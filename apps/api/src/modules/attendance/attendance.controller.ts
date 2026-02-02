@@ -9,12 +9,42 @@ import {
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { MarkAttendanceDto, BulkAttendanceDto, QueryAttendanceDto } from './dto';
-import { Roles } from '../../common/decorators';
+import { Roles, CurrentUser } from '../../common/decorators';
 import { UserRole, AbsenceType } from '@prisma/client';
+import { JwtPayload } from '../../common/types/auth.types';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('attendance')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) {}
+  constructor(
+    private readonly attendanceService: AttendanceService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  @Get('my')
+  @Roles(UserRole.STUDENT)
+  async getMyAttendance(@CurrentUser() user: JwtPayload) {
+    // Find student by user ID
+    const student = await this.prisma.student.findFirst({
+      where: { userId: user.sub },
+    });
+
+    if (!student) {
+      return {
+        attendances: [],
+        statistics: {
+          total: 0,
+          present: 0,
+          absent: 0,
+          absentJustified: 0,
+          absentUnjustified: 0,
+          attendanceRate: 100,
+        },
+      };
+    }
+
+    return this.attendanceService.getByStudent(student.id, {});
+  }
 
   @Get('lesson/:lessonId')
   async getByLesson(@Param('lessonId') lessonId: string) {

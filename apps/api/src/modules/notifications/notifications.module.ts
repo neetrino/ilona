@@ -1,11 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
+import { NotificationsService } from './notifications.service';
+import { EmailService } from './email.service';
 
-// TODO: Implement NotificationsService
+@Global()
 @Module({
-  controllers: [],
-  providers: [],
-  exports: [],
+  providers: [NotificationsService, EmailService],
+  exports: [NotificationsService, EmailService],
 })
 export class NotificationsModule {}
-
-
