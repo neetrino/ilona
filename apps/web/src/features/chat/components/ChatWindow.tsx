@@ -261,3 +261,4 @@ export function ChatWindow({ chat, onSendMessage, onBack }: ChatWindowProps) {
   );
 }
 
+

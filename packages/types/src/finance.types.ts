@@ -193,3 +193,4 @@ export interface ProcessSalaryDto {
   month: Date;
 }
 
+

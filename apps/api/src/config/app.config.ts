@@ -7,3 +7,4 @@ export const appConfig = registerAs('app', () => ({
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
 }));
 
+

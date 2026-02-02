@@ -6,3 +6,4 @@ export const jwtConfig = registerAs('jwt', () => ({
   refreshExpiration: process.env.JWT_REFRESH_EXPIRATION || '7d',
 }));
 
+
