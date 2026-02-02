@@ -1,7 +1,7 @@
 # Прогресс: Ilona English Center
 
-**Текущий этап:** Этап 4 — Chat System ✅ ЗАВЕРШЕН
-**Общий прогресс:** 50%
+**Текущий этап:** Этап 5 — Finance Module ✅ ЗАВЕРШЕН
+**Общий прогресс:** 60%
 **Последнее обновление:** 2026-02-02
 
 ---
@@ -21,77 +21,41 @@
 
 ## ✅ Выполнено
 
-### Этап 0: Подготовка
-- [x] ТЗ получено и проанализировано
-- [x] Размер проекта определён: B+ (средний)
-- [x] Архитектура согласована (NestJS + Next.js)
-- [x] Prisma схема спроектирована
-- [x] Документация начата
-
-### Этап 1: Core (Project initialization, DB, Auth, Admin CRUD, i18n)
-- [x] Инициализация Monorepo (Turborepo, pnpm)
-- [x] Базовая структура папок (`apps/api`, `apps/web`, `packages/database`, `packages/types`)
-- [x] Конфигурация ESLint, Prettier, TypeScript
-- [x] Prisma: `schema.prisma` с 18 моделями
-- [x] Prisma: `seed.ts` для начальных данных
-- [x] NestJS API: Базовая структура приложения
-- [x] NestJS API: Модуль `Auth` (Login, Refresh Token)
-- [x] NestJS API: Модуль `Users` (CRUD, `getMe`)
-- [x] NestJS API: JWT аутентификация и Role-Based Access Control (RBAC)
-
-### Этап 2: Аутентификация и UI
-- [x] База данных Neon подключена и схема применена
-- [x] Seed данные созданы (Admin, Teacher, Student, Centers, Group, Chat)
-- [x] API: Модуль Centers - CRUD операции
-- [x] API: Модуль Groups - CRUD операции
-- [x] API: Модуль Lessons - CRUD + расписание
-- [x] API: Модуль Attendance - посещаемость
-- [x] API: Модуль Students - CRUD + связи
-- [x] API: Модуль Teachers - CRUD + связи
-
-### Этап 3: Качество кода ✅
-- [x] TypeScript strict mode включен
-- [x] Все `any` типы заменены на конкретные типы
-- [x] Созданы общие типы (JwtPayload, AuthTokens, SafeUser)
-- [x] Unit тесты: AuthService (7 тестов)
-- [x] Unit тесты: CentersService (11 тестов)
-- [x] Unit тесты: LessonsService (13 тестов)
-- [x] **Всего: 31 тест проходят ✅**
-- [x] E2E тесты созданы (Auth, Centers)
+### Этап 0-3: Базовая настройка
+- [x] Monorepo (Turborepo, pnpm)
+- [x] TypeScript strict mode
+- [x] Prisma: 18 моделей
+- [x] NestJS: Auth, Users, Centers, Groups, Lessons, Attendance, Students, Teachers
+- [x] 31 unit тест (Auth, Centers, Lessons)
 
 ### Этап 4: Chat System ✅
-- [x] ChatModule создан
-- [x] ChatService с полным функционалом:
-  - [x] Получение чатов пользователя
-  - [x] Получение сообщений с пагинацией
-  - [x] Создание direct чатов
-  - [x] Отправка сообщений (текст, файлы, голос)
-  - [x] Редактирование сообщений
-  - [x] Удаление сообщений
-  - [x] Пометка как прочитано
-  - [x] Vocabulary сообщения для учителей
-- [x] ChatGateway (WebSocket):
-  - [x] Аутентификация через JWT
-  - [x] Real-time сообщения
-  - [x] Typing indicators
-  - [x] Online/offline статусы
-  - [x] Vocabulary отправка
-- [x] ChatController (REST API)
-- [x] DTOs с валидацией
+- [x] ChatService (чаты, сообщения, vocabulary)
+- [x] ChatGateway (WebSocket, real-time)
+- [x] Typing indicators, online/offline статусы
+
+### Этап 5: Finance Module ✅
+- [x] **PaymentsService:**
+  - Create, update, process payments
+  - Student payment summary
+  - Revenue statistics
+  - Auto-overdue check
+- [x] **SalariesService:**
+  - Generate monthly salaries
+  - Process salary payments
+  - Teacher salary summary
+- [x] **DeductionsService:**
+  - Create deductions
+  - Auto-deduction for missing vocabulary
+  - Auto-deduction for missing feedback
+  - Deduction statistics
+- [x] **FinanceController:**
+  - Dashboard endpoint
+  - Monthly reports
+  - Automation tasks
 
 ---
 
 ## 🚀 В процессе
-
-### Этап 5: Finance Module
-- [ ] Модуль платежей (Payments)
-- [ ] Модуль зарплат (SalaryRecords)
-- [ ] Модуль вычетов (Deductions)
-- [ ] Интеграция с платежными шлюзами
-
----
-
-## 🔮 Планы на будущее
 
 ### Этап 6: Frontend Integration
 - [ ] Подключение API к Next.js
@@ -99,12 +63,6 @@
 - [ ] Страницы Teacher Dashboard
 - [ ] Страницы Student Dashboard
 - [ ] Real-time чат на фронтенде
-
-### Этап 7: Analytics & Polish
-- [ ] Отчеты по успеваемости
-- [ ] Аналитика учителей
-- [ ] Финансовая аналитика
-- [ ] Оптимизация и документация
 
 ---
 
@@ -121,7 +79,7 @@ apps/api/src/modules/
 ├── students/       ✅ CRUD + dashboard
 ├── teachers/       ✅ CRUD + daily plan
 ├── chat/           ✅ WebSocket + REST
-├── finance/        🔜 In progress
+├── finance/        ✅ Payments + Salaries + Deductions
 ├── analytics/      📋 Planned
 └── notifications/  📋 Planned
 ```
@@ -139,6 +97,22 @@ apps/api/src/modules/
 
 ---
 
+## 💰 Finance API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/finance/dashboard` | GET | Financial overview |
+| `/finance/report/monthly` | GET | Monthly report |
+| `/finance/automation/run` | POST | Run auto tasks |
+| `/finance/payments` | GET/POST | Payments CRUD |
+| `/finance/payments/:id/process` | PATCH | Process payment |
+| `/finance/salaries` | GET/POST | Salaries CRUD |
+| `/finance/salaries/generate-monthly` | POST | Generate monthly |
+| `/finance/deductions` | GET/POST | Deductions CRUD |
+| `/finance/deductions/stats` | GET | Deduction stats |
+
+---
+
 ## 🔐 Демо аккаунты
 
 | Роль | Email | Password |
@@ -149,9 +123,10 @@ apps/api/src/modules/
 
 ---
 
-## 📝 Примечания
+## 📝 Git репозиторий
 
-- API работает на `http://localhost:4000/api`
-- WebSocket для чата: `ws://localhost:4000/chat`
-- База данных: Neon PostgreSQL (облачная)
-- Strict TypeScript mode включен
+**URL:** https://github.com/neetrino-development/ilona-english-center.git
+
+**Последние коммиты:**
+- `feat: Add Finance module (Payments, Salaries, Deductions)`
+- `feat: Complete backend API implementation`
