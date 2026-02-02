@@ -22,6 +22,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -52,6 +53,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     FinanceModule,
     AnalyticsModule,
     NotificationsModule,
+    StorageModule,
   ],
   providers: [
     // Global JWT guard (can be overridden with @Public())
