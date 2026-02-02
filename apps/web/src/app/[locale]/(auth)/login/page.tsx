@@ -1,43 +1,32 @@
-import { useTranslations } from 'next-intl';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/components/ui';
-import { LoginForm } from '@/features/auth';
+'use client';
 
-interface LoginPageProps {
-  params: { locale: string };
-}
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { LoginForm } from '@/features/auth/components/LoginForm';
+import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 
-export default function LoginPage({ params: { locale } }: LoginPageProps) {
-  const t = useTranslations('auth');
+export default function LoginPage() {
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      window.location.href = getDashboardPath(user.role);
+    }
+  }, [isAuthenticated, user]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-primary"
-            >
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
-          </div>
-          <CardTitle className="text-2xl">Ilona English Center</CardTitle>
-          <CardDescription>{t('enterCredentials')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LoginForm locale={locale} />
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4">
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+      
+      {/* Decorative blobs */}
+      <div className="absolute top-20 left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" />
+      <div className="absolute top-40 right-20 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000" />
+      <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000" />
+
+      <div className="relative z-10 w-full max-w-md">
+        <LoginForm />
+      </div>
     </div>
   );
 }
-

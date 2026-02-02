@@ -189,7 +189,7 @@ describe('ChatService', () => {
       });
 
       const result = await chatService.createDirectChat(
-        { type: ChatType.DIRECT, participantIds: ['user-2'] },
+        { participantIds: ['user-2'] },
         'user-1',
       );
 
@@ -202,8 +202,8 @@ describe('ChatService', () => {
         type: ChatType.DIRECT,
       });
 
-      const result = await chatService.createDirectChat(
-        { type: ChatType.DIRECT, participantIds: ['user-2'] },
+      await chatService.createDirectChat(
+        { participantIds: ['user-2'] },
         'user-1',
       );
 
@@ -212,7 +212,7 @@ describe('ChatService', () => {
 
     it('should throw BadRequestException if no participants', async () => {
       await expect(
-        chatService.createDirectChat({ type: ChatType.DIRECT, participantIds: [] }, 'user-1'),
+        chatService.createDirectChat({ participantIds: [] }, 'user-1'),
       ).rejects.toThrow(BadRequestException);
     });
   });

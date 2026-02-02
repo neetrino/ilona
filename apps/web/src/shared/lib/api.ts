@@ -4,13 +4,22 @@ interface FetchOptions extends RequestInit {
   token?: string;
 }
 
-interface ApiError {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-    details?: Record<string, string[]>;
-  };
+interface ApiErrorResponse {
+  statusCode?: number;
+  message?: string | string[];
+  error?: string;
+}
+
+export class ApiError extends Error {
+  statusCode: number;
+  details?: string[];
+
+  constructor(message: string, statusCode: number, details?: string[]) {
+    super(message);
+    this.name = 'ApiError';
+    this.statusCode = statusCode;
+    this.details = details;
+  }
 }
 
 class ApiClient {
@@ -20,8 +29,23 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
+  private getToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = localStorage.getItem('ilona-auth');
+      if (stored) {
+        const data = JSON.parse(stored);
+        return data?.state?.tokens?.accessToken || null;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
   private async request<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
-    const { token, ...fetchOptions } = options;
+    const { token: explicitToken, ...fetchOptions } = options;
+    const token = explicitToken || this.getToken();
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -37,11 +61,25 @@ class ApiClient {
       headers,
     });
 
-    const data = await response.json();
+    let data: T | ApiErrorResponse;
+    const text = await response.text();
+    
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      throw new ApiError('Invalid response from server', response.status);
+    }
 
     if (!response.ok) {
-      const error = data as ApiError;
-      throw new Error(error.error?.message || 'An error occurred');
+      const errorData = data as ApiErrorResponse;
+      const message = Array.isArray(errorData.message) 
+        ? errorData.message[0] 
+        : errorData.message || errorData.error || 'An error occurred';
+      throw new ApiError(
+        message,
+        response.status,
+        Array.isArray(errorData.message) ? errorData.message : undefined
+      );
     }
 
     return data as T;
@@ -81,4 +119,3 @@ class ApiClient {
 }
 
 export const api = new ApiClient(API_URL);
-

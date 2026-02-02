@@ -1,17 +1,32 @@
 'use client';
 
-import { DashboardLayout } from '@/shared/components/layout';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
-interface AdminLayoutProps {
+export default function AdminLayout({
+  children,
+}: {
   children: React.ReactNode;
-  params: { locale: string };
-}
+}) {
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuthStore();
 
-export default function AdminLayout({ children, params: { locale } }: AdminLayoutProps) {
-  return (
-    <DashboardLayout role="ADMIN" locale={locale}>
-      {children}
-    </DashboardLayout>
-  );
-}
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login');
+    } else if (user?.role !== 'ADMIN') {
+      router.push('/');
+    }
+  }, [isAuthenticated, user, router]);
 
+  if (!isAuthenticated || user?.role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}

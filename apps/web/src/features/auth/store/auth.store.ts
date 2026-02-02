@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { api } from '@/shared/lib/api';
-import type { User, AuthTokens, UserRole } from '@ilona/types';
+import type { User, AuthTokens, UserRole } from '@/types';
 
 interface AuthState {
   user: User | null;

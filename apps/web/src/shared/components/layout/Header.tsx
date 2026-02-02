@@ -1,71 +1,70 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { useAuthStore } from '@/features/auth';
-import { Button } from '@/shared/components/ui';
-import { LogOut, User, Bell, Globe } from 'lucide-react';
+import { useState } from 'react';
+import { Input } from '@/shared/components/ui/input';
 
 interface HeaderProps {
-  locale: string;
+  title: string;
+  subtitle?: string;
 }
 
-export function Header({ locale }: HeaderProps) {
-  const t = useTranslations('nav');
-  const { user, logout } = useAuthStore();
+export function Header({ title, subtitle }: HeaderProps) {
+  const [searchValue, setSearchValue] = useState('');
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = `/${locale}/login`;
-  };
-
-  const otherLocale = locale === 'en' ? 'hy' : 'en';
+  const today = new Date().toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
   return (
-    <header className="fixed left-64 right-0 top-0 z-30 flex h-16 items-center justify-between border-b bg-card px-6">
-      {/* Search or Title */}
-      <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold">{t('dashboard')}</h1>
+    <header className="flex items-center justify-between px-8 py-4 bg-white border-b border-slate-100">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">{title}</h1>
+        {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
       </div>
 
-      {/* Right side */}
       <div className="flex items-center gap-4">
-        {/* Language switcher */}
-        <Link
-          href={`/${otherLocale}`}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <Globe className="h-4 w-4" />
-          {otherLocale.toUpperCase()}
-        </Link>
-
-        {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground">
-            3
-          </span>
-        </Button>
-
-        {/* User menu */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-            <User className="h-5 w-5 text-primary" />
-          </div>
-          <div className="hidden md:block">
-            <p className="text-sm font-medium">
-              {user?.firstName} {user?.lastName}
-            </p>
-            <p className="text-xs text-muted-foreground">{user?.role}</p>
-          </div>
+        {/* Search */}
+        <div className="relative">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <Input
+            type="search"
+            placeholder="Global search"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="pl-10 w-64 bg-slate-50 border-slate-200 focus:bg-white"
+          />
         </div>
 
-        {/* Logout */}
-        <Button variant="ghost" size="icon" onClick={handleLogout}>
-          <LogOut className="h-5 w-5" />
-        </Button>
+        {/* Date */}
+        <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg border border-slate-200">
+          <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span className="text-sm font-medium text-slate-600">{today}</span>
+        </div>
+
+        {/* Notifications */}
+        <button className="relative p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
       </div>
     </header>
   );
 }
-

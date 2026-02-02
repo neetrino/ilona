@@ -4,7 +4,6 @@ const withNextIntl = createNextIntlPlugin('./src/config/i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@ilona/types'],
   images: {
     remotePatterns: [
       {
@@ -12,9 +11,6 @@ const nextConfig = {
         hostname: '**.cloudflare.com',
       },
     ],
-  },
-  experimental: {
-    typedRoutes: true,
   },
 };
 

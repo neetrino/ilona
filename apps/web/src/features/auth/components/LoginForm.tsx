@@ -1,53 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button, Input, Label } from '@/shared/components/ui';
-import { useAuthStore, getDashboardPath } from '../store';
+import { useAuthStore, getDashboardPath } from '../store/auth.store';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
-interface LoginFormProps {
-  locale: string;
-}
-
-export function LoginForm({ locale }: LoginFormProps) {
-  const t = useTranslations('auth');
-  const router = useRouter();
+export function LoginForm() {
   const { login, isLoading, error, clearError } = useAuthStore();
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearError();
 
-  const onSubmit = async (data: LoginFormData) => {
     try {
-      clearError();
-      await login(data.email, data.password);
-
-      // Get user from store after login
+      await login(email, password);
       const user = useAuthStore.getState().user;
       if (user) {
-        const dashboardPath = getDashboardPath(user.role);
-        router.push(`/${locale}${dashboardPath}`);
+        window.location.href = getDashboardPath(user.role);
       }
     } catch {
       // Error is handled in store
@@ -55,86 +28,97 @@ export function LoginForm({ locale }: LoginFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {error && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
-      )}
-
-      <div className="space-y-2">
-        <Label htmlFor="email">{t('email')}</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="user@example.com"
-          error={errors.email?.message}
-          {...register('email')}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password">{t('password')}</Label>
-        <div className="relative">
-          <Input
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="••••••••"
-            error={errors.password?.message}
-            {...register('password')}
-          />
-          <button
-            type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                <line x1="1" y1="1" x2="23" y2="23" />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-            )}
-          </button>
+    <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-white/95 backdrop-blur">
+      <CardHeader className="space-y-1 text-center pb-2">
+        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+          <span className="text-3xl">🎓</span>
         </div>
-      </div>
+        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          Ilona English Center
+        </CardTitle>
+        <CardDescription className="text-slate-500">
+          Enter your credentials to access the platform
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-slate-700 font-medium">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="h-11 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-slate-700 font-medium">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="h-11 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
 
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" className="rounded border-input" />
-          {t('rememberMe')}
-        </label>
-        <a href="#" className="text-sm text-primary hover:underline">
-          {t('forgotPassword')}
-        </a>
-      </div>
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600 font-medium">{error}</p>
+            </div>
+          )}
 
-      <Button type="submit" className="w-full" isLoading={isLoading}>
-        {t('loginButton')}
-      </Button>
-    </form>
+          <Button
+            type="submit"
+            className="w-full h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg shadow-indigo-500/30 transition-all duration-200"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Signing in...
+              </span>
+            ) : (
+              'Sign In'
+            )}
+          </Button>
+        </form>
+
+        <div className="mt-6 pt-4 border-t border-slate-100">
+          <p className="text-xs text-slate-400 text-center mb-3">Demo Accounts</p>
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => { setEmail('admin@ilona.edu'); setPassword('admin123'); }}
+              className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors text-slate-600"
+            >
+              👤 Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('teacher@ilona.edu'); setPassword('teacher123'); }}
+              className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors text-slate-600"
+            >
+              👩‍🏫 Teacher
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('student@ilona.edu'); setPassword('student123'); }}
+              className="p-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors text-slate-600"
+            >
+              🎒 Student
+            </button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
-
