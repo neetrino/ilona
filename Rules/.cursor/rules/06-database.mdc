@@ -1,0 +1,848 @@
+---
+description: Правила работы с базой данных. Применяется к схемам, миграциям и запросам.
+globs: ["**/prisma/**", "**/*.prisma", "**/db/**", "**/database/**", "**/migrations/**"]
+alwaysApply: false
+---
+
+# ПРАВИЛА РАБОТЫ С БАЗОЙ ДАННЫХ
+
+> PostgreSQL как основа. Prisma как ORM. Безопасность и производительность.
+
+---
+
+## 🎯 ГЛАВНЫЕ ПРИНЦИПЫ
+
+1. **PostgreSQL по умолчанию** — для 95% проектов
+2. **Prisma ORM** — никаких raw SQL без необходимости
+3. **Миграции обязательны** — все изменения через миграции
+4. **Индексы продуманы** — для всех частых запросов
+
+---
+
+## 🗄️ ВЫБОР БАЗЫ ДАННЫХ
+
+### Когда какую использовать
+
+| База данных | Когда использовать | Когда НЕ использовать |
+|-------------|-------------------|----------------------|
+| **PostgreSQL** | 95% проектов, ACID, сложные запросы | Очень простые проекты |
+| **MongoDB** | Документы, гибкая схема, прототипы | Транзакции, связи данных |
+| **SQLite** | Прототипы, встроенные приложения | Production web-приложения |
+| **Redis** | Кэш, сессии, очереди | Основное хранилище |
+
+### Стандартный стек
+
+```
+Production:
+├── PostgreSQL 15+ — основная БД
+├── Redis 7+ — кэш и очереди
+└── (опционально) Elasticsearch — полнотекстовый поиск
+```
+
+---
+
+## 📝 PRISMA SCHEMA
+
+### Структура schema.prisma
+
+```prisma
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// ПОЛЬЗОВАТЕЛИ И АВТОРИЗАЦИЯ
+// ==========================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Связи
+  orders    Order[]
+  sessions  Session[]
+  
+  @@index([email])
+  @@index([role, isActive])
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MANAGER
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ==========================================
+// ПРОДУКТЫ И КАТЕГОРИИ
+// ==========================================
+
+model Category {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String?
+  parentId    String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Связи
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+  
+  @@index([slug])
+  @@index([parentId])
+  @@index([isActive, sortOrder])
+  @@map("categories")
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  sku         String? @unique
+  name        String
+  description String?
+  price       Int     // Цена в копейках
+  comparePrice Int?   // Старая цена для скидки
+  stock       Int     @default(0)
+  categoryId  String
+  isActive    Boolean @default(true)
+  isFeatured  Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Связи
+  category   Category    @relation(fields: [categoryId], references: [id])
+  variants   Variant[]
+  images     Image[]
+  orderItems OrderItem[]
+  
+  @@index([slug])
+  @@index([sku])
+  @@index([categoryId])
+  @@index([isActive, isFeatured])
+  @@index([price])
+  @@map("products")
+}
+
+model Variant {
+  id        String @id @default(cuid())
+  productId String
+  sku       String @unique
+  name      String // "Красный, L"
+  price     Int?   // Своя цена или null = цена продукта
+  stock     Int    @default(0)
+  
+  // Атрибуты как JSON
+  attributes Json @default("{}")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+  
+  @@index([productId])
+  @@index([sku])
+  @@map("variants")
+}
+
+model Image {
+  id        String @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  sortOrder Int    @default(0)
+  
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([productId])
+  @@map("images")
+}
+
+// ==========================================
+// ЗАКАЗЫ
+// ==========================================
+
+model Order {
+  id          String      @id @default(cuid())
+  number      String      @unique // ORD-2024-00001
+  userId      String?
+  status      OrderStatus @default(PENDING)
+  
+  // Суммы в копейках
+  subtotal    Int
+  discount    Int         @default(0)
+  shipping    Int         @default(0)
+  total       Int
+  
+  // Данные доставки
+  shippingAddress Json
+  billingAddress  Json?
+  
+  // Контакт
+  email       String
+  phone       String
+  
+  // Мета
+  notes       String?
+  metadata    Json        @default("{}")
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Связи
+  user        User?       @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+  payments    Payment[]
+  events      OrderEvent[]
+  
+  @@index([number])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  variantId String?
+  
+  name      String // Сохраняем на момент заказа
+  sku       String
+  price     Int    // Цена на момент заказа
+  quantity  Int
+  total     Int    // price * quantity
+  
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product  @relation(fields: [productId], references: [id])
+  variant Variant? @relation(fields: [variantId], references: [id])
+  
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  type      String   // status_changed, payment_received, note_added
+  data      Json     @default("{}")
+  createdAt DateTime @default(now())
+  createdBy String?  // User ID или 'system'
+  
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([orderId])
+  @@index([type])
+  @@map("order_events")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  orderId       String
+  provider      String        // stripe, idram, arca
+  externalId    String?       @unique
+  status        PaymentStatus @default(PENDING)
+  amount        Int
+  currency      String        @default("AMD")
+  metadata      Json          @default("{}")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  order Order @relation(fields: [orderId], references: [id])
+  
+  @@index([orderId])
+  @@index([externalId])
+  @@index([status])
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+```
+
+---
+
+## 🔧 ПРАВИЛА СХЕМЫ
+
+### Именование
+
+```prisma
+// ✅ ПРАВИЛЬНО
+model User { ... }           // PascalCase для моделей
+model OrderItem { ... }      // PascalCase составные
+
+// Поля — camelCase
+firstName String
+createdAt DateTime
+isActive  Boolean
+
+// Enum — UPPER_SNAKE для значений
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+// Таблицы — snake_case через @@map
+model OrderItem {
+  ...
+  @@map("order_items")
+}
+```
+
+### ID стратегия
+
+```prisma
+// ✅ CUID — рекомендуется (короче UUID, сортируемый)
+id String @id @default(cuid())
+
+// ✅ UUID — когда нужна совместимость
+id String @id @default(uuid())
+
+// ⚠️ Auto-increment — только для внутренних таблиц
+id Int @id @default(autoincrement())
+```
+
+### Обязательные поля
+
+```prisma
+// ✅ Всегда добавляй timestamps
+model Entity {
+  id        String   @id @default(cuid())
+  // ... поля
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+---
+
+## 📊 ИНДЕКСЫ
+
+### Когда добавлять индексы
+
+```prisma
+// ✅ Поля для поиска
+@@index([email])
+@@index([slug])
+
+// ✅ Поля для фильтрации
+@@index([status])
+@@index([isActive])
+@@index([categoryId])
+
+// ✅ Составные индексы для частых запросов
+@@index([isActive, createdAt])
+@@index([userId, status])
+
+// ✅ Уникальные индексы
+email String @unique
+slug  String @unique
+
+// ✅ Составной уникальный
+@@unique([productId, variantId])
+```
+
+### Что НЕ индексировать
+
+```prisma
+// ❌ Не индексируй:
+// - Поля с низкой кардинальностью (boolean с 50/50)
+// - Редко используемые в WHERE
+// - Большие текстовые поля (description)
+```
+
+---
+
+## 🔄 МИГРАЦИИ
+
+### Workflow миграций
+
+```bash
+# 1. Изменить schema.prisma
+
+# 2. Создать миграцию (development)
+npx prisma migrate dev --name add_user_role
+
+# 3. Применить миграцию (production)
+npx prisma migrate deploy
+
+# 4. Сгенерировать клиент
+npx prisma generate
+```
+
+### Именование миграций
+
+```bash
+# ✅ ПРАВИЛЬНО — описательные имена
+add_users_table
+add_user_email_index
+add_order_status_column
+rename_price_to_amount
+remove_deprecated_field
+
+# ❌ ПЛОХО
+update
+fix
+changes
+migration1
+```
+
+### Опасные миграции
+
+```prisma
+// ⚠️ ОСТОРОЖНО — потеря данных
+
+// Удаление колонки
+// СНАЧАЛА: убедись что данные не нужны или мигрированы
+
+// Переименование колонки  
+// ИСПОЛЬЗУЙ: @map для обратной совместимости
+model User {
+  firstName String @map("first_name") // Было first_name в БД
+}
+
+// Изменение типа
+// СОЗДАЙ: новую колонку, мигрируй данные, удали старую
+```
+
+---
+
+## 📝 ЗАПРОСЫ PRISMA
+
+### Правильные паттерны
+
+```typescript
+// ✅ Select только нужные поля
+const users = await prisma.user.findMany({
+  select: {
+    id: true,
+    name: true,
+    email: true,
+  },
+});
+
+// ✅ Include для связей
+const order = await prisma.order.findUnique({
+  where: { id: orderId },
+  include: {
+    items: true,
+    user: {
+      select: { id: true, name: true, email: true },
+    },
+  },
+});
+
+// ✅ Пагинация
+const products = await prisma.product.findMany({
+  skip: (page - 1) * limit,
+  take: limit,
+  orderBy: { createdAt: 'desc' },
+});
+
+// ✅ Транзакции
+const [order, payment] = await prisma.$transaction([
+  prisma.order.create({ data: orderData }),
+  prisma.payment.create({ data: paymentData }),
+]);
+
+// ✅ Интерактивные транзакции
+const result = await prisma.$transaction(async (tx) => {
+  const product = await tx.product.findUnique({ where: { id } });
+  
+  if (product.stock < quantity) {
+    throw new Error('Insufficient stock');
+  }
+  
+  await tx.product.update({
+    where: { id },
+    data: { stock: { decrement: quantity } },
+  });
+  
+  return tx.orderItem.create({ data: itemData });
+});
+```
+
+### Антипаттерны
+
+```typescript
+// ❌ N+1 проблема
+const orders = await prisma.order.findMany();
+for (const order of orders) {
+  const items = await prisma.orderItem.findMany({
+    where: { orderId: order.id },
+  }); // N дополнительных запросов!
+}
+
+// ✅ Используй include
+const orders = await prisma.order.findMany({
+  include: { items: true },
+});
+
+// ❌ Загрузка всех данных
+const allProducts = await prisma.product.findMany(); // Миллионы записей!
+
+// ✅ Используй пагинацию
+const products = await prisma.product.findMany({
+  take: 100,
+  skip: offset,
+});
+
+// ❌ Raw SQL без необходимости
+const users = await prisma.$queryRaw`SELECT * FROM users WHERE ...`;
+
+// ✅ Используй Prisma Query API
+const users = await prisma.user.findMany({
+  where: { ... },
+});
+```
+
+---
+
+## 🔒 БЕЗОПАСНОСТЬ
+
+### Защита от SQL Injection
+
+```typescript
+// ✅ Prisma автоматически экранирует параметры
+const user = await prisma.user.findFirst({
+  where: { email: userInput }, // Безопасно
+});
+
+// ⚠️ Raw SQL — используй параметры
+const result = await prisma.$queryRaw`
+  SELECT * FROM users WHERE email = ${userInput}
+`; // Prisma экранирует
+
+// ❌ НИКОГДА не конкатенируй строки
+const result = await prisma.$queryRawUnsafe(
+  `SELECT * FROM users WHERE email = '${userInput}'` // SQL INJECTION!
+);
+```
+
+### Мягкое удаление
+
+```prisma
+model Product {
+  id        String    @id @default(cuid())
+  // ...
+  deletedAt DateTime? // null = активен, дата = удалён
+  
+  @@index([deletedAt])
+}
+```
+
+```typescript
+// Middleware для автоматической фильтрации
+prisma.$use(async (params, next) => {
+  if (params.model === 'Product') {
+    if (params.action === 'findMany' || params.action === 'findFirst') {
+      params.args.where = {
+        ...params.args.where,
+        deletedAt: null,
+      };
+    }
+  }
+  return next(params);
+});
+```
+
+---
+
+## 💾 BACKUP И ВОССТАНОВЛЕНИЕ
+
+### Стратегия бэкапов
+
+```markdown
+## Типы бэкапов
+
+| Тип | Частота | Retention | Когда использовать |
+|-----|---------|-----------|-------------------|
+| Full backup | Ежедневно | 30 дней | Полное восстановление |
+| Incremental | Каждый час | 7 дней | Восстановление на точку |
+| WAL archiving | Непрерывно | 7 дней | Point-in-time recovery |
+```
+
+### Настройка бэкапов PostgreSQL
+
+```bash
+# Полный бэкап
+pg_dump -h localhost -U user -d database -F c -f backup_$(date +%Y%m%d).dump
+
+# Восстановление
+pg_restore -h localhost -U user -d database -c backup_20240115.dump
+
+# Бэкап только схемы
+pg_dump -h localhost -U user -d database --schema-only -f schema.sql
+
+# Бэкап только данных
+pg_dump -h localhost -U user -d database --data-only -f data.sql
+```
+
+### Автоматизация (Docker/Kubernetes)
+
+```yaml
+# docker-compose.yml — backup service
+services:
+  backup:
+    image: postgres:15-alpine
+    environment:
+      PGHOST: postgres
+      PGUSER: ${DB_USER}
+      PGPASSWORD: ${DB_PASSWORD}
+      PGDATABASE: ${DB_NAME}
+    volumes:
+      - ./backups:/backups
+    command: |
+      sh -c 'while true; do
+        pg_dump -F c -f /backups/backup_$$(date +%Y%m%d_%H%M%S).dump
+        find /backups -mtime +30 -delete
+        sleep 86400
+      done'
+```
+
+### 🔴 ОБЯЗАТЕЛЬНО: Restore Testing
+
+```markdown
+## Checklist тестирования восстановления
+
+### Ежемесячно
+- [ ] Восстановить последний бэкап в тестовую БД
+- [ ] Проверить целостность данных
+- [ ] Проверить что приложение работает с восстановленными данными
+- [ ] Замерить время восстановления (RTO)
+- [ ] Задокументировать результат
+
+### Что проверять после восстановления
+- [ ] Количество записей в ключевых таблицах совпадает
+- [ ] Связи (FK) не нарушены
+- [ ] Приложение запускается и работает
+- [ ] Критичные функции работают (авторизация, заказы, платежи)
+```
+
+### Runbook восстановления
+
+```markdown
+## Восстановление из бэкапа
+
+### 1. Подготовка
+- Определить точку восстановления (какой бэкап)
+- Уведомить команду о downtime
+- Подготовить чистую БД или остановить текущую
+
+### 2. Восстановление
+\`\`\`bash
+# Остановить приложение
+docker-compose stop app
+
+# Восстановить БД
+pg_restore -h localhost -U user -d database -c backup.dump
+
+# Проверить
+psql -h localhost -U user -d database -c "SELECT COUNT(*) FROM users;"
+
+# Запустить приложение
+docker-compose start app
+\`\`\`
+
+### 3. Верификация
+- [ ] Приложение запустилось
+- [ ] Health checks проходят
+- [ ] Smoke tests проходят
+- [ ] Мониторинг в норме
+
+### 4. Коммуникация
+- Уведомить команду о завершении
+- Создать incident report
+```
+
+### Метрики бэкапов
+
+```typescript
+// Что мониторить
+const backupMetrics = {
+  lastBackupTime: Date,        // Когда был последний бэкап
+  backupSize: number,          // Размер бэкапа
+  backupDuration: number,      // Время создания бэкапа
+  lastRestoreTest: Date,       // Когда тестировали восстановление
+  restoreDuration: number,     // Время восстановления (RTO)
+};
+
+// Алерты
+// - Бэкап не создавался > 24 часов
+// - Restore test не проводился > 30 дней
+// - Размер бэкапа аномально изменился
+```
+
+---
+
+## ☁️ NEON (MANAGED POSTGRES)
+
+> Если используется Neon — многие секции выше упрощаются.
+
+### Что Neon делает автоматически
+
+```markdown
+## Бэкапы
+- ✅ Автоматические бэкапы (не нужно настраивать)
+- ✅ Point-in-time recovery (до 7/30 дней в зависимости от плана)
+- ✅ Хранение в отдельном месте (S3-совместимое хранилище)
+
+## Branching
+- ✅ Database branches (как git branches для БД)
+- ✅ Preview environments с отдельной БД
+- ✅ Instant branching (copy-on-write)
+
+## Масштабирование
+- ✅ Autoscaling compute
+- ✅ Scale to zero (экономия на dev)
+- ✅ Read replicas (на Pro плане)
+```
+
+### Neon Branching для разработки
+
+```bash
+# Вместо docker-compose с локальным Postgres:
+# 1. Main branch = production
+# 2. Dev branch = для разработки
+# 3. PR branches = для preview deployments
+
+# Создание branch через Neon CLI
+neonctl branches create --name feature-auth
+
+# Или через Vercel Integration — автоматически для каждого PR
+```
+
+### Connection String
+
+```typescript
+// .env.local (development)
+DATABASE_URL="postgresql://user:pass@ep-xxx-123.us-east-2.aws.neon.tech/neondb?sslmode=require"
+
+// Prisma — добавить для serverless
+// schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")  // Для миграций (без connection pooling)
+}
+```
+
+### Что всё равно нужно делать
+
+```markdown
+## Ваша ответственность
+
+- ✅ Схема БД и миграции (Prisma)
+- ✅ Индексы для производительности
+- ✅ Правильные запросы (без N+1)
+- ✅ Транзакции где нужно
+- ✅ Soft delete для важных данных
+
+## НЕ нужно (Neon делает)
+
+- ❌ Настраивать бэкапы
+- ❌ docker-compose для локальной БД
+- ❌ Restore testing (Neon гарантирует)
+- ❌ Мониторинг дискового пространства
+```
+
+### Neon + Vercel Integration
+
+```markdown
+## Автоматически при интеграции
+
+1. Preview deployment → Neon создаёт branch
+2. PR merged → branch удаляется
+3. Environment variables прокидываются автоматически
+```
+
+---
+
+## 📋 CHECKLIST
+
+### Перед production
+
+- [ ] Все индексы созданы для частых запросов
+- [ ] Миграции протестированы на копии данных
+- [ ] Нет N+1 проблем
+- [ ] Транзакции для связанных операций
+- [ ] Мягкое удаление для важных данных
+- [ ] Backup настроен *(автоматически если Neon)*
+- [ ] **Restore testing проведён** *(не требуется если Neon)*
+- [ ] **RTO/RPO определены** *(Neon: RPO ~0, RTO минуты)*
+
+### Backup Checklist (self-hosted)
+
+> Пропустить если используется Neon или другой managed сервис
+
+- [ ] Автоматические бэкапы настроены
+- [ ] Retention policy определена
+- [ ] Бэкапы хранятся в отдельном месте (не на том же сервере)
+- [ ] Restore testing проводится регулярно (минимум ежемесячно)
+- [ ] Runbook восстановления задокументирован
+- [ ] Алерты на отсутствие бэкапов
+
+### Neon Checklist
+
+- [ ] Правильный план выбран (Free/Pro/Scale)
+- [ ] Vercel Integration настроена (если Vercel)
+- [ ] Connection pooling включён
+- [ ] `directUrl` настроен для миграций
+
+---
+
+**Версия:** 1.2
+**Дата:** 2025-01-31

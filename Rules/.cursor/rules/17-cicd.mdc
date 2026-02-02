@@ -1,0 +1,1004 @@
+---
+description: Правила CI/CD. GitHub Actions, пайплайны, деплой.
+globs: [".github/**", "**/Dockerfile", "**/docker-compose*"]
+alwaysApply: false
+---
+
+# ПРАВИЛА CI/CD
+
+> Автоматизация = консистентность. Каждый коммит проходит одинаковые проверки.
+
+---
+
+## 🎯 ГЛАВНЫЕ ПРИНЦИПЫ
+
+1. **Fail Fast** — ловим ошибки как можно раньше
+2. **Автоматизация** — минимум ручных действий
+3. **Reproducible** — одинаковый результат каждый раз
+4. **Безопасность** — секреты в GitHub Secrets
+
+---
+
+## 📦 СТРУКТУРА ПАЙПЛАЙНА
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       CI PIPELINE                           │
+├─────────┬─────────┬─────────┬─────────┬─────────┬──────────┤
+│ Install │  Lint   │  Type   │  Test   │  Build  │ Security │
+│         │         │  Check  │         │         │  Audit   │
+│  deps   │ ESLint  │   tsc   │  Jest   │ Next.js │   npm    │
+│         │ Prettier│         │Playwright│         │  audit   │
+└─────────┴─────────┴─────────┴─────────┴─────────┴──────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                       CD PIPELINE                           │
+├─────────────────┬─────────────────┬─────────────────────────┤
+│     Preview     │     Staging     │      Production         │
+│                 │                 │                         │
+│   PR preview    │   develop →     │   main →                │
+│   environments  │   staging env   │   production env        │
+└─────────────────┴─────────────────┴─────────────────────────┘
+```
+
+---
+
+## 🔧 GITHUB ACTIONS
+
+### CI Workflow
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Отменять предыдущие запуски для того же PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+
+jobs:
+  # ==========================================
+  # LINT & TYPECHECK
+  # ==========================================
+  lint:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Format check
+        run: pnpm format:check
+
+  # ==========================================
+  # TEST
+  # ==========================================
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+
+      - name: Run migrations
+        run: pnpm prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+
+      - name: Run unit tests
+        run: pnpm test:unit
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+
+      - name: Run integration tests
+        run: pnpm test:integration
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+  # ==========================================
+  # BUILD
+  # ==========================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+        env:
+          # Минимальные env для сборки
+          NEXT_PUBLIC_API_URL: https://api.example.com
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: .next
+          retention-days: 1
+
+  # ==========================================
+  # SECURITY
+  # ==========================================
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Audit dependencies
+        run: pnpm audit --prod
+        continue-on-error: true  # Не блокируем, но показываем
+
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+```
+
+### CD Workflow
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  # ==========================================
+  # DEPLOY STAGING (develop branch)
+  # ==========================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.example.com
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel (Staging)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --env staging'
+          alias-domains: staging.example.com
+
+  # ==========================================
+  # DEPLOY PRODUCTION (main branch)
+  # ==========================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://example.com
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Database migrations
+      - name: Run migrations
+        run: |
+          npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+
+      - name: Notify on success
+        if: success()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -H 'Content-type: application/json' \
+            -d '{"text":"✅ Deployed to production: ${{ github.sha }}"}'
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -H 'Content-type: application/json' \
+            -d '{"text":"❌ Production deploy failed: ${{ github.sha }}"}'
+```
+
+### Preview Deployments
+
+```yaml
+# .github/workflows/preview.yml
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.preview-url }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy Preview
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 Preview deployed: ${{ steps.deploy.outputs.preview-url }}`
+            })
+```
+
+---
+
+## 🐳 DOCKER
+
+### Dockerfile (Production)
+
+```dockerfile
+# Dockerfile
+# Multi-stage build для минимального образа
+
+# ==========================================
+# DEPENDENCIES
+# ==========================================
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Устанавливаем зависимости для native modules
+RUN apk add --no-cache libc6-compat
+
+# Копируем package files
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma/
+
+# Устанавливаем зависимости
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
+
+# ==========================================
+# BUILDER
+# ==========================================
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Генерируем Prisma Client
+RUN npx prisma generate
+
+# Build приложения
+ENV NEXT_TELEMETRY_DISABLED 1
+RUN npm run build
+
+# ==========================================
+# RUNNER
+# ==========================================
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Создаём пользователя (не root)
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Копируем только необходимое
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/prisma ./prisma
+
+# Права на папки
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["node", "server.js"]
+```
+
+### docker-compose (Development)
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: app-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-app}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-app}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: app-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # App (для production-like testing)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-app}:${DB_PASSWORD:-password}@postgres:5432/${DB_NAME:-app}
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  redis-data:
+```
+
+---
+
+## 📜 SCRIPTS (package.json)
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "tsc --noEmit",
+    
+    "test": "jest",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:e2e": "playwright test",
+    "test:coverage": "jest --coverage",
+    
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    
+    "prepare": "husky install"
+  }
+}
+```
+
+---
+
+## 🔐 СЕКРЕТЫ
+
+### GitHub Secrets
+
+```markdown
+## Обязательные секреты
+
+| Секрет | Описание |
+|--------|----------|
+| `DATABASE_URL` | Connection string к БД |
+| `VERCEL_TOKEN` | Токен Vercel |
+| `VERCEL_ORG_ID` | ID организации Vercel |
+| `VERCEL_PROJECT_ID` | ID проекта Vercel |
+
+## Опциональные
+
+| Секрет | Описание |
+|--------|----------|
+| `SLACK_WEBHOOK` | Webhook для уведомлений |
+| `CODECOV_TOKEN` | Токен Codecov |
+| `SENTRY_DSN` | DSN для Sentry |
+```
+
+### Environments
+
+```yaml
+# GitHub Environments:
+# - preview (для PR)
+# - staging (develop branch)
+# - production (main branch, требует approval)
+```
+
+---
+
+## 🚩 FEATURE FLAGS
+
+### Зачем нужны
+
+- Постепенный rollout новых фич
+- A/B тестирование
+- Kill switch для проблемных фич
+- Разделение deploy и release
+
+### Простая реализация
+
+```typescript
+// lib/feature-flags.ts
+
+type FeatureFlag = {
+  enabled: boolean;
+  percentage?: number;  // Для постепенного rollout
+  allowedUsers?: string[];  // Для beta-тестеров
+};
+
+const FLAGS: Record<string, FeatureFlag> = {
+  'new-checkout': {
+    enabled: true,
+    percentage: 10,  // 10% пользователей
+  },
+  'dark-mode': {
+    enabled: true,
+    allowedUsers: ['user-123', 'user-456'],
+  },
+  'experimental-search': {
+    enabled: false,
+  },
+};
+
+export function isFeatureEnabled(
+  flagName: string,
+  userId?: string,
+): boolean {
+  const flag = FLAGS[flagName];
+  if (!flag || !flag.enabled) return false;
+
+  // Проверяем список разрешённых
+  if (flag.allowedUsers?.includes(userId ?? '')) {
+    return true;
+  }
+
+  // Проверяем процент
+  if (flag.percentage !== undefined && userId) {
+    const hash = simpleHash(userId + flagName);
+    return (hash % 100) < flag.percentage;
+  }
+
+  return flag.enabled;
+}
+
+function simpleHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+```
+
+### Использование
+
+```tsx
+// В React компоненте
+function CheckoutPage() {
+  const { user } = useAuth();
+  const showNewCheckout = isFeatureEnabled('new-checkout', user?.id);
+
+  if (showNewCheckout) {
+    return <NewCheckout />;
+  }
+  return <OldCheckout />;
+}
+
+// В API
+@Get('search')
+async search(@Query() query: SearchDto, @CurrentUser() user: User) {
+  if (isFeatureEnabled('experimental-search', user?.id)) {
+    return this.experimentalSearch(query);
+  }
+  return this.classicSearch(query);
+}
+```
+
+### Продвинутые решения
+
+```markdown
+## Сервисы Feature Flags
+
+| Сервис | Плюсы | Минусы |
+|--------|-------|--------|
+| LaunchDarkly | Мощный, A/B, analytics | Дорого |
+| Unleash | Open source, self-hosted | Нужно хостить |
+| ConfigCat | Простой, дешёвый | Меньше фич |
+| Flagsmith | Open source, хороший UI | Молодой |
+| Env vars | Бесплатно, просто | Требует redeploy |
+```
+
+### Environment-based Flags
+
+```typescript
+// Простой вариант через env
+const FEATURES = {
+  NEW_CHECKOUT: process.env.FEATURE_NEW_CHECKOUT === 'true',
+  DARK_MODE: process.env.FEATURE_DARK_MODE === 'true',
+};
+
+// .env.staging
+FEATURE_NEW_CHECKOUT=true
+FEATURE_DARK_MODE=true
+
+// .env.production
+FEATURE_NEW_CHECKOUT=false
+FEATURE_DARK_MODE=true
+```
+
+### Правила Feature Flags
+
+```markdown
+## Best Practices
+
+### Именование
+- ✅ `new-checkout`, `experimental-search`
+- ❌ `flag1`, `test`, `temp`
+
+### Lifecycle
+1. Создать флаг (disabled)
+2. Включить для dev/staging
+3. Постепенный rollout в prod (10% → 50% → 100%)
+4. Удалить флаг и старый код
+
+### Гигиена
+- ✅ Удалять флаги после полного rollout
+- ✅ Документировать назначение каждого флага
+- ✅ Устанавливать expiration date
+- ❌ Не накапливать сотни флагов
+
+### Мониторинг
+- ✅ Логировать какой вариант показан
+- ✅ Метрики по каждому варианту
+- ✅ Алерты при проблемах с новым вариантом
+```
+
+---
+
+## ☁️ MANAGED PLATFORMS (Vercel, Railway, Render, Fly.io)
+
+> Если деплой на managed платформы — Docker и K8s секции выше не нужны.
+
+### Сравнение платформ
+
+```markdown
+| Платформа | Best for | Особенности |
+|-----------|----------|-------------|
+| **Vercel** | Next.js, Frontend | Edge Functions, ISR, идеален для Next.js |
+| **Railway** | Full-stack, API | Простой, хороший DX, дешевле Vercel для backend |
+| **Render** | Full-stack | Бесплатный tier, background workers |
+| **Fly.io** | Global, Edge | Контейнеры близко к юзерам, low latency |
+```
+
+### Vercel (Next.js)
+
+```markdown
+## Что Vercel делает автоматически
+
+- ✅ Build и deploy при push
+- ✅ Preview deployments для каждого PR
+- ✅ SSL сертификаты
+- ✅ CDN / Edge Network
+- ✅ Environment variables management
+- ✅ Analytics и Speed Insights
+- ✅ Интеграция с Neon (auto DB branches)
+
+## Настройка
+
+1. Подключить GitHub repo
+2. Выбрать Framework Preset: Next.js
+3. Настроить Environment Variables
+4. Deploy
+```
+
+```typescript
+// vercel.json (опционально, для кастомизации)
+{
+  "framework": "nextjs",
+  "regions": ["iad1"],  // US East (ближе к Neon)
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://api.example.com"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
+}
+```
+
+### Railway
+
+```markdown
+## Когда использовать
+
+- Backend API (NestJS, Express)
+- Cron jobs / background workers
+- Полноценные приложения (не только frontend)
+- Нужна БД и другие сервисы рядом
+
+## Что Railway делает
+
+- ✅ Auto-deploy при push
+- ✅ Preview environments
+- ✅ Встроенные сервисы (Postgres, Redis, etc.)
+- ✅ Private networking между сервисами
+- ✅ Logs и metrics
+
+## Настройка
+
+1. New Project → Deploy from GitHub
+2. Railway автоматически определяет framework
+3. Add Variables
+4. Deploy
+```
+
+```toml
+# railway.toml (опционально)
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "npm run start:prod"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+```
+
+### Render
+
+```markdown
+## Когда использовать
+
+- Нужен бесплатный tier
+- Background workers / Cron
+- Static sites
+- Простые API
+
+## Особенности
+
+- ✅ Free tier (с ограничениями)
+- ✅ Auto-deploy
+- ✅ Background workers
+- ⚠️ Cold starts на free tier
+```
+
+```yaml
+# render.yaml
+services:
+  - type: web
+    name: api
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mydb
+          property: connectionString
+```
+
+### Fly.io
+
+```markdown
+## Когда использовать
+
+- Нужна low latency globally
+- Edge computing
+- Контейнеры с полным контролем
+- WebSockets / real-time apps
+
+## Особенности
+
+- ✅ Деплой в регионы близко к юзерам
+- ✅ Fly Machines (контейнеры)
+- ✅ Встроенный Postgres и Redis
+- ✅ Private networking
+- ⚠️ Сложнее чем Vercel/Railway
+```
+
+```toml
+# fly.toml
+app = "my-app"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 3000
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [[services.http_checks]]
+    path = "/health"
+    interval = 10000
+    timeout = 2000
+```
+
+### Что НЕ нужно с managed платформами
+
+```markdown
+## Можно пропустить
+
+- ❌ Писать Dockerfile (Vercel, Railway)
+- ❌ Настраивать Nginx/reverse proxy
+- ❌ SSL сертификаты
+- ❌ CI/CD pipelines для deploy (встроено)
+- ❌ Kubernetes манифесты
+- ❌ docker-compose для production
+
+## Всё равно нужно
+
+- ✅ GitHub Actions для CI (lint, test, typecheck)
+- ✅ Environment variables настроить
+- ✅ Health check endpoint (/health или /api/health)
+- ✅ Мониторинг (Vercel Analytics, Sentry, etc.)
+```
+
+### Миграции БД на managed платформах
+
+```markdown
+## Vercel + Neon
+
+# В package.json
+"scripts": {
+  "postinstall": "prisma generate",
+  "vercel-build": "prisma generate && prisma migrate deploy && next build"
+}
+
+## Railway
+
+# В настройках Deploy Command:
+npx prisma migrate deploy && npm run start:prod
+
+## Или через GitHub Actions (рекомендуется для production)
+
+- Миграции запускать отдельным шагом
+- Проверять что миграция безопасна (не удаляет данные)
+- Делать backup перед миграцией
+```
+
+---
+
+## 📋 CHECKLIST
+
+### CI Pipeline (GitHub Actions)
+
+- [ ] Lint (ESLint)
+- [ ] Format check (Prettier)
+- [ ] Type check (TypeScript)
+- [ ] Unit tests
+- [ ] Integration tests
+- [ ] Build
+- [ ] Security audit
+
+### CD Pipeline (Managed Platforms)
+
+- [ ] Preview deployments для PR *(автоматически на Vercel/Railway)*
+- [ ] Staging environment настроен
+- [ ] Production deploy (main branch)
+- [ ] Database migrations
+- [ ] Environment variables настроены
+- [ ] Health check endpoint работает
+
+### Docker (только если self-hosted или Fly.io)
+
+- [ ] Multi-stage build
+- [ ] Non-root user
+- [ ] Health checks
+- [ ] .dockerignore настроен
+
+### Vercel Checklist
+
+- [ ] Framework Preset правильный (Next.js)
+- [ ] Environment Variables настроены
+- [ ] Neon Integration подключена (если используется)
+- [ ] Custom domain настроен
+- [ ] Analytics включён
+
+### Railway/Render Checklist
+
+- [ ] Repo подключён
+- [ ] Build/Start commands настроены
+- [ ] Environment Variables настроены
+- [ ] Health check работает
+
+### Feature Flags (если используются)
+
+- [ ] Флаги документированы
+- [ ] Есть kill switch для критичных фич
+- [ ] Старые флаги удаляются
+- [ ] Логирование какой вариант показан
+
+---
+
+**Версия:** 1.2
+**Дата:** 2025-01-31
