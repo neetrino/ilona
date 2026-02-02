@@ -1,64 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-
-interface UpcomingLesson {
-  id: string;
-  scheduledAt: string;
-  duration: number;
-  topic?: string;
-  status: string;
-  teacher: {
-    firstName: string;
-    lastName: string;
-  };
-  group: {
-    name: string;
-    level?: string;
-  };
-}
+import { useMyDashboard, type StudentUpcomingLesson } from '@/features/students';
 
 export default function StudentDashboardPage() {
-  const { user: _user } = useAuthStore();
-  const [upcomingLessons, setUpcomingLessons] = useState<UpcomingLesson[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuthStore();
+  
+  // Fetch student dashboard data
+  const { data: dashboard, isLoading } = useMyDashboard();
 
-  useEffect(() => {
-    // Mock data
-    setUpcomingLessons([
-      {
-        id: '1',
-        scheduledAt: new Date(Date.now() + 1800000).toISOString(),
-        duration: 60,
-        topic: 'Present Perfect Tense',
-        status: 'STARTING_SOON',
-        teacher: { firstName: 'Sarah', lastName: 'Jenkins' },
-        group: { name: 'English B2', level: 'B2' },
-      },
-      {
-        id: '2',
-        scheduledAt: new Date(Date.now() + 86400000).toISOString(),
-        duration: 45,
-        topic: 'Reading Comprehension',
-        status: 'SCHEDULED',
-        teacher: { firstName: 'Sarah', lastName: 'Jenkins' },
-        group: { name: 'English B2', level: 'B2' },
-      },
-      {
-        id: '3',
-        scheduledAt: new Date(Date.now() + 172800000).toISOString(),
-        duration: 60,
-        topic: 'Writing Practice',
-        status: 'SCHEDULED',
-        teacher: { firstName: 'Sarah', lastName: 'Jenkins' },
-        group: { name: 'English B2', level: 'B2' },
-      },
-    ]);
-    setIsLoading(false);
-  }, []);
+  const upcomingLessons = dashboard?.upcomingLessons || [];
+  const stats = dashboard?.statistics;
+  const pendingPayments = dashboard?.pendingPayments || [];
+  const student = dashboard?.student;
+
+  // Calculate stats
+  const attendanceRate = stats?.attendance?.rate || 0;
+  const totalLessons = stats?.attendance?.total || 0;
+  const pendingPaymentAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
+  const nextPayment = pendingPayments[0];
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -75,14 +37,23 @@ export default function StudentDashboardPage() {
     return new Date(dateStr).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false,
     });
+  };
+
+  // Check if lesson is starting soon (within 30 min)
+  const isStartingSoon = (dateStr: string) => {
+    const lessonTime = new Date(dateStr).getTime();
+    const now = Date.now();
+    const diff = lessonTime - now;
+    return diff > 0 && diff < 30 * 60 * 1000; // 30 minutes
   };
 
   const lessonColumns = [
     {
       key: 'date',
       header: 'Date',
-      render: (lesson: UpcomingLesson) => (
+      render: (lesson: StudentUpcomingLesson) => (
         <div className="text-center">
           <p className="font-semibold text-slate-800">{formatDate(lesson.scheduledAt)}</p>
           <p className="text-sm text-slate-500">{formatTime(lesson.scheduledAt)}</p>
@@ -92,7 +63,7 @@ export default function StudentDashboardPage() {
     {
       key: 'lesson',
       header: 'Lesson',
-      render: (lesson: UpcomingLesson) => (
+      render: (lesson: StudentUpcomingLesson) => (
         <div>
           <p className="font-semibold text-slate-800">{lesson.topic || 'Lesson'}</p>
           <p className="text-sm text-slate-500">{lesson.duration} min</p>
@@ -102,9 +73,9 @@ export default function StudentDashboardPage() {
     {
       key: 'teacher',
       header: 'Teacher',
-      render: (lesson: UpcomingLesson) => {
-        const firstName = lesson.teacher?.firstName || '';
-        const lastName = lesson.teacher?.lastName || '';
+      render: (lesson: StudentUpcomingLesson) => {
+        const firstName = lesson.teacher?.user?.firstName || '';
+        const lastName = lesson.teacher?.user?.lastName || '';
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
           <div className="flex items-center gap-3">
@@ -119,8 +90,8 @@ export default function StudentDashboardPage() {
     {
       key: 'status',
       header: 'Status',
-      render: (lesson: UpcomingLesson) => (
-        lesson.status === 'STARTING_SOON' ? (
+      render: (lesson: StudentUpcomingLesson) => (
+        isStartingSoon(lesson.scheduledAt) ? (
           <Badge variant="success">Starting Soon</Badge>
         ) : (
           <span className="text-slate-500">Scheduled</span>
@@ -130,8 +101,8 @@ export default function StudentDashboardPage() {
     {
       key: 'actions',
       header: 'Actions',
-      render: (lesson: UpcomingLesson) => (
-        lesson.status === 'STARTING_SOON' ? (
+      render: (lesson: StudentUpcomingLesson) => (
+        isStartingSoon(lesson.scheduledAt) ? (
           <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm">
             Join Lesson
           </Button>
@@ -147,24 +118,58 @@ export default function StudentDashboardPage() {
   return (
     <DashboardLayout 
       title="My Learning" 
-      subtitle="Track your progress and upcoming lessons."
+      subtitle={`Welcome back, ${user?.firstName || 'Student'}! Track your progress and upcoming lessons.`}
     >
       <div className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard 
             title="Attendance Rate" 
-            value="94%" 
-            change={{ value: '+2%', type: 'positive' }}
+            value={`${attendanceRate}%`} 
+            change={{ 
+              value: attendanceRate >= 90 ? 'Excellent' : attendanceRate >= 75 ? 'Good' : 'Needs improvement', 
+              type: attendanceRate >= 90 ? 'positive' : attendanceRate >= 75 ? 'neutral' : 'warning' 
+            }}
           />
-          <StatCard title="Lessons This Month" value="12" />
-          <StatCard title="Completed Lessons" value="45" />
+          <StatCard 
+            title="Total Lessons" 
+            value={totalLessons}
+            change={{ value: `${stats?.attendance?.present || 0} attended`, type: 'positive' }}
+          />
+          <StatCard 
+            title="Upcoming" 
+            value={upcomingLessons.length}
+            change={{ value: 'lessons scheduled', type: 'neutral' }}
+          />
           <StatCard 
             title="Next Payment" 
-            value="$150" 
-            change={{ value: 'Due in 5 days', type: 'neutral' }}
+            value={nextPayment ? `$${nextPayment.amount}` : 'None'} 
+            change={{ 
+              value: nextPayment 
+                ? `Due ${new Date(nextPayment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                : 'All paid', 
+              type: nextPayment?.status === 'OVERDUE' ? 'warning' : 'neutral' 
+            }}
           />
         </div>
+
+        {/* Group Info */}
+        {student?.group && (
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm mb-1">Your Group</p>
+                <h2 className="text-2xl font-bold">{student.group.name}</h2>
+                {student.group.level && (
+                  <p className="text-blue-100 mt-1">Level: {student.group.level}</p>
+                )}
+              </div>
+              <Button className="bg-white text-blue-600 hover:bg-blue-50">
+                Open Group Chat
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Search */}
         <div className="flex items-center gap-4">
@@ -186,28 +191,54 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Upcoming Lessons Table */}
-        <DataTable
-          columns={lessonColumns}
-          data={upcomingLessons}
-          keyExtractor={(lesson) => lesson.id}
-          isLoading={isLoading}
-          emptyMessage="No upcoming lessons"
-        />
-
-        {/* Pagination */}
-        <div className="flex items-center justify-end gap-2 text-sm text-slate-500">
-          <button className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" disabled>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <span>1-3 of 12</span>
-          <button className="p-2 rounded-lg hover:bg-slate-100">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+        <div className="bg-white rounded-2xl border border-slate-200">
+          <div className="p-4 border-b border-slate-200">
+            <h2 className="text-lg font-semibold text-slate-800">Upcoming Lessons</h2>
+          </div>
+          <DataTable
+            columns={lessonColumns}
+            data={upcomingLessons}
+            keyExtractor={(lesson) => lesson.id}
+            isLoading={isLoading}
+            emptyMessage="No upcoming lessons scheduled"
+          />
         </div>
+
+        {/* Pending Payments Alert */}
+        {pendingPayments.length > 0 && (
+          <div className={`rounded-2xl p-4 flex items-center gap-4 ${
+            pendingPayments.some(p => p.status === 'OVERDUE') 
+              ? 'bg-red-50 border border-red-200' 
+              : 'bg-amber-50 border border-amber-200'
+          }`}>
+            <div className={`p-2 rounded-lg ${
+              pendingPayments.some(p => p.status === 'OVERDUE') ? 'bg-red-100' : 'bg-amber-100'
+            }`}>
+              <svg className={`w-5 h-5 ${
+                pendingPayments.some(p => p.status === 'OVERDUE') ? 'text-red-600' : 'text-amber-600'
+              }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className={`font-medium ${
+                pendingPayments.some(p => p.status === 'OVERDUE') ? 'text-red-800' : 'text-amber-800'
+              }`}>
+                {pendingPayments.some(p => p.status === 'OVERDUE') 
+                  ? 'Payment Overdue' 
+                  : 'Payment Pending'}
+              </p>
+              <p className={`text-sm ${
+                pendingPayments.some(p => p.status === 'OVERDUE') ? 'text-red-600' : 'text-amber-600'
+              }`}>
+                Total: ${pendingPaymentAmount} • {pendingPayments.length} payment(s)
+              </p>
+            </div>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              Pay Now
+            </Button>
+          </div>
+        )}
 
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -221,7 +252,10 @@ export default function StudentDashboardPage() {
               <div className="flex-1">
                 <h3 className="font-semibold text-slate-800 mb-2">Your Progress</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Current Level: <span className="font-medium text-slate-700">B2</span> • Words learned this month: <span className="font-medium text-slate-700">124</span>
+                  Attendance: <span className="font-medium text-slate-700">{stats?.attendance?.present || 0}/{stats?.attendance?.total || 0}</span> lessons
+                  {stats?.attendance?.unjustifiedAbsences && stats.attendance.unjustifiedAbsences > 0 && (
+                    <> • <span className="text-red-600">{stats.attendance.unjustifiedAbsences} unexcused absences</span></>
+                  )}
                 </p>
                 <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
                   View Full Progress

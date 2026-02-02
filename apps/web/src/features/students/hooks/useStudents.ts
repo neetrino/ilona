@@ -9,6 +9,7 @@ import {
   updateStudent,
   changeStudentGroup,
   deleteStudent,
+  fetchMyDashboard,
 } from '../api/students.api';
 import type {
   StudentFilters,
@@ -24,6 +25,7 @@ export const studentKeys = {
   details: () => [...studentKeys.all, 'detail'] as const,
   detail: (id: string) => [...studentKeys.details(), id] as const,
   statistics: (id: string) => [...studentKeys.detail(id), 'statistics'] as const,
+  myDashboard: () => [...studentKeys.all, 'my-dashboard'] as const,
 };
 
 /**
@@ -115,5 +117,16 @@ export function useDeleteStudent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
     },
+  });
+}
+
+/**
+ * Hook to fetch student's own dashboard
+ */
+export function useMyDashboard(enabled = true) {
+  return useQuery({
+    queryKey: studentKeys.myDashboard(),
+    queryFn: () => fetchMyDashboard(),
+    enabled,
   });
 }

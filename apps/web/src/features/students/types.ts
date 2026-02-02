@@ -84,3 +84,52 @@ export interface StudentStatistics {
   };
   feedbacks: number;
 }
+
+export interface StudentDashboard {
+  student: Student;
+  upcomingLessons: StudentUpcomingLesson[];
+  recentFeedbacks: StudentFeedback[];
+  pendingPayments: StudentPayment[];
+  statistics: StudentStatistics;
+}
+
+export interface StudentUpcomingLesson {
+  id: string;
+  scheduledAt: string;
+  duration: number;
+  topic?: string;
+  status: string;
+  teacher: {
+    id: string;
+    user: {
+      firstName: string;
+      lastName: string;
+    };
+  };
+}
+
+export interface StudentFeedback {
+  id: string;
+  rating?: number;
+  comment?: string;
+  createdAt: string;
+  lesson: {
+    scheduledAt: string;
+    topic?: string;
+  };
+  teacher: {
+    user: {
+      firstName: string;
+      lastName: string;
+    };
+  };
+}
+
+export interface StudentPayment {
+  id: string;
+  amount: number;
+  status: string;
+  dueDate: string;
+  month: number;
+  year: number;
+}

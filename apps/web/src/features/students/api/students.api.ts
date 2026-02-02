@@ -6,6 +6,7 @@ import type {
   CreateStudentDto,
   UpdateStudentDto,
   StudentStatistics,
+  StudentDashboard,
 } from '../types';
 
 const STUDENTS_ENDPOINT = '/students';
@@ -68,4 +69,11 @@ export async function changeStudentGroup(id: string, groupId: string | null): Pr
  */
 export async function deleteStudent(id: string): Promise<{ success: boolean }> {
   return api.delete<{ success: boolean }>(`${STUDENTS_ENDPOINT}/${id}`);
+}
+
+/**
+ * Fetch student's own dashboard (for logged-in student)
+ */
+export async function fetchMyDashboard(): Promise<StudentDashboard> {
+  return api.get<StudentDashboard>(`${STUDENTS_ENDPOINT}/me/dashboard`);
 }

@@ -7,6 +7,7 @@ export {
   useUpdateStudent,
   useChangeStudentGroup,
   useDeleteStudent,
+  useMyDashboard,
   studentKeys,
 } from './hooks';
 
@@ -19,4 +20,8 @@ export type {
   CreateStudentDto,
   UpdateStudentDto,
   StudentStatistics,
+  StudentDashboard,
+  StudentUpcomingLesson,
+  StudentFeedback,
+  StudentPayment,
 } from './types';
