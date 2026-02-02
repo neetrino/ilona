@@ -20,7 +20,7 @@ interface TodayLesson {
 }
 
 export default function TeacherDashboardPage() {
-  const { user } = useAuthStore();
+  const { user: _user } = useAuthStore();
   const [todayLessons, setTodayLessons] = useState<TodayLesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

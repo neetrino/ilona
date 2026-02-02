@@ -22,7 +22,7 @@ interface UpcomingLesson {
 }
 
 export default function StudentDashboardPage() {
-  const { user } = useAuthStore();
+  const { user: _user } = useAuthStore();
   const [upcomingLessons, setUpcomingLessons] = useState<UpcomingLesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

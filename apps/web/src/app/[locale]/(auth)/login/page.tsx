@@ -6,7 +6,7 @@ import { LoginForm } from '@/features/auth/components/LoginForm';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 
 export default function LoginPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {

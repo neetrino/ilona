@@ -132,19 +132,22 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const getChatHref = () => {
     switch (userRole) {
       case 'ADMIN':
-        return '/chat';
+        return '/admin/chat';
       case 'TEACHER':
-        return '/chat';
+        return '/teacher/chat';
       case 'STUDENT':
-        return '/chat';
+        return '/student/chat';
       default:
-        return '/chat';
+        return '/admin/chat';
     }
   };
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
       return pathname.includes('/dashboard');
+    }
+    if (href === '/chat') {
+      return pathname.includes('/chat');
     }
     return pathname.startsWith(href);
   };

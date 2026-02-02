@@ -10,7 +10,7 @@ import { cn } from '@/shared/lib/utils';
 export default function StudentChatPage() {
   const { user } = useAuthStore();
   const {
-    chats,
+    chats: _chats,
     activeChat,
     setChats,
     setActiveChat,
@@ -26,7 +26,7 @@ export default function StudentChatPage() {
       try {
         const data = await api.get<Chat[]>('/chat');
         setChats(data || []);
-      } catch (error) {
+      } catch {
         // Mock data for student
         setChats([
           {
@@ -56,13 +56,12 @@ export default function StudentChatPage() {
 
   useEffect(() => {
     if (!activeChat) return;
-    // Mock messages
     setMessages([
       {
         id: 'msg-1', chatId: activeChat.id, senderId: '1',
         sender: { id: '1', firstName: 'Sarah', lastName: 'Jenkins', role: 'TEACHER' },
         type: 'VOCABULARY',
-        content: '📚 Today\'s Vocabulary:\n\n1. Accomplish - to achieve or complete successfully\n2. Determine - to decide or establish\n3. Efficient - achieving maximum productivity\n4. Significant - important or notable\n\nPlease review these words before our next class!',
+        content: '📚 Today\'s Vocabulary:\n\n1. Accomplish - to achieve or complete successfully\n2. Determine - to decide or establish',
         isEdited: false, createdAt: new Date(Date.now() - 1800000).toISOString(), updatedAt: new Date(Date.now() - 1800000).toISOString(),
       },
       {
