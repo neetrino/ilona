@@ -1,7 +1,7 @@
 # Прогресс: Ilona English Center
 
 **Текущий этап:** Этап 6 — Frontend Integration 🚧
-**Общий прогресс:** 85%
+**Общий прогресс:** 90%
 **Последнее обновление:** 2026-02-02
 
 ---
@@ -74,13 +74,18 @@
 - [x] **Admin Students** — подключён к реальному API с пагинацией и поиском
 - [x] **Finance feature** — API hooks (usePayments, useSalaries, useFinanceDashboard и др.)
 - [x] **Admin Finance** — подключён к реальному API (payments, salaries, dashboard stats)
+- [x] **Groups feature** — API hooks (useGroups, useCreateGroup, useDeleteGroup и др.)
+- [x] **Admin Groups** — подключён к API с пагинацией, поиском, toggle active
+- [x] **Lessons feature** — API hooks (useLessons, useStartLesson, useCompleteLesson и др.)
+- [x] **Admin Calendar** — расписание уроков (week/list view), статистика
+- [x] **Teacher Dashboard** — подключён к реальному API (today's lessons, groups, actions)
 
 ---
 
 ## 🚧 Осталось сделать
 
 ### Этап 6: Frontend (продолжение)
-- [ ] **Calendar page** — расписание уроков
+- [ ] **Student Dashboard** — подключить к API
 - [ ] **Attendance page** — отметка посещаемости
 - [ ] **Settings page** — настройки профиля
 - [ ] **Groups page** — управление группами

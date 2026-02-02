@@ -1,75 +1,77 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-
-interface TodayLesson {
-  id: string;
-  scheduledAt: string;
-  duration: number;
-  topic?: string;
-  status: string;
-  group: {
-    id: string;
-    name: string;
-    level?: string;
-  };
-  studentsCount: number;
-}
+import { useLessons, useStartLesson, useCompleteLesson, type Lesson } from '@/features/lessons';
+import { useGroups } from '@/features/groups';
 
 export default function TeacherDashboardPage() {
-  const { user: _user } = useAuthStore();
-  const [todayLessons, setTodayLessons] = useState<TodayLesson[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuthStore();
 
-  useEffect(() => {
-    // Mock data
-    setTodayLessons([
-      {
-        id: '1',
-        scheduledAt: new Date().toISOString(),
-        duration: 60,
-        topic: 'Present Perfect Tense',
-        status: 'SCHEDULED',
-        group: { id: 'g1', name: 'English B2', level: 'B2' },
-        studentsCount: 8,
-      },
-      {
-        id: '2',
-        scheduledAt: new Date(Date.now() + 3600000).toISOString(),
-        duration: 45,
-        topic: 'Business Vocabulary',
-        status: 'SCHEDULED',
-        group: { id: 'g2', name: 'Business FR', level: 'C1' },
-        studentsCount: 6,
-      },
-      {
-        id: '3',
-        scheduledAt: new Date(Date.now() + 7200000).toISOString(),
-        duration: 60,
-        topic: 'IELTS Speaking Practice',
-        status: 'SCHEDULED',
-        group: { id: 'g3', name: 'IELTS ADV', level: 'Advanced' },
-        studentsCount: 4,
-      },
-    ]);
-    setIsLoading(false);
-  }, []);
+  // Get today's date range
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // Fetch today's lessons
+  const { 
+    data: lessonsData, 
+    isLoading: isLoadingLessons 
+  } = useLessons({
+    dateFrom: today.toISOString(),
+    dateTo: tomorrow.toISOString(),
+    take: 20,
+  });
+
+  // Fetch teacher's groups
+  const { data: groupsData } = useGroups({ take: 10 });
+
+  // Mutations
+  const startLesson = useStartLesson();
+  const completeLesson = useCompleteLesson();
+
+  const todayLessons = lessonsData?.items || [];
+  const groups = groupsData?.items || [];
+
+  // Calculate stats
+  const totalStudents = groups.reduce((sum, g) => sum + (g._count?.students || 0), 0);
+  const scheduledLessons = todayLessons.filter(l => l.status === 'SCHEDULED').length;
+  const completedLessons = todayLessons.filter(l => l.status === 'COMPLETED').length;
+  const vocabularySent = todayLessons.filter(l => l.vocabularySent).length;
 
   const formatTime = (dateStr: string) => {
     return new Date(dateStr).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false,
     });
+  };
+
+  // Handle start lesson
+  const handleStartLesson = async (id: string) => {
+    try {
+      await startLesson.mutateAsync(id);
+    } catch (err) {
+      console.error('Failed to start lesson:', err);
+    }
+  };
+
+  // Handle complete lesson
+  const handleCompleteLesson = async (id: string) => {
+    try {
+      await completeLesson.mutateAsync({ id });
+    } catch (err) {
+      console.error('Failed to complete lesson:', err);
+    }
   };
 
   const lessonColumns = [
     {
       key: 'time',
       header: 'Time',
-      render: (lesson: TodayLesson) => (
+      render: (lesson: Lesson) => (
         <div className="text-center">
           <p className="font-semibold text-slate-800">{formatTime(lesson.scheduledAt)}</p>
           <p className="text-xs text-slate-500">{lesson.duration} min</p>
@@ -79,7 +81,7 @@ export default function TeacherDashboardPage() {
     {
       key: 'lesson',
       header: 'Lesson',
-      render: (lesson: TodayLesson) => (
+      render: (lesson: Lesson) => (
         <div>
           <p className="font-semibold text-slate-800">{lesson.topic || 'Untitled'}</p>
           <p className="text-sm text-slate-500">Level: {lesson.group?.level || 'N/A'}</p>
@@ -89,7 +91,7 @@ export default function TeacherDashboardPage() {
     {
       key: 'group',
       header: 'Group',
-      render: (lesson: TodayLesson) => (
+      render: (lesson: Lesson) => (
         <Badge variant="info">{lesson.group?.name || 'No group'}</Badge>
       ),
     },
@@ -97,22 +99,54 @@ export default function TeacherDashboardPage() {
       key: 'students',
       header: 'Students',
       className: 'text-center',
-      render: (lesson: TodayLesson) => (
-        <span className="font-medium text-slate-700">{lesson.studentsCount}</span>
+      render: (lesson: Lesson) => (
+        <span className="font-medium text-slate-700">
+          {lesson.group?._count?.students || lesson._count?.attendances || 0}
+        </span>
       ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (lesson: Lesson) => {
+        switch (lesson.status) {
+          case 'COMPLETED':
+            return <Badge variant="success">Completed</Badge>;
+          case 'IN_PROGRESS':
+            return <Badge variant="warning">In Progress</Badge>;
+          case 'CANCELLED':
+            return <Badge variant="default">Cancelled</Badge>;
+          default:
+            return <Badge variant="info">Scheduled</Badge>;
+        }
+      },
     },
     {
       key: 'actions',
       header: 'Actions',
-      render: (lesson: TodayLesson, index?: number) => (
+      render: (lesson: Lesson) => (
         <div className="flex items-center gap-2">
-          {index === 0 ? (
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm">
-              Start Lesson
+          {lesson.status === 'SCHEDULED' && (
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
+              onClick={() => handleStartLesson(lesson.id)}
+              disabled={startLesson.isPending}
+            >
+              Start
             </Button>
-          ) : (
+          )}
+          {lesson.status === 'IN_PROGRESS' && (
+            <Button 
+              className="bg-green-600 hover:bg-green-700 text-white text-sm"
+              onClick={() => handleCompleteLesson(lesson.id)}
+              disabled={completeLesson.isPending}
+            >
+              Complete
+            </Button>
+          )}
+          {lesson.status === 'COMPLETED' && (
             <Button variant="ghost" className="text-blue-600 text-sm">
-              View Details
+              View
             </Button>
           )}
         </div>
@@ -123,26 +157,34 @@ export default function TeacherDashboardPage() {
   return (
     <DashboardLayout 
       title="Daily Plan" 
-      subtitle="Your schedule, tasks and student feedback for today."
+      subtitle={`Welcome back, ${user?.firstName || 'Teacher'}! Here's your schedule for today.`}
     >
       <div className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <StatCard title="Today's Lessons" value="3" />
-          <StatCard title="Total Students" value="18" />
           <StatCard 
-            title="Pending Feedbacks" 
-            value="2" 
-            change={{ value: '! Due today', type: 'warning' }}
+            title="Today's Lessons" 
+            value={todayLessons.length}
+            change={{ value: `${completedLessons} completed`, type: completedLessons > 0 ? 'positive' : 'neutral' }}
+          />
+          <StatCard 
+            title="Total Students" 
+            value={totalStudents}
+            change={{ value: `${groups.length} groups`, type: 'neutral' }}
+          />
+          <StatCard 
+            title="Pending Lessons" 
+            value={scheduledLessons} 
+            change={{ value: scheduledLessons > 0 ? 'Upcoming' : 'All done', type: scheduledLessons > 0 ? 'warning' : 'positive' }}
           />
           <StatCard 
             title="Vocabulary Sent" 
-            value="1/3" 
-            change={{ value: 'Send now', type: 'neutral' }}
+            value={`${vocabularySent}/${todayLessons.length}`} 
+            change={{ value: vocabularySent < todayLessons.length ? 'Send now' : 'All sent', type: vocabularySent < todayLessons.length ? 'warning' : 'positive' }}
           />
         </div>
 
-        {/* Search & Actions */}
+        {/* Quick Actions */}
         <div className="flex items-center gap-4">
           <div className="flex-1 relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,18 +197,44 @@ export default function TeacherDashboardPage() {
             />
           </div>
           <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium">
-            + Add Lesson
+            Open Chat
           </Button>
         </div>
 
         {/* Today's Lessons Table */}
-        <DataTable
-          columns={lessonColumns}
-          data={todayLessons}
-          keyExtractor={(lesson) => lesson.id}
-          isLoading={isLoading}
-          emptyMessage="No lessons scheduled for today"
-        />
+        <div className="bg-white rounded-2xl border border-slate-200">
+          <div className="p-4 border-b border-slate-200">
+            <h2 className="text-lg font-semibold text-slate-800">Today's Lessons</h2>
+          </div>
+          <DataTable
+            columns={lessonColumns}
+            data={todayLessons}
+            keyExtractor={(lesson) => lesson.id}
+            isLoading={isLoadingLessons}
+            emptyMessage="No lessons scheduled for today"
+          />
+        </div>
+
+        {/* My Groups */}
+        {groups.length > 0 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-6">
+            <h3 className="text-lg font-semibold text-slate-800 mb-4">My Groups</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {groups.slice(0, 6).map(group => (
+                <div key={group.id} className="p-4 bg-slate-50 rounded-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-slate-800">{group.name}</h4>
+                    {group.level && <Badge variant="info">{group.level}</Badge>}
+                  </div>
+                  <p className="text-sm text-slate-500">
+                    {group._count?.students || 0} students • {group._count?.lessons || 0} lessons
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">{group.center?.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -178,9 +246,9 @@ export default function TeacherDashboardPage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 mb-2">Pending Feedback</h3>
+                <h3 className="font-semibold text-slate-800 mb-2">Student Feedback</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  You have 2 students awaiting feedback from yesterday's lessons. Complete feedback to maintain your performance score.
+                  Remember to provide feedback for students after each lesson. This helps track progress and keeps parents informed.
                 </p>
                 <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
                   Write Feedback
@@ -202,7 +270,7 @@ export default function TeacherDashboardPage() {
               <div className="flex-1">
                 <h3 className="font-semibold text-slate-800 mb-2">Send Vocabulary</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Remember to send today's vocabulary list to your groups after each lesson. This helps students review and retain new words.
+                  Send today's vocabulary list to your groups after each lesson. This helps students review and retain new words.
                 </p>
                 <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
                   Open Group Chat
