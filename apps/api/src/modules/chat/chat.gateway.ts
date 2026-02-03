@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { ChatService } from './chat.service';
 import { JwtPayload } from '../../common/types/auth.types';
 
@@ -35,14 +36,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly chatService: ChatService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
       // Extract token from query or auth header
-      const token = 
-        client.handshake.query.token as string ||
-        client.handshake.auth.token as string ||
+      const token =
+        (client.handshake.query.token as string | undefined) ||
+        (client.handshake.auth.token as string | undefined) ||
         client.handshake.headers.authorization?.replace('Bearer ', '');
 
       if (!token) {
@@ -50,8 +52,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      // Verify token
-      const payload = this.jwtService.verify<JwtPayload>(token);
+      // Optional debug logging (safe: only prefix)
+      // console.log('[ChatGateway] Incoming token:', token.slice(0, 30));
+
+      // Verify token explicitly with the same secret used in HTTP auth
+      const payload = this.jwtService.verify<JwtPayload>(token, {
+        secret: this.configService.get<string>('jwt.secret'),
+      });
       client.user = payload;
 
       // Track socket
