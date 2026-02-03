@@ -1,4 +1,4 @@
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/types';
 
 /**
  * JWT Payload structure
