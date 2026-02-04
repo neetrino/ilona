@@ -32,12 +32,13 @@ export function formatTime(date: Date | string, locale: string = 'en'): string {
 }
 
 /**
- * Format currency
+ * Format currency (AMD only)
  */
 export function formatCurrency(amount: number, currency: string = 'AMD'): string {
-  return new Intl.NumberFormat('en-US', {
+  // Always use AMD, ignore currency parameter
+  return new Intl.NumberFormat('hy-AM', {
     style: 'currency',
-    currency,
+    currency: 'AMD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);

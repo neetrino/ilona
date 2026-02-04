@@ -148,6 +148,13 @@ export class EmailService {
     amount: number,
     dueDate: string,
   ): Promise<boolean> {
+    const formattedAmount = new Intl.NumberFormat('hy-AM', {
+      style: 'currency',
+      currency: 'AMD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+
     return this.send({
       to,
       subject: 'Payment Reminder',
@@ -172,7 +179,7 @@ export class EmailService {
             <div class="content">
               <p>Hello <strong>${studentName}</strong>,</p>
               <p>This is a reminder that your payment is due:</p>
-              <div class="amount">${amount.toLocaleString()} UAH</div>
+              <div class="amount">${formattedAmount}</div>
               <p style="text-align: center;">Due date: <strong>${dueDate}</strong></p>
               <p>Please make your payment to continue your English lessons without interruption.</p>
               <p>Best regards,<br>Ilona English Center</p>

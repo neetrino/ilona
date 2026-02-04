@@ -6,10 +6,11 @@ import { useMySalaries, useMySalarySummary, useMyDeductions } from '@/features/f
 import { cn } from '@/shared/lib/utils';
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('uk-UA', {
+  return new Intl.NumberFormat('hy-AM', {
     style: 'currency',
-    currency: 'UAH',
+    currency: 'AMD',
     minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 

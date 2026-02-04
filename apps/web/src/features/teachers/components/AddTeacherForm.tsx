@@ -192,7 +192,7 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="hourlyRate">
-              Hourly Rate ($) <span className="text-red-500">*</span>
+              Hourly Rate (AMD) <span className="text-red-500">*</span>
             </Label>
             <Input
               id="hourlyRate"

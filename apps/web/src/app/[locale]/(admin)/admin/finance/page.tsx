@@ -112,9 +112,19 @@ export default function FinancePage() {
       key: 'amount',
       header: 'Amount',
       className: 'text-right',
-      render: (payment: Payment) => (
-        <span className="font-semibold text-slate-800">${payment.amount}</span>
-      ),
+      render: (payment: Payment) => {
+        const amount = typeof payment.amount === 'string' ? parseFloat(payment.amount) : Number(payment.amount);
+        return (
+          <span className="font-semibold text-slate-800">
+            {new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(amount)}
+          </span>
+        );
+      },
     },
     {
       key: 'dueDate',
@@ -211,29 +221,64 @@ export default function FinancePage() {
       key: 'gross',
       header: 'Gross',
       className: 'text-right',
-      render: (salary: SalaryRecord) => (
-        <span className="text-slate-700">${salary.baseSalary}</span>
-      ),
+      render: (salary: SalaryRecord) => {
+        const amount = typeof salary.baseSalary === 'string' ? parseFloat(salary.baseSalary) : Number(salary.baseSalary);
+        return (
+          <span className="text-slate-700">
+            {new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(amount)}
+          </span>
+        );
+      },
     },
     {
       key: 'deductions',
       header: 'Deductions',
       className: 'text-right',
-      render: (salary: SalaryRecord) => (
-        salary.totalDeductions > 0 ? (
-          <span className="text-red-500">-${salary.totalDeductions}</span>
+      render: (salary: SalaryRecord) => {
+        const amount = typeof salary.totalDeductions === 'string' ? parseFloat(salary.totalDeductions) : Number(salary.totalDeductions);
+        return amount > 0 ? (
+          <span className="text-red-500">
+            -{new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(amount)}
+          </span>
         ) : (
-          <span className="text-slate-400">$0</span>
-        )
-      ),
+          <span className="text-slate-400">
+            {new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(0)}
+          </span>
+        );
+      },
     },
     {
       key: 'net',
       header: 'Net Amount',
       className: 'text-right',
-      render: (salary: SalaryRecord) => (
-        <span className="font-semibold text-slate-800">${salary.netAmount}</span>
-      ),
+      render: (salary: SalaryRecord) => {
+        const amount = typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
+        return (
+          <span className="font-semibold text-slate-800">
+            {new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(amount)}
+          </span>
+        );
+      },
     },
     {
       key: 'status',
@@ -278,12 +323,22 @@ export default function FinancePage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard
             title="Total Revenue"
-            value={`$${(dashboard?.revenue?.totalRevenue || 0).toLocaleString()}`}
+            value={new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(dashboard?.revenue?.totalRevenue || 0)}
             change={{ value: '+8.2%', type: 'positive' }}
           />
           <StatCard
             title="Pending Payments"
-            value={`$${(dashboard?.pendingPayments?.totalPending || 0).toLocaleString()}`}
+            value={new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(dashboard?.pendingPayments?.totalPending || 0)}
             change={{ 
               value: `${dashboard?.pendingPayments?.count || 0} pending`, 
               type: (dashboard?.pendingPayments?.overdueCount || 0) > 0 ? 'warning' : 'neutral' 
@@ -291,12 +346,22 @@ export default function FinancePage() {
           />
           <StatCard
             title="Total Expenses"
-            value={`$${(dashboard?.expenses?.totalExpenses || 0).toLocaleString()}`}
+            value={new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(dashboard?.expenses?.totalExpenses || 0)}
             change={{ value: `${dashboard?.expenses?.salariesPaid || 0} salaries paid`, type: 'neutral' }}
           />
           <StatCard
             title="Net Profit"
-            value={`$${(dashboard?.profit || 0).toLocaleString()}`}
+            value={new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(dashboard?.profit || 0)}
             change={{ value: dashboard?.profit && dashboard.profit > 0 ? 'Positive' : 'Review needed', type: dashboard?.profit && dashboard.profit > 0 ? 'positive' : 'warning' }}
           />
         </div>

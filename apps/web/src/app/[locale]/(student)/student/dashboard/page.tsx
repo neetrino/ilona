@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMyDashboard, type StudentUpcomingLesson } from '@/features/students';
+import { formatCurrency } from '@/shared/lib/utils';
 
 export default function StudentDashboardPage() {
   const { user } = useAuthStore();
@@ -143,7 +144,7 @@ export default function StudentDashboardPage() {
           />
           <StatCard 
             title="Next Payment" 
-            value={nextPayment ? `$${nextPayment.amount}` : 'None'} 
+            value={nextPayment ? formatCurrency(Number(nextPayment.amount)) : 'None'} 
             change={{ 
               value: nextPayment 
                 ? `Due ${new Date(nextPayment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
@@ -231,7 +232,7 @@ export default function StudentDashboardPage() {
               <p className={`text-sm ${
                 pendingPayments.some(p => p.status === 'OVERDUE') ? 'text-red-600' : 'text-amber-600'
               }`}>
-                Total: ${pendingPaymentAmount} • {pendingPayments.length} payment(s)
+                Total: {formatCurrency(pendingPaymentAmount)} • {pendingPayments.length} payment(s)
               </p>
             </div>
             <Button className="bg-blue-600 hover:bg-blue-700 text-white">

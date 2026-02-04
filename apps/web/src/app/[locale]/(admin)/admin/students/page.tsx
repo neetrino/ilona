@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
 import { useStudents, useDeleteStudent, type Student } from '@/features/students';
+import { formatCurrency } from '@/shared/lib/utils';
 
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -115,11 +116,14 @@ export default function StudentsPage() {
       key: 'monthlyFee',
       header: 'Monthly Fee',
       className: 'text-right',
-      render: (student: Student) => (
-        <span className="text-slate-700 font-medium">
-          ${student.monthlyFee || 0}
-        </span>
-      ),
+      render: (student: Student) => {
+        const fee = typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) : Number(student.monthlyFee || 0);
+        return (
+          <span className="text-slate-700 font-medium">
+            {formatCurrency(fee)}
+          </span>
+        );
+      },
     },
     {
       key: 'status',
@@ -179,7 +183,7 @@ export default function StudentsPage() {
           />
           <StatCard
             title="Total Monthly Fees"
-            value={`$${totalFees.toLocaleString()}`}
+            value={formatCurrency(totalFees)}
           />
         </div>
 
