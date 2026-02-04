@@ -24,10 +24,14 @@ export class ApiError extends Error {
 }
 
 type TokenRefreshCallback = () => Promise<boolean>;
+type TokenGetter = () => string | null;
+type RefreshTokenGetter = () => string | null;
 
 class ApiClient {
   private baseUrl: string;
   private refreshCallback: TokenRefreshCallback | null = null;
+  private tokenGetter: TokenGetter | null = null;
+  private refreshTokenGetter: RefreshTokenGetter | null = null;
   private isRefreshing = false;
   private refreshPromise: Promise<boolean> | null = null;
 
@@ -36,14 +40,34 @@ class ApiClient {
   }
 
   /**
-   * Set the token refresh callback
+   * Set the token refresh callback and getters
    * This should be called from the auth store after initialization
    */
   setRefreshCallback(callback: TokenRefreshCallback) {
     this.refreshCallback = callback;
   }
 
+  /**
+   * Set token getters to read from Zustand store directly
+   * This ensures we always have the latest token state
+   */
+  setTokenGetters(tokenGetter: TokenGetter, refreshTokenGetter: RefreshTokenGetter) {
+    this.tokenGetter = tokenGetter;
+    this.refreshTokenGetter = refreshTokenGetter;
+  }
+
   private getToken(): string | null {
+    // Try to get from Zustand store first (more reliable)
+    if (this.tokenGetter) {
+      try {
+        const token = this.tokenGetter();
+        if (token) return token;
+      } catch {
+        // Fallback to localStorage
+      }
+    }
+
+    // Fallback to localStorage
     if (typeof window === 'undefined') return null;
     try {
       const stored = localStorage.getItem('ilona-auth');
@@ -58,6 +82,17 @@ class ApiClient {
   }
 
   private getRefreshToken(): string | null {
+    // Try to get from Zustand store first (more reliable)
+    if (this.refreshTokenGetter) {
+      try {
+        const token = this.refreshTokenGetter();
+        if (token) return token;
+      } catch {
+        // Fallback to localStorage
+      }
+    }
+
+    // Fallback to localStorage
     if (typeof window === 'undefined') return null;
     try {
       const stored = localStorage.getItem('ilona-auth');
@@ -77,7 +112,7 @@ class ApiClient {
     isRetry = false
   ): Promise<T> {
     const { token: explicitToken, skipAuthRefresh, ...fetchOptions } = options;
-    const token = explicitToken || this.getToken();
+    let token = explicitToken || this.getToken();
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -117,16 +152,47 @@ class ApiClient {
         );
       }
 
+      // Only attempt refresh if we have a refresh token
+      const refreshToken = this.getRefreshToken();
+      if (!refreshToken) {
+        // No refresh token available, throw error immediately
+        const errorData = data as ApiErrorResponse;
+        const message = Array.isArray(errorData.message) 
+          ? errorData.message[0] 
+          : errorData.message || errorData.error || 'Unauthorized';
+        throw new ApiError(
+          message,
+          response.status,
+          Array.isArray(errorData.message) ? errorData.message : undefined
+        );
+      }
+
       // Attempt to refresh token
       const refreshSuccess = await this.attemptTokenRefresh();
       
       if (refreshSuccess) {
-        // Wait a bit to ensure token is available in localStorage
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Wait a bit to ensure token is available (store might need time to update)
+        // Try multiple times to get the new token
+        let newToken: string | null = null;
+        for (let i = 0; i < 5; i++) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+          newToken = this.getToken();
+          if (newToken) break;
+        }
+
+        if (!newToken) {
+          // If we still don't have a token after refresh, try one more time with original token
+          // This handles edge cases where refresh succeeded but token retrieval is delayed
+          console.warn('Token not available after refresh, retrying request...');
+          // Retry with original options - the token might be available now
+          return this.request<T>(endpoint, { ...options, skipAuthRefresh: true }, true);
+        }
+        
         // Retry the original request with new token
-        return this.request<T>(endpoint, { ...options, skipAuthRefresh: true }, true);
+        return this.request<T>(endpoint, { ...options, skipAuthRefresh: true, token: newToken }, true);
       } else {
-        // Refresh failed, throw the original error
+        // Refresh failed - this could be temporary, so we'll throw the error
+        // but the user session remains intact (no forced logout)
         const errorData = data as ApiErrorResponse;
         const message = Array.isArray(errorData.message) 
           ? errorData.message[0] 
@@ -157,6 +223,7 @@ class ApiClient {
   /**
    * Attempt to refresh the access token
    * Returns true if successful, false otherwise
+   * Handles concurrent refresh requests by queuing them
    */
   private async attemptTokenRefresh(): Promise<boolean> {
     // If already refreshing, wait for the existing refresh to complete
@@ -171,15 +238,20 @@ class ApiClient {
         .then(async (success) => {
           this.isRefreshing = false;
           this.refreshPromise = null;
-          // Give a small delay to ensure localStorage is updated
+          
+          // Give a small delay to ensure store is updated
           if (success && typeof window !== 'undefined') {
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => setTimeout(resolve, 100));
+            // Verify token is actually available after refresh
+            const token = this.getToken();
+            return !!token;
           }
           return success;
         })
-        .catch(() => {
+        .catch((error) => {
           this.isRefreshing = false;
           this.refreshPromise = null;
+          console.warn('Token refresh error:', error);
           return false;
         });
       return this.refreshPromise;
@@ -208,7 +280,7 @@ class ApiClient {
 
         const newTokens = await response.json();
         
-        // Update tokens in localStorage
+        // Update tokens in localStorage (fallback)
         if (typeof window !== 'undefined') {
           try {
             const stored = localStorage.getItem('ilona-auth');
@@ -216,6 +288,10 @@ class ApiClient {
               const data = JSON.parse(stored);
               data.state.tokens = newTokens;
               localStorage.setItem('ilona-auth', JSON.stringify(data));
+              // Verify token is actually available after update
+              await new Promise(resolve => setTimeout(resolve, 50));
+              const token = this.getToken();
+              return !!token;
             }
           } catch {
             return false;

@@ -17,7 +17,7 @@ interface AuthState {
 interface AuthActions {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  refreshToken: () => Promise<void>;
+  refreshToken: () => Promise<boolean>;
   clearError: () => void;
   setUser: (user: User) => void;
   setHydrated: () => void;
@@ -71,8 +71,9 @@ export const useAuthStore = create<AuthStore>()(
       refreshToken: async () => {
         const { tokens } = get();
         if (!tokens?.refreshToken) {
-          set({ ...initialState, isHydrated: true });
-          return;
+          // No refresh token available, but don't logout - just return false
+          // The session might still be valid, just the refresh token is missing
+          return false;
         }
 
         try {
@@ -85,10 +86,18 @@ export const useAuthStore = create<AuthStore>()(
             { skipAuthRefresh: true }
           );
 
-          set({ tokens: newTokens });
-        } catch {
-          set({ ...initialState, isHydrated: true });
-          throw new Error('Token refresh failed');
+          // Update tokens while preserving user and authentication state
+          set({ 
+            tokens: newTokens,
+            // Keep isAuthenticated true if we successfully refreshed
+            isAuthenticated: true 
+          });
+          return true;
+        } catch (error) {
+          // Refresh failed, but don't logout - the user might still have a valid session
+          // Just log the error and return false so the request can handle it appropriately
+          console.warn('Token refresh failed:', error);
+          return false;
         }
       },
 
@@ -136,24 +145,36 @@ export function getDashboardPath(role: UserRole): string {
   }
 }
 
-// Initialize API client with token refresh callback
+// Initialize API client with token refresh callback and token getters
 // This should be called after the store is created (e.g., in QueryProvider)
 export function initializeApiClient() {
   if (typeof window === 'undefined') return;
   
+  // Set token getters to read directly from Zustand store
+  // This ensures we always have the latest token state and avoids sync issues
+  api.setTokenGetters(
+    () => {
+      const state = useAuthStore.getState();
+      return state.tokens?.accessToken || null;
+    },
+    () => {
+      const state = useAuthStore.getState();
+      return state.tokens?.refreshToken || null;
+    }
+  );
+  
+  // Set refresh callback
   api.setRefreshCallback(async () => {
     try {
       const store = useAuthStore.getState();
-      await store.refreshToken();
-      return true;
-    } catch {
-      // If refresh fails, logout the user
-      const store = useAuthStore.getState();
-      store.logout();
-      // Redirect to login page
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
+      const success = await store.refreshToken();
+      
+      // Return the result - don't force logout
+      // The API client will handle the failure appropriately
+      return success;
+    } catch (error) {
+      // Log error but don't force logout
+      console.warn('Token refresh callback error:', error);
       return false;
     }
   });
