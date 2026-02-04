@@ -95,6 +95,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
   ),
+  attendanceRegister: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  ),
 };
 
 // Admin navigation items
@@ -105,6 +110,7 @@ const adminNavItems: NavItem[] = [
   { label: 'Finance', href: '/admin/finance', icon: icons.finance },
   { label: 'Groups', href: '/admin/groups', icon: icons.groups },
   { label: 'Calendar', href: '/admin/calendar', icon: icons.calendar },
+  { label: 'Attendance Register', href: '/admin/attendance-register', icon: icons.attendanceRegister },
   { label: 'Analytics', href: '/admin/analytics', icon: icons.analytics },
   { label: 'Reports', href: '/admin/reports', icon: icons.reports },
   { label: 'Chat', href: '/admin/chat', icon: icons.chat },
@@ -117,6 +123,7 @@ const teacherNavItems: NavItem[] = [
   { label: 'Daily Plan', href: '/teacher/daily-plan', icon: icons.dailyPlan },
   { label: 'My Students', href: '/teacher/students', icon: icons.students },
   { label: 'Attendance', href: '/teacher/attendance', icon: icons.attendance },
+  { label: 'Attendance Register', href: '/teacher/attendance-register', icon: icons.attendanceRegister },
   { label: 'Calendar', href: '/teacher/calendar', icon: icons.calendar },
   { label: 'Analytics', href: '/teacher/analytics', icon: icons.analytics },
   { label: 'Salary', href: '/teacher/salary', icon: icons.salary },

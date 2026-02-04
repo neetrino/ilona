@@ -90,6 +90,6 @@ export async function fetchGroupAttendanceReport(
   dateTo: string
 ): Promise<GroupAttendanceReport> {
   return api.get<GroupAttendanceReport>(
-    `${ATTENDANCE_ENDPOINT}/report/group/${groupId}?dateFrom=${dateFrom}&dateTo=${dateTo}`
+    `${ATTENDANCE_ENDPOINT}/group/${groupId}/report?dateFrom=${dateFrom}&dateTo=${dateTo}`
   );
 }
