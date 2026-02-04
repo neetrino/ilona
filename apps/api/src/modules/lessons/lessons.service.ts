@@ -285,8 +285,12 @@ export class LessonsService {
   async update(id: string, dto: UpdateLessonDto) {
     const lesson = await this.findById(id);
 
+    // Allow updates to completed lessons for notes, topic, description
+    // but prevent changing scheduledAt or duration for completed lessons
     if (lesson.status === 'COMPLETED') {
-      throw new BadRequestException('Cannot update completed lesson');
+      if (dto.scheduledAt || dto.duration !== undefined) {
+        throw new BadRequestException('Cannot change scheduledAt or duration for completed lesson');
+      }
     }
 
     return this.prisma.lesson.update({
@@ -339,7 +343,9 @@ export class LessonsService {
       }
     }
 
-    if (!['SCHEDULED', 'IN_PROGRESS'].includes(lesson.status)) {
+    // Allow completing lessons that are SCHEDULED, IN_PROGRESS, or past lessons (CANCELLED/MISSED)
+    // This allows teachers/admins to mark past lessons as completed retroactively
+    if (!['SCHEDULED', 'IN_PROGRESS', 'CANCELLED', 'MISSED'].includes(lesson.status)) {
       throw new BadRequestException('Lesson cannot be completed');
     }
 
