@@ -11,6 +11,9 @@ export {
   studentKeys,
 } from './hooks';
 
+// Components
+export { AddStudentForm } from './components/AddStudentForm';
+
 // Types
 export type {
   Student,

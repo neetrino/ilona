@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
-import { useStudents, useDeleteStudent, type Student } from '@/features/students';
+import { useStudents, useDeleteStudent, AddStudentForm, type Student } from '@/features/students';
 import { formatCurrency } from '@/shared/lib/utils';
 
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
+  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
   const pageSize = 10;
 
   // Fetch students with search and pagination
@@ -201,7 +202,10 @@ export default function StudentsPage() {
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium">
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
+            onClick={() => setIsAddStudentOpen(true)}
+          >
             + Add student
           </Button>
           <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
@@ -298,6 +302,12 @@ export default function StudentsPage() {
           </div>
         </div>
       </div>
+
+      {/* Add Student Modal */}
+      <AddStudentForm 
+        open={isAddStudentOpen} 
+        onOpenChange={setIsAddStudentOpen} 
+      />
     </DashboardLayout>
   );
 }
