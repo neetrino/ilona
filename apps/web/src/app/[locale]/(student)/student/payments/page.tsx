@@ -17,19 +17,23 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, { bg: string; text: string; label: string }> = {
-    PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pending' },
-    PAID: { bg: 'bg-green-100', text: 'text-green-700', label: 'Paid' },
-    OVERDUE: { bg: 'bg-red-100', text: 'text-red-700', label: 'Overdue' },
-    CANCELLED: { bg: 'bg-slate-100', text: 'text-slate-700', label: 'Cancelled' },
+function StatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
+  const styles: Record<string, { bg: string; text: string }> = {
+    PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
+    PAID: { bg: 'bg-green-100', text: 'text-green-700' },
+    OVERDUE: { bg: 'bg-red-100', text: 'text-red-700' },
+    CANCELLED: { bg: 'bg-slate-100', text: 'text-slate-700' },
   };
 
-  const style = styles[status] || { bg: 'bg-slate-100', text: 'text-slate-700', label: status };
+  const style = styles[status] || { bg: 'bg-slate-100', text: 'text-slate-700' };
+  const label = status === 'PENDING' ? t('pending') :
+                status === 'PAID' ? t('paid') :
+                status === 'OVERDUE' ? t('overdue') :
+                status === 'CANCELLED' ? t('cancelled') : status;
 
   return (
     <span className={cn('px-2 py-1 text-xs font-medium rounded-full', style.bg, style.text)}>
-      {style.label}
+      {label}
     </span>
   );
 }
@@ -72,7 +76,7 @@ export default function StudentPaymentsPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Total Paid</p>
+              <p className="text-sm text-slate-500">{t('totalPaid')}</p>
               {isLoadingSummary ? (
                 <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
               ) : (
@@ -90,7 +94,7 @@ export default function StudentPaymentsPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Pending</p>
+              <p className="text-sm text-slate-500">{t('pending')}</p>
               {isLoadingSummary ? (
                 <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
               ) : (
@@ -108,7 +112,7 @@ export default function StudentPaymentsPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Overdue</p>
+              <p className="text-sm text-slate-500">{t('overdue')}</p>
               {isLoadingSummary ? (
                 <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
               ) : (
@@ -130,7 +134,7 @@ export default function StudentPaymentsPage() {
                 </svg>
               </div>
               <div>
-                <p className="font-semibold text-blue-800">Next Payment Due</p>
+                <p className="font-semibold text-blue-800">{t('nextPaymentDue')}</p>
                 <p className="text-sm text-blue-600">
                   {new Date(summary.nextPayment.dueDate).toLocaleDateString('en-US', {
                     weekday: 'long',
@@ -139,7 +143,7 @@ export default function StudentPaymentsPage() {
                     year: 'numeric',
                   })}
                   {' '}
-                  ({getDaysUntilDue(summary.nextPayment.dueDate)} days)
+                  ({t('daysLeft', { count: getDaysUntilDue(summary.nextPayment.dueDate) })})
                 </p>
               </div>
             </div>
@@ -155,7 +159,7 @@ export default function StudentPaymentsPage() {
         {/* Filter */}
         <div className="p-4 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-500">Filter:</span>
+            <span className="text-sm text-slate-500">{t('filter')}:</span>
             {(['all', 'PENDING', 'PAID', 'OVERDUE'] as FilterStatus[]).map((status) => (
               <button
                 key={status}
@@ -167,7 +171,10 @@ export default function StudentPaymentsPage() {
                     : 'text-slate-600 hover:bg-slate-100'
                 )}
               >
-                {status === 'all' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase()}
+                {status === 'all' ? t('all') : 
+                 status === 'PENDING' ? t('pending') :
+                 status === 'PAID' ? t('paid') :
+                 status === 'OVERDUE' ? t('overdue') : status}
               </button>
             ))}
           </div>
@@ -194,9 +201,9 @@ export default function StudentPaymentsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-1">No payments found</h3>
+              <h3 className="text-lg font-semibold text-slate-800 mb-1">{t('noPaymentsFound')}</h3>
               <p className="text-sm text-slate-500">
-                {filter === 'all' ? 'Your payment history is empty.' : `No ${filter.toLowerCase()} payments.`}
+                {filter === 'all' ? t('paymentHistoryEmpty') : t('noStatusPayments', { status: filter.toLowerCase() })}
               </p>
             </div>
           ) : (
@@ -213,17 +220,17 @@ export default function StudentPaymentsPage() {
                         <p className="font-semibold text-slate-800">
                           {dueDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                         </p>
-                        <StatusBadge status={payment.status} />
+                        <StatusBadge status={payment.status} t={t} />
                       </div>
                       <p className="text-sm text-slate-500">
                         {payment.status === 'PAID' && payment.paidAt
-                          ? `Paid on ${new Date(payment.paidAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                          : `Due: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                          ? `${t('paidOn')} ${new Date(payment.paidAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                          : `${t('due')}: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
                         {payment.status === 'PENDING' && !isOverdue && daysUntil > 0 && (
-                          <span className="ml-2 text-blue-600">({daysUntil} days left)</span>
+                          <span className="ml-2 text-blue-600">({t('daysLeft', { count: daysUntil })})</span>
                         )}
                         {isOverdue && payment.status !== 'PAID' && (
-                          <span className="ml-2 text-red-600 font-medium">({Math.abs(daysUntil)} days overdue)</span>
+                          <span className="ml-2 text-red-600 font-medium">({t('daysOverdue', { count: Math.abs(daysUntil) })})</span>
                         )}
                       </p>
                       {payment.description && (

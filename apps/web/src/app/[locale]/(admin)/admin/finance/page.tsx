@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
 import {
@@ -18,6 +19,7 @@ export default function FinancePage() {
   const [paymentsPage, setPaymentsPage] = useState(0);
   const [salariesPage, setSalariesPage] = useState(0);
   const t = useTranslations('finance');
+  const tTeachers = useTranslations('teachers');
   const pageSize = 10;
 
   // Fetch dashboard stats
@@ -82,7 +84,7 @@ export default function FinancePage() {
   const paymentColumns = [
     {
       key: 'student',
-      header: 'Student',
+      header: t('student'),
       render: (payment: Payment) => {
         const firstName = payment.student?.user?.firstName || '';
         const lastName = payment.student?.user?.lastName || '';
@@ -104,14 +106,14 @@ export default function FinancePage() {
     },
     {
       key: 'month',
-      header: 'Month',
+      header: t('month'),
       render: (payment: Payment) => (
         <span className="text-slate-700">{formatMonth(payment.month, payment.year)}</span>
       ),
     },
     {
       key: 'amount',
-      header: 'Amount',
+      header: t('amount'),
       className: 'text-right',
       render: (payment: Payment) => {
         const amount = typeof payment.amount === 'string' ? parseFloat(payment.amount) : Number(payment.amount);
@@ -129,7 +131,7 @@ export default function FinancePage() {
     },
     {
       key: 'dueDate',
-      header: 'Due Date',
+      header: t('dueDate'),
       render: (payment: Payment) => (
         <span className="text-slate-500">
           {new Date(payment.dueDate).toLocaleDateString()}
@@ -138,24 +140,24 @@ export default function FinancePage() {
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('status'),
       render: (payment: Payment) => {
         switch (payment.status) {
           case 'PAID':
-            return <Badge variant="success">Paid</Badge>;
+            return <Badge variant="success">{t('paid')}</Badge>;
           case 'PENDING':
-            return <Badge variant="warning">Pending</Badge>;
+            return <Badge variant="warning">{t('pending')}</Badge>;
           case 'OVERDUE':
             return (
               <div className="flex items-center gap-2">
                 <span className="text-red-500">!</span>
-                <Badge variant="error">Overdue</Badge>
+                <Badge variant="error">{t('overdue')}</Badge>
               </div>
             );
           case 'CANCELLED':
-            return <Badge variant="default">Cancelled</Badge>;
+            return <Badge variant="default">{t('cancelled')}</Badge>;
           case 'REFUNDED':
-            return <Badge variant="info">Refunded</Badge>;
+            return <Badge variant="info">{t('refunded')}</Badge>;
           default:
             return <Badge variant="default">{payment.status}</Badge>;
         }
@@ -163,7 +165,7 @@ export default function FinancePage() {
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: t('actions'),
       render: (payment: Payment) => (
         payment.status !== 'PAID' && payment.status !== 'CANCELLED' ? (
           <Button 
@@ -172,11 +174,11 @@ export default function FinancePage() {
             onClick={() => handleProcessPayment(payment.id)}
             disabled={processPayment.isPending}
           >
-            Mark Paid
+            {t('markPaid')}
           </Button>
         ) : (
           <Button variant="ghost" size="sm" className="text-blue-600 text-sm">
-            View
+            {t('view')}
           </Button>
         )
       ),
@@ -186,7 +188,7 @@ export default function FinancePage() {
   const salaryColumns = [
     {
       key: 'teacher',
-      header: 'Teacher',
+      header: t('teacher'),
       render: (salary: SalaryRecord) => {
         const firstName = salary.teacher?.user?.firstName || '';
         const lastName = salary.teacher?.user?.lastName || '';
@@ -205,14 +207,14 @@ export default function FinancePage() {
     },
     {
       key: 'period',
-      header: 'Period',
+      header: t('period'),
       render: (salary: SalaryRecord) => (
         <span className="text-slate-700">{formatMonth(salary.month, salary.year)}</span>
       ),
     },
     {
       key: 'lessons',
-      header: 'Lessons',
+      header: tTeachers('lessons'),
       className: 'text-center',
       render: (salary: SalaryRecord) => (
         <span className="text-slate-700">{salary.lessonsCount}</span>
@@ -220,7 +222,7 @@ export default function FinancePage() {
     },
     {
       key: 'gross',
-      header: 'Gross',
+      header: t('salaryAmount'),
       className: 'text-right',
       render: (salary: SalaryRecord) => {
         const amount = typeof salary.baseSalary === 'string' ? parseFloat(salary.baseSalary) : Number(salary.baseSalary);
@@ -238,7 +240,7 @@ export default function FinancePage() {
     },
     {
       key: 'deductions',
-      header: 'Deductions',
+      header: t('deductionsAmount'),
       className: 'text-right',
       render: (salary: SalaryRecord) => {
         const amount = typeof salary.totalDeductions === 'string' ? parseFloat(salary.totalDeductions) : Number(salary.totalDeductions);
@@ -265,7 +267,7 @@ export default function FinancePage() {
     },
     {
       key: 'net',
-      header: 'Net Amount',
+      header: t('netSalary'),
       className: 'text-right',
       render: (salary: SalaryRecord) => {
         const amount = typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
@@ -283,7 +285,7 @@ export default function FinancePage() {
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('status'),
       render: (salary: SalaryRecord) => (
         salary.status === 'PAID' ? (
           <Badge variant="success">Paid</Badge>
@@ -294,7 +296,7 @@ export default function FinancePage() {
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: t('actions'),
       render: (salary: SalaryRecord) => (
         salary.status === 'PENDING' ? (
           <Button 

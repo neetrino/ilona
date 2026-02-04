@@ -24,6 +24,7 @@ function formatCurrency(amount: number): string {
 
 export default function AdminReportsPage() {
   const t = useTranslations('analytics');
+  const tHome = useTranslations('home');
   const [selectedReport, setSelectedReport] = useState<ReportType>('teachers');
   const [dateFrom, setDateFrom] = useState(() => {
     const d = new Date();
@@ -246,7 +247,7 @@ export default function AdminReportsPage() {
 
             {/* Print Header */}
             <div className="hidden print:block p-4 border-b">
-              <h1 className="text-xl font-bold">Ilona English Center</h1>
+              <h1 className="text-xl font-bold">{tHome('title')}</h1>
               <h2 className="text-lg">{reports.find((r) => r.id === selectedReport)?.label}</h2>
               <p className="text-sm text-slate-500">Generated: {new Date().toLocaleDateString()}</p>
             </div>

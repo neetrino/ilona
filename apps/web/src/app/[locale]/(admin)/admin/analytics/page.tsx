@@ -147,6 +147,7 @@ function StudentRiskRow({ student }: { student: StudentRisk }) {
 }
 
 export default function AdminAnalyticsPage() {
+  const tCommon = useTranslations('common');
   const t = useTranslations('analytics');
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
@@ -324,7 +325,7 @@ export default function AdminAnalyticsPage() {
               <tbody className="divide-y divide-slate-100">
                 {isLoadingTeachers ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">Loading...</td>
+                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">{tCommon('loading')}</td>
                   </tr>
                 ) : teachers.length === 0 ? (
                   <tr>
@@ -377,7 +378,7 @@ export default function AdminAnalyticsPage() {
               <tbody className="divide-y divide-slate-100">
                 {isLoadingStudents ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">Loading...</td>
+                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">{tCommon('loading')}</td>
                   </tr>
                 ) : students.length === 0 ? (
                   <tr>
@@ -432,7 +433,7 @@ export default function AdminAnalyticsPage() {
                 <tbody className="divide-y divide-slate-100">
                   {isLoadingRevenue ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-slate-500">Loading...</td>
+                      <td colSpan={5} className="px-4 py-8 text-center text-slate-500">{tCommon('loading')}</td>
                     </tr>
                   ) : revenue.length === 0 ? (
                     <tr>

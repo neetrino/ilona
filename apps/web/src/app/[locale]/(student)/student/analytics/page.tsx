@@ -146,7 +146,7 @@ export default function StudentAnalyticsPage() {
         <>
           {/* Progress Circles */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
-            <h3 className="font-semibold text-slate-800 mb-6 text-center">Your Progress Overview</h3>
+            <h3 className="font-semibold text-slate-800 mb-6 text-center">{t('yourProgressOverview')}</h3>
             <div className="flex flex-wrap justify-center gap-8">
               <CircularProgress
                 value={attendanceRate}
@@ -213,12 +213,12 @@ export default function StudentAnalyticsPage() {
           {/* Attendance Details */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h3 className="font-semibold text-slate-800 mb-4">Attendance Breakdown</h3>
+              <h3 className="font-semibold text-slate-800 mb-4">{t('attendanceBreakdown')}</h3>
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-600">Present</span>
-                    <span className="font-medium">{presentCount} lessons</span>
+                    <span className="text-slate-600">{t('present')}</span>
+                    <span className="font-medium">{presentCount} {t('lessons')}</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-3">
                     <div
@@ -229,8 +229,8 @@ export default function StudentAnalyticsPage() {
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-600">Justified Absences</span>
-                    <span className="font-medium">{absentJustified} lessons</span>
+                    <span className="text-slate-600">{t('justifiedAbsences')}</span>
+                    <span className="font-medium">{absentJustified} {t('lessons')}</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-3">
                     <div
@@ -241,8 +241,8 @@ export default function StudentAnalyticsPage() {
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-600">Unjustified Absences</span>
-                    <span className="font-medium">{absentUnjustified} lessons</span>
+                    <span className="text-slate-600">{t('unjustifiedAbsences')}</span>
+                    <span className="font-medium">{absentUnjustified} {t('lessons')}</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-3">
                     <div
@@ -255,40 +255,40 @@ export default function StudentAnalyticsPage() {
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h3 className="font-semibold text-slate-800 mb-4">Tips for Success</h3>
+              <h3 className="font-semibold text-slate-800 mb-4">{t('tipsForSuccess')}</h3>
               <div className="space-y-3">
                 {attendanceRate >= 90 ? (
                   <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
                     <span className="text-green-600 text-xl">🎉</span>
                     <div>
-                      <p className="font-medium text-green-800">Excellent Attendance!</p>
-                      <p className="text-sm text-green-600">Keep up the great work!</p>
+                      <p className="font-medium text-green-800">{t('excellentAttendance')}</p>
+                      <p className="text-sm text-green-600">{t('keepUpGreatWork')}</p>
                     </div>
                   </div>
                 ) : attendanceRate >= 70 ? (
                   <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
                     <span className="text-yellow-600 text-xl">💪</span>
                     <div>
-                      <p className="font-medium text-yellow-800">Good Progress</p>
-                      <p className="text-sm text-yellow-600">Try to attend a few more lessons to improve.</p>
+                      <p className="font-medium text-yellow-800">{t('goodProgress')}</p>
+                      <p className="text-sm text-yellow-600">{t('tryAttendMore')}</p>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
                     <span className="text-red-600 text-xl">⚠️</span>
                     <div>
-                      <p className="font-medium text-red-800">Needs Improvement</p>
-                      <p className="text-sm text-red-600">Regular attendance is key to learning success.</p>
+                      <p className="font-medium text-red-800">{t('needsImprovement')}</p>
+                      <p className="text-sm text-red-600">{t('regularAttendanceKey')}</p>
                     </div>
                   </div>
                 )}
 
                 <div className="p-3 bg-blue-50 rounded-lg">
-                  <p className="font-medium text-blue-800 mb-1">Study Tips</p>
+                  <p className="font-medium text-blue-800 mb-1">{t('studyTips')}</p>
                   <ul className="text-sm text-blue-600 space-y-1">
-                    <li>• Review vocabulary recordings after each lesson</li>
-                    <li>• Practice speaking English daily</li>
-                    <li>• Don't hesitate to ask questions in chat</li>
+                    <li>• {t('reviewVocabularyRecordings')}</li>
+                    <li>• {t('practiceSpeakingDaily')}</li>
+                    <li>• {t('askQuestionsInChat')}</li>
                   </ul>
                 </div>
               </div>
@@ -301,9 +301,9 @@ export default function StudentAnalyticsPage() {
               <div className="flex items-start gap-3">
                 <span className="text-red-600 text-2xl">⚠️</span>
                 <div>
-                  <h4 className="font-semibold text-red-800">Attendance Warning</h4>
+                  <h4 className="font-semibold text-red-800">{t('attendanceWarning')}</h4>
                   <p className="text-sm text-red-600">
-                    You have {absentUnjustified} unjustified absences. Please contact your teacher or admin if you need help.
+                    {t('unjustifiedAbsencesWarning', { count: absentUnjustified })}
                   </p>
                 </div>
               </div>

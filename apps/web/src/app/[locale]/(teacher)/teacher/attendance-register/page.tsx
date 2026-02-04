@@ -228,7 +228,7 @@ export default function TeacherAttendanceRegisterPage() {
   // Handle view mode change
   const handleViewModeChange = (newMode: ViewMode) => {
     if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to switch view mode? Your changes will be lost.'
+      t('unsavedChangesWarning', { action: t('switchViewMode') })
     )) {
       return;
     }
@@ -242,7 +242,7 @@ export default function TeacherAttendanceRegisterPage() {
   // Handle date change
   const handleDateChange = (newDate: string) => {
     if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to change the date? Your changes will be lost.'
+      t('unsavedChangesWarning', { action: t('changeDate') })
     )) {
       return;
     }
@@ -253,7 +253,7 @@ export default function TeacherAttendanceRegisterPage() {
   // Handle group change
   const handleGroupChange = (newGroupId: string | null) => {
     if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to switch groups? Your changes will be lost.'
+      t('unsavedChangesWarning', { action: t('switchGroups') })
     )) {
       return;
     }
@@ -264,7 +264,7 @@ export default function TeacherAttendanceRegisterPage() {
   // Navigation handlers
   const handlePrevious = () => {
     if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to navigate? Your changes will be lost.'
+      t('unsavedChangesWarning', { action: t('navigate') })
     )) {
       return;
     }
@@ -278,7 +278,7 @@ export default function TeacherAttendanceRegisterPage() {
 
   const handleNext = () => {
     if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to navigate? Your changes will be lost.'
+      t('unsavedChangesWarning', { action: t('navigate') })
     )) {
       return;
     }
@@ -293,7 +293,7 @@ export default function TeacherAttendanceRegisterPage() {
   // Handle day selection in month view
   const handleDaySelect = (date: Date) => {
     if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to select a different day? Your changes will be lost.'
+      t('unsavedChangesWarning', { action: t('selectDifferentDay') })
     )) {
       return;
     }
@@ -363,7 +363,7 @@ export default function TeacherAttendanceRegisterPage() {
 
   // Handle save success
   const handleSaveSuccess = (id: string) => {
-    setSaveMessages({ type: 'success', message: 'Attendance saved successfully' });
+    setSaveMessages({ type: 'success', message: t('attendanceSaved') });
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);
     }
@@ -374,7 +374,7 @@ export default function TeacherAttendanceRegisterPage() {
 
   // Handle save error
   const handleSaveError = (id: string, error: string) => {
-    setSaveMessages({ type: 'error', message: `Failed to save attendance: ${error}` });
+    setSaveMessages({ type: 'error', message: t('failedToSaveAttendance', { error }) });
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);
     }

@@ -16,6 +16,7 @@ export default function TeachersPage() {
   const locale = params.locale as string;
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
+  const tStatus = useTranslations('status');
   const pageSize = 10;
 
   // Fetch teachers with search and pagination
@@ -44,7 +45,7 @@ export default function TeachersPage() {
 
   // Handle delete
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this teacher?')) {
+    if (confirm(t('confirmDelete'))) {
       try {
         await deleteTeacher.mutateAsync(id);
       } catch (err) {
@@ -142,7 +143,7 @@ export default function TeachersPage() {
         const status = teacher.user?.status || 'ACTIVE';
         return (
           <Badge variant={status === 'ACTIVE' ? 'success' : 'warning'}>
-            {status}
+            {tStatus(status.toLowerCase())}
           </Badge>
         );
       },

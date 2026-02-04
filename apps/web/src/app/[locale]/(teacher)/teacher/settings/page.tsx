@@ -14,6 +14,7 @@ export default function TeacherSettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('settings');
+  const tRoles = useTranslations('roles');
 
   // Profile form state
   const [firstName, setFirstName] = useState(user?.firstName || '');
@@ -41,13 +42,13 @@ export default function TeacherSettingsPage() {
     setIsSaving(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSaving(false);
-    alert('Profile updated successfully!');
+    alert(t('profileUpdatedSuccess'));
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      alert('Passwords do not match');
+      alert(t('passwordsDoNotMatch'));
       return;
     }
     setIsSaving(true);
@@ -56,13 +57,13 @@ export default function TeacherSettingsPage() {
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
-    alert('Password changed successfully!');
+    alert(t('passwordChangedSuccess'));
   };
 
   const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     {
       id: 'profile',
-      label: 'Profile',
+      label: t('profile'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -71,7 +72,7 @@ export default function TeacherSettingsPage() {
     },
     {
       id: 'security',
-      label: 'Security',
+      label: t('security'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -80,7 +81,7 @@ export default function TeacherSettingsPage() {
     },
     {
       id: 'notifications',
-      label: 'Notifications',
+      label: t('notifications'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -89,7 +90,7 @@ export default function TeacherSettingsPage() {
     },
     {
       id: 'teaching',
-      label: 'Teaching',
+      label: t('teaching'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -127,16 +128,16 @@ export default function TeacherSettingsPage() {
           </nav>
 
           <div className="mt-6 bg-white rounded-xl border border-slate-200 p-4">
-            <h3 className="font-medium text-slate-800 mb-2">Session</h3>
+            <h3 className="font-medium text-slate-800 mb-2">{t('session')}</h3>
             <p className="text-sm text-slate-500 mb-4">
-              Sign out from your account.
+              {t('signOutDescription')}
             </p>
             <Button 
               variant="outline" 
               className="w-full text-red-600 border-red-200 hover:bg-red-50"
               onClick={logout}
             >
-              Sign Out
+              {t('signOut')}
             </Button>
           </div>
         </div>
@@ -146,7 +147,7 @@ export default function TeacherSettingsPage() {
           {/* Profile Tab */}
           {activeTab === 'profile' && (
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-6">Profile Information</h2>
+              <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('profileInformation')}</h2>
               
               {/* Avatar */}
               <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-200">
@@ -156,10 +157,10 @@ export default function TeacherSettingsPage() {
                 <div>
                   <h3 className="font-medium text-slate-800">{user?.firstName} {user?.lastName}</h3>
                   <p className="text-sm text-slate-500">{user?.email}</p>
-                  <Badge variant="info" className="mt-2">Teacher</Badge>
+                  <Badge variant="info" className="mt-2">{tRoles('teacher')}</Badge>
                   <div className="flex gap-2 mt-3">
-                    <Button variant="outline" size="sm">Upload Photo</Button>
-                    <Button variant="ghost" size="sm" className="text-red-600">Remove</Button>
+                    <Button variant="outline" size="sm">{t('uploadPhoto')}</Button>
+                    <Button variant="ghost" size="sm" className="text-red-600">{t('remove')}</Button>
                   </div>
                 </div>
               </div>
@@ -168,7 +169,7 @@ export default function TeacherSettingsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      First Name
+                      {t('firstName')}
                     </label>
                     <input
                       type="text"
@@ -179,7 +180,7 @@ export default function TeacherSettingsPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Last Name
+                      {t('lastName')}
                     </label>
                     <input
                       type="text"
@@ -192,7 +193,7 @@ export default function TeacherSettingsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Email Address
+                    {t('emailAddress')}
                   </label>
                   <input
                     type="email"
@@ -204,7 +205,7 @@ export default function TeacherSettingsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Phone Number
+                    {t('phoneNumber')}
                   </label>
                   <input
                     type="tel"
@@ -217,7 +218,7 @@ export default function TeacherSettingsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Bio
+                    {t('bio')}
                   </label>
                   <textarea
                     value={bio}
@@ -234,7 +235,7 @@ export default function TeacherSettingsPage() {
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6"
                     disabled={isSaving}
                   >
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+                    {isSaving ? t('saving') : t('saveChanges')}
                   </Button>
                 </div>
               </form>
@@ -244,12 +245,12 @@ export default function TeacherSettingsPage() {
           {/* Security Tab */}
           {activeTab === 'security' && (
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-6">Change Password</h2>
+              <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('changePassword')}</h2>
               
               <form onSubmit={handleChangePassword} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Current Password
+                    {t('currentPassword')}
                   </label>
                   <input
                     type="password"
@@ -261,7 +262,7 @@ export default function TeacherSettingsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    New Password
+                    {t('newPassword')}
                   </label>
                   <input
                     type="password"
@@ -273,7 +274,7 @@ export default function TeacherSettingsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Confirm New Password
+                    {t('confirmNewPassword')}
                   </label>
                   <input
                     type="password"
@@ -289,7 +290,7 @@ export default function TeacherSettingsPage() {
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6"
                     disabled={isSaving}
                   >
-                    {isSaving ? 'Updating...' : 'Update Password'}
+                    {isSaving ? t('updating') : t('updatePassword')}
                   </Button>
                 </div>
               </form>
@@ -299,14 +300,14 @@ export default function TeacherSettingsPage() {
           {/* Notifications Tab */}
           {activeTab === 'notifications' && (
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-6">Notification Preferences</h2>
+              <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('notificationPreferences')}</h2>
               
               <div className="space-y-6">
                 {[
-                  { id: 'email', label: 'Email Notifications', desc: 'Receive important updates via email', checked: emailNotifications, onChange: setEmailNotifications },
-                  { id: 'lessons', label: 'Lesson Reminders', desc: 'Get notified before your scheduled lessons', checked: lessonReminders, onChange: setLessonReminders },
-                  { id: 'students', label: 'New Student Alerts', desc: 'Notifications when new students join your groups', checked: newStudentAlerts, onChange: setNewStudentAlerts },
-                  { id: 'salary', label: 'Salary Notifications', desc: 'Alerts about salary payments and deductions', checked: salaryNotifications, onChange: setSalaryNotifications },
+                  { id: 'email', label: t('emailNotifications'), desc: t('receiveImportantUpdates'), checked: emailNotifications, onChange: setEmailNotifications },
+                  { id: 'lessons', label: t('lessonReminders'), desc: t('getNotifiedBeforeScheduledLessons'), checked: lessonReminders, onChange: setLessonReminders },
+                  { id: 'students', label: t('newStudentAlerts'), desc: t('newStudentAlertsDesc'), checked: newStudentAlerts, onChange: setNewStudentAlerts },
+                  { id: 'salary', label: t('salaryNotifications'), desc: t('salaryNotificationsDesc'), checked: salaryNotifications, onChange: setSalaryNotifications },
                 ].map((item, index, arr) => (
                   <div key={item.id} className={cn('flex items-center justify-between py-4', index < arr.length - 1 && 'border-b border-slate-100')}>
                     <div>
@@ -328,7 +329,7 @@ export default function TeacherSettingsPage() {
 
               <div className="pt-6 flex justify-end">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
-                  Save Preferences
+                  {t('savePreferences')}
                 </Button>
               </div>
             </div>
@@ -337,29 +338,29 @@ export default function TeacherSettingsPage() {
           {/* Teaching Tab */}
           {activeTab === 'teaching' && (
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-6">Teaching Preferences</h2>
+              <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('teachingPreferences')}</h2>
               
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Default Lesson Duration
+                    {t('defaultLessonDuration')}
                   </label>
                   <select
                     value={defaultLessonDuration}
                     onChange={(e) => setDefaultLessonDuration(e.target.value)}
                     className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                   >
-                    <option value="30">30 minutes</option>
-                    <option value="45">45 minutes</option>
-                    <option value="60">60 minutes</option>
-                    <option value="90">90 minutes</option>
+                    <option value="30">30 {t('minutes')}</option>
+                    <option value="45">45 {t('minutes')}</option>
+                    <option value="60">60 {t('minutes')}</option>
+                    <option value="90">90 {t('minutes')}</option>
                   </select>
                 </div>
 
                 <div className="flex items-center justify-between py-4 border-t border-slate-100">
                   <div>
-                    <h3 className="font-medium text-slate-800">Auto-send Vocabulary</h3>
-                    <p className="text-sm text-slate-500">Automatically send vocabulary list after completing lessons</p>
+                    <h3 className="font-medium text-slate-800">{t('autoSendVocabulary')}</h3>
+                    <p className="text-sm text-slate-500">{t('autoSendVocabularyDesc')}</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -375,7 +376,7 @@ export default function TeacherSettingsPage() {
 
               <div className="pt-6 flex justify-end">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
-                  Save Preferences
+                  {t('savePreferences')}
                 </Button>
               </div>
             </div>
