@@ -112,11 +112,11 @@ export function AttendanceGrid({
     [attendanceData]
   );
 
-  // Toggle cell status
+  // Toggle cell status - simplified cycle: Not Marked → Present → Absent (Justified) → Absent (Unjustified) → Not Marked
   const toggleCellStatus = useCallback(
     (studentId: string, lessonId: string) => {
       const currentStatus = getCellStatus(studentId, lessonId);
-      const statuses: AttendanceStatus[] = ['present', 'absent_justified', 'absent_unjustified'];
+      const statuses: AttendanceStatus[] = ['not_marked', 'present', 'absent_justified', 'absent_unjustified'];
       const currentIndex = statuses.indexOf(currentStatus);
       const nextIndex = (currentIndex + 1) % statuses.length;
       const newStatus = statuses[nextIndex];
@@ -326,7 +326,7 @@ export function AttendanceGrid({
     });
   }, [lessons, dateRange]);
 
-  // Group lessons by date
+  // Group lessons by date and sort chronologically (oldest to newest)
   const lessonsByDate = useMemo(() => {
     const grouped: Record<string, Lesson[]> = {};
     filteredLessons.forEach((lesson) => {
@@ -336,16 +336,29 @@ export function AttendanceGrid({
       }
       grouped[date].push(lesson);
     });
-    return grouped;
+    
+    // Sort lessons within each date by time
+    Object.keys(grouped).forEach((date) => {
+      grouped[date].sort((a, b) => 
+        new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+      );
+    });
+    
+    // Return sorted entries (oldest to newest)
+    const sortedEntries = Object.entries(grouped).sort(([dateA], [dateB]) => 
+      dateA.localeCompare(dateB)
+    );
+    
+    return Object.fromEntries(sortedEntries);
   }, [filteredLessons]);
 
-  // Get status styles
+  // Get status styles - enhanced for better visibility and contrast
   const getStatusStyles = (status: AttendanceStatus) => {
     const styles = {
-      present: 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700',
-      absent_justified: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-700',
-      absent_unjustified: 'bg-red-50 hover:bg-red-100 border-red-200 text-red-700',
-      not_marked: 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500',
+      present: 'bg-green-100 hover:bg-green-200 border-2 border-green-400 text-green-800 font-semibold',
+      absent_justified: 'bg-amber-100 hover:bg-amber-200 border-2 border-amber-400 text-amber-800 font-semibold',
+      absent_unjustified: 'bg-red-100 hover:bg-red-200 border-2 border-red-400 text-red-800 font-semibold',
+      not_marked: 'bg-white hover:bg-slate-50 border-2 border-slate-300 text-slate-600',
     };
     return styles[status];
   };
@@ -392,87 +405,104 @@ export function AttendanceGrid({
 
   return (
     <div className="space-y-4">
-      {/* Status indicator and Save button */}
-      {(hasAnySaving || totalPendingChanges > 0 || Object.keys(saveSuccess).length > 0) && (
-        <div className="flex items-center justify-between rounded-lg bg-blue-50 px-4 py-3 text-sm border border-blue-200">
-          <div className="flex items-center gap-3 flex-1">
-            {hasAnySaving ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-                <span className="text-blue-700 font-medium">Saving changes...</span>
-              </>
-            ) : totalPendingChanges > 0 ? (
-              <>
-                <div className="h-2 w-2 rounded-full bg-amber-500"></div>
-                <span className="text-amber-700 font-medium">
+      {/* Prominent Save button and status indicator */}
+      <div className={cn(
+        "flex items-center justify-between rounded-lg px-5 py-4 text-sm border-2 transition-all",
+        totalPendingChanges > 0 
+          ? "bg-amber-50 border-amber-300" 
+          : hasAnySaving
+          ? "bg-blue-50 border-blue-300"
+          : Object.keys(saveSuccess).length > 0
+          ? "bg-green-50 border-green-300"
+          : "bg-slate-50 border-slate-200"
+      )}>
+        <div className="flex items-center gap-4 flex-1">
+          {hasAnySaving ? (
+            <>
+              <div className="h-5 w-5 animate-spin rounded-full border-[3px] border-blue-600 border-t-transparent"></div>
+              <span className="text-blue-800 font-semibold text-base">Saving changes...</span>
+            </>
+          ) : totalPendingChanges > 0 ? (
+            <>
+              <div className="h-4 w-4 rounded-full bg-amber-500 animate-pulse"></div>
+              <div>
+                <span className="text-amber-800 font-bold text-base block">
                   {totalPendingChanges} unsaved {totalPendingChanges === 1 ? 'change' : 'changes'}
                 </span>
-              </>
-            ) : Object.keys(saveSuccess).length > 0 ? (
-              <>
-                <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="text-green-700 font-medium">Changes saved successfully</span>
-              </>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-3">
-            {Object.keys(saveError).length > 0 && (
-              <span className="text-red-600 text-xs font-medium">
-                {Object.values(saveError)[0]} {Object.keys(saveError).length > 1 && `(+${Object.keys(saveError).length - 1} more)`}
-              </span>
-            )}
-            {totalPendingChanges > 0 && !hasAnySaving && (
-              <Button
-                onClick={handleSaveAll}
-                disabled={lessonsWithChanges.length === 0 || hasAnySaving}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                size="sm"
-              >
-                Save All Changes
-              </Button>
-            )}
-          </div>
+                <span className="text-amber-700 text-xs mt-0.5 block">Click "Save All" to save your changes</span>
+              </div>
+            </>
+          ) : Object.keys(saveSuccess).length > 0 ? (
+            <>
+              <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-green-800 font-semibold text-base">All changes saved successfully</span>
+            </>
+          ) : (
+            <span className="text-slate-600 text-sm">No unsaved changes</span>
+          )}
         </div>
-      )}
+        <div className="flex items-center gap-3">
+          {Object.keys(saveError).length > 0 && (
+            <span className="text-red-700 text-sm font-medium px-3 py-1 bg-red-100 rounded">
+              {Object.values(saveError)[0]} {Object.keys(saveError).length > 1 && `(+${Object.keys(saveError).length - 1} more)`}
+            </span>
+          )}
+          {totalPendingChanges > 0 && !hasAnySaving && (
+            <Button
+              onClick={handleSaveAll}
+              disabled={lessonsWithChanges.length === 0 || hasAnySaving}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
+              size="lg"
+            >
+              Save All Changes
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* Grid */}
       <div
         ref={gridRef}
-        className="overflow-auto rounded-lg border border-slate-200 bg-white"
-        style={{ maxHeight: 'calc(100vh - 300px)' }}
+        className="overflow-auto rounded-lg border-2 border-slate-300 bg-white shadow-sm"
+        style={{ maxHeight: 'calc(100vh - 400px)' }}
       >
         <div className="inline-block min-w-full">
           <table className="min-w-full border-collapse">
-            <thead className="bg-slate-50 sticky top-0 z-10">
+            <thead className="bg-slate-100 sticky top-0 z-20 shadow-sm">
               <tr>
                 {/* Student name column (frozen) */}
-                <th className="sticky left-0 z-20 bg-slate-50 border-b border-r border-slate-200 px-3 md:px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider min-w-[150px] md:min-w-[200px]">
-                  Student
+                <th className="sticky left-0 z-30 bg-slate-100 border-b-2 border-r-2 border-slate-400 px-4 md:px-5 py-4 text-left text-sm font-bold text-slate-900 uppercase tracking-wide min-w-[180px] md:min-w-[220px] shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <span>Student</span>
+                  </div>
                 </th>
                 {/* Date/Lesson columns */}
                 {Object.entries(lessonsByDate).map(([date, dateLessons]) => (
                   <th
                     key={date}
                     colSpan={dateLessons.length}
-                    className="border-b border-r border-slate-200 px-1 md:px-2 py-2 text-center text-xs font-semibold text-slate-700 bg-slate-100"
+                    className="border-b-2 border-r-2 border-slate-400 px-2 md:px-3 py-3 text-center bg-slate-200"
                   >
-                    <div className="font-medium text-[10px] md:text-xs">{formatDate(date)}</div>
+                    <div className="font-bold text-xs md:text-sm text-slate-900">{formatDate(date)}</div>
+                    <div className="text-[10px] text-slate-600 mt-0.5">
+                      {dateLessons.length} {dateLessons.length === 1 ? 'session' : 'sessions'}
+                    </div>
                   </th>
                 ))}
               </tr>
-              <tr>
-                <th className="sticky left-0 z-20 bg-slate-50 border-b border-r border-slate-200"></th>
+              <tr className="bg-slate-50 sticky z-20" style={{ top: '64px' }}>
+                <th className="sticky left-0 z-30 bg-slate-50 border-b-2 border-r-2 border-slate-400 shadow-sm"></th>
                 {Object.entries(lessonsByDate).map(([date, dateLessons]) =>
                   dateLessons.map((lesson) => (
                     <th
                       key={lesson.id}
-                      className="border-b border-r border-slate-200 px-1 md:px-2 py-2 text-center text-xs text-slate-600 bg-slate-50 min-w-[60px] md:min-w-[80px]"
+                      className="border-b-2 border-r-2 border-slate-400 px-2 md:px-3 py-3 text-center bg-slate-50 min-w-[90px] md:min-w-[110px]"
                     >
-                      <div className="font-normal text-[10px] md:text-xs">{formatTime(lesson.scheduledAt)}</div>
+                      <div className="font-semibold text-xs md:text-sm text-slate-800 mb-1">{formatTime(lesson.scheduledAt)}</div>
                       {lesson.topic && (
-                        <div className="text-[9px] md:text-[10px] text-slate-500 truncate max-w-[60px] md:max-w-[80px]" title={lesson.topic}>
+                        <div className="text-[10px] md:text-[11px] text-slate-600 truncate max-w-[90px] md:max-w-[110px] font-medium" title={lesson.topic}>
                           {lesson.topic}
                         </div>
                       )}
@@ -481,19 +511,19 @@ export function AttendanceGrid({
                 )}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-100">
+            <tbody className="bg-white divide-y-2 divide-slate-200">
               {students.map((student) => {
                 const initials = `${student.user.firstName[0] || ''}${student.user.lastName[0] || ''}` || '?';
                 return (
                   <tr key={student.id} className="hover:bg-slate-50 transition-colors">
                     {/* Student name cell (frozen) */}
-                    <td className="sticky left-0 z-10 bg-white border-r border-slate-200 px-3 md:px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                    <td className="sticky left-0 z-20 bg-white border-r-2 border-b-2 border-slate-400 px-4 md:px-5 py-4 whitespace-nowrap shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-md">
                           {initials}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-xs md:text-sm font-medium text-slate-900 truncate max-w-[100px] md:max-w-none">
+                          <div className="text-sm md:text-base font-semibold text-slate-900 truncate max-w-[120px] md:max-w-none">
                             {student.user.firstName} {student.user.lastName}
                           </div>
                         </div>
@@ -516,29 +546,30 @@ export function AttendanceGrid({
                           if (el) cellRefs.current[cellKey] = el;
                         }}
                         className={cn(
-                          'border-r border-b border-slate-200 px-1 md:px-2 py-2 text-center cursor-pointer transition-all relative',
+                          'border-r-2 border-b-2 border-slate-300 px-2 md:px-3 py-3 text-center cursor-pointer transition-all relative min-h-[60px]',
                           getStatusStyles(status),
-                          isFocused && 'ring-2 ring-blue-500 ring-offset-1',
-                          hasPendingChange && 'ring-1 ring-amber-400',
-                          isLessonSaving && 'opacity-75'
+                          isFocused && 'ring-4 ring-blue-500 ring-offset-2 shadow-lg',
+                          hasPendingChange && 'ring-2 ring-amber-500',
+                          isLessonSaving && 'opacity-60 cursor-wait'
                         )}
                         onClick={() => !isLessonSaving && toggleCellStatus(student.id, lesson.id)}
                         onKeyDown={(e) => !isLessonSaving && handleKeyDown(e, student.id, lesson.id)}
                         tabIndex={isLessonSaving ? -1 : 0}
                         role="gridcell"
-                        aria-label={`${student.user.firstName} ${student.user.lastName} - ${formatDate(lesson.scheduledAt)} ${formatTime(lesson.scheduledAt)} - ${status}`}
+                        aria-label={`${student.user.firstName} ${student.user.lastName} - ${formatDate(lesson.scheduledAt)} ${formatTime(lesson.scheduledAt)} - ${status === 'present' ? 'Present' : status === 'absent_justified' ? 'Absent Justified' : status === 'absent_unjustified' ? 'Absent Unjustified' : 'Not Marked'}`}
                         aria-disabled={isLessonSaving}
+                        title={`Click to mark: ${status === 'not_marked' ? 'Present' : status === 'present' ? 'Absent (Justified)' : status === 'absent_justified' ? 'Absent (Unjustified)' : 'Not Marked'}`}
                       >
-                        <div className="flex items-center justify-center h-7 w-7 md:h-8 md:w-8 mx-auto rounded text-xs md:text-sm font-semibold relative">
+                        <div className="flex items-center justify-center h-10 w-10 md:h-12 md:w-12 mx-auto rounded-md text-base md:text-lg font-bold relative">
                           {getStatusIcon(status)}
                           {isLessonSaving && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="h-2.5 w-2.5 md:h-3 md:w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">
+                              <div className="h-4 w-4 animate-spin rounded-full border-[3px] border-current border-t-transparent"></div>
                             </div>
                           )}
                         </div>
                         {hasPendingChange && !isLessonSaving && (
-                          <div className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-amber-500"></div>
+                          <div className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-amber-500 shadow-sm animate-pulse"></div>
                         )}
                       </td>
                     );
@@ -552,83 +583,34 @@ export function AttendanceGrid({
         </div>
       </div>
 
-      {/* Lesson-specific Save buttons */}
-      {Object.entries(lessonsByDate).map(([date, dateLessons]) =>
-        dateLessons.map((lesson) => {
-          const hasLessonChanges = pendingChanges[lesson.id] && pendingChanges[lesson.id].size > 0;
-          const isLessonSaving = isSaving?.[lesson.id] || false;
-          const lessonSaveError = saveError[lesson.id];
-          const lessonSaveSuccess = saveSuccess[lesson.id];
 
-          if (!hasLessonChanges && !isLessonSaving && !lessonSaveError && !lessonSaveSuccess) {
-            return null;
-          }
-
-          return (
-            <div
-              key={lesson.id}
-              className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-2 text-sm border border-slate-200"
-            >
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-slate-700">
-                  {formatDate(lesson.scheduledAt)} {formatTime(lesson.scheduledAt)}
-                </span>
-                {lesson.topic && <span className="text-slate-500">• {lesson.topic}</span>}
-                {hasLessonChanges && (
-                  <span className="text-amber-600">
-                    ({pendingChanges[lesson.id].size} {pendingChanges[lesson.id].size === 1 ? 'change' : 'changes'})
-                  </span>
-                )}
-                {lessonSaveSuccess && (
-                  <span className="text-green-600 font-medium">✓ Saved</span>
-                )}
-                {lessonSaveError && (
-                  <span className="text-red-600 text-xs">{lessonSaveError}</span>
-                )}
-              </div>
-              {hasLessonChanges && !isLessonSaving && (
-                <Button
-                  onClick={() => handleManualSave(lesson.id)}
-                  disabled={isLessonSaving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  size="sm"
-                  isLoading={isLessonSaving}
-                >
-                  Save
-                </Button>
-              )}
-            </div>
-          );
-        })
-      )}
-
-      {/* Legend */}
-      <div className="flex items-center gap-4 text-xs text-slate-600 bg-slate-50 rounded-lg px-4 py-2">
-        <span className="font-medium">Legend:</span>
-        <div className="flex items-center gap-1">
-          <span className="w-4 h-4 bg-green-50 border border-green-200 rounded text-green-700 flex items-center justify-center text-[10px] font-semibold">
+      {/* Enhanced Legend */}
+      <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm bg-slate-100 rounded-lg px-5 py-4 border-2 border-slate-300">
+        <span className="font-bold text-slate-900 text-base">Legend:</span>
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 bg-green-100 border-2 border-green-400 rounded-md text-green-800 flex items-center justify-center text-sm font-bold shadow-sm">
             ✓
           </span>
-          <span>Present</span>
+          <span className="font-semibold text-slate-800">Present</span>
         </div>
-        <div className="flex items-center gap-1">
-          <span className="w-4 h-4 bg-yellow-50 border border-yellow-200 rounded text-yellow-700 flex items-center justify-center text-[10px] font-semibold">
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 bg-amber-100 border-2 border-amber-400 rounded-md text-amber-800 flex items-center justify-center text-sm font-bold shadow-sm">
             J
           </span>
-          <span>Justified</span>
+          <span className="font-semibold text-slate-800">Absent (Justified)</span>
         </div>
-        <div className="flex items-center gap-1">
-          <span className="w-4 h-4 bg-red-50 border border-red-200 rounded text-red-700 flex items-center justify-center text-[10px] font-semibold">
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 bg-red-100 border-2 border-red-400 rounded-md text-red-800 flex items-center justify-center text-sm font-bold shadow-sm">
             ✗
           </span>
-          <span>Unjustified</span>
+          <span className="font-semibold text-slate-800">Absent (Unjustified)</span>
         </div>
-        <div className="flex items-center gap-1">
-          <span className="w-4 h-4 bg-slate-50 border border-slate-200 rounded"></span>
-          <span>Not Marked</span>
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 bg-white border-2 border-slate-300 rounded-md shadow-sm"></span>
+          <span className="font-semibold text-slate-800">Not Marked</span>
         </div>
-        <div className="ml-auto text-slate-500">
-          Use arrow keys or click to navigate • Enter/Space to toggle
+        <div className="ml-auto text-slate-600 text-xs md:text-sm hidden md:block">
+          <span className="font-medium">Tip:</span> Click any cell to mark attendance • Use arrow keys to navigate
         </div>
       </div>
     </div>
