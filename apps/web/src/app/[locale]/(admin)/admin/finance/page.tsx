@@ -17,6 +17,7 @@ export default function FinancePage() {
   const [activeTab, setActiveTab] = useState<'payments' | 'salaries'>('payments');
   const [paymentsPage, setPaymentsPage] = useState(0);
   const [salariesPage, setSalariesPage] = useState(0);
+  const t = useTranslations('finance');
   const pageSize = 10;
 
   // Fetch dashboard stats
@@ -315,14 +316,14 @@ export default function FinancePage() {
 
   return (
     <DashboardLayout 
-      title="Finance Management" 
-      subtitle="Track revenue, payments and teacher salaries."
+      title={t('title')} 
+      subtitle={t('adminSubtitle')}
     >
       <div className="space-y-6">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard
-            title="Total Revenue"
+            title={t('totalRevenue')}
             value={new Intl.NumberFormat('hy-AM', {
               style: 'currency',
               currency: 'AMD',
@@ -332,7 +333,7 @@ export default function FinancePage() {
             change={{ value: '+8.2%', type: 'positive' }}
           />
           <StatCard
-            title="Pending Payments"
+            title={t('pendingPayments')}
             value={new Intl.NumberFormat('hy-AM', {
               style: 'currency',
               currency: 'AMD',
@@ -340,22 +341,22 @@ export default function FinancePage() {
               maximumFractionDigits: 0,
             }).format(dashboard?.pendingPayments?.totalPending || 0)}
             change={{ 
-              value: `${dashboard?.pendingPayments?.count || 0} pending`, 
+              value: t('pendingCount', { count: dashboard?.pendingPayments?.count || 0 }), 
               type: (dashboard?.pendingPayments?.overdueCount || 0) > 0 ? 'warning' : 'neutral' 
             }}
           />
           <StatCard
-            title="Total Expenses"
+            title={t('totalExpenses')}
             value={new Intl.NumberFormat('hy-AM', {
               style: 'currency',
               currency: 'AMD',
               minimumFractionDigits: 0,
               maximumFractionDigits: 0,
             }).format(dashboard?.expenses?.totalExpenses || 0)}
-            change={{ value: `${dashboard?.expenses?.salariesPaid || 0} salaries paid`, type: 'neutral' }}
+            change={{ value: t('salariesPaid', { count: dashboard?.expenses?.salariesPaid || 0 }), type: 'neutral' }}
           />
           <StatCard
-            title="Net Profit"
+            title={t('netProfit')}
             value={new Intl.NumberFormat('hy-AM', {
               style: 'currency',
               currency: 'AMD',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyPayments, useMyPaymentsSummary } from '@/features/finance';
 import { cn } from '@/shared/lib/utils';
@@ -34,6 +35,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function StudentPaymentsPage() {
+  const t = useTranslations('finance');
   const [filter, setFilter] = useState<FilterStatus>('all');
 
   // Fetch data
@@ -57,8 +59,8 @@ export default function StudentPaymentsPage() {
 
   return (
     <DashboardLayout
-      title="Payments"
-      subtitle="View your payment history and upcoming payments."
+      title={t('payments')}
+      subtitle={t('paymentsSubtitle')}
     >
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

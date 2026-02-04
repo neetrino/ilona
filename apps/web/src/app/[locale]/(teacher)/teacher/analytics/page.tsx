@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useTodayLessons, useMyLessons } from '@/features/lessons';
 import { useMySalaries, useMySalarySummary, useMyDeductions } from '@/features/finance';
@@ -82,6 +83,7 @@ function ProgressBar({ value, max = 100, label }: { value: number; max?: number;
 }
 
 export default function TeacherAnalyticsPage() {
+  const t = useTranslations('analytics');
   // Get date range for this month
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -120,33 +122,33 @@ export default function TeacherAnalyticsPage() {
 
   return (
     <DashboardLayout
-      title="My Analytics"
-      subtitle="Track your teaching performance and earnings."
+      title={t('myAnalytics')}
+      subtitle={t('teacherSubtitle')}
     >
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
-          label="Lessons This Month"
+          label={t('lessonsThisMonth')}
           value={completedLessons}
-          subtext={`of ${totalLessons} scheduled`}
+          subtext={t('ofScheduled', { total: totalLessons })}
           color="blue"
         />
         <StatCard
-          label="Total Earned"
+          label={t('totalEarned')}
           value={formatCurrency(totalEarned)}
-          subtext="All time"
+          subtext={t('allTime')}
           color="green"
         />
         <StatCard
-          label="Pending Payment"
+          label={t('pendingPayment')}
           value={formatCurrency(pendingAmount)}
-          subtext="Awaiting payout"
+          subtext={t('awaitingPayout')}
           color="yellow"
         />
         <StatCard
-          label="Deductions"
+          label={t('deductions')}
           value={formatCurrency(totalDeductionsAmount)}
-          subtext={`${deductionsList.length} deductions`}
+          subtext={t('deductionsCount', { count: deductionsList.length })}
           color="red"
         />
       </div>
@@ -154,11 +156,11 @@ export default function TeacherAnalyticsPage() {
       {/* Performance Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h3 className="font-semibold text-slate-800 mb-6">Performance Rates</h3>
+          <h3 className="font-semibold text-slate-800 mb-6">{t('performanceRates')}</h3>
           <div className="space-y-6">
-            <ProgressBar value={completionRate} label="Lesson Completion" />
-            <ProgressBar value={vocabularyRate} label="Vocabulary Sent" />
-            <ProgressBar value={100 - (deductionsList.length * 10)} max={100} label="Compliance Score" />
+            <ProgressBar value={completionRate} label={t('lessonCompletion')} />
+            <ProgressBar value={vocabularyRate} label={t('vocabularySent')} />
+            <ProgressBar value={100 - (deductionsList.length * 10)} max={100} label={t('complianceScore')} />
           </div>
         </div>
 

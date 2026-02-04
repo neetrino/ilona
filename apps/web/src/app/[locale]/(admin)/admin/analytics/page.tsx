@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
   useTeacherPerformance,
@@ -146,6 +147,7 @@ function StudentRiskRow({ student }: { student: StudentRisk }) {
 }
 
 export default function AdminAnalyticsPage() {
+  const t = useTranslations('analytics');
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   // Fetch data
@@ -170,8 +172,8 @@ export default function AdminAnalyticsPage() {
 
   return (
     <DashboardLayout
-      title="Analytics"
-      subtitle="Monitor performance, track risks, and analyze revenue."
+      title={t('title')}
+      subtitle={t('adminSubtitle')}
     >
       {/* Tabs */}
       <div className="flex border-b border-slate-200 mb-6">

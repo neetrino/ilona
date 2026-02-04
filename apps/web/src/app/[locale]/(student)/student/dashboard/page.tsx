@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -7,6 +8,8 @@ import { useMyDashboard, type StudentUpcomingLesson } from '@/features/students'
 import { formatCurrency } from '@/shared/lib/utils';
 
 export default function StudentDashboardPage() {
+  const t = useTranslations('dashboard');
+  const tCommon = useTranslations('common');
   const { user } = useAuthStore();
   
   // Fetch student dashboard data
@@ -118,37 +121,37 @@ export default function StudentDashboardPage() {
 
   return (
     <DashboardLayout 
-      title="My Learning" 
-      subtitle={`Welcome back, ${user?.firstName || 'Student'}! Track your progress and upcoming lessons.`}
+      title={t('myLearning')} 
+      subtitle={t('welcomeStudent', { name: user?.firstName || tCommon('student') })}
     >
       <div className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard 
-            title="Attendance Rate" 
+            title={t('attendanceRate')} 
             value={`${attendanceRate}%`} 
             change={{ 
-              value: attendanceRate >= 90 ? 'Excellent' : attendanceRate >= 75 ? 'Good' : 'Needs improvement', 
+              value: attendanceRate >= 90 ? t('excellent') : attendanceRate >= 75 ? t('good') : t('needsImprovement'), 
               type: attendanceRate >= 90 ? 'positive' : attendanceRate >= 75 ? 'neutral' : 'warning' 
             }}
           />
           <StatCard 
-            title="Total Lessons" 
+            title={t('totalLessons')} 
             value={totalLessons}
-            change={{ value: `${stats?.attendance?.present || 0} attended`, type: 'positive' }}
+            change={{ value: t('attendedCount', { count: stats?.attendance?.present || 0 }), type: 'positive' }}
           />
           <StatCard 
-            title="Upcoming" 
+            title={t('upcoming')} 
             value={upcomingLessons.length}
-            change={{ value: 'lessons scheduled', type: 'neutral' }}
+            change={{ value: t('lessonsScheduled'), type: 'neutral' }}
           />
           <StatCard 
-            title="Next Payment" 
-            value={nextPayment ? formatCurrency(Number(nextPayment.amount)) : 'None'} 
+            title={t('nextPayment')} 
+            value={nextPayment ? formatCurrency(Number(nextPayment.amount)) : t('none')} 
             change={{ 
               value: nextPayment 
-                ? `Due ${new Date(nextPayment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-                : 'All paid', 
+                ? t('dueDate', { date: new Date(nextPayment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) })
+                : t('allPaid'), 
               type: nextPayment?.status === 'OVERDUE' ? 'warning' : 'neutral' 
             }}
           />
@@ -159,14 +162,14 @@ export default function StudentDashboardPage() {
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-100 text-sm mb-1">Your Group</p>
+                <p className="text-blue-100 text-sm mb-1">{t('yourGroup')}</p>
                 <h2 className="text-2xl font-bold">{student.group.name}</h2>
                 {student.group.level && (
-                  <p className="text-blue-100 mt-1">Level: {student.group.level}</p>
+                  <p className="text-blue-100 mt-1">{t('level')}: {student.group.level}</p>
                 )}
               </div>
               <Button className="bg-white text-blue-600 hover:bg-blue-50">
-                Open Group Chat
+                {t('openGroupChat')}
               </Button>
             </div>
           </div>
@@ -180,7 +183,7 @@ export default function StudentDashboardPage() {
             </svg>
             <input
               type="search"
-              placeholder="Search lessons, vocabulary..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>

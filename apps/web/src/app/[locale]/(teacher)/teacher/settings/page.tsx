@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button, Badge } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -12,6 +13,7 @@ export default function TeacherSettingsPage() {
   const { user, logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [isSaving, setIsSaving] = useState(false);
+  const t = useTranslations('settings');
 
   // Profile form state
   const [firstName, setFirstName] = useState(user?.firstName || '');
@@ -100,8 +102,8 @@ export default function TeacherSettingsPage() {
 
   return (
     <DashboardLayout 
-      title="Settings" 
-      subtitle="Manage your account and teaching preferences."
+      title={t('title')} 
+      subtitle={t('teacherSubtitle')}
     >
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar */}
@@ -220,7 +222,7 @@ export default function TeacherSettingsPage() {
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell students about yourself..."
+                    placeholder={t('bioPlaceholder')}
                     rows={3}
                     className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
                   />

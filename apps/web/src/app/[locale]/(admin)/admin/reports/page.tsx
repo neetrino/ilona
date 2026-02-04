@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
   useTeacherPerformance,
@@ -22,6 +23,7 @@ function formatCurrency(amount: number): string {
 }
 
 export default function AdminReportsPage() {
+  const t = useTranslations('analytics');
   const [selectedReport, setSelectedReport] = useState<ReportType>('teachers');
   const [dateFrom, setDateFrom] = useState(() => {
     const d = new Date();
@@ -138,8 +140,8 @@ export default function AdminReportsPage() {
 
   return (
     <DashboardLayout
-      title="Reports"
-      subtitle="Generate and export reports for analysis."
+      title={t('reports')}
+      subtitle={t('reportsSubtitle')}
     >
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Report Selection */}

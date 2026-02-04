@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMySalaries, useMySalarySummary, useMyDeductions } from '@/features/finance';
 import { cn } from '@/shared/lib/utils';
@@ -51,6 +52,7 @@ function DeductionReasonBadge({ reason }: { reason: string }) {
 }
 
 export default function TeacherSalaryPage() {
+  const t = useTranslations('finance');
   const [activeTab, setActiveTab] = useState<TabType>('salaries');
 
   // Fetch data
@@ -63,8 +65,8 @@ export default function TeacherSalaryPage() {
 
   return (
     <DashboardLayout
-      title="Salary"
-      subtitle="View your earnings, salary records, and deductions."
+      title={t('salary')}
+      subtitle={t('salarySubtitle')}
     >
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

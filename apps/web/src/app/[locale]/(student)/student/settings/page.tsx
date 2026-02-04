@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -12,6 +13,7 @@ export default function StudentSettingsPage() {
   const { user, logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [isSaving, setIsSaving] = useState(false);
+  const t = useTranslations('settings');
 
   // Profile form state
   const [firstName, setFirstName] = useState(user?.firstName || '');
@@ -86,8 +88,8 @@ export default function StudentSettingsPage() {
 
   return (
     <DashboardLayout 
-      title="Settings" 
-      subtitle="Manage your account settings and preferences."
+      title={t('title')} 
+      subtitle={t('subtitle')}
     >
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar */}

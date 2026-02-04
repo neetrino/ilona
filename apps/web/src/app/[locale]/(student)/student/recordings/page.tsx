@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 
 interface Recording {
@@ -119,6 +120,7 @@ function RecordingCard({ recording }: { recording: Recording }) {
 }
 
 export default function StudentRecordingsPage() {
+  const t = useTranslations('nav');
   const [searchQuery, setSearchQuery] = useState('');
   
   // In real app, would fetch from API
@@ -137,8 +139,8 @@ export default function StudentRecordingsPage() {
 
   return (
     <DashboardLayout
-      title="Lesson Recordings"
-      subtitle="Watch recordings of your past lessons to review material."
+      title={t('recordings')}
+      subtitle={t('recordingsSubtitle')}
     >
       {/* Search & Info */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
@@ -148,7 +150,7 @@ export default function StudentRecordingsPage() {
           </svg>
           <input
             type="search"
-            placeholder="Search recordings..."
+            placeholder={t('searchRecordings')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"

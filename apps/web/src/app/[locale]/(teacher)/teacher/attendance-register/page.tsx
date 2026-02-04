@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { AttendanceGrid, WeekAttendanceGrid, ViewModeSelector } from '@/shared/components/attendance';
@@ -44,6 +45,7 @@ interface AttendanceCell {
 }
 
 export default function TeacherAttendanceRegisterPage() {
+  const t = useTranslations('attendance');
   const router = useRouter();
   
   // View mode state
@@ -447,7 +449,7 @@ export default function TeacherAttendanceRegisterPage() {
   }, [viewMode, lessons, selectedGroupId]);
 
   return (
-    <DashboardLayout title="Attendance Register" subtitle="Mark and manage student attendance">
+    <DashboardLayout title={t('attendanceRegister')} subtitle={t('subtitle')}>
       <div className="space-y-6">
         {/* Save messages */}
         {saveMessages && (

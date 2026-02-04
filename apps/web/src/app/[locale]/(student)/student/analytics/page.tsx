@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyPayments } from '@/features/finance';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -108,6 +109,7 @@ function CircularProgress({ value, label, color }: { value: number; label: strin
 }
 
 export default function StudentAnalyticsPage() {
+  const t = useTranslations('analytics');
   // Fetch data
   const { data: attendance, isLoading: isLoadingAttendance } = useMyAttendance();
   const { data: payments, isLoading: isLoadingPayments } = useMyPayments();
@@ -133,8 +135,8 @@ export default function StudentAnalyticsPage() {
 
   return (
     <DashboardLayout
-      title="My Analytics"
-      subtitle="Track your attendance and progress."
+      title={t('myAnalytics')}
+      subtitle={t('studentSubtitle')}
     >
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
@@ -148,17 +150,17 @@ export default function StudentAnalyticsPage() {
             <div className="flex flex-wrap justify-center gap-8">
               <CircularProgress
                 value={attendanceRate}
-                label="Attendance Rate"
+                label={t('attendanceRate')}
                 color={attendanceRate >= 90 ? '#22c55e' : attendanceRate >= 70 ? '#eab308' : '#ef4444'}
               />
               <CircularProgress
                 value={paymentRate}
-                label="Payment Status"
+                label={t('paymentStatus')}
                 color={paymentRate >= 90 ? '#22c55e' : paymentRate >= 70 ? '#eab308' : '#ef4444'}
               />
               <CircularProgress
                 value={participationScore}
-                label="Overall Score"
+                label={t('overallScore')}
                 color={participationScore >= 90 ? '#22c55e' : participationScore >= 70 ? '#eab308' : '#ef4444'}
               />
             </div>
@@ -167,7 +169,7 @@ export default function StudentAnalyticsPage() {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
-              label="Total Lessons"
+              label={t('totalLessons')}
               value={totalLessons}
               color="blue"
               icon={
@@ -177,7 +179,7 @@ export default function StudentAnalyticsPage() {
               }
             />
             <StatCard
-              label="Present"
+              label={t('present')}
               value={presentCount}
               color="green"
               icon={
@@ -187,7 +189,7 @@ export default function StudentAnalyticsPage() {
               }
             />
             <StatCard
-              label="Justified Absences"
+              label={t('justifiedAbsences')}
               value={absentJustified}
               color="yellow"
               icon={
@@ -197,7 +199,7 @@ export default function StudentAnalyticsPage() {
               }
             />
             <StatCard
-              label="Unjustified Absences"
+              label={t('unjustifiedAbsences')}
               value={absentUnjustified}
               color="red"
               icon={

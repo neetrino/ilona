@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -30,6 +31,8 @@ type UpdateTeacherFormData = z.infer<typeof updateTeacherSchema>;
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export default function TeacherProfilePage() {
+  const t = useTranslations('teachers');
+  const tCommon = useTranslations('common');
   const params = useParams();
   const router = useRouter();
   const teacherId = params.id as string;
@@ -210,8 +213,8 @@ export default function TeacherProfilePage() {
   if (isLoading) {
     return (
       <DashboardLayout 
-        title="Teacher Profile" 
-        subtitle="Loading teacher information..."
+        title={t('teacherProfile')} 
+        subtitle={t('loadingTeacherInfo')}
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -224,8 +227,8 @@ export default function TeacherProfilePage() {
   if (error || !teacher) {
     return (
       <DashboardLayout 
-        title="Teacher Profile" 
-        subtitle="Error loading teacher information"
+        title={t('teacherProfile')} 
+        subtitle={t('errorLoadingTeacherInfo')}
       >
         <div className="bg-white rounded-xl border border-red-200 p-6">
           <div className="flex items-center gap-4">
@@ -263,7 +266,7 @@ export default function TeacherProfilePage() {
 
   return (
     <DashboardLayout 
-      title="Teacher Profile" 
+      title={t('teacherProfile')} 
       subtitle={`Viewing profile for ${firstName} ${lastName}`}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -504,7 +507,7 @@ export default function TeacherProfilePage() {
                       id="specialization"
                       {...register('specialization')}
                       error={errors.specialization?.message}
-                      placeholder="English Literature, Business English, etc."
+                      placeholder={t('specializationPlaceholder')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -514,7 +517,7 @@ export default function TeacherProfilePage() {
                       {...register('bio')}
                       rows={4}
                       className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="Brief description about the teacher..."
+                      placeholder={t('bioPlaceholder')}
                     />
                     {errors.bio && (
                       <p className="text-sm text-red-600">{errors.bio.message}</p>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
@@ -102,57 +103,48 @@ const icons = {
   ),
 };
 
-// Admin navigation items
-const adminNavItems: NavItem[] = [
-  { label: 'Dashboard', href: '/admin/dashboard', icon: icons.dashboard },
-  { label: 'Teachers', href: '/admin/teachers', icon: icons.teachers },
-  { label: 'Students', href: '/admin/students', icon: icons.students },
-  { label: 'Finance', href: '/admin/finance', icon: icons.finance },
-  { label: 'Groups', href: '/admin/groups', icon: icons.groups },
-  { label: 'Calendar', href: '/admin/calendar', icon: icons.calendar },
-  { label: 'Attendance Register', href: '/admin/attendance-register', icon: icons.attendanceRegister },
-  { label: 'Analytics', href: '/admin/analytics', icon: icons.analytics },
-  { label: 'Reports', href: '/admin/reports', icon: icons.reports },
-  { label: 'Chat', href: '/admin/chat', icon: icons.chat },
-  { label: 'Settings', href: '/admin/settings', icon: icons.settings },
-];
-
-// Teacher navigation items
-const teacherNavItems: NavItem[] = [
-  { label: 'Dashboard', href: '/teacher/dashboard', icon: icons.dashboard },
-  { label: 'Daily Plan', href: '/teacher/daily-plan', icon: icons.dailyPlan },
-  { label: 'My Students', href: '/teacher/students', icon: icons.students },
-  { label: 'Attendance', href: '/teacher/attendance', icon: icons.attendance },
-  { label: 'Attendance Register', href: '/teacher/attendance-register', icon: icons.attendanceRegister },
-  { label: 'Calendar', href: '/teacher/calendar', icon: icons.calendar },
-  { label: 'Analytics', href: '/teacher/analytics', icon: icons.analytics },
-  { label: 'Salary', href: '/teacher/salary', icon: icons.salary },
-  { label: 'Chat', href: '/teacher/chat', icon: icons.chat },
-  { label: 'Settings', href: '/teacher/settings', icon: icons.settings },
-];
-
-// Student navigation items
-const studentNavItems: NavItem[] = [
-  { label: 'Dashboard', href: '/student/dashboard', icon: icons.dashboard },
-  { label: 'Recordings', href: '/student/recordings', icon: icons.recordings },
-  { label: 'Payments', href: '/student/payments', icon: icons.payments },
-  { label: 'Analytics', href: '/student/analytics', icon: icons.analytics },
-  { label: 'Absence', href: '/student/absence', icon: icons.absence },
-  { label: 'Chat', href: '/student/chat', icon: icons.chat },
-  { label: 'Settings', href: '/student/settings', icon: icons.settings },
-];
-
 // Get nav items based on role
-function getNavItems(role: string): NavItem[] {
+function getNavItems(role: string, t: (key: string) => string): NavItem[] {
   switch (role) {
     case 'ADMIN':
-      return adminNavItems;
+      return [
+        { label: t('dashboard'), href: '/admin/dashboard', icon: icons.dashboard },
+        { label: t('teachers'), href: '/admin/teachers', icon: icons.teachers },
+        { label: t('students'), href: '/admin/students', icon: icons.students },
+        { label: t('finance'), href: '/admin/finance', icon: icons.finance },
+        { label: t('groups'), href: '/admin/groups', icon: icons.groups },
+        { label: t('calendar'), href: '/admin/calendar', icon: icons.calendar },
+        { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
+        { label: t('analytics'), href: '/admin/analytics', icon: icons.analytics },
+        { label: t('reports'), href: '/admin/reports', icon: icons.reports },
+        { label: t('chat'), href: '/admin/chat', icon: icons.chat },
+        { label: t('settings'), href: '/admin/settings', icon: icons.settings },
+      ];
     case 'TEACHER':
-      return teacherNavItems;
+      return [
+        { label: t('dashboard'), href: '/teacher/dashboard', icon: icons.dashboard },
+        { label: t('dailyPlan'), href: '/teacher/daily-plan', icon: icons.dailyPlan },
+        { label: t('myStudents'), href: '/teacher/students', icon: icons.students },
+        { label: t('attendance'), href: '/teacher/attendance', icon: icons.attendance },
+        { label: t('attendanceRegister'), href: '/teacher/attendance-register', icon: icons.attendanceRegister },
+        { label: t('calendar'), href: '/teacher/calendar', icon: icons.calendar },
+        { label: t('analytics'), href: '/teacher/analytics', icon: icons.analytics },
+        { label: t('salary'), href: '/teacher/salary', icon: icons.salary },
+        { label: t('chat'), href: '/teacher/chat', icon: icons.chat },
+        { label: t('settings'), href: '/teacher/settings', icon: icons.settings },
+      ];
     case 'STUDENT':
-      return studentNavItems;
+      return [
+        { label: t('dashboard'), href: '/student/dashboard', icon: icons.dashboard },
+        { label: t('recordings'), href: '/student/recordings', icon: icons.recordings },
+        { label: t('payments'), href: '/student/payments', icon: icons.payments },
+        { label: t('analytics'), href: '/student/analytics', icon: icons.analytics },
+        { label: t('absence'), href: '/student/absence', icon: icons.absence },
+        { label: t('chat'), href: '/student/chat', icon: icons.chat },
+        { label: t('settings'), href: '/student/settings', icon: icons.settings },
+      ];
     default:
-      return studentNavItems;
+      return [];
   }
 }
 
@@ -164,9 +156,11 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const t = useTranslations('nav');
+  const tAuth = useTranslations('auth');
   const userRole = user?.role || 'STUDENT';
 
-  const navItems = getNavItems(userRole);
+  const navItems = getNavItems(userRole, t);
 
   const isActive = (href: string) => {
     // Extract the path without locale
@@ -188,8 +182,8 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         </div>
         {!collapsed && (
           <div>
-            <h1 className="font-bold text-slate-800 leading-tight">Ilona Educational</h1>
-            <p className="text-xs text-slate-400">Center</p>
+            <h1 className="font-bold text-slate-800 leading-tight">{t('ilonaEducational')}</h1>
+            <p className="text-xs text-slate-400">{t('center')}</p>
           </div>
         )}
         {onToggle && (
@@ -240,9 +234,9 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-slate-500">Welcome back</p>
+              <p className="text-sm text-slate-500">{tAuth('welcomeBack')}</p>
               <p className="font-semibold text-slate-800 truncate">
-                {user?.firstName || 'User'}
+                {user?.firstName || t('user')}
               </p>
             </div>
           )}
@@ -250,7 +244,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             <button
               onClick={logout}
               className="p-2 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
-              title="Logout"
+              title={tAuth('logout')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
