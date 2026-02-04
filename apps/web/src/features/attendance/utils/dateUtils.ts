@@ -138,14 +138,14 @@ export function formatDateDisplay(date: Date, options?: Intl.DateTimeFormatOptio
 }
 
 /**
- * Format week range for display
+ * Format week range for display (e.g., "Feb 2–Feb 8, 2026")
  */
 export function formatWeekRange(date: Date): string {
   const weekStart = getWeekStart(date);
   const weekEnd = getWeekEnd(date);
   const startStr = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const endStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  return `${startStr} - ${endStr}`;
+  return `${startStr}–${endStr}`;
 }
 
 /**

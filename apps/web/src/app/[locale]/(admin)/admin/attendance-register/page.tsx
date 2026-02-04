@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { cn } from '@/shared/lib/utils';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { AttendanceGrid, ViewModeSelector } from '@/shared/components/attendance';
+import { AttendanceGrid, WeekAttendanceGrid, ViewModeSelector } from '@/shared/components/attendance';
 import { Button } from '@/shared/components/ui/button';
 import { useGroups } from '@/features/groups';
 import { useLessons } from '@/features/lessons';
@@ -343,7 +343,7 @@ export default function AdminAttendanceRegisterPage() {
 
   const markBulkAttendance = useMarkBulkAttendance();
 
-  // Handle lesson save
+  // Handle lesson save (for day view)
   const handleLessonSave = async (
     lessonId: string,
     attendances: Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType }>
@@ -363,8 +363,46 @@ export default function AdminAttendanceRegisterPage() {
     }
   };
 
+  // Handle day save (for week view)
+  const handleDaySave = async (
+    date: string,
+    attendances: Array<{ studentId: string; lessonId: string; isPresent: boolean; absenceType?: AbsenceType }>
+  ) => {
+    setSavingLessons((prev) => ({ ...prev, [date]: true }));
+    try {
+      // Group attendances by lessonId
+      const attendancesByLesson: Record<string, Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType }>> = {};
+      attendances.forEach((att) => {
+        if (!attendancesByLesson[att.lessonId]) {
+          attendancesByLesson[att.lessonId] = [];
+        }
+        attendancesByLesson[att.lessonId].push({
+          studentId: att.studentId,
+          isPresent: att.isPresent,
+          absenceType: att.absenceType,
+        });
+      });
+
+      // Save all lessons for this date
+      await Promise.all(
+        Object.entries(attendancesByLesson).map(([lessonId, atts]) =>
+          markBulkAttendance.mutateAsync({
+            lessonId,
+            attendances: atts,
+          })
+        )
+      );
+    } finally {
+      setSavingLessons((prev) => {
+        const next = { ...prev };
+        delete next[date];
+        return next;
+      });
+    }
+  };
+
   // Handle save success
-  const handleSaveSuccess = (lessonId: string) => {
+  const handleSaveSuccess = (id: string) => {
     setSaveMessages({ type: 'success', message: 'Attendance saved successfully' });
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);
@@ -375,7 +413,7 @@ export default function AdminAttendanceRegisterPage() {
   };
 
   // Handle save error
-  const handleSaveError = (lessonId: string, error: string) => {
+  const handleSaveError = (id: string, error: string) => {
     setSaveMessages({ type: 'error', message: `Failed to save attendance: ${error}` });
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);
@@ -384,6 +422,14 @@ export default function AdminAttendanceRegisterPage() {
       setSaveMessages(null);
     }, 5000);
   };
+
+  // Get week dates for week view
+  const weekDates = useMemo(() => {
+    if (viewMode === 'week') {
+      return getWeekDates(currentDate);
+    }
+    return [];
+  }, [viewMode, currentDate]);
 
   // Cleanup message timeout
   useEffect(() => {
@@ -419,14 +465,6 @@ export default function AdminAttendanceRegisterPage() {
 
     return { total, present, absent, notMarked };
   }, [students, filteredLessons, attendanceData]);
-
-  // Get week dates for week view
-  const weekDates = useMemo(() => {
-    if (viewMode === 'week') {
-      return getWeekDates(currentDate);
-    }
-    return [];
-  }, [viewMode, currentDate]);
 
   // Get month dates for month view
   const monthDates = useMemo(() => {
@@ -678,8 +716,8 @@ export default function AdminAttendanceRegisterPage() {
           </div>
         )}
 
-        {/* Attendance Grid - Day and Week Views */}
-        {selectedGroupId && students.length > 0 && viewMode !== 'month' && (
+        {/* Attendance Grid - Day View */}
+        {selectedGroupId && students.length > 0 && viewMode === 'day' && (
           <div className="bg-white rounded-xl border-2 border-slate-300 p-6 shadow-sm">
             {/* Context Indicators */}
             <div className="mb-6 pb-4 border-b-2 border-slate-200">
@@ -701,15 +739,11 @@ export default function AdminAttendanceRegisterPage() {
                       <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                        {viewMode === 'day' ? 'Date:' : 'Week:'}
-                      </span>
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Date:</span>
                       <span className="text-xl font-bold text-slate-900">
-                        {viewMode === 'day'
-                          ? formatDateDisplay(currentDate)
-                          : formatWeekRange(currentDate)}
+                        {formatDateDisplay(currentDate)}
                       </span>
-                      {isCurrentDateToday && viewMode === 'day' && (
+                      {isCurrentDateToday && (
                         <span className="px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">Today</span>
                       )}
                     </div>
@@ -761,9 +795,7 @@ export default function AdminAttendanceRegisterPage() {
                 </div>
                 <p className="text-sm font-medium text-slate-600 mb-1">No lessons found</p>
                 <p className="text-xs text-slate-500">
-                  {viewMode === 'day'
-                    ? `No lessons scheduled for ${formatDateDisplay(currentDate)}`
-                    : `No lessons scheduled for this ${viewMode}`}
+                  No lessons scheduled for {formatDateDisplay(currentDate)}
                 </p>
               </div>
             ) : (
@@ -783,6 +815,98 @@ export default function AdminAttendanceRegisterPage() {
                 isLoading={isLoadingAttendance}
                 isSaving={savingLessons}
                 dateRange={effectiveDateRange}
+                onSaveSuccess={handleSaveSuccess}
+                onSaveError={handleSaveError}
+                onUnsavedChangesChange={setHasUnsavedChanges}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Week Attendance Grid - Week View */}
+        {selectedGroupId && students.length > 0 && viewMode === 'week' && (
+          <div className="bg-white rounded-xl border-2 border-slate-300 p-6 shadow-sm">
+            {/* Context Indicators */}
+            <div className="mb-6 pb-4 border-b-2 border-slate-200">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Group:</span>
+                      <span className="text-xl font-bold text-slate-900">{selectedGroup?.name || 'N/A'}</span>
+                      {selectedGroup?.level && (
+                        <span className="text-sm font-medium text-slate-600">({selectedGroup.level})</span>
+                      )}
+                    </div>
+                    <div className="h-6 w-px bg-slate-300"></div>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Week:</span>
+                      <span className="text-xl font-bold text-slate-900">
+                        {formatWeekRange(currentDate)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-slate-600">
+                    <span>
+                      <span className="font-semibold">{filteredLessons.length}</span> {filteredLessons.length === 1 ? 'session' : 'sessions'}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      <span className="font-semibold">{students.length}</span> {students.length === 1 ? 'student' : 'students'}
+                    </span>
+                  </div>
+                </div>
+                {hasUnsavedChanges && (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-amber-100 border-2 border-amber-400 rounded-lg">
+                    <div className="h-2 w-2 rounded-full bg-amber-600 animate-pulse"></div>
+                    <span className="text-sm font-semibold text-amber-800">Unsaved Changes</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {isLoadingLessons || isLoadingStudents || isLoadingAttendance ? (
+              <div className="flex items-center justify-center p-12">
+                <div className="text-center">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                  <p className="mt-4 text-sm text-slate-500">
+                    {isLoadingAttendance ? 'Loading attendance records...' : 'Loading lessons...'}
+                  </p>
+                </div>
+              </div>
+            ) : attendanceQueries.some((q) => q.isError) ? (
+              <div className="text-center p-12">
+                <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-red-600 mb-1">Error loading attendance data</p>
+                <p className="text-xs text-slate-500">Please try again or contact support if the problem persists</p>
+              </div>
+            ) : (
+              <WeekAttendanceGrid
+                students={students.map((s) => ({
+                  id: s.id,
+                  user: {
+                    id: s.user.id,
+                    firstName: s.user.firstName,
+                    lastName: s.user.lastName,
+                    avatarUrl: s.user.avatarUrl,
+                  },
+                }))}
+                lessons={filteredLessons}
+                initialAttendance={attendanceData}
+                onDaySave={handleDaySave}
+                isLoading={isLoadingAttendance}
+                isSaving={savingLessons}
+                weekDates={weekDates}
                 onSaveSuccess={handleSaveSuccess}
                 onSaveError={handleSaveError}
                 onUnsavedChangesChange={setHasUnsavedChanges}
