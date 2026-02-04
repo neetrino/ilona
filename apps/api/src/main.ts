@@ -14,10 +14,21 @@ async function bootstrap() {
 
   // CORS
   const corsOrigin = configService.get<string>('CORS_ORIGIN', 'http://localhost:3000');
-  app.enableCors({
-    origin: corsOrigin.split(','),
-    credentials: true,
-  });
+  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+  
+  // In development, allow all origins for easier local network access
+  // In production, use strict CORS configuration
+  const corsOptions = nodeEnv === 'production' 
+    ? {
+        origin: corsOrigin.split(',').map((origin: string) => origin.trim()),
+        credentials: true,
+      }
+    : {
+        origin: true, // Allow all origins in development
+        credentials: true,
+      };
+  
+  app.enableCors(corsOptions);
 
   // Validation pipe
   app.useGlobalPipes(
@@ -63,12 +74,16 @@ async function bootstrap() {
     SwaggerModule.setup(`${apiPrefix}/docs`, app, document);
   }
 
-  // Start server
+  // Start server - listen on all interfaces (0.0.0.0) to allow network access
   const port = configService.get<number>('API_PORT', 4000);
-  await app.listen(port);
+  const host = nodeEnv === 'production' ? '0.0.0.0' : '0.0.0.0'; // Listen on all interfaces
+  await app.listen(port, host);
 
-  console.log(`🚀 Application is running on: http://localhost:${port}/${apiPrefix}`);
-  console.log(`📚 Swagger docs: http://localhost:${port}/${apiPrefix}/docs`);
+  console.log(`🚀 Application is running on: http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/${apiPrefix}`);
+  console.log(`📚 Swagger docs: http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/${apiPrefix}/docs`);
+  if (host === '0.0.0.0') {
+    console.log(`🌐 Network access: http://<your-ip>:${port}/${apiPrefix}`);
+  }
 }
 
 bootstrap();

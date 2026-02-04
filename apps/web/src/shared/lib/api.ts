@@ -1,4 +1,28 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+// Get API URL from environment or construct from current host
+function getApiUrl(): string {
+  // If explicitly set in environment, use it
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // In browser, construct from current host
+  if (typeof window !== 'undefined') {
+    const host = window.location.host;
+    const protocol = window.location.protocol;
+    // If running on port 3000, assume API is on 4000
+    // Otherwise, use same host and port
+    if (host.includes(':3000')) {
+      return `${protocol}//${host.split(':')[0]}:4000/api`;
+    }
+    // For production or custom ports, try same host with /api
+    return `${protocol}//${host}/api`;
+  }
+
+  // Server-side fallback
+  return 'http://localhost:4000/api';
+}
+
+const API_URL = getApiUrl();
 
 interface FetchOptions extends RequestInit {
   token?: string;

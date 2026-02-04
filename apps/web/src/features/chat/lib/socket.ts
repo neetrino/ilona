@@ -6,8 +6,31 @@ import type { SocketEvents } from '../types';
 // Socket instance
 let socket: Socket | null = null;
 
-// API URL for WebSocket
-const WS_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
+// Get WebSocket URL - same logic as API URL
+function getWebSocketUrl(): string {
+  // If explicitly set in environment, use it
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace('/api', '');
+  }
+
+  // In browser, construct from current host
+  if (typeof window !== 'undefined') {
+    const host = window.location.host;
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    // If running on port 3000, assume API is on 4000
+    // Otherwise, use same host and port
+    if (host.includes(':3000')) {
+      return `${protocol}//${host.split(':')[0]}:4000`;
+    }
+    // For production or custom ports, use same host
+    return `${protocol}//${host}`;
+  }
+
+  // Server-side fallback
+  return 'http://localhost:4000';
+}
+
+const WS_URL = getWebSocketUrl();
 
 export interface SocketOptions {
   token: string;

@@ -20,7 +20,11 @@ interface AuthenticatedSocket extends Socket {
 @WebSocketGateway({
   namespace: '/chat',
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    // In development, allow all origins for network access
+    // In production, use specific origin from environment
+    origin: process.env.NODE_ENV === 'production'
+      ? (process.env.FRONTEND_URL || 'http://localhost:3000')
+      : true, // Allow all origins in development
     credentials: true,
   },
 })
