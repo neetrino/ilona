@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
 import { useStudents, useDeleteStudent, AddStudentForm, type Student } from '@/features/students';
@@ -10,6 +11,8 @@ export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const t = useTranslations('students');
+  const tCommon = useTranslations('common');
   const pageSize = 10;
 
   // Fetch students with search and pagination
@@ -161,29 +164,29 @@ export default function StudentsPage() {
 
   return (
     <DashboardLayout 
-      title="Student Management" 
-      subtitle="Track enrollment, attendance and payment status across all groups."
+      title={t('title')} 
+      subtitle={t('subtitle')}
     >
       <div className="space-y-6">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard
-            title="Total Students"
+            title={t('totalStudents')}
             value={totalStudents}
             change={{ value: '+5.2%', type: 'positive' }}
           />
           <StatCard
-            title="Active Students"
+            title={t('activeStudents')}
             value={activeStudents || totalStudents}
             change={{ value: '+3.1%', type: 'positive' }}
           />
           <StatCard
-            title="In Groups"
+            title={t('inGroups')}
             value={studentsWithGroup}
-            change={{ value: `${totalStudents - studentsWithGroup} unassigned`, type: totalStudents - studentsWithGroup > 0 ? 'warning' : 'positive' }}
+            change={{ value: t('unassignedCount', { count: totalStudents - studentsWithGroup }), type: totalStudents - studentsWithGroup > 0 ? 'warning' : 'positive' }}
           />
           <StatCard
-            title="Total Monthly Fees"
+            title={t('totalMonthlyFees')}
             value={formatCurrency(totalFees)}
           />
         </div>
@@ -196,7 +199,7 @@ export default function StudentsPage() {
             </svg>
             <input
               type="search"
-              placeholder="Search students by name, email or group..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={handleSearchChange}
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
@@ -206,7 +209,7 @@ export default function StudentsPage() {
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
             onClick={() => setIsAddStudentOpen(true)}
           >
-            + Add student
+            + {t('addStudent')}
           </Button>
           <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
             <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

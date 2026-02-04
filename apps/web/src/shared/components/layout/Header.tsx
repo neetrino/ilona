@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Input } from '@/shared/components/ui/input';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 
@@ -13,6 +13,7 @@ interface HeaderProps {
 export function Header({ title, subtitle }: HeaderProps) {
   const [searchValue, setSearchValue] = useState('');
   const locale = useLocale();
+  const t = useTranslations('common');
 
   const today = new Date().toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', {
     month: 'short',
@@ -48,7 +49,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           </svg>
           <Input
             type="search"
-            placeholder="Global search"
+            placeholder={t('globalSearch')}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             className="pl-10 w-64 bg-slate-50 border-slate-200 focus:bg-white"

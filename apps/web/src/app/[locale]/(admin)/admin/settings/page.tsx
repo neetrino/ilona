@@ -103,7 +103,7 @@ export default function SettingsPage() {
   return (
     <DashboardLayout 
       title={t('title')} 
-      subtitle="Manage your account settings and preferences."
+      subtitle={t('subtitle')}
     >
       <div className="flex gap-6">
         {/* Sidebar */}

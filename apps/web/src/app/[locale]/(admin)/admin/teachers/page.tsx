@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
 import { useTeachers, useDeleteTeacher, AddTeacherForm, type Teacher } from '@/features/teachers';
@@ -13,6 +14,8 @@ export default function TeachersPage() {
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
+  const t = useTranslations('teachers');
+  const tCommon = useTranslations('common');
   const pageSize = 10;
 
   // Fetch teachers with search and pagination
@@ -80,7 +83,7 @@ export default function TeachersPage() {
     },
     {
       key: 'teacher',
-      header: 'Teacher',
+      header: t('title'),
       sortable: true,
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
@@ -103,7 +106,7 @@ export default function TeachersPage() {
     },
     {
       key: 'groups',
-      header: 'Assigned Groups',
+      header: t('assignedGroups'),
       render: (teacher: Teacher) => {
         const groups = teacher.groups || [];
         return (
@@ -117,7 +120,7 @@ export default function TeachersPage() {
               <Badge variant="default">+{groups.length - 2}</Badge>
             )}
             {groups.length === 0 && (
-              <span className="text-slate-400 text-sm">No groups</span>
+              <span className="text-slate-400 text-sm">{t('noGroups')}</span>
             )}
           </div>
         );
@@ -125,7 +128,7 @@ export default function TeachersPage() {
     },
     {
       key: 'lessons',
-      header: 'Lessons',
+      header: t('lessons'),
       sortable: true,
       className: 'text-center',
       render: (teacher: Teacher) => (
@@ -134,7 +137,7 @@ export default function TeachersPage() {
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('status'),
       render: (teacher: Teacher) => {
         const status = teacher.user?.status || 'ACTIVE';
         return (
@@ -146,15 +149,17 @@ export default function TeachersPage() {
     },
     {
       key: 'hourlyRate',
-      header: 'Rate',
+      header: t('rate'),
       className: 'text-right',
       render: (teacher: Teacher) => {
         const rate = typeof teacher.hourlyRate === 'string' ? parseFloat(teacher.hourlyRate) : Number(teacher.hourlyRate || 0);
+        const localeForFormatting = locale === 'hy' ? 'hy-AM' : 'en-US';
+        const currency = locale === 'hy' ? 'AMD' : 'USD';
         return (
           <span className="text-slate-700 font-medium">
-            {new Intl.NumberFormat('hy-AM', {
+            {new Intl.NumberFormat(localeForFormatting, {
               style: 'currency',
-              currency: 'AMD',
+              currency: currency,
               minimumFractionDigits: 0,
               maximumFractionDigits: 0,
             }).format(rate)}/hr
@@ -164,7 +169,7 @@ export default function TeachersPage() {
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: t('actions'),
       render: (teacher: Teacher) => (
         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
           <Button 
@@ -176,7 +181,7 @@ export default function TeachersPage() {
               // TODO: Implement edit functionality
             }}
           >
-            Edit
+            {t('edit')}
           </Button>
           <Button 
             variant="ghost" 
@@ -187,7 +192,7 @@ export default function TeachersPage() {
               handleDelete(teacher.id);
             }}
           >
-            Delete
+            {t('delete')}
           </Button>
         </div>
       ),
@@ -196,28 +201,28 @@ export default function TeachersPage() {
 
   return (
     <DashboardLayout 
-      title="Teacher Management" 
-      subtitle="Monitor accountability, performance, and workload across all departments."
+      title={t('title')} 
+      subtitle={t('subtitle')}
     >
       <div className="space-y-6">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard
-            title="Total Teachers"
+            title={t('totalTeachers')}
             value={totalTeachers}
             change={{ value: '+4.5%', type: 'positive' }}
           />
           <StatCard
-            title="Active Teachers"
+            title={t('activeTeachers')}
             value={activeTeachers || totalTeachers}
             change={{ value: '+2.1%', type: 'positive' }}
           />
           <StatCard
-            title="Total Lessons"
+            title={t('totalLessons')}
             value={totalLessons}
           />
           <StatCard
-            title="Avg. Lessons/Teacher"
+            title={t('avgLessonsPerTeacher')}
             value={teachers.length > 0 ? Math.round(totalLessons / teachers.length) : 0}
           />
         </div>
@@ -240,7 +245,7 @@ export default function TeachersPage() {
             </svg>
             <input
               type="search"
-              placeholder="Search teachers by name, email or group..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={handleSearchChange}
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
@@ -250,7 +255,7 @@ export default function TeachersPage() {
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
             onClick={() => setIsAddTeacherOpen(true)}
           >
-            + Add teacher
+            + {t('addTeacher')}
           </Button>
           <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
             <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,13 +271,17 @@ export default function TeachersPage() {
           keyExtractor={(teacher) => teacher.id}
           onRowClick={handleRowClick}
           isLoading={isLoading}
-          emptyMessage={searchQuery ? "No teachers match your search" : "No teachers found"}
+          emptyMessage={searchQuery ? t('noTeachersMatch') : t('noTeachersFound')}
         />
 
         {/* Pagination */}
         <div className="flex items-center justify-between text-sm text-slate-500">
           <span>
-            Showing {page * pageSize + 1}-{Math.min((page + 1) * pageSize, totalTeachers)} of {totalTeachers} teachers
+            {t('showing', {
+              start: page * pageSize + 1,
+              end: Math.min((page + 1) * pageSize, totalTeachers),
+              total: totalTeachers
+            })}
           </span>
           <div className="flex items-center gap-2">
             <button 
@@ -284,7 +293,7 @@ export default function TeachersPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span>Page {page + 1} of {totalPages}</span>
+            <span>{t('page', { current: page + 1, total: totalPages })}</span>
             <button 
               className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
               disabled={page >= totalPages - 1}
@@ -307,13 +316,15 @@ export default function TeachersPage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 mb-2">Salary Calculation</h3>
+                <h3 className="font-semibold text-slate-800 mb-2">{t('salaryCalculation')}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Teacher salaries are calculated based on hourly rate and completed lessons. 
-                  Review the finance section for detailed breakdown.
+                  {t('salaryDescription')}
                 </p>
-                <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
-                  View Salaries
+                <button 
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                  onClick={() => router.push(`/${locale}/admin/finance`)}
+                >
+                  {t('viewSalaries')}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -330,14 +341,17 @@ export default function TeachersPage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 mb-2">Staff Workload</h3>
+                <h3 className="font-semibold text-slate-800 mb-2">{t('staffWorkload')}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
                   {teachers.length > 0 
-                    ? `Average of ${Math.round(totalLessons / teachers.length)} lessons per teacher. Monitor workload to prevent burnout.`
-                    : 'Add teachers to start tracking workload metrics.'}
+                    ? t('workloadDescription', { avg: Math.round(totalLessons / teachers.length) })
+                    : t('workloadNoTeachers')}
                 </p>
-                <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
-                  View Analytics
+                <button 
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                  onClick={() => router.push(`/${locale}/admin/analytics`)}
+                >
+                  {t('viewAnalytics')}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>

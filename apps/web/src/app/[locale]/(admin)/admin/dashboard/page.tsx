@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Button } from '@/shared/components/ui';
 import { useAdminDashboardStats } from '@/features/dashboard';
@@ -9,6 +10,9 @@ export default function AdminDashboardPage() {
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
+  const t = useTranslations('dashboard');
+  const tCommon = useTranslations('common');
+  const tNav = useTranslations('nav');
   
   // Fetch dashboard stats
   const { 
@@ -24,29 +28,29 @@ export default function AdminDashboardPage() {
 
   return (
     <DashboardLayout 
-      title="Admin Dashboard" 
-      subtitle="Overview of your organization's performance and key metrics."
+      title={t('title')} 
+      subtitle={t('overview')}
     >
       <div className="space-y-6">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard
-            title="Total Teachers"
+            title={t('totalTeachers')}
             value={stats?.teachers.total || 0}
             change={{ value: '+4.5%', type: 'positive' }}
           />
           <StatCard
-            title="Active Teachers"
+            title={t('activeTeachers')}
             value={stats?.teachers.active || 0}
             change={{ value: '+2.1%', type: 'positive' }}
           />
           <StatCard
-            title="Pending Payments"
+            title={t('pendingPayments')}
             value={stats?.finance.pendingPayments || 0}
             change={{ 
               value: stats?.finance.overduePayments 
-                ? `${stats.finance.overduePayments} overdue` 
-                : 'All on time', 
+                ? t('overdueCount', { count: stats.finance.overduePayments })
+                : t('allOnTime'), 
               type: stats?.finance.overduePayments ? 'negative' : 'positive' 
             }}
           />
@@ -62,13 +66,21 @@ export default function AdminDashboardPage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 mb-2">Finance Overview</h3>
+                <h3 className="font-semibold text-slate-800 mb-2">{t('financeOverview')}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  {stats?.finance.pendingPayments || 0} pending payments worth tracking. 
-                  {stats?.finance.overduePayments ? ` ${stats.finance.overduePayments} are overdue and need attention.` : ' All payments are on track.'}
+                  {t('financeDescription', { 
+                    count: stats?.finance.pendingPayments || 0
+                  })}
+                  {stats?.finance.overduePayments 
+                    ? ` ${t('overdueCount', { count: stats.finance.overduePayments })} ${t('needAttention')}.`
+                    : ` ${t('allOnTime')}.`
+                  }
                 </p>
-                <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
-                  View Finance
+                <button 
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                  onClick={() => router.push(`/${locale}/admin/finance`)}
+                >
+                  {t('viewFinance')}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -85,17 +97,16 @@ export default function AdminDashboardPage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 mb-2">Staff Overview</h3>
+                <h3 className="font-semibold text-slate-800 mb-2">{t('staffOverview')}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  {stats?.teachers.total || 0} teachers registered in the system. 
-                  Manage teachers, view profiles, and track performance from the Teachers section.
+                  {t('staffDescription', { count: stats?.teachers.total || 0 })}
                 </p>
                 <Button 
                   variant="ghost"
                   className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 p-0 h-auto"
                   onClick={() => router.push(`/${locale}/admin/teachers`)}
                 >
-                  Manage Teachers
+                  {t('manageTeachers')}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>

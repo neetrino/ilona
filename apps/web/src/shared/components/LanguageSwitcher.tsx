@@ -2,7 +2,10 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
-import { locales, Locale } from '@/config/i18n';
+import { useEffect } from 'react';
+import { locales, Locale, defaultLocale } from '@/config/i18n';
+
+const LOCALE_STORAGE_KEY = 'preferred-locale';
 
 export function LanguageSwitcher() {
   const locale = useLocale() as Locale;
@@ -10,7 +13,17 @@ export function LanguageSwitcher() {
   const pathname = usePathname();
   const t = useTranslations('language');
 
+  // Save current locale to localStorage when it changes
+  useEffect(() => {
+    if (locale && locales.includes(locale as Locale)) {
+      localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    }
+  }, [locale]);
+
   const switchLocale = (newLocale: Locale) => {
+    // Save preference to localStorage
+    localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
+    
     // Replace the locale in the current pathname
     const segments = pathname.split('/');
     if (segments[1] && locales.includes(segments[1] as Locale)) {
@@ -30,8 +43,8 @@ export function LanguageSwitcher() {
       className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
       aria-label="Select language"
     >
-      <option value="en">🇺🇸 English</option>
-      <option value="hy">🇦🇲 Հայերեն</option>
+      <option value="en">{t('english')}</option>
+      <option value="hy">{t('armenian')}</option>
     </select>
   );
 }
