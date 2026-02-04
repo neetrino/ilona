@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
 import { useTeachers, AddTeacherForm, type Teacher } from '@/features/teachers';
@@ -8,6 +9,9 @@ import { useAdminDashboardStats } from '@/features/dashboard';
 
 export default function AdminDashboardPage() {
   const [isAddTeacherOpen, setIsAddTeacherOpen] = useState(false);
+  const params = useParams();
+  const router = useRouter();
+  const locale = params.locale as string;
   
   // Fetch teachers list (top 5 for dashboard)
   const { 
@@ -99,8 +103,13 @@ export default function AdminDashboardPage() {
     {
       key: 'actions',
       header: 'Actions',
-      render: () => (
-        <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 font-medium">
+      render: (teacher: Teacher) => (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-blue-600 hover:text-blue-700 font-medium"
+          onClick={() => router.push(`/${locale}/admin/teachers/${teacher.id}`)}
+        >
           View Profile
         </Button>
       ),
