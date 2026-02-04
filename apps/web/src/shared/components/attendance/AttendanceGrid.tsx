@@ -61,16 +61,84 @@ export function AttendanceGrid({
   const gridRef = useRef<HTMLDivElement>(null);
   const cellRefs = useRef<Record<string, HTMLTableCellElement>>({});
   const initialDataRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
+  const prevInitialAttendanceRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
+  const isInitialMountRef = useRef(true);
+  const pendingChangesRef = useRef<Record<string, Set<string>>>({});
 
-  // Initialize attendance data
+  // Keep ref in sync with state
   useEffect(() => {
-    if (Object.keys(initialAttendance).length > 0) {
+    pendingChangesRef.current = pendingChanges;
+  }, [pendingChanges]);
+
+  // Initialize attendance data on mount
+  useEffect(() => {
+    if (isInitialMountRef.current && Object.keys(initialAttendance).length > 0) {
       setAttendanceData(initialAttendance);
       initialDataRef.current = initialAttendance;
-      // Clear pending changes when initial data changes (e.g., after save or data refresh)
-      setPendingChanges({});
-      setSaveError({});
-      setSaveSuccess({});
+      prevInitialAttendanceRef.current = initialAttendance;
+      isInitialMountRef.current = false;
+    }
+  }, []);
+
+  // Sync from initialAttendance only when there are no pending changes
+  // This prevents overwriting local unsaved changes when queries refetch
+  useEffect(() => {
+    if (isInitialMountRef.current) return;
+    
+    if (Object.keys(initialAttendance).length > 0) {
+      const hasAnyPendingChanges = Object.values(pendingChangesRef.current).some((set) => set.size > 0);
+      
+      // Check if this is a structural change (e.g., different lessons/students - group or date range changed)
+      const prevInitial = prevInitialAttendanceRef.current;
+      const currentLessonIds = Object.keys(initialAttendance).sort();
+      const prevLessonIds = Object.keys(prevInitial).sort();
+      const hasStructuralChange = 
+        currentLessonIds.length !== prevLessonIds.length ||
+        currentLessonIds.some((id, idx) => id !== prevLessonIds[idx]);
+
+      if (!hasAnyPendingChanges) {
+        // No pending changes - safe to sync from initialAttendance
+        setAttendanceData(initialAttendance);
+        initialDataRef.current = initialAttendance;
+        prevInitialAttendanceRef.current = initialAttendance;
+      } else if (hasStructuralChange) {
+        // Structural change detected (e.g., group/date range changed) - reset everything
+        setAttendanceData(initialAttendance);
+        initialDataRef.current = initialAttendance;
+        prevInitialAttendanceRef.current = initialAttendance;
+        setPendingChanges({});
+        setSaveError({});
+        setSaveSuccess({});
+      } else {
+        // There are pending changes and no structural change - preserve local state
+        // Merge: keep local changes for cells with pending changes, update others from initialAttendance
+        setAttendanceData((prev) => {
+          const merged: Record<string, Record<string, AttendanceCell>> = {};
+          
+          // Start with initialAttendance
+          Object.keys(initialAttendance).forEach((lessonId) => {
+            merged[lessonId] = { ...initialAttendance[lessonId] };
+          });
+          
+          // Override with local changes for cells that have pending changes
+          Object.keys(pendingChangesRef.current).forEach((lessonId) => {
+            const lessonPendingChanges = pendingChangesRef.current[lessonId];
+            if (lessonPendingChanges && lessonPendingChanges.size > 0 && prev[lessonId]) {
+              if (!merged[lessonId]) {
+                merged[lessonId] = {};
+              }
+              lessonPendingChanges.forEach((studentId) => {
+                if (prev[lessonId]?.[studentId]) {
+                  merged[lessonId][studentId] = prev[lessonId][studentId];
+                }
+              });
+            }
+          });
+          
+          return merged;
+        });
+        prevInitialAttendanceRef.current = initialAttendance;
+      }
     }
   }, [initialAttendance]);
 
@@ -263,19 +331,30 @@ export function AttendanceGrid({
     }
   }, [focusedCell]);
 
+  // Filter lessons by date range if provided (should be single date now)
+  const filteredLessons = useMemo(() => {
+    if (!dateRange) return lessons;
+    // Since we're only showing a single date, filter to that exact date
+    return lessons.filter((lesson) => {
+      const lessonDate = new Date(lesson.scheduledAt).toISOString().split('T')[0];
+      return lessonDate === dateRange.from; // Use 'from' since from === to for single date
+    });
+  }, [lessons, dateRange]);
+
+  // Sort lessons by time (single date only, no grouping needed)
+  const sortedLessons = useMemo(() => {
+    return [...filteredLessons].sort((a, b) => 
+      new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+    );
+  }, [filteredLessons]);
+
   // Keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, studentId: string, lessonId: string) => {
       if (isLoading || isSaving) return;
 
       const studentIndex = students.findIndex((s) => s.id === studentId);
-      const filteredLessonsList = dateRange
-        ? lessons.filter((l) => {
-            const lessonDate = new Date(l.scheduledAt).toISOString().split('T')[0];
-            return lessonDate >= dateRange.from && lessonDate <= dateRange.to;
-          })
-        : lessons;
-      const lessonIndex = filteredLessonsList.findIndex((l) => l.id === lessonId);
+      const lessonIndex = sortedLessons.findIndex((l) => l.id === lessonId);
 
       switch (e.key) {
         case 'Enter':
@@ -300,57 +379,22 @@ export function AttendanceGrid({
         case 'ArrowLeft':
           e.preventDefault();
           if (lessonIndex > 0) {
-            const prevLesson = filteredLessonsList[lessonIndex - 1];
+            const prevLesson = sortedLessons[lessonIndex - 1];
             setFocusedCell({ studentId, lessonId: prevLesson.id });
           }
           break;
         case 'ArrowRight':
         case 'Tab':
           e.preventDefault();
-          if (lessonIndex < filteredLessonsList.length - 1) {
-            const nextLesson = filteredLessonsList[lessonIndex + 1];
+          if (lessonIndex < sortedLessons.length - 1) {
+            const nextLesson = sortedLessons[lessonIndex + 1];
             setFocusedCell({ studentId, lessonId: nextLesson.id });
           }
           break;
       }
     },
-    [students, lessons, toggleCellStatus, isLoading, isSaving, dateRange]
+    [students, sortedLessons, toggleCellStatus, isLoading, isSaving]
   );
-
-  // Filter lessons by date range if provided
-  const filteredLessons = useMemo(() => {
-    if (!dateRange) return lessons;
-    return lessons.filter((lesson) => {
-      const lessonDate = new Date(lesson.scheduledAt).toISOString().split('T')[0];
-      return lessonDate >= dateRange.from && lessonDate <= dateRange.to;
-    });
-  }, [lessons, dateRange]);
-
-  // Group lessons by date and sort chronologically (oldest to newest)
-  const lessonsByDate = useMemo(() => {
-    const grouped: Record<string, Lesson[]> = {};
-    filteredLessons.forEach((lesson) => {
-      const date = new Date(lesson.scheduledAt).toISOString().split('T')[0];
-      if (!grouped[date]) {
-        grouped[date] = [];
-      }
-      grouped[date].push(lesson);
-    });
-    
-    // Sort lessons within each date by time
-    Object.keys(grouped).forEach((date) => {
-      grouped[date].sort((a, b) => 
-        new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
-      );
-    });
-    
-    // Return sorted entries (oldest to newest)
-    const sortedEntries = Object.entries(grouped).sort(([dateA], [dateB]) => 
-      dateA.localeCompare(dateB)
-    );
-    
-    return Object.fromEntries(sortedEntries);
-  }, [filteredLessons]);
 
   // Get status styles - enhanced for better visibility and contrast
   const getStatusStyles = (status: AttendanceStatus) => {
@@ -462,53 +506,36 @@ export function AttendanceGrid({
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Grid - Fixed height container to fit viewport */}
       <div
         ref={gridRef}
-        className="overflow-auto rounded-lg border-2 border-slate-300 bg-white shadow-sm"
-        style={{ maxHeight: 'calc(100vh - 400px)' }}
+        className="rounded-lg border-2 border-slate-300 bg-white shadow-sm overflow-hidden flex flex-col"
+        style={{ height: 'calc(100vh - 500px)', minHeight: '400px', maxHeight: '600px' }}
       >
-        <div className="inline-block min-w-full">
+        <div className="flex-1 overflow-auto">
           <table className="min-w-full border-collapse">
             <thead className="bg-slate-100 sticky top-0 z-20 shadow-sm">
               <tr>
                 {/* Student name column (frozen) */}
-                <th className="sticky left-0 z-30 bg-slate-100 border-b-2 border-r-2 border-slate-400 px-4 md:px-5 py-4 text-left text-sm font-bold text-slate-900 uppercase tracking-wide min-w-[180px] md:min-w-[220px] shadow-sm">
+                <th className="sticky left-0 z-30 bg-slate-100 border-b-2 border-r-2 border-slate-400 px-4 md:px-5 py-3 text-left text-sm font-bold text-slate-900 uppercase tracking-wide min-w-[180px] md:min-w-[220px] shadow-sm">
                   <div className="flex items-center gap-2">
                     <span>Student</span>
                   </div>
                 </th>
-                {/* Date/Lesson columns */}
-                {Object.entries(lessonsByDate).map(([date, dateLessons]) => (
+                {/* Lesson columns (single date) */}
+                {sortedLessons.map((lesson) => (
                   <th
-                    key={date}
-                    colSpan={dateLessons.length}
-                    className="border-b-2 border-r-2 border-slate-400 px-2 md:px-3 py-3 text-center bg-slate-200"
+                    key={lesson.id}
+                    className="border-b-2 border-r-2 border-slate-400 px-2 md:px-3 py-3 text-center bg-slate-100 min-w-[90px] md:min-w-[110px]"
                   >
-                    <div className="font-bold text-xs md:text-sm text-slate-900">{formatDate(date)}</div>
-                    <div className="text-[10px] text-slate-600 mt-0.5">
-                      {dateLessons.length} {dateLessons.length === 1 ? 'session' : 'sessions'}
-                    </div>
+                    <div className="font-semibold text-xs md:text-sm text-slate-800 mb-1">{formatTime(lesson.scheduledAt)}</div>
+                    {lesson.topic && (
+                      <div className="text-[10px] md:text-[11px] text-slate-600 truncate max-w-[90px] md:max-w-[110px] font-medium" title={lesson.topic}>
+                        {lesson.topic}
+                      </div>
+                    )}
                   </th>
                 ))}
-              </tr>
-              <tr className="bg-slate-50 sticky z-20" style={{ top: '64px' }}>
-                <th className="sticky left-0 z-30 bg-slate-50 border-b-2 border-r-2 border-slate-400 shadow-sm"></th>
-                {Object.entries(lessonsByDate).map(([date, dateLessons]) =>
-                  dateLessons.map((lesson) => (
-                    <th
-                      key={lesson.id}
-                      className="border-b-2 border-r-2 border-slate-400 px-2 md:px-3 py-3 text-center bg-slate-50 min-w-[90px] md:min-w-[110px]"
-                    >
-                      <div className="font-semibold text-xs md:text-sm text-slate-800 mb-1">{formatTime(lesson.scheduledAt)}</div>
-                      {lesson.topic && (
-                        <div className="text-[10px] md:text-[11px] text-slate-600 truncate max-w-[90px] md:max-w-[110px] font-medium" title={lesson.topic}>
-                          {lesson.topic}
-                        </div>
-                      )}
-                    </th>
-                  ))
-                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y-2 divide-slate-200">
@@ -530,51 +557,49 @@ export function AttendanceGrid({
                       </div>
                     </td>
                     {/* Attendance cells */}
-                {Object.entries(lessonsByDate).map(([date, dateLessons]) =>
-                  dateLessons.map((lesson) => {
-                    const status = getCellStatus(student.id, lesson.id);
-                    const isFocused = focusedCell?.studentId === student.id && focusedCell?.lessonId === lesson.id;
-                    const hasPendingChange = pendingChanges[lesson.id]?.has(student.id) || false;
-                    const isLessonSaving = isSaving?.[lesson.id] || false;
-                    const hasLessonChanges = pendingChanges[lesson.id] && pendingChanges[lesson.id].size > 0;
+                    {sortedLessons.map((lesson) => {
+                      const status = getCellStatus(student.id, lesson.id);
+                      const isFocused = focusedCell?.studentId === student.id && focusedCell?.lessonId === lesson.id;
+                      const hasPendingChange = pendingChanges[lesson.id]?.has(student.id) || false;
+                      const isLessonSaving = isSaving?.[lesson.id] || false;
+                      const hasLessonChanges = pendingChanges[lesson.id] && pendingChanges[lesson.id].size > 0;
 
-                    const cellKey = `${student.id}-${lesson.id}`;
-                    return (
-                      <td
-                        key={lesson.id}
-                        ref={(el) => {
-                          if (el) cellRefs.current[cellKey] = el;
-                        }}
-                        className={cn(
-                          'border-r-2 border-b-2 border-slate-300 px-2 md:px-3 py-3 text-center cursor-pointer transition-all relative min-h-[60px]',
-                          getStatusStyles(status),
-                          isFocused && 'ring-4 ring-blue-500 ring-offset-2 shadow-lg',
-                          hasPendingChange && 'ring-2 ring-amber-500',
-                          isLessonSaving && 'opacity-60 cursor-wait'
-                        )}
-                        onClick={() => !isLessonSaving && toggleCellStatus(student.id, lesson.id)}
-                        onKeyDown={(e) => !isLessonSaving && handleKeyDown(e, student.id, lesson.id)}
-                        tabIndex={isLessonSaving ? -1 : 0}
-                        role="gridcell"
-                        aria-label={`${student.user.firstName} ${student.user.lastName} - ${formatDate(lesson.scheduledAt)} ${formatTime(lesson.scheduledAt)} - ${status === 'present' ? 'Present' : status === 'absent_justified' ? 'Absent Justified' : status === 'absent_unjustified' ? 'Absent Unjustified' : 'Not Marked'}`}
-                        aria-disabled={isLessonSaving}
-                        title={`Click to mark: ${status === 'not_marked' ? 'Present' : status === 'present' ? 'Absent (Justified)' : status === 'absent_justified' ? 'Absent (Unjustified)' : 'Not Marked'}`}
-                      >
-                        <div className="flex items-center justify-center h-10 w-10 md:h-12 md:w-12 mx-auto rounded-md text-base md:text-lg font-bold relative">
-                          {getStatusIcon(status)}
-                          {isLessonSaving && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">
-                              <div className="h-4 w-4 animate-spin rounded-full border-[3px] border-current border-t-transparent"></div>
-                            </div>
+                      const cellKey = `${student.id}-${lesson.id}`;
+                      return (
+                        <td
+                          key={cellKey}
+                          ref={(el) => {
+                            if (el) cellRefs.current[cellKey] = el;
+                          }}
+                          className={cn(
+                            'border-r-2 border-b-2 border-slate-300 px-2 md:px-3 py-3 text-center cursor-pointer transition-all relative min-h-[60px]',
+                            getStatusStyles(status),
+                            isFocused && 'ring-4 ring-blue-500 ring-offset-2 shadow-lg',
+                            hasPendingChange && 'ring-2 ring-amber-500',
+                            isLessonSaving && 'opacity-60 cursor-wait'
                           )}
-                        </div>
-                        {hasPendingChange && !isLessonSaving && (
-                          <div className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-amber-500 shadow-sm animate-pulse"></div>
-                        )}
-                      </td>
-                    );
-                  })
-                )}
+                          onClick={() => !isLessonSaving && toggleCellStatus(student.id, lesson.id)}
+                          onKeyDown={(e) => !isLessonSaving && handleKeyDown(e, student.id, lesson.id)}
+                          tabIndex={isLessonSaving ? -1 : 0}
+                          role="gridcell"
+                          aria-label={`${student.user.firstName} ${student.user.lastName} - ${formatDate(lesson.scheduledAt)} ${formatTime(lesson.scheduledAt)} - ${status === 'present' ? 'Present' : status === 'absent_justified' ? 'Absent Justified' : status === 'absent_unjustified' ? 'Absent Unjustified' : 'Not Marked'}`}
+                          aria-disabled={isLessonSaving}
+                          title={`Click to mark: ${status === 'not_marked' ? 'Present' : status === 'present' ? 'Absent (Justified)' : status === 'absent_justified' ? 'Absent (Unjustified)' : 'Not Marked'}`}
+                        >
+                          <div className="flex items-center justify-center h-10 w-10 md:h-12 md:w-12 mx-auto rounded-md text-base md:text-lg font-bold relative">
+                            {getStatusIcon(status)}
+                            {isLessonSaving && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">
+                                <div className="h-4 w-4 animate-spin rounded-full border-[3px] border-current border-t-transparent"></div>
+                              </div>
+                            )}
+                          </div>
+                          {hasPendingChange && !isLessonSaving && (
+                            <div className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-amber-500 shadow-sm animate-pulse"></div>
+                          )}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })}

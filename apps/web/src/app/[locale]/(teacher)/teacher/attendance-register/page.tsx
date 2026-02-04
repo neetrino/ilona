@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/shared/lib/utils';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { AttendanceGrid } from '@/shared/components/attendance';
+import { Button } from '@/shared/components/ui/button';
 import { useGroups } from '@/features/groups';
-import { useLessons } from '@/features/lessons';
+import { useLessons, useTodayLessons } from '@/features/lessons';
 import { useStudents } from '@/features/students';
 import { useMarkBulkAttendance, attendanceKeys, type AbsenceType } from '@/features/attendance';
 import { useQueries } from '@tanstack/react-query';
@@ -24,33 +25,59 @@ interface AttendanceCell {
 
 export default function TeacherAttendanceRegisterPage() {
   const router = useRouter();
+  
+  // Get today's date as default
+  const getTodayDate = () => new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayDate());
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [dateFrom, setDateFrom] = useState<string>(() => {
-    const date = new Date();
-    date.setDate(date.getDate() - 7); // Default to last 7 days
-    return date.toISOString().split('T')[0];
-  });
-  const [dateTo, setDateTo] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [savingLessons, setSavingLessons] = useState<Record<string, boolean>>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveMessages, setSaveMessages] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasAutoSelectedGroup = useRef(false);
 
   // Fetch teacher's groups (backend filters automatically)
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ take: 100, isActive: true });
   const groups = groupsData?.items || [];
 
-  // Fetch lessons for selected group and date range
-  const dateFromISO = dateFrom ? new Date(dateFrom + 'T00:00:00').toISOString() : undefined;
-  const dateToISO = dateTo ? new Date(dateTo + 'T23:59:59').toISOString() : undefined;
+  // Fetch today's lessons to auto-select group
+  const { data: todayLessonsData } = useTodayLessons();
+  const todayLessons = todayLessonsData || [];
+
+  // Auto-select first group with a lesson today on initial load
+  useEffect(() => {
+    if (!hasAutoSelectedGroup.current && todayLessons.length > 0 && groups.length > 0 && !selectedGroupId) {
+      // Find the first group that has a lesson today
+      const groupWithLesson = groups.find((group) =>
+        todayLessons.some((lesson) => lesson.groupId === group.id)
+      );
+      if (groupWithLesson) {
+        setSelectedGroupId(groupWithLesson.id);
+        hasAutoSelectedGroup.current = true;
+      }
+    }
+  }, [todayLessons, groups, selectedGroupId]);
+
+  // Fetch lessons for selected group and selected date (single date only)
+  const selectedDateStart = selectedDate ? new Date(selectedDate + 'T00:00:00').toISOString() : undefined;
+  const selectedDateEnd = selectedDate ? new Date(selectedDate + 'T23:59:59').toISOString() : undefined;
 
   const { data: lessonsData, isLoading: isLoadingLessons } = useLessons({
     groupId: selectedGroupId || undefined,
-    dateFrom: dateFromISO,
-    dateTo: dateToISO,
+    dateFrom: selectedDateStart,
+    dateTo: selectedDateEnd,
     take: 100,
   });
   const lessons = lessonsData?.items || [];
+
+  // Filter lessons to only show lessons for the selected date
+  const filteredLessons = useMemo(() => {
+    if (!selectedDate) return [];
+    return lessons.filter((lesson) => {
+      const lessonDate = new Date(lesson.scheduledAt).toISOString().split('T')[0];
+      return lessonDate === selectedDate;
+    });
+  }, [lessons, selectedDate]);
 
   // Fetch students for selected group
   const { data: studentsData, isLoading: isLoadingStudents } = useStudents({
@@ -59,12 +86,55 @@ export default function TeacherAttendanceRegisterPage() {
   });
   const students = studentsData?.items || [];
 
-  // Fetch attendance for all lessons in parallel
+  // Helper function to go back to today
+  const goToToday = () => {
+    setSelectedDate(getTodayDate());
+    // Auto-select group with lesson today if available
+    if (todayLessons.length > 0 && groups.length > 0) {
+      const groupWithLesson = groups.find((group) =>
+        todayLessons.some((lesson) => lesson.groupId === group.id)
+      );
+      if (groupWithLesson) {
+        setSelectedGroupId(groupWithLesson.id);
+      }
+    }
+  };
+
+  // Check if selected date is today
+  const isToday = selectedDate === getTodayDate();
+
+  // Handle date change with unsaved changes confirmation
+  const handleDateChange = (newDate: string) => {
+    if (hasUnsavedChanges) {
+      const confirmed = window.confirm(
+        'You have unsaved changes. Are you sure you want to switch dates? Your changes will be lost.'
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+    setSelectedDate(newDate);
+  };
+
+  // Handle group change with unsaved changes confirmation
+  const handleGroupChange = (newGroupId: string | null) => {
+    if (hasUnsavedChanges) {
+      const confirmed = window.confirm(
+        'You have unsaved changes. Are you sure you want to switch groups? Your changes will be lost.'
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+    setSelectedGroupId(newGroupId);
+  };
+
+  // Fetch attendance for filtered lessons only
   const attendanceQueries = useQueries({
-    queries: lessons.map((lesson) => ({
+    queries: filteredLessons.map((lesson) => ({
       queryKey: attendanceKeys.lesson(lesson.id),
       queryFn: () => fetchLessonAttendance(lesson.id),
-      enabled: !!selectedGroupId && lessons.length > 0,
+      enabled: !!selectedGroupId && filteredLessons.length > 0,
     })),
   });
 
@@ -74,7 +144,7 @@ export default function TeacherAttendanceRegisterPage() {
   const attendanceData = useMemo(() => {
     const data: Record<string, Record<string, AttendanceCell>> = {};
 
-    lessons.forEach((lesson, index) => {
+    filteredLessons.forEach((lesson, index) => {
       const query = attendanceQueries[index];
       if (query?.data?.studentsWithAttendance) {
         const lessonData: Record<string, AttendanceCell> = {};
@@ -103,7 +173,7 @@ export default function TeacherAttendanceRegisterPage() {
     });
 
     return data;
-  }, [lessons, attendanceQueries]);
+  }, [filteredLessons, attendanceQueries]);
 
   const markBulkAttendance = useMarkBulkAttendance();
 
@@ -180,7 +250,7 @@ export default function TeacherAttendanceRegisterPage() {
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId);
 
-  // Calculate statistics
+  // Calculate statistics for selected date only
   const stats = useMemo(() => {
     let total = 0;
     let present = 0;
@@ -188,7 +258,7 @@ export default function TeacherAttendanceRegisterPage() {
     let notMarked = 0;
 
     students.forEach((student) => {
-      lessons.forEach((lesson) => {
+      filteredLessons.forEach((lesson) => {
         total++;
         const cell = attendanceData[lesson.id]?.[student.id];
         if (!cell) {
@@ -202,7 +272,7 @@ export default function TeacherAttendanceRegisterPage() {
     });
 
     return { total, present, absent, notMarked };
-  }, [students, lessons, attendanceData]);
+  }, [students, filteredLessons, attendanceData]);
 
   return (
     <DashboardLayout title="Attendance Register" subtitle="Mark and manage student attendance">
@@ -229,7 +299,7 @@ export default function TeacherAttendanceRegisterPage() {
               <select
                 value={selectedGroupId || ''}
                 onChange={(e) => {
-                  setSelectedGroupId(e.target.value || null);
+                  handleGroupChange(e.target.value || null);
                 }}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 disabled={isLoadingGroups}
@@ -243,28 +313,29 @@ export default function TeacherAttendanceRegisterPage() {
               </select>
             </div>
 
-            {/* Date From */}
+            {/* Date Selection */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Date From</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Select Date</label>
               <input
                 type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
+                value={selectedDate}
+                onChange={(e) => handleDateChange(e.target.value)}
+                max={getTodayDate()}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 disabled={!selectedGroupId}
               />
             </div>
 
-            {/* Date To */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Date To</label>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={!selectedGroupId}
-              />
+            {/* Back to Today Button */}
+            <div className="flex items-end">
+              <Button
+                onClick={goToToday}
+                disabled={isToday}
+                variant={isToday ? 'outline' : 'default'}
+                className="w-full"
+              >
+                {isToday ? 'Today' : 'Back to Today'}
+              </Button>
             </div>
           </div>
         </div>
@@ -297,25 +368,44 @@ export default function TeacherAttendanceRegisterPage() {
             {/* Context Indicators */}
             <div className="mb-6 pb-4 border-b-2 border-slate-200">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Selected Group:</span>
-                    <span className="text-xl font-bold text-slate-900">{selectedGroup?.name}</span>
-                    {selectedGroup?.level && (
-                      <span className="text-sm font-medium text-slate-600">({selectedGroup.level})</span>
-                    )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Group:</span>
+                      <span className="text-xl font-bold text-slate-900">{selectedGroup?.name || 'N/A'}</span>
+                      {selectedGroup?.level && (
+                        <span className="text-sm font-medium text-slate-600">({selectedGroup.level})</span>
+                      )}
+                    </div>
+                    <div className="h-6 w-px bg-slate-300"></div>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Date:</span>
+                      <span className="text-xl font-bold text-slate-900">
+                        {new Date(selectedDate).toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </span>
+                      {isToday && (
+                        <span className="px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">Today</span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-slate-600">
                     <span>
-                      <span className="font-semibold">{lessons.length}</span> {lessons.length === 1 ? 'session' : 'sessions'}
+                      <span className="font-semibold">{filteredLessons.length}</span> {filteredLessons.length === 1 ? 'session' : 'sessions'}
                     </span>
                     <span>•</span>
                     <span>
                       <span className="font-semibold">{students.length}</span> {students.length === 1 ? 'student' : 'students'}
-                    </span>
-                    <span>•</span>
-                    <span>
-                      Date range: <span className="font-semibold">{dateFrom}</span> to <span className="font-semibold">{dateTo}</span>
                     </span>
                   </div>
                 </div>
@@ -332,12 +422,36 @@ export default function TeacherAttendanceRegisterPage() {
               <div className="flex items-center justify-center p-12">
                 <div className="text-center">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-                  <p className="mt-4 text-sm text-slate-500">Loading attendance data...</p>
+                  <p className="mt-4 text-sm text-slate-500">
+                    {isLoadingAttendance ? 'Loading attendance records...' : 'Loading lessons...'}
+                  </p>
                 </div>
               </div>
-            ) : lessons.length === 0 ? (
+            ) : attendanceQueries.some((q) => q.isError) ? (
               <div className="text-center p-12">
-                <p className="text-sm text-slate-500">No lessons found for the selected date range</p>
+                <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-red-600 mb-1">Error loading attendance data</p>
+                <p className="text-xs text-slate-500">Please try again or contact support if the problem persists</p>
+              </div>
+            ) : filteredLessons.length === 0 ? (
+              <div className="text-center p-12">
+                <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-slate-600 mb-1">No lessons found</p>
+                <p className="text-xs text-slate-500">
+                  No lessons scheduled for {new Date(selectedDate).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  })}
+                </p>
               </div>
             ) : (
               <AttendanceGrid
@@ -350,12 +464,12 @@ export default function TeacherAttendanceRegisterPage() {
                     avatarUrl: s.user.avatarUrl,
                   },
                 }))}
-                lessons={lessons}
+                lessons={filteredLessons}
                 initialAttendance={attendanceData}
                 onLessonSave={handleLessonSave}
                 isLoading={isLoadingAttendance}
                 isSaving={savingLessons}
-                dateRange={{ from: dateFrom, to: dateTo }}
+                dateRange={{ from: selectedDate, to: selectedDate }}
                 onSaveSuccess={handleSaveSuccess}
                 onSaveError={handleSaveError}
                 onUnsavedChangesChange={setHasUnsavedChanges}
