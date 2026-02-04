@@ -24,9 +24,16 @@ export function initSocket(options: SocketOptions): Socket {
     return socket;
   }
 
-  // Disconnect existing socket if any
+  // Disconnect existing socket if any (only if it exists and is not already disconnected)
   if (socket) {
-    socket.disconnect();
+    // Remove all listeners to prevent memory leaks
+    socket.removeAllListeners();
+    // Only disconnect if already connected to avoid closing during connection attempt
+    if (socket.connected) {
+      socket.disconnect();
+    }
+    // Clear the socket reference
+    socket = null;
   }
 
   // Create new socket connection
@@ -71,7 +78,13 @@ export function getSocket(): Socket | null {
  */
 export function disconnectSocket(): void {
   if (socket) {
-    socket.disconnect();
+    // Remove all listeners first
+    socket.removeAllListeners();
+    // Only disconnect if already connected to avoid closing during connection attempt
+    if (socket.connected) {
+      socket.disconnect();
+    }
+    // Clear the socket reference
     socket = null;
   }
 }
