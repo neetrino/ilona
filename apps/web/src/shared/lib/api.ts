@@ -121,6 +121,8 @@ class ApiClient {
       const refreshSuccess = await this.attemptTokenRefresh();
       
       if (refreshSuccess) {
+        // Wait a bit to ensure token is available in localStorage
+        await new Promise(resolve => setTimeout(resolve, 100));
         // Retry the original request with new token
         return this.request<T>(endpoint, { ...options, skipAuthRefresh: true }, true);
       } else {
@@ -166,9 +168,13 @@ class ApiClient {
     if (this.refreshCallback) {
       this.isRefreshing = true;
       this.refreshPromise = this.refreshCallback()
-        .then((success) => {
+        .then(async (success) => {
           this.isRefreshing = false;
           this.refreshPromise = null;
+          // Give a small delay to ensure localStorage is updated
+          if (success && typeof window !== 'undefined') {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
           return success;
         })
         .catch(() => {

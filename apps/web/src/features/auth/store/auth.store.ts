@@ -76,13 +76,19 @@ export const useAuthStore = create<AuthStore>()(
         }
 
         try {
-          const newTokens = await api.post<AuthTokens>('/auth/refresh', {
-            refreshToken: tokens.refreshToken,
-          });
+          // Use skipAuthRefresh to avoid infinite loop
+          const newTokens = await api.post<AuthTokens>(
+            '/auth/refresh',
+            {
+              refreshToken: tokens.refreshToken,
+            },
+            { skipAuthRefresh: true }
+          );
 
           set({ tokens: newTokens });
         } catch {
           set({ ...initialState, isHydrated: true });
+          throw new Error('Token refresh failed');
         }
       },
 
