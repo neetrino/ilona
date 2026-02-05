@@ -77,3 +77,20 @@ export async function deleteStudent(id: string): Promise<{ success: boolean }> {
 export async function fetchMyDashboard(): Promise<StudentDashboard> {
   return api.get<StudentDashboard>(`${STUDENTS_ENDPOINT}/me/dashboard`);
 }
+
+/**
+ * Fetch students assigned to the currently logged-in teacher
+ */
+export async function fetchMyAssignedStudents(filters?: StudentFilters): Promise<StudentsResponse> {
+  const params = new URLSearchParams();
+  
+  if (filters?.skip !== undefined) params.append('skip', String(filters.skip));
+  if (filters?.take !== undefined) params.append('take', String(filters.take));
+  if (filters?.search) params.append('search', filters.search);
+  if (filters?.status) params.append('status', filters.status);
+
+  const query = params.toString();
+  const url = query ? `${STUDENTS_ENDPOINT}/me/assigned?${query}` : `${STUDENTS_ENDPOINT}/me/assigned`;
+  
+  return api.get<StudentsResponse>(url);
+}

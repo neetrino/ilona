@@ -43,6 +43,20 @@ export class StudentsController {
     return this.studentsService.getMyDashboard(user.sub);
   }
 
+  @Get('me/assigned')
+  @Roles(UserRole.TEACHER)
+  async getMyAssignedStudents(
+    @CurrentUser() user: JwtPayload,
+    @Query() query: QueryStudentDto,
+  ) {
+    return this.studentsService.findAssignedToTeacherByUserId(user.sub, {
+      skip: query.skip,
+      take: query.take,
+      search: query.search,
+      status: query.status as UserStatus | undefined,
+    });
+  }
+
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   async findById(@Param('id') id: string) {

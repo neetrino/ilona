@@ -10,6 +10,7 @@ import {
   changeStudentGroup,
   deleteStudent,
   fetchMyDashboard,
+  fetchMyAssignedStudents,
 } from '../api/students.api';
 import type {
   StudentFilters,
@@ -26,6 +27,7 @@ export const studentKeys = {
   detail: (id: string) => [...studentKeys.details(), id] as const,
   statistics: (id: string) => [...studentKeys.detail(id), 'statistics'] as const,
   myDashboard: () => [...studentKeys.all, 'my-dashboard'] as const,
+  myAssigned: (filters?: StudentFilters) => [...studentKeys.all, 'my-assigned', filters] as const,
 };
 
 /**
@@ -70,6 +72,7 @@ export function useCreateStudent() {
     mutationFn: (data: CreateStudentDto) => createStudent(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
     },
   });
 }
@@ -86,6 +89,7 @@ export function useUpdateStudent() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: studentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
     },
   });
 }
@@ -128,5 +132,15 @@ export function useMyDashboard(enabled = true) {
     queryKey: studentKeys.myDashboard(),
     queryFn: () => fetchMyDashboard(),
     enabled,
+  });
+}
+
+/**
+ * Hook to fetch students assigned to the currently logged-in teacher
+ */
+export function useMyAssignedStudents(filters?: StudentFilters) {
+  return useQuery({
+    queryKey: studentKeys.myAssigned(filters),
+    queryFn: () => fetchMyAssignedStudents(filters),
   });
 }

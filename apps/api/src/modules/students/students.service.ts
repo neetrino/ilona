@@ -243,12 +243,11 @@ export class StudentsService {
       });
 
       // Create student profile
-      // NOTE: teacherId will be added after migration is run
       const student = await tx.student.create({
         data: {
           userId: user.id,
           groupId: dto.groupId,
-          // teacherId: dto.teacherId, // Uncomment after migration
+          teacherId: dto.teacherId,
           parentName: dto.parentName,
           parentPhone: dto.parentPhone,
           parentEmail: dto.parentEmail,
@@ -321,7 +320,6 @@ export class StudentsService {
     }
 
     // Update student fields
-    // NOTE: teacherId will be added after migration is run
     const updateData: any = {
       parentName: dto.parentName,
       parentPhone: dto.parentPhone,
@@ -335,7 +333,9 @@ export class StudentsService {
     if (dto.groupId !== undefined) {
       updateData.groupId = dto.groupId;
     }
-    // teacherId: dto.teacherId, // Uncomment after migration
+    if (dto.teacherId !== undefined) {
+      updateData.teacherId = dto.teacherId;
+    }
     
     return this.prisma.student.update({
       where: { id },
@@ -538,5 +538,113 @@ export class StudentsService {
       pendingPayments,
       statistics: stats,
     };
+  }
+
+  async findAssignedToTeacher(teacherId: string, params?: {
+    skip?: number;
+    take?: number;
+    search?: string;
+    status?: UserStatus;
+  }) {
+    const { skip = 0, take = 50, search, status } = params || {};
+
+    // Ensure skip and take are valid numbers
+    const skipValue = Number(skip) || 0;
+    const takeValue = Number(take) || 50;
+
+    const where: Prisma.StudentWhereInput = {
+      teacherId,
+    };
+    const userWhere: Prisma.UserWhereInput = {};
+
+    if (search) {
+      userWhere.OR = [
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (status) {
+      userWhere.status = status;
+    }
+
+    if (Object.keys(userWhere).length > 0) {
+      where.user = userWhere;
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.student.findMany({
+        where,
+        skip: skipValue,
+        take: takeValue,
+        orderBy: { user: { firstName: 'asc' } },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              phone: true,
+              avatarUrl: true,
+              status: true,
+              lastLoginAt: true,
+              createdAt: true,
+            },
+          },
+          group: {
+            select: {
+              id: true,
+              name: true,
+              level: true,
+              center: { select: { id: true, name: true } },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  phone: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      this.prisma.student.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page: takeValue > 0 ? Math.floor(skipValue / takeValue) + 1 : 1,
+      pageSize: takeValue,
+      totalPages: takeValue > 0 ? Math.ceil(total / takeValue) : 0,
+    };
+  }
+
+  async findAssignedToTeacherByUserId(userId: string, params?: {
+    skip?: number;
+    take?: number;
+    search?: string;
+    status?: UserStatus;
+  }) {
+    // Get teacher by userId
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!teacher) {
+      throw new NotFoundException('Teacher profile not found');
+    }
+
+    return this.findAssignedToTeacher(teacher.id, params);
   }
 }

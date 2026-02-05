@@ -3,7 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "description": "English Learning Center Management Platform",
-  "keywords": ["education", "english", "management", "nestjs", "nextjs"],
+  "keywords": [
+    "education",
+    "english",
+    "management",
+    "nestjs",
+    "nextjs"
+  ],
   "license": "UNLICENSED",
   "author": "Ilona English Center",
   "scripts": {
@@ -27,6 +33,7 @@
   "devDependencies": {
     "@commitlint/cli": "^18.6.0",
     "@commitlint/config-conventional": "^18.6.0",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^8.56.0",
     "husky": "^9.0.0",
     "prettier": "^3.2.0",
@@ -39,4 +46,3 @@
     "pnpm": ">=8.0.0"
   }
 }
-
