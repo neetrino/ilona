@@ -80,3 +80,5 @@ Production-ում պետք է:
 2. Configure `CORS_ORIGIN` with specific allowed origins
 3. Use HTTPS for security
 
+
+
