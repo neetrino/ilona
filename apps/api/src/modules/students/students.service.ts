@@ -296,9 +296,7 @@ export class StudentsService {
 
   async update(id: string, dto: UpdateStudentDto) {
     const student = await this.findById(id);
-    console.log("hello");
 
-    // Validate teacher if provided
     if (dto.teacherId) {
       const teacher = await this.prisma.teacher.findUnique({
         where: { id: dto.teacherId },
