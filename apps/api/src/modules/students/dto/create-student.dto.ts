@@ -41,6 +41,10 @@ export class CreateStudentDto {
 
   @IsString()
   @IsOptional()
+  teacherId?: string;
+
+  @IsString()
+  @IsOptional()
   @MaxLength(100)
   parentName?: string;
 

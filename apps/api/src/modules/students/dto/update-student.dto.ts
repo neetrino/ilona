@@ -37,6 +37,14 @@ export class UpdateStudentDto {
   // Student fields
   @IsString()
   @IsOptional()
+  groupId?: string;
+
+  @IsString()
+  @IsOptional()
+  teacherId?: string;
+
+  @IsString()
+  @IsOptional()
   @MaxLength(100)
   parentName?: string;
 

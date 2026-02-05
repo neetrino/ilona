@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useCreateStudent, type CreateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
+import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
 
 const createStudentSchema = z.object({
@@ -16,6 +17,7 @@ const createStudentSchema = z.object({
   phone: z.string().optional(),
   age: z.number().int('Age must be a whole number').min(1, 'Age must be at least 1').max(120, 'Age must be reasonable'),
   groupId: z.string().optional(),
+  teacherId: z.string().optional(),
   parentName: z.string().max(100, 'Parent name must be at most 100 characters').optional(),
   parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional(),
   parentEmail: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),
@@ -67,9 +69,11 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const createStudent = useCreateStudent();
   
-  // Fetch groups for dropdown
+  // Fetch groups and teachers for dropdowns
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
+  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
   const groups = groupsData?.items || [];
+  const teachers = teachersData?.items || [];
 
   const {
     register,
@@ -88,6 +92,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       phone: '',
       age: undefined as number | undefined,
       groupId: '',
+      teacherId: '',
       parentName: '',
       parentPhone: '',
       parentEmail: '',
@@ -130,6 +135,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
         lastName: data.lastName,
         phone: data.phone || undefined,
         groupId: data.groupId || undefined,
+        teacherId: data.teacherId || undefined,
         parentName: data.parentName || undefined,
         parentPhone: data.parentPhone || undefined,
         parentEmail: data.parentEmail || undefined,
@@ -258,24 +264,50 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="groupId">Group</Label>
-            <select
-              id="groupId"
-              {...register('groupId')}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isLoadingGroups}
-            >
-              <option value="">No group assigned</option>
-              {groups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name} {group.level ? `(${group.level})` : ''}
-                </option>
-              ))}
-            </select>
-            {errors.groupId && (
-              <p className="text-sm text-red-600">{errors.groupId.message}</p>
-            )}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="groupId">Group</Label>
+              <select
+                id="groupId"
+                {...register('groupId')}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isLoadingGroups}
+              >
+                <option value="">No group assigned</option>
+                {groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name} {group.level ? `(${group.level})` : ''}
+                  </option>
+                ))}
+              </select>
+              {errors.groupId && (
+                <p className="text-sm text-red-600">{errors.groupId.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="teacherId">Teacher</Label>
+              <select
+                id="teacherId"
+                {...register('teacherId')}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isLoadingTeachers || isSubmitting}
+              >
+                <option value="">Select a teacher</option>
+                {teachers.map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.user.firstName} {teacher.user.lastName}
+                    {teacher.user.phone ? ` - ${teacher.user.phone}` : ''}
+                  </option>
+                ))}
+              </select>
+              {errors.teacherId && (
+                <p className="text-sm text-red-600">{errors.teacherId.message}</p>
+              )}
+              {isLoadingTeachers && (
+                <p className="text-sm text-slate-500">Loading teachers...</p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">

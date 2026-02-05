@@ -213,6 +213,17 @@ export class StudentsService {
       }
     }
 
+    // Validate teacher if provided
+    if (dto.teacherId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { id: dto.teacherId },
+      });
+
+      if (!teacher) {
+        throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
+      }
+    }
+
     // Hash password
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
@@ -232,10 +243,12 @@ export class StudentsService {
       });
 
       // Create student profile
+      // NOTE: teacherId will be added after migration is run
       const student = await tx.student.create({
         data: {
           userId: user.id,
           groupId: dto.groupId,
+          // teacherId: dto.teacherId, // Uncomment after migration
           parentName: dto.parentName,
           parentPhone: dto.parentPhone,
           parentEmail: dto.parentEmail,
@@ -284,6 +297,17 @@ export class StudentsService {
   async update(id: string, dto: UpdateStudentDto) {
     const student = await this.findById(id);
 
+    // Validate teacher if provided
+    if (dto.teacherId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { id: dto.teacherId },
+      });
+
+      if (!teacher) {
+        throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
+      }
+    }
+
     // Update user fields if provided
     if (dto.firstName || dto.lastName || dto.phone || dto.status) {
       await this.prisma.user.update({
@@ -298,16 +322,25 @@ export class StudentsService {
     }
 
     // Update student fields
+    // NOTE: teacherId will be added after migration is run
+    const updateData: any = {
+      parentName: dto.parentName,
+      parentPhone: dto.parentPhone,
+      parentEmail: dto.parentEmail,
+      monthlyFee: dto.monthlyFee,
+      notes: dto.notes,
+      receiveReports: dto.receiveReports,
+    };
+    
+    // Only include these fields if provided
+    if (dto.groupId !== undefined) {
+      updateData.groupId = dto.groupId;
+    }
+    // teacherId: dto.teacherId, // Uncomment after migration
+    
     return this.prisma.student.update({
       where: { id },
-      data: {
-        parentName: dto.parentName,
-        parentPhone: dto.parentPhone,
-        parentEmail: dto.parentEmail,
-        monthlyFee: dto.monthlyFee,
-        notes: dto.notes,
-        receiveReports: dto.receiveReports,
-      },
+      data: updateData,
       include: {
         user: {
           select: {

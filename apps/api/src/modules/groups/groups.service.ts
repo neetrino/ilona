@@ -70,14 +70,6 @@ export class GroupsService {
       pageSize: take,
       totalPages: Math.ceil(total / take),
     };
-
-    return {
-      items,
-      total,
-      page: Math.floor(skip / take) + 1,
-      pageSize: take,
-      totalPages: Math.ceil(total / take),
-    };
   }
 
   async findById(id: string) {

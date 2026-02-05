@@ -4,6 +4,7 @@ export interface Student {
   id: string;
   userId: string;
   groupId?: string | null;
+  teacherId?: string | null;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
@@ -12,6 +13,16 @@ export interface Student {
   receiveReports: boolean;
   user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'phone' | 'avatarUrl' | 'status' | 'lastLoginAt' | 'createdAt'>;
   group?: StudentGroup | null;
+  teacher?: {
+    id: string;
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone?: string;
+    };
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -49,6 +60,7 @@ export interface CreateStudentDto {
   lastName: string;
   phone?: string;
   groupId?: string;
+  teacherId?: string;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
@@ -62,6 +74,8 @@ export interface UpdateStudentDto {
   lastName?: string;
   phone?: string;
   status?: UserStatus;
+  groupId?: string;
+  teacherId?: string;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
