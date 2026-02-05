@@ -305,7 +305,7 @@ export class StudentsService {
         throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
       }
     }
-
+    
     // Update user fields if provided
     if (dto.firstName || dto.lastName || dto.phone || dto.status) {
       await this.prisma.user.update({
