@@ -19,7 +19,6 @@ export default function GroupsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('groups');
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
-  const [showActiveOnly, setShowActiveOnly] = useState<boolean | undefined>(undefined);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const pageSize = 10;
 
@@ -31,7 +30,6 @@ export default function GroupsPage() {
     skip: page * pageSize,
     take: pageSize,
     search: searchQuery || undefined,
-    isActive: showActiveOnly,
   });
 
   // Mutations
@@ -184,7 +182,6 @@ export default function GroupsPage() {
   // Centers state and handlers
   const [centerSearchQuery, setCenterSearchQuery] = useState('');
   const [centerPage, setCenterPage] = useState(0);
-  const [centerShowActiveOnly, setCenterShowActiveOnly] = useState<boolean | undefined>(undefined);
   const [createCenterOpen, setCreateCenterOpen] = useState(false);
   const [editCenterId, setEditCenterId] = useState<string | null>(null);
 
@@ -195,7 +192,6 @@ export default function GroupsPage() {
     skip: centerPage * pageSize,
     take: pageSize,
     search: centerSearchQuery || undefined,
-    isActive: centerShowActiveOnly,
   });
 
   const deleteCenter = useDeleteCenter();
@@ -383,21 +379,6 @@ export default function GroupsPage() {
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
-          
-          {/* Filter by status */}
-          <select
-            value={showActiveOnly === undefined ? 'all' : showActiveOnly ? 'active' : 'inactive'}
-            onChange={(e) => {
-              const val = e.target.value;
-              setShowActiveOnly(val === 'all' ? undefined : val === 'active');
-              setPage(0);
-            }}
-            className="px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active Only</option>
-            <option value="inactive">Inactive Only</option>
-          </select>
 
           <Button 
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
@@ -527,21 +508,6 @@ export default function GroupsPage() {
                   className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
-              
-              {/* Filter by status */}
-              <select
-                value={centerShowActiveOnly === undefined ? 'all' : centerShowActiveOnly ? 'active' : 'inactive'}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setCenterShowActiveOnly(val === 'all' ? undefined : val === 'active');
-                  setCenterPage(0);
-                }}
-                className="px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active Only</option>
-                <option value="inactive">Inactive Only</option>
-              </select>
 
               <Button 
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
