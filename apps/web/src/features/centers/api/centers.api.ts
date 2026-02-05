@@ -61,3 +61,4 @@ export async function toggleCenterActive(id: string): Promise<Center> {
   return api.patch<Center>(`${CENTERS_ENDPOINT}/${id}/toggle-active`, {});
 }
 
+

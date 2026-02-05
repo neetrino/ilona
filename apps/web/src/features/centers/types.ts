@@ -23,3 +23,4 @@ export interface CenterFilters {
 
 export type { Center, CreateCenterDto, UpdateCenterDto };
 
+
