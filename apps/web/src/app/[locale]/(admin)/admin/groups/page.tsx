@@ -4,8 +4,19 @@ import { useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
 import { useGroups, useDeleteGroup, useToggleGroupActive, type Group } from '@/features/groups';
+import { 
+  useCenters, 
+  useDeleteCenter, 
+  useToggleCenterActive,
+  CreateCenterForm,
+  EditCenterForm,
+  type CenterWithCount 
+} from '@/features/centers';
+
+type TabType = 'groups' | 'centers';
 
 export default function GroupsPage() {
+  const [activeTab, setActiveTab] = useState<TabType>('groups');
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const [showActiveOnly, setShowActiveOnly] = useState<boolean | undefined>(undefined);
@@ -169,12 +180,172 @@ export default function GroupsPage() {
     },
   ];
 
+  // Centers state and handlers
+  const [centerSearchQuery, setCenterSearchQuery] = useState('');
+  const [centerPage, setCenterPage] = useState(0);
+  const [centerShowActiveOnly, setCenterShowActiveOnly] = useState<boolean | undefined>(undefined);
+  const [createCenterOpen, setCreateCenterOpen] = useState(false);
+  const [editCenterId, setEditCenterId] = useState<string | null>(null);
+
+  const { 
+    data: centersData, 
+    isLoading: isLoadingCenters 
+  } = useCenters({ 
+    skip: centerPage * pageSize,
+    take: pageSize,
+    search: centerSearchQuery || undefined,
+    isActive: centerShowActiveOnly,
+  });
+
+  const deleteCenter = useDeleteCenter();
+  const toggleCenterActive = useToggleCenterActive();
+
+  const centers = centersData?.items || [];
+  const totalCenters = centersData?.total || 0;
+  const totalCenterPages = centersData?.totalPages || 1;
+
+  const handleCenterSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCenterSearchQuery(e.target.value);
+    setCenterPage(0);
+  };
+
+  const handleDeleteCenter = async (id: string) => {
+    if (confirm('Are you sure you want to delete this center? This action cannot be undone.')) {
+      try {
+        await deleteCenter.mutateAsync(id);
+      } catch (err) {
+        console.error('Failed to delete center:', err);
+        alert('Failed to delete center. Please try again.');
+      }
+    }
+  };
+
+  const handleToggleCenterActive = async (id: string) => {
+    try {
+      await toggleCenterActive.mutateAsync(id);
+    } catch (err) {
+      console.error('Failed to toggle center status:', err);
+    }
+  };
+
+  const centerColumns = [
+    {
+      key: 'name',
+      header: 'Center Name',
+      render: (center: CenterWithCount) => (
+        <div>
+          <p className="font-semibold text-slate-800">{center.name}</p>
+          {center.address && (
+            <p className="text-sm text-slate-500">{center.address}</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'contact',
+      header: 'Contact',
+      render: (center: CenterWithCount) => (
+        <div className="space-y-1">
+          {center.phone && (
+            <p className="text-sm text-slate-700">{center.phone}</p>
+          )}
+          {center.email && (
+            <p className="text-sm text-slate-600">{center.email}</p>
+          )}
+          {!center.phone && !center.email && (
+            <span className="text-slate-400 text-sm">—</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'groups',
+      header: 'Groups',
+      className: 'text-center',
+      render: (center: CenterWithCount) => (
+        <span className="text-slate-700">{center._count?.groups || 0}</span>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (center: CenterWithCount) => (
+        <Badge variant={center.isActive ? 'success' : 'default'}>
+          {center.isActive ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (center: CenterWithCount) => (
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-blue-600 hover:text-blue-700 font-medium"
+            onClick={() => setEditCenterId(center.id)}
+          >
+            Edit
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-amber-600 hover:text-amber-700 font-medium"
+            onClick={() => handleToggleCenterActive(center.id)}
+          >
+            {center.isActive ? 'Deactivate' : 'Activate'}
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-red-600 hover:text-red-700 font-medium"
+            onClick={() => handleDeleteCenter(center.id)}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  // Stats for centers
+  const activeCenters = centers.filter(c => c.isActive).length;
+
   return (
     <DashboardLayout 
-      title="Group Management" 
-      subtitle="Manage learning groups, assign teachers and track progress."
+      title="Groups & Centers" 
+      subtitle="Manage learning groups and center branches."
     >
       <div className="space-y-6">
+        {/* Tabs */}
+        <div className="border-b border-slate-200">
+          <nav className="flex gap-4">
+            <button
+              onClick={() => setActiveTab('groups')}
+              className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                activeTab === 'groups'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              Groups
+            </button>
+            <button
+              onClick={() => setActiveTab('centers')}
+              className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                activeTab === 'centers'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              Centers / Branches
+            </button>
+          </nav>
+        </div>
+
+        {activeTab === 'groups' && (
+          <div className="space-y-6">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard
@@ -315,6 +486,118 @@ export default function GroupsPage() {
             </div>
           </div>
         </div>
+          </div>
+        )}
+
+        {activeTab === 'centers' && (
+          <div className="space-y-6">
+            {/* Centers Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatCard
+                title="Total Centers"
+                value={totalCenters}
+              />
+              <StatCard
+                title="Active Centers"
+                value={activeCenters || totalCenters}
+                change={{ value: 'Currently active', type: 'positive' }}
+              />
+              <StatCard
+                title="Total Groups"
+                value={centers.reduce((sum, c) => sum + (c._count?.groups || 0), 0)}
+                change={{ value: 'across all centers', type: 'neutral' }}
+              />
+            </div>
+
+            {/* Centers Filters & Actions */}
+            <div className="flex items-center gap-4">
+              <div className="flex-1 relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="search"
+                  placeholder="Search centers by name or address..."
+                  value={centerSearchQuery}
+                  onChange={handleCenterSearchChange}
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />
+              </div>
+              
+              {/* Filter by status */}
+              <select
+                value={centerShowActiveOnly === undefined ? 'all' : centerShowActiveOnly ? 'active' : 'inactive'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setCenterShowActiveOnly(val === 'all' ? undefined : val === 'active');
+                  setCenterPage(0);
+                }}
+                className="px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+              </select>
+
+              <Button 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
+                onClick={() => setCreateCenterOpen(true)}
+              >
+                + Add Center
+              </Button>
+            </div>
+
+            {/* Centers Table */}
+            <DataTable
+              columns={centerColumns}
+              data={centers}
+              keyExtractor={(center) => center.id}
+              isLoading={isLoadingCenters}
+              emptyMessage={centerSearchQuery ? "No centers match your search" : "No centers found"}
+            />
+
+            {/* Centers Pagination */}
+            <div className="flex items-center justify-between text-sm text-slate-500">
+              <span>
+                Showing {Math.min(centerPage * pageSize + 1, totalCenters)}-{Math.min((centerPage + 1) * pageSize, totalCenters)} of {totalCenters} centers
+              </span>
+              <div className="flex items-center gap-2">
+                <button 
+                  className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
+                  disabled={centerPage === 0}
+                  onClick={() => setCenterPage(p => Math.max(0, p - 1))}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <span>Page {centerPage + 1} of {totalCenterPages || 1}</span>
+                <button 
+                  className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+                  disabled={centerPage >= totalCenterPages - 1}
+                  onClick={() => setCenterPage(p => p + 1)}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modals */}
+        <CreateCenterForm 
+          open={createCenterOpen} 
+          onOpenChange={setCreateCenterOpen} 
+        />
+        {editCenterId && (
+          <EditCenterForm 
+            open={!!editCenterId} 
+            onOpenChange={(open) => !open && setEditCenterId(null)} 
+            centerId={editCenterId}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
