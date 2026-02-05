@@ -1,14 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
+
+// Component for select all checkbox with indeterminate state
+function SelectAllCheckbox({
+  checked,
+  indeterminate,
+  onChange,
+  disabled,
+}: {
+  checked: boolean;
+  indeterminate: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+}) {
+  const checkboxRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
+
+  return (
+    <input
+      ref={checkboxRef}
+      type="checkbox"
+      className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      checked={checked}
+      onChange={onChange}
+      onClick={(e) => e.stopPropagation()}
+      disabled={disabled}
+      aria-label="Select all"
+    />
+  );
+}
 import { 
   useTeachers, 
   useDeleteTeacher,
+  useDeleteTeachers,
   useUpdateTeacher,
   AddTeacherForm, 
   EditTeacherForm,
@@ -24,9 +59,14 @@ export default function TeachersPage() {
   const [isAddTeacherOpen, setIsAddTeacherOpen] = useState(false);
   const [isEditTeacherOpen, setIsEditTeacherOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
+  const [deletedCount, setDeletedCount] = useState<number>(0);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
+  const [bulkDeleteSuccess, setBulkDeleteSuccess] = useState(false);
   const [deactivateError, setDeactivateError] = useState<string | null>(null);
   const [deactivateSuccess, setDeactivateSuccess] = useState(false);
   const params = useParams();
@@ -53,6 +93,9 @@ export default function TeachersPage() {
   // Delete mutation
   const deleteTeacher = useDeleteTeacher();
   
+  // Bulk delete mutation
+  const deleteTeachers = useDeleteTeachers();
+  
   // Update mutation (for deactivate)
   const updateTeacher = useUpdateTeacher();
 
@@ -64,6 +107,8 @@ export default function TeachersPage() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setPage(0); // Reset to first page on search
+    // Clear selection on search/filter change
+    setSelectedTeacherIds(new Set());
   };
 
   // Handle sorting
@@ -77,7 +122,45 @@ export default function TeachersPage() {
       setSortOrder('asc');
     }
     setPage(0); // Reset to first page on sort
+    // Clear selection on sort change
+    setSelectedTeacherIds(new Set());
   };
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    // Clear selection on page change (selection is per-page)
+    setSelectedTeacherIds(new Set());
+  };
+
+  // Handle individual checkbox toggle
+  const handleToggleSelect = (teacherId: string) => {
+    setSelectedTeacherIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(teacherId)) {
+        newSet.delete(teacherId);
+      } else {
+        newSet.add(teacherId);
+      }
+      return newSet;
+    });
+  };
+
+  // Handle select all toggle
+  const handleSelectAll = () => {
+    if (selectedTeacherIds.size === teachers.length) {
+      // Deselect all
+      setSelectedTeacherIds(new Set());
+    } else {
+      // Select all visible teachers
+      setSelectedTeacherIds(new Set(teachers.map((t) => t.id)));
+    }
+  };
+
+  // Check if all visible teachers are selected
+  const allSelected = teachers.length > 0 && selectedTeacherIds.size === teachers.length;
+  // Check if some (but not all) are selected (indeterminate state)
+  const someSelected = selectedTeacherIds.size > 0 && selectedTeacherIds.size < teachers.length;
 
   // Handle edit button click
   const handleEditClick = (teacher: Teacher) => {
@@ -113,6 +196,41 @@ export default function TeachersPage() {
     } catch (err: any) {
       const message = err?.response?.data?.message || err?.message || 'Failed to delete teacher. Please try again.';
       setDeleteError(message);
+    }
+  };
+
+  // Handle bulk delete click
+  const handleBulkDeleteClick = () => {
+    if (selectedTeacherIds.size === 0) return;
+    setBulkDeleteError(null);
+    setBulkDeleteSuccess(false);
+    setIsBulkDeleteDialogOpen(true);
+  };
+
+  // Handle bulk delete confirmation
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedTeacherIds.size === 0) return;
+
+    setBulkDeleteError(null);
+    setBulkDeleteSuccess(false);
+
+    const count = selectedTeacherIds.size;
+    try {
+      const idsArray = Array.from(selectedTeacherIds);
+      await deleteTeachers.mutateAsync(idsArray);
+      setDeletedCount(count);
+      setBulkDeleteSuccess(true);
+      setIsBulkDeleteDialogOpen(false);
+      setSelectedTeacherIds(new Set());
+      
+      // Clear success message after a delay
+      setTimeout(() => {
+        setBulkDeleteSuccess(false);
+        setDeletedCount(0);
+      }, 3000);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.message || 'Failed to delete teachers. Please try again.';
+      setBulkDeleteError(message);
     }
   };
 
@@ -156,13 +274,22 @@ export default function TeachersPage() {
     {
       key: 'checkbox',
       header: (
-        <input type="checkbox" className="w-4 h-4 rounded border-slate-300" />
+        <SelectAllCheckbox
+          checked={allSelected}
+          indeterminate={someSelected}
+          onChange={handleSelectAll}
+          disabled={deleteTeachers.isPending || deleteTeacher.isPending || isLoading}
+        />
       ),
-      render: () => (
-        <input 
-          type="checkbox" 
-          className="w-4 h-4 rounded border-slate-300" 
+      render: (teacher: Teacher) => (
+        <input
+          type="checkbox"
+          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          checked={selectedTeacherIds.has(teacher.id)}
+          onChange={() => handleToggleSelect(teacher.id)}
           onClick={(e) => e.stopPropagation()}
+          disabled={deleteTeachers.isPending || deleteTeacher.isPending || isLoading}
+          aria-label={`Select ${teacher.user?.firstName} ${teacher.user?.lastName}`}
         />
       ),
     },
@@ -432,13 +559,26 @@ export default function TeachersPage() {
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
+          {selectedTeacherIds.size > 0 && (
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium"
+              onClick={handleBulkDeleteClick}
+              disabled={deleteTeachers.isPending || deleteTeacher.isPending}
+            >
+              {tCommon('delete')} ({selectedTeacherIds.size})
+            </Button>
+          )}
           <Button 
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
             onClick={() => setIsAddTeacherOpen(true)}
+            disabled={deleteTeachers.isPending || deleteTeacher.isPending}
           >
             + {t('addTeacher')}
           </Button>
-          <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
+          <button 
+            className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={deleteTeachers.isPending || deleteTeacher.isPending}
+          >
             <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
@@ -469,8 +609,8 @@ export default function TeachersPage() {
           <div className="flex items-center gap-2">
             <button 
               className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
-              disabled={page === 0}
-              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0 || deleteTeachers.isPending || deleteTeacher.isPending}
+              onClick={() => handlePageChange(Math.max(0, page - 1))}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -479,8 +619,8 @@ export default function TeachersPage() {
             <span>{t('page', { current: page + 1, total: totalPages })}</span>
             <button 
               className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
-              disabled={page >= totalPages - 1}
-              onClick={() => setPage(p => p + 1)}
+              disabled={page >= totalPages - 1 || deleteTeachers.isPending || deleteTeacher.isPending}
+              onClick={() => handlePageChange(page + 1)}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -556,6 +696,20 @@ export default function TeachersPage() {
           <p className="text-sm text-red-600 font-medium">{deleteError}</p>
         </div>
       )}
+      {bulkDeleteSuccess && (
+        <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
+          <p className="text-sm text-green-600 font-medium">
+            {deletedCount > 0 
+              ? `${deletedCount} ${deletedCount === 1 ? 'teacher' : 'teachers'} deleted successfully!`
+              : 'Teachers deleted successfully!'}
+          </p>
+        </div>
+      )}
+      {bulkDeleteError && (
+        <div className="fixed bottom-4 right-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg z-50">
+          <p className="text-sm text-red-600 font-medium">{bulkDeleteError}</p>
+        </div>
+      )}
       {deactivateSuccess && (
         <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
           <p className="text-sm text-green-600 font-medium">Teacher status updated successfully!</p>
@@ -602,6 +756,23 @@ export default function TeachersPage() {
         teacherName={selectedTeacher ? `${selectedTeacher.user.firstName} ${selectedTeacher.user.lastName}` : undefined}
         isLoading={deleteTeacher.isPending}
         error={deleteError}
+      />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={isBulkDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsBulkDeleteDialogOpen(open);
+          if (!open) {
+            setBulkDeleteError(null);
+            setBulkDeleteSuccess(false);
+          }
+        }}
+        onConfirm={handleBulkDeleteConfirm}
+        teacherName={selectedTeacherIds.size > 0 ? `${selectedTeacherIds.size} ${selectedTeacherIds.size === 1 ? 'teacher' : 'teachers'}` : undefined}
+        isLoading={deleteTeachers.isPending}
+        error={bulkDeleteError}
+        title="Delete Teachers"
       />
     </DashboardLayout>
   );

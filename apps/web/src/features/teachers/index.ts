@@ -6,6 +6,7 @@ export {
   useCreateTeacher,
   useUpdateTeacher,
   useDeleteTeacher,
+  useDeleteTeachers,
   teacherKeys,
 } from './hooks';
 

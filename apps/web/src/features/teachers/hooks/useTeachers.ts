@@ -8,6 +8,7 @@ import {
   createTeacher,
   updateTeacher,
   deleteTeacher,
+  deleteTeachers,
 } from '../api/teachers.api';
 import type {
   TeacherFilters,
@@ -161,6 +162,21 @@ export function useDeleteTeacher() {
 
   return useMutation({
     mutationFn: (id: string) => deleteTeacher(id),
+    onSuccess: () => {
+      // Invalidate teachers list
+      queryClient.invalidateQueries({ queryKey: teacherKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Hook to delete multiple teachers
+ */
+export function useDeleteTeachers() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => deleteTeachers(ids),
     onSuccess: () => {
       // Invalidate teachers list
       queryClient.invalidateQueries({ queryKey: teacherKeys.lists() });

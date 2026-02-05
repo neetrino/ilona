@@ -76,3 +76,12 @@ export async function updateTeacher(id: string, data: UpdateTeacherDto): Promise
 export async function deleteTeacher(id: string): Promise<{ success: boolean }> {
   return api.delete<{ success: boolean }>(`${TEACHERS_ENDPOINT}/${id}`);
 }
+
+/**
+ * Delete multiple teachers
+ */
+export async function deleteTeachers(ids: string[]): Promise<{ success: boolean; deletedCount: number }> {
+  return api.delete<{ success: boolean; deletedCount: number }>(`${TEACHERS_ENDPOINT}/bulk`, {
+    body: JSON.stringify({ ids }),
+  });
+}

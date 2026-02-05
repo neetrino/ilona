@@ -90,4 +90,10 @@ export class TeachersController {
   async delete(@Param('id') id: string) {
     return this.teachersService.delete(id);
   }
+
+  @Delete('bulk')
+  @Roles(UserRole.ADMIN)
+  async deleteMany(@Body() body: { ids: string[] }) {
+    return this.teachersService.deleteMany(body.ids);
+  }
 }

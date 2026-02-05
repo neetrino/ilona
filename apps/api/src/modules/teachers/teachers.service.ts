@@ -405,6 +405,70 @@ export class TeachersService {
     return { success: true };
   }
 
+  async deleteMany(ids: string[]) {
+    if (!ids || ids.length === 0) {
+      return { success: true, deletedCount: 0 };
+    }
+
+    // Verify all teachers exist
+    const teachers = await this.prisma.teacher.findMany({
+      where: { id: { in: ids } },
+      include: { user: true },
+    });
+
+    if (teachers.length !== ids.length) {
+      throw new NotFoundException('One or more teachers not found');
+    }
+
+    const userIds = teachers.map((t) => t.user.id);
+
+    // Delete in transaction to handle foreign key constraints
+    await this.prisma.$transaction(async (tx) => {
+      // Delete related feedbacks
+      await tx.feedback.deleteMany({
+        where: { teacherId: { in: ids } },
+      });
+
+      // Delete related lessons
+      await tx.lesson.deleteMany({
+        where: { teacherId: { in: ids } },
+      });
+
+      // Delete salary records
+      await tx.salaryRecord.deleteMany({
+        where: { teacherId: { in: ids } },
+      });
+
+      // Delete deductions
+      await tx.deduction.deleteMany({
+        where: { teacherId: { in: ids } },
+      });
+
+      // Update groups to set teacherId to null
+      await tx.group.updateMany({
+        where: { teacherId: { in: ids } },
+        data: { teacherId: null },
+      });
+
+      // Delete chat participants
+      await tx.chatParticipant.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+
+      // Delete notifications
+      await tx.notification.deleteMany({
+        where: { userId: { in: userIds } },
+      });
+
+      // Finally, delete the users (this will cascade to teachers)
+      await tx.user.deleteMany({
+        where: { id: { in: userIds } },
+      });
+    });
+
+    return { success: true, deletedCount: ids.length };
+  }
+
   async getStatistics(id: string, dateFrom?: Date, dateTo?: Date) {
     const teacher = await this.findById(id);
 
