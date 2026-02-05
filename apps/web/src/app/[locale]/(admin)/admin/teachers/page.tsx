@@ -89,6 +89,7 @@ export default function TeachersPage() {
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
+        const phone = teacher.user?.phone || t('noPhoneNumber');
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
           <div className="flex items-center gap-3">
@@ -99,7 +100,7 @@ export default function TeachersPage() {
               <p className="font-semibold text-slate-800 hover:text-blue-600 transition-colors">
                 {firstName} {lastName}
               </p>
-              <p className="text-sm text-slate-500">{teacher.user?.phone || t('noPhoneNumber')}</p>
+              <p className="text-sm text-slate-500">{phone}</p>
             </div>
           </div>
         );
@@ -126,15 +127,6 @@ export default function TeachersPage() {
           </div>
         );
       },
-    },
-    {
-      key: 'lessons',
-      header: t('lessons'),
-      sortable: true,
-      className: 'text-center',
-      render: (teacher: Teacher) => (
-        <span className="text-slate-700 font-medium">{teacher._count?.lessons || 0}</span>
-      ),
     },
     {
       key: 'status',
