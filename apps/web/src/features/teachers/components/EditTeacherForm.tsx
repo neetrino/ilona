@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateTeacher, useTeacher, type UpdateTeacherDto, type Teacher } from '@/features/teachers';
+import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from './WeeklySchedule';
 import { useState, useEffect } from 'react';
 import type { UserStatus } from '@/types';
 
@@ -15,10 +16,50 @@ const updateTeacherSchema = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
   hourlyRate: z.number().min(0, 'Hourly rate must be positive').optional(),
   workingDays: z.array(z.string()).optional(),
-  workingHours: z.object({
-    start: z.string(),
-    end: z.string(),
-  }).optional(),
+  workingHours: z
+    .object({
+      MON: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
+      TUE: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
+      WED: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
+      THU: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
+      FRI: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
+      SAT: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
+      SUN: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
+    })
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        const hasDays = Object.keys(val).length > 0;
+        if (!hasDays) return false;
+        // Validate each day's time ranges
+        for (const day of Object.keys(val)) {
+          const ranges = val[day as keyof typeof val];
+          if (ranges && Array.isArray(ranges)) {
+            for (const range of ranges) {
+              if (range.start >= range.end) return false;
+            }
+            // Check for overlaps
+            for (let i = 0; i < ranges.length; i++) {
+              for (let j = i + 1; j < ranges.length; j++) {
+                const r1 = ranges[i];
+                const r2 = ranges[j];
+                if (
+                  (r1.start < r2.end && r1.end > r2.start) ||
+                  (r2.start < r1.end && r2.end > r1.start)
+                ) {
+                  return false;
+                }
+              }
+            }
+          }
+        }
+        return true;
+      },
+      {
+        message: 'At least one day must be selected with valid, non-overlapping time ranges',
+      }
+    ),
 });
 
 type UpdateTeacherFormData = z.infer<typeof updateTeacherSchema>;
@@ -41,6 +82,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
     formState: { errors, isSubmitting },
     reset,
     setValue,
+    watch,
   } = useForm<UpdateTeacherFormData>({
     resolver: zodResolver(updateTeacherSchema),
     defaultValues: {
@@ -49,12 +91,11 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       phone: '',
       hourlyRate: 0,
       workingDays: [],
-      workingHours: {
-        start: '09:00',
-        end: '18:00',
-      },
+      workingHours: undefined,
     },
   });
+
+  const workingHours = watch('workingHours');
 
   // Pre-fill form when teacher data is loaded
   useEffect(() => {
@@ -65,7 +106,25 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       setValue('status', teacher.user.status);
       setValue('hourlyRate', teacher.hourlyRate || 0);
       setValue('workingDays', teacher.workingDays || []);
-      setValue('workingHours', teacher.workingHours || { start: '09:00', end: '18:00' });
+      
+      // Convert old format to new format if needed
+      let workingHoursValue: WeeklyScheduleType | undefined = undefined;
+      if (teacher.workingHours) {
+        // Check if it's the new format (has day keys)
+        if ('MON' in teacher.workingHours || 'TUE' in teacher.workingHours) {
+          workingHoursValue = teacher.workingHours as WeeklyScheduleType;
+        } else if ('start' in teacher.workingHours && 'end' in teacher.workingHours) {
+          // Old format: convert to new format using workingDays
+          const oldHours = teacher.workingHours as { start: string; end: string };
+          workingHoursValue = {};
+          (teacher.workingDays || []).forEach((day) => {
+            workingHoursValue![day as keyof WeeklyScheduleType] = [
+              { start: oldHours.start, end: oldHours.end },
+            ];
+          });
+        }
+      }
+      setValue('workingHours', workingHoursValue);
       setErrorMessage(null);
       setSuccessMessage(null);
     }
@@ -84,14 +143,17 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
     setErrorMessage(null);
     
     try {
+      // Extract working days from workingHours
+      const workingDays = data.workingHours ? Object.keys(data.workingHours) : [];
+      
       const payload: UpdateTeacherDto = {
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone || undefined,
         status: data.status,
         hourlyRate: data.hourlyRate,
-        workingDays: data.workingDays,
-        workingHours: data.workingHours,
+        workingDays: workingDays.length > 0 ? workingDays : undefined,
+        workingHours: data.workingHours && Object.keys(data.workingHours).length > 0 ? data.workingHours : undefined,
       };
 
       await updateTeacher.mutateAsync({ id: teacherId, data: payload });
@@ -208,26 +270,12 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="workingHoursStart">Working Hours Start</Label>
-                <Input
-                  id="workingHoursStart"
-                  type="time"
-                  {...register('workingHours.start')}
-                  error={errors.workingHours?.start?.message}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="workingHoursEnd">Working Hours End</Label>
-                <Input
-                  id="workingHoursEnd"
-                  type="time"
-                  {...register('workingHours.end')}
-                  error={errors.workingHours?.end?.message}
-                />
-              </div>
+            <div className="space-y-2">
+              <WeeklySchedule
+                value={workingHours}
+                onChange={(schedule) => setValue('workingHours', schedule)}
+                error={errors.workingHours?.message}
+              />
             </div>
 
             <DialogFooter>

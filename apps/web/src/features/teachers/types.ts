@@ -7,10 +7,15 @@ export interface Teacher {
   specialization?: string;
   hourlyRate: number;
   workingDays: string[];
-  workingHours: {
-    start: string;
-    end: string;
-  };
+  workingHours?: {
+    MON?: Array<{ start: string; end: string }>;
+    TUE?: Array<{ start: string; end: string }>;
+    WED?: Array<{ start: string; end: string }>;
+    THU?: Array<{ start: string; end: string }>;
+    FRI?: Array<{ start: string; end: string }>;
+    SAT?: Array<{ start: string; end: string }>;
+    SUN?: Array<{ start: string; end: string }>;
+  } | null;
   user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'phone' | 'avatarUrl' | 'status' | 'lastLoginAt' | 'createdAt'>;
   groups?: TeacherGroup[];
   _count: {
@@ -54,8 +59,13 @@ export interface CreateTeacherDto {
   hourlyRate: number;
   workingDays?: string[];
   workingHours?: {
-    start: string;
-    end: string;
+    MON?: Array<{ start: string; end: string }>;
+    TUE?: Array<{ start: string; end: string }>;
+    WED?: Array<{ start: string; end: string }>;
+    THU?: Array<{ start: string; end: string }>;
+    FRI?: Array<{ start: string; end: string }>;
+    SAT?: Array<{ start: string; end: string }>;
+    SUN?: Array<{ start: string; end: string }>;
   };
 }
 
@@ -67,8 +77,13 @@ export interface UpdateTeacherDto {
   hourlyRate?: number;
   workingDays?: string[];
   workingHours?: {
-    start: string;
-    end: string;
+    MON?: Array<{ start: string; end: string }>;
+    TUE?: Array<{ start: string; end: string }>;
+    WED?: Array<{ start: string; end: string }>;
+    THU?: Array<{ start: string; end: string }>;
+    FRI?: Array<{ start: string; end: string }>;
+    SAT?: Array<{ start: string; end: string }>;
+    SUN?: Array<{ start: string; end: string }>;
   };
 }
 

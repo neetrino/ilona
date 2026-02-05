@@ -164,7 +164,7 @@ model Teacher {
   specialization String?
   hourlyRate    Decimal  @db.Decimal(10, 2)
   workingDays   String[] // ["MON", "TUE", "WED", "THU", "FRI"]
-  workingHours  Json?    // { start: "09:00", end: "18:00" }
+  workingHours  Json?    // { MON: [{ start: "09:00", end: "13:00" }, { start: "14:00", end: "18:00" }], TUE: [...], ... }
   hireDate      DateTime @default(now())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

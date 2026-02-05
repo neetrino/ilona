@@ -57,6 +57,14 @@ export class UpdateTeacherDto {
 
   @IsObject()
   @IsOptional()
-  workingHours?: { start: string; end: string };
+  workingHours?: {
+    MON?: Array<{ start: string; end: string }>;
+    TUE?: Array<{ start: string; end: string }>;
+    WED?: Array<{ start: string; end: string }>;
+    THU?: Array<{ start: string; end: string }>;
+    FRI?: Array<{ start: string; end: string }>;
+    SAT?: Array<{ start: string; end: string }>;
+    SUN?: Array<{ start: string; end: string }>;
+  };
 }
 

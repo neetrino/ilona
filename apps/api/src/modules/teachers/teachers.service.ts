@@ -290,7 +290,7 @@ export class TeachersService {
           specialization: dto.specialization,
           hourlyRate: dto.hourlyRate,
           workingDays: dto.workingDays ?? ['MON', 'TUE', 'WED', 'THU', 'FRI'],
-          workingHours: dto.workingHours ?? { start: '09:00', end: '18:00' },
+          workingHours: dto.workingHours ?? undefined,
         },
         include: {
           user: {
