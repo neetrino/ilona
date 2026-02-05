@@ -20,3 +20,6 @@ export type {
   CreateGroupDto,
   UpdateGroupDto,
 } from './types';
+
+// Components
+export { CreateGroupForm } from './components/CreateGroupForm';

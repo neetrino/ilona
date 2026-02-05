@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
-import { useGroups, useDeleteGroup, useToggleGroupActive, type Group } from '@/features/groups';
+import { useGroups, useDeleteGroup, useToggleGroupActive, CreateGroupForm, type Group } from '@/features/groups';
 import { 
   useCenters, 
   useDeleteCenter, 
@@ -20,6 +20,7 @@ export default function GroupsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const [showActiveOnly, setShowActiveOnly] = useState<boolean | undefined>(undefined);
+  const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const pageSize = 10;
 
   // Fetch groups
@@ -398,8 +399,11 @@ export default function GroupsPage() {
             <option value="inactive">Inactive Only</option>
           </select>
 
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium">
-            + Add group
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
+            onClick={() => setCreateGroupOpen(true)}
+          >
+            + Add Group
           </Button>
         </div>
 
@@ -587,6 +591,10 @@ export default function GroupsPage() {
         )}
 
         {/* Modals */}
+        <CreateGroupForm 
+          open={createGroupOpen} 
+          onOpenChange={setCreateGroupOpen} 
+        />
         <CreateCenterForm 
           open={createCenterOpen} 
           onOpenChange={setCreateCenterOpen} 
