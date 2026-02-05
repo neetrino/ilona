@@ -139,6 +139,8 @@
     "actions": "Actions",
     "edit": "Edit",
     "delete": "Delete",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
     "noTeachersMatch": "No teachers match your search",
     "noTeachersFound": "No teachers found",
     "showing": "Showing {start}-{end} of {total} teachers",
