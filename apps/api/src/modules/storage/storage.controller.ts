@@ -8,9 +8,13 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  InternalServerErrorException,
+  PayloadTooLargeException,
+  UnsupportedMediaTypeException,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
@@ -20,11 +24,13 @@ import { CurrentUser } from '../../common/decorators';
 import { JwtPayload } from '../../common/types/auth.types';
 
 // Max file sizes
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+// Note: Base64 encoding increases size by ~33%, so 5MB file becomes ~6.7MB base64
+// We limit to 5MB to ensure base64 stays under 10MB for database storage
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB for avatars (becomes ~6.7MB base64)
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
 
-// Allowed MIME types
-const IMAGE_TYPES = /^image\/(jpeg|png|gif|webp)$/;
+// Allowed MIME types - allow jpg as well as jpeg
+const IMAGE_TYPES = /^image\/(jpeg|jpg|png|gif|webp)$/i;
 const FILE_TYPES = /^(image|application|audio|video)\//;
 
 interface PresignedUrlDto {
@@ -38,6 +44,8 @@ interface PresignedUrlDto {
 @UseGuards(JwtAuthGuard)
 @Controller('storage')
 export class StorageController {
+  private readonly logger = new Logger(StorageController.name);
+
   constructor(private readonly storageService: StorageService) {}
 
   /**
@@ -62,21 +70,58 @@ export class StorageController {
           new MaxFileSizeValidator({ maxSize: MAX_IMAGE_SIZE }),
           new FileTypeValidator({ fileType: IMAGE_TYPES }),
         ],
+        exceptionFactory: (error) => {
+          if (error.includes('File is too large')) {
+            throw new PayloadTooLargeException(
+              `File size exceeds the maximum allowed size of ${MAX_IMAGE_SIZE / 1024 / 1024}MB`,
+            );
+          }
+          if (error.includes('File type')) {
+            throw new UnsupportedMediaTypeException(
+              'Invalid file type. Only JPG, PNG, WEBP, and GIF images are allowed.',
+            );
+          }
+          throw new BadRequestException(`File validation failed: ${error}`);
+        },
       }),
     )
     file: Express.Multer.File,
     @CurrentUser() _user: JwtPayload,
   ) {
-    const result = await this.storageService.uploadAvatar(
-      file.buffer,
-      file.originalname,
-      file.mimetype,
-    );
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
 
-    return {
-      success: true,
-      data: result,
-    };
+    if (!file.buffer || file.buffer.length === 0) {
+      throw new BadRequestException('File is empty');
+    }
+
+    try {
+      const result = await this.storageService.uploadAvatar(
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+      );
+
+      // Result.url now contains base64 data URL (data:image/jpeg;base64,...)
+      // This will be saved directly in the database
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to upload avatar: ${error instanceof Error ? error.message : String(error)}`, error instanceof Error ? error.stack : undefined);
+      
+      if (error instanceof BadRequestException || 
+          error instanceof PayloadTooLargeException || 
+          error instanceof UnsupportedMediaTypeException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Failed to upload file. Please try again later.',
+      );
+    }
   }
 
   /**
@@ -200,4 +245,5 @@ export class StorageController {
       message: 'File deleted successfully',
     };
   }
+
 }

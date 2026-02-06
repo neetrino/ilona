@@ -14,6 +14,7 @@ export interface UpdateProfileDto {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  avatarUrl?: string | null;
 }
 
 export interface ChangePasswordDto {

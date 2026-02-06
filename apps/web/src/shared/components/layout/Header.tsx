@@ -97,8 +97,26 @@ export function Header({ title, subtitle }: HeaderProps) {
             onClick={handleProfileClick}
             className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-semibold shadow-sm">
-              {user?.firstName?.[0] || user?.lastName?.[0] || 'U'}
+            <div className="relative w-10 h-10">
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={`${user?.firstName} ${user?.lastName}`}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                  onError={(e) => {
+                    // Fallback to initials if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div 
+                className={`w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-semibold shadow-sm ${user?.avatarUrl ? 'hidden' : ''}`}
+              >
+                {user?.firstName?.[0] || user?.lastName?.[0] || 'U'}
+              </div>
             </div>
             <div className="flex-1 min-w-0 text-left">
               <p className="text-sm text-slate-500">{tAuth('welcomeBack')}</p>

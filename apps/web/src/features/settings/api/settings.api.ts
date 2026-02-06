@@ -27,15 +27,41 @@ export async function changePassword(data: ChangePasswordDto): Promise<{ success
  */
 export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
   const formData = new FormData();
-  formData.append('avatar', file);
+  formData.append('file', file);
   
-  // Note: This would need special handling for multipart/form-data
-  return api.post<{ avatarUrl: string }>('/users/me/avatar', formData);
+  try {
+    const response = await api.post<{ success: boolean; data: { url: string; key: string; fileName: string; fileSize: number; mimeType: string } }>('/storage/avatar', formData);
+    
+    // Update user profile with the avatar URL
+    if (response.success && response.data?.url) {
+      await api.patch<UserProfile>('/users/me', { avatarUrl: response.data.url });
+      return { avatarUrl: response.data.url };
+    }
+    
+    throw new Error('Failed to upload avatar: Invalid response from server');
+  } catch (error: any) {
+    // Extract user-friendly error message from API response
+    if (error?.statusCode === 413) {
+      throw new Error('File size too large. Please upload an image smaller than 5MB.');
+    }
+    if (error?.statusCode === 415) {
+      throw new Error('Invalid file type. Only JPG, PNG, WEBP, and GIF images are allowed.');
+    }
+    if (error?.statusCode === 400) {
+      throw new Error(error?.message || 'Invalid file. Please check the file and try again.');
+    }
+    if (error?.statusCode === 500) {
+      throw new Error(error?.message || 'Server error. Please try again later or contact support.');
+    }
+    throw error;
+  }
 }
 
 /**
  * Delete avatar
  */
 export async function deleteAvatar(): Promise<{ success: boolean }> {
-  return api.delete<{ success: boolean }>('/users/me/avatar');
+  // Update user profile to remove avatar URL
+  await api.patch<UserProfile>('/users/me', { avatarUrl: null });
+  return { success: true };
 }

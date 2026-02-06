@@ -138,8 +138,10 @@ class ApiClient {
     const { token: explicitToken, skipAuthRefresh, ...fetchOptions } = options;
     let token = explicitToken || this.getToken();
 
+    // Don't set Content-Type for FormData - browser will set it with boundary
+    const isFormData = fetchOptions.body instanceof FormData;
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
+      ...(!isFormData && { 'Content-Type': 'application/json' }),
       ...(options.headers || {}),
     };
 
@@ -339,10 +341,12 @@ class ApiClient {
   }
 
   async post<T>(endpoint: string, body?: unknown, options?: FetchOptions): Promise<T> {
+    // If body is FormData, pass it directly; otherwise stringify JSON
+    const requestBody = body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined);
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: requestBody,
     });
   }
 

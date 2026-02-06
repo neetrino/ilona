@@ -75,11 +75,20 @@ export function useChangePassword() {
  */
 export function useUploadAvatar() {
   const queryClient = useQueryClient();
+  const { user, setUser } = useAuthStore();
 
   return useMutation({
     mutationFn: (file: File) => uploadAvatar(file),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: settingsKeys.profile() });
+      
+      // Update auth store with new avatar URL
+      if (result.avatarUrl && user) {
+        setUser({
+          ...user,
+          avatarUrl: result.avatarUrl,
+        });
+      }
     },
   });
 }
@@ -89,11 +98,20 @@ export function useUploadAvatar() {
  */
 export function useDeleteAvatar() {
   const queryClient = useQueryClient();
+  const { user, setUser } = useAuthStore();
 
   return useMutation({
     mutationFn: () => deleteAvatar(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: settingsKeys.profile() });
+      
+      // Update auth store to remove avatar URL
+      if (user) {
+        setUser({
+          ...user,
+          avatarUrl: null,
+        });
+      }
     },
   });
 }

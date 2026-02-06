@@ -139,4 +139,49 @@ export class UsersService {
       data: { lastLoginAt: new Date() },
     });
   }
+
+  async update(userId: string, data: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string }) {
+    try {
+      const user = await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(data.firstName !== undefined && { firstName: data.firstName }),
+          ...(data.lastName !== undefined && { lastName: data.lastName }),
+          ...(data.phone !== undefined && { phone: data.phone }),
+          ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }),
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          avatarUrl: true,
+          role: true,
+          status: true,
+          lastLoginAt: true,
+          createdAt: true,
+          updatedAt: true,
+          teacher: true,
+          student: {
+            include: {
+              group: {
+                include: {
+                  center: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return user;
+    } catch (error) {
+      if (this.isDatabaseConnectionError(error)) {
+        this.logger.error('Database connection error in update', error);
+        throw new ServiceUnavailableException('Database unavailable, please retry');
+      }
+      throw error;
+    }
+  }
 }
