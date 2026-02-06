@@ -134,14 +134,6 @@ export default function GroupsPage() {
       ),
     },
     {
-      key: 'lessons',
-      header: 'Lessons',
-      className: 'text-center',
-      render: (group: Group) => (
-        <span className="text-slate-700">{group._count?.lessons || 0}</span>
-      ),
-    },
-    {
       key: 'status',
       header: 'Status',
       render: (group: Group) => (
