@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/shared/components/ui/input';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -14,10 +15,24 @@ interface HeaderProps {
 export function Header({ title, subtitle }: HeaderProps) {
   const [searchValue, setSearchValue] = useState('');
   const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
   const t = useTranslations('common');
   const { user, logout } = useAuthStore();
   const tAuth = useTranslations('auth');
   const tNav = useTranslations('nav');
+
+  const handleProfileClick = () => {
+    if (!user?.role) return;
+    
+    // Get the current locale from pathname
+    const segments = pathname.split('/');
+    const currentLocale = segments[1] || locale;
+    
+    // Navigate to profile page based on role
+    const profilePath = `/${currentLocale}/${user.role.toLowerCase()}/profile`;
+    router.push(profilePath);
+  };
 
   const today = new Date().toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', {
     month: 'short',
@@ -78,15 +93,20 @@ export function Header({ title, subtitle }: HeaderProps) {
 
         {/* Profile Component */}
         <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-semibold shadow-sm">
-            {user?.firstName?.[0] || user?.lastName?.[0] || 'U'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-slate-500">{tAuth('welcomeBack')}</p>
-            <p className="font-semibold text-slate-800 truncate">
-              {user?.role === 'ADMIN' ? 'Admin' : user?.role === 'TEACHER' ? 'Teacher' : user?.role === 'STUDENT' ? 'Student' : user?.firstName || tNav('user')}
-            </p>
-          </div>
+          <button
+            onClick={handleProfileClick}
+            className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-semibold shadow-sm">
+              {user?.firstName?.[0] || user?.lastName?.[0] || 'U'}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-sm text-slate-500">{tAuth('welcomeBack')}</p>
+              <p className="font-semibold text-slate-800 truncate">
+                {user?.role === 'ADMIN' ? 'Admin' : user?.role === 'TEACHER' ? 'Teacher' : user?.role === 'STUDENT' ? 'Student' : user?.firstName || tNav('user')}
+              </p>
+            </div>
+          </button>
           <button
             onClick={logout}
             className="p-2 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
