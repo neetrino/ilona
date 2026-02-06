@@ -353,7 +353,7 @@ export default function StudentsPage() {
                 e.stopPropagation();
                 handleEditClick(student);
               }}
-              className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              className="p-1.5 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
               disabled={isDeactivating || deleteStudent.isPending}
             >
               <svg 
@@ -381,7 +381,7 @@ export default function StudentsPage() {
                 e.stopPropagation();
                 handleDeleteClick(student);
               }}
-              className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              className="p-1.5 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
               disabled={isDeactivating || deleteStudent.isPending}
             >
               <svg 
@@ -409,11 +409,7 @@ export default function StudentsPage() {
                 e.stopPropagation();
                 handleDeactivateClick(student);
               }}
-              className={`p-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
-                isActive 
-                  ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50' 
-                  : 'text-green-600 hover:text-green-700 hover:bg-green-50'
-              }`}
+              className="p-1.5 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
               disabled={isDeactivating || deleteStudent.isPending}
             >
               {isDeactivating ? (

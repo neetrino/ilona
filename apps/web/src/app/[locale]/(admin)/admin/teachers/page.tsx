@@ -484,7 +484,7 @@ export default function TeachersPage() {
                 e.stopPropagation();
                 handleEditClick(teacher);
               }}
-              className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
               disabled={isDeactivating}
             >
               <svg 
@@ -512,7 +512,7 @@ export default function TeachersPage() {
                 e.stopPropagation();
                 handleDeleteClick(teacher);
               }}
-              className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
               disabled={isDeactivating || deleteTeacher.isPending}
             >
               <svg 
@@ -540,11 +540,7 @@ export default function TeachersPage() {
                 e.stopPropagation();
                 handleDeactivateClick(teacher);
               }}
-              className={`p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                isActive 
-                  ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50' 
-                  : 'text-green-600 hover:text-green-700 hover:bg-green-50'
-              }`}
+              className="p-2 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
               disabled={isDeactivating || deleteTeacher.isPending}
             >
               {isDeactivating ? (
