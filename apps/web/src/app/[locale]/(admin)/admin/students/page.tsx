@@ -116,7 +116,9 @@ export default function StudentsPage() {
               <p className="font-semibold text-slate-800">
                 {firstName} {lastName}
               </p>
-              <p className="text-sm text-slate-500">{student.user?.email || ''}</p>
+              <p className="text-sm text-slate-500">
+                {student.user?.phone || 'No phone'}
+              </p>
             </div>
           </div>
         );

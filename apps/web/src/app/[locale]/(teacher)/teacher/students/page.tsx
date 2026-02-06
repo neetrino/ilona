@@ -21,9 +21,10 @@ export default function TeacherStudentsPage() {
   const filteredStudents = students.filter((student) => {
     if (!searchQuery) return true;
     const fullName = `${student.user.firstName} ${student.user.lastName}`.toLowerCase();
+    const phone = student.user.phone?.toLowerCase() || '';
     return (
       fullName.includes(searchQuery.toLowerCase()) ||
-      student.user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      phone.includes(searchQuery.toLowerCase())
     );
   });
 
@@ -60,7 +61,7 @@ export default function TeacherStudentsPage() {
             </svg>
             <input
               type="search"
-              placeholder="Search students by name or email..."
+              placeholder="Search students by name or phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -137,7 +138,9 @@ export default function TeacherStudentsPage() {
                         <p className="font-medium text-slate-800">
                           {student.user.firstName} {student.user.lastName}
                         </p>
-                        <p className="text-sm text-slate-500">{student.user.email}</p>
+                        <p className="text-sm text-slate-500">
+                          {student.user.phone || 'No phone'}
+                        </p>
                         {student.group && (
                           <p className="text-xs text-slate-400 mt-0.5">
                             Group: {student.group.name}
