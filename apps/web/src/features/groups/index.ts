@@ -2,6 +2,7 @@
 export {
   useGroups,
   useGroup,
+  useMyGroups,
   useCreateGroup,
   useUpdateGroup,
   useDeleteGroup,

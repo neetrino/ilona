@@ -103,6 +103,7 @@ export async function fetchMyAssignedStudents(filters?: StudentFilters): Promise
   if (filters?.take !== undefined) params.append('take', String(filters.take));
   if (filters?.search) params.append('search', filters.search);
   if (filters?.status) params.append('status', filters.status);
+  if (filters?.groupId) params.append('groupId', filters.groupId);
 
   const query = params.toString();
   const url = query ? `${STUDENTS_ENDPOINT}/me/assigned?${query}` : `${STUDENTS_ENDPOINT}/me/assigned`;

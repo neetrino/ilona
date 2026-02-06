@@ -106,6 +106,7 @@ export function useChangeStudentGroup() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: studentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
     },
   });
 }

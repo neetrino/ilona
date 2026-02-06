@@ -11,6 +11,7 @@ import {
   assignTeacher,
   addStudentToGroup,
   removeStudentFromGroup,
+  fetchMyGroups,
 } from '../api/groups.api';
 import type { GroupFilters, CreateGroupDto, UpdateGroupDto } from '../types';
 
@@ -21,6 +22,7 @@ export const groupKeys = {
   list: (filters?: GroupFilters) => [...groupKeys.lists(), filters] as const,
   details: () => [...groupKeys.all, 'detail'] as const,
   detail: (id: string) => [...groupKeys.details(), id] as const,
+  myGroups: () => [...groupKeys.all, 'my-groups'] as const,
 };
 
 /**
@@ -45,6 +47,16 @@ export function useGroup(id: string, enabled = true) {
 }
 
 /**
+ * Hook to fetch groups assigned to the currently logged-in teacher
+ */
+export function useMyGroups() {
+  return useQuery({
+    queryKey: groupKeys.myGroups(),
+    queryFn: () => fetchMyGroups(),
+  });
+}
+
+/**
  * Hook to create a group
  */
 export function useCreateGroup() {
@@ -52,8 +64,12 @@ export function useCreateGroup() {
 
   return useMutation({
     mutationFn: (data: CreateGroupDto) => createGroup(data),
-    onSuccess: () => {
+    onSuccess: (group) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+      // If a teacher is assigned, invalidate their my-groups cache
+      if (group.teacherId) {
+        queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      }
     },
   });
 }
@@ -67,9 +83,13 @@ export function useUpdateGroup() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateGroupDto }) =>
       updateGroup(id, data),
-    onSuccess: (_, { id }) => {
+    onSuccess: (group, { id }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+      // If teacher assignment changed, invalidate my-groups cache
+      if (data.teacherId !== undefined) {
+        queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      }
     },
   });
 }
@@ -115,6 +135,7 @@ export function useAssignTeacher() {
     onSuccess: (_, { groupId }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
     },
   });
 }
@@ -131,6 +152,9 @@ export function useAddStudentToGroup() {
     onSuccess: (_, { groupId }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      // Invalidate student queries to refresh student lists
+      queryClient.invalidateQueries({ queryKey: ['students', 'my-assigned'] });
     },
   });
 }
@@ -147,6 +171,9 @@ export function useRemoveStudentFromGroup() {
     onSuccess: (_, { groupId }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      // Invalidate student queries to refresh student lists
+      queryClient.invalidateQueries({ queryKey: ['students', 'my-assigned'] });
     },
   });
 }

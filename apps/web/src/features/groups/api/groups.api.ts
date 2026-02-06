@@ -84,3 +84,10 @@ export async function addStudentToGroup(groupId: string, studentId: string): Pro
 export async function removeStudentFromGroup(groupId: string, studentId: string): Promise<{ success: boolean }> {
   return api.delete<{ success: boolean }>(`${GROUPS_ENDPOINT}/${groupId}/students/${studentId}`);
 }
+
+/**
+ * Fetch groups assigned to the currently logged-in teacher
+ */
+export async function fetchMyGroups(): Promise<Group[]> {
+  return api.get<Group[]>(`${GROUPS_ENDPOINT}/my-groups`);
+}

@@ -123,14 +123,38 @@ export class GroupsService {
   }
 
   async findByTeacher(teacherId: string) {
-    return this.prisma.group.findMany({
+    const groups = await this.prisma.group.findMany({
       where: { teacherId, isActive: true },
       include: {
         center: { select: { id: true, name: true } },
-        _count: { select: { students: true, lessons: true } },
+        _count: { select: { lessons: true } },
       },
       orderBy: { name: 'asc' },
     });
+
+    // Count only ACTIVE students for each group
+    const groupIds = groups.map(g => g.id);
+    const activeStudentCounts = await this.prisma.student.groupBy({
+      by: ['groupId'],
+      where: {
+        groupId: { in: groupIds },
+        user: { status: 'ACTIVE' },
+      },
+      _count: { id: true },
+    });
+
+    const countMap = new Map(
+      activeStudentCounts.map(item => [item.groupId, item._count.id])
+    );
+
+    // Add student counts to groups
+    return groups.map(group => ({
+      ...group,
+      _count: {
+        ...group._count,
+        students: countMap.get(group.id) || 0,
+      },
+    }));
   }
 
   async create(dto: CreateGroupDto) {

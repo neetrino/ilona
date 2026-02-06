@@ -793,16 +793,15 @@ export class StudentsService {
     take?: number;
     search?: string;
     status?: UserStatus;
+    groupId?: string;
   }) {
-    const { skip = 0, take = 50, search, status } = params || {};
+    const { skip = 0, take = 50, search, status, groupId } = params || {};
 
     // Ensure skip and take are valid numbers
     const skipValue = Number(skip) || 0;
     const takeValue = Number(take) || 50;
 
-    const where: Prisma.StudentWhereInput = {
-      teacherId,
-    };
+    const where: Prisma.StudentWhereInput = {};
     const userWhere: Prisma.UserWhereInput = {};
 
     if (search) {
@@ -813,12 +812,34 @@ export class StudentsService {
       ];
     }
 
-    if (status) {
-      userWhere.status = status;
-    }
+    // Default to ACTIVE status if not specified
+    userWhere.status = status || 'ACTIVE';
 
     if (Object.keys(userWhere).length > 0) {
       where.user = userWhere;
+    }
+
+    if (groupId) {
+      // When groupId is provided, verify the group belongs to this teacher
+      // and show ALL students in that group (not just those with matching teacherId)
+      const group = await this.prisma.group.findUnique({
+        where: { id: groupId },
+        select: { teacherId: true },
+      });
+
+      if (!group) {
+        throw new NotFoundException(`Group with ID ${groupId} not found`);
+      }
+
+      if (group.teacherId !== teacherId) {
+        throw new NotFoundException('Group is not assigned to this teacher');
+      }
+
+      // Show all students in this group
+      where.groupId = groupId;
+    } else {
+      // When no groupId is provided, show all students assigned to this teacher
+      where.teacherId = teacherId;
     }
 
     const [items, total] = await Promise.all([
@@ -882,6 +903,7 @@ export class StudentsService {
     take?: number;
     search?: string;
     status?: UserStatus;
+    groupId?: string;
   }) {
     // Get teacher by userId
     const teacher = await this.prisma.teacher.findUnique({

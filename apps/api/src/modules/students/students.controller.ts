@@ -68,6 +68,7 @@ export class StudentsController {
       take: query.take,
       search: query.search,
       status: query.status as UserStatus | undefined,
+      groupId: query.groupId,
     });
   }
 
