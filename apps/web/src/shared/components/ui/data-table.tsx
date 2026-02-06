@@ -97,7 +97,10 @@ export function DataTable<T>({
                       </span>
                     </button>
                   ) : (
-                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase">
+                    <div className={cn(
+                      'flex items-center gap-1.5 text-xs font-semibold uppercase',
+                      column.className?.includes('text-center') && 'justify-center'
+                    )}>
                       {column.header}
                     </div>
                   )}

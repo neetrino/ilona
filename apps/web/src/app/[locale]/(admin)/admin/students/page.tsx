@@ -35,6 +35,10 @@ export default function StudentsPage() {
   const [selectedCenterIds, setSelectedCenterIds] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  // Month/year filter for attendance - default to current month
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth() + 1); // 1-12
+  const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -71,6 +75,8 @@ export default function StudentsPage() {
     centerIds: centerIdsArray,
     sortBy: sortBy,
     sortOrder: sortOrder,
+    month: selectedMonth,
+    year: selectedYear,
   });
 
   // Mutations
@@ -348,6 +354,41 @@ export default function StudentsPage() {
       },
     },
     {
+      key: 'absence',
+      header: 'ABSENCE',
+      className: '!text-center',
+      render: (student: Student) => {
+        const attendance = student.attendanceSummary;
+        
+        // If student has no group, show "—"
+        if (!student.groupId) {
+          return (
+            <div className="flex justify-center">
+              <span className="text-slate-400">—</span>
+            </div>
+          );
+        }
+        
+        // If no attendance data, show "0/0"
+        if (!attendance) {
+          return (
+            <div className="flex justify-center">
+              <span className="text-slate-600">0/0</span>
+            </div>
+          );
+        }
+        
+        const { totalClasses, absences } = attendance;
+        return (
+          <div className="flex justify-center">
+            <span className="text-slate-700 font-medium">
+              {totalClasses}/{absences}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
       key: 'actions',
       header: 'ACTIONS',
       className: '!w-[160px] !min-w-[160px] !max-w-[160px] !px-3 !py-4 text-left',
@@ -527,7 +568,7 @@ export default function StudentsPage() {
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <FilterDropdown
               label="Teacher"
               options={teacherFilterOptions}
@@ -550,6 +591,52 @@ export default function StudentsPage() {
               placeholder="All Centers"
               isLoading={!centersData}
             />
+            {/* Month Filter */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700">Month</label>
+              <select
+                value={selectedMonth}
+                onChange={(e) => {
+                  setSelectedMonth(Number(e.target.value));
+                  handleFilterChange();
+                }}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              >
+                <option value={1}>January</option>
+                <option value={2}>February</option>
+                <option value={3}>March</option>
+                <option value={4}>April</option>
+                <option value={5}>May</option>
+                <option value={6}>June</option>
+                <option value={7}>July</option>
+                <option value={8}>August</option>
+                <option value={9}>September</option>
+                <option value={10}>October</option>
+                <option value={11}>November</option>
+                <option value={12}>December</option>
+              </select>
+            </div>
+            {/* Year Filter */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700">Year</label>
+              <select
+                value={selectedYear}
+                onChange={(e) => {
+                  setSelectedYear(Number(e.target.value));
+                  handleFilterChange();
+                }}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              >
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = now.getFullYear() - 2 + i;
+                  return (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
           </div>
         </div>
 

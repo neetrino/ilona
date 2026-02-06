@@ -23,6 +23,10 @@ export interface Student {
       phone?: string;
     };
   } | null;
+  attendanceSummary?: {
+    totalClasses: number;
+    absences: number;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -58,6 +62,8 @@ export interface StudentFilters {
   centerIds?: string[];
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  month?: number; // 1-12 (January-December)
+  year?: number; // e.g., 2024
 }
 
 export interface CreateStudentDto {

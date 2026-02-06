@@ -62,6 +62,19 @@ export class QueryStudentDto {
   @IsOptional()
   @IsEnum(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc';
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  month?: number; // 1-12 (January-December)
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(2000)
+  year?: number; // e.g., 2024
 }
 
 

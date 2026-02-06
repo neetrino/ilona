@@ -25,6 +25,8 @@ export class StudentsService {
     centerIds?: string[];
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    month?: number;
+    year?: number;
   }) {
     const { skip = 0, take = 50, search, groupId, status, teacherId, teacherIds, centerId, centerIds, sortBy, sortOrder = 'asc' } = params || {};
 
@@ -166,8 +168,114 @@ export class StudentsService {
       ? Number(totalMonthlyFeesResult._sum.monthlyFee) 
       : 0;
 
+    // Calculate attendance data for the selected month
+    // If month/year not provided, use current month
+    const now = new Date();
+    const selectedMonth = params?.month ?? now.getMonth() + 1; // 1-12 (January-December)
+    const selectedYear = params?.year ?? now.getFullYear();
+    
+    // Calculate date range for the selected month
+    // JavaScript Date months are 0-indexed (0-11), so we subtract 1
+    const monthStart = new Date(selectedYear, selectedMonth - 1, 1, 0, 0, 0, 0);
+    // Get the last day of the month by going to the first day of next month and subtracting 1 day
+    const monthEnd = new Date(selectedYear, selectedMonth, 0, 23, 59, 59, 999);
+
+    // Get all student IDs from the fetched items
+    const studentIds = sortedItems.map(item => item.id);
+
+    // Calculate attendance data efficiently using aggregation
+    // For each student, we need:
+    // 1. Total classes = count of lessons in their group within the month
+    // 2. Absences = count of attendance records marked as absent (isPresent = false) within the month
+    // Note: If attendance is not marked for a session, it's not counted as absence (only explicitly marked absences count)
+    
+    const attendanceDataMap = new Map<string, { totalClasses: number; absences: number }>();
+
+    if (studentIds.length > 0) {
+      // Get all groups for these students
+      const studentGroups = new Map<string, string | null>();
+      const groupToStudents = new Map<string, string[]>(); // Map groupId to array of studentIds
+      sortedItems.forEach(student => {
+        studentGroups.set(student.id, student.groupId);
+        if (student.groupId) {
+          if (!groupToStudents.has(student.groupId)) {
+            groupToStudents.set(student.groupId, []);
+          }
+          groupToStudents.get(student.groupId)!.push(student.id);
+        }
+      });
+
+      // Get all unique group IDs
+      const uniqueGroupIds = Array.from(groupToStudents.keys());
+
+      // Fetch total classes per group in a single query (grouped by groupId)
+      // Then distribute to students in those groups
+      const groupClassesMap = new Map<string, number>();
+      if (uniqueGroupIds.length > 0) {
+        const groupClassesResults = await Promise.all(
+          uniqueGroupIds.map(async (groupId) => {
+            const count = await this.prisma.lesson.count({
+              where: {
+                groupId,
+                scheduledAt: {
+                  gte: monthStart,
+                  lte: monthEnd,
+                },
+              },
+            });
+            return { groupId, count };
+          })
+        );
+        groupClassesResults.forEach(({ groupId, count }) => {
+          groupClassesMap.set(groupId, count);
+        });
+      }
+
+      // Fetch absences for all students in a single aggregation query
+      const absencesResults = await this.prisma.attendance.groupBy({
+        by: ['studentId'],
+        where: {
+          studentId: { in: studentIds },
+          isPresent: false,
+          lesson: {
+            scheduledAt: {
+              gte: monthStart,
+              lte: monthEnd,
+            },
+          },
+        },
+        _count: true,
+      });
+
+      // Build absences map
+      const absencesMap = new Map<string, number>();
+      absencesResults.forEach((result) => {
+        absencesMap.set(result.studentId, result._count);
+      });
+
+      // Combine data for each student
+      studentIds.forEach((studentId) => {
+        const groupId = studentGroups.get(studentId);
+        const totalClasses = groupId ? (groupClassesMap.get(groupId) || 0) : 0;
+        const absences = absencesMap.get(studentId) || 0;
+        attendanceDataMap.set(studentId, { totalClasses, absences });
+      });
+    }
+
+    // Add attendance data to each student item
+    const itemsWithAttendance = sortedItems.map(student => {
+      const attendance = attendanceDataMap.get(student.id) || { totalClasses: 0, absences: 0 };
+      return {
+        ...student,
+        attendanceSummary: {
+          totalClasses: attendance.totalClasses,
+          absences: attendance.absences,
+        },
+      };
+    });
+
     return {
-      items: sortedItems,
+      items: itemsWithAttendance,
       total,
       page: Math.floor(skip / take) + 1,
       pageSize: take,

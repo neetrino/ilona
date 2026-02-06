@@ -32,6 +32,8 @@ export async function fetchStudents(filters?: StudentFilters): Promise<StudentsR
   }
   if (filters?.sortBy) params.append('sortBy', filters.sortBy);
   if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
+  if (filters?.month !== undefined) params.append('month', String(filters.month));
+  if (filters?.year !== undefined) params.append('year', String(filters.year));
 
   const query = params.toString();
   const url = query ? `${STUDENTS_ENDPOINT}?${query}` : STUDENTS_ENDPOINT;

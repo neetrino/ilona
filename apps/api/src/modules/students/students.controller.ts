@@ -38,6 +38,8 @@ export class StudentsController {
       centerIds,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
+      month: query.month,
+      year: query.year,
     });
   }
 
