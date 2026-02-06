@@ -36,6 +36,8 @@ export class StudentsController {
       teacherIds,
       centerId: query.centerId,
       centerIds,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
     });
   }
 

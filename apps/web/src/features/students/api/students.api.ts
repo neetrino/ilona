@@ -30,6 +30,8 @@ export async function fetchStudents(filters?: StudentFilters): Promise<StudentsR
   if (filters?.centerIds && filters.centerIds.length > 0) {
     filters.centerIds.forEach(id => params.append('centerIds', id));
   }
+  if (filters?.sortBy) params.append('sortBy', filters.sortBy);
+  if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
 
   const query = params.toString();
   const url = query ? `${STUDENTS_ENDPOINT}?${query}` : STUDENTS_ENDPOINT;

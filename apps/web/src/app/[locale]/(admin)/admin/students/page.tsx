@@ -69,6 +69,8 @@ export default function StudentsPage() {
     search: searchQuery || undefined,
     teacherIds: teacherIdsArray,
     centerIds: centerIdsArray,
+    sortBy: sortBy,
+    sortOrder: sortOrder,
   });
 
   // Mutations
@@ -89,23 +91,8 @@ export default function StudentsPage() {
       setSortBy(key);
       setSortOrder('asc');
     }
+    setPage(0); // Reset to first page on sort change
   };
-
-  // Sort students based on current sort state
-  const sortedStudents = useMemo(() => {
-    if (!sortBy) return students;
-
-    return [...students].sort((a, b) => {
-      if (sortBy === 'monthlyFee') {
-        // Numeric sorting for Monthly Fee
-        const feeA = typeof a.monthlyFee === 'string' ? parseFloat(a.monthlyFee) || 0 : Number(a.monthlyFee || 0);
-        const feeB = typeof b.monthlyFee === 'string' ? parseFloat(b.monthlyFee) || 0 : Number(b.monthlyFee || 0);
-        return sortOrder === 'asc' ? feeA - feeB : feeB - feeA;
-      }
-      // Default: no sorting for other columns (can be extended later)
-      return 0;
-    });
-  }, [students, sortBy, sortOrder]);
 
   // Handle search
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -574,7 +561,7 @@ export default function StudentsPage() {
         {/* Students Table */}
         <DataTable
           columns={studentColumns}
-          data={sortedStudents}
+          data={students}
           keyExtractor={(student) => student.id}
           isLoading={isLoading}
           emptyMessage={searchQuery ? "No students match your search" : "No students found"}

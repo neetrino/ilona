@@ -55,6 +55,8 @@ export interface StudentFilters {
   teacherIds?: string[];
   centerId?: string;
   centerIds?: string[];
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface CreateStudentDto {

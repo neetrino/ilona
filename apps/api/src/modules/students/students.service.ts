@@ -23,8 +23,10 @@ export class StudentsService {
     teacherIds?: string[];
     centerId?: string;
     centerIds?: string[];
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   }) {
-    const { skip = 0, take = 50, search, groupId, status, teacherId, teacherIds, centerId, centerIds } = params || {};
+    const { skip = 0, take = 50, search, groupId, status, teacherId, teacherIds, centerId, centerIds, sortBy, sortOrder = 'asc' } = params || {};
 
     const where: Prisma.StudentWhereInput = {};
     const userWhere: Prisma.UserWhereInput = {};
@@ -63,12 +65,40 @@ export class StudentsService {
       where.group = { centerId };
     }
 
+    // Build orderBy based on sortBy parameter
+    // For 'student' sorting, we'll sort by full name in JavaScript after fetching
+    let orderBy: Prisma.StudentOrderByWithRelationInput | Prisma.StudentOrderByWithRelationInput[];
+    if (sortBy === 'student') {
+      // For student name sorting, we'll sort by full name in JavaScript
+      // So we fetch with default order first
+      orderBy = [
+        { user: { firstName: 'asc' } },
+        { user: { lastName: 'asc' } },
+      ];
+    } else if (sortBy === 'monthlyFee') {
+      // Sort by monthly fee
+      orderBy = { monthlyFee: sortOrder };
+    } else {
+      // Default sorting by firstName, then lastName
+      orderBy = [
+        { user: { firstName: 'asc' } },
+        { user: { lastName: 'asc' } },
+      ];
+    }
+
+    // For student name sorting, we need to fetch all matching records, sort them, then paginate
+    // For other sorts, we can use database-level sorting with pagination
+    const shouldSortInMemory = sortBy === 'student';
+    
+    const fetchSkip = shouldSortInMemory ? 0 : skip;
+    const fetchTake = shouldSortInMemory ? undefined : take;
+
     const [items, total] = await Promise.all([
       this.prisma.student.findMany({
         where,
-        skip,
-        take,
-        orderBy: { user: { firstName: 'asc' } },
+        skip: fetchSkip,
+        take: fetchTake,
+        orderBy,
         include: {
           user: {
             select: {
@@ -110,8 +140,22 @@ export class StudentsService {
       this.prisma.student.count({ where }),
     ]);
 
+    // Apply in-memory sorting for student name if needed
+    let sortedItems = items;
+    if (shouldSortInMemory && sortBy === 'student') {
+      sortedItems = [...items].sort((a, b) => {
+        const aValue = `${a.user.firstName} ${a.user.lastName}`.toLowerCase();
+        const bValue = `${b.user.firstName} ${b.user.lastName}`.toLowerCase();
+        const comparison = aValue.localeCompare(bValue);
+        return sortOrder === 'asc' ? comparison : -comparison;
+      });
+      
+      // Apply pagination after sorting
+      sortedItems = sortedItems.slice(skip, skip + take);
+    }
+
     return {
-      items,
+      items: sortedItems,
       total,
       page: Math.floor(skip / take) + 1,
       pageSize: take,
