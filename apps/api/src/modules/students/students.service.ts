@@ -93,7 +93,7 @@ export class StudentsService {
     const fetchSkip = shouldSortInMemory ? 0 : skip;
     const fetchTake = shouldSortInMemory ? undefined : take;
 
-    const [items, total] = await Promise.all([
+    const [items, total, totalMonthlyFeesResult] = await Promise.all([
       this.prisma.student.findMany({
         where,
         skip: fetchSkip,
@@ -138,6 +138,13 @@ export class StudentsService {
         },
       }),
       this.prisma.student.count({ where }),
+      // Calculate total monthly fees using aggregate (SUM) with same filters, independent of pagination
+      this.prisma.student.aggregate({
+        where,
+        _sum: {
+          monthlyFee: true,
+        },
+      }),
     ]);
 
     // Apply in-memory sorting for student name if needed
@@ -154,12 +161,18 @@ export class StudentsService {
       sortedItems = sortedItems.slice(skip, skip + take);
     }
 
+    // Extract total monthly fees from aggregate result
+    const totalMonthlyFees = totalMonthlyFeesResult._sum.monthlyFee 
+      ? Number(totalMonthlyFeesResult._sum.monthlyFee) 
+      : 0;
+
     return {
       items: sortedItems,
       total,
       page: Math.floor(skip / take) + 1,
       pageSize: take,
       totalPages: Math.ceil(total / take),
+      totalMonthlyFees,
     };
   }
 

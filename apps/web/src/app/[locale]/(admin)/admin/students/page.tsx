@@ -244,13 +244,8 @@ export default function StudentsPage() {
   // Stats calculation
   const activeStudents = students.filter(s => s.user?.status === 'ACTIVE').length;
   const studentsWithGroup = students.filter(s => s.group).length;
-  // Safely convert monthlyFee to number before summing (handles string values from API)
-  const totalFees = students.reduce((sum, s) => {
-    const fee = typeof s.monthlyFee === 'string' 
-      ? parseFloat(s.monthlyFee) || 0 
-      : Number(s.monthlyFee) || 0;
-    return sum + fee;
-  }, 0);
+  // Use backend-provided totalMonthlyFees (calculated from all matching students, respecting filters, independent of pagination)
+  const totalFees = studentsData?.totalMonthlyFees || 0;
 
   // Error state
   if (error) {

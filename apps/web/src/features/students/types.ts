@@ -43,6 +43,7 @@ export interface StudentsResponse {
   page: number;
   pageSize: number;
   totalPages: number;
+  totalMonthlyFees: number;
 }
 
 export interface StudentFilters {
