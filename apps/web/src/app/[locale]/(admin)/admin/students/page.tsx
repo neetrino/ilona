@@ -196,7 +196,13 @@ export default function StudentsPage() {
   // Stats calculation
   const activeStudents = students.filter(s => s.user?.status === 'ACTIVE').length;
   const studentsWithGroup = students.filter(s => s.group).length;
-  const totalFees = students.reduce((sum, s) => sum + (s.monthlyFee || 0), 0);
+  // Safely convert monthlyFee to number before summing (handles string values from API)
+  const totalFees = students.reduce((sum, s) => {
+    const fee = typeof s.monthlyFee === 'string' 
+      ? parseFloat(s.monthlyFee) || 0 
+      : Number(s.monthlyFee) || 0;
+    return sum + fee;
+  }, 0);
 
   // Error state
   if (error) {
@@ -487,7 +493,7 @@ export default function StudentsPage() {
               <div className="flex-1">
                 <h3 className="font-semibold text-slate-800 mb-2">Payment Collection</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Total monthly fees: ${totalFees.toLocaleString()}. 
+                  Total monthly fees: {formatCurrency(totalFees)}. 
                   Monitor payment status in the Finance section.
                 </p>
                 <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
