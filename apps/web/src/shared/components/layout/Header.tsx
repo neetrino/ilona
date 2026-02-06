@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Input } from '@/shared/components/ui/input';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 interface HeaderProps {
   title: string;
@@ -14,6 +15,9 @@ export function Header({ title, subtitle }: HeaderProps) {
   const [searchValue, setSearchValue] = useState('');
   const locale = useLocale();
   const t = useTranslations('common');
+  const { user, logout } = useAuthStore();
+  const tAuth = useTranslations('auth');
+  const tNav = useTranslations('nav');
 
   const today = new Date().toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', {
     month: 'short',
@@ -71,6 +75,28 @@ export function Header({ title, subtitle }: HeaderProps) {
           </svg>
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
+
+        {/* Profile Component */}
+        <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-semibold shadow-sm">
+            {user?.firstName?.[0] || user?.lastName?.[0] || 'U'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-slate-500">{tAuth('welcomeBack')}</p>
+            <p className="font-semibold text-slate-800 truncate">
+              {user?.role === 'ADMIN' ? 'Admin' : user?.role === 'TEACHER' ? 'Teacher' : user?.role === 'STUDENT' ? 'Student' : user?.firstName || tNav('user')}
+            </p>
+          </div>
+          <button
+            onClick={logout}
+            className="p-2 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+            title={tAuth('logout')}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
       </div>
     </header>
   );

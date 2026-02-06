@@ -154,9 +154,8 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const t = useTranslations('nav');
-  const tAuth = useTranslations('auth');
   const userRole = user?.role || 'STUDENT';
 
   const navItems = getNavItems(userRole, t);
@@ -221,37 +220,6 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           );
         })}
       </nav>
-
-      {/* User section */}
-      <div className="p-3 border-t border-slate-100">
-        <div className={cn(
-          'flex items-center gap-3 p-3 rounded-xl bg-slate-50',
-          collapsed ? 'justify-center' : ''
-        )}>
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-semibold shadow-sm">
-            {user?.firstName?.[0] || 'U'}
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-slate-500">{tAuth('welcomeBack')}</p>
-              <p className="font-semibold text-slate-800 truncate">
-                {user?.firstName || t('user')}
-              </p>
-            </div>
-          )}
-          {!collapsed && (
-            <button
-              onClick={logout}
-              className="p-2 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
-              title={tAuth('logout')}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
     </aside>
   );
 }
