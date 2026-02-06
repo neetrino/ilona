@@ -32,6 +32,9 @@ async function bootstrap() {
   
   app.enableCors(corsOptions);
 
+  // Enable shutdown hooks to ensure Prisma disconnects properly
+  app.enableShutdownHooks();
+
   // Validation pipe
   app.useGlobalPipes(
     new ValidationPipe({

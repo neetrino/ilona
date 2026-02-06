@@ -1,50 +1,113 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ServiceUnavailableException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Checks if an error is a database connection error.
+   */
+  private isDatabaseConnectionError(error: unknown): boolean {
+    if (!(error instanceof Error)) return false;
+
+    const prismaConnectionErrorCodes = [
+      'P1001', // Can't reach database server
+      'P1002', // Database server closed the connection
+      'P1008', // Operations timed out
+      'P1017', // Server has closed the connection
+    ];
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return prismaConnectionErrorCodes.includes(error.code);
+    }
+
+    if (error instanceof Prisma.PrismaClientUnknownRequestError) {
+      const message = error.message.toLowerCase();
+      return (
+        message.includes('server has closed the connection') ||
+        message.includes('connection reset') ||
+        message.includes('econnreset') ||
+        message.includes('connection closed')
+      );
+    }
+
+    const message = error.message.toLowerCase();
+    return (
+      message.includes('econnreset') ||
+      message.includes('connection reset') ||
+      message.includes('server has closed the connection') ||
+      (error as any).code === 'ECONNRESET' ||
+      (error as any).code === 10054
+    );
+  }
+
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
-      where: { email },
-    });
+    try {
+      return await this.prisma.user.findUnique({
+        where: { email },
+      });
+    } catch (error) {
+      if (this.isDatabaseConnectionError(error)) {
+        this.logger.error('Database connection error in findByEmail', error);
+        throw new ServiceUnavailableException('Database unavailable, please retry');
+      }
+      throw error;
+    }
   }
 
   async findById(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        phone: true,
-        avatarUrl: true,
-        role: true,
-        status: true,
-        lastLoginAt: true,
-        createdAt: true,
-        updatedAt: true,
-        teacher: true,
-        student: {
-          include: {
-            group: {
-              include: {
-                center: true,
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          avatarUrl: true,
+          role: true,
+          status: true,
+          lastLoginAt: true,
+          createdAt: true,
+          updatedAt: true,
+          teacher: true,
+          student: {
+            include: {
+              group: {
+                include: {
+                  center: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      // Re-throw NotFoundException as-is
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      // If it's a database connection error, return 503
+      if (this.isDatabaseConnectionError(error)) {
+        this.logger.error('Database connection error in findById', error);
+        throw new ServiceUnavailableException('Database unavailable, please retry');
+      }
+
+      // Re-throw other errors
+      throw error;
     }
-
-    return user;
   }
 
   async findAll(filters?: { role?: UserRole; status?: string }) {
