@@ -25,6 +25,7 @@ export class StudentsController {
     // Handle array query params (e.g., ?teacherIds=id1&teacherIds=id2)
     const teacherIds = query.teacherIds || (query.teacherId ? [query.teacherId] : undefined);
     const centerIds = query.centerIds || (query.centerId ? [query.centerId] : undefined);
+    const statusIds = query.statusIds || (query.status ? [query.status] : undefined);
 
     return this.studentsService.findAll({
       skip: query.skip,
@@ -32,6 +33,7 @@ export class StudentsController {
       search: query.search,
       groupId: query.groupId,
       status: query.status as UserStatus | undefined,
+      statusIds: statusIds as UserStatus[] | undefined,
       teacherId: query.teacherId,
       teacherIds,
       centerId: query.centerId,

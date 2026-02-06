@@ -56,6 +56,7 @@ export interface StudentFilters {
   search?: string;
   groupId?: string;
   status?: UserStatus;
+  statusIds?: UserStatus[];
   teacherId?: string;
   teacherIds?: string[];
   centerId?: string;

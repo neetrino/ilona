@@ -33,6 +33,7 @@ export default function StudentsPage() {
   const [deactivateSuccess, setDeactivateSuccess] = useState(false);
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
   const [selectedCenterIds, setSelectedCenterIds] = useState<Set<string>>(new Set());
+  const [selectedStatusIds, setSelectedStatusIds] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   // Month/year filter for attendance - default to current month
@@ -45,6 +46,7 @@ export default function StudentsPage() {
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const tTeachers = useTranslations('teachers');
+  const tStatus = useTranslations('status');
   const pageSize = 10;
 
   // Fetch teachers, groups, and centers for filters and dropdowns
@@ -61,6 +63,10 @@ export default function StudentsPage() {
     selectedCenterIds.size > 0 ? Array.from(selectedCenterIds) : undefined,
     [selectedCenterIds]
   );
+  const statusIdsArray = useMemo(() => 
+    selectedStatusIds.size > 0 ? Array.from(selectedStatusIds) as ('ACTIVE' | 'INACTIVE' | 'SUSPENDED')[] : undefined,
+    [selectedStatusIds]
+  );
 
   // Fetch students with search, pagination, and filters
   const { 
@@ -73,6 +79,7 @@ export default function StudentsPage() {
     search: searchQuery || undefined,
     teacherIds: teacherIdsArray,
     centerIds: centerIdsArray,
+    statusIds: statusIdsArray,
     sortBy: sortBy,
     sortOrder: sortOrder,
     month: selectedMonth,
@@ -241,6 +248,12 @@ export default function StudentsPage() {
     })),
     [centersData]
   );
+
+  const statusFilterOptions = useMemo(() => [
+    { id: 'ACTIVE', label: tStatus('active') },
+    { id: 'INACTIVE', label: tStatus('inactive') },
+    { id: 'SUSPENDED', label: tStatus('suspended') },
+  ], [tStatus]);
 
   // Reset page when filters change
   const handleFilterChange = () => {
@@ -563,7 +576,17 @@ export default function StudentsPage() {
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <FilterDropdown
+              label="Status"
+              options={statusFilterOptions}
+              selectedIds={selectedStatusIds}
+              onSelectionChange={(ids) => {
+                setSelectedStatusIds(ids);
+                handleFilterChange();
+              }}
+              placeholder="All Statuses"
+            />
             <FilterDropdown
               label="Teacher"
               options={teacherFilterOptions}

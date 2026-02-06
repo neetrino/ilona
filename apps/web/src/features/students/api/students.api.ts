@@ -22,6 +22,9 @@ export async function fetchStudents(filters?: StudentFilters): Promise<StudentsR
   if (filters?.search) params.append('search', filters.search);
   if (filters?.groupId) params.append('groupId', filters.groupId);
   if (filters?.status) params.append('status', filters.status);
+  if (filters?.statusIds && filters.statusIds.length > 0) {
+    filters.statusIds.forEach(status => params.append('statusIds', status));
+  }
   if (filters?.teacherId) params.append('teacherId', filters.teacherId);
   if (filters?.teacherIds && filters.teacherIds.length > 0) {
     filters.teacherIds.forEach(id => params.append('teacherIds', id));

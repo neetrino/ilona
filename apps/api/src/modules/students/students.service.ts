@@ -19,6 +19,7 @@ export class StudentsService {
     search?: string;
     groupId?: string;
     status?: UserStatus;
+    statusIds?: UserStatus[];
     teacherId?: string;
     teacherIds?: string[];
     centerId?: string;
@@ -28,7 +29,7 @@ export class StudentsService {
     month?: number;
     year?: number;
   }) {
-    const { skip = 0, take = 50, search, groupId, status, teacherId, teacherIds, centerId, centerIds, sortBy, sortOrder = 'asc' } = params || {};
+    const { skip = 0, take = 50, search, groupId, status, statusIds, teacherId, teacherIds, centerId, centerIds, sortBy, sortOrder = 'asc' } = params || {};
 
     const where: Prisma.StudentWhereInput = {};
     const userWhere: Prisma.UserWhereInput = {};
@@ -41,7 +42,10 @@ export class StudentsService {
       ];
     }
 
-    if (status) {
+    // Filter by status (single or multiple)
+    if (statusIds && statusIds.length > 0) {
+      userWhere.status = { in: statusIds };
+    } else if (status) {
       userWhere.status = status;
     }
 
