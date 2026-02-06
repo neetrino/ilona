@@ -24,3 +24,5 @@ export type {
 
 // Components
 export { CreateGroupForm } from './components/CreateGroupForm';
+export { EditGroupForm } from './components/EditGroupForm';
+export { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';

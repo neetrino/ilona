@@ -1,9 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { Pencil, Trash2, Ban } from 'lucide-react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
-import { useGroups, useDeleteGroup, useToggleGroupActive, CreateGroupForm, type Group } from '@/features/groups';
+import { 
+  useGroups, 
+  useDeleteGroup, 
+  useToggleGroupActive, 
+  CreateGroupForm, 
+  EditGroupForm,
+  DeleteConfirmationDialog,
+  type Group 
+} from '@/features/groups';
 import { 
   useCenters, 
   useDeleteCenter, 
@@ -20,6 +29,9 @@ export default function GroupsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [editGroupId, setEditGroupId] = useState<string | null>(null);
+  const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
+  const [deleteGroupError, setDeleteGroupError] = useState<string | null>(null);
   const pageSize = 10;
 
   // Fetch groups
@@ -47,13 +59,21 @@ export default function GroupsPage() {
   };
 
   // Handle delete
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this group?')) {
-      try {
-        await deleteGroup.mutateAsync(id);
-      } catch (err) {
-        console.error('Failed to delete group:', err);
-      }
+  const handleDeleteClick = (id: string) => {
+    setDeleteGroupId(id);
+    setDeleteGroupError(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteGroupId) return;
+    
+    try {
+      await deleteGroup.mutateAsync(deleteGroupId);
+      setDeleteGroupId(null);
+      setDeleteGroupError(null);
+    } catch (err: any) {
+      const message = err?.message || err?.response?.data?.message || 'Failed to delete group. Please try again.';
+      setDeleteGroupError(Array.isArray(message) ? message[0] : message);
     }
   };
 
@@ -134,38 +154,34 @@ export default function GroupsPage() {
       ),
     },
     {
-      key: 'status',
-      header: 'Status',
-      render: (group: Group) => (
-        <Badge variant={group.isActive ? 'success' : 'default'}>
-          {group.isActive ? 'Active' : 'Inactive'}
-        </Badge>
-      ),
-    },
-    {
       key: 'actions',
       header: 'Actions',
       render: (group: Group) => (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 font-medium">
-            View
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-amber-600 hover:text-amber-700 font-medium"
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => setEditGroupId(group.id)}
+            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            aria-label="Edit group"
+            title="Edit group"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
             onClick={() => handleToggleActive(group.id)}
+            className="p-2 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+            aria-label={group.isActive ? 'Deactivate group' : 'Activate group'}
+            title={group.isActive ? 'Deactivate group' : 'Activate group'}
           >
-            {group.isActive ? 'Deactivate' : 'Activate'}
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-red-600 hover:text-red-700 font-medium"
-            onClick={() => handleDelete(group.id)}
+            <Ban className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleDeleteClick(group.id)}
+            className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            aria-label="Delete group"
+            title="Delete group"
           >
-            Delete
-          </Button>
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       ),
     },
@@ -176,6 +192,8 @@ export default function GroupsPage() {
   const [centerPage, setCenterPage] = useState(0);
   const [createCenterOpen, setCreateCenterOpen] = useState(false);
   const [editCenterId, setEditCenterId] = useState<string | null>(null);
+  const [deleteCenterId, setDeleteCenterId] = useState<string | null>(null);
+  const [deleteCenterError, setDeleteCenterError] = useState<string | null>(null);
 
   const { 
     data: centersData, 
@@ -198,14 +216,21 @@ export default function GroupsPage() {
     setCenterPage(0);
   };
 
-  const handleDeleteCenter = async (id: string) => {
-    if (confirm('Are you sure you want to delete this center? This action cannot be undone.')) {
-      try {
-        await deleteCenter.mutateAsync(id);
-      } catch (err) {
-        console.error('Failed to delete center:', err);
-        alert('Failed to delete center. Please try again.');
-      }
+  const handleDeleteCenterClick = (id: string) => {
+    setDeleteCenterId(id);
+    setDeleteCenterError(null);
+  };
+
+  const handleDeleteCenterConfirm = async () => {
+    if (!deleteCenterId) return;
+    
+    try {
+      await deleteCenter.mutateAsync(deleteCenterId);
+      setDeleteCenterId(null);
+      setDeleteCenterError(null);
+    } catch (err: any) {
+      const message = err?.message || err?.response?.data?.message || 'Failed to delete center. Please try again.';
+      setDeleteCenterError(Array.isArray(message) ? message[0] : message);
     }
   };
 
@@ -256,43 +281,34 @@ export default function GroupsPage() {
       ),
     },
     {
-      key: 'status',
-      header: 'Status',
-      render: (center: CenterWithCount) => (
-        <Badge variant={center.isActive ? 'success' : 'default'}>
-          {center.isActive ? 'Active' : 'Inactive'}
-        </Badge>
-      ),
-    },
-    {
       key: 'actions',
       header: 'Actions',
       render: (center: CenterWithCount) => (
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-blue-600 hover:text-blue-700 font-medium"
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <button
             onClick={() => setEditCenterId(center.id)}
+            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            aria-label="Edit center"
+            title="Edit center"
           >
-            Edit
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-amber-600 hover:text-amber-700 font-medium"
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
             onClick={() => handleToggleCenterActive(center.id)}
+            className="p-2 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+            aria-label={center.isActive ? 'Deactivate center' : 'Activate center'}
+            title={center.isActive ? 'Deactivate center' : 'Activate center'}
           >
-            {center.isActive ? 'Deactivate' : 'Activate'}
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-red-600 hover:text-red-700 font-medium"
-            onClick={() => handleDeleteCenter(center.id)}
+            <Ban className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleDeleteCenterClick(center.id)}
+            className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            aria-label="Delete center"
+            title="Delete center"
           >
-            Delete
-          </Button>
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       ),
     },
@@ -553,6 +569,22 @@ export default function GroupsPage() {
           open={createGroupOpen} 
           onOpenChange={setCreateGroupOpen} 
         />
+        {editGroupId && (
+          <EditGroupForm 
+            open={!!editGroupId} 
+            onOpenChange={(open) => !open && setEditGroupId(null)} 
+            groupId={editGroupId}
+          />
+        )}
+        <DeleteConfirmationDialog
+          open={!!deleteGroupId}
+          onOpenChange={(open) => !open && setDeleteGroupId(null)}
+          onConfirm={handleDeleteConfirm}
+          itemName={groups.find(g => g.id === deleteGroupId)?.name}
+          isLoading={deleteGroup.isPending}
+          error={deleteGroupError}
+          itemType="group"
+        />
         <CreateCenterForm 
           open={createCenterOpen} 
           onOpenChange={setCreateCenterOpen} 
@@ -564,6 +596,15 @@ export default function GroupsPage() {
             centerId={editCenterId}
           />
         )}
+        <DeleteConfirmationDialog
+          open={!!deleteCenterId}
+          onOpenChange={(open) => !open && setDeleteCenterId(null)}
+          onConfirm={handleDeleteCenterConfirm}
+          itemName={centers.find(c => c.id === deleteCenterId)?.name}
+          isLoading={deleteCenter.isPending}
+          error={deleteCenterError}
+          itemType="center"
+        />
       </div>
     </DashboardLayout>
   );
