@@ -14,12 +14,17 @@ import { UsersModule } from '../users/users.module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('jwt.secret'),
-        signOptions: {
-          expiresIn: configService.get<string>('jwt.accessExpiration'),
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('jwt.secret') || 'default-secret-change-in-production';
+        const accessExpiration = configService.get<string>('jwt.accessExpiration') || '15m';
+        
+        return {
+          secret,
+          signOptions: {
+            expiresIn: accessExpiration,
+          },
+        };
+      },
       inject: [ConfigService],
     }),
   ],
