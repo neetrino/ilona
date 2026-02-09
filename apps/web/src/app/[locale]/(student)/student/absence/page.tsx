@@ -1,8 +1,9 @@
 'use client';
 
+import { useMemo } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useStudentAttendance } from '@/features/attendance';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useMyProfile } from '@/features/students';
 import { cn } from '@/shared/lib/utils';
 
 function AbsenceTypeBadge({ type }: { type: 'JUSTIFIED' | 'UNJUSTIFIED' | null | undefined }) {
@@ -27,20 +28,44 @@ function AbsenceTypeBadge({ type }: { type: 'JUSTIFIED' | 'UNJUSTIFIED' | null |
 }
 
 export default function StudentAbsencePage() {
-  const { user } = useAuthStore();
+  // Get date range for last 3 months (memoized to prevent query key changes)
+  const { dateFrom, dateTo } = useMemo(() => {
+    const today = new Date();
+    const threeMonthsAgo = new Date(today);
+    threeMonthsAgo.setMonth(today.getMonth() - 3);
+    return {
+      dateFrom: threeMonthsAgo.toISOString(),
+      dateTo: today.toISOString(),
+    };
+  }, []);
 
-  // Get date range for last 3 months
-  const today = new Date();
-  const threeMonthsAgo = new Date(today);
-  threeMonthsAgo.setMonth(today.getMonth() - 3);
+  // Fetch current student profile to get studentId
+  const { data: studentProfile, isLoading: isLoadingProfile, error: profileError, refetch: refetchProfile } = useMyProfile();
 
-  // Fetch attendance history
-  // Note: We need studentId, not userId - this should be fetched from user profile
-  const { data: attendanceData, isLoading } = useStudentAttendance(
-    user?.id || '', // This should be studentId
-    threeMonthsAgo.toISOString(),
-    today.toISOString()
+  // Fetch attendance history using studentId
+  const { 
+    data: attendanceData, 
+    isLoading: isLoadingAttendance, 
+    error: attendanceError,
+    refetch: refetchAttendance 
+  } = useStudentAttendance(
+    studentProfile?.id || '',
+    dateFrom,
+    dateTo,
+    !!studentProfile?.id // Only enable when studentId is available
   );
+
+  const isLoading = isLoadingProfile || isLoadingAttendance;
+  const error = profileError || attendanceError;
+
+  const handleRetry = () => {
+    if (profileError) {
+      refetchProfile();
+    }
+    if (attendanceError) {
+      refetchAttendance();
+    }
+  };
 
   const statistics = attendanceData?.statistics || {
     total: 0,
@@ -176,6 +201,24 @@ export default function StudentAbsencePage() {
                   <div className="h-6 bg-slate-200 rounded w-20" />
                 </div>
               ))}
+            </div>
+          ) : error ? (
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-1">Error Loading Attendance</h3>
+              <p className="text-sm text-slate-500 mb-4">
+                {error instanceof Error ? error.message : 'Failed to load absence data. Please try again.'}
+              </p>
+              <button
+                onClick={handleRetry}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                Retry
+              </button>
             </div>
           ) : absences.length === 0 ? (
             <div className="p-8 text-center">

@@ -6,6 +6,7 @@ export {
   useUpdateStudent,
   useChangeStudentGroup,
   useDeleteStudent,
+  useMyProfile,
   useMyDashboard,
   studentKeys,
 } from './useStudents';

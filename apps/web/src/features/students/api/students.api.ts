@@ -87,6 +87,13 @@ export async function deleteStudent(id: string): Promise<{ success: boolean }> {
 }
 
 /**
+ * Fetch current student's profile (for logged-in student)
+ */
+export async function fetchMyProfile(): Promise<Student> {
+  return api.get<Student>(`${STUDENTS_ENDPOINT}/me`);
+}
+
+/**
  * Fetch student's own dashboard (for logged-in student)
  */
 export async function fetchMyDashboard(): Promise<StudentDashboard> {

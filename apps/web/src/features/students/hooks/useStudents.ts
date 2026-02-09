@@ -9,6 +9,7 @@ import {
   updateStudent,
   changeStudentGroup,
   deleteStudent,
+  fetchMyProfile,
   fetchMyDashboard,
   fetchMyAssignedStudents,
 } from '../api/students.api';
@@ -26,6 +27,7 @@ export const studentKeys = {
   details: () => [...studentKeys.all, 'detail'] as const,
   detail: (id: string) => [...studentKeys.details(), id] as const,
   statistics: (id: string) => [...studentKeys.detail(id), 'statistics'] as const,
+  myProfile: () => [...studentKeys.all, 'my-profile'] as const,
   myDashboard: () => [...studentKeys.all, 'my-dashboard'] as const,
   myAssigned: (filters?: StudentFilters) => [...studentKeys.all, 'my-assigned', filters] as const,
 };
@@ -122,6 +124,17 @@ export function useDeleteStudent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
     },
+  });
+}
+
+/**
+ * Hook to fetch current student's profile
+ */
+export function useMyProfile(enabled = true) {
+  return useQuery({
+    queryKey: studentKeys.myProfile(),
+    queryFn: () => fetchMyProfile(),
+    enabled,
   });
 }
 

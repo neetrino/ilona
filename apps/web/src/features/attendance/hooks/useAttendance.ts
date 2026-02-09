@@ -47,6 +47,8 @@ export function useStudentAttendance(
     queryKey: attendanceKeys.student(studentId, dateFrom, dateTo),
     queryFn: () => fetchStudentAttendance(studentId, dateFrom, dateTo),
     enabled: enabled && !!studentId,
+    retry: 2, // Retry up to 2 times on failure
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
   });
 }
 
