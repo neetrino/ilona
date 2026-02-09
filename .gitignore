@@ -3,11 +3,18 @@ node_modules
 .pnpm-store
 
 # Build outputs
-dist
-.next
-.turbo
-out
-build
+dist/
+**/dist/
+.next/
+**/.next/
+.turbo/
+**/.turbo/
+out/
+**/out/
+build/
+**/build/
+*.tsbuildinfo
+**/*.tsbuildinfo
 
 # Environment
 .env
@@ -41,7 +48,6 @@ prisma/*.db
 prisma/*.db-journal
 
 # Misc
-*.tsbuildinfo
 .eslintcache
 .cache
 tmp
