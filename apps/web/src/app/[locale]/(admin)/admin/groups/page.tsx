@@ -168,6 +168,10 @@ export default function GroupsPage() {
   const [editGroupId, setEditGroupId] = useState<string | null>(null);
   const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
   const [deleteGroupError, setDeleteGroupError] = useState<string | null>(null);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
+  const [bulkDeleteSuccess, setBulkDeleteSuccess] = useState(false);
+  const [deletedCount, setDeletedCount] = useState<number>(0);
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(new Set());
   const pageSize = 10;
 
@@ -302,19 +306,84 @@ export default function GroupsPage() {
 
   // Handle select all toggle for groups
   const handleSelectAllGroups = () => {
-    if (selectedGroupIds.size === groups.length) {
-      // Deselect all
-      setSelectedGroupIds(new Set());
+    const currentPageIds = new Set(groups.map((g) => g.id));
+    const allCurrentSelected = groups.length > 0 && groups.every((g) => selectedGroupIds.has(g.id));
+    
+    if (allCurrentSelected) {
+      // Deselect all current visible groups (but keep selections from other pages)
+      setSelectedGroupIds((prev) => {
+        const newSet = new Set(prev);
+        currentPageIds.forEach((id) => newSet.delete(id));
+        return newSet;
+      });
     } else {
       // Select all visible groups
-      setSelectedGroupIds(new Set(groups.map((g) => g.id)));
+      setSelectedGroupIds((prev) => {
+        const newSet = new Set(prev);
+        currentPageIds.forEach((id) => newSet.add(id));
+        return newSet;
+      });
     }
   };
 
   // Check if all visible groups are selected
-  const allGroupsSelected = groups.length > 0 && selectedGroupIds.size === groups.length;
+  const allGroupsSelected = groups.length > 0 && groups.every((g) => selectedGroupIds.has(g.id));
   // Check if some (but not all) are selected (indeterminate state)
-  const someGroupsSelected = selectedGroupIds.size > 0 && selectedGroupIds.size < groups.length;
+  const someGroupsSelected = groups.some((g) => selectedGroupIds.has(g.id)) && !allGroupsSelected;
+
+  // Handle bulk delete click for groups
+  const handleBulkDeleteGroupsClick = () => {
+    if (selectedGroupIds.size === 0) return;
+    setBulkDeleteError(null);
+    setBulkDeleteSuccess(false);
+    setIsBulkDeleteDialogOpen(true);
+  };
+
+  // Handle bulk delete confirmation for groups
+  const handleBulkDeleteGroupsConfirm = async () => {
+    if (selectedGroupIds.size === 0) return;
+
+    setBulkDeleteError(null);
+    setBulkDeleteSuccess(false);
+
+    const idsArray = Array.from(selectedGroupIds);
+    const count = idsArray.length;
+    let successCount = 0;
+    let lastError: string | null = null;
+
+    try {
+      // Delete groups one by one
+      for (const id of idsArray) {
+        try {
+          await deleteGroup.mutateAsync(id);
+          successCount++;
+        } catch (err: any) {
+          const message = err?.message || err?.response?.data?.message || 'Failed to delete group.';
+          lastError = message;
+        }
+      }
+
+      if (successCount > 0) {
+        setDeletedCount(successCount);
+        setBulkDeleteSuccess(true);
+        setIsBulkDeleteDialogOpen(false);
+        setSelectedGroupIds(new Set());
+        
+        // Clear success message after a delay
+        setTimeout(() => {
+          setBulkDeleteSuccess(false);
+          setDeletedCount(0);
+        }, 3000);
+      }
+
+      if (lastError && successCount < count) {
+        setBulkDeleteError(`Deleted ${successCount} of ${count} groups. ${lastError}`);
+      }
+    } catch (err: any) {
+      const message = err?.message || err?.response?.data?.message || 'Failed to delete groups. Please try again.';
+      setBulkDeleteError(message);
+    }
+  };
 
   // Stats
   const activeGroups = groups.filter(g => g.isActive).length;
@@ -447,6 +516,10 @@ export default function GroupsPage() {
   const [editCenterId, setEditCenterId] = useState<string | null>(null);
   const [deleteCenterId, setDeleteCenterId] = useState<string | null>(null);
   const [deleteCenterError, setDeleteCenterError] = useState<string | null>(null);
+  const [isBulkDeleteCentersDialogOpen, setIsBulkDeleteCentersDialogOpen] = useState(false);
+  const [bulkDeleteCentersError, setBulkDeleteCentersError] = useState<string | null>(null);
+  const [bulkDeleteCentersSuccess, setBulkDeleteCentersSuccess] = useState(false);
+  const [deletedCentersCount, setDeletedCentersCount] = useState<number>(0);
   const [selectedCenterIds, setSelectedCenterIds] = useState<Set<string>>(new Set());
 
   const { 
@@ -487,19 +560,84 @@ export default function GroupsPage() {
 
   // Handle select all toggle for centers
   const handleSelectAllCenters = () => {
-    if (selectedCenterIds.size === centers.length) {
-      // Deselect all
-      setSelectedCenterIds(new Set());
+    const currentPageIds = new Set(centers.map((c) => c.id));
+    const allCurrentSelected = centers.length > 0 && centers.every((c) => selectedCenterIds.has(c.id));
+    
+    if (allCurrentSelected) {
+      // Deselect all current visible centers (but keep selections from other pages)
+      setSelectedCenterIds((prev) => {
+        const newSet = new Set(prev);
+        currentPageIds.forEach((id) => newSet.delete(id));
+        return newSet;
+      });
     } else {
       // Select all visible centers
-      setSelectedCenterIds(new Set(centers.map((c) => c.id)));
+      setSelectedCenterIds((prev) => {
+        const newSet = new Set(prev);
+        currentPageIds.forEach((id) => newSet.add(id));
+        return newSet;
+      });
     }
   };
 
   // Check if all visible centers are selected
-  const allCentersSelected = centers.length > 0 && selectedCenterIds.size === centers.length;
+  const allCentersSelected = centers.length > 0 && centers.every((c) => selectedCenterIds.has(c.id));
   // Check if some (but not all) are selected (indeterminate state)
-  const someCentersSelected = selectedCenterIds.size > 0 && selectedCenterIds.size < centers.length;
+  const someCentersSelected = centers.some((c) => selectedCenterIds.has(c.id)) && !allCentersSelected;
+
+  // Handle bulk delete click for centers
+  const handleBulkDeleteCentersClick = () => {
+    if (selectedCenterIds.size === 0) return;
+    setBulkDeleteCentersError(null);
+    setBulkDeleteCentersSuccess(false);
+    setIsBulkDeleteCentersDialogOpen(true);
+  };
+
+  // Handle bulk delete confirmation for centers
+  const handleBulkDeleteCentersConfirm = async () => {
+    if (selectedCenterIds.size === 0) return;
+
+    setBulkDeleteCentersError(null);
+    setBulkDeleteCentersSuccess(false);
+
+    const idsArray = Array.from(selectedCenterIds);
+    const count = idsArray.length;
+    let successCount = 0;
+    let lastError: string | null = null;
+
+    try {
+      // Delete centers one by one
+      for (const id of idsArray) {
+        try {
+          await deleteCenter.mutateAsync(id);
+          successCount++;
+        } catch (err: any) {
+          const message = err?.message || err?.response?.data?.message || 'Failed to delete center.';
+          lastError = message;
+        }
+      }
+
+      if (successCount > 0) {
+        setDeletedCentersCount(successCount);
+        setBulkDeleteCentersSuccess(true);
+        setIsBulkDeleteCentersDialogOpen(false);
+        setSelectedCenterIds(new Set());
+        
+        // Clear success message after a delay
+        setTimeout(() => {
+          setBulkDeleteCentersSuccess(false);
+          setDeletedCentersCount(0);
+        }, 3000);
+      }
+
+      if (lastError && successCount < count) {
+        setBulkDeleteCentersError(`Deleted ${successCount} of ${count} centers. ${lastError}`);
+      }
+    } catch (err: any) {
+      const message = err?.message || err?.response?.data?.message || 'Failed to delete centers. Please try again.';
+      setBulkDeleteCentersError(message);
+    }
+  };
 
   const handleDeleteCenterClick = (id: string) => {
     setDeleteCenterId(id);
@@ -691,7 +829,15 @@ export default function GroupsPage() {
                   className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
-
+              {selectedCenterIds.size > 0 && (
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium"
+                  onClick={handleBulkDeleteCentersClick}
+                  disabled={deleteCenter.isPending || isLoadingCenters}
+                >
+                  Delete All ({selectedCenterIds.size})
+                </Button>
+              )}
               <Button 
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
                 onClick={() => setCreateCenterOpen(true)}
@@ -785,7 +931,15 @@ export default function GroupsPage() {
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
           </div>
-
+          {selectedGroupIds.size > 0 && (
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium"
+              onClick={handleBulkDeleteGroupsClick}
+              disabled={deleteGroup.isPending || isLoading}
+            >
+              Delete All ({selectedGroupIds.size})
+            </Button>
+          )}
           {/* View Mode Toggle */}
           <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
             <button
@@ -1024,8 +1178,24 @@ export default function GroupsPage() {
           onConfirm={handleDeleteConfirm}
           itemName={groups.find(g => g.id === deleteGroupId)?.name}
           isLoading={deleteGroup.isPending}
-          error={deleteGroupError}
+          error={deleteGroupError || undefined}
           itemType="group"
+        />
+        <DeleteConfirmationDialog
+          open={isBulkDeleteDialogOpen}
+          onOpenChange={(open) => {
+            setIsBulkDeleteDialogOpen(open);
+            if (!open) {
+              setBulkDeleteError(null);
+              setBulkDeleteSuccess(false);
+            }
+          }}
+          onConfirm={handleBulkDeleteGroupsConfirm}
+          itemName={selectedGroupIds.size > 0 ? `${selectedGroupIds.size} ${selectedGroupIds.size === 1 ? 'group' : 'groups'}` : undefined}
+          isLoading={deleteGroup.isPending}
+          error={bulkDeleteError || undefined}
+          itemType="group"
+          title="Delete Groups"
         />
         <CreateCenterForm 
           open={createCenterOpen} 
@@ -1044,9 +1214,45 @@ export default function GroupsPage() {
           onConfirm={handleDeleteCenterConfirm}
           itemName={centers.find(c => c.id === deleteCenterId)?.name}
           isLoading={deleteCenter.isPending}
-          error={deleteCenterError}
+          error={deleteCenterError || undefined}
           itemType="center"
         />
+        <DeleteConfirmationDialog
+          open={isBulkDeleteCentersDialogOpen}
+          onOpenChange={(open) => {
+            setIsBulkDeleteCentersDialogOpen(open);
+            if (!open) {
+              setBulkDeleteCentersError(null);
+              setBulkDeleteCentersSuccess(false);
+            }
+          }}
+          onConfirm={handleBulkDeleteCentersConfirm}
+          itemName={selectedCenterIds.size > 0 ? `${selectedCenterIds.size} ${selectedCenterIds.size === 1 ? 'center' : 'centers'}` : undefined}
+          isLoading={deleteCenter.isPending}
+          error={bulkDeleteCentersError || undefined}
+          itemType="center"
+          title="Delete Centers"
+        />
+        
+        {/* Success Messages */}
+        {bulkDeleteSuccess && (
+          <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
+            <p className="text-sm text-green-600 font-medium">
+              {deletedCount > 0 
+                ? `${deletedCount} ${deletedCount === 1 ? 'group' : 'groups'} deleted successfully!`
+                : 'Groups deleted successfully!'}
+            </p>
+          </div>
+        )}
+        {bulkDeleteCentersSuccess && (
+          <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
+            <p className="text-sm text-green-600 font-medium">
+              {deletedCentersCount > 0 
+                ? `${deletedCentersCount} ${deletedCentersCount === 1 ? 'center' : 'centers'} deleted successfully!`
+                : 'Centers deleted successfully!'}
+            </p>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

@@ -196,19 +196,30 @@ export default function TeachersPage() {
 
   // Handle select all toggle
   const handleSelectAll = () => {
-    if (selectedTeacherIds.size === teachers.length) {
-      // Deselect all
-      setSelectedTeacherIds(new Set());
+    const currentPageIds = new Set(teachers.map((t) => t.id));
+    const allCurrentSelected = teachers.length > 0 && teachers.every((t) => selectedTeacherIds.has(t.id));
+    
+    if (allCurrentSelected) {
+      // Deselect all current visible teachers (but keep selections from other pages)
+      setSelectedTeacherIds((prev) => {
+        const newSet = new Set(prev);
+        currentPageIds.forEach((id) => newSet.delete(id));
+        return newSet;
+      });
     } else {
       // Select all visible teachers
-      setSelectedTeacherIds(new Set(teachers.map((t) => t.id)));
+      setSelectedTeacherIds((prev) => {
+        const newSet = new Set(prev);
+        currentPageIds.forEach((id) => newSet.add(id));
+        return newSet;
+      });
     }
   };
 
   // Check if all visible teachers are selected
-  const allSelected = teachers.length > 0 && selectedTeacherIds.size === teachers.length;
+  const allSelected = teachers.length > 0 && teachers.every((t) => selectedTeacherIds.has(t.id));
   // Check if some (but not all) are selected (indeterminate state)
-  const someSelected = selectedTeacherIds.size > 0 && selectedTeacherIds.size < teachers.length;
+  const someSelected = teachers.some((t) => selectedTeacherIds.has(t.id)) && !allSelected;
 
   // Handle edit button click
   const handleEditClick = (teacher: Teacher) => {
@@ -669,7 +680,7 @@ export default function TeachersPage() {
               onClick={handleBulkDeleteClick}
               disabled={deleteTeachers.isPending || deleteTeacher.isPending}
             >
-              {tCommon('delete')} ({selectedTeacherIds.size})
+              Delete All ({selectedTeacherIds.size})
             </Button>
           )}
           <Button 
