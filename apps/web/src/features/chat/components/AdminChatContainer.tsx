@@ -26,11 +26,11 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible } = useChatStore();
   const isInitialMount = useRef(true);
 
-  // Get tab from URL, default to 'students'
+  // Get tab from URL, no default - user must select a tab
   const tabFromUrl = searchParams.get('tab') as AdminChatTab | null;
   const validTabs: AdminChatTab[] = ['students', 'teachers', 'groups'];
-  const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : 'students';
-  const [activeTab, setActiveTab] = useState<AdminChatTab>(initialTab);
+  const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : null;
+  const [activeTab, setActiveTab] = useState<AdminChatTab | null>(initialTab);
 
   // Get conversationId from URL (support both chatId and conversationId for backward compatibility)
   const conversationIdFromUrl = searchParams.get('conversationId') || searchParams.get('chatId');
@@ -54,8 +54,11 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
     const tabFromUrl = searchParams.get('tab') as AdminChatTab | null;
     if (tabFromUrl && validTabs.includes(tabFromUrl) && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
+    } else if (!tabFromUrl && activeTab !== null) {
+      // If URL has no tab but state has one, clear it
+      setActiveTab(null);
     }
-  }, [searchParams, activeTab]);
+  }, [searchParams, activeTab, validTabs]);
 
   // Handle tab change
   const handleTabChange = (tab: AdminChatTab) => {
@@ -103,8 +106,8 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
       if (activeChat.id !== conversationIdFromUrl) {
         const params = new URLSearchParams(searchParams.toString());
         params.set('conversationId', activeChat.id);
-        // Ensure tab is set
-        if (!params.get('tab')) {
+        // Ensure tab is set if we have one
+        if (!params.get('tab') && activeTab) {
           params.set('tab', activeTab);
         }
         router.replace(`${pathname}?${params.toString()}`);
@@ -150,7 +153,9 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
     // Update URL immediately
     const params = new URLSearchParams(searchParams.toString());
     params.set('conversationId', chat.id);
-    params.set('tab', activeTab);
+    if (activeTab) {
+      params.set('tab', activeTab);
+    }
     router.replace(`${pathname}?${params.toString()}`);
   };
 

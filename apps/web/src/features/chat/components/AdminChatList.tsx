@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useAdminStudents, useAdminTeachers, useAdminGroups, useCreateDirectChat } from '../hooks';
 import { useChatStore } from '../store/chat.store';
@@ -11,7 +11,7 @@ import { cn } from '@/shared/lib/utils';
 type AdminChatTab = 'students' | 'teachers' | 'groups';
 
 interface AdminChatListProps {
-  activeTab: AdminChatTab;
+  activeTab: AdminChatTab | null;
   onTabChange: (tab: AdminChatTab) => void;
   onSelectChat: (chat: Chat) => void;
 }
@@ -21,6 +21,11 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
   const createDirectChatMutation = useCreateDirectChat();
+
+  // Reset search query when tab changes
+  useEffect(() => {
+    setSearchQuery('');
+  }, [activeTab]);
 
   // Fetch data based on active tab
   const { data: students = [], isLoading: isLoadingStudents } = useAdminStudents(
@@ -35,7 +40,8 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
 
   const isLoading = activeTab === 'students' ? isLoadingStudents : 
                     activeTab === 'teachers' ? isLoadingTeachers : 
-                    isLoadingGroups;
+                    activeTab === 'groups' ? isLoadingGroups :
+                    false;
 
   // Handle selecting a student/teacher (create or open DM)
   const handleSelectUser = async (userId: string) => {
@@ -265,15 +271,15 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
       <div className="p-4 border-b border-slate-200">
         <div className="flex gap-2">
           <button
-            onClick={() => onTabChange('students')}
+            onClick={() => onTabChange('groups')}
             className={cn(
               'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-              activeTab === 'students'
+              activeTab === 'groups'
                 ? 'bg-slate-900 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             )}
           >
-            Students
+            Groups
           </button>
           <button
             onClick={() => onTabChange('teachers')}
@@ -287,40 +293,60 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             Teachers
           </button>
           <button
-            onClick={() => onTabChange('groups')}
+            onClick={() => onTabChange('students')}
             className={cn(
               'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-              activeTab === 'groups'
+              activeTab === 'students'
                 ? 'bg-slate-900 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             )}
           >
-            Groups
+            Students
           </button>
         </div>
       </div>
 
       {/* Search */}
-      <div className="p-4 border-b border-slate-200">
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="search"
-            placeholder={`Search ${activeTab}...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
+      {activeTab && (
+        <div className="p-4 border-b border-slate-200">
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="search"
+              placeholder={`Search ${activeTab}...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* List */}
       <div className="flex-1 overflow-y-auto">
-        {activeTab === 'students' && renderStudents()}
-        {activeTab === 'teachers' && renderTeachers()}
-        {activeTab === 'groups' && renderGroups()}
+        {!activeTab ? (
+          <div className="p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-slate-700 mb-1">
+              Select a category
+            </p>
+            <p className="text-xs text-slate-500">
+              Choose Groups, Teachers, or Students to start browsing
+            </p>
+          </div>
+        ) : (
+          <>
+            {activeTab === 'students' && renderStudents()}
+            {activeTab === 'teachers' && renderTeachers()}
+            {activeTab === 'groups' && renderGroups()}
+          </>
+        )}
       </div>
     </div>
   );
