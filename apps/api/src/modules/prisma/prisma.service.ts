@@ -141,17 +141,40 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         : ['error'],
     });
 
-    // Set up middleware to retry transient connection errors
+    // Set up middleware to retry transient connection errors with reconnection
     this.$use(async (params, next) => {
       try {
         return await withRetry(
-          () => next(params),
+          async () => {
+            // Check if connection is alive before operation
+            if (!this.isConnected) {
+              try {
+                await this.$connect();
+                this.isConnected = true;
+                this.logger.log('Reconnected to database');
+              } catch (reconnectError) {
+                this.logger.warn('Failed to reconnect, will retry operation');
+              }
+            }
+            return await next(params);
+          },
           3, // max 3 retries (increased from 2)
           150, // base delay 150ms (increased from 100ms)
         );
       } catch (error) {
-        // Log connection errors with context (without secrets)
+        // If connection error, mark as disconnected and try to reconnect
         if (isTransientConnectionError(error)) {
+          this.isConnected = false;
+          
+          // Try to reconnect for next operation
+          try {
+            await this.$connect();
+            this.isConnected = true;
+            this.logger.log('Reconnected to database after error');
+          } catch (reconnectError) {
+            this.logger.warn('Could not reconnect after error');
+          }
+
           const errorInfo: {
             code?: string | number;
             message?: string;
@@ -203,19 +226,44 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    * Health check method to verify database connectivity
    */
   async checkHealth(): Promise<{ healthy: boolean; latency?: number; error?: string }> {
-    if (!this.isConnected) {
-      return { healthy: false, error: 'Not connected to database' };
-    }
-
     try {
       const start = Date.now();
       await this.$queryRaw`SELECT 1`;
       const latency = Date.now() - start;
+      this.isConnected = true;
       return { healthy: true, latency };
     } catch (error) {
+      this.isConnected = false;
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.warn(`Database health check failed: ${errorMessage}`);
+      
+      // Try to reconnect
+      try {
+        await this.$connect();
+        this.isConnected = true;
+        this.logger.log('Reconnected during health check');
+      } catch (reconnectError) {
+        this.logger.warn('Could not reconnect during health check');
+      }
+      
       return { healthy: false, error: errorMessage.substring(0, 200) };
+    }
+  }
+
+  /**
+   * Ensures database connection is active, reconnects if needed
+   */
+  async ensureConnected(): Promise<void> {
+    if (!this.isConnected) {
+      try {
+        await this.$connect();
+        this.isConnected = true;
+        this.logger.log('Reconnected to database');
+      } catch (error) {
+        this.isConnected = false;
+        this.logger.error('Failed to ensure database connection', error);
+        throw error;
+      }
     }
   }
 }
