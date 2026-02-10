@@ -84,6 +84,7 @@ export class StorageService {
       await fs.mkdir(path.join(this.localStoragePath, 'avatars'), { recursive: true });
       await fs.mkdir(path.join(this.localStoragePath, 'chat'), { recursive: true });
       await fs.mkdir(path.join(this.localStoragePath, 'documents'), { recursive: true });
+      await fs.mkdir(path.join(this.localStoragePath, 'settings'), { recursive: true });
     } catch (error) {
       this.logger.error(`Failed to create local storage directory: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -304,6 +305,53 @@ export class StorageService {
         `Failed to delete file from R2: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
+    }
+  }
+
+  /**
+   * Get a file buffer
+   */
+  async getFile(key: string): Promise<Buffer | null> {
+    if (this.useLocalStorage) {
+      try {
+        const filePath = path.join(this.localStoragePath, key);
+        return await fs.readFile(filePath);
+      } catch (error) {
+        this.logger.error(
+          `Failed to read file from local storage: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        return null;
+      }
+    }
+
+    if (!this.s3Client) {
+      return null;
+    }
+
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      });
+
+      const response = await this.s3Client.send(command);
+      
+      if (!response.Body) {
+        return null;
+      }
+
+      // Convert stream to buffer
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of response.Body as any) {
+        chunks.push(chunk);
+      }
+      
+      return Buffer.concat(chunks);
+    } catch (error) {
+      this.logger.error(
+        `Failed to get file from R2: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
     }
   }
 

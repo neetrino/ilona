@@ -1,9 +1,11 @@
 import {
   Controller,
+  Get,
   Post,
   Delete,
   Body,
   Param,
+  Res,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -11,16 +13,19 @@ import {
   InternalServerErrorException,
   PayloadTooLargeException,
   UnsupportedMediaTypeException,
+  NotFoundException,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
   Logger,
 } from '@nestjs/common';
+import { Response } from 'express';
+import * as path from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { StorageService } from './storage.service';
-import { CurrentUser } from '../../common/decorators';
+import { CurrentUser, Public } from '../../common/decorators';
 import { JwtPayload } from '../../common/types/auth.types';
 
 // Max file sizes
@@ -224,6 +229,54 @@ export class StorageController {
       success: true,
       data: result,
     };
+  }
+
+  /**
+   * Get a file (for local storage - public endpoint, no auth required)
+   */
+  @Get('file/:key(*)')
+  @Public()
+  @ApiOperation({ summary: 'Get a file (public endpoint for local storage)' })
+  async getFile(
+    @Param('key') key: string,
+    @Res() res: Response,
+  ) {
+    try {
+      // Decode the key (it may be URL encoded)
+      const decodedKey = decodeURIComponent(key);
+      
+      // Get file from storage service
+      const fileBuffer = await this.storageService.getFile(decodedKey);
+      
+      if (!fileBuffer) {
+        throw new NotFoundException('File not found');
+      }
+
+      // Determine content type from file extension
+      const ext = path.extname(decodedKey).toLowerCase();
+      const contentTypeMap: Record<string, string> = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+        '.gif': 'image/gif',
+        '.pdf': 'application/pdf',
+        '.txt': 'text/plain',
+      };
+      
+      const contentType = contentTypeMap[ext] || 'application/octet-stream';
+      
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+      res.send(fileBuffer);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(`Failed to get file: ${error instanceof Error ? error.message : String(error)}`);
+      throw new NotFoundException('File not found');
+    }
   }
 
   /**

@@ -474,6 +474,7 @@ model SystemSettings {
   maxUnjustifiedAbsences   Int      @default(3)
   paymentDueDays           Int      @default(5) // Days after month start
   lessonReminderHours      Int      @default(24) // Hours before lesson
+  logoUrl                  String?  // URL to the company logo stored in R2
   updatedAt                DateTime @updatedAt
 
   @@map("system_settings")

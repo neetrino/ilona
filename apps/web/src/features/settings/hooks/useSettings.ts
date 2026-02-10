@@ -7,6 +7,9 @@ import {
   changePassword,
   uploadAvatar,
   deleteAvatar,
+  fetchLogo,
+  uploadLogo,
+  deleteLogo,
 } from '../api/settings.api';
 import type { UpdateProfileDto, ChangePasswordDto } from '../types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -16,6 +19,8 @@ import { teacherKeys } from '@/features/teachers';
 export const settingsKeys = {
   all: ['settings'] as const,
   profile: () => [...settingsKeys.all, 'profile'] as const,
+  logo: () => [...settingsKeys.all, 'logo'] as const,
+  public: () => [...settingsKeys.all, 'public'] as const,
 };
 
 /**
@@ -112,6 +117,49 @@ export function useDeleteAvatar() {
           avatarUrl: undefined,
         });
       }
+    },
+  });
+}
+
+/**
+ * Hook to fetch logo (public - all roles)
+ */
+export function useLogo() {
+  return useQuery({
+    queryKey: settingsKeys.logo(),
+    queryFn: () => fetchLogo(),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+}
+
+/**
+ * Hook to upload logo (Admin only)
+ */
+export function useUploadLogo() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => uploadLogo(file),
+    onSuccess: () => {
+      // Invalidate logo query so all users see the new logo immediately
+      queryClient.invalidateQueries({ queryKey: settingsKeys.logo() });
+      queryClient.invalidateQueries({ queryKey: settingsKeys.public() });
+    },
+  });
+}
+
+/**
+ * Hook to delete logo (Admin only)
+ */
+export function useDeleteLogo() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteLogo(),
+    onSuccess: () => {
+      // Invalidate logo query so all users see the logo removed
+      queryClient.invalidateQueries({ queryKey: settingsKeys.logo() });
+      queryClient.invalidateQueries({ queryKey: settingsKeys.public() });
     },
   });
 }

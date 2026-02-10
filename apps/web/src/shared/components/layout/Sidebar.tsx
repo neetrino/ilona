@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useLogo } from '@/features/settings/hooks/useSettings';
 
 interface NavItem {
   label: string;
@@ -153,8 +154,10 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const { user } = useAuthStore();
   const t = useTranslations('nav');
   const userRole = user?.role || 'STUDENT';
+  const { data: logoData, isLoading: isLoadingLogo } = useLogo();
 
   const navItems = getNavItems(userRole, t);
+  const logoUrl = logoData?.logoUrl;
 
   const isActive = (href: string) => {
     // Extract the path without locale
@@ -171,9 +174,33 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-100">
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-          <span className="text-white text-lg font-bold">I</span>
-        </div>
+        {logoUrl ? (
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden bg-white flex-shrink-0">
+            <img
+              src={logoUrl}
+              alt="Company Logo"
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                // Fallback to default icon if logo fails to load
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+            />
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 hidden">
+              <span className="text-white text-lg font-bold">I</span>
+            </div>
+          </div>
+        ) : (
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
+            {isLoadingLogo ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <span className="text-white text-lg font-bold">I</span>
+            )}
+          </div>
+        )}
         {!collapsed && (
           <div>
             <h1 className="font-bold text-slate-800 leading-tight">{t('ilonaEducational')}</h1>
