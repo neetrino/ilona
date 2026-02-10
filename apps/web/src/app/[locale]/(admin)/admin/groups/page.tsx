@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Pencil, Trash2, Ban, List, LayoutGrid } from 'lucide-react';
+import { List, LayoutGrid } from 'lucide-react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
+import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 
 // Component for select all checkbox with indeterminate state
@@ -82,32 +82,23 @@ function GroupCard({ group, onEdit, onDelete, onToggleActive }: GroupCardProps) 
           <h4 className="font-semibold text-slate-800 text-sm leading-tight flex-1">
             {group.name}
           </h4>
-          <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={onEdit}
-              className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-              aria-label="Edit group"
-              title="Edit group"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={onToggleActive}
-              className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-              aria-label={group.isActive ? 'Deactivate group' : 'Activate group'}
-              title={group.isActive ? 'Deactivate group' : 'Activate group'}
-            >
-              <Ban className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={onDelete}
-              className="p-1.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-              aria-label="Delete group"
-              title="Delete group"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <ActionButtons
+            onEdit={onEdit}
+            onDisable={onToggleActive}
+            onDelete={onDelete}
+            isActive={group.isActive}
+            size="sm"
+            ariaLabels={{
+              edit: 'Edit group',
+              disable: group.isActive ? 'Deactivate group' : 'Activate group',
+              delete: 'Delete group',
+            }}
+            titles={{
+              edit: 'Edit group',
+              disable: group.isActive ? 'Deactivate group' : 'Activate group',
+              delete: 'Delete group',
+            }}
+          />
         </div>
         {group.description && (
           <p className="text-xs text-slate-500 line-clamp-2 mt-1" title={group.description}>
@@ -479,32 +470,22 @@ export default function GroupsPage() {
       key: 'actions',
       header: 'Actions',
       render: (group: Group) => (
-        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => setEditGroupId(group.id)}
-            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            aria-label="Edit group"
-            title="Edit group"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleToggleActive(group.id)}
-            className="p-2 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-            aria-label={group.isActive ? 'Deactivate group' : 'Activate group'}
-            title={group.isActive ? 'Deactivate group' : 'Activate group'}
-          >
-            <Ban className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleDeleteClick(group.id)}
-            className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            aria-label="Delete group"
-            title="Delete group"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
+        <ActionButtons
+          onEdit={() => setEditGroupId(group.id)}
+          onDisable={() => handleToggleActive(group.id)}
+          onDelete={() => handleDeleteClick(group.id)}
+          isActive={group.isActive}
+          ariaLabels={{
+            edit: 'Edit group',
+            disable: group.isActive ? 'Deactivate group' : 'Activate group',
+            delete: 'Delete group',
+          }}
+          titles={{
+            edit: 'Edit group',
+            disable: group.isActive ? 'Deactivate group' : 'Activate group',
+            delete: 'Delete group',
+          }}
+        />
       ),
     },
   ];
