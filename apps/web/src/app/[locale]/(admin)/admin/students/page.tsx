@@ -730,6 +730,36 @@ export default function StudentsPage() {
                 className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
             </div>
+            {/* Status Filter */}
+            <div className="relative">
+              <select
+                value={selectedStatusIds.size === 1 ? Array.from(selectedStatusIds)[0] : ''}
+                onChange={(e) => {
+                  const status = e.target.value as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '';
+                  if (status) {
+                    setSelectedStatusIds(new Set([status]));
+                  } else {
+                    setSelectedStatusIds(new Set());
+                  }
+                  setPage(0);
+                  setSelectedStudentIds(new Set());
+                }}
+                className="pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer min-w-[160px]"
+              >
+                <option value="">All statuses</option>
+                <option value="ACTIVE">{tStatus('active')}</option>
+                <option value="INACTIVE">{tStatus('inactive')}</option>
+                <option value="SUSPENDED">{tStatus('suspended')}</option>
+              </select>
+              <svg 
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
             {selectedStudentIds.size > 0 && (
               <Button
                 className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium"

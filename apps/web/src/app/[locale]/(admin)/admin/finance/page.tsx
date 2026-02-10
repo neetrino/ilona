@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
@@ -12,15 +13,99 @@ import {
   useProcessSalary,
   type Payment,
   type SalaryRecord,
+  type PaymentStatus,
+  type SalaryStatus,
 } from '@/features/finance';
 
 export default function FinancePage() {
-  const [activeTab, setActiveTab] = useState<'payments' | 'salaries'>('payments');
-  const [paymentsPage, setPaymentsPage] = useState(0);
-  const [salariesPage, setSalariesPage] = useState(0);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  // Initialize state from URL params
+  const [activeTab, setActiveTab] = useState<'payments' | 'salaries'>(() => {
+    const tabFromUrl = searchParams.get('tab');
+    return (tabFromUrl === 'payments' || tabFromUrl === 'salaries') ? tabFromUrl : 'payments';
+  });
+  const [paymentsPage, setPaymentsPage] = useState(() => {
+    const page = parseInt(searchParams.get('paymentsPage') || '0', 10);
+    return isNaN(page) ? 0 : Math.max(0, page);
+  });
+  const [salariesPage, setSalariesPage] = useState(() => {
+    const page = parseInt(searchParams.get('salariesPage') || '0', 10);
+    return isNaN(page) ? 0 : Math.max(0, page);
+  });
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | ''>(() => {
+    const status = searchParams.get('paymentStatus') as PaymentStatus | null;
+    return status && ['PENDING', 'PAID', 'OVERDUE', 'CANCELLED', 'REFUNDED'].includes(status) ? status : '';
+  });
+  const [salaryStatus, setSalaryStatus] = useState<SalaryStatus | ''>(() => {
+    const status = searchParams.get('salaryStatus') as SalaryStatus | null;
+    return status && ['PENDING', 'PAID'].includes(status) ? status : '';
+  });
+  
   const t = useTranslations('finance');
   const tTeachers = useTranslations('teachers');
   const pageSize = 10;
+
+  // Update URL params when filters change
+  const updateUrlParams = useCallback((updates: Record<string, string | number | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === '' || value === 0) {
+        params.delete(key);
+      } else {
+        params.set(key, String(value));
+      }
+    });
+    
+    router.push(`${pathname}?${params.toString()}`);
+  }, [router, pathname, searchParams]);
+
+  // Handle tab change
+  const handleTabChange = (tab: 'payments' | 'salaries') => {
+    setActiveTab(tab);
+    updateUrlParams({ tab });
+  };
+
+  // Handle search change
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (activeTab === 'payments') {
+      setPaymentsPage(0);
+      updateUrlParams({ q: value || null, paymentsPage: null });
+    } else {
+      setSalariesPage(0);
+      updateUrlParams({ q: value || null, salariesPage: null });
+    }
+  };
+
+  // Handle payment status change
+  const handlePaymentStatusChange = (status: PaymentStatus | '') => {
+    setPaymentStatus(status);
+    setPaymentsPage(0);
+    updateUrlParams({ paymentStatus: status || null, paymentsPage: null });
+  };
+
+  // Handle salary status change
+  const handleSalaryStatusChange = (status: SalaryStatus | '') => {
+    setSalaryStatus(status);
+    setSalariesPage(0);
+    updateUrlParams({ salaryStatus: status || null, salariesPage: null });
+  };
+
+  // Handle page changes
+  const handlePaymentsPageChange = (page: number) => {
+    setPaymentsPage(page);
+    updateUrlParams({ paymentsPage: page || null });
+  };
+
+  const handleSalariesPageChange = (page: number) => {
+    setSalariesPage(page);
+    updateUrlParams({ salariesPage: page || null });
+  };
 
   // Fetch dashboard stats
   const { data: dashboard, isLoading: isLoadingDashboard } = useFinanceDashboard();
@@ -32,6 +117,7 @@ export default function FinancePage() {
   } = usePayments({
     skip: paymentsPage * pageSize,
     take: pageSize,
+    status: paymentStatus || undefined,
   });
 
   // Fetch salaries
@@ -41,6 +127,7 @@ export default function FinancePage() {
   } = useSalaries({
     skip: salariesPage * pageSize,
     take: pageSize,
+    status: salaryStatus || undefined,
   });
 
   // Mutations
@@ -372,7 +459,7 @@ export default function FinancePage() {
         {/* Tabs */}
         <div className="flex items-center gap-4 border-b border-slate-200">
           <button
-            onClick={() => setActiveTab('payments')}
+            onClick={() => handleTabChange('payments')}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'payments'
                 ? 'border-blue-600 text-blue-600'
@@ -382,7 +469,7 @@ export default function FinancePage() {
             Student Payments ({totalPayments})
           </button>
           <button
-            onClick={() => setActiveTab('salaries')}
+            onClick={() => handleTabChange('salaries')}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'salaries'
                 ? 'border-blue-600 text-blue-600'
@@ -401,9 +488,49 @@ export default function FinancePage() {
             </svg>
             <input
               type="search"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
               placeholder={`Search ${activeTab === 'payments' ? 'payments' : 'salaries'}...`}
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             />
+          </div>
+          {/* Status Filter */}
+          <div className="relative">
+            <select
+              value={activeTab === 'payments' ? paymentStatus : salaryStatus}
+              onChange={(e) => {
+                if (activeTab === 'payments') {
+                  handlePaymentStatusChange(e.target.value as PaymentStatus | '');
+                } else {
+                  handleSalaryStatusChange(e.target.value as SalaryStatus | '');
+                }
+              }}
+              className="pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer min-w-[160px]"
+            >
+              <option value="">All statuses</option>
+              {activeTab === 'payments' ? (
+                <>
+                  <option value="PENDING">{t('pending')}</option>
+                  <option value="PAID">{t('paid')}</option>
+                  <option value="OVERDUE">{t('overdue')}</option>
+                  <option value="CANCELLED">{t('cancelled')}</option>
+                  <option value="REFUNDED">{t('refunded')}</option>
+                </>
+              ) : (
+                <>
+                  <option value="PENDING">Pending</option>
+                  <option value="PAID">Paid</option>
+                </>
+              )}
+            </select>
+            <svg 
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
           {activeTab === 'payments' ? (
             <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium">
@@ -440,7 +567,7 @@ export default function FinancePage() {
                 <button 
                   className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
                   disabled={paymentsPage === 0}
-                  onClick={() => setPaymentsPage(p => Math.max(0, p - 1))}
+                  onClick={() => handlePaymentsPageChange(Math.max(0, paymentsPage - 1))}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -450,7 +577,7 @@ export default function FinancePage() {
                 <button 
                   className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
                   disabled={paymentsPage >= paymentsTotalPages - 1}
-                  onClick={() => setPaymentsPage(p => p + 1)}
+                  onClick={() => handlePaymentsPageChange(paymentsPage + 1)}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -477,7 +604,7 @@ export default function FinancePage() {
                 <button 
                   className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
                   disabled={salariesPage === 0}
-                  onClick={() => setSalariesPage(p => Math.max(0, p - 1))}
+                  onClick={() => handleSalariesPageChange(Math.max(0, salariesPage - 1))}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -487,7 +614,7 @@ export default function FinancePage() {
                 <button 
                   className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
                   disabled={salariesPage >= salariesTotalPages - 1}
-                  onClick={() => setSalariesPage(p => p + 1)}
+                  onClick={() => handleSalariesPageChange(salariesPage + 1)}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

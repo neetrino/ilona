@@ -75,6 +75,10 @@ export default function TeachersPage() {
   const [deactivateSuccess, setDeactivateSuccess] = useState(false);
   // Filter states
   const [selectedBranchIds, setSelectedBranchIds] = useState<Set<string>>(new Set());
+  const [selectedStatus, setSelectedStatus] = useState<'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | ''>(() => {
+    const statusFromUrl = searchParams.get('status');
+    return (statusFromUrl === 'ACTIVE' || statusFromUrl === 'INACTIVE' || statusFromUrl === 'SUSPENDED') ? statusFromUrl : '';
+  });
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -110,6 +114,7 @@ export default function TeachersPage() {
     skip: 0,
     take: 100, // Max allowed by backend
     search: debouncedSearchQuery || undefined,
+    status: selectedStatus || undefined,
     sortBy: sortBy,
     sortOrder: sortOrder,
   });
@@ -135,6 +140,7 @@ export default function TeachersPage() {
   
   // Apply filters client-side
   const filteredTeachers = allTeachers.filter((teacher) => {
+    // Status filter is handled by API, but we keep this for branch filter
     // Branch filter
     if (selectedBranchIds.size > 0) {
       const teacherCenters = teacher.centers || 
@@ -174,6 +180,21 @@ export default function TeachersPage() {
     setSelectedBranchIds(selectedIds);
     setPage(0); // Reset to first page on filter change
     setSelectedTeacherIds(new Set());
+  };
+
+  // Handle status filter change
+  const handleStatusChange = (status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '') => {
+    setSelectedStatus(status);
+    setPage(0);
+    setSelectedTeacherIds(new Set());
+    // Update URL
+    const params = new URLSearchParams(searchParams.toString());
+    if (status) {
+      params.set('status', status);
+    } else {
+      params.delete('status');
+    }
+    router.push(`/${locale}/admin/teachers?${params.toString()}`);
   };
 
   // Handle sorting
@@ -704,6 +725,33 @@ export default function TeachersPage() {
                 onChange={handleSearchChange}
                 className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
+            </div>
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex-shrink-0">
+            <label className="block text-sm font-medium text-slate-500 mb-1.5">
+              Status
+            </label>
+            <div className="relative">
+              <select
+                value={selectedStatus}
+                onChange={(e) => handleStatusChange(e.target.value as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '')}
+                className="pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer min-w-[160px]"
+              >
+                <option value="">All statuses</option>
+                <option value="ACTIVE">{tStatus('active')}</option>
+                <option value="INACTIVE">{tStatus('inactive')}</option>
+                <option value="SUSPENDED">{tStatus('suspended')}</option>
+              </select>
+              <svg 
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
           </div>
 
