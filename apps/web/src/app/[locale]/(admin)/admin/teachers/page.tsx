@@ -74,14 +74,14 @@ export default function TeachersPage() {
   const [deactivateError, setDeactivateError] = useState<string | null>(null);
   const [deactivateSuccess, setDeactivateSuccess] = useState(false);
   // Filter states
+  const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedBranchIds, setSelectedBranchIds] = useState<Set<string>>(new Set());
   const [selectedStatus, setSelectedStatus] = useState<'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | ''>(() => {
     const statusFromUrl = searchParams.get('status');
     return (statusFromUrl === 'ACTIVE' || statusFromUrl === 'INACTIVE' || statusFromUrl === 'SUSPENDED') ? statusFromUrl : '';
   });
-  const params = useParams();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const locale = params.locale as string;
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
