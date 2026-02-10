@@ -109,7 +109,7 @@ export function useDeleteAvatar() {
       if (user) {
         setUser({
           ...user,
-          avatarUrl: null,
+          avatarUrl: undefined,
         });
       }
     },
