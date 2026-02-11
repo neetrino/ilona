@@ -12,6 +12,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isHydrated: boolean; // Track if store is hydrated from localStorage
   error: string | null;
+  sessionExpired: boolean; // Track if session has expired (non-blocking)
 }
 
 interface AuthActions {
@@ -21,6 +22,8 @@ interface AuthActions {
   clearError: () => void;
   setUser: (user: User) => void;
   setHydrated: () => void;
+  setSessionExpired: (expired: boolean) => void;
+  clearSessionExpired: () => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -32,6 +35,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isHydrated: false,
   error: null,
+  sessionExpired: false,
 };
 
 export const useAuthStore = create<AuthStore>()(
@@ -40,7 +44,7 @@ export const useAuthStore = create<AuthStore>()(
       ...initialState,
 
       login: async (email: string, password: string) => {
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, error: null, sessionExpired: false });
 
         try {
           const response = await api.post<{ user: User; tokens: AuthTokens }>('/auth/login', {
@@ -54,7 +58,11 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: true,
             isLoading: false,
             error: null,
+            sessionExpired: false,
           });
+          
+          // Reset refresh failed state in API client
+          api.resetRefreshFailed();
         } catch (error) {
           set({
             isLoading: false,
@@ -66,13 +74,15 @@ export const useAuthStore = create<AuthStore>()(
 
       logout: () => {
         set({ ...initialState, isHydrated: true });
+        // Reset refresh failed state in API client
+        api.resetRefreshFailed();
       },
 
       refreshToken: async () => {
         const { tokens } = get();
         if (!tokens?.refreshToken) {
-          // No refresh token available - user needs to login again
-          get().logout();
+          // No refresh token available - set session expired (don't auto-logout)
+          set({ sessionExpired: true });
           return false;
         }
 
@@ -90,17 +100,22 @@ export const useAuthStore = create<AuthStore>()(
           set({ 
             tokens: newTokens,
             // Keep isAuthenticated true if we successfully refreshed
-            isAuthenticated: true 
+            isAuthenticated: true,
+            sessionExpired: false, // Clear session expired state on successful refresh
           });
           return true;
         } catch (error) {
-          // If refresh failed with 401, the refresh token is invalid/expired
-          // User needs to login again
+          // If refresh failed with 401/403, the refresh token is invalid/expired
+          // Set session expired state but DON'T auto-logout (user can still interact)
           if (error instanceof Error && 'statusCode' in error && (error as any).statusCode === 401) {
-            console.warn('Refresh token is invalid, logging out user');
-            get().logout();
+            console.warn('Refresh token is invalid, session expired');
+            set({ sessionExpired: true });
+          } else if (error instanceof Error && 'statusCode' in error && (error as any).statusCode === 403) {
+            console.warn('Refresh token is forbidden, session expired');
+            set({ sessionExpired: true });
           } else {
-            // For other errors, log but don't logout (might be temporary network issue)
+            // For other errors (network issues), log but don't set session expired
+            // Might be temporary network issue
             console.warn('Token refresh failed:', error);
           }
           return false;
@@ -117,6 +132,14 @@ export const useAuthStore = create<AuthStore>()(
 
       setHydrated: () => {
         set({ isHydrated: true });
+      },
+
+      setSessionExpired: (expired: boolean) => {
+        set({ sessionExpired: expired });
+      },
+
+      clearSessionExpired: () => {
+        set({ sessionExpired: false });
       },
     }),
     {
@@ -185,9 +208,9 @@ export function initializeApiClient() {
     }
   });
   
-  // Set logout callback
-  api.setLogoutCallback(() => {
+  // Set session expired callback (non-blocking notification)
+  api.setSessionExpiredCallback(() => {
     const store = useAuthStore.getState();
-    store.logout();
+    store.setSessionExpired(true);
   });
 }

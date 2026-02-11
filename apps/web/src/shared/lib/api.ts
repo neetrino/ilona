@@ -1,3 +1,5 @@
+import { decodeJwt, isTokenExpired, expiresWithin } from './jwt-utils';
+
 // Get API URL from environment or construct from current host
 function getApiUrl(): string {
   // If explicitly set in environment, use it
@@ -27,6 +29,7 @@ const API_URL = getApiUrl();
 interface FetchOptions extends RequestInit {
   token?: string;
   skipAuthRefresh?: boolean; // Flag to skip auto-refresh for auth endpoints
+  retryCount?: number; // Internal: track retry attempts for exponential backoff
 }
 
 interface ApiErrorResponse {
@@ -48,18 +51,30 @@ export class ApiError extends Error {
 }
 
 type TokenRefreshCallback = () => Promise<boolean>;
-type LogoutCallback = () => void;
+type SessionExpiredCallback = () => void; // Called when refresh fails (non-blocking)
 type TokenGetter = () => string | null;
 type RefreshTokenGetter = () => string | null;
+
+/**
+ * Queued request that waits for token refresh to complete
+ */
+interface QueuedRequest<T> {
+  resolve: (value: T) => void;
+  reject: (error: Error) => void;
+  endpoint: string;
+  options: FetchOptions;
+}
 
 class ApiClient {
   private baseUrl: string;
   private refreshCallback: TokenRefreshCallback | null = null;
-  private logoutCallback: LogoutCallback | null = null;
+  private sessionExpiredCallback: SessionExpiredCallback | null = null;
   private tokenGetter: TokenGetter | null = null;
   private refreshTokenGetter: RefreshTokenGetter | null = null;
   private isRefreshing = false;
   private refreshPromise: Promise<boolean> | null = null;
+  private requestQueue: QueuedRequest<unknown>[] = [];
+  private refreshFailed = false; // Track if refresh has permanently failed
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -74,11 +89,11 @@ class ApiClient {
   }
 
   /**
-   * Set the logout callback
+   * Set the session expired callback (non-blocking notification)
    * This should be called from the auth store after initialization
    */
-  setLogoutCallback(callback: LogoutCallback) {
-    this.logoutCallback = callback;
+  setSessionExpiredCallback(callback: SessionExpiredCallback) {
+    this.sessionExpiredCallback = callback;
   }
 
   /**
@@ -88,6 +103,13 @@ class ApiClient {
   setTokenGetters(tokenGetter: TokenGetter, refreshTokenGetter: RefreshTokenGetter) {
     this.tokenGetter = tokenGetter;
     this.refreshTokenGetter = refreshTokenGetter;
+  }
+
+  /**
+   * Reset refresh failed state (called after successful login)
+   */
+  resetRefreshFailed() {
+    this.refreshFailed = false;
   }
 
   private getToken(): string | null {
@@ -140,13 +162,62 @@ class ApiClient {
     return null;
   }
 
+  /**
+   * Calculate exponential backoff delay
+   */
+  private getBackoffDelay(retryCount: number): number {
+    // Exponential backoff: 100ms, 200ms, 400ms, 800ms, max 2000ms
+    return Math.min(100 * Math.pow(2, retryCount), 2000);
+  }
+
+  /**
+   * Make HTTP request with retry logic and token refresh
+   */
   private async request<T>(
     endpoint: string,
     options: FetchOptions = {},
     isRetry = false
   ): Promise<T> {
-    const { token: explicitToken, skipAuthRefresh, ...fetchOptions } = options;
+    const { token: explicitToken, skipAuthRefresh, retryCount = 0, ...fetchOptions } = options;
+    
+    // If refresh has permanently failed, don't retry
+    if (this.refreshFailed && !skipAuthRefresh && !endpoint.startsWith('/auth/')) {
+      const errorData: ApiErrorResponse = {
+        message: 'Session expired. Please log in again.',
+        statusCode: 401,
+      };
+      throw new ApiError(
+        'Session expired. Please log in again.',
+        401,
+        Array.isArray(errorData.message) ? errorData.message : undefined
+      );
+    }
+
+    // PROACTIVE REFRESH: Check if token expires within 60 seconds
+    if (!skipAuthRefresh && !endpoint.startsWith('/auth/') && !isRetry) {
+      const currentToken = explicitToken || this.getToken();
+      if (currentToken && expiresWithin(currentToken, 60)) {
+        // Token expires soon, refresh proactively
+        const refreshToken = this.getRefreshToken();
+        if (refreshToken && !this.isRefreshing) {
+          await this.attemptTokenRefresh();
+        }
+      }
+    }
+
     let token = explicitToken || this.getToken();
+
+    // If we're currently refreshing and this is not a retry, queue the request
+    if (this.isRefreshing && !skipAuthRefresh && !endpoint.startsWith('/auth/') && !isRetry) {
+      return new Promise<T>((resolve, reject) => {
+        this.requestQueue.push({
+          resolve: resolve as (value: unknown) => void,
+          reject,
+          endpoint,
+          options,
+        });
+      });
+    }
 
     // Don't set Content-Type for FormData - browser will set it with boundary
     const isFormData = fetchOptions.body instanceof FormData;
@@ -159,120 +230,138 @@ class ApiClient {
       (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...fetchOptions,
-      headers,
-    });
-
-    let data: T | ApiErrorResponse;
-    const text = await response.text();
-    
     try {
-      data = text ? JSON.parse(text) : {};
-    } catch {
-      throw new ApiError('Invalid response from server', response.status);
-    }
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        ...fetchOptions,
+        headers,
+        credentials: 'include', // Include cookies for refresh token if using httpOnly cookies
+      });
 
-    // Handle 401 Unauthorized - attempt token refresh
-    if (response.status === 401 && !skipAuthRefresh && !isRetry) {
-      // Skip refresh for auth endpoints to avoid infinite loops
-      if (endpoint.startsWith('/auth/')) {
-        const errorData = data as ApiErrorResponse;
-        const message = Array.isArray(errorData.message) 
-          ? errorData.message[0] 
-          : errorData.message || errorData.error || 'Unauthorized';
-        throw new ApiError(
-          message,
-          response.status,
-          Array.isArray(errorData.message) ? errorData.message : undefined
-        );
-      }
-
-      // Only attempt refresh if we have a refresh token
-      const refreshToken = this.getRefreshToken();
-      if (!refreshToken) {
-        // No refresh token available - user needs to login again
-        // Trigger logout through the auth store if available
-        if (this.logoutCallback) {
-          try {
-            this.logoutCallback();
-          } catch (error) {
-            console.warn('Error during logout callback:', error);
-          }
-        }
-        const errorData = data as ApiErrorResponse;
-        const message = Array.isArray(errorData.message) 
-          ? errorData.message[0] 
-          : errorData.message || errorData.error || 'Unauthorized';
-        throw new ApiError(
-          message,
-          response.status,
-          Array.isArray(errorData.message) ? errorData.message : undefined
-        );
-      }
-
-      // Attempt to refresh token
-      const refreshSuccess = await this.attemptTokenRefresh();
+      let data: T | ApiErrorResponse;
+      const text = await response.text();
       
-      if (refreshSuccess) {
-        // Wait a bit to ensure token is available (store might need time to update)
-        // Try multiple times to get the new token
-        let newToken: string | null = null;
-        for (let i = 0; i < 5; i++) {
-          await new Promise(resolve => setTimeout(resolve, 50));
-          newToken = this.getToken();
-          if (newToken) break;
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new ApiError('Invalid response from server', response.status);
+      }
+
+      // Handle 401 Unauthorized - attempt token refresh
+      if (response.status === 401 && !skipAuthRefresh && !isRetry) {
+        // Skip refresh for auth endpoints to avoid infinite loops
+        if (endpoint.startsWith('/auth/')) {
+          const errorData = data as ApiErrorResponse;
+          const message = Array.isArray(errorData.message) 
+            ? errorData.message[0] 
+            : errorData.message || errorData.error || 'Unauthorized';
+          throw new ApiError(
+            message,
+            response.status,
+            Array.isArray(errorData.message) ? errorData.message : undefined
+          );
         }
 
-        if (!newToken) {
-          // If we still don't have a token after refresh, try one more time with original token
-          // This handles edge cases where refresh succeeded but token retrieval is delayed
-          console.warn('Token not available after refresh, retrying request...');
-          // Retry with original options - the token might be available now
-          return this.request<T>(endpoint, { ...options, skipAuthRefresh: true }, true);
+        // Only attempt refresh if we have a refresh token
+        const refreshToken = this.getRefreshToken();
+        if (!refreshToken) {
+          // No refresh token available - show session expired notification
+          this.refreshFailed = true;
+          if (this.sessionExpiredCallback) {
+            this.sessionExpiredCallback();
+          }
+          const errorData = data as ApiErrorResponse;
+          const message = Array.isArray(errorData.message) 
+            ? errorData.message[0] 
+            : errorData.message || errorData.error || 'Session expired';
+          throw new ApiError(
+            message,
+            response.status,
+            Array.isArray(errorData.message) ? errorData.message : undefined
+          );
         }
+
+        // Attempt to refresh token (single-flight: concurrent requests will queue)
+        const refreshSuccess = await this.attemptTokenRefresh();
         
-        // Retry the original request with new token
-        return this.request<T>(endpoint, { ...options, skipAuthRefresh: true, token: newToken }, true);
-      } else {
-        // Refresh failed - if refresh token was invalid, user should already be logged out
-        // by the refreshToken function. Just throw the error.
+        if (refreshSuccess) {
+          // Get the new token
+          let newToken: string | null = null;
+          for (let i = 0; i < 10; i++) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            newToken = this.getToken();
+            if (newToken) break;
+          }
+
+          if (!newToken) {
+            console.warn('Token not available after refresh, retrying request...');
+            return this.request<T>(endpoint, { ...options, skipAuthRefresh: true }, true);
+          }
+          
+          // Retry the original request with new token
+          return this.request<T>(endpoint, { ...options, skipAuthRefresh: true, token: newToken }, true);
+        } else {
+          // Refresh failed - mark as failed and show notification
+          this.refreshFailed = true;
+          if (this.sessionExpiredCallback) {
+            this.sessionExpiredCallback();
+          }
+          const errorData = data as ApiErrorResponse;
+          const message = Array.isArray(errorData.message) 
+            ? errorData.message[0] 
+            : errorData.message || errorData.error || 'Session expired';
+          throw new ApiError(
+            message,
+            response.status,
+            Array.isArray(errorData.message) ? errorData.message : undefined
+          );
+        }
+      }
+
+      // Handle network errors with exponential backoff (NOT for 401)
+      if (!response.ok && response.status >= 500 && retryCount < 3) {
+        const delay = this.getBackoffDelay(retryCount);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.request<T>(endpoint, { ...options, retryCount: retryCount + 1 }, false);
+      }
+
+      if (!response.ok) {
         const errorData = data as ApiErrorResponse;
         const message = Array.isArray(errorData.message) 
           ? errorData.message[0] 
-          : errorData.message || errorData.error || 'Unauthorized';
+          : errorData.message || errorData.error || 'An error occurred';
         throw new ApiError(
           message,
           response.status,
           Array.isArray(errorData.message) ? errorData.message : undefined
         );
       }
-    }
 
-    if (!response.ok) {
-      const errorData = data as ApiErrorResponse;
-      const message = Array.isArray(errorData.message) 
-        ? errorData.message[0] 
-        : errorData.message || errorData.error || 'An error occurred';
-      throw new ApiError(
-        message,
-        response.status,
-        Array.isArray(errorData.message) ? errorData.message : undefined
-      );
+      return data as T;
+    } catch (error) {
+      // Handle network errors (not HTTP errors) with exponential backoff
+      if (error instanceof TypeError && error.message.includes('fetch') && retryCount < 3) {
+        const delay = this.getBackoffDelay(retryCount);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.request<T>(endpoint, { ...options, retryCount: retryCount + 1 }, false);
+      }
+      throw error;
     }
-
-    return data as T;
   }
 
   /**
    * Attempt to refresh the access token
    * Returns true if successful, false otherwise
-   * Handles concurrent refresh requests by queuing them
+   * Handles concurrent refresh requests with single-flight pattern (all wait for same refresh)
    */
   private async attemptTokenRefresh(): Promise<boolean> {
-    // If already refreshing, wait for the existing refresh to complete
+    // SINGLE-FLIGHT: If already refreshing, wait for the existing refresh to complete
     if (this.isRefreshing && this.refreshPromise) {
       return this.refreshPromise;
+    }
+
+    // Prevent infinite loops: if refresh endpoint returns 401, don't retry
+    if (this.refreshFailed) {
+      return false;
     }
 
     // Use callback if available (preferred method)
@@ -280,22 +369,33 @@ class ApiClient {
       this.isRefreshing = true;
       this.refreshPromise = this.refreshCallback()
         .then(async (success) => {
+          if (success) {
+            // Give a small delay to ensure store is updated
+            if (typeof window !== 'undefined') {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              // Verify token is actually available after refresh
+              const token = this.getToken();
+              if (token) {
+                // Process queued requests
+                this.processRequestQueue(true);
+                this.isRefreshing = false;
+                this.refreshPromise = null;
+                return true;
+              }
+            }
+          }
+          
+          // Refresh failed or token not available
+          this.processRequestQueue(false);
           this.isRefreshing = false;
           this.refreshPromise = null;
-          
-          // Give a small delay to ensure store is updated
-          if (success && typeof window !== 'undefined') {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            // Verify token is actually available after refresh
-            const token = this.getToken();
-            return !!token;
-          }
-          return success;
+          return false;
         })
         .catch((error) => {
+          console.warn('Token refresh error:', error);
+          this.processRequestQueue(false);
           this.isRefreshing = false;
           this.refreshPromise = null;
-          console.warn('Token refresh error:', error);
           return false;
         });
       return this.refreshPromise;
@@ -315,10 +415,19 @@ class ApiClient {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include', // Include cookies if refresh token is in cookie
           body: JSON.stringify({ refreshToken }),
         });
 
+        // If refresh endpoint returns 401/403, refresh token is invalid - don't retry
+        if (response.status === 401 || response.status === 403) {
+          this.refreshFailed = true;
+          this.processRequestQueue(false);
+          return false;
+        }
+
         if (!response.ok) {
+          this.processRequestQueue(false);
           return false;
         }
 
@@ -335,15 +444,21 @@ class ApiClient {
               // Verify token is actually available after update
               await new Promise(resolve => setTimeout(resolve, 50));
               const token = this.getToken();
-              return !!token;
+              if (token) {
+                this.processRequestQueue(true);
+                return true;
+              }
             }
           } catch {
+            this.processRequestQueue(false);
             return false;
           }
         }
 
-        return true;
+        this.processRequestQueue(false);
+        return false;
       } catch {
+        this.processRequestQueue(false);
         return false;
       } finally {
         this.isRefreshing = false;
@@ -352,6 +467,30 @@ class ApiClient {
     })();
 
     return this.refreshPromise;
+  }
+
+  /**
+   * Process queued requests after refresh completes
+   */
+  private processRequestQueue(refreshSuccess: boolean) {
+    const queue = [...this.requestQueue];
+    this.requestQueue = [];
+
+    if (refreshSuccess) {
+      // Replay all queued requests
+      queue.forEach((queued) => {
+        this.request(queued.endpoint, queued.options)
+          .then(queued.resolve)
+          .catch(queued.reject);
+      });
+    } else {
+      // Reject all queued requests with session expired error
+      queue.forEach((queued) => {
+        queued.reject(
+          new ApiError('Session expired. Please log in again.', 401)
+        );
+      });
+    }
   }
 
   async get<T>(endpoint: string, options?: FetchOptions): Promise<T> {
