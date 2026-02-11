@@ -1,3 +1,38 @@
+// Load environment variables before anything else (needed for Prisma)
+import { config } from 'dotenv';
+import { resolve } from 'path';
+import { existsSync } from 'fs';
+
+// Load .env.local from project root
+// Try multiple paths to handle different execution contexts (dev, build, etc.)
+const possibleRootPaths = [
+  resolve(process.cwd(), '.env.local'),           // If running from root
+  resolve(process.cwd(), '../../.env.local'),    // If running from apps/api
+  resolve(__dirname, '../../../.env.local'),     // If running from dist
+];
+
+// Find the first existing .env.local file
+let envPath: string | undefined;
+for (const path of possibleRootPaths) {
+  if (existsSync(path)) {
+    envPath = path;
+    break;
+  }
+}
+
+if (envPath) {
+  config({ path: envPath });
+  // Also try .env as fallback
+  const envFallback = envPath.replace('.env.local', '.env');
+  if (existsSync(envFallback)) {
+    config({ path: envFallback });
+  }
+} else {
+  // Fallback: try loading from current working directory
+  config({ path: resolve(process.cwd(), '.env.local') });
+  config({ path: resolve(process.cwd(), '.env') });
+}
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, RequestMethod } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

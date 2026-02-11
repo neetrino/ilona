@@ -48,12 +48,14 @@ export class ApiError extends Error {
 }
 
 type TokenRefreshCallback = () => Promise<boolean>;
+type LogoutCallback = () => void;
 type TokenGetter = () => string | null;
 type RefreshTokenGetter = () => string | null;
 
 class ApiClient {
   private baseUrl: string;
   private refreshCallback: TokenRefreshCallback | null = null;
+  private logoutCallback: LogoutCallback | null = null;
   private tokenGetter: TokenGetter | null = null;
   private refreshTokenGetter: RefreshTokenGetter | null = null;
   private isRefreshing = false;
@@ -69,6 +71,14 @@ class ApiClient {
    */
   setRefreshCallback(callback: TokenRefreshCallback) {
     this.refreshCallback = callback;
+  }
+
+  /**
+   * Set the logout callback
+   * This should be called from the auth store after initialization
+   */
+  setLogoutCallback(callback: LogoutCallback) {
+    this.logoutCallback = callback;
   }
 
   /**
@@ -181,7 +191,15 @@ class ApiClient {
       // Only attempt refresh if we have a refresh token
       const refreshToken = this.getRefreshToken();
       if (!refreshToken) {
-        // No refresh token available, throw error immediately
+        // No refresh token available - user needs to login again
+        // Trigger logout through the auth store if available
+        if (this.logoutCallback) {
+          try {
+            this.logoutCallback();
+          } catch (error) {
+            console.warn('Error during logout callback:', error);
+          }
+        }
         const errorData = data as ApiErrorResponse;
         const message = Array.isArray(errorData.message) 
           ? errorData.message[0] 
@@ -217,8 +235,8 @@ class ApiClient {
         // Retry the original request with new token
         return this.request<T>(endpoint, { ...options, skipAuthRefresh: true, token: newToken }, true);
       } else {
-        // Refresh failed - this could be temporary, so we'll throw the error
-        // but the user session remains intact (no forced logout)
+        // Refresh failed - if refresh token was invalid, user should already be logged out
+        // by the refreshToken function. Just throw the error.
         const errorData = data as ApiErrorResponse;
         const message = Array.isArray(errorData.message) 
           ? errorData.message[0] 

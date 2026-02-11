@@ -26,6 +26,46 @@ function isConnectionError(error: unknown): error is ConnectionError {
 }
 
 /**
+ * Deep check for connection error codes in nested error structures.
+ * Handles Rust-style error structures from Prisma (kind: Io, cause: Some(Os { code: 10054 }))
+ */
+function hasConnectionErrorCode(error: unknown, targetCode: string | number): boolean {
+  if (!error || typeof error !== 'object') return false;
+  
+  const err = error as any;
+  
+  // Check direct code
+  if (err.code === targetCode || err.code === String(targetCode)) {
+    return true;
+  }
+  
+  // Check cause.code
+  if (err.cause?.code === targetCode || err.cause?.code === String(targetCode)) {
+    return true;
+  }
+  
+  // Check nested cause structures (Rust-style: cause: Some(Os { code: 10054 }))
+  if (err.cause && typeof err.cause === 'object') {
+    const cause = err.cause;
+    if (cause.code === targetCode || cause.code === String(targetCode)) {
+      return true;
+    }
+    // Handle nested structures
+    if (cause.cause?.code === targetCode || cause.cause?.code === String(targetCode)) {
+      return true;
+    }
+  }
+  
+  // Check error message for code references
+  const message = String(err.message || '').toLowerCase();
+  if (message.includes(`code ${targetCode}`) || message.includes(`code: ${targetCode}`)) {
+    return true;
+  }
+  
+  return false;
+}
+
+/**
  * Checks if an error is a transient database connection error that should be retried.
  */
 function isTransientConnectionError(error: unknown): boolean {
@@ -44,6 +84,16 @@ function isTransientConnectionError(error: unknown): boolean {
     return prismaConnectionErrorCodes.includes(error.code);
   }
 
+  // Check for Windows error code 10054 (connection forcibly closed)
+  if (hasConnectionErrorCode(error, 10054) || hasConnectionErrorCode(error, '10054')) {
+    return true;
+  }
+
+  // Check for ECONNRESET
+  if (hasConnectionErrorCode(error, 'ECONNRESET')) {
+    return true;
+  }
+
   // Check for PrismaClientUnknownRequestError (connection reset, etc.)
   if (error instanceof Prisma.PrismaClientUnknownRequestError) {
     const message = error.message.toLowerCase();
@@ -54,31 +104,18 @@ function isTransientConnectionError(error: unknown): boolean {
       message.includes('connection closed') ||
       message.includes('socket hang up') ||
       message.includes('io(connectionreset') ||
-      message.includes('os code 10054') ||
-      message.includes('code: 10054') ||
-      message.includes('forcibly closed by the remote host') ||
-      message.includes('error in postgresql connection')
-    );
-  }
-
-  // Check for generic connection errors (including Windows error 10054)
-  const message = error.message.toLowerCase();
-  
-  if (!isConnectionError(error)) {
-    return (
-      message.includes('econnreset') ||
-      message.includes('connection reset') ||
-      message.includes('server has closed the connection') ||
-      message.includes('connection closed') ||
-      message.includes('socket hang up') ||
-      message.includes('io(connectionreset') ||
+      message.includes('io(connection reset') ||
       message.includes('os code 10054') ||
       message.includes('code: 10054') ||
       message.includes('forcibly closed by the remote host') ||
       message.includes('error in postgresql connection') ||
-      error.name === 'ConnectionReset'
+      message.includes('error in postgresql connection: error')
     );
   }
+
+  // Check for generic connection errors
+  const message = error.message.toLowerCase();
+  const err = error as any;
   
   return (
     message.includes('econnreset') ||
@@ -87,16 +124,20 @@ function isTransientConnectionError(error: unknown): boolean {
     message.includes('connection closed') ||
     message.includes('socket hang up') ||
     message.includes('io(connectionreset') ||
+    message.includes('io(connection reset') ||
     message.includes('os code 10054') ||
     message.includes('code: 10054') ||
     message.includes('forcibly closed by the remote host') ||
     message.includes('error in postgresql connection') ||
     error.name === 'ConnectionReset' ||
-    error.code === 'ECONNRESET' ||
-    error.code === 10054 || // Windows connection reset code
-    (error.cause?.code === 'ECONNRESET') ||
-    (error.cause?.code === 10054) ||
-    Boolean(error.cause?.message && error.cause.message.toLowerCase().includes('connectionreset'))
+    err.code === 'ECONNRESET' ||
+    err.code === 10054 ||
+    err.code === '10054' ||
+    (err.cause?.code === 'ECONNRESET') ||
+    (err.cause?.code === 10054) ||
+    (err.cause?.code === '10054') ||
+    Boolean(err.cause?.message && err.cause.message.toLowerCase().includes('connectionreset')) ||
+    Boolean(err.cause?.message && err.cause.message.toLowerCase().includes('forcibly closed'))
   );
 }
 
@@ -145,15 +186,20 @@ async function withRetry<T>(
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
   private isConnected = false;
+  private healthCheckInterval?: NodeJS.Timeout;
+  private readonly healthCheckIntervalMs = 30000; // 30 seconds
 
   constructor() {
     // Configure PrismaClient - connection pool settings come from DATABASE_URL parameters
     // Recommended DATABASE_URL format:
     // postgresql://user:pass@host/db?sslmode=require&connection_limit=10&pool_timeout=20&connect_timeout=10
+    // For Neon PostgreSQL, use pooled connection string with pgbouncer=true
     super({
       log: process.env.NODE_ENV === 'development' 
         ? ['warn', 'error'] 
         : ['error'],
+      // Add error formatting for better debugging
+      errorFormat: 'pretty',
     });
 
     // Set up middleware to retry transient connection errors with reconnection
@@ -254,6 +300,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       await this.$connect();
       this.isConnected = true;
       this.logger.log('Database connected successfully');
+      
+      // Start periodic health check to keep connection alive
+      this.startHealthCheck();
     } catch (error) {
       this.isConnected = false;
       this.logger.error('Failed to connect to database on startup', error);
@@ -261,7 +310,50 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     }
   }
 
+  /**
+   * Starts periodic health checks to detect and recover from connection issues
+   */
+  private startHealthCheck(): void {
+    // Only run health checks in production or when explicitly enabled
+    if (process.env.NODE_ENV === 'test') {
+      return;
+    }
+
+    this.healthCheckInterval = setInterval(async () => {
+      try {
+        await this.$queryRaw`SELECT 1`;
+        if (!this.isConnected) {
+          this.isConnected = true;
+          this.logger.log('Connection restored via health check');
+        }
+      } catch (error) {
+        if (isTransientConnectionError(error)) {
+          this.isConnected = false;
+          this.logger.warn('Health check detected connection issue, attempting reconnect');
+          try {
+            await this.$disconnect();
+          } catch (disconnectError) {
+            // Ignore disconnect errors
+          }
+          try {
+            await this.$connect();
+            this.isConnected = true;
+            this.logger.log('Reconnected via health check');
+          } catch (reconnectError) {
+            this.logger.warn('Failed to reconnect via health check');
+          }
+        }
+      }
+    }, this.healthCheckIntervalMs);
+  }
+
   async onModuleDestroy() {
+    // Stop health check interval
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = undefined;
+    }
+
     try {
       await this.$disconnect();
       this.isConnected = false;

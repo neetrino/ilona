@@ -71,8 +71,8 @@ export const useAuthStore = create<AuthStore>()(
       refreshToken: async () => {
         const { tokens } = get();
         if (!tokens?.refreshToken) {
-          // No refresh token available, but don't logout - just return false
-          // The session might still be valid, just the refresh token is missing
+          // No refresh token available - user needs to login again
+          get().logout();
           return false;
         }
 
@@ -94,9 +94,15 @@ export const useAuthStore = create<AuthStore>()(
           });
           return true;
         } catch (error) {
-          // Refresh failed, but don't logout - the user might still have a valid session
-          // Just log the error and return false so the request can handle it appropriately
-          console.warn('Token refresh failed:', error);
+          // If refresh failed with 401, the refresh token is invalid/expired
+          // User needs to login again
+          if (error instanceof Error && 'statusCode' in error && (error as any).statusCode === 401) {
+            console.warn('Refresh token is invalid, logging out user');
+            get().logout();
+          } else {
+            // For other errors, log but don't logout (might be temporary network issue)
+            console.warn('Token refresh failed:', error);
+          }
           return false;
         }
       },
@@ -177,5 +183,11 @@ export function initializeApiClient() {
       console.warn('Token refresh callback error:', error);
       return false;
     }
+  });
+  
+  // Set logout callback
+  api.setLogoutCallback(() => {
+    const store = useAuthStore.getState();
+    store.logout();
   });
 }
