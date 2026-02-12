@@ -208,7 +208,7 @@ export class GroupsService {
   }
 
   async update(id: string, dto: UpdateGroupDto) {
-    await this.findById(id);
+    const currentGroup = await this.findById(id);
 
     // Validate center if changing (centerId is required in DB, so if provided it must be valid)
     if (dto.centerId !== undefined) {
@@ -226,13 +226,73 @@ export class GroupsService {
     }
 
     // Validate teacher if changing
-    if (dto.teacherId) {
-      const teacher = await this.prisma.teacher.findUnique({
-        where: { id: dto.teacherId },
-      });
+    if (dto.teacherId !== undefined) {
+      if (dto.teacherId) {
+        const teacher = await this.prisma.teacher.findUnique({
+          where: { id: dto.teacherId },
+        });
 
-      if (!teacher) {
-        throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
+        if (!teacher) {
+          throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
+        }
+      }
+
+      // Handle teacher assignment/removal
+      const oldTeacherId = currentGroup.teacherId;
+      const newTeacherId = dto.teacherId || null;
+
+      // If teacher is being removed, mark them as left in chat
+      if (oldTeacherId && oldTeacherId !== newTeacherId) {
+        const oldTeacher = await this.prisma.teacher.findUnique({
+          where: { id: oldTeacherId },
+          select: { userId: true },
+        });
+
+        if (oldTeacher) {
+          const chat = await this.prisma.chat.findUnique({
+            where: { groupId: id },
+          });
+
+          if (chat) {
+            await this.prisma.chatParticipant.updateMany({
+              where: {
+                chatId: chat.id,
+                userId: oldTeacher.userId,
+              },
+              data: { leftAt: new Date() },
+            });
+          }
+        }
+      }
+
+      // If new teacher is being assigned, ensure they're added to chat
+      if (newTeacherId && newTeacherId !== oldTeacherId) {
+        const newTeacher = await this.prisma.teacher.findUnique({
+          where: { id: newTeacherId },
+          include: { user: true },
+        });
+
+        if (newTeacher) {
+          let chat = await this.prisma.chat.findUnique({
+            where: { groupId: id },
+          });
+
+          if (!chat) {
+            chat = await this.createGroupChat(id, currentGroup.name, newTeacherId);
+          } else {
+            await this.prisma.chatParticipant.upsert({
+              where: {
+                chatId_userId: { chatId: chat.id, userId: newTeacher.userId },
+              },
+              update: { isAdmin: true, leftAt: null },
+              create: {
+                chatId: chat.id,
+                userId: newTeacher.userId,
+                isAdmin: true,
+              },
+            });
+          }
+        }
       }
     }
 
@@ -287,12 +347,16 @@ export class GroupsService {
       data: { teacherId },
     });
 
-    // Add teacher to group chat if exists
-    const chat = await this.prisma.chat.findUnique({
+    // Ensure group chat exists and teacher is added as participant
+    let chat = await this.prisma.chat.findUnique({
       where: { groupId },
     });
 
-    if (chat) {
+    // Create chat if it doesn't exist
+    if (!chat) {
+      chat = await this.createGroupChat(groupId, group.name, teacherId);
+    } else {
+      // Add teacher to existing chat
       await this.prisma.chatParticipant.upsert({
         where: {
           chatId_userId: { chatId: chat.id, userId: teacher.userId },

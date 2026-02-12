@@ -23,81 +23,100 @@ export class ChatService {
    * Get all chats for a user
    */
   async getUserChats(userId: string) {
-    const chats = await this.prisma.chat.findMany({
-      where: {
-        participants: {
-          some: {
-            userId,
-            leftAt: null,
+    try {
+      // Ensure connection is active before query
+      await this.prisma.ensureConnected();
+      
+      const chats = await this.prisma.chat.findMany({
+        where: {
+          participants: {
+            some: {
+              userId,
+              leftAt: null,
+            },
           },
+          isActive: true,
         },
-        isActive: true,
-      },
-      include: {
-        group: {
-          select: {
-            id: true,
-            name: true,
-            level: true,
+        include: {
+          group: {
+            select: {
+              id: true,
+              name: true,
+              level: true,
+            },
           },
-        },
-        participants: {
-          where: { leftAt: null },
-          include: {
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-                role: true,
+          participants: {
+            where: { leftAt: null },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  avatarUrl: true,
+                  role: true,
+                },
               },
             },
           },
-        },
-        messages: {
-          take: 1,
-          orderBy: { createdAt: 'desc' },
-          include: {
-            sender: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
+          messages: {
+            take: 1,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                },
               },
             },
           },
+          _count: {
+            select: { messages: true },
+          },
         },
-        _count: {
-          select: { messages: true },
-        },
-      },
-      orderBy: { updatedAt: 'desc' },
-    });
+        orderBy: { updatedAt: 'desc' },
+      });
 
-    // Get unread counts
-    const chatsWithUnread = await Promise.all(
-      chats.map(async (chat) => {
-        const participant = chat.participants.find(p => p.userId === userId);
-        const unreadCount = participant?.lastReadAt
-          ? await this.prisma.message.count({
-              where: {
-                chatId: chat.id,
-                createdAt: { gt: participant.lastReadAt },
-                senderId: { not: userId },
-              },
-            })
-          : chat._count.messages;
+      // Get unread counts
+      const chatsWithUnread = await Promise.all(
+        chats.map(async (chat) => {
+          try {
+            const participant = chat.participants.find(p => p.userId === userId);
+            const unreadCount = participant?.lastReadAt
+              ? await this.prisma.message.count({
+                  where: {
+                    chatId: chat.id,
+                    createdAt: { gt: participant.lastReadAt },
+                    senderId: { not: userId },
+                  },
+                })
+              : chat._count.messages;
 
-        return {
-          ...chat,
-          unreadCount,
-          lastMessage: chat.messages[0] || null,
-        };
-      }),
-    );
+            return {
+              ...chat,
+              unreadCount,
+              lastMessage: chat.messages[0] || null,
+            };
+          } catch (error) {
+            // If unread count query fails, return chat with 0 unread
+            this.logger.warn(`Failed to get unread count for chat ${chat.id}:`, error);
+            return {
+              ...chat,
+              unreadCount: 0,
+              lastMessage: chat.messages[0] || null,
+            };
+          }
+        }),
+      );
 
-    return chatsWithUnread;
+      return chatsWithUnread;
+    } catch (error) {
+      this.logger.error(`Failed to get user chats for user ${userId}:`, error);
+      // Re-throw to let PrismaService middleware handle retry
+      throw error;
+    }
   }
 
   /**
@@ -184,41 +203,17 @@ export class ChatService {
     // For teachers, validate assignment for group chats
     if (!isParticipant && !isAdminAccessingGroup) {
       if (userRole === 'TEACHER' && chat.type === ChatType.GROUP && chat.groupId) {
-        // Check if teacher is assigned to this group
-        const group = await this.prisma.group.findUnique({
-          where: { id: chat.groupId },
-          select: { teacherId: true },
-        });
+        // Check if teacher is assigned to this group (canonical source: Group.teacherId)
+        const isAssigned = await this.isTeacherAssignedToGroup(userId, chat.groupId);
         
-        if (group) {
-          const teacher = await this.prisma.teacher.findUnique({
-            where: { userId },
-            select: { id: true },
-          });
+        if (isAssigned) {
+          // Teacher is assigned, ensure they're added as participant
+          await this.ensureTeacherInGroupChat(chat.id, userId);
           
-          if (teacher && group.teacherId === teacher.id) {
-            // Teacher is assigned, add them as participant if not already
-            await this.prisma.chatParticipant.upsert({
-              where: {
-                chatId_userId: {
-                  chatId: chat.id,
-                  userId,
-                },
-              },
-              update: {
-                leftAt: null,
-                isAdmin: true,
-              },
-              create: {
-                chatId: chat.id,
-                userId,
-                isAdmin: true,
-              },
-            });
-            
-            // Refetch chat with updated participants
-            return this.getChatById(chatId, userId, userRole);
-          }
+          // Refetch chat with updated participants
+          return this.getChatById(chatId, userId, userRole);
+        } else {
+          throw new ForbiddenException('You are not assigned to this group');
         }
       }
       
@@ -365,6 +360,77 @@ export class ChatService {
       hasMore,
       nextCursor: hasMore ? items[items.length - 1]?.id : null,
     };
+  }
+
+  /**
+   * Check if a teacher is assigned to a group (canonical source: Group.teacherId)
+   */
+  private async isTeacherAssignedToGroup(teacherUserId: string, groupId: string): Promise<boolean> {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { userId: teacherUserId },
+      select: { id: true },
+    });
+
+    if (!teacher) {
+      return false;
+    }
+
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      select: { teacherId: true },
+    });
+
+    return !!(group && group.teacherId === teacher.id);
+  }
+
+  /**
+   * Ensure teacher is added as ChatParticipant for a group chat if they're assigned
+   */
+  private async ensureTeacherInGroupChat(chatId: string, teacherUserId: string): Promise<void> {
+    // Check if teacher is already a participant
+    const existingParticipant = await this.prisma.chatParticipant.findUnique({
+      where: {
+        chatId_userId: {
+          chatId,
+          userId: teacherUserId,
+        },
+      },
+    });
+
+    if (existingParticipant && !existingParticipant.leftAt) {
+      // Already a participant, just ensure isAdmin is true
+      if (!existingParticipant.isAdmin) {
+        await this.prisma.chatParticipant.update({
+          where: {
+            chatId_userId: {
+              chatId,
+              userId: teacherUserId,
+            },
+          },
+          data: { isAdmin: true },
+        });
+      }
+      return;
+    }
+
+    // Add or rejoin teacher as admin
+    await this.prisma.chatParticipant.upsert({
+      where: {
+        chatId_userId: {
+          chatId,
+          userId: teacherUserId,
+        },
+      },
+      update: {
+        leftAt: null,
+        isAdmin: true,
+      },
+      create: {
+        chatId,
+        userId: teacherUserId,
+        isAdmin: true,
+      },
+    });
   }
 
   /**
@@ -1094,45 +1160,17 @@ export class ChatService {
 
     // For teachers, validate assignment to the group
     if (userId && userRole === UserRole.TEACHER) {
-      // Check if teacher is assigned to this group
-      const group = await this.prisma.group.findUnique({
-        where: { id: groupId },
-        select: { teacherId: true },
-      });
+      // Check if teacher is assigned to this group (canonical source: Group.teacherId)
+      const isAssigned = await this.isTeacherAssignedToGroup(userId, groupId);
       
-      if (group) {
-        const teacher = await this.prisma.teacher.findUnique({
-          where: { userId },
-          select: { id: true },
-        });
+      if (isAssigned) {
+        // Teacher is assigned, ensure they're added as participant
+        await this.ensureTeacherInGroupChat(chat.id, userId);
         
-        if (teacher && group.teacherId === teacher.id) {
-          // Teacher is assigned, add them as participant
-          await this.prisma.chatParticipant.upsert({
-            where: {
-              chatId_userId: {
-                chatId: chat.id,
-                userId,
-              },
-            },
-            update: {
-              leftAt: null,
-              isAdmin: true,
-            },
-            create: {
-              chatId: chat.id,
-              userId,
-              isAdmin: true,
-            },
-          });
-          
-          // Refetch with updated participants
-          return this.getGroupChat(groupId, userId, userRole);
-        } else {
-          throw new ForbiddenException('You are not assigned to this group');
-        }
+        // Refetch with updated participants
+        return this.getGroupChat(groupId, userId, userRole);
       } else {
-        throw new ForbiddenException('Group not found');
+        throw new ForbiddenException('You are not assigned to this group');
       }
     }
 

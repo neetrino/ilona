@@ -14,6 +14,7 @@ import {
   fetchMyGroups,
 } from '../api/groups.api';
 import type { GroupFilters, CreateGroupDto, UpdateGroupDto } from '../types';
+import { chatKeys } from '../../chat/hooks/useChat';
 
 // Query keys
 export const groupKeys = {
@@ -86,9 +87,12 @@ export function useUpdateGroup() {
     onSuccess: (group, { id, data }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
-      // If teacher assignment changed, invalidate my-groups cache
+      // If teacher assignment changed, invalidate my-groups cache and chat queries
       if (data.teacherId !== undefined) {
         queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+        queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
+        queryClient.invalidateQueries({ queryKey: chatKeys.details() });
       }
     },
   });
@@ -185,9 +189,16 @@ export function useAssignTeacher() {
     mutationFn: ({ groupId, teacherId }: { groupId: string; teacherId: string }) =>
       assignTeacher(groupId, teacherId),
     onSuccess: (_, { groupId }) => {
+      // Invalidate group-related queries
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
       queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      
+      // Invalidate chat-related queries to ensure teacher sees updated groups
+      queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
+      // Invalidate any group chat detail queries
+      queryClient.invalidateQueries({ queryKey: chatKeys.details() });
     },
   });
 }

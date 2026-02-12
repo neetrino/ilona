@@ -146,6 +146,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           metadata: data.metadata,
         },
         client.user.sub,
+        client.user.role,
       );
 
       // Broadcast to all participants in the chat
@@ -263,7 +264,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     try {
       // Verify user is participant
-      await this.chatService.getChatById(data.chatId, client.user.sub);
+      await this.chatService.getChatById(data.chatId, client.user.sub, client.user.role);
       
       void client.join(`chat:${data.chatId}`);
       
