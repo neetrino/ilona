@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { useMyLessons, type Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
 
-type ViewMode = 'week' | 'month';
+type ViewMode = 'week' | 'month' | 'list';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -96,6 +98,7 @@ function LessonBlock({ lesson }: { lesson: Lesson }) {
 }
 
 export default function TeacherCalendarPage() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -195,6 +198,15 @@ export default function TeacherCalendarPage() {
           >
             Month
           </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+              viewMode === 'list' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+            )}
+          >
+            List
+          </button>
         </div>
       </div>
 
@@ -219,10 +231,19 @@ export default function TeacherCalendarPage() {
       </div>
 
       {/* Calendar */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        {isLoading ? (
-          <div className="p-8 text-center text-slate-500">Loading...</div>
-        ) : viewMode === 'week' ? (
+      {viewMode === 'list' ? (
+        <LessonListTable
+          lessons={lessons}
+          isLoading={isLoading}
+          onObligationClick={(lessonId, obligation) => {
+            router.push(`/teacher/calendar/${lessonId}?tab=${obligation}`);
+          }}
+        />
+      ) : (
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          {isLoading ? (
+            <div className="p-8 text-center text-slate-500">Loading...</div>
+          ) : viewMode === 'week' ? (
           /* Week View */
           <div className="grid grid-cols-7 divide-x divide-slate-200">
             {weekDates.map((date, index) => {
@@ -313,8 +334,9 @@ export default function TeacherCalendarPage() {
               ))}
             </div>
           </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </DashboardLayout>
   );
 }

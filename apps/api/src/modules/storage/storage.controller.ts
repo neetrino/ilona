@@ -5,6 +5,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   Res,
   UseGuards,
   UseInterceptors,
@@ -263,10 +264,25 @@ export class StorageController {
         '.gif': 'image/gif',
         '.pdf': 'application/pdf',
         '.txt': 'text/plain',
+        // Audio types
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+        '.ogg': 'audio/ogg',
+        '.webm': 'audio/webm',
+        '.m4a': 'audio/mp4',
+        '.aac': 'audio/aac',
+        // Video types
+        '.mp4': 'video/mp4',
+        '.mov': 'video/quicktime',
+        '.avi': 'video/x-msvideo',
       };
       
       const contentType = contentTypeMap[ext] || 'application/octet-stream';
       
+      // Set CORS headers explicitly
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
       res.setHeader('Content-Type', contentType);
       res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
       res.send(fileBuffer);
@@ -275,6 +291,95 @@ export class StorageController {
         throw error;
       }
       this.logger.error(`Failed to get file: ${error instanceof Error ? error.message : String(error)}`);
+      throw new NotFoundException('File not found');
+    }
+  }
+
+  /**
+   * Proxy a file from R2 storage (to avoid CORS issues)
+   * This endpoint extracts the key from R2 URLs and serves the file through the API
+   */
+  @Get('proxy')
+  @Public()
+  @ApiOperation({ summary: 'Proxy a file from R2 storage (to avoid CORS issues)' })
+  async proxyFile(
+    @Query('url') fileUrl: string,
+    @Res() res: Response,
+  ) {
+    try {
+      
+      if (!fileUrl) {
+        throw new BadRequestException('File URL is required');
+      }
+
+      // Decode the URL in case it's encoded
+      const decodedUrl = decodeURIComponent(fileUrl);
+
+      // Extract key from R2 URL
+      // R2 URLs format: https://pub-xxx.r2.dev/chat/filename.webm
+      // or: https://pub-xxx.r2.dev/chat/voice/filename.webm
+      let key: string;
+      
+      try {
+        const url = new URL(decodedUrl);
+        // Extract path after domain (e.g., /chat/filename.webm)
+        key = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
+      } catch {
+        // If URL parsing fails, try to extract key manually
+        // Look for patterns like /chat/ or /chat/voice/
+        const match = decodedUrl.match(/\/(chat|avatars|documents)(\/.*)?$/);
+        if (match) {
+          key = match[0].startsWith('/') ? match[0].substring(1) : match[0];
+        } else {
+          throw new BadRequestException('Invalid file URL format');
+        }
+      }
+      
+      // Get file from storage service
+      const fileBuffer = await this.storageService.getFile(key);
+      
+      if (!fileBuffer) {
+        throw new NotFoundException('File not found');
+      }
+
+      // Determine content type from file extension
+      const ext = path.extname(key).toLowerCase();
+      const contentTypeMap: Record<string, string> = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+        '.gif': 'image/gif',
+        '.pdf': 'application/pdf',
+        '.txt': 'text/plain',
+        // Audio types
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+        '.ogg': 'audio/ogg',
+        '.webm': 'audio/webm',
+        '.m4a': 'audio/mp4',
+        '.aac': 'audio/aac',
+        // Video types
+        '.mp4': 'video/mp4',
+        '.mov': 'video/quicktime',
+        '.avi': 'video/x-msvideo',
+      };
+      
+      const contentType = contentTypeMap[ext] || 'application/octet-stream';
+      
+      // Set CORS headers explicitly
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+      res.send(fileBuffer);
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(`Failed to proxy file: ${error instanceof Error ? error.message : String(error)}`);
       throw new NotFoundException('File not found');
     }
   }

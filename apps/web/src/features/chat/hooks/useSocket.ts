@@ -31,7 +31,7 @@ interface UseSocketOptions {
 }
 
 export function useSocket(options: UseSocketOptions = {}) {
-  const { tokens } = useAuthStore();
+  const { tokens, refreshToken: refreshTokenFn } = useAuthStore();
   const token = tokens?.accessToken;
   const queryClient = useQueryClient();
   const [isConnected, setIsConnected] = useState(false);
@@ -43,12 +43,50 @@ export function useSocket(options: UseSocketOptions = {}) {
   useEffect(() => {
     if (!token) return;
 
-    initSocket({
-      token,
-      onConnect: () => setIsConnected(true),
-      onDisconnect: () => setIsConnected(false),
-      onError: (error) => console.error('[useSocket] Error:', error),
-    });
+    let socketInitialized = false;
+
+    const initializeSocket = async (currentToken: string) => {
+      if (socketInitialized) return;
+      
+      initSocket({
+        token: currentToken,
+        onConnect: () => {
+          setIsConnected(true);
+          socketInitialized = true;
+        },
+        onDisconnect: () => {
+          setIsConnected(false);
+          socketInitialized = false;
+        },
+        onError: (error) => {
+          console.error('[useSocket] Error:', error);
+        },
+        onTokenExpired: async () => {
+          try {
+            const refreshed = await refreshTokenFn?.();
+            if (refreshed) {
+              const newTokens = useAuthStore.getState().tokens;
+              return newTokens?.accessToken || null;
+            }
+          } catch (refreshError) {
+            console.error('[useSocket] Failed to refresh token:', refreshError);
+          }
+          return null;
+        },
+      });
+    };
+
+    void initializeSocket(token);
+
+    // Cleanup on unmount or token change
+    return () => {
+      disconnectSocket();
+    };
+  }, [token, refreshTokenFn, queryClient]);
+
+  // Subscribe to events (separate effect to avoid re-subscribing on token change)
+  useEffect(() => {
+    if (!token) return;
 
     // Subscribe to events
     const unsubscribers: (() => void)[] = [];
@@ -141,7 +179,7 @@ export function useSocket(options: UseSocketOptions = {}) {
       })
     );
 
-    // Message deleted
+    // Message deleted (hard delete - remove completely)
     unsubscribers.push(
       onSocketEvent('message:deleted', (data) => {
         queryClient.setQueryData(
@@ -149,15 +187,12 @@ export function useSocket(options: UseSocketOptions = {}) {
           (oldData: { pages: { items: Message[] }[] } | undefined) => {
             if (!oldData) return oldData;
 
+            // Remove the message completely from all pages
             return {
               ...oldData,
               pages: oldData.pages.map((page) => ({
                 ...page,
-                items: page.items.map((m) =>
-                  m.id === data.messageId
-                    ? { ...m, content: null, isSystem: true }
-                    : m
-                ),
+                items: page.items.filter((m) => m.id !== data.messageId),
               })),
             };
           }

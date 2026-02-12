@@ -12,6 +12,13 @@ export interface Lesson {
   status: LessonStatus;
   vocabularySent: boolean;
   vocabularySentAt?: string;
+  feedbacksCompleted?: boolean;
+  absenceMarked?: boolean;
+  absenceMarkedAt?: string;
+  voiceSent?: boolean;
+  voiceSentAt?: string;
+  textSent?: boolean;
+  textSentAt?: string;
   completedAt?: string;
   group: {
     id: string;

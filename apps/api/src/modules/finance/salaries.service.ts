@@ -59,8 +59,24 @@ export class SalariesService {
       this.prisma.salaryRecord.count({ where }),
     ]);
 
+    // Parse obligations info from notes for each item
+    const itemsWithObligations = items.map((item) => {
+      let obligationsInfo = null;
+      if (item.notes) {
+        try {
+          obligationsInfo = JSON.parse(item.notes);
+        } catch {
+          // If parsing fails, ignore
+        }
+      }
+      return {
+        ...item,
+        obligationsInfo,
+      };
+    });
+
     return {
-      items,
+      items: itemsWithObligations,
       total,
       page: Math.floor(skip / take) + 1,
       pageSize: take,
@@ -159,7 +175,7 @@ export class SalariesService {
     const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
     const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59);
 
-    // Count completed lessons in period
+    // Get completed lessons with obligation status
     const lessons = await this.prisma.lesson.findMany({
       where: {
         teacherId,
@@ -169,15 +185,57 @@ export class SalariesService {
           lte: endOfMonth,
         },
       },
-      select: { duration: true },
+      select: { 
+        duration: true,
+        feedbacksCompleted: true,
+        absenceMarked: true,
+        voiceSent: true,
+        textSent: true,
+      } as any, // Type assertion needed until Prisma Client is regenerated
     });
 
     const lessonsCount = lessons.length;
-    const totalHours = lessons.reduce((sum, l) => sum + l.duration / 60, 0);
-    const grossAmount = totalHours * Number(teacher.hourlyRate);
+    const totalHours = lessons.reduce((sum, l: any) => sum + (l.duration || 0) / 60, 0);
+    const baseSalary = totalHours * Number(teacher.hourlyRate);
 
-    // Get deductions for this period
-    const deductions = await this.prisma.deduction.aggregate({
+    // Calculate obligations completion
+    // 4 obligations = 40% of base salary (10% each)
+    // If any obligation is missing, deduct 10% of base salary per missing obligation
+    let totalObligationsCompleted = 0;
+    let totalObligationsRequired = 0;
+    let missingObligationsCount = 0;
+
+    lessons.forEach((lesson: any) => {
+      // Use optional chaining and defaults in case fields don't exist yet (before migration)
+      const obligations = [
+        lesson.absenceMarked ?? false,
+        lesson.feedbacksCompleted ?? false,
+        lesson.voiceSent ?? false,
+        lesson.textSent ?? false,
+      ];
+      
+      totalObligationsRequired += 4;
+      const completed = obligations.filter(Boolean).length;
+      totalObligationsCompleted += completed;
+      missingObligationsCount += (4 - completed);
+    });
+
+    // Calculate obligations portion: 40% of base salary if all completed
+    // Each missing obligation deducts 10% of base salary
+    const obligationsCompletionRate = totalObligationsRequired > 0 
+      ? totalObligationsCompleted / totalObligationsRequired 
+      : 0;
+    const obligationsBonus = baseSalary * 0.4 * obligationsCompletionRate;
+    
+    // Deduction for missing obligations: 10% of base salary per missing obligation
+    const obligationDeduction = (missingObligationsCount / totalObligationsRequired) * baseSalary * 0.4;
+    
+    // Gross amount = base salary + obligations bonus - obligation deductions
+    // Simplified: base salary * (1 + 0.4 * completion_rate - 0.4 * missing_rate)
+    const grossAmount = baseSalary + obligationsBonus - obligationDeduction;
+
+    // Get other deductions for this period (from Deduction table)
+    const otherDeductions = await this.prisma.deduction.aggregate({
       where: {
         teacherId,
         appliedAt: {
@@ -188,8 +246,9 @@ export class SalariesService {
       _sum: { amount: true },
     });
 
-    const totalDeductions = Number(deductions._sum.amount) || 0;
-    const netAmount = grossAmount - totalDeductions;
+    const totalOtherDeductions = Number(otherDeductions._sum.amount) || 0;
+    const totalDeductions = obligationDeduction + totalOtherDeductions;
+    const netAmount = grossAmount - totalOtherDeductions;
 
     // Check if record already exists for this month
     const existing = await this.prisma.salaryRecord.findFirst({
@@ -206,6 +265,14 @@ export class SalariesService {
       throw new BadRequestException('Salary record already exists for this month');
     }
 
+    // Store obligations info in notes as JSON
+    const obligationsInfo = {
+      completed: totalObligationsCompleted,
+      required: totalObligationsRequired,
+      missing: missingObligationsCount,
+      completionRate: obligationsCompletionRate,
+    };
+
     return this.prisma.salaryRecord.create({
       data: {
         teacherId,
@@ -215,6 +282,7 @@ export class SalariesService {
         totalDeductions,
         netAmount: Math.max(0, netAmount),
         status: SalaryStatus.PENDING,
+        notes: JSON.stringify(obligationsInfo),
       },
       include: {
         teacher: {

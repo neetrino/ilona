@@ -337,6 +337,7 @@ export class StorageService {
       const response = await this.s3Client.send(command);
       
       if (!response.Body) {
+        this.logger.warn(`File found in R2 but has no body: ${key}`);
         return null;
       }
 
@@ -347,10 +348,17 @@ export class StorageService {
       }
       
       return Buffer.concat(chunks);
-    } catch (error) {
-      this.logger.error(
-        `Failed to get file from R2: ${error instanceof Error ? error.message : String(error)}`,
-      );
+    } catch (error: any) {
+      // Check if it's a "not found" error
+      if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404 || 
+          error.message?.includes('does not exist') || error.message?.includes('NoSuchKey')) {
+        this.logger.warn(`File not found in R2: ${key}`);
+      } else {
+        this.logger.error(
+          `Failed to get file from R2: ${error instanceof Error ? error.message : String(error)}`,
+          error instanceof Error ? error.stack : undefined,
+        );
+      }
       return null;
     }
   }

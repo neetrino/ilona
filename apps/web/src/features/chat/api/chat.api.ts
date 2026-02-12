@@ -48,12 +48,24 @@ export async function createDirectChat(participantId: string): Promise<Chat> {
 export async function sendMessageHttp(
   chatId: string,
   content: string,
-  type = 'TEXT'
+  type = 'TEXT',
+  options?: {
+    fileUrl?: string;
+    fileName?: string;
+    fileSize?: number;
+    duration?: number;
+    metadata?: Record<string, unknown>;
+  }
 ): Promise<Message> {
-  return api.post<Message>(`${CHAT_ENDPOINT}/${chatId}/messages`, {
+  return api.post<Message>(`${CHAT_ENDPOINT}/messages`, {
     chatId,
     content,
     type,
+    fileUrl: options?.fileUrl,
+    fileName: options?.fileName,
+    fileSize: options?.fileSize,
+    duration: options?.duration,
+    metadata: options?.metadata,
   });
 }
 

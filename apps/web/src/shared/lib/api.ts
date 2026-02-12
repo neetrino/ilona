@@ -390,3 +390,73 @@ class ApiClient {
 }
 
 export const api = new ApiClient(API_URL);
+
+/**
+ * Get API URL for file proxy
+ * Converts R2 URLs to API proxy URLs to avoid CORS issues
+ */
+function getApiBaseUrl(): string {
+  // If explicitly set in environment, use it
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // In browser, construct from current host
+  if (typeof window !== 'undefined') {
+    const host = window.location.host;
+    const protocol = window.location.protocol;
+    // If running on port 3000, assume API is on 4000
+    // Otherwise, use same host and port
+    if (host.includes(':3000')) {
+      return `${protocol}//${host.split(':')[0]}:4000/api`;
+    }
+    // For production or custom ports, try same host with /api
+    return `${protocol}//${host}/api`;
+  }
+
+  // Server-side fallback
+  return 'http://localhost:4000/api';
+}
+
+/**
+ * Convert a file URL to use the API proxy if it's an R2 URL
+ * This avoids CORS issues when loading audio/video files from R2 storage
+ */
+export function getProxiedFileUrl(fileUrl: string | null | undefined): string | null {
+  if (!fileUrl) return null;
+
+  // If it's already a local API URL, return as is
+  if (fileUrl.startsWith('/api/') || fileUrl.includes('/api/storage/file/')) {
+    return fileUrl;
+  }
+
+  // If it's a data URL, return as is
+  if (fileUrl.startsWith('data:')) {
+    return fileUrl;
+  }
+
+  // If it's an R2 URL (contains .r2.dev), proxy it through the API
+  if (fileUrl.includes('.r2.dev')) {
+    const apiBaseUrl = getApiBaseUrl();
+    return `${apiBaseUrl}/storage/proxy?url=${encodeURIComponent(fileUrl)}`;
+  }
+
+  // If it's a localhost API URL but not using the proxy, check if it needs proxy
+  // For files that might have CORS issues, use proxy
+  try {
+    const url = new URL(fileUrl);
+    // If it's from a different origin and not our API, proxy it
+    if (typeof window !== 'undefined') {
+      const currentOrigin = window.location.origin;
+      if (url.origin !== currentOrigin && !url.origin.includes('localhost:4000')) {
+        const apiBaseUrl = getApiBaseUrl();
+        return `${apiBaseUrl}/storage/proxy?url=${encodeURIComponent(fileUrl)}`;
+      }
+    }
+  } catch {
+    // If URL parsing fails, return as is
+  }
+
+  // For all other URLs, return as is
+  return fileUrl;
+}

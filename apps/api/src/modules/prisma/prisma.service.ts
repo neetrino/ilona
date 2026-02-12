@@ -188,6 +188,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private isConnected = false;
   private healthCheckInterval?: NodeJS.Timeout;
   private readonly healthCheckIntervalMs = 30000; // 30 seconds
+  private isReconnecting = false;
+  private reconnectPromise: Promise<void> | null = null;
 
   constructor() {
     // Configure PrismaClient - connection pool settings come from DATABASE_URL parameters
@@ -227,24 +229,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             );
             this.isConnected = false;
             
-            // Force disconnect to clear stale connections
-            try {
-              await this.$disconnect();
-            } catch (disconnectError) {
-              // Ignore disconnect errors
-            }
+            // Use shared reconnection to prevent multiple simultaneous reconnection attempts
+            await this.reconnectWithLock();
             
-            // Wait a bit before reconnecting (progressive delay)
+            // Wait a bit before retrying (progressive delay)
             await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
-            
-            // Reconnect
-            try {
-              await this.$connect();
-              this.isConnected = true;
-              this.logger.log('Reconnected after connection error');
-            } catch (reconnectError) {
-              this.logger.warn('Failed to reconnect, will retry');
-            }
           },
           3, // max 3 retries
           150, // base delay 150ms
@@ -254,21 +243,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         if (isTransientConnectionError(error)) {
           this.isConnected = false;
           
-          // Force disconnect to clear stale connections
-          try {
-            await this.$disconnect();
-          } catch (disconnectError) {
-            // Ignore disconnect errors
-          }
-          
-          // Try to reconnect for next operation
-          try {
-            await this.$connect();
-            this.isConnected = true;
-            this.logger.log('Reconnected to database after error');
-          } catch (reconnectError) {
-            this.logger.warn('Could not reconnect after error');
-          }
+          // Try to reconnect for next operation (non-blocking)
+          this.reconnectWithLock().catch((reconnectError) => {
+            this.logger.warn('Could not reconnect after error', reconnectError);
+          });
 
           const errorInfo: {
             code?: string | number;
@@ -331,14 +309,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           this.isConnected = false;
           this.logger.warn('Health check detected connection issue, attempting reconnect');
           try {
-            await this.$disconnect();
-          } catch (disconnectError) {
-            // Ignore disconnect errors
-          }
-          try {
-            await this.$connect();
-            this.isConnected = true;
-            this.logger.log('Reconnected via health check');
+            await this.reconnectWithLock();
           } catch (reconnectError) {
             this.logger.warn('Failed to reconnect via health check');
           }
@@ -380,9 +351,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       
       // Try to reconnect
       try {
-        await this.$connect();
-        this.isConnected = true;
-        this.logger.log('Reconnected during health check');
+        await this.reconnectWithLock();
       } catch (reconnectError) {
         this.logger.warn('Could not reconnect during health check');
       }
@@ -396,15 +365,47 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    */
   async ensureConnected(): Promise<void> {
     if (!this.isConnected) {
+      await this.reconnectWithLock();
+    }
+  }
+
+  /**
+   * Reconnects to database with a lock to prevent multiple simultaneous reconnection attempts
+   */
+  private async reconnectWithLock(): Promise<void> {
+    // If already reconnecting, wait for the existing reconnection to complete
+    if (this.isReconnecting && this.reconnectPromise) {
+      return this.reconnectPromise;
+    }
+
+    // Start new reconnection
+    this.isReconnecting = true;
+    this.reconnectPromise = (async () => {
       try {
+        // Force disconnect to clear stale connections
+        try {
+          await this.$disconnect();
+        } catch (disconnectError) {
+          // Ignore disconnect errors
+        }
+
+        // Wait a bit before reconnecting
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Reconnect
         await this.$connect();
         this.isConnected = true;
-        this.logger.log('Reconnected to database');
-      } catch (error) {
+        this.logger.log('Reconnected after connection error');
+      } catch (reconnectError) {
         this.isConnected = false;
-        this.logger.error('Failed to ensure database connection', error);
-        throw error;
+        this.logger.warn('Failed to reconnect, will retry on next operation');
+        throw reconnectError;
+      } finally {
+        this.isReconnecting = false;
+        this.reconnectPromise = null;
       }
-    }
+    })();
+
+    return this.reconnectPromise;
   }
 }

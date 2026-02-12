@@ -7,10 +7,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, ChatType, MessageType, UserRole } from '@prisma/client';
 import { CreateChatDto, SendMessageDto, UpdateMessageDto } from './dto';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   /**
    * Get all chats for a user
@@ -205,6 +209,26 @@ export class ChatService {
   }
 
   /**
+   * Get a single message by ID
+   */
+  async getMessage(messageId: string) {
+    return this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+            role: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
    * Get messages with pagination
    */
   async getMessages(
@@ -219,7 +243,17 @@ export class ChatService {
     const { cursor, take = 50 } = params || {};
 
     const messages = await this.prisma.message.findMany({
-      where: { chatId },
+      where: {
+        chatId,
+        // Filter out soft-deleted messages (content === null && isSystem === true)
+        // With hard delete, messages are completely removed, but we filter old soft-deleted ones
+        NOT: {
+          AND: [
+            { content: null },
+            { isSystem: true },
+          ],
+        },
+      },
       take: take + 1, // Get one extra to check if there are more
       ...(cursor && {
         cursor: { id: cursor },
@@ -478,6 +512,36 @@ export class ChatService {
       data: { updatedAt: new Date() },
     });
 
+    // Auto-mark lesson obligations if metadata contains lessonId
+    if (dto.metadata && typeof dto.metadata === 'object' && 'lessonId' in dto.metadata) {
+      const lessonId = dto.metadata.lessonId as string;
+      const messageType = dto.type || MessageType.TEXT;
+
+      // Mark voice or text as sent based on message type
+      if (messageType === MessageType.VOICE) {
+        await this.prisma.lesson.update({
+          where: { id: lessonId },
+          data: {
+            voiceSent: true,
+            voiceSentAt: new Date(),
+          },
+        }).catch(() => {
+          // Silently fail if lesson doesn't exist or update fails
+        });
+      } else if (messageType === MessageType.TEXT && dto.metadata.fromLessonDetail) {
+        // Only mark text as sent if it's explicitly from lesson detail page
+        await this.prisma.lesson.update({
+          where: { id: lessonId },
+          data: {
+            textSent: true,
+            textSentAt: new Date(),
+          },
+        }).catch(() => {
+          // Silently fail if lesson doesn't exist or update fails
+        });
+      }
+    }
+
     return message;
   }
 
@@ -522,7 +586,8 @@ export class ChatService {
   }
 
   /**
-   * Delete a message (soft delete - replace content)
+   * Delete a message (hard delete - completely remove from database)
+   * Also deletes associated file from storage if it exists
    */
   async deleteMessage(messageId: string, userId: string) {
     const message = await this.prisma.message.findUnique({
@@ -537,15 +602,58 @@ export class ChatService {
       throw new ForbiddenException('You can only delete your own messages');
     }
 
-    return this.prisma.message.update({
+    // Delete file from storage if it exists
+    if (message.fileUrl) {
+      try {
+        // Extract key from fileUrl
+        // For R2 URLs: https://pub-xxx.r2.dev/chat/filename.webm -> chat/filename.webm
+        // For local storage: http://localhost:4000/api/storage/file/chat/filename.webm -> chat/filename.webm
+        let key: string | undefined;
+        
+        if (message.fileUrl.includes('.r2.dev')) {
+          // R2 URL
+          try {
+            const url = new URL(message.fileUrl);
+            key = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
+          } catch {
+            // If URL parsing fails, try to extract manually
+            const match = message.fileUrl.match(/\/(chat|avatars|documents)(\/.*)?$/);
+            if (match) {
+              key = match[0].startsWith('/') ? match[0].substring(1) : match[0];
+            }
+          }
+        } else if (message.fileUrl.includes('/api/storage/file/')) {
+          // Local storage URL
+          const parts = message.fileUrl.split('/api/storage/file/');
+          if (parts.length > 1) {
+            key = decodeURIComponent(parts[1]);
+          }
+        } else {
+          // Try to extract key from any URL format
+          const match = message.fileUrl.match(/\/(chat|avatars|documents)(\/.*)?$/);
+          if (match) {
+            key = match[0].startsWith('/') ? match[0].substring(1) : match[0];
+          }
+        }
+
+        if (key) {
+          await this.storageService.delete(key).catch((error) => {
+            // Log error but don't fail the message deletion
+            console.error(`Failed to delete file from storage: ${error.message}`);
+          });
+        }
+      } catch (error) {
+        // Log error but don't fail the message deletion
+        console.error(`Error deleting file: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    // Hard delete - completely remove from database
+    const deletedMessage = await this.prisma.message.delete({
       where: { id: messageId },
-      data: {
-        content: null,
-        fileUrl: null,
-        isSystem: true,
-        metadata: { deleted: true, deletedAt: new Date() },
-      },
     });
+
+    return deletedMessage;
   }
 
   /**

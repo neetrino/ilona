@@ -185,15 +185,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { messageId: string },
   ) {
     try {
-      const message = await this.chatService.deleteMessage(
+      // Get message first to get chatId before deletion
+      const message = await this.chatService.getMessage(data.messageId);
+      
+      if (!message) {
+        return { success: false, error: 'Message not found' };
+      }
+
+      const chatId = message.chatId;
+      const messageId = message.id;
+
+      // Delete the message (hard delete)
+      await this.chatService.deleteMessage(
         data.messageId,
         client.user.sub,
       );
 
       // Broadcast to all participants
-      this.server.to(`chat:${message.chatId}`).emit('message:deleted', {
-        messageId: message.id,
-        chatId: message.chatId,
+      this.server.to(`chat:${chatId}`).emit('message:deleted', {
+        messageId,
+        chatId,
       });
 
       return { success: true };

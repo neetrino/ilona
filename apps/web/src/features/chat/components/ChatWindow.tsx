@@ -6,12 +6,151 @@ import { useMessages, useSocket } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat, Message } from '../types';
 import { cn } from '@/shared/lib/utils';
-import { api } from '@/shared/lib/api';
+import { api, getProxiedFileUrl } from '@/shared/lib/api';
 
 interface ChatWindowProps {
   chat: Chat;
   onSendMessage?: (content: string, type?: string) => void;
   onBack?: () => void;
+}
+
+// Voice Message Player Component with error handling
+function VoiceMessagePlayer({
+  fileUrl,
+  duration,
+  fileName,
+}: {
+  fileUrl: string;
+  duration?: number;
+  fileName?: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // Convert R2 URLs to API proxy URLs to avoid CORS issues
+  const proxiedUrl = getProxiedFileUrl(fileUrl) || fileUrl;
+
+  // Format duration for voice messages (seconds to MM:SS)
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleError = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
+    const audio = e.currentTarget;
+    const error = audio.error;
+    
+    if (error) {
+      let errorMessage = 'Unknown error';
+      switch (error.code) {
+        case error.MEDIA_ERR_ABORTED:
+          errorMessage = 'Playback aborted';
+          break;
+        case error.MEDIA_ERR_NETWORK:
+          errorMessage = 'Network error - file may not be accessible';
+          break;
+        case error.MEDIA_ERR_DECODE:
+          errorMessage = 'Decode error - file format may not be supported';
+          break;
+        case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          errorMessage = 'File format not supported';
+          break;
+      }
+      
+      console.warn('[ChatWindow] Voice playback error:', {
+        code: error.code,
+        message: errorMessage,
+        fileUrl: proxiedUrl.substring(0, 100), // Log first 100 chars only
+      });
+    }
+    
+    setHasError(true);
+    setIsLoading(false);
+  };
+
+  const handleCanPlay = () => {
+    setIsLoading(false);
+    setHasError(false);
+  };
+
+  const handleLoadStart = () => {
+    setIsLoading(true);
+    setHasError(false);
+  };
+
+  // Try to reload on error (with retry limit)
+  const handleRetry = () => {
+    if (audioRef.current) {
+      setHasError(false);
+      setIsLoading(true);
+      audioRef.current.load();
+    }
+  };
+
+  if (hasError) {
+    return (
+      <div className="flex items-center gap-3 min-w-[200px] p-2 bg-red-50 border border-red-200 rounded-lg">
+        <div className="flex-shrink-0 text-red-500">
+          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <p className="text-xs text-red-700 font-medium">Unable to play audio</p>
+          <p className="text-xs text-red-600">File may be missing or inaccessible</p>
+        </div>
+        <button
+          onClick={handleRetry}
+          className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+          title="Retry loading audio"
+        >
+          Retry
+        </button>
+        {duration && (
+          <span className="text-xs text-red-600 flex-shrink-0">
+            {formatDuration(duration)}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 min-w-[200px]">
+      <div className="flex-shrink-0">
+        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+        </svg>
+      </div>
+      <div className="flex-1 relative">
+        <audio
+          ref={audioRef}
+          src={proxiedUrl}
+          controls
+          preload="metadata"
+          className="flex-1 h-10 w-full"
+          style={{ minWidth: '200px' }}
+          onError={handleError}
+          onCanPlay={handleCanPlay}
+          onLoadStart={handleLoadStart}
+          crossOrigin="anonymous"
+        />
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+      </div>
+      {duration && (
+        <span className="text-xs opacity-80 flex-shrink-0">
+          {formatDuration(duration)}
+        </span>
+      )}
+    </div>
+  );
 }
 
 // Vocabulary Modal Component
@@ -143,6 +282,7 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   const [inputValue, setInputValue] = useState(getDraft(chat.id));
   const [showVocabularyModal, setShowVocabularyModal] = useState(false);
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
 
   // Check if user is teacher (can send vocabulary)
   const isTeacher = user?.role === 'TEACHER';
@@ -165,6 +305,7 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
     stopTyping,
     markAsRead,
     isUserOnline,
+    deleteMessage,
   } = useSocket({
     onTypingStart: ({ chatId, userId }) => {
       if (chatId === chat.id && userId !== user?.id) {
@@ -280,6 +421,27 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
     }
   };
 
+  // Handle delete message
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingMessageId(messageId);
+    try {
+      const result = await deleteMessage(messageId);
+      if (!result.success) {
+        console.error('Failed to delete message:', result.error);
+        alert('Failed to delete message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to delete message:', error);
+      alert('Failed to delete message. Please try again.');
+    } finally {
+      setDeletingMessageId(null);
+    }
+  };
+
   // Format time
   const formatTime = (dateStr: string) => {
     return new Date(dateStr).toLocaleTimeString('en-US', {
@@ -287,6 +449,15 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
       minute: '2-digit',
     });
   };
+
+  // Format duration for voice messages (seconds to MM:SS)
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const onlineStatus = getOnlineStatus();
 
   // Format date separator
   const formatDateSeparator = (dateStr: string) => {
@@ -311,8 +482,6 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
     const prevDate = new Date(prevMessage.createdAt).toDateString();
     return currDate !== prevDate;
   };
-
-  const onlineStatus = getOnlineStatus();
 
   return (
     <div className="flex flex-col h-full">
@@ -413,12 +582,18 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
             <p className="text-sm text-slate-400 mt-1">Start the conversation!</p>
           </div>
         ) : (
-          messages.map((message, index) => {
-            const isOwn = message.senderId === user?.id;
-            const prevMessage = messages[index - 1];
-            const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
-            const isDeleted = message.content === null && message.isSystem;
-            const isVocabulary = message.metadata && typeof message.metadata === 'object' && 'isVocabulary' in message.metadata;
+          (() => {
+            // Filter out deleted messages (soft deleted from old system)
+            // With hard delete, messages are completely removed, but we filter old soft-deleted ones
+            const filteredMessages = messages.filter(
+              (message) => !(message.content === null && message.isSystem)
+            );
+
+            return filteredMessages.map((message, index) => {
+              const isOwn = message.senderId === user?.id;
+              const prevMessage = filteredMessages[index - 1];
+              const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
+              const isVocabulary = message.metadata && typeof message.metadata === 'object' && 'isVocabulary' in message.metadata;
 
             return (
               <div key={message.id}>
@@ -434,7 +609,7 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
                 {/* Message */}
                 <div
                   className={cn(
-                    'flex gap-2',
+                    'flex gap-2 group',
                     isOwn ? 'justify-end' : 'justify-start'
                   )}
                 >
@@ -445,7 +620,27 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
                     </div>
                   )}
 
-                  <div className={cn('max-w-[70%]', isOwn && 'order-first')}>
+                  <div className={cn('max-w-[70%] relative', isOwn && 'order-first')}>
+                    {/* Delete button (only for own messages) */}
+                    {isOwn && (
+                      <button
+                        onClick={() => handleDeleteMessage(message.id)}
+                        disabled={deletingMessageId === message.id}
+                        className={cn(
+                          'absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50',
+                          isOwn ? '-right-1' : '-left-1'
+                        )}
+                        title="Delete message"
+                      >
+                        {deletingMessageId === message.id ? (
+                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        )}
+                      </button>
+                    )}
                     {/* Sender name (group chats) */}
                     {!isOwn && chat.type === 'GROUP' && (
                       <p className="text-xs text-slate-500 mb-1 ml-1">
@@ -461,12 +656,15 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
                           ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg border-2 border-purple-300'
                           : isOwn
                             ? 'bg-primary text-primary-foreground rounded-br-md'
-                            : 'bg-white text-slate-800 rounded-bl-md shadow-sm',
-                        isDeleted && 'opacity-60 italic'
+                            : 'bg-white text-slate-800 rounded-bl-md shadow-sm'
                       )}
                     >
-                      {isDeleted ? (
-                        <p className="text-sm">This message was deleted</p>
+                      {message.type === 'VOICE' && message.fileUrl ? (
+                        <VoiceMessagePlayer
+                          fileUrl={message.fileUrl}
+                          duration={message.duration}
+                          fileName={message.fileName}
+                        />
                       ) : isVocabulary ? (
                         <div>
                           <div className="flex items-center gap-2 mb-2 pb-2 border-b border-purple-400/30">
@@ -502,7 +700,8 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
                 </div>
               </div>
             );
-          })
+          });
+          })()
         )}
 
         <div ref={messagesEndRef} />

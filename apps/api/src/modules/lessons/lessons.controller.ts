@@ -164,6 +164,24 @@ export class LessonsController {
     return this.lessonsService.markVocabularySent(id);
   }
 
+  @Patch(':id/absence-complete')
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  async markAbsenceComplete(@Param('id') id: string) {
+    return this.lessonsService.markAbsenceComplete(id);
+  }
+
+  @Patch(':id/voice-sent')
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  async markVoiceSent(@Param('id') id: string) {
+    return this.lessonsService.markVoiceSent(id);
+  }
+
+  @Patch(':id/text-sent')
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  async markTextSent(@Param('id') id: string) {
+    return this.lessonsService.markTextSent(id);
+  }
+
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   async delete(@Param('id') id: string) {

@@ -47,12 +47,20 @@ export interface SalaryRecord {
   teacherId: string;
   month: number;
   year: number;
-  baseSalary: number;
+  grossAmount: number;
+  baseSalary?: number; // Legacy field, use grossAmount
   lessonsCount: number;
   totalDeductions: number;
   netAmount: number;
   status: SalaryStatus;
   paidAt?: string;
+  notes?: string; // JSON string with obligations info
+  obligationsInfo?: {
+    completed: number;
+    required: number;
+    missing: number;
+    completionRate: number;
+  };
   teacher: {
     id: string;
     user: {

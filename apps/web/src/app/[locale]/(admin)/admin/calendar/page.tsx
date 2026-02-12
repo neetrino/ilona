@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Badge, Button } from '@/shared/components/ui';
+import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { useLessons, useLessonStatistics, useCancelLesson, type Lesson, type LessonStatus } from '@/features/lessons';
 
 // Helper to get week dates
@@ -40,6 +42,7 @@ const statusConfig: Record<LessonStatus, { label: string; variant: 'success' | '
 };
 
 export default function CalendarPage() {
+  const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'week' | 'list'>('week');
   
@@ -294,72 +297,18 @@ export default function CalendarPage() {
 
         {/* List View */}
         {viewMode === 'list' && (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="divide-y divide-slate-200">
-              {isLoading ? (
-                <div className="p-6 animate-pulse space-y-4">
-                  <div className="h-12 bg-slate-200 rounded-lg" />
-                  <div className="h-12 bg-slate-200 rounded-lg" />
-                  <div className="h-12 bg-slate-200 rounded-lg" />
-                </div>
-              ) : lessons.length === 0 ? (
-                <div className="p-12 text-center">
-                  <p className="text-slate-500">No lessons scheduled for this week</p>
-                </div>
-              ) : (
-                lessons.map(lesson => {
-                  const teacherName = lesson.teacher?.user 
-                    ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
-                    : 'Unknown';
-                  
-                  return (
-                    <div key={lesson.id} className="p-4 flex items-center gap-4 hover:bg-slate-50">
-                      <div className="w-24 text-center">
-                        <p className="text-sm font-medium text-slate-800">
-                          {new Date(lesson.scheduledAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </p>
-                        <p className="text-lg font-bold text-blue-600">
-                          {formatTime(lesson.scheduledAt)}
-                        </p>
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-slate-800">
-                            {lesson.group?.name || 'Unknown Group'}
-                          </h3>
-                          <Badge variant={statusConfig[lesson.status].variant}>
-                            {statusConfig[lesson.status].label}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-slate-600">{lesson.topic || 'No topic specified'}</p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          Teacher: {teacherName} • Duration: {lesson.duration} min • 
-                          {lesson.group?.level && ` Level: ${lesson.group.level}`}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" className="text-blue-600 font-medium">
-                          View
-                        </Button>
-                        {lesson.status === 'SCHEDULED' && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-red-600 font-medium"
-                            onClick={() => handleCancel(lesson.id)}
-                          >
-                            Cancel
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
+          <LessonListTable
+            lessons={lessons}
+            isLoading={isLoading}
+            onObligationClick={(lessonId, obligation) => {
+              router.push(`/admin/calendar/${lessonId}?tab=${obligation}`);
+            }}
+            onDelete={(lessonId) => {
+              if (confirm('Are you sure you want to delete this lesson?')) {
+                handleCancel(lessonId);
+              }
+            }}
+          />
         )}
 
         {/* Quick Actions */}

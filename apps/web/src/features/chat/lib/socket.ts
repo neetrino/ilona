@@ -37,6 +37,7 @@ export interface SocketOptions {
   onConnect?: () => void;
   onDisconnect?: () => void;
   onError?: (error: Error) => void;
+  onTokenExpired?: () => Promise<string | null>; // Callback to refresh token
 }
 
 /**
@@ -81,8 +82,26 @@ export function initSocket(options: SocketOptions): Socket {
     options.onDisconnect?.();
   });
 
-  socket.on('connect_error', (error) => {
+  socket.on('connect_error', async (error) => {
     console.error('[Socket] Connection error:', error.message);
+    
+    // If token expired, try to refresh
+    if (error.message?.includes('expired') || error.message?.includes('jwt') || error.message?.includes('TokenExpiredError')) {
+      if (options.onTokenExpired) {
+        try {
+          const newToken = await options.onTokenExpired();
+          if (newToken) {
+            // Reconnect with new token
+            socket.auth = { token: newToken };
+            socket.connect();
+            return;
+          }
+        } catch (refreshError) {
+          console.error('[Socket] Failed to refresh token:', refreshError);
+        }
+      }
+    }
+    
     options.onError?.(error);
   });
 
