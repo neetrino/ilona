@@ -207,16 +207,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       try {
         return await withRetry(
           async () => {
-            // Check if connection is alive before operation
-            if (!this.isConnected) {
-              try {
-                await this.$connect();
-                this.isConnected = true;
-                this.logger.log('Reconnected to database');
-              } catch (reconnectError) {
-                this.logger.warn('Failed to reconnect, will retry operation');
-              }
-            }
+            // Let Prisma handle connection pooling automatically
+            // Don't check isConnected flag - Prisma manages connections internally
             return await next(params);
           },
           async (_error, attempt) => {
@@ -322,9 +314,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     this.healthCheckInterval = setInterval(async () => {
       try {
         await this.$queryRaw`SELECT 1`;
+        // Connection is healthy, update flag silently
+        // Don't log "reconnected" if we were already connected
         if (!this.isConnected) {
           this.isConnected = true;
-          this.logger.log('Connection restored via health check');
+          // Only log if we actually recovered from a disconnected state
+          this.logger.debug('Connection verified via health check');
         }
       } catch (error) {
         if (isTransientConnectionError(error)) {
@@ -342,6 +337,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           } catch (reconnectError) {
             this.logger.warn('Failed to reconnect via health check');
           }
+        } else {
+          // Non-transient error, just log it
+          this.logger.warn(`Health check failed with non-transient error: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
     }, this.healthCheckIntervalMs);
@@ -374,17 +372,30 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       this.isConnected = true;
       return { healthy: true, latency };
     } catch (error) {
-      this.isConnected = false;
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.warn(`Database health check failed: ${errorMessage}`);
       
-      // Try to reconnect
-      try {
-        await this.$connect();
-        this.isConnected = true;
-        this.logger.log('Reconnected during health check');
-      } catch (reconnectError) {
-        this.logger.warn('Could not reconnect during health check');
+      // Only try to reconnect if it's a transient connection error
+      if (isTransientConnectionError(error)) {
+        this.isConnected = false;
+        this.logger.warn(`Database health check failed (transient): ${errorMessage}`);
+        
+        // Try to reconnect
+        try {
+          await this.$disconnect();
+        } catch (disconnectError) {
+          // Ignore disconnect errors
+        }
+        
+        try {
+          await this.$connect();
+          this.isConnected = true;
+          this.logger.log('Reconnected during health check');
+        } catch (reconnectError) {
+          this.logger.warn('Could not reconnect during health check');
+        }
+      } else {
+        // Non-transient error, don't try to reconnect
+        this.logger.warn(`Database health check failed (non-transient): ${errorMessage}`);
       }
       
       return { healthy: false, error: errorMessage.substring(0, 200) };
@@ -393,8 +404,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   /**
    * Ensures database connection is active, reconnects if needed
+   * Note: Prisma manages connections automatically via connection pool,
+   * so this method is mainly for explicit reconnection after known disconnections
    */
   async ensureConnected(): Promise<void> {
+    // Only reconnect if we know we're disconnected AND it's been a while
+    // Prisma's connection pool handles most cases automatically
     if (!this.isConnected) {
       try {
         await this.$connect();
@@ -406,5 +421,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         throw error;
       }
     }
+    // If isConnected is true, trust Prisma's connection pool
   }
 }
