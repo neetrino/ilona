@@ -19,11 +19,15 @@ describe('ChatService', () => {
       findUnique: Mock;
       create: Mock;
       update: Mock;
+      delete: Mock;
       count: Mock;
     };
     chatParticipant: {
       updateMany: Mock;
     };
+  };
+  let mockStorageService: {
+    delete: Mock;
   };
 
   const mockChat = {
@@ -110,6 +114,7 @@ describe('ChatService', () => {
         findUnique: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
+        delete: vi.fn(),
         count: vi.fn(),
       },
       chatParticipant: {
@@ -117,7 +122,11 @@ describe('ChatService', () => {
       },
     };
 
-    chatService = new ChatService(mockPrismaService as never);
+    mockStorageService = {
+      delete: vi.fn().mockResolvedValue(undefined),
+    };
+
+    chatService = new ChatService(mockPrismaService as never, mockStorageService as never);
   });
 
   describe('getUserChats', () => {
@@ -282,18 +291,31 @@ describe('ChatService', () => {
   });
 
   describe('deleteMessage', () => {
-    it('should soft delete a message', async () => {
+    it('should hard delete a message', async () => {
       mockPrismaService.message.findUnique.mockResolvedValue(mockMessage);
-      mockPrismaService.message.update.mockResolvedValue({
-        ...mockMessage,
-        content: null,
-        isSystem: true,
-      });
+      mockPrismaService.message.delete.mockResolvedValue(mockMessage);
 
       const result = await chatService.deleteMessage('msg-1', 'user-1');
 
-      expect(result.content).toBeNull();
-      expect(result.isSystem).toBe(true);
+      expect(mockPrismaService.message.delete).toHaveBeenCalledWith({
+        where: { id: 'msg-1' },
+      });
+      expect(result).toEqual(mockMessage);
+    });
+
+    it('should delete file from storage if fileUrl exists', async () => {
+      const messageWithFile = {
+        ...mockMessage,
+        fileUrl: 'https://pub-xxx.r2.dev/chat/filename.webm',
+      };
+      mockPrismaService.message.findUnique.mockResolvedValue(messageWithFile);
+      mockPrismaService.message.delete.mockResolvedValue(messageWithFile);
+      mockStorageService.delete.mockResolvedValue(undefined);
+
+      await chatService.deleteMessage('msg-1', 'user-1');
+
+      expect(mockStorageService.delete).toHaveBeenCalledWith('chat/filename.webm');
+      expect(mockPrismaService.message.delete).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if message not found', async () => {

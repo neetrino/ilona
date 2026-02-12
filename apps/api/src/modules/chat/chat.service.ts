@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, ChatType, MessageType, UserRole } from '@prisma/client';
@@ -11,6 +12,8 @@ import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
@@ -607,44 +610,90 @@ export class ChatService {
       try {
         // Extract key from fileUrl
         // For R2 URLs: https://pub-xxx.r2.dev/chat/filename.webm -> chat/filename.webm
+        // For R2 URLs with voice folder: https://pub-xxx.r2.dev/chat/voice/filename.webm -> chat/voice/filename.webm
         // For local storage: http://localhost:4000/api/storage/file/chat/filename.webm -> chat/filename.webm
         let key: string | undefined;
         
-        if (message.fileUrl.includes('.r2.dev')) {
-          // R2 URL
-          try {
-            const url = new URL(message.fileUrl);
-            key = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
-          } catch {
-            // If URL parsing fails, try to extract manually
-            const match = message.fileUrl.match(/\/(chat|avatars|documents)(\/.*)?$/);
-            if (match) {
-              key = match[0].startsWith('/') ? match[0].substring(1) : match[0];
+        const fileUrl = message.fileUrl;
+        
+        // Try to parse as URL first (works for both .r2.dev and custom domains)
+        try {
+          const url = new URL(fileUrl);
+          // Extract pathname and remove leading slash
+          const pathname = url.pathname;
+          if (pathname && pathname.length > 1) {
+            key = pathname.startsWith('/') ? pathname.substring(1) : pathname;
+            // Validate that it looks like a storage key (starts with chat/, avatars/, or documents/)
+            if (key && !key.match(/^(chat|avatars|documents)\//)) {
+              // If it doesn't match expected pattern, try regex extraction
+              const match = fileUrl.match(/\/(chat|avatars|documents)(\/.*)?$/);
+              if (match && match[0]) {
+                key = match[0].startsWith('/') ? match[0].substring(1) : match[0];
+              } else {
+                key = undefined; // Reset if pattern doesn't match
+              }
             }
           }
-        } else if (message.fileUrl.includes('/api/storage/file/')) {
-          // Local storage URL
-          const parts = message.fileUrl.split('/api/storage/file/');
-          if (parts.length > 1) {
-            key = decodeURIComponent(parts[1]);
-          }
-        } else {
-          // Try to extract key from any URL format
-          const match = message.fileUrl.match(/\/(chat|avatars|documents)(\/.*)?$/);
-          if (match) {
+        } catch (urlError) {
+          // If URL parsing fails, try regex extraction
+          const match = fileUrl.match(/\/(chat|avatars|documents)(\/.*)?$/);
+          if (match && match[0]) {
             key = match[0].startsWith('/') ? match[0].substring(1) : match[0];
+          }
+        }
+        
+        // If still no key, try other patterns
+        if (!key) {
+          if (fileUrl.includes('/api/storage/file/')) {
+            // Local storage URL
+            const parts = fileUrl.split('/api/storage/file/');
+            if (parts.length > 1) {
+              key = decodeURIComponent(parts[1]);
+            }
+          } else if (fileUrl.includes('/api/storage/proxy')) {
+            // Proxy URL - extract from query parameter
+            try {
+              const url = new URL(fileUrl);
+              const urlParam = url.searchParams.get('url');
+              if (urlParam) {
+                // Recursively extract from the proxied URL (works for both .r2.dev and custom domains)
+                const proxiedUrl = decodeURIComponent(urlParam);
+                try {
+                  const proxiedUrlObj = new URL(proxiedUrl);
+                  const pathname = proxiedUrlObj.pathname;
+                  if (pathname && pathname.length > 1) {
+                    key = pathname.startsWith('/') ? pathname.substring(1) : pathname;
+                  }
+                } catch {
+                  // If proxied URL parsing fails, try regex
+                  const match = proxiedUrl.match(/\/(chat|avatars|documents)(\/.*)?$/);
+                  if (match && match[0]) {
+                    key = match[0].startsWith('/') ? match[0].substring(1) : match[0];
+                  }
+                }
+              }
+            } catch {
+              // Ignore parsing errors
+            }
           }
         }
 
         if (key) {
-          await this.storageService.delete(key).catch((error) => {
+          // Log for debugging
+          this.logger.log(`Deleting file from storage. Key: ${key}, Original URL: ${fileUrl}`);
+          
+          await this.storageService.delete(key).then(() => {
+            this.logger.log(`Successfully deleted file from storage: ${key}`);
+          }).catch((error) => {
             // Log error but don't fail the message deletion
-            console.error(`Failed to delete file from storage: ${error.message}`);
+            this.logger.error(`Failed to delete file from storage. Key: ${key}, Error: ${error.message}`);
           });
+        } else {
+          this.logger.warn(`Could not extract key from fileUrl: ${fileUrl}`);
         }
       } catch (error) {
         // Log error but don't fail the message deletion
-        console.error(`Error deleting file: ${error instanceof Error ? error.message : String(error)}`);
+        this.logger.error(`Error processing file deletion: ${error instanceof Error ? error.message : String(error)}, FileUrl: ${message.fileUrl}`);
       }
     }
 
