@@ -203,16 +203,26 @@ export class ChatService {
     // For teachers, validate assignment for group chats
     if (!isParticipant && !isAdminAccessingGroup) {
       if ((userRole === UserRole.TEACHER || userRole === 'TEACHER') && chat.type === ChatType.GROUP && chat.groupId) {
-        // Check if teacher is assigned to this group (canonical source: Group.teacherId)
-        const isAssigned = await this.isTeacherAssignedToGroup(userId, chat.groupId);
+        // Use centralized authorization check
+        const accessCheck = await this.canTeacherAccessGroupChat(userId, chat.groupId);
         
-        if (isAssigned) {
-          // Teacher is assigned, ensure they're added as participant
+        if (accessCheck.hasAccess) {
+          // Teacher has access, ensure they're added as participant
           await this.ensureTeacherInGroupChat(chat.id, userId);
           
           // Refetch chat with updated participants
           return this.getChatById(chatId, userId, userRole);
         } else {
+          // Dev-only logging for 403 debugging
+          if (process.env.NODE_ENV !== 'production') {
+            this.logger.warn(
+              `[403] Teacher denied access to group chat (getChatById). ` +
+              `userId: ${userId}, chatId: ${chatId}, groupId: ${chat.groupId}, ` +
+              `teacherId: ${accessCheck.debug?.teacherId || 'N/A'}, ` +
+              `groupTeacherId: ${accessCheck.debug?.groupTeacherId || 'N/A'}, ` +
+              `hasLessons: ${accessCheck.debug?.hasLessons || false}`
+            );
+          }
           throw new ForbiddenException('You are not assigned to this group');
         }
       }
@@ -363,24 +373,75 @@ export class ChatService {
   }
 
   /**
-   * Check if a teacher is assigned to a group (canonical source: Group.teacherId)
+   * Centralized authorization check: Can a teacher access a group chat?
+   * 
+   * A teacher can access a group chat if:
+   * 1. They are the assigned group teacher (Group.teacherId === Teacher.id), OR
+   * 2. They have lessons scheduled in that group (Lesson.teacherId === Teacher.id)
+   * 
+   * This is the canonical source of truth for teacher->group chat access.
+   * 
+   * @param teacherUserId - The User.id of the teacher
+   * @param groupId - The Group.id to check access for
+   * @returns Object with access boolean and debug context (for dev logging)
    */
-  private async isTeacherAssignedToGroup(teacherUserId: string, groupId: string): Promise<boolean> {
+  private async canTeacherAccessGroupChat(
+    teacherUserId: string,
+    groupId: string,
+  ): Promise<{ hasAccess: boolean; debug?: { teacherId?: string; groupTeacherId?: string | null; hasLessons: boolean } }> {
+    // Get teacher entity
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: teacherUserId },
       select: { id: true },
     });
 
     if (!teacher) {
-      return false;
+      return { hasAccess: false, debug: { teacherId: undefined, groupTeacherId: undefined, hasLessons: false } };
     }
 
+    // Get group with teacher assignment
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
       select: { teacherId: true },
     });
 
-    return !!(group && group.teacherId === teacher.id);
+    if (!group) {
+      return { hasAccess: false, debug: { teacherId: teacher.id, groupTeacherId: undefined, hasLessons: false } };
+    }
+
+    // Check 1: Direct group assignment (Group.teacherId === Teacher.id)
+    const isGroupTeacher = group.teacherId === teacher.id;
+
+    // Check 2: Has lessons in this group (Lesson.teacherId === Teacher.id)
+    const lessonCount = await this.prisma.lesson.count({
+      where: {
+        groupId,
+        teacherId: teacher.id,
+      },
+    });
+
+    const hasLessons = lessonCount > 0;
+
+    // Teacher has access if they're the group teacher OR have lessons in the group
+    const hasAccess = isGroupTeacher || hasLessons;
+
+    return {
+      hasAccess,
+      debug: {
+        teacherId: teacher.id,
+        groupTeacherId: group.teacherId,
+        hasLessons,
+      },
+    };
+  }
+
+  /**
+   * @deprecated Use canTeacherAccessGroupChat instead
+   * Kept for backward compatibility during migration
+   */
+  private async isTeacherAssignedToGroup(teacherUserId: string, groupId: string): Promise<boolean> {
+    const result = await this.canTeacherAccessGroupChat(teacherUserId, groupId);
+    return result.hasAccess;
   }
 
   /**
@@ -920,6 +981,28 @@ export class ChatService {
   }
 
   /**
+   * Get or create a group conversation, ensuring the requesting user has access and membership.
+   * This is a helper for voice sending and other flows that need guaranteed access.
+   * 
+   * @param groupId - The group ID
+   * @param userId - The user requesting access
+   * @param userRole - The user's role
+   * @returns The chat/conversation for the group
+   * @throws ForbiddenException if user doesn't have access
+   */
+  async getOrCreateGroupConversation(
+    groupId: string,
+    userId: string,
+    userRole?: string,
+  ) {
+    // This delegates to getGroupChat which already handles:
+    // - Authorization checks
+    // - Chat creation if missing
+    // - Membership upsert
+    return this.getGroupChat(groupId, userId, userRole);
+  }
+
+  /**
    * Get chat for a group
    */
   async getGroupChat(
@@ -1014,8 +1097,20 @@ export class ChatService {
       if (userRole === UserRole.ADMIN || userRole === 'ADMIN') {
         isAuthorized = true;
       } else if ((userRole === UserRole.TEACHER || userRole === 'TEACHER') && userId) {
-        // Use canonical method to check assignment (Group.teacherId)
-        isAuthorized = await this.isTeacherAssignedToGroup(userId, groupId);
+        // Use centralized authorization check
+        const accessCheck = await this.canTeacherAccessGroupChat(userId, groupId);
+        isAuthorized = accessCheck.hasAccess;
+        
+        // Dev-only logging for 403 debugging
+        if (!isAuthorized && process.env.NODE_ENV !== 'production') {
+          this.logger.warn(
+            `[403] Teacher denied access to group chat (chat doesn't exist yet). ` +
+            `userId: ${userId}, groupId: ${groupId}, ` +
+            `teacherId: ${accessCheck.debug?.teacherId || 'N/A'}, ` +
+            `groupTeacherId: ${accessCheck.debug?.groupTeacherId || 'N/A'}, ` +
+            `hasLessons: ${accessCheck.debug?.hasLessons || false}`
+          );
+        }
       } else if (userRole === UserRole.STUDENT && userId) {
         // Check if student is a member of this group
         const student = await this.prisma.student.findFirst({
@@ -1157,16 +1252,26 @@ export class ChatService {
 
     // For teachers, validate assignment to the group
     if (userId && (userRole === UserRole.TEACHER || userRole === 'TEACHER')) {
-      // Check if teacher is assigned to this group (canonical source: Group.teacherId)
-      const isAssigned = await this.isTeacherAssignedToGroup(userId, groupId);
+      // Use centralized authorization check
+      const accessCheck = await this.canTeacherAccessGroupChat(userId, groupId);
       
-      if (isAssigned) {
-        // Teacher is assigned, ensure they're added as participant
+      if (accessCheck.hasAccess) {
+        // Teacher has access, ensure they're added as participant
         await this.ensureTeacherInGroupChat(chat.id, userId);
         
         // Refetch with updated participants
         return this.getGroupChat(groupId, userId, userRole);
       } else {
+        // Dev-only logging for 403 debugging
+        if (process.env.NODE_ENV !== 'production') {
+          this.logger.warn(
+            `[403] Teacher denied access to group chat. ` +
+            `userId: ${userId}, groupId: ${groupId}, ` +
+            `teacherId: ${accessCheck.debug?.teacherId || 'N/A'}, ` +
+            `groupTeacherId: ${accessCheck.debug?.groupTeacherId || 'N/A'}, ` +
+            `hasLessons: ${accessCheck.debug?.hasLessons || false}`
+          );
+        }
         throw new ForbiddenException('You are not assigned to this group');
       }
     }
