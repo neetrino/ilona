@@ -26,7 +26,7 @@ export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 
   @Get()
-  async findAll(@Query() query: QueryLessonDto) {
+  async findAll(@Query() query: QueryLessonDto, @CurrentUser() user?: JwtPayload) {
     return this.lessonsService.findAll({
       skip: query.skip,
       take: query.take,
@@ -35,6 +35,8 @@ export class LessonsController {
       status: query.status as LessonStatus,
       dateFrom: query.dateFrom ? new Date(query.dateFrom) : undefined,
       dateTo: query.dateTo ? new Date(query.dateTo) : undefined,
+      currentUserId: user?.sub,
+      userRole: user?.role,
     });
   }
 
@@ -46,7 +48,7 @@ export class LessonsController {
     });
 
     if (!teacher) {
-      return { items: [], total: 0 };
+      return { items: [], total: 0, page: 1, pageSize: query.take || 50, totalPages: 0 };
     }
 
     return this.lessonsService.findByTeacher(
@@ -106,8 +108,8 @@ export class LessonsController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string) {
-    return this.lessonsService.findById(id);
+  async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.lessonsService.findById(id, user?.sub, user?.role);
   }
 
   @Post()

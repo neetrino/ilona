@@ -20,19 +20,83 @@ export class LessonsService {
     status?: LessonStatus;
     dateFrom?: Date;
     dateTo?: Date;
+    currentUserId?: string;
+    userRole?: UserRole;
   }) {
-    const { skip = 0, take = 50, groupId, teacherId, status, dateFrom, dateTo } = params || {};
+    const { skip = 0, take = 50, groupId, teacherId, status, dateFrom, dateTo, currentUserId, userRole } = params || {};
 
     const where: Prisma.LessonWhereInput = {};
 
-    if (groupId) where.groupId = groupId;
-    if (teacherId) where.teacherId = teacherId;
-    if (status) where.status = status;
+    // Role-based scoping: Teachers can only see their own lessons
+    let teacherScopeCondition: Prisma.LessonWhereInput | null = null;
+    let currentTeacherId: string | null = null;
+    
+    if (userRole === UserRole.TEACHER && currentUserId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId: currentUserId },
+        select: { id: true },
+      });
+
+      if (teacher) {
+        currentTeacherId = teacher.id;
+        // Include lessons where teacher is directly assigned OR where teacher is assigned to the group
+        teacherScopeCondition = {
+          OR: [
+            { teacherId: teacher.id },
+            {
+              group: {
+                teacherId: teacher.id,
+              },
+            },
+          ],
+        };
+      } else {
+        // Teacher not found, return empty result
+        return {
+          items: [],
+          total: 0,
+          page: 1,
+          pageSize: take,
+          totalPages: 0,
+        };
+      }
+    }
+
+    // Build filter conditions
+    const filterConditions: Prisma.LessonWhereInput[] = [];
+
+    // Add teacher scope condition if applicable
+    if (teacherScopeCondition) {
+      filterConditions.push(teacherScopeCondition);
+    }
+
+    // Admin can see all lessons, but can still filter
+    const additionalFilters: Prisma.LessonWhereInput = {};
+    if (groupId) additionalFilters.groupId = groupId;
+    if (teacherId) {
+      // For teachers, ensure they can only query their own teacherId
+      if (userRole === UserRole.TEACHER && currentTeacherId && teacherId !== currentTeacherId) {
+        throw new ForbiddenException('You can only view your own lessons');
+      }
+      additionalFilters.teacherId = teacherId;
+    }
+    if (status) additionalFilters.status = status;
 
     if (dateFrom || dateTo) {
-      where.scheduledAt = {};
-      if (dateFrom) where.scheduledAt.gte = dateFrom;
-      if (dateTo) where.scheduledAt.lte = dateTo;
+      additionalFilters.scheduledAt = {};
+      if (dateFrom) additionalFilters.scheduledAt.gte = dateFrom;
+      if (dateTo) additionalFilters.scheduledAt.lte = dateTo;
+    }
+
+    // Combine all conditions with AND
+    if (filterConditions.length > 0 || Object.keys(additionalFilters).length > 0) {
+      if (filterConditions.length > 0 && Object.keys(additionalFilters).length > 0) {
+        where.AND = [...filterConditions, additionalFilters];
+      } else if (filterConditions.length > 0) {
+        Object.assign(where, filterConditions[0]);
+      } else {
+        Object.assign(where, additionalFilters);
+      }
     }
 
     const [items, total] = await Promise.all([
@@ -82,7 +146,7 @@ export class LessonsService {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, currentUserId?: string, userRole?: UserRole) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id },
       include: {
@@ -155,11 +219,41 @@ export class LessonsService {
       throw new NotFoundException(`Lesson with ID ${id} not found`);
     }
 
+    // Role-based authorization: Teachers can only access their own lessons
+    if (userRole === UserRole.TEACHER && currentUserId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId: currentUserId },
+        select: { id: true },
+      });
+
+      if (teacher) {
+        // Check if teacher is assigned to this lesson (directly or via group)
+        const isAssigned =
+          lesson.teacherId === teacher.id || lesson.group.teacherId === teacher.id;
+
+        if (!isAssigned) {
+          throw new ForbiddenException('You do not have access to this lesson');
+        }
+      } else {
+        throw new ForbiddenException('Teacher profile not found');
+      }
+    }
+
     return lesson;
   }
 
   async findByTeacher(teacherId: string, dateFrom?: Date, dateTo?: Date) {
-    const where: Prisma.LessonWhereInput = { teacherId };
+    // Include lessons where teacher is directly assigned OR where teacher is assigned to the group
+    const where: Prisma.LessonWhereInput = {
+      OR: [
+        { teacherId },
+        {
+          group: {
+            teacherId,
+          },
+        },
+      ],
+    };
 
     if (dateFrom || dateTo) {
       where.scheduledAt = {};
@@ -167,7 +261,7 @@ export class LessonsService {
       if (dateTo) where.scheduledAt.lte = dateTo;
     }
 
-    return this.prisma.lesson.findMany({
+    const lessons = await this.prisma.lesson.findMany({
       where,
       orderBy: { scheduledAt: 'asc' },
       include: {
@@ -180,11 +274,32 @@ export class LessonsService {
             _count: { select: { students: true } },
           },
         },
+        teacher: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
         _count: {
           select: { attendances: true, feedbacks: true },
         },
       },
     });
+
+    // Return in the same format as findAll for consistency
+    return {
+      items: lessons,
+      total: lessons.length,
+      page: 1,
+      pageSize: lessons.length,
+      totalPages: 1,
+    };
   }
 
   async getTodayLessons(teacherId: string) {

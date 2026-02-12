@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
-import { useMyLessons, type Lesson } from '@/features/lessons';
+import { useLessons, type Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
 
 type ViewMode = 'week' | 'month' | 'list';
@@ -103,27 +103,36 @@ export default function TeacherCalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // Calculate date range
-  const weekDates = getWeekDates(new Date(currentDate));
-  const monthDates = getMonthDates(new Date(currentDate));
+  const weekDates = useMemo(() => getWeekDates(new Date(currentDate)), [currentDate]);
+  const monthDates = useMemo(() => getMonthDates(new Date(currentDate)), [currentDate]);
   
   const dateFrom = viewMode === 'week' ? weekDates[0] : new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   const dateTo = viewMode === 'week' ? weekDates[6] : new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
 
-  // Fetch lessons
-  const { data: lessonsData, isLoading } = useMyLessons(
-    dateFrom.toISOString(),
-    dateTo.toISOString()
-  );
+  // Format dates for API
+  const formatDate = (date: Date): string => {
+    return date.toISOString().split('T')[0];
+  };
+
+  // Fetch lessons using main endpoint (automatically scoped by backend for teachers)
+  const { data: lessonsData, isLoading } = useLessons({
+    dateFrom: formatDate(dateFrom),
+    dateTo: formatDate(dateTo),
+    take: 100,
+  });
 
   const lessons = lessonsData?.items || [];
 
   // Group lessons by date
-  const lessonsByDate = lessons.reduce((acc, lesson) => {
-    const date = new Date(lesson.scheduledAt).toISOString().split('T')[0];
-    if (!acc[date]) acc[date] = [];
-    acc[date].push(lesson);
-    return acc;
-  }, {} as Record<string, Lesson[]>);
+  const lessonsByDate = useMemo(() => {
+    const grouped: Record<string, Lesson[]> = {};
+    lessons.forEach(lesson => {
+      const dateKey = lesson.scheduledAt.split('T')[0];
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push(lesson);
+    });
+    return grouped;
+  }, [lessons]);
 
   const goToToday = () => setCurrentDate(new Date());
   
