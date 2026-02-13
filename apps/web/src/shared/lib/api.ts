@@ -172,6 +172,7 @@ class ApiClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...fetchOptions,
       headers,
+      credentials: 'include', // Include cookies in all requests
     });
 
     let data: T | ApiErrorResponse;
@@ -341,6 +342,7 @@ class ApiClient {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ refreshToken }),
+          credentials: 'include', // Include cookies in refresh request
         });
 
         if (!response.ok) {

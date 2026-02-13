@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import {
   fetchDashboardSummary,
   fetchTeacherPerformance,
@@ -8,6 +8,12 @@ import {
   fetchRevenueAnalytics,
   fetchAttendanceOverview,
   fetchLessonsOverview,
+  type DashboardSummary,
+  type TeacherPerformance,
+  type StudentRisk,
+  type RevenueData,
+  type AttendanceOverview,
+  type LessonsOverview,
 } from '../api/analytics.api';
 
 export const analyticsKeys = {
@@ -20,44 +26,65 @@ export const analyticsKeys = {
   lessons: (dateFrom?: string, dateTo?: string) => [...analyticsKeys.all, 'lessons', { dateFrom, dateTo }] as const,
 };
 
-export function useDashboardSummary() {
+export function useDashboardSummary(options?: Omit<UseQueryOptions<DashboardSummary>, 'queryKey' | 'queryFn'>) {
   return useQuery({
     queryKey: analyticsKeys.summary(),
     queryFn: fetchDashboardSummary,
+    ...options,
   });
 }
 
-export function useTeacherPerformance(dateFrom?: string, dateTo?: string) {
+export function useTeacherPerformance(
+  dateFrom?: string,
+  dateTo?: string,
+  options?: Omit<UseQueryOptions<TeacherPerformance[]>, 'queryKey' | 'queryFn'>
+) {
   return useQuery({
     queryKey: analyticsKeys.teachers(dateFrom, dateTo),
     queryFn: () => fetchTeacherPerformance(dateFrom, dateTo),
+    ...options,
   });
 }
 
-export function useStudentRisk() {
+export function useStudentRisk(options?: Omit<UseQueryOptions<StudentRisk[]>, 'queryKey' | 'queryFn'>) {
   return useQuery({
     queryKey: analyticsKeys.studentsRisk(),
     queryFn: fetchStudentRisk,
+    ...options,
   });
 }
 
-export function useRevenueAnalytics(months = 6) {
+export function useRevenueAnalytics(
+  months = 6,
+  options?: Omit<UseQueryOptions<RevenueData[]>, 'queryKey' | 'queryFn'>
+) {
   return useQuery({
     queryKey: analyticsKeys.revenue(months),
     queryFn: () => fetchRevenueAnalytics(months),
+    ...options,
   });
 }
 
-export function useAttendanceOverview(dateFrom?: string, dateTo?: string) {
+export function useAttendanceOverview(
+  dateFrom?: string,
+  dateTo?: string,
+  options?: Omit<UseQueryOptions<AttendanceOverview>, 'queryKey' | 'queryFn'>
+) {
   return useQuery({
     queryKey: analyticsKeys.attendance(dateFrom, dateTo),
     queryFn: () => fetchAttendanceOverview(dateFrom, dateTo),
+    ...options,
   });
 }
 
-export function useLessonsOverview(dateFrom?: string, dateTo?: string) {
+export function useLessonsOverview(
+  dateFrom?: string,
+  dateTo?: string,
+  options?: Omit<UseQueryOptions<LessonsOverview>, 'queryKey' | 'queryFn'>
+) {
   return useQuery({
     queryKey: analyticsKeys.lessons(dateFrom, dateTo),
     queryFn: () => fetchLessonsOverview(dateFrom, dateTo),
+    ...options,
   });
 }
