@@ -1894,3 +1894,5 @@ export class ChatService {
   }
 }
 
+console.log("Hello")
+
