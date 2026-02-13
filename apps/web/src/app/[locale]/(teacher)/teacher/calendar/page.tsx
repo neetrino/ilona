@@ -331,6 +331,7 @@ export default function TeacherCalendarPage() {
             onObligationClick={(lessonId, obligation) => {
               router.push(`/teacher/calendar/${lessonId}?tab=${obligation}`);
             }}
+            hideTeacherColumn={true}
           />
           <AddCourseForm
             open={isAddCourseOpen}

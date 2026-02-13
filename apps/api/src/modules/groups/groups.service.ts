@@ -32,35 +32,43 @@ export class GroupsService {
     if (isActive !== undefined) where.isActive = isActive;
     if (level) where.level = level;
 
+    // Wrap both queries with retry
     const [items, total] = await Promise.all([
-      this.prisma.group.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { name: 'asc' },
-        include: {
-          center: {
-            select: { id: true, name: true },
-          },
-          teacher: {
+      this.prisma.prismaWithRetry(
+        () =>
+          this.prisma.group.findMany({
+            where,
+            skip,
+            take,
+            orderBy: { name: 'asc' },
             include: {
-              user: {
-                select: {
-                  id: true,
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  avatarUrl: true,
+              center: {
+                select: { id: true, name: true },
+              },
+              teacher: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      firstName: true,
+                      lastName: true,
+                      email: true,
+                      avatarUrl: true,
+                    },
+                  },
                 },
               },
+              _count: {
+                select: { students: true, lessons: true },
+              },
             },
-          },
-          _count: {
-            select: { students: true, lessons: true },
-          },
-        },
-      }),
-      this.prisma.group.count({ where }),
+          }),
+        { op: 'groups.findAll', meta: { skip, take, teacherId, centerId } },
+      ),
+      this.prisma.prismaWithRetry(
+        () => this.prisma.group.count({ where }),
+        { op: 'groups.findAll.count', meta: { teacherId, centerId } },
+      ),
     ]);
 
     return {
@@ -126,11 +134,14 @@ export class GroupsService {
    * Get teacher entity by userId (canonical lookup method)
    */
   async getTeacherByUserId(userId: string) {
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { userId },
-      select: { id: true },
-    });
-    return teacher;
+    return this.prisma.prismaWithRetry(
+      () =>
+        this.prisma.teacher.findUnique({
+          where: { userId },
+          select: { id: true },
+        }),
+      { op: 'groups.getTeacherByUserId', meta: { userId } },
+    );
   }
 
   /**
@@ -138,25 +149,39 @@ export class GroupsService {
    * This is the canonical method for fetching teacher groups - used by all endpoints
    */
   async findByTeacher(teacherId: string) {
-    const groups = await this.prisma.group.findMany({
-      where: { teacherId, isActive: true },
-      include: {
-        center: { select: { id: true, name: true } },
-        _count: { select: { lessons: true } },
-      },
-      orderBy: { name: 'asc' },
-    });
+    // Wrap main query with retry for transient connection errors
+    const groups = await this.prisma.prismaWithRetry(
+      () =>
+        this.prisma.group.findMany({
+          where: { teacherId, isActive: true },
+          include: {
+            center: { select: { id: true, name: true } },
+            _count: { select: { lessons: true } },
+          },
+          orderBy: { name: 'asc' },
+        }),
+      { op: 'groups.findByTeacher', meta: { teacherId } },
+    );
 
     // Count only ACTIVE students for each group
     const groupIds = groups.map(g => g.id);
-    const activeStudentCounts = await this.prisma.student.groupBy({
-      by: ['groupId'],
-      where: {
-        groupId: { in: groupIds },
-        user: { status: 'ACTIVE' },
-      },
-      _count: { id: true },
-    });
+    if (groupIds.length === 0) {
+      return [];
+    }
+
+    // Wrap student count query with retry
+    const activeStudentCounts = await this.prisma.prismaWithRetry(
+      () =>
+        this.prisma.student.groupBy({
+          by: ['groupId'],
+          where: {
+            groupId: { in: groupIds },
+            user: { status: 'ACTIVE' },
+          },
+          _count: { id: true },
+        }),
+      { op: 'groups.findByTeacher.studentCount', meta: { teacherId, groupCount: groupIds.length } },
+    );
 
     const countMap = new Map(
       activeStudentCounts.map(item => [item.groupId, item._count.id])

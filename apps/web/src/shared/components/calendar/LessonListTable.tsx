@@ -15,6 +15,7 @@ interface LessonListTableProps {
   onEdit?: (lessonId: string) => void;
   onDelete?: (lessonId: string) => void;
   onObligationClick?: (lessonId: string, obligation: 'absence' | 'feedback' | 'voice' | 'text') => void;
+  hideTeacherColumn?: boolean;
 }
 
 const statusConfig: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
@@ -40,28 +41,31 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function ObligationButton({
+function StatusIndicator({
   completed,
   onClick,
   label,
+  count,
 }: {
   completed: boolean;
   onClick: () => void;
   label: string;
+  count?: number;
 }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        'w-8 h-8 rounded-md border-2 flex items-center justify-center transition-colors',
+        'inline-flex items-center justify-center min-w-[32px] h-6 px-1.5 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
         completed
-          ? 'bg-green-50 border-green-500 text-green-600'
-          : 'bg-slate-50 border-slate-300 text-slate-400 hover:border-slate-400'
+          ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+          : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
       )}
       title={label}
+      aria-label={`${label}: ${completed ? 'Completed' : 'Not completed'}${count !== undefined ? ` (${count})` : ''}`}
     >
       {completed ? (
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
           <path
             fillRule="evenodd"
             d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -69,9 +73,17 @@ function ObligationButton({
           />
         </svg>
       ) : (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
         </svg>
+      )}
+      {count !== undefined && count > 0 && (
+        <span className={cn(
+          'ml-1 text-xs font-medium',
+          completed ? 'text-emerald-700' : 'text-slate-500'
+        )}>
+          {count}
+        </span>
       )}
     </button>
   );
@@ -84,6 +96,7 @@ export function LessonListTable({
   onEdit,
   onDelete,
   onObligationClick,
+  hideTeacherColumn = false,
 }: LessonListTableProps) {
   const router = useRouter();
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
@@ -181,11 +194,13 @@ export function LessonListTable({
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Lesson Name</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Date & Time</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Teacher</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Absence</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Feedbacks</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Voice</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Text</th>
+              {!hideTeacherColumn && (
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Teacher</th>
+              )}
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Absence</th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Feedbacks</th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Voice</th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Text</th>
               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Actions</th>
             </tr>
           </thead>
@@ -217,36 +232,47 @@ export function LessonListTable({
                       <p className="text-sm text-slate-600">{formatTime(lesson.scheduledAt)}</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <p className="text-sm text-slate-700">{teacherName}</p>
+                  {!hideTeacherColumn && (
+                    <td className="px-4 py-3">
+                      <p className="text-sm text-slate-700">{teacherName}</p>
+                    </td>
+                  )}
+                  <td className="px-2 py-3 text-center align-middle">
+                    <div className="flex items-center justify-center">
+                      <StatusIndicator
+                        completed={lesson.absenceMarked || false}
+                        onClick={() => onObligationClick?.(lesson.id, 'absence')}
+                        label="Absence"
+                      />
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    <ObligationButton
-                      completed={lesson.absenceMarked || false}
-                      onClick={() => onObligationClick?.(lesson.id, 'absence')}
-                      label="Absence"
-                    />
+                  <td className="px-2 py-3 text-center align-middle">
+                    <div className="flex items-center justify-center">
+                      <StatusIndicator
+                        completed={lesson.feedbacksCompleted || false}
+                        onClick={() => onObligationClick?.(lesson.id, 'feedback')}
+                        label="Feedbacks"
+                        count={lesson._count?.feedbacks}
+                      />
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    <ObligationButton
-                      completed={lesson.feedbacksCompleted || false}
-                      onClick={() => onObligationClick?.(lesson.id, 'feedback')}
-                      label="Feedbacks"
-                    />
+                  <td className="px-2 py-3 text-center align-middle">
+                    <div className="flex items-center justify-center">
+                      <StatusIndicator
+                        completed={lesson.voiceSent || false}
+                        onClick={() => onObligationClick?.(lesson.id, 'voice')}
+                        label="Voice"
+                      />
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    <ObligationButton
-                      completed={lesson.voiceSent || false}
-                      onClick={() => onObligationClick?.(lesson.id, 'voice')}
-                      label="Voice"
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <ObligationButton
-                      completed={lesson.textSent || false}
-                      onClick={() => onObligationClick?.(lesson.id, 'text')}
-                      label="Text"
-                    />
+                  <td className="px-2 py-3 text-center align-middle">
+                    <div className="flex items-center justify-center">
+                      <StatusIndicator
+                        completed={lesson.textSent || false}
+                        onClick={() => onObligationClick?.(lesson.id, 'text')}
+                        label="Text"
+                      />
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-2">
