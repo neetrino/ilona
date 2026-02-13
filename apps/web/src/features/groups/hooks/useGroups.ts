@@ -16,6 +16,7 @@ import {
 import type { GroupFilters, CreateGroupDto, UpdateGroupDto } from '../types';
 import { chatKeys } from '../../chat/hooks/useChat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { ApiError } from '@/shared/lib/api';
 
 // Query keys
 export const groupKeys = {
@@ -68,8 +69,19 @@ export function useMyGroups() {
     // Set staleTime to 0 to ensure fresh data after mutations
     // This prevents stale cache from hiding newly assigned groups
     staleTime: 0,
-    // Refetch on window focus to catch updates from other tabs/windows
-    refetchOnWindowFocus: true,
+    // Only refetch on window focus if auth is ready
+    // This prevents 401 errors when token is expired/invalid
+    refetchOnWindowFocus: isAuthReady,
+    // Don't retry on 401 errors - token refresh is handled by API client
+    retry: (failureCount, error) => {
+      // Don't retry if it's a 401 error (authentication issue)
+      // The API client already attempts token refresh, so retrying would be redundant
+      if (error instanceof ApiError && error.statusCode === 401) {
+        return false;
+      }
+      // Retry up to 2 times for other errors
+      return failureCount < 2;
+    },
   });
 }
 
