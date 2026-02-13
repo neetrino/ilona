@@ -14,3 +14,5 @@ export async function markTextSent(lessonId: string) {
   return api.patch(`${LESSONS_ENDPOINT}/${lessonId}/text-sent`);
 }
 
+
+

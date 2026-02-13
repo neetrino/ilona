@@ -79,3 +79,5 @@ Check:
 - ✅ You have permissions to alter the `lessons` table
 - ✅ API server is restarted after migration
 
+
+
