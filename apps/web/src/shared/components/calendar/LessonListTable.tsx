@@ -50,6 +50,29 @@ function formatDate(dateStr: string, locale: string): string {
   });
 }
 
+/**
+ * Determines if a lesson is past, today, or future based on its scheduled date.
+ * Compares calendar dates (year, month, day) in the local timezone.
+ * @param scheduledAt - ISO date string of the lesson
+ * @returns 'past' | 'today' | 'future'
+ */
+function getLessonDateStatus(scheduledAt: string): 'past' | 'today' | 'future' {
+  const lessonDate = new Date(scheduledAt);
+  const today = new Date();
+  
+  // Compare calendar dates (year, month, day) by resetting time to midnight
+  const lessonDateOnly = new Date(lessonDate.getFullYear(), lessonDate.getMonth(), lessonDate.getDate());
+  const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  
+  if (lessonDateOnly < todayOnly) {
+    return 'past';
+  } else if (lessonDateOnly.getTime() === todayOnly.getTime()) {
+    return 'today';
+  } else {
+    return 'future';
+  }
+}
+
 function StatusIndicator({
   completed,
   onClick,
@@ -255,9 +278,17 @@ export function LessonListTable({
               const teacherName = lesson.teacher?.user
                 ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
                 : 'Unknown';
+              
+              const dateStatus = getLessonDateStatus(lesson.scheduledAt);
+              const rowClassName = cn(
+                'transition-colors',
+                dateStatus === 'today' && 'bg-green-50 hover:bg-green-100',
+                dateStatus === 'past' && 'bg-slate-50 hover:bg-slate-100',
+                dateStatus === 'future' && 'hover:bg-slate-50'
+              );
 
               return (
-                <tr key={lesson.id} className="hover:bg-slate-50 transition-colors">
+                <tr key={lesson.id} className={rowClassName}>
                   <td className="px-4 py-3">
                     <Checkbox
                       checked={selectedLessons.has(lesson.id)}
