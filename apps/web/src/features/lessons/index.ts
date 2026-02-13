@@ -33,3 +33,4 @@ export type {
 
 // Components
 export { AddLessonForm } from './components/AddLessonForm';
+export { AddCourseForm } from './components/AddCourseForm';

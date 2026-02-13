@@ -8,6 +8,8 @@ import {
   Body,
   Param,
   Query,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import {
@@ -113,22 +115,78 @@ export class LessonsController {
   }
 
   @Post()
-  @Roles(UserRole.ADMIN)
-  async create(@Body() dto: CreateLessonDto) {
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  async create(@Body() dto: CreateLessonDto, @CurrentUser() user?: JwtPayload) {
+    // For teachers, validate that they can only create lessons for their own groups
+    if (user?.role === UserRole.TEACHER) {
+      const teacher = await this.lessonsService['prisma'].teacher.findUnique({
+        where: { userId: user.sub },
+        include: { groups: { select: { id: true } } },
+      });
+
+      if (!teacher) {
+        throw new ForbiddenException('Teacher profile not found');
+      }
+
+      // Ensure teacherId matches the current teacher
+      if (dto.teacherId !== teacher.id) {
+        throw new ForbiddenException('You can only create lessons for yourself');
+      }
+
+      // Ensure group belongs to the teacher
+      const teacherGroupIds = teacher.groups.map((g) => g.id);
+      if (!teacherGroupIds.includes(dto.groupId)) {
+        throw new ForbiddenException('You can only create lessons for your assigned groups');
+      }
+    }
+
     return this.lessonsService.create(dto);
   }
 
   @Post('recurring')
-  @Roles(UserRole.ADMIN)
-  async createRecurring(@Body() dto: CreateRecurringLessonDto) {
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  async createRecurring(@Body() dto: CreateRecurringLessonDto, @CurrentUser() user?: JwtPayload) {
+    // Validate date range
+    const startDate = new Date(dto.startDate);
+    const endDate = new Date(dto.endDate);
+    
+    if (endDate <= startDate) {
+      throw new BadRequestException('End date must be after start date');
+    }
+
+    let teacherId = dto.teacherId;
+
+    // For teachers, validate that they can only create lessons for themselves
+    if (user?.role === UserRole.TEACHER) {
+      const teacher = await this.lessonsService['prisma'].teacher.findUnique({
+        where: { userId: user.sub },
+        include: { groups: { select: { id: true } } },
+      });
+
+      if (!teacher) {
+        throw new ForbiddenException('Teacher profile not found');
+      }
+
+      // Auto-set teacherId to current teacher
+      teacherId = teacher.id;
+
+      // Ensure group belongs to the teacher
+      const teacherGroupIds = teacher.groups.map((g) => g.id);
+      if (!teacherGroupIds.includes(dto.groupId)) {
+        throw new ForbiddenException('You can only create lessons for your assigned groups');
+      }
+    }
+
     return this.lessonsService.createRecurring({
       groupId: dto.groupId,
-      teacherId: dto.teacherId,
-      schedule: dto.schedule,
-      startDate: new Date(dto.startDate),
-      endDate: new Date(dto.endDate),
-      duration: dto.duration,
+      teacherId,
+      weekdays: dto.weekdays,
+      startTime: dto.startTime,
+      endTime: dto.endTime,
+      startDate,
+      endDate,
       topic: dto.topic,
+      description: dto.description,
     });
   }
 

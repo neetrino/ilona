@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { useLessons, type Lesson } from '@/features/lessons';
+import { AddCourseForm } from '@/features/lessons/components/AddCourseForm';
+import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/shared/lib/utils';
+import { useTranslations } from 'next-intl';
 
 type ViewMode = 'week' | 'month' | 'list';
 
@@ -99,15 +102,83 @@ function LessonBlock({ lesson }: { lesson: Lesson }) {
 
 export default function TeacherCalendarPage() {
   const router = useRouter();
-  const [viewMode, setViewMode] = useState<ViewMode>('week');
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const t = useTranslations('calendar');
+  const tCommon = useTranslations('common');
+  
+  // Initialize view mode from URL query params, with fallback to 'list'
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const viewFromUrl = searchParams.get('view');
+    if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
+      return viewFromUrl;
+    }
+    return 'list'; // Default to list view
+  });
+  
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
+  
+  // Update URL when view mode changes
+  const updateViewModeInUrl = (mode: ViewMode) => {
+    // Update state immediately for responsive UI
+    setViewMode(mode);
+    
+    // Update URL to persist the selection
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode === 'list') {
+      // Remove 'view' param for default list view to keep URL clean
+      params.delete('view');
+    } else {
+      params.set('view', mode);
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
+  
+  // Sync view mode from URL (for browser back/forward navigation)
+  useEffect(() => {
+    const viewFromUrl = searchParams.get('view');
+    if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
+      setViewMode(viewFromUrl);
+    } else if (!viewFromUrl) {
+      setViewMode('list');
+    }
+  }, [searchParams]);
 
   // Calculate date range
   const weekDates = useMemo(() => getWeekDates(new Date(currentDate)), [currentDate]);
   const monthDates = useMemo(() => getMonthDates(new Date(currentDate)), [currentDate]);
   
-  const dateFrom = viewMode === 'week' ? weekDates[0] : new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-  const dateTo = viewMode === 'week' ? weekDates[6] : new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  // For list view, show a wider range (3 months from today)
+  // For week view, show the week
+  // For month view, show the month
+  const dateFrom = useMemo(() => {
+    if (viewMode === 'week') {
+      return weekDates[0];
+    } else if (viewMode === 'list') {
+      // Show 3 months back and 3 months forward from today
+      const today = new Date();
+      today.setMonth(today.getMonth() - 3);
+      today.setDate(1);
+      return today;
+    } else {
+      return new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    }
+  }, [viewMode, weekDates, currentDate]);
+  
+  const dateTo = useMemo(() => {
+    if (viewMode === 'week') {
+      return weekDates[6];
+    } else if (viewMode === 'list') {
+      // Show 3 months forward from today
+      const today = new Date();
+      today.setMonth(today.getMonth() + 3);
+      today.setDate(0); // Last day of the month
+      return today;
+    } else {
+      return new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    }
+  }, [viewMode, weekDates, currentDate]);
 
   // Format dates for API
   const formatDate = (date: Date): string => {
@@ -155,8 +226,8 @@ export default function TeacherCalendarPage() {
 
   return (
     <DashboardLayout
-      title="My Calendar"
-      subtitle="View your teaching schedule."
+      title={t('title') || 'My Calendar'}
+      subtitle={t('subtitle') || 'View your teaching schedule.'}
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -184,74 +255,92 @@ export default function TeacherCalendarPage() {
             onClick={goToToday}
             className="ml-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Today
+            {t('today') || 'Today'}
           </button>
         </div>
 
-        <div className="flex bg-slate-100 p-1 rounded-lg">
-          <button
-            onClick={() => setViewMode('week')}
-            className={cn(
-              'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-              viewMode === 'week' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
-            )}
-          >
-            Week
-          </button>
-          <button
-            onClick={() => setViewMode('month')}
-            className={cn(
-              'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-              viewMode === 'month' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
-            )}
-          >
-            Month
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={cn(
-              'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-              viewMode === 'list' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
-            )}
-          >
-            List
-          </button>
+        <div className="flex items-center gap-3">
+          <div className="flex bg-slate-100 p-1 rounded-lg">
+            <button
+              onClick={() => updateViewModeInUrl('list')}
+              className={cn(
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                viewMode === 'list' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+              )}
+            >
+              {t('list') || 'List'}
+            </button>
+            <button
+              onClick={() => updateViewModeInUrl('week')}
+              className={cn(
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                viewMode === 'week' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+              )}
+            >
+              {t('week') || 'Week'}
+            </button>
+            <button
+              onClick={() => updateViewModeInUrl('month')}
+              className={cn(
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                viewMode === 'month' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+              )}
+            >
+              {t('month') || 'Month'}
+            </button>
+          </div>
+          {viewMode === 'list' && (
+            <Button
+              onClick={() => setIsAddCourseOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {t('addCourse') || 'Add Course'}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mb-4 text-sm">
-        <div className="flex items-center gap-1">
-          <StatusDot status="SCHEDULED" />
-          <span className="text-slate-600">Scheduled</span>
+      {viewMode !== 'list' && (
+        <div className="flex items-center gap-4 mb-4 text-sm">
+          <div className="flex items-center gap-1">
+            <StatusDot status="SCHEDULED" />
+            <span className="text-slate-600">{t('scheduled') || 'Scheduled'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <StatusDot status="IN_PROGRESS" />
+            <span className="text-slate-600">{t('inProgress') || 'In Progress'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <StatusDot status="COMPLETED" />
+            <span className="text-slate-600">{t('completed') || 'Completed'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <StatusDot status="CANCELLED" />
+            <span className="text-slate-600">{t('cancelled') || 'Cancelled'}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <StatusDot status="IN_PROGRESS" />
-          <span className="text-slate-600">In Progress</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <StatusDot status="COMPLETED" />
-          <span className="text-slate-600">Completed</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <StatusDot status="CANCELLED" />
-          <span className="text-slate-600">Cancelled</span>
-        </div>
-      </div>
+      )}
 
       {/* Calendar */}
       {viewMode === 'list' ? (
-        <LessonListTable
-          lessons={lessons}
-          isLoading={isLoading}
-          onObligationClick={(lessonId, obligation) => {
-            router.push(`/teacher/calendar/${lessonId}?tab=${obligation}`);
-          }}
-        />
+        <>
+          <LessonListTable
+            lessons={lessons}
+            isLoading={isLoading}
+            onObligationClick={(lessonId, obligation) => {
+              router.push(`/teacher/calendar/${lessonId}?tab=${obligation}`);
+            }}
+          />
+          <AddCourseForm
+            open={isAddCourseOpen}
+            onOpenChange={setIsAddCourseOpen}
+          />
+        </>
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           {isLoading ? (
-            <div className="p-8 text-center text-slate-500">Loading...</div>
+            <div className="p-8 text-center text-slate-500">{tCommon('loading')}</div>
           ) : viewMode === 'week' ? (
           /* Week View */
           <div className="grid grid-cols-7 divide-x divide-slate-200">
@@ -281,7 +370,7 @@ export default function TeacherCalendarPage() {
                         <LessonBlock key={lesson.id} lesson={lesson} />
                       ))}
                     {dayLessons.length === 0 && (
-                      <p className="text-xs text-slate-400 text-center py-4">No lessons</p>
+                      <p className="text-xs text-slate-400 text-center py-4">{t('noLessons') || 'No lessons'}</p>
                     )}
                   </div>
                 </div>

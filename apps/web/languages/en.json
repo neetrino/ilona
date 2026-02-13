@@ -27,7 +27,8 @@
     "email": "Email",
     "phone": "Phone",
     "description": "Description",
-    "notes": "Notes"
+    "notes": "Notes",
+    "minutes": "minutes"
   },
   "home": {
     "title": "Ilona English Center",
@@ -523,6 +524,41 @@
     "notFound": "Not found",
     "unauthorized": "Unauthorized",
     "forbidden": "Access denied"
+  },
+  "calendar": {
+    "title": "My Calendar",
+    "subtitle": "View your teaching schedule.",
+    "list": "List",
+    "week": "Week",
+    "month": "Month",
+    "today": "Today",
+    "addCourse": "Add Course",
+    "addCourseDescription": "Fill in the information below to create a new course. Fields marked with * are required.",
+    "courseName": "Course Name",
+    "selectGroup": "Select a group",
+    "group": "Group",
+    "weekdays": "Weekdays",
+    "weekdaysHint": "Select the days of the week when the course runs",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "duration": "Duration",
+    "durationHint": "Duration between 15 and 240 minutes (default: 60)",
+    "topic": "Topic",
+    "topicPlaceholder": "e.g., Present Simple, Vocabulary Review",
+    "descriptionPlaceholder": "Optional course description or notes...",
+    "creating": "Creating...",
+    "createCourse": "Create Course",
+    "courseCreatedSuccess": "Course created successfully!",
+    "courseCreateError": "Failed to create course. Please try again.",
+    "teacherProfileNotFound": "Teacher profile not found. Please try again.",
+    "noGroupsAvailable": "No groups available. Please contact admin to assign you to a group.",
+    "scheduled": "Scheduled",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "noLessons": "No lessons"
   }
 }
 

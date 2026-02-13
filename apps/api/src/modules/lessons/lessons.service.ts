@@ -146,7 +146,11 @@ export class LessonsService {
     };
   }
 
-  async findById(id: string, currentUserId?: string, userRole?: UserRole) {
+  async findById(
+    id: string,
+    currentUserId?: string,
+    userRole?: UserRole,
+  ) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id },
       include: {
@@ -571,39 +575,119 @@ export class LessonsService {
   async createRecurring(params: {
     groupId: string;
     teacherId: string;
-    schedule: {
-      dayOfWeek: number; // 0-6 (Sunday-Saturday)
-      time: string; // "09:00"
-    }[];
+    weekdays: number[]; // Array of 0-6 (Sunday-Saturday)
+    startTime: string; // "09:00"
+    endTime: string; // "10:30"
     startDate: Date;
     endDate: Date;
-    duration?: number;
     topic?: string;
+    description?: string;
   }) {
-    const { groupId, teacherId, schedule, startDate, endDate, duration = 60, topic } = params;
+    const { groupId, teacherId, weekdays, startTime, endTime, startDate, endDate, topic, description } = params;
 
+    // Calculate duration from time range
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+    const duration = endMinutes - startMinutes;
+
+    if (duration <= 0) {
+      throw new BadRequestException('End time must be after start time');
+    }
+
+    // Validate group exists and teacher is assigned
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      include: { teacher: true },
+    });
+
+    if (!group) {
+      throw new BadRequestException(`Group with ID ${groupId} not found`);
+    }
+
+    // Check if teacher is assigned to this group
+    if (group.teacherId !== teacherId) {
+      throw new ForbiddenException('You are not assigned to this group');
+    }
+
+    // Generate all potential lesson dates
     const lessons: CreateLessonDto[] = [];
     const current = new Date(startDate);
+    current.setHours(0, 0, 0, 0);
 
-    while (current <= endDate) {
-      for (const slot of schedule) {
-        if (current.getDay() === slot.dayOfWeek) {
-          const [hours, minutes] = slot.time.split(':').map(Number);
-          const scheduledAt = new Date(current);
-          scheduledAt.setHours(hours, minutes, 0, 0);
+    const endDateWithTime = new Date(endDate);
+    endDateWithTime.setHours(23, 59, 59, 999);
 
-          if (scheduledAt >= startDate && scheduledAt <= endDate) {
-            lessons.push({
-              groupId,
-              teacherId,
-              scheduledAt: scheduledAt.toISOString(),
-              duration,
-              topic,
-            });
-          }
+    // Cap at 200 lessons to prevent abuse
+    const MAX_LESSONS = 200;
+
+    // First, generate all potential lesson dates
+    const potentialLessons: Date[] = [];
+    while (current <= endDateWithTime) {
+      const dayOfWeek = current.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+      if (weekdays.includes(dayOfWeek)) {
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const scheduledAt = new Date(current);
+        scheduledAt.setHours(hours, minutes, 0, 0);
+
+        if (scheduledAt >= startDate && scheduledAt <= endDateWithTime) {
+          potentialLessons.push(scheduledAt);
         }
       }
       current.setDate(current.getDate() + 1);
+    }
+
+    // Check limit before querying
+    if (potentialLessons.length > MAX_LESSONS) {
+      throw new BadRequestException(
+        `Cannot create more than ${MAX_LESSONS} lessons at once. Please reduce the date range or number of weekdays.`
+      );
+    }
+
+    // Fetch existing lessons in the date range to check for duplicates
+    const existingLessons = await this.prisma.lesson.findMany({
+      where: {
+        groupId,
+        teacherId,
+        scheduledAt: {
+          gte: startDate,
+          lte: endDateWithTime,
+        },
+      },
+      select: {
+        scheduledAt: true,
+      },
+    });
+
+    // Create a set of existing lesson times (rounded to minute) for quick lookup
+    const existingTimes = new Set(
+      existingLessons.map((lesson) => {
+        const date = new Date(lesson.scheduledAt);
+        // Round to minute precision
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+      })
+    );
+
+    // Filter out duplicates
+    for (const scheduledAt of potentialLessons) {
+      const timeKey = `${scheduledAt.getFullYear()}-${String(scheduledAt.getMonth() + 1).padStart(2, '0')}-${String(scheduledAt.getDate()).padStart(2, '0')}T${String(scheduledAt.getHours()).padStart(2, '0')}:${String(scheduledAt.getMinutes()).padStart(2, '0')}`;
+      
+      if (!existingTimes.has(timeKey)) {
+        lessons.push({
+          groupId,
+          teacherId,
+          scheduledAt: scheduledAt.toISOString(),
+          duration,
+          topic,
+          description,
+        });
+      }
+    }
+
+    if (lessons.length === 0) {
+      throw new BadRequestException('No lessons would be created with the provided parameters');
     }
 
     return this.createBulk(lessons);
