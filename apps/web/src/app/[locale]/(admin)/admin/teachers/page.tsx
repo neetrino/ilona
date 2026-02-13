@@ -605,7 +605,7 @@ export default function TeachersPage() {
     {
       key: 'actions',
       header: t('actions'),
-      className: 'text-left',
+      className: '!w-[140px] !min-w-[140px] !max-w-[140px] !px-3 !py-4 text-left',
       render: (teacher: Teacher) => {
         const isActive = teacher.user?.status === 'ACTIVE';
         const isDeactivating = updateTeacher.isPending;

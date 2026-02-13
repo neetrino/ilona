@@ -92,9 +92,9 @@ export function ActionButtons({
   ariaLabels,
   titles,
 }: ActionButtonsProps) {
-  const iconSize = size === 'sm' ? 'w-5 h-5' : 'w-6 h-6';
-  const padding = size === 'sm' ? 'p-2' : 'p-2.5';
-  const gap = size === 'sm' ? 'gap-2' : 'gap-2.5';
+  const iconSize = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
+  const padding = size === 'sm' ? 'p-1.5' : 'p-2';
+  const gap = size === 'sm' ? 'gap-1' : 'gap-1.5';
 
   const handleClick = (e: React.MouseEvent, callback?: () => void) => {
     e.stopPropagation();
@@ -170,15 +170,15 @@ export function ActionButtons({
             title={titles?.disable || (isActive ? 'Deactivate' : 'Activate')}
           />
           <div className={cn(
-            'w-11 h-6 rounded-full transition-colors duration-200',
+            'w-9 h-5 rounded-full transition-colors duration-200',
             'peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-slate-400 peer-focus:ring-offset-1',
             isActive ? 'bg-green-500' : 'bg-slate-300',
             (disabled || disableDisabled) && 'opacity-50'
           )}>
             <div className={cn(
-              'absolute top-[2px] left-[2px] bg-white rounded-full h-5 w-5 transition-transform duration-200',
+              'absolute top-[2px] left-[2px] bg-white rounded-full h-4 w-4 transition-transform duration-200',
               'border border-slate-300',
-              isActive && 'translate-x-5'
+              isActive && 'translate-x-4'
             )} />
           </div>
         </label>
