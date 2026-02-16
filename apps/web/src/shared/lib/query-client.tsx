@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, useEffect, type ReactNode } from 'react';
 import { initializeApiClient } from '@/features/auth/store/auth.store';
+import { SessionExpiredBanner } from '@/shared/components/SessionExpiredBanner';
 
 interface QueryProviderProps {
   children: ReactNode;
@@ -33,6 +34,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SessionExpiredBanner />
       {children}
     </QueryClientProvider>
   );
