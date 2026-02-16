@@ -325,7 +325,12 @@
     "directChat": "Direct Chat",
     "systemMessage": "System Message",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "admin": "Admin",
+    "groups": "Groups",
+    "students": "Students",
+    "teachers": "My Teachers",
+    "chats": "Chats"
   },
   "finance": {
     "title": "Finance",

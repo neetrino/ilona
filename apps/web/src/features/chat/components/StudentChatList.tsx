@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useChats, useSocket, useCreateDirectChat } from '../hooks';
+import { useChats, useSocket, useCreateDirectChat, useStudentAdmin } from '../hooks';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
@@ -17,7 +17,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
   const { user } = useAuthStore();
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'chats' | 'teachers'>('chats');
+  const [activeTab, setActiveTab] = useState<'admin' | 'chats' | 'teachers'>('chats');
 
   // Fetch chats from API
   const { data: chats = [], isLoading: isLoadingChats } = useChats();
@@ -25,14 +25,25 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
   // Fetch assigned teachers
   const { data: teachers = [], isLoading: isLoadingTeachers } = useMyTeachers();
 
+  // Fetch admin
+  const { data: admin, isLoading: isLoadingAdmin } = useStudentAdmin();
+
   // Create direct chat mutation
   const createDirectChat = useCreateDirectChat();
 
   // Socket for online status
   const { isConnected, isUserOnline } = useSocket();
 
-  // Filter chats by search
+  // Filter chats by search and exclude Admin from chats list
   const filteredChats = chats.filter((chat) => {
+    // Filter out Admin from chats list - Admin should only appear in Admin section
+    if (chat.type === 'DIRECT') {
+      const otherParticipant = chat.participants.find((p) => p.userId !== user?.id);
+      if (otherParticipant?.user.role === 'ADMIN') {
+        return false;
+      }
+    }
+
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
 
@@ -135,6 +146,24 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
     }
   };
 
+  // Handle admin click - create or open DM
+  const handleAdminClick = async (adminUserId: string, chatId: string | null) => {
+    try {
+      if (chatId) {
+        // Chat exists, fetch it
+        const { fetchChat } = await import('../api/chat.api');
+        const chat = await fetchChat(chatId);
+        onSelectChat(chat);
+      } else {
+        // Create new direct chat
+        const newChat = await createDirectChat.mutateAsync(adminUserId);
+        onSelectChat(newChat);
+      }
+    } catch (error) {
+      console.error('Failed to open admin chat:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -185,6 +214,17 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
           >
             My Teachers
           </button>
+          <button
+            onClick={() => setActiveTab('admin')}
+            className={cn(
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+              activeTab === 'admin'
+                ? 'bg-primary/20 text-primary'
+                : 'text-slate-600 hover:bg-slate-100'
+            )}
+          >
+            Admin
+          </button>
         </div>
 
         {/* Search */}
@@ -194,7 +234,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
           </svg>
           <input
             type="search"
-            placeholder={activeTab === 'teachers' ? 'Search teachers...' : 'Search chats...'}
+            placeholder={activeTab === 'admin' ? 'Search admin...' : activeTab === 'teachers' ? 'Search teachers...' : 'Search chats...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -204,7 +244,107 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        {activeTab === 'chats' ? (
+        {activeTab === 'admin' ? (
+          // Admin section
+          isLoadingAdmin ? (
+            <div className="p-4 space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 animate-pulse">
+                  <div className="w-12 h-12 bg-slate-200 rounded-full" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-slate-200 rounded w-24 mb-2" />
+                    <div className="h-3 bg-slate-200 rounded w-40" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : !admin ? (
+            <div className="p-8 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 bg-slate-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-slate-700 mb-1">
+                {searchQuery ? 'No admin found' : 'No admin available'}
+              </p>
+              <p className="text-xs text-slate-500">
+                {searchQuery 
+                  ? 'Try a different search term' 
+                  : 'Admin contact will appear here'}
+              </p>
+            </div>
+          ) : (
+            <div className="border-b border-slate-200">
+              <button
+                onClick={() => handleAdminClick(admin.id, admin.chatId || null)}
+                disabled={createDirectChat.isPending}
+                className={cn(
+                  'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
+                  activeChat?.id === admin.chatId && 'bg-primary/10 hover:bg-primary/10',
+                  createDirectChat.isPending && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {/* Avatar */}
+                <div className="relative">
+                  {admin.avatarUrl ? (
+                    <img
+                      src={admin.avatarUrl}
+                      alt={admin.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
+                      {admin.firstName?.[0]}{admin.lastName?.[0]}
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3
+                      className={cn(
+                        'font-medium truncate',
+                        (admin.unreadCount || 0) > 0 ? 'text-slate-900' : 'text-slate-700'
+                      )}
+                    >
+                      {admin.name}
+                    </h3>
+                    {admin.chatId && admin.updatedAt && (
+                      <span className="text-xs text-slate-500 flex-shrink-0">
+                        {formatTime(admin.lastMessage?.createdAt || admin.updatedAt)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    {admin.chatId ? (
+                      <>
+                        <p
+                          className={cn(
+                            'text-sm truncate',
+                            (admin.unreadCount || 0) > 0 ? 'text-slate-700 font-medium' : 'text-slate-500'
+                          )}
+                        >
+                          {formatMessagePreview(admin.lastMessage)}
+                        </p>
+                        {(admin.unreadCount || 0) > 0 && (
+                          <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
+                            {admin.unreadCount}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-slate-500 italic">
+                        Click to start conversation
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </button>
+            </div>
+          )
+        ) : activeTab === 'chats' ? (
           // Chats list
           isLoadingChats ? (
             <div className="p-4 space-y-3">

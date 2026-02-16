@@ -13,8 +13,9 @@ import {
   fetchTeacherGroups,
   fetchTeacherStudents,
   fetchTeacherAdmin,
+  fetchStudentAdmin,
 } from '../api/chat.api';
-import type { AdminChatUser, AdminChatGroup, TeacherGroup, TeacherStudent, TeacherAdmin } from '../api/chat.api';
+import type { AdminChatUser, AdminChatGroup, TeacherGroup, TeacherStudent, TeacherAdmin, StudentAdmin } from '../api/chat.api';
 
 // Query keys
 export const chatKeys = {
@@ -32,6 +33,8 @@ export const chatKeys = {
   teacherGroups: (search?: string) => [...chatKeys.all, 'teacher', 'groups', search] as const,
   teacherStudents: (search?: string) => [...chatKeys.all, 'teacher', 'students', search] as const,
   teacherAdmin: () => [...chatKeys.all, 'teacher', 'admin'] as const,
+  // Student chat lists
+  studentAdmin: () => [...chatKeys.all, 'student', 'admin'] as const,
 };
 
 /**
@@ -235,6 +238,17 @@ export function useTeacherAdmin() {
   return useQuery({
     queryKey: chatKeys.teacherAdmin(),
     queryFn: () => fetchTeacherAdmin(),
+    staleTime: 60 * 1000, // Cache for 1 minute
+  });
+}
+
+/**
+ * Student-only: Hook to fetch admin user info for direct messaging
+ */
+export function useStudentAdmin() {
+  return useQuery({
+    queryKey: chatKeys.studentAdmin(),
+    queryFn: () => fetchStudentAdmin(),
     staleTime: 60 * 1000, // Cache for 1 minute
   });
 }

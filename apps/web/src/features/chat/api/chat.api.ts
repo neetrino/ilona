@@ -220,3 +220,33 @@ export interface TeacherAdmin {
 export async function fetchTeacherAdmin(): Promise<TeacherAdmin | null> {
   return api.get<TeacherAdmin | null>(`${CHAT_ENDPOINT}/teacher/admin`);
 }
+
+/**
+ * Student-only: Fetch admin user info for direct messaging
+ */
+export interface StudentAdmin {
+  id: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  avatarUrl?: string | null;
+  chatId: string | null;
+  lastMessage?: {
+    id: string;
+    type?: string;
+    content: string | null;
+    fileName?: string | null;
+    createdAt: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  } | null;
+  unreadCount: number;
+  updatedAt: string | null;
+}
+
+export async function fetchStudentAdmin(): Promise<StudentAdmin | null> {
+  return api.get<StudentAdmin | null>(`${CHAT_ENDPOINT}/student/admin`);
+}

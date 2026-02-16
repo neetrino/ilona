@@ -17,7 +17,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
   const { user } = useAuthStore();
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'groups' | 'students'>('groups');
+  const [activeTab, setActiveTab] = useState<'admin' | 'groups' | 'students'>('groups');
 
   // Fetch teacher's groups and students
   const { data: groups = [], isLoading: isLoadingGroups } = useTeacherGroups(
@@ -115,9 +115,11 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
     }
   };
 
-  const isLoading = activeTab === 'groups' ? isLoadingGroups : isLoadingStudents;
-  const hasData = activeTab === 'groups' ? groups.length > 0 : students.length > 0;
   const hasAdmin = admin !== null && admin !== undefined;
+  const isLoading = activeTab === 'admin' ? isLoadingAdmin :
+                    activeTab === 'groups' ? isLoadingGroups : isLoadingStudents;
+  const hasData = activeTab === 'admin' ? hasAdmin :
+                  activeTab === 'groups' ? groups.length > 0 : students.length > 0;
 
   return (
     <div className="flex flex-col h-full">
@@ -175,6 +177,20 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
           >
             Students
           </button>
+          <button
+            onClick={() => {
+              setActiveTab('admin');
+              setSearchQuery(''); // Clear search when switching tabs
+            }}
+            className={cn(
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+              activeTab === 'admin'
+                ? 'bg-primary/20 text-primary'
+                : 'text-slate-600 hover:bg-slate-100'
+            )}
+          >
+            Admin
+          </button>
         </div>
 
         {/* Search */}
@@ -184,7 +200,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
           </svg>
           <input
             type="search"
-            placeholder={activeTab === 'groups' ? 'Search groups...' : 'Search students...'}
+            placeholder={activeTab === 'admin' ? 'Search admin...' : activeTab === 'groups' ? 'Search groups...' : 'Search students...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -194,78 +210,6 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        {/* Admin Contact - Always show at top if available */}
-        {hasAdmin && admin && (
-          <div className="border-b border-slate-200">
-            <button
-              onClick={() => handleAdminClick(admin.id, admin.chatId || null)}
-              disabled={createDirectChat.isPending}
-              className={cn(
-                'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
-                activeChat?.id === admin.chatId && 'bg-primary/10 hover:bg-primary/10',
-                createDirectChat.isPending && 'opacity-50 cursor-not-allowed'
-              )}
-            >
-              {/* Avatar */}
-              <div className="relative">
-                {admin.avatarUrl ? (
-                  <img
-                    src={admin.avatarUrl}
-                    alt={admin.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
-                    {admin.firstName?.[0]}{admin.lastName?.[0]}
-                  </div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <h3
-                    className={cn(
-                      'font-medium truncate',
-                      (admin.unreadCount || 0) > 0 ? 'text-slate-900' : 'text-slate-700'
-                    )}
-                  >
-                    {admin.name}
-                  </h3>
-                  {admin.chatId && admin.updatedAt && (
-                    <span className="text-xs text-slate-500 flex-shrink-0">
-                      {formatTime(admin.lastMessage?.createdAt || admin.updatedAt)}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  {admin.chatId ? (
-                    <>
-                      <p
-                        className={cn(
-                          'text-sm truncate',
-                          (admin.unreadCount || 0) > 0 ? 'text-slate-700 font-medium' : 'text-slate-500'
-                        )}
-                      >
-                        {formatMessagePreview(admin.lastMessage)}
-                      </p>
-                      {(admin.unreadCount || 0) > 0 && (
-                        <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
-                          {admin.unreadCount}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-sm text-slate-500 italic">
-                      Click to start conversation
-                    </p>
-                  )}
-                </div>
-              </div>
-            </button>
-          </div>
-        )}
-
         {isLoading ? (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
@@ -291,15 +235,87 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
             </div>
             <p className="text-sm font-medium text-slate-700 mb-1">
               {searchQuery 
-                ? `No ${activeTab === 'groups' ? 'groups' : 'students'} found` 
-                : `No assigned ${activeTab === 'groups' ? 'groups' : 'students'}`}
+                ? `No ${activeTab === 'admin' ? 'admin' : activeTab === 'groups' ? 'groups' : 'students'} found` 
+                : activeTab === 'admin' ? 'No admin available' : `No assigned ${activeTab === 'groups' ? 'groups' : 'students'}`}
             </p>
             <p className="text-xs text-slate-500">
               {searchQuery 
                 ? 'Try a different search term' 
-                : `Your assigned ${activeTab === 'groups' ? 'groups' : 'students'} will appear here`}
+                : activeTab === 'admin' ? 'Admin contact will appear here' : `Your assigned ${activeTab === 'groups' ? 'groups' : 'students'} will appear here`}
             </p>
           </div>
+        ) : activeTab === 'admin' ? (
+          // Admin section
+          hasAdmin && admin ? (
+            <div className="border-b border-slate-200">
+              <button
+                onClick={() => handleAdminClick(admin.id, admin.chatId || null)}
+                disabled={createDirectChat.isPending}
+                className={cn(
+                  'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
+                  activeChat?.id === admin.chatId && 'bg-primary/10 hover:bg-primary/10',
+                  createDirectChat.isPending && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {/* Avatar */}
+                <div className="relative">
+                  {admin.avatarUrl ? (
+                    <img
+                      src={admin.avatarUrl}
+                      alt={admin.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
+                      {admin.firstName?.[0]}{admin.lastName?.[0]}
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3
+                      className={cn(
+                        'font-medium truncate',
+                        (admin.unreadCount || 0) > 0 ? 'text-slate-900' : 'text-slate-700'
+                      )}
+                    >
+                      {admin.name}
+                    </h3>
+                    {admin.chatId && admin.updatedAt && (
+                      <span className="text-xs text-slate-500 flex-shrink-0">
+                        {formatTime(admin.lastMessage?.createdAt || admin.updatedAt)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    {admin.chatId ? (
+                      <>
+                        <p
+                          className={cn(
+                            'text-sm truncate',
+                            (admin.unreadCount || 0) > 0 ? 'text-slate-700 font-medium' : 'text-slate-500'
+                          )}
+                        >
+                          {formatMessagePreview(admin.lastMessage)}
+                        </p>
+                        {(admin.unreadCount || 0) > 0 && (
+                          <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
+                            {admin.unreadCount}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-slate-500 italic">
+                        Click to start conversation
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </button>
+            </div>
+          ) : null
         ) : activeTab === 'groups' ? (
           // Groups list
           groups.map((group) => {

@@ -201,6 +201,15 @@ export class ChatController {
   async getAdminForTeacher(@CurrentUser() user: JwtPayload) {
     return this.chatService.getAdminForTeacher(user.sub);
   }
+
+  /**
+   * Get admin user info for Student Chat (Student only)
+   */
+  @Get('student/admin')
+  @Roles(UserRole.STUDENT)
+  async getAdminForStudent(@CurrentUser() user: JwtPayload) {
+    return this.chatService.getAdminForStudent(user.sub);
+  }
 }
 
 

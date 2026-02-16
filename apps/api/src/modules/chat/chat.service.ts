@@ -2057,4 +2057,120 @@ export class ChatService {
       updatedAt: existingChat?.updatedAt || null,
     };
   }
+
+  /**
+   * Get admin user info for Student Chat
+   * Returns the first active admin user (or null if none exists)
+   * Also includes existing direct chat info if one exists
+   */
+  async getAdminForStudent(studentUserId: string) {
+    // Find the first active admin user
+    const adminUser = await this.prisma.user.findFirst({
+      where: {
+        role: UserRole.ADMIN,
+        status: 'ACTIVE',
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+      },
+      orderBy: {
+        createdAt: 'asc', // Get the first admin (primary admin)
+      },
+    });
+
+    if (!adminUser) {
+      return null;
+    }
+
+    // Check if a direct chat already exists between student and admin
+    const userIds = [studentUserId, adminUser.id].sort();
+    
+    const chatsWithStudent = await this.prisma.chat.findMany({
+      where: {
+        type: ChatType.DIRECT,
+        participants: {
+          some: {
+            userId: studentUserId,
+            leftAt: null,
+          },
+        },
+      },
+      include: {
+        participants: {
+          where: { leftAt: null },
+          select: {
+            userId: true,
+            lastReadAt: true,
+          },
+        },
+        messages: {
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+          where: {
+            NOT: {
+              AND: [
+                { content: null },
+                { isSystem: true },
+              ],
+            },
+          },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: { messages: true },
+        },
+      },
+    });
+
+    // Find the chat with exactly these two participants
+    const existingChat = chatsWithStudent.find((chat) => {
+      const participantUserIds = chat.participants.map(p => p.userId).sort();
+      return participantUserIds.length === 2 &&
+             participantUserIds[0] === userIds[0] &&
+             participantUserIds[1] === userIds[1];
+    });
+
+    // Get unread count if chat exists
+    let unreadCount = 0;
+    if (existingChat) {
+      const studentParticipant = existingChat.participants.find(p => p.userId === studentUserId);
+      const lastReadAt = studentParticipant?.lastReadAt;
+      
+      if (lastReadAt) {
+        unreadCount = await this.prisma.message.count({
+          where: {
+            chatId: existingChat.id,
+            createdAt: { gt: lastReadAt },
+            senderId: { not: studentUserId },
+          },
+        });
+      } else {
+        // If no lastReadAt, all messages are unread
+        unreadCount = existingChat._count.messages;
+      }
+    }
+
+    return {
+      id: adminUser.id,
+      firstName: adminUser.firstName,
+      lastName: adminUser.lastName,
+      name: `${adminUser.firstName} ${adminUser.lastName}`,
+      avatarUrl: adminUser.avatarUrl,
+      chatId: existingChat?.id || null,
+      lastMessage: existingChat?.messages[0] || null,
+      unreadCount,
+      updatedAt: existingChat?.updatedAt || null,
+    };
+  }
 }
