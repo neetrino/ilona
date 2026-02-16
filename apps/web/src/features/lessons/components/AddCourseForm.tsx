@@ -9,7 +9,7 @@ import { useMyGroups } from '@/features/groups';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/shared/lib/api';
+import { api, getErrorMessage } from '@/shared/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/shared/lib/utils';
 
@@ -176,8 +176,8 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
       setTimeout(() => {
         onOpenChange(false);
       }, 1500);
-    } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || err?.message || t('courseCreateError') || 'Failed to create course. Please try again.';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, t('courseCreateError') || 'Failed to create course. Please try again.');
       setErrorMessage(errorMsg);
       setSuccessMessage(null);
     }

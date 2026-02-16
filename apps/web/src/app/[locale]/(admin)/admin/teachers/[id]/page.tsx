@@ -11,6 +11,7 @@ import { Badge, Button, Input, Label } from '@/shared/components/ui';
 import { useTeacher, useUpdateTeacher, type UpdateTeacherDto } from '@/features/teachers';
 import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
 import type { UserStatus } from '@/types';
+import { getErrorMessage } from '@/shared/lib/api';
 
 const updateTeacherSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
@@ -221,16 +222,19 @@ export default function TeacherProfilePage() {
         setIsEditMode(false);
         setSuccessMessage(null);
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle error with more specific messages
       let message = 'Failed to update teacher. Please try again.';
       
-      if (error?.response?.data?.message) {
-        message = error.response.data.message;
-      } else if (error?.message) {
+      if (error instanceof Error) {
         message = error.message;
-      } else if (error?.response?.status === 409) {
-        message = 'This record was modified by another user. Please refresh and try again.';
+      } else if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { message?: string }; status?: number } }).response;
+        if (response?.data?.message) {
+          message = response.data.message;
+        } else if (response?.status === 409) {
+          message = 'This record was modified by another user. Please refresh and try again.';
+        }
       } else if (error?.response?.status === 400) {
         message = 'Invalid data. Please check your input and try again.';
       }

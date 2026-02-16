@@ -1,4 +1,4 @@
-import { api } from '@/shared/lib/api';
+import { api, ApiError } from '@/shared/lib/api';
 import type { UserProfile, UpdateProfileDto, ChangePasswordDto } from '../types';
 
 /**
@@ -39,19 +39,21 @@ export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
     }
     
     throw new Error('Failed to upload avatar: Invalid response from server');
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Extract user-friendly error message from API response
-    if (error?.statusCode === 413) {
-      throw new Error('File size too large. Please upload an image smaller than 5MB.');
-    }
-    if (error?.statusCode === 415) {
-      throw new Error('Invalid file type. Only JPG, PNG, WEBP, and GIF images are allowed.');
-    }
-    if (error?.statusCode === 400) {
-      throw new Error(error?.message || 'Invalid file. Please check the file and try again.');
-    }
-    if (error?.statusCode === 500) {
-      throw new Error(error?.message || 'Server error. Please try again later or contact support.');
+    if (error instanceof ApiError) {
+      if (error.statusCode === 413) {
+        throw new Error('File size too large. Please upload an image smaller than 5MB.');
+      }
+      if (error.statusCode === 415) {
+        throw new Error('Invalid file type. Only JPG, PNG, WEBP, and GIF images are allowed.');
+      }
+      if (error.statusCode === 400) {
+        throw new Error(error.message || 'Invalid file. Please check the file and try again.');
+      }
+      if (error.statusCode === 500) {
+        throw new Error(error.message || 'Server error. Please try again later or contact support.');
+      }
     }
     throw error;
   }
@@ -93,22 +95,24 @@ export async function uploadLogo(file: File): Promise<{ logoUrl: string; key: st
     }
     
     throw new Error('Failed to upload logo: Invalid response from server');
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Extract user-friendly error message from API response
-    if (error?.statusCode === 413) {
-      throw new Error('File size too large. Please upload an image smaller than 5MB.');
-    }
-    if (error?.statusCode === 415) {
-      throw new Error('Invalid file type. Only PNG, JPG, WEBP, and SVG images are allowed.');
-    }
-    if (error?.statusCode === 400) {
-      throw new Error(error?.message || 'Invalid file. Please check the file and try again.');
-    }
-    if (error?.statusCode === 500) {
-      throw new Error(error?.message || 'Server error. Please try again later or contact support.');
-    }
-    if (error?.statusCode === 403) {
-      throw new Error('You do not have permission to upload logos. Admin access required.');
+    if (error instanceof ApiError) {
+      if (error.statusCode === 413) {
+        throw new Error('File size too large. Please upload an image smaller than 5MB.');
+      }
+      if (error.statusCode === 415) {
+        throw new Error('Invalid file type. Only PNG, JPG, WEBP, and SVG images are allowed.');
+      }
+      if (error.statusCode === 400) {
+        throw new Error(error.message || 'Invalid file. Please check the file and try again.');
+      }
+      if (error.statusCode === 500) {
+        throw new Error(error.message || 'Server error. Please try again later or contact support.');
+      }
+      if (error.statusCode === 403) {
+        throw new Error('You do not have permission to upload logos. Admin access required.');
+      }
     }
     throw error;
   }

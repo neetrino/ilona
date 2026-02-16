@@ -7,6 +7,7 @@ import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle,
 import { useCreateTeacher, type CreateTeacherDto } from '@/features/teachers';
 import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from './WeeklySchedule';
 import { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/shared/lib/api';
 
 const createTeacherSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -136,9 +137,9 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
         onOpenChange(false);
         setSuccessMessage(null);
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle error
-      const message = error?.response?.data?.message || error?.message || 'Failed to create teacher. Please try again.';
+      const message = getErrorMessage(error, 'Failed to create teacher. Please try again.');
       setErrorMessage(message);
       setSuccessMessage(null);
     }

@@ -19,6 +19,7 @@ import { useTeachers } from '@/features/teachers';
 import { useGroups } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { formatCurrency } from '@/shared/lib/utils';
+import { getErrorMessage } from '@/shared/lib/api';
 
 // Component for select all checkbox with indeterminate state
 function SelectAllCheckbox({
@@ -222,8 +223,8 @@ export default function StudentsPage() {
         try {
           await deleteStudent.mutateAsync(id);
           successCount++;
-        } catch (err: any) {
-          const message = err?.response?.data?.message || err?.message || 'Failed to delete student.';
+        } catch (err: unknown) {
+          const message = getErrorMessage(err, 'Failed to delete student.');
           lastError = message;
         }
       }
@@ -244,8 +245,8 @@ export default function StudentsPage() {
       if (lastError && successCount < count) {
         setBulkDeleteError(`Deleted ${successCount} of ${count} students. ${lastError}`);
       }
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to delete students. Please try again.';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete students. Please try again.');
       setBulkDeleteError(message);
     }
   };
@@ -283,8 +284,8 @@ export default function StudentsPage() {
       setTimeout(() => {
         setDeleteSuccess(false);
       }, 3000);
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to delete student. Please try again.';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete student. Please try again.');
       setDeleteError(message);
     }
   };
@@ -314,8 +315,8 @@ export default function StudentsPage() {
       setTimeout(() => {
         setDeactivateSuccess(false);
       }, 3000);
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} student. Please try again.`;
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} student. Please try again.`);
       setDeactivateError(message);
     }
   };

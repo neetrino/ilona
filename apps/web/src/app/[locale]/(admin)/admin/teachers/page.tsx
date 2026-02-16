@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
+import { getErrorMessage } from '@/shared/lib/api';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 
@@ -299,8 +300,8 @@ export default function TeachersPage() {
       setTimeout(() => {
         setDeleteSuccess(false);
       }, 3000);
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to delete teacher. Please try again.';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete teacher. Please try again.');
       setDeleteError(message);
     }
   };
@@ -334,8 +335,8 @@ export default function TeachersPage() {
         setBulkDeleteSuccess(false);
         setDeletedCount(0);
       }, 3000);
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to delete teachers. Please try again.';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete teachers. Please try again.');
       setBulkDeleteError(message);
     }
   };
@@ -359,8 +360,8 @@ export default function TeachersPage() {
       setTimeout(() => {
         setDeactivateSuccess(false);
       }, 3000);
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} teacher. Please try again.`;
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} teacher. Please try again.`);
       setDeactivateError(message);
     }
   };

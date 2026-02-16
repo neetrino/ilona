@@ -9,6 +9,7 @@ import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
 import type { UserStatus } from '@/types';
+import { getErrorMessage } from '@/shared/lib/api';
 
 const updateStudentSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
@@ -128,9 +129,9 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
         onOpenChange(false);
         setSuccessMessage(null);
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle error
-      const message = error?.response?.data?.message || error?.message || 'Failed to update student. Please try again.';
+      const message = getErrorMessage(error, 'Failed to update student. Please try again.');
       setErrorMessage(message);
       setSuccessMessage(null);
     }

@@ -30,7 +30,12 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
 
   useEffect(() => {
     if (existingFeedbacks.length > 0) {
-      const initial: Record<string, any> = {};
+      const initial: Record<string, {
+        content: string;
+        rating?: number;
+        strengths?: string;
+        improvements?: string;
+      }> = {};
       existingFeedbacks.forEach((fb) => {
         initial[fb.studentId] = {
           content: fb.content || '',

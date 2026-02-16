@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/shared/lib/utils';
+import { getErrorMessage } from '@/shared/lib/api';
 
 interface InlineSelectProps {
   value: string | null;
@@ -61,10 +62,10 @@ export function InlineSelect({
 
     try {
       await onChange(newValue);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Revert on error
       setLocalValue(previousValue);
-      setError(err?.response?.data?.message || err?.message || 'Failed to update');
+      setError(getErrorMessage(err, 'Failed to update'));
       // Show error for 3 seconds
       setTimeout(() => setError(null), 3000);
     } finally {

@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateCenter, useCenter, type UpdateCenterDto, type Center } from '@/features/centers';
 import { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/shared/lib/api';
 
 const updateCenterSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters').optional(),
@@ -94,16 +95,9 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
         onOpenChange(false);
         setSuccessMessage(null);
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle error
-      let message = 'Failed to update center. Please try again.';
-      if (error?.message) {
-        message = Array.isArray(error.message) ? error.message[0] : error.message;
-      } else if (error?.response?.data?.message) {
-        message = Array.isArray(error.response.data.message) 
-          ? error.response.data.message[0] 
-          : error.response.data.message;
-      }
+      const message = getErrorMessage(error, 'Failed to update center. Please try again.');
       setErrorMessage(message);
       setSuccessMessage(null);
     }

@@ -8,6 +8,7 @@ import { useUpdateTeacher, useTeacher, type UpdateTeacherDto, type Teacher } fro
 import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from './WeeklySchedule';
 import { useState, useEffect } from 'react';
 import type { UserStatus } from '@/types';
+import { getErrorMessage } from '@/shared/lib/api';
 
 const updateTeacherSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
@@ -167,9 +168,9 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
         onOpenChange(false);
         setSuccessMessage(null);
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle error
-      const message = error?.response?.data?.message || error?.message || 'Failed to update teacher. Please try again.';
+      const message = getErrorMessage(error, 'Failed to update teacher. Please try again.');
       setErrorMessage(message);
       setSuccessMessage(null);
     }

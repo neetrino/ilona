@@ -13,7 +13,7 @@ import {
   removeStudentFromGroup,
   fetchMyGroups,
 } from '../api/groups.api';
-import type { GroupFilters, CreateGroupDto, UpdateGroupDto } from '../types';
+import type { Group, GroupFilters, CreateGroupDto, UpdateGroupDto, GroupsResponse } from '../types';
 import { chatKeys } from '../../chat/hooks/useChat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ApiError } from '@/shared/lib/api';
@@ -197,17 +197,19 @@ export function useToggleGroupActive() {
 
       // Optimistically update the detail query
       if (previousGroup) {
+        const group = previousGroup as Group;
         queryClient.setQueryData(groupKeys.detail(id), {
-          ...previousGroup,
-          isActive: !(previousGroup as any).isActive,
+          ...group,
+          isActive: !group.isActive,
         });
       }
 
       // Optimistically update all list queries
       previousLists.forEach(([queryKey, oldData]) => {
         if (oldData && typeof oldData === 'object' && 'items' in oldData) {
-          const items = (oldData as any).items || [];
-          const updatedItems = items.map((item: any) => {
+          const response = oldData as GroupsResponse;
+          const items = response.items || [];
+          const updatedItems = items.map((item: Group) => {
             if (item.id === id) {
               return {
                 ...item,
@@ -217,7 +219,7 @@ export function useToggleGroupActive() {
             return item;
           });
           queryClient.setQueryData(queryKey, {
-            ...oldData,
+            ...response,
             items: updatedItems,
           });
         }
