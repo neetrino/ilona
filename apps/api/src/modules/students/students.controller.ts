@@ -80,14 +80,14 @@ export class StudentsController {
 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async findById(@Param('id') id: string) {
-    return this.studentsService.findById(id);
+  async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.studentsService.findById(id, user?.sub, user?.role);
   }
 
   @Get(':id/statistics')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async getStatistics(@Param('id') id: string) {
-    return this.studentsService.getStatistics(id);
+  async getStatistics(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.studentsService.getStatistics(id, user?.sub, user?.role);
   }
 
   @Post()

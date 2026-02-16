@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
@@ -314,7 +315,7 @@ export class StudentsService {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, currentUserId?: string, userRole?: UserRole) {
     const student = await this.prisma.student.findUnique({
       where: { id },
       include: {
@@ -373,6 +374,31 @@ export class StudentsService {
 
     if (!student) {
       throw new NotFoundException(`Student with ID ${id} not found`);
+    }
+
+    // Authorization check: If user is a teacher, verify they are assigned to this student
+    if (userRole === UserRole.TEACHER && currentUserId) {
+      // Get teacher by userId
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId: currentUserId },
+        select: { id: true },
+      });
+
+      if (!teacher) {
+        throw new ForbiddenException('Teacher profile not found');
+      }
+
+      // Check if teacher is assigned to this student
+      // Teacher is assigned if:
+      // 1. Student has direct teacherId assignment matching this teacher, OR
+      // 2. Student is in a group that has this teacher assigned
+      const isAssigned =
+        student.teacherId === teacher.id ||
+        (student.group?.teacherId === teacher.id);
+
+      if (!isAssigned) {
+        throw new ForbiddenException('You do not have access to this student');
+      }
     }
 
     return student;
@@ -678,8 +704,8 @@ export class StudentsService {
     return { success: true };
   }
 
-  async getStatistics(id: string) {
-    await this.findById(id);
+  async getStatistics(id: string, currentUserId?: string, userRole?: UserRole) {
+    await this.findById(id, currentUserId, userRole);
 
     // Get attendance stats
     const totalAttendances = await this.prisma.attendance.count({

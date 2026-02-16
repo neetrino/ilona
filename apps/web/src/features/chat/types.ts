@@ -37,6 +37,11 @@ export interface Message {
   metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
+  navigation?: {
+    conversationId: string;
+    groupId: string;
+    messageId: string;
+  };
 }
 
 export interface Chat {
@@ -55,6 +60,7 @@ export interface Chat {
   };
   participants: ChatParticipant[];
   lastMessage?: Message | null;
+  lastMessageAt?: string; // Timestamp of last message for sorting
   unreadCount?: number;
   isActive?: boolean;
   createdAt: string;

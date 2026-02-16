@@ -8,6 +8,9 @@ import { CreateTeacherDto, UpdateTeacherDto } from './dto';
 import { Prisma, UserRole, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
+// Constant for deduction amount per missing action (in AMD)
+const DEDUCTION_PER_MISSING_ACTION = 1500;
+
 @Injectable()
 export class TeachersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -204,25 +207,143 @@ export class TeachersService {
       }
     });
 
-    // Apply pagination
-    const total = sortedTeachers.length;
-    const paginatedTeachers = sortedTeachers.slice(skip, skip + take);
+    // Calculate obligations, deduction, and final cost for each teacher
+    // Fetch completed lessons for all teachers to calculate obligations
+    const allCompletedLessons = await this.prisma.lesson.findMany({
+      where: {
+        teacherId: { in: teacherIds },
+        status: 'COMPLETED',
+      },
+      select: {
+        teacherId: true,
+        duration: true,
+        absenceMarked: true,
+        feedbacksCompleted: true,
+        voiceSent: true,
+        textSent: true,
+      },
+    });
 
-    // Format response to match expected structure
-    const items = paginatedTeachers.map((teacher) => ({
-      ...teacher,
-      groups: teacher.groups.map((group) => ({
-        id: group.id,
-        name: group.name,
-        level: group.level,
-        center: group.center ? {
-          id: group.center.id,
-          name: group.center.name,
-        } : undefined,
-      })),
-      // Add all unique centers for this teacher (from all groups, not just the first 3)
-      centers: teacherCentersMap.get(teacher.id) || [],
-    }));
+    // Calculate obligations per teacher
+    const teacherObligationsMap = new Map<string, {
+      completed: number;
+      total: number;
+      deductionAmount: number;
+    }>();
+
+    teacherIds.forEach(teacherId => {
+      const teacherLessons = allCompletedLessons.filter(l => l.teacherId === teacherId);
+      
+      if (teacherLessons.length === 0) {
+        // No lessons, show 0/4 with 0 deduction
+        teacherObligationsMap.set(teacherId, {
+          completed: 0,
+          total: 0,
+          deductionAmount: 0,
+        });
+      } else {
+        // Calculate total obligations across all lessons
+        let totalCompleted = 0;
+        let totalRequired = 0;
+
+        teacherLessons.forEach(lesson => {
+          const obligations = [
+            lesson.absenceMarked ?? false,
+            lesson.feedbacksCompleted ?? false,
+            lesson.voiceSent ?? false,
+            lesson.textSent ?? false,
+          ];
+          
+          totalRequired += 4;
+          totalCompleted += obligations.filter(Boolean).length;
+        });
+
+        // Calculate average actions completed per lesson (for display as X/4)
+        const avgCompletedPerLesson = Math.round(totalCompleted / teacherLessons.length);
+        
+        // Total missing actions across all lessons
+        const missingCount = totalRequired - totalCompleted;
+        const deductionAmount = missingCount * DEDUCTION_PER_MISSING_ACTION;
+
+        teacherObligationsMap.set(teacherId, {
+          completed: avgCompletedPerLesson, // Average per lesson for X/4 display
+          total: 4, // Always 4 actions required
+          deductionAmount,
+        });
+      }
+    });
+
+    // Format response to match expected structure (with obligations)
+    const teachersWithObligations = sortedTeachers.map((teacher) => {
+      const obligations = teacherObligationsMap.get(teacher.id) || {
+        completed: 0,
+        total: 0,
+        deductionAmount: 0,
+      };
+      
+      // Calculate base salary (hourly rate * total hours from completed lessons)
+      const teacherLessonsWithDuration = allCompletedLessons.filter(l => l.teacherId === teacher.id);
+      const totalHours = teacherLessonsWithDuration.reduce((sum, l) => sum + (l.duration || 60) / 60, 0);
+      const baseSalary = totalHours * Number(teacher.hourlyRate || 0);
+      
+      // Final cost = base salary - deduction
+      const finalCost = Math.max(0, baseSalary - obligations.deductionAmount);
+
+      return {
+        ...teacher,
+        groups: teacher.groups.map((group) => ({
+          id: group.id,
+          name: group.name,
+          level: group.level,
+          center: group.center ? {
+            id: group.center.id,
+            name: group.center.name,
+          } : undefined,
+        })),
+        // Add all unique centers for this teacher (from all groups, not just the first 3)
+        centers: teacherCentersMap.get(teacher.id) || [],
+        // Add obligation fields
+        obligationsDoneCount: obligations.completed,
+        obligationsTotal: 4, // Always 4 actions required
+        deductionAmount: obligations.deductionAmount,
+        finalCost,
+      };
+    });
+
+    // Apply sorting again after adding obligation data (if sortBy is for obligation/deduction/cost)
+    let finalSortedTeachers = teachersWithObligations;
+    if (sortBy && ['obligation', 'deduction', 'cost'].includes(sortBy)) {
+      finalSortedTeachers = [...teachersWithObligations].sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortBy) {
+          case 'obligation':
+            aValue = a.obligationsDoneCount ?? 0;
+            bValue = b.obligationsDoneCount ?? 0;
+            break;
+          case 'deduction':
+            aValue = a.deductionAmount ?? 0;
+            bValue = b.deductionAmount ?? 0;
+            break;
+          case 'cost':
+            aValue = a.finalCost ?? 0;
+            bValue = b.finalCost ?? 0;
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    // Apply pagination
+    const total = finalSortedTeachers.length;
+    const paginatedTeachers = finalSortedTeachers.slice(skip, skip + take);
+    const items = paginatedTeachers;
 
     return {
       items,

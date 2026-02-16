@@ -82,6 +82,35 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
         // Successfully loaded chat from URL - restore it
         setActiveChat(chatFromUrl);
         setMobileListVisible(false);
+        
+        // Auto-select the correct tab based on chat type
+        if (chatFromUrl.type === 'GROUP' && chatFromUrl.groupId) {
+          // Group chat - select groups tab
+          if (activeTab !== 'groups') {
+            setActiveTab('groups');
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('tab', 'groups');
+            router.replace(`${pathname}?${params.toString()}`);
+          }
+        } else if (chatFromUrl.type === 'DIRECT') {
+          // Direct chat - determine if it's a student or teacher
+          const otherParticipant = chatFromUrl.participants.find(p => p.userId !== user?.id);
+          if (otherParticipant) {
+            const otherUserRole = otherParticipant.user.role;
+            if (otherUserRole === 'STUDENT' && activeTab !== 'students') {
+              setActiveTab('students');
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('tab', 'students');
+              router.replace(`${pathname}?${params.toString()}`);
+            } else if (otherUserRole === 'TEACHER' && activeTab !== 'teachers') {
+              setActiveTab('teachers');
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('tab', 'teachers');
+              router.replace(`${pathname}?${params.toString()}`);
+            }
+          }
+        }
+        
         isInitialMount.current = false;
       } else if (!isLoadingChatFromUrl && isChatError) {
         // Chat failed to load - clear conversationId from URL and mark as not initial mount
@@ -95,7 +124,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
       // No conversationId in URL, just mark as not initial mount
       isInitialMount.current = false;
     }
-  }, [conversationIdFromUrl, chatFromUrl, isLoadingChatFromUrl, isChatError, setActiveChat, setMobileListVisible, searchParams, router, pathname]);
+  }, [conversationIdFromUrl, chatFromUrl, isLoadingChatFromUrl, isChatError, setActiveChat, setMobileListVisible, searchParams, router, pathname, activeTab, user]);
 
   // Sync URL when activeChat changes (but skip on initial mount)
   useEffect(() => {

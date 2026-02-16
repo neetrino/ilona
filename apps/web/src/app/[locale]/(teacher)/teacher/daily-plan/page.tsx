@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
   useTodayLessons,
@@ -11,6 +12,7 @@ import {
   type Lesson,
 } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
+import { getWeekStart, getWeekEnd, formatDateString, formatWeekRange } from '@/features/attendance/utils/dateUtils';
 
 type ViewMode = 'today' | 'week';
 type LessonStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'MISSED';
@@ -169,20 +171,69 @@ function LessonCard({
 }
 
 export default function TeacherDailyPlanPage() {
-  const [viewMode, setViewMode] = useState<ViewMode>('today');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  // Initialize view mode from URL query params, with fallback to 'today'
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const viewFromUrl = searchParams.get('view');
+    if (viewFromUrl === 'week' || viewFromUrl === 'today') {
+      return viewFromUrl;
+    }
+    return 'today'; // Default to today view
+  });
 
-  // Get date range for week view
-  const today = new Date();
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay() + 1); // Monday
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6); // Sunday
+  // Sync view mode from URL (for browser back/forward navigation)
+  useEffect(() => {
+    const viewFromUrl = searchParams.get('view');
+    if (viewFromUrl === 'week' || viewFromUrl === 'today') {
+      setViewMode(viewFromUrl);
+    } else if (!viewFromUrl) {
+      setViewMode('today');
+    }
+  }, [searchParams]);
+
+  // Get current date for display and calculations
+  // We use a fresh date on each render for display, but memoize week calculations
+  const currentDate = useMemo(() => new Date(), []);
+  
+  // Memoize week date range calculations (stable for the session)
+  const weekDateRange = useMemo(() => {
+    const weekStart = getWeekStart(currentDate);
+    const weekEnd = getWeekEnd(currentDate);
+    return {
+      start: weekStart,
+      end: weekEnd,
+      startStr: formatDateString(weekStart),
+      endStr: formatDateString(weekEnd),
+    };
+  }, [currentDate]);
+  
+  // For display, use a fresh date to show current date
+  const displayDate = new Date();
+
+  // Update URL when view mode changes
+  const updateViewModeInUrl = (mode: ViewMode) => {
+    // Update state immediately for responsive UI
+    setViewMode(mode);
+    
+    // Update URL to persist the selection
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode === 'today') {
+      // Remove 'view' param for default today view to keep URL clean
+      params.delete('view');
+    } else {
+      params.set('view', mode);
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   // Fetch data
-  const { data: todayLessons = [], isLoading: isLoadingToday } = useTodayLessons(viewMode === 'today');
-  const { data: weekLessons, isLoading: isLoadingWeek } = useMyLessons(
-    weekStart.toISOString(),
-    weekEnd.toISOString(),
+  const { data: todayLessons = [], isLoading: isLoadingToday, error: errorToday, refetch: refetchToday } = useTodayLessons(viewMode === 'today');
+  const { data: weekLessons, isLoading: isLoadingWeek, error: errorWeek, refetch: refetchWeek } = useMyLessons(
+    weekDateRange.startStr,
+    weekDateRange.endStr,
     viewMode === 'week'
   );
 
@@ -192,7 +243,10 @@ export default function TeacherDailyPlanPage() {
   const markVocabulary = useMarkVocabularySent();
 
   const isLoading = viewMode === 'today' ? isLoadingToday : isLoadingWeek;
-  const lessons = viewMode === 'today' ? todayLessons : (weekLessons?.items || []);
+  const error = viewMode === 'today' ? errorToday : errorWeek;
+  const lessons = viewMode === 'today' 
+    ? (Array.isArray(todayLessons) ? todayLessons : [])
+    : (Array.isArray(weekLessons?.items) ? weekLessons.items : []);
 
   // Sort lessons by time
   const sortedLessons = [...lessons].sort(
@@ -231,7 +285,7 @@ export default function TeacherDailyPlanPage() {
           {/* View Toggle */}
           <div className="flex bg-slate-100 p-1 rounded-lg">
             <button
-              onClick={() => setViewMode('today')}
+              onClick={() => updateViewModeInUrl('today')}
               className={cn(
                 'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                 viewMode === 'today'
@@ -242,7 +296,7 @@ export default function TeacherDailyPlanPage() {
               Today
             </button>
             <button
-              onClick={() => setViewMode('week')}
+              onClick={() => updateViewModeInUrl('week')}
               className={cn(
                 'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                 viewMode === 'week'
@@ -280,13 +334,37 @@ export default function TeacherDailyPlanPage() {
         {/* Date Display */}
         <p className="text-slate-600">
           {viewMode === 'today'
-            ? today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-            : `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+            ? displayDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            : formatWeekRange(currentDate)}
         </p>
       </div>
 
       {/* Lessons */}
-      {isLoading ? (
+      {error ? (
+        <div className="text-center py-12 bg-white rounded-xl border border-red-200">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-slate-800 mb-2">Failed to load lessons</h3>
+          <p className="text-sm text-slate-500 mb-4">
+            {error instanceof Error ? error.message : 'An error occurred while loading your lessons.'}
+          </p>
+          <button
+            onClick={() => {
+              if (viewMode === 'today') {
+                refetchToday();
+              } else {
+                refetchWeek();
+              }
+            }}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+          >
+            Retry
+          </button>
+        </div>
+      ) : isLoading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="p-4 bg-white rounded-xl border border-slate-200 animate-pulse">

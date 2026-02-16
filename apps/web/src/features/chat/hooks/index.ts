@@ -9,6 +9,10 @@ export {
   useAdminStudents,
   useAdminTeachers,
   useAdminGroups,
+  useTeacherGroups,
+  useTeacherStudents,
+  useTeacherAdmin,
+  useStudentAdmin,
   chatKeys,
 } from './useChat';
 

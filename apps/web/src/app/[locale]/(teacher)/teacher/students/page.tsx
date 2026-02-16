@@ -324,7 +324,7 @@ export default function TeacherStudentsPage() {
 
                         <div className="flex items-center gap-2">
                           <Link
-                            href={`/${locale}/teacher/students/${student.id}`}
+                            href={`/${locale}/teacher/students/${student.id}?${searchParams.toString()}`}
                             className="px-3 py-1.5 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
                           >
                             View Profile

@@ -1,20 +1,37 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Badge, Button } from '@/shared/components/ui';
 import { useStudent, useStudentStatistics } from '@/features/students';
 import { formatCurrency } from '@/shared/lib/utils';
+import { ApiError } from '@/shared/lib/api';
 
 export default function TeacherStudentProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const studentId = params.id as string;
   const locale = params.locale as string;
 
   const { data: student, isLoading, error, refetch } = useStudent(studentId);
   const { data: statistics, isLoading: isLoadingStats } = useStudentStatistics(studentId, !!student);
+
+  // Check if error is 403 (Forbidden)
+  const isForbidden = error instanceof ApiError && error.statusCode === 403;
+  const isNotFound = error instanceof ApiError && error.statusCode === 404;
+
+  // Build back URL preserving search/filter state
+  const getBackUrl = () => {
+    const groupId = searchParams.get('groupId');
+    const search = searchParams.get('search');
+    const params = new URLSearchParams();
+    if (groupId) params.set('groupId', groupId);
+    if (search) params.set('search', search);
+    const query = params.toString();
+    return query ? `/${locale}/teacher/students?${query}` : `/${locale}/teacher/students`;
+  };
 
   // Refetch data when page becomes visible
   useEffect(() => {
@@ -51,23 +68,39 @@ export default function TeacherStudentProfilePage() {
         title="Student Profile" 
         subtitle="Error loading student information"
       >
-        <div className="bg-white rounded-xl border border-red-200 p-6">
+        <div className={`bg-white rounded-xl border p-6 ${
+          isForbidden ? 'border-amber-200' : 'border-red-200'
+        }`}>
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-red-50 rounded-xl">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className={`p-3 rounded-xl ${
+              isForbidden ? 'bg-amber-50' : 'bg-red-50'
+            }`}>
+              {isForbidden ? (
+                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">Student Not Found</h3>
+              <h3 className="font-semibold text-slate-800 mb-2">
+                {isForbidden ? 'Access Denied' : isNotFound ? 'Student Not Found' : 'Error Loading Student'}
+              </h3>
               <p className="text-sm text-slate-500 mb-4">
-                {error 
-                  ? 'Failed to load student information. Please try again later.'
-                  : 'The student you are looking for does not exist or has been removed.'}
+                {isForbidden
+                  ? 'You do not have permission to view this student. You can only view profiles of students assigned to you.'
+                  : isNotFound
+                  ? 'The student you are looking for does not exist or has been removed.'
+                  : error instanceof ApiError
+                  ? error.message || 'Failed to load student information. Please try again later.'
+                  : 'Failed to load student information. Please try again later.'}
               </p>
               <Button 
                 variant="outline" 
-                onClick={() => router.push(`/${locale}/teacher/students`)}
+                onClick={() => router.push(getBackUrl())}
               >
                 Back to Students
               </Button>
@@ -97,7 +130,7 @@ export default function TeacherStudentProfilePage() {
           <Button 
             variant="ghost" 
             type="button"
-            onClick={() => router.push(`/${locale}/teacher/students`)}
+            onClick={() => router.push(getBackUrl())}
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

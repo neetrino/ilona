@@ -1,11 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { useMyLessons, type Lesson } from '@/features/lessons';
+import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
+import { useLessons, type Lesson } from '@/features/lessons';
+import { AddCourseForm } from '@/features/lessons/components/AddCourseForm';
+import { EditLessonForm } from '@/features/lessons/components/EditLessonForm';
+import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/shared/lib/utils';
+import { useTranslations } from 'next-intl';
 
-type ViewMode = 'week' | 'month';
+type ViewMode = 'week' | 'month' | 'list';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -96,31 +102,128 @@ function LessonBlock({ lesson }: { lesson: Lesson }) {
 }
 
 export default function TeacherCalendarPage() {
-  const [viewMode, setViewMode] = useState<ViewMode>('week');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const t = useTranslations('calendar');
+  const tCommon = useTranslations('common');
+  
+  // Initialize view mode from URL query params, with fallback to 'list'
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const viewFromUrl = searchParams.get('view');
+    if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
+      return viewFromUrl;
+    }
+    return 'list'; // Default to list view
+  });
+  
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<string>('scheduledAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  
+  // Update URL when view mode changes
+  const updateViewModeInUrl = (mode: ViewMode) => {
+    // Update state immediately for responsive UI
+    setViewMode(mode);
+    
+    // Update URL to persist the selection
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode === 'list') {
+      // Remove 'view' param for default list view to keep URL clean
+      params.delete('view');
+    } else {
+      params.set('view', mode);
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
+  
+  // Sync view mode from URL (for browser back/forward navigation)
+  useEffect(() => {
+    const viewFromUrl = searchParams.get('view');
+    if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
+      setViewMode(viewFromUrl);
+    } else if (!viewFromUrl) {
+      setViewMode('list');
+    }
+  }, [searchParams]);
 
   // Calculate date range
-  const weekDates = getWeekDates(new Date(currentDate));
-  const monthDates = getMonthDates(new Date(currentDate));
+  const weekDates = useMemo(() => getWeekDates(new Date(currentDate)), [currentDate]);
+  const monthDates = useMemo(() => getMonthDates(new Date(currentDate)), [currentDate]);
   
-  const dateFrom = viewMode === 'week' ? weekDates[0] : new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-  const dateTo = viewMode === 'week' ? weekDates[6] : new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  // For list view, show lessons from today onwards (no past lessons by default)
+  // For week view, show the week
+  // For month view, show the month
+  const dateFrom = useMemo(() => {
+    if (viewMode === 'week') {
+      return weekDates[0];
+    } else if (viewMode === 'list') {
+      // Start from today (beginning of today)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return today;
+    } else {
+      return new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    }
+  }, [viewMode, weekDates, currentDate]);
+  
+  const dateTo = useMemo(() => {
+    if (viewMode === 'week') {
+      return weekDates[6];
+    } else if (viewMode === 'list') {
+      // Show 3 months forward from today
+      const today = new Date();
+      today.setMonth(today.getMonth() + 3);
+      today.setDate(0); // Last day of the month
+      return today;
+    } else {
+      return new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    }
+  }, [viewMode, weekDates, currentDate]);
 
-  // Fetch lessons
-  const { data: lessonsData, isLoading } = useMyLessons(
-    dateFrom.toISOString(),
-    dateTo.toISOString()
-  );
+  // Format dates for API (use local date to avoid timezone shifts)
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Handle sorting
+  const handleSort = (key: string) => {
+    if (sortBy === key) {
+      // Toggle sort order if clicking the same column
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new sort column and default to ascending
+      setSortBy(key);
+      setSortOrder('asc');
+    }
+  };
+
+  // Fetch lessons using main endpoint (automatically scoped by backend for teachers)
+  const { data: lessonsData, isLoading } = useLessons({
+    dateFrom: formatDate(dateFrom),
+    dateTo: formatDate(dateTo),
+    take: 100,
+    sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
+    sortOrder: sortBy === 'scheduledAt' ? sortOrder : undefined,
+  });
 
   const lessons = lessonsData?.items || [];
 
   // Group lessons by date
-  const lessonsByDate = lessons.reduce((acc, lesson) => {
-    const date = new Date(lesson.scheduledAt).toISOString().split('T')[0];
-    if (!acc[date]) acc[date] = [];
-    acc[date].push(lesson);
-    return acc;
-  }, {} as Record<string, Lesson[]>);
+  const lessonsByDate = useMemo(() => {
+    const grouped: Record<string, Lesson[]> = {};
+    lessons.forEach(lesson => {
+      const dateKey = lesson.scheduledAt.split('T')[0];
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push(lesson);
+    });
+    return grouped;
+  }, [lessons]);
 
   const goToToday = () => setCurrentDate(new Date());
   
@@ -143,8 +246,8 @@ export default function TeacherCalendarPage() {
 
   return (
     <DashboardLayout
-      title="My Calendar"
-      subtitle="View your teaching schedule."
+      title={t('title') || 'My Calendar'}
+      subtitle={t('subtitle') || 'View your teaching schedule.'}
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -172,57 +275,109 @@ export default function TeacherCalendarPage() {
             onClick={goToToday}
             className="ml-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Today
+            {t('today') || 'Today'}
           </button>
         </div>
 
-        <div className="flex bg-slate-100 p-1 rounded-lg">
-          <button
-            onClick={() => setViewMode('week')}
-            className={cn(
-              'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-              viewMode === 'week' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
-            )}
-          >
-            Week
-          </button>
-          <button
-            onClick={() => setViewMode('month')}
-            className={cn(
-              'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-              viewMode === 'month' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
-            )}
-          >
-            Month
-          </button>
+        <div className="flex items-center gap-3">
+          <div className="flex bg-slate-100 p-1 rounded-lg">
+            <button
+              onClick={() => updateViewModeInUrl('list')}
+              className={cn(
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                viewMode === 'list' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+              )}
+            >
+              {t('list') || 'List'}
+            </button>
+            <button
+              onClick={() => updateViewModeInUrl('week')}
+              className={cn(
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                viewMode === 'week' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+              )}
+            >
+              {t('week') || 'Week'}
+            </button>
+            <button
+              onClick={() => updateViewModeInUrl('month')}
+              className={cn(
+                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                viewMode === 'month' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+              )}
+            >
+              {t('month') || 'Month'}
+            </button>
+          </div>
+          {viewMode === 'list' && (
+            <Button
+              onClick={() => setIsAddCourseOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {t('addCourse') || 'Add Course'}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mb-4 text-sm">
-        <div className="flex items-center gap-1">
-          <StatusDot status="SCHEDULED" />
-          <span className="text-slate-600">Scheduled</span>
+      {viewMode !== 'list' && (
+        <div className="flex items-center gap-4 mb-4 text-sm">
+          <div className="flex items-center gap-1">
+            <StatusDot status="SCHEDULED" />
+            <span className="text-slate-600">{t('scheduled') || 'Scheduled'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <StatusDot status="IN_PROGRESS" />
+            <span className="text-slate-600">{t('inProgress') || 'In Progress'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <StatusDot status="COMPLETED" />
+            <span className="text-slate-600">{t('completed') || 'Completed'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <StatusDot status="CANCELLED" />
+            <span className="text-slate-600">{t('cancelled') || 'Cancelled'}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <StatusDot status="IN_PROGRESS" />
-          <span className="text-slate-600">In Progress</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <StatusDot status="COMPLETED" />
-          <span className="text-slate-600">Completed</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <StatusDot status="CANCELLED" />
-          <span className="text-slate-600">Cancelled</span>
-        </div>
-      </div>
+      )}
 
       {/* Calendar */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        {isLoading ? (
-          <div className="p-8 text-center text-slate-500">Loading...</div>
-        ) : viewMode === 'week' ? (
+      {viewMode === 'list' ? (
+        <>
+          <LessonListTable
+            lessons={lessons}
+            isLoading={isLoading}
+            onEdit={(lessonId) => setEditingLessonId(lessonId)}
+            onObligationClick={(lessonId, obligation) => {
+              router.push(`/teacher/calendar/${lessonId}?tab=${obligation}`);
+            }}
+            hideTeacherColumn={true}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+          />
+          <AddCourseForm
+            open={isAddCourseOpen}
+            onOpenChange={setIsAddCourseOpen}
+          />
+          {editingLessonId && (
+            <EditLessonForm
+              open={!!editingLessonId}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setEditingLessonId(null);
+                }
+              }}
+              lessonId={editingLessonId}
+            />
+          )}
+        </>
+      ) : (
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          {isLoading ? (
+            <div className="p-8 text-center text-slate-500">{tCommon('loading')}</div>
+          ) : viewMode === 'week' ? (
           /* Week View */
           <div className="grid grid-cols-7 divide-x divide-slate-200">
             {weekDates.map((date, index) => {
@@ -251,7 +406,7 @@ export default function TeacherCalendarPage() {
                         <LessonBlock key={lesson.id} lesson={lesson} />
                       ))}
                     {dayLessons.length === 0 && (
-                      <p className="text-xs text-slate-400 text-center py-4">No lessons</p>
+                      <p className="text-xs text-slate-400 text-center py-4">{t('noLessons') || 'No lessons'}</p>
                     )}
                   </div>
                 </div>
@@ -313,8 +468,9 @@ export default function TeacherCalendarPage() {
               ))}
             </div>
           </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </DashboardLayout>
   );
 }

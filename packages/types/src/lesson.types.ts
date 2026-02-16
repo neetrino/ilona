@@ -23,6 +23,12 @@ export interface Lesson {
   vocabularySent: boolean;
   vocabularySentAt?: Date | null;
   feedbacksCompleted: boolean;
+  absenceMarked: boolean;
+  absenceMarkedAt?: Date | null;
+  voiceSent: boolean;
+  voiceSentAt?: Date | null;
+  textSent: boolean;
+  textSentAt?: Date | null;
   completedAt?: Date | null;
   notes?: string | null;
   createdAt: Date;

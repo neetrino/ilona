@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
   fetchChats,
   fetchChat,
@@ -10,8 +11,12 @@ import {
   fetchAdminTeachers,
   fetchAdminGroups,
   fetchGroupChat,
+  fetchTeacherGroups,
+  fetchTeacherStudents,
+  fetchTeacherAdmin,
+  fetchStudentAdmin,
 } from '../api/chat.api';
-import type { AdminChatUser, AdminChatGroup } from '../api/chat.api';
+import type { AdminChatUser, AdminChatGroup, TeacherGroup, TeacherStudent, TeacherAdmin, StudentAdmin } from '../api/chat.api';
 
 // Query keys
 export const chatKeys = {
@@ -25,6 +30,12 @@ export const chatKeys = {
   adminStudents: (search?: string) => [...chatKeys.all, 'admin', 'students', search] as const,
   adminTeachers: (search?: string) => [...chatKeys.all, 'admin', 'teachers', search] as const,
   adminGroups: (search?: string) => [...chatKeys.all, 'admin', 'groups', search] as const,
+  // Teacher chat lists
+  teacherGroups: (search?: string) => [...chatKeys.all, 'teacher', 'groups', search] as const,
+  teacherStudents: (search?: string) => [...chatKeys.all, 'teacher', 'students', search] as const,
+  teacherAdmin: () => [...chatKeys.all, 'teacher', 'admin'] as const,
+  // Student chat lists
+  studentAdmin: () => [...chatKeys.all, 'student', 'admin'] as const,
 };
 
 /**
@@ -70,7 +81,12 @@ export function useCreateDirectChat() {
   return useMutation({
     mutationFn: (participantId: string) => createDirectChat(participantId),
     onSuccess: () => {
+      // Invalidate all chat-related queries to ensure both sides see the conversation
       queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+      // Invalidate teacher-specific queries
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'teacher'] });
+      // Invalidate admin-specific queries
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
     },
   });
 }
@@ -82,6 +98,7 @@ export function useAddMessageToCache() {
   const queryClient = useQueryClient();
 
   return (chatId: string, message: unknown) => {
+    // Update messages cache
     queryClient.setQueryData(
       chatKeys.messages(chatId),
       (oldData: { pages: { items: unknown[] }[] } | undefined) => {
@@ -102,8 +119,50 @@ export function useAddMessageToCache() {
       }
     );
 
-    // Also update the chat list with the last message
-    queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+    // Update chat list cache with new lastMessage and lastMessageAt
+    // This prevents unnecessary refetches and keeps the conversation at the top
+    queryClient.setQueryData(
+      chatKeys.list(),
+      (oldData: Array<{ id: string; lastMessage?: unknown; lastMessageAt?: string; unreadCount?: number; updatedAt: string }> | undefined) => {
+        if (!oldData) return oldData;
+
+        const messageWithDate = message as { createdAt: string; senderId?: string };
+        const now = new Date().toISOString();
+        const lastMessageAt = messageWithDate?.createdAt || now;
+
+        // Get current user to check if message is from another user
+        const { user } = useAuthStore.getState();
+        const isFromOtherUser = messageWithDate?.senderId && messageWithDate.senderId !== user?.id;
+
+        return oldData.map((chat) => {
+          if (chat.id === chatId) {
+            // Update lastMessage, lastMessageAt, and updatedAt
+            // Also increment unreadCount if message is from another user
+            const newUnreadCount = isFromOtherUser 
+              ? (chat.unreadCount || 0) + 1 
+              : chat.unreadCount;
+
+            return {
+              ...chat,
+              lastMessage: message,
+              lastMessageAt,
+              updatedAt: now,
+              unreadCount: newUnreadCount,
+            };
+          }
+          return chat;
+        }).sort((a, b) => {
+          // Re-sort by lastMessageAt (newest first)
+          const aTime = a.lastMessageAt 
+            ? new Date(a.lastMessageAt).getTime()
+            : (a.lastMessage && 'createdAt' in a.lastMessage ? new Date((a.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(a.updatedAt).getTime());
+          const bTime = b.lastMessageAt 
+            ? new Date(b.lastMessageAt).getTime()
+            : (b.lastMessage && 'createdAt' in b.lastMessage ? new Date((b.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(b.updatedAt).getTime());
+          return bTime - aTime; // DESC order
+        });
+      }
+    );
   };
 }
 
@@ -158,6 +217,28 @@ export function useRemoveMessageFromCache() {
 }
 
 /**
+ * Hook to update chat unread count in cache after mark-as-read
+ * This prevents infinite loops by updating cache directly instead of invalidating
+ */
+export function useUpdateChatUnreadCount() {
+  const queryClient = useQueryClient();
+
+  return (chatId: string, unreadCount: number) => {
+    // Update the chat list cache
+    queryClient.setQueryData(
+      chatKeys.list(),
+      (oldData: Array<{ id: string; unreadCount?: number }> | undefined) => {
+        if (!oldData) return oldData;
+
+        return oldData.map((chat) =>
+          chat.id === chatId ? { ...chat, unreadCount } : chat
+        );
+      }
+    );
+  };
+}
+
+/**
  * Admin-only: Hook to fetch students list for chat
  */
 export function useAdminStudents(search?: string) {
@@ -186,6 +267,54 @@ export function useAdminGroups(search?: string) {
   return useQuery({
     queryKey: chatKeys.adminGroups(search),
     queryFn: () => fetchAdminGroups(search),
+    staleTime: 60 * 1000, // Cache for 1 minute
+  });
+}
+
+/**
+ * Teacher-only: Hook to fetch teacher's assigned groups
+ */
+export function useTeacherGroups(search?: string) {
+  return useQuery({
+    queryKey: chatKeys.teacherGroups(search),
+    queryFn: () => fetchTeacherGroups(search),
+    // Set staleTime to 0 to ensure fresh data after mutations
+    // This prevents stale cache from hiding newly assigned groups
+    staleTime: 0,
+    // Refetch on window focus to catch updates from other tabs/windows
+    refetchOnWindowFocus: true,
+  });
+}
+
+/**
+ * Teacher-only: Hook to fetch teacher's assigned students
+ */
+export function useTeacherStudents(search?: string) {
+  return useQuery({
+    queryKey: chatKeys.teacherStudents(search),
+    queryFn: () => fetchTeacherStudents(search),
+    staleTime: 60 * 1000, // Cache for 1 minute
+  });
+}
+
+/**
+ * Teacher-only: Hook to fetch admin user info for direct messaging
+ */
+export function useTeacherAdmin() {
+  return useQuery({
+    queryKey: chatKeys.teacherAdmin(),
+    queryFn: () => fetchTeacherAdmin(),
+    staleTime: 60 * 1000, // Cache for 1 minute
+  });
+}
+
+/**
+ * Student-only: Hook to fetch admin user info for direct messaging
+ */
+export function useStudentAdmin() {
+  return useQuery({
+    queryKey: chatKeys.studentAdmin(),
+    queryFn: () => fetchStudentAdmin(),
     staleTime: 60 * 1000, // Cache for 1 minute
   });
 }

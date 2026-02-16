@@ -4,7 +4,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLessons, useStartLesson, useCompleteLesson, type Lesson } from '@/features/lessons';
-import { useGroups } from '@/features/groups';
+import { useMyGroups } from '@/features/groups';
 
 export default function TeacherDashboardPage() {
   const { user } = useAuthStore();
@@ -25,15 +25,14 @@ export default function TeacherDashboardPage() {
     take: 20,
   });
 
-  // Fetch teacher's groups
-  const { data: groupsData } = useGroups({ take: 10 });
+  // Fetch teacher's groups - use canonical endpoint for consistency
+  const { data: groups = [] } = useMyGroups();
 
   // Mutations
   const startLesson = useStartLesson();
   const completeLesson = useCompleteLesson();
 
   const todayLessons = lessonsData?.items || [];
-  const groups = groupsData?.items || [];
 
   // Calculate stats
   const totalStudents = groups.reduce((sum, g) => sum + (g._count?.students || 0), 0);

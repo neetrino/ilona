@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { useRouter, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button, Badge } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -13,11 +14,19 @@ type SettingsTab = 'security' | 'notifications' | 'system';
 
 export default function SettingsPage() {
   const { user, logout } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<SettingsTab>('security');
   const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('settings');
   const tCommon = useTranslations('common');
   const locale = useLocale() as Locale;
+
+  const handleLogout = () => {
+    logout();
+    // Redirect to root page after logout
+    router.replace('/');
+  };
 
   // Password form state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -110,7 +119,7 @@ export default function SettingsPage() {
             <Button 
               variant="outline" 
               className="w-full text-red-600 border-red-200 hover:bg-red-50"
-              onClick={logout}
+              onClick={handleLogout}
             >
               {t('signOut')}
             </Button>

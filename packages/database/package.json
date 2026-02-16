@@ -21,6 +21,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset",
+    "db:apply-obligations": "node scripts/apply-migration.js",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist node_modules"
   },

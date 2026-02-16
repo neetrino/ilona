@@ -17,7 +17,7 @@ export default function StudentLayout({
     if (!isHydrated) return;
 
     if (!isAuthenticated) {
-      router.replace('/login');
+      router.replace('/');
     } else if (user?.role !== 'STUDENT') {
       router.replace('/');
     }

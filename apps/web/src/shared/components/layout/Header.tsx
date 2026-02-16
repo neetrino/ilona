@@ -34,6 +34,12 @@ export function Header({ title, subtitle }: HeaderProps) {
     router.push(profilePath);
   };
 
+  const handleLogout = () => {
+    logout();
+    // Redirect to root page after logout
+    router.replace('/');
+  };
+
   return (
     <header className="flex items-center justify-between px-8 py-4 bg-white border-b border-slate-100">
       <div>
@@ -111,7 +117,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             </div>
           </button>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="p-2 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
             title={tAuth('logout')}
           >

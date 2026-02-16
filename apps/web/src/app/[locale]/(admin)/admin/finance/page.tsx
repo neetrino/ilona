@@ -308,11 +308,36 @@ export default function FinancePage() {
       ),
     },
     {
+      key: 'obligations',
+      header: 'Obligations',
+      className: 'text-center',
+      render: (salary: SalaryRecord) => {
+        // Use obligationsInfo from response or parse from notes
+        const obligationsInfo = salary.obligationsInfo || (salary.notes ? (() => {
+          try {
+            return JSON.parse(salary.notes);
+          } catch {
+            return null;
+          }
+        })() : null);
+        
+        if (obligationsInfo && obligationsInfo.completed !== undefined && obligationsInfo.required !== undefined) {
+          return (
+            <span className="text-slate-700 font-medium">
+              {obligationsInfo.completed}/{obligationsInfo.required}
+            </span>
+          );
+        }
+        
+        return <span className="text-slate-400">-</span>;
+      },
+    },
+    {
       key: 'gross',
       header: t('salaryAmount'),
       className: 'text-right',
       render: (salary: SalaryRecord) => {
-        const amount = typeof salary.baseSalary === 'string' ? parseFloat(salary.baseSalary) : Number(salary.baseSalary);
+        const amount = typeof salary.grossAmount === 'string' ? parseFloat(salary.grossAmount) : Number(salary.grossAmount);
         return (
           <span className="text-slate-700">
             {new Intl.NumberFormat('hy-AM', {
@@ -327,12 +352,12 @@ export default function FinancePage() {
     },
     {
       key: 'deductions',
-      header: t('deductionsAmount'),
+      header: 'Deductions',
       className: 'text-right',
       render: (salary: SalaryRecord) => {
         const amount = typeof salary.totalDeductions === 'string' ? parseFloat(salary.totalDeductions) : Number(salary.totalDeductions);
         return amount > 0 ? (
-          <span className="text-red-500">
+          <span className="text-red-500 font-medium">
             -{new Intl.NumberFormat('hy-AM', {
               style: 'currency',
               currency: 'AMD',

@@ -4,7 +4,7 @@
   "private": true,
   "description": "Next.js Frontend for Ilona English Center",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0",
+    "dev": "next dev --turbo -H 0.0.0.0",
     "build": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "next lint",
@@ -28,6 +28,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.34.0",
     "lucide-react": "^0.460.0",
     "next": "15.1.0",
     "next-intl": "^3.25.0",

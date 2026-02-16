@@ -543,9 +543,69 @@ export default function TeachersPage() {
       },
     },
     {
+      key: 'obligation',
+      header: t('obligation') || 'Obligation',
+      sortable: true,
+      className: 'text-center',
+      render: (teacher: Teacher) => {
+        const doneCount = teacher.obligationsDoneCount ?? 0;
+        const total = teacher.obligationsTotal ?? 4;
+        return (
+          <span className="text-slate-700 font-medium" onClick={(e) => e.stopPropagation()}>
+            {doneCount}/{total}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'deduction',
+      header: t('deduction') || 'Deduction',
+      sortable: true,
+      className: 'text-right',
+      render: (teacher: Teacher) => {
+        const deduction = teacher.deductionAmount ?? 0;
+        if (deduction === 0) {
+          return (
+            <span className="text-slate-500" onClick={(e) => e.stopPropagation()}>
+              —
+            </span>
+          );
+        }
+        return (
+          <span className="text-red-600 font-medium" onClick={(e) => e.stopPropagation()}>
+            {new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(-deduction)}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'cost',
+      header: t('cost') || 'Cost',
+      sortable: true,
+      className: 'text-right',
+      render: (teacher: Teacher) => {
+        const finalCost = teacher.finalCost ?? 0;
+        return (
+          <span className="text-slate-700 font-medium" onClick={(e) => e.stopPropagation()}>
+            {new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(finalCost)}
+          </span>
+        );
+      },
+    },
+    {
       key: 'actions',
       header: t('actions'),
-      className: 'text-left',
+      className: '!w-[140px] !min-w-[140px] !max-w-[140px] !px-3 !py-4 text-left',
       render: (teacher: Teacher) => {
         const isActive = teacher.user?.status === 'ACTIVE';
         const isDeactivating = updateTeacher.isPending;

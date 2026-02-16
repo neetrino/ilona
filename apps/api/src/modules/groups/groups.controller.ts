@@ -35,16 +35,9 @@ export class GroupsController {
   @Get('my-groups')
   @Roles(UserRole.TEACHER)
   async getMyGroups(@CurrentUser() user: JwtPayload) {
-    // Get teacher by user ID
-    const teacher = await this.groupsService['prisma'].teacher.findUnique({
-      where: { userId: user.sub },
-    });
-
-    if (!teacher) {
-      return [];
-    }
-
-    return this.groupsService.findByTeacher(teacher.id);
+    // Use canonical method to get teacher groups by userId
+    // This ensures consistency with chat service and other endpoints
+    return this.groupsService.findByTeacherUserId(user.sub);
   }
 
   @Get(':id')

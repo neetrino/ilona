@@ -27,6 +27,10 @@ export interface Teacher {
     lessons: number;
     students: number;
   };
+  obligationsDoneCount?: number;
+  obligationsTotal?: number;
+  deductionAmount?: number;
+  finalCost?: number;
   createdAt: string;
   updatedAt: string;
 }

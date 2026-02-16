@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { useRouter, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -11,9 +12,18 @@ type SettingsTab = 'security' | 'notifications';
 
 export default function StudentSettingsPage() {
   const { user, logout } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<SettingsTab>('security');
   const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('settings');
+
+  const handleLogout = () => {
+    logout();
+    // Redirect to root page after logout
+    router.replace('/');
+  };
 
   // Password form state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -96,7 +106,7 @@ export default function StudentSettingsPage() {
             <Button 
               variant="outline" 
               className="w-full text-red-600 border-red-200 hover:bg-red-50"
-              onClick={logout}
+              onClick={handleLogout}
             >
               Sign Out
             </Button>

@@ -48,12 +48,24 @@ export async function createDirectChat(participantId: string): Promise<Chat> {
 export async function sendMessageHttp(
   chatId: string,
   content: string,
-  type = 'TEXT'
+  type = 'TEXT',
+  options?: {
+    fileUrl?: string;
+    fileName?: string;
+    fileSize?: number;
+    duration?: number;
+    metadata?: Record<string, unknown>;
+  }
 ): Promise<Message> {
-  return api.post<Message>(`${CHAT_ENDPOINT}/${chatId}/messages`, {
+  return api.post<Message>(`${CHAT_ENDPOINT}/messages`, {
     chatId,
     content,
     type,
+    fileUrl: options?.fileUrl,
+    fileName: options?.fileName,
+    fileSize: options?.fileSize,
+    duration: options?.duration,
+    metadata: options?.metadata,
   });
 }
 
@@ -108,4 +120,140 @@ export async function fetchAdminGroups(search?: string): Promise<AdminChatGroup[
   const query = params.toString();
   const url = query ? `${CHAT_ENDPOINT}/admin/groups?${query}` : `${CHAT_ENDPOINT}/admin/groups`;
   return api.get<AdminChatGroup[]>(url);
+}
+
+/**
+ * Teacher-only: Fetch teacher's assigned groups
+ */
+export interface TeacherGroup {
+  id: string;
+  name: string;
+  level?: string | null;
+  center?: {
+    id: string;
+    name: string;
+  } | null;
+  chatId: string | null;
+  lastMessage?: {
+    id: string;
+    type?: string;
+    content: string | null;
+    fileName?: string | null;
+    createdAt: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  } | null;
+  unreadCount: number;
+  updatedAt: string;
+}
+
+export async function fetchTeacherGroups(search?: string): Promise<TeacherGroup[]> {
+  const params = new URLSearchParams();
+  if (search) params.append('search', search);
+  const query = params.toString();
+  const url = query ? `${CHAT_ENDPOINT}/teacher/groups?${query}` : `${CHAT_ENDPOINT}/teacher/groups`;
+  return api.get<TeacherGroup[]>(url);
+}
+
+/**
+ * Teacher-only: Fetch teacher's assigned students
+ */
+export interface TeacherStudent {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string | null;
+  chatId: string | null;
+  lastMessage?: {
+    id: string;
+    type?: string;
+    content: string | null;
+    fileName?: string | null;
+    createdAt: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  } | null;
+  unreadCount: number;
+  updatedAt: string;
+}
+
+export async function fetchTeacherStudents(search?: string): Promise<TeacherStudent[]> {
+  const params = new URLSearchParams();
+  if (search) params.append('search', search);
+  const query = params.toString();
+  const url = query ? `${CHAT_ENDPOINT}/teacher/students?${query}` : `${CHAT_ENDPOINT}/teacher/students`;
+  return api.get<TeacherStudent[]>(url);
+}
+
+/**
+ * Teacher-only: Fetch admin user info for direct messaging
+ */
+export interface TeacherAdmin {
+  id: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  avatarUrl?: string | null;
+  chatId: string | null;
+  lastMessage?: {
+    id: string;
+    type?: string;
+    content: string | null;
+    fileName?: string | null;
+    createdAt: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  } | null;
+  unreadCount: number;
+  updatedAt: string | null;
+}
+
+export async function fetchTeacherAdmin(): Promise<TeacherAdmin | null> {
+  return api.get<TeacherAdmin | null>(`${CHAT_ENDPOINT}/teacher/admin`);
+}
+
+/**
+ * Student-only: Fetch admin user info for direct messaging
+ */
+export interface StudentAdmin {
+  id: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  avatarUrl?: string | null;
+  chatId: string | null;
+  lastMessage?: {
+    id: string;
+    type?: string;
+    content: string | null;
+    fileName?: string | null;
+    createdAt: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  } | null;
+  unreadCount: number;
+  updatedAt: string | null;
+}
+
+export async function fetchStudentAdmin(): Promise<StudentAdmin | null> {
+  return api.get<StudentAdmin | null>(`${CHAT_ENDPOINT}/student/admin`);
+}
+
+/**
+ * Mark a chat as read
+ */
+export async function markChatAsRead(chatId: string): Promise<{ success: boolean }> {
+  return api.post<{ success: boolean }>(`${CHAT_ENDPOINT}/${chatId}/read`);
 }

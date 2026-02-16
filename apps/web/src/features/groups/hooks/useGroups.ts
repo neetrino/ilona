@@ -14,6 +14,9 @@ import {
   fetchMyGroups,
 } from '../api/groups.api';
 import type { GroupFilters, CreateGroupDto, UpdateGroupDto } from '../types';
+import { chatKeys } from '../../chat/hooks/useChat';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { ApiError } from '@/shared/lib/api';
 
 // Query keys
 export const groupKeys = {
@@ -32,6 +35,19 @@ export function useGroups(filters?: GroupFilters) {
   return useQuery({
     queryKey: groupKeys.list(filters),
     queryFn: () => fetchGroups(filters),
+    // Don't retry on 503 (Service Unavailable) errors
+    retry: (failureCount, error) => {
+      // Don't retry if it's a 503 error (service unavailable)
+      if (error instanceof ApiError && error.statusCode === 503) {
+        return false;
+      }
+      // Don't retry if it's a 401 error (authentication issue)
+      if (error instanceof ApiError && error.statusCode === 401) {
+        return false;
+      }
+      // Retry up to 2 times for other errors
+      return failureCount < 2;
+    },
   });
 }
 
@@ -43,6 +59,23 @@ export function useGroup(id: string, enabled = true) {
     queryKey: groupKeys.detail(id),
     queryFn: () => fetchGroup(id),
     enabled: enabled && !!id,
+    // Don't retry on 503 (Service Unavailable) or 404 (Not Found) errors
+    retry: (failureCount, error) => {
+      // Don't retry if it's a 503 error (service unavailable)
+      if (error instanceof ApiError && error.statusCode === 503) {
+        return false;
+      }
+      // Don't retry if it's a 404 error (group not found)
+      if (error instanceof ApiError && error.statusCode === 404) {
+        return false;
+      }
+      // Don't retry if it's a 401 error (authentication issue)
+      if (error instanceof ApiError && error.statusCode === 401) {
+        return false;
+      }
+      // Retry up to 2 times for other errors
+      return failureCount < 2;
+    },
   });
 }
 
@@ -50,9 +83,35 @@ export function useGroup(id: string, enabled = true) {
  * Hook to fetch groups assigned to the currently logged-in teacher
  */
 export function useMyGroups() {
+  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
+  
+  // Only enable query when:
+  // 1. Auth store is hydrated (token loaded from localStorage)
+  // 2. User is authenticated
+  // 3. Access token is available
+  // This prevents race condition where request fires before token is ready
+  const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
+  
   return useQuery({
     queryKey: groupKeys.myGroups(),
     queryFn: () => fetchMyGroups(),
+    enabled: isAuthReady,
+    // Set staleTime to 0 to ensure fresh data after mutations
+    // This prevents stale cache from hiding newly assigned groups
+    staleTime: 0,
+    // Only refetch on window focus if auth is ready
+    // This prevents 401 errors when token is expired/invalid
+    refetchOnWindowFocus: isAuthReady,
+    // Don't retry on 401 errors - token refresh is handled by API client
+    retry: (failureCount, error) => {
+      // Don't retry if it's a 401 error (authentication issue)
+      // The API client already attempts token refresh, so retrying would be redundant
+      if (error instanceof ApiError && error.statusCode === 401) {
+        return false;
+      }
+      // Retry up to 2 times for other errors
+      return failureCount < 2;
+    },
   });
 }
 
@@ -86,9 +145,19 @@ export function useUpdateGroup() {
     onSuccess: (group, { id, data }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
-      // If teacher assignment changed, invalidate my-groups cache
+      // If teacher assignment changed, invalidate my-groups cache and chat queries
+      // This ensures both the old teacher (if removed) and new teacher (if assigned) see updates
       if (data.teacherId !== undefined) {
+        // Invalidate all teacher my-groups queries (affects both old and new teacher)
         queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+        queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
+        queryClient.invalidateQueries({ queryKey: chatKeys.details() });
+      }
+      // If group active status changed, invalidate my-groups (inactive groups shouldn't appear)
+      if (data.isActive !== undefined) {
+        queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+        queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
       }
     },
   });
@@ -171,6 +240,9 @@ export function useToggleGroupActive() {
       // Invalidate to refetch and ensure consistency
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+      // Invalidate my-groups since active status affects teacher group visibility
+      queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
     },
   });
 }
@@ -185,9 +257,16 @@ export function useAssignTeacher() {
     mutationFn: ({ groupId, teacherId }: { groupId: string; teacherId: string }) =>
       assignTeacher(groupId, teacherId),
     onSuccess: (_, { groupId }) => {
+      // Invalidate group-related queries
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
       queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      
+      // Invalidate chat-related queries to ensure teacher sees updated groups
+      queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
+      // Invalidate any group chat detail queries
+      queryClient.invalidateQueries({ queryKey: chatKeys.details() });
     },
   });
 }

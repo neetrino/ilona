@@ -32,35 +32,43 @@ export class GroupsService {
     if (isActive !== undefined) where.isActive = isActive;
     if (level) where.level = level;
 
+    // Wrap both queries with retry
     const [items, total] = await Promise.all([
-      this.prisma.group.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { name: 'asc' },
-        include: {
-          center: {
-            select: { id: true, name: true },
-          },
-          teacher: {
+      this.prisma.prismaWithRetry(
+        () =>
+          this.prisma.group.findMany({
+            where,
+            skip,
+            take,
+            orderBy: { name: 'asc' },
             include: {
-              user: {
-                select: {
-                  id: true,
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  avatarUrl: true,
+              center: {
+                select: { id: true, name: true },
+              },
+              teacher: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      firstName: true,
+                      lastName: true,
+                      email: true,
+                      avatarUrl: true,
+                    },
+                  },
                 },
               },
+              _count: {
+                select: { students: true, lessons: true },
+              },
             },
-          },
-          _count: {
-            select: { students: true, lessons: true },
-          },
-        },
-      }),
-      this.prisma.group.count({ where }),
+          }),
+        { op: 'groups.findAll', meta: { skip, take, teacherId, centerId } },
+      ),
+      this.prisma.prismaWithRetry(
+        () => this.prisma.group.count({ where }),
+        { op: 'groups.findAll.count', meta: { teacherId, centerId } },
+      ),
     ]);
 
     return {
@@ -122,26 +130,58 @@ export class GroupsService {
     return group;
   }
 
+  /**
+   * Get teacher entity by userId (canonical lookup method)
+   */
+  async getTeacherByUserId(userId: string) {
+    return this.prisma.prismaWithRetry(
+      () =>
+        this.prisma.teacher.findUnique({
+          where: { userId },
+          select: { id: true },
+        }),
+      { op: 'groups.getTeacherByUserId', meta: { userId } },
+    );
+  }
+
+  /**
+   * Get all groups assigned to a teacher by teacherId
+   * This is the canonical method for fetching teacher groups - used by all endpoints
+   */
   async findByTeacher(teacherId: string) {
-    const groups = await this.prisma.group.findMany({
-      where: { teacherId, isActive: true },
-      include: {
-        center: { select: { id: true, name: true } },
-        _count: { select: { lessons: true } },
-      },
-      orderBy: { name: 'asc' },
-    });
+    // Wrap main query with retry for transient connection errors
+    const groups = await this.prisma.prismaWithRetry(
+      () =>
+        this.prisma.group.findMany({
+          where: { teacherId, isActive: true },
+          include: {
+            center: { select: { id: true, name: true } },
+            _count: { select: { lessons: true } },
+          },
+          orderBy: { name: 'asc' },
+        }),
+      { op: 'groups.findByTeacher', meta: { teacherId } },
+    );
 
     // Count only ACTIVE students for each group
     const groupIds = groups.map(g => g.id);
-    const activeStudentCounts = await this.prisma.student.groupBy({
-      by: ['groupId'],
-      where: {
-        groupId: { in: groupIds },
-        user: { status: 'ACTIVE' },
-      },
-      _count: { id: true },
-    });
+    if (groupIds.length === 0) {
+      return [];
+    }
+
+    // Wrap student count query with retry
+    const activeStudentCounts = await this.prisma.prismaWithRetry(
+      () =>
+        this.prisma.student.groupBy({
+          by: ['groupId'],
+          where: {
+            groupId: { in: groupIds },
+            user: { status: 'ACTIVE' },
+          },
+          _count: { id: true },
+        }),
+      { op: 'groups.findByTeacher.studentCount', meta: { teacherId, groupCount: groupIds.length } },
+    );
 
     const countMap = new Map(
       activeStudentCounts.map(item => [item.groupId, item._count.id])
@@ -155,6 +195,18 @@ export class GroupsService {
         students: countMap.get(group.id) || 0,
       },
     }));
+  }
+
+  /**
+   * Get all groups assigned to a teacher by userId
+   * This method ensures consistent lookup across all endpoints
+   */
+  async findByTeacherUserId(userId: string) {
+    const teacher = await this.getTeacherByUserId(userId);
+    if (!teacher) {
+      return [];
+    }
+    return this.findByTeacher(teacher.id);
   }
 
   async create(dto: CreateGroupDto) {
@@ -208,7 +260,7 @@ export class GroupsService {
   }
 
   async update(id: string, dto: UpdateGroupDto) {
-    await this.findById(id);
+    const currentGroup = await this.findById(id);
 
     // Validate center if changing (centerId is required in DB, so if provided it must be valid)
     if (dto.centerId !== undefined) {
@@ -226,13 +278,73 @@ export class GroupsService {
     }
 
     // Validate teacher if changing
-    if (dto.teacherId) {
-      const teacher = await this.prisma.teacher.findUnique({
-        where: { id: dto.teacherId },
-      });
+    if (dto.teacherId !== undefined) {
+      if (dto.teacherId) {
+        const teacher = await this.prisma.teacher.findUnique({
+          where: { id: dto.teacherId },
+        });
 
-      if (!teacher) {
-        throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
+        if (!teacher) {
+          throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
+        }
+      }
+
+      // Handle teacher assignment/removal
+      const oldTeacherId = currentGroup.teacherId;
+      const newTeacherId = dto.teacherId || null;
+
+      // If teacher is being removed, mark them as left in chat
+      if (oldTeacherId && oldTeacherId !== newTeacherId) {
+        const oldTeacher = await this.prisma.teacher.findUnique({
+          where: { id: oldTeacherId },
+          select: { userId: true },
+        });
+
+        if (oldTeacher) {
+          const chat = await this.prisma.chat.findUnique({
+            where: { groupId: id },
+          });
+
+          if (chat) {
+            await this.prisma.chatParticipant.updateMany({
+              where: {
+                chatId: chat.id,
+                userId: oldTeacher.userId,
+              },
+              data: { leftAt: new Date() },
+            });
+          }
+        }
+      }
+
+      // If new teacher is being assigned, ensure they're added to chat
+      if (newTeacherId && newTeacherId !== oldTeacherId) {
+        const newTeacher = await this.prisma.teacher.findUnique({
+          where: { id: newTeacherId },
+          include: { user: true },
+        });
+
+        if (newTeacher) {
+          let chat = await this.prisma.chat.findUnique({
+            where: { groupId: id },
+          });
+
+          if (!chat) {
+            chat = await this.createGroupChat(id, currentGroup.name, newTeacherId);
+          } else {
+            await this.prisma.chatParticipant.upsert({
+              where: {
+                chatId_userId: { chatId: chat.id, userId: newTeacher.userId },
+              },
+              update: { isAdmin: true, leftAt: null },
+              create: {
+                chatId: chat.id,
+                userId: newTeacher.userId,
+                isAdmin: true,
+              },
+            });
+          }
+        }
       }
     }
 
@@ -270,43 +382,85 @@ export class GroupsService {
   }
 
   async assignTeacher(groupId: string, teacherId: string) {
-    await this.findById(groupId);
+    // Use transaction to ensure atomicity: Group.teacherId and ChatParticipant must be updated together
+    return await this.prisma.$transaction(async (tx) => {
+      // Verify group exists
+      const existingGroup = await tx.group.findUnique({
+        where: { id: groupId },
+        select: { id: true, name: true, teacherId: true },
+      });
 
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { id: teacherId },
-      include: { user: true },
-    });
+      if (!existingGroup) {
+        throw new NotFoundException(`Group with ID ${groupId} not found`);
+      }
 
-    if (!teacher) {
-      throw new BadRequestException(`Teacher with ID ${teacherId} not found`);
-    }
+      // Verify teacher exists
+      const teacher = await tx.teacher.findUnique({
+        where: { id: teacherId },
+        include: { user: true },
+      });
 
-    // Update group
-    const group = await this.prisma.group.update({
-      where: { id: groupId },
-      data: { teacherId },
-    });
+      if (!teacher) {
+        throw new BadRequestException(`Teacher with ID ${teacherId} not found`);
+      }
 
-    // Add teacher to group chat if exists
-    const chat = await this.prisma.chat.findUnique({
-      where: { groupId },
-    });
-
-    if (chat) {
-      await this.prisma.chatParticipant.upsert({
-        where: {
-          chatId_userId: { chatId: chat.id, userId: teacher.userId },
-        },
-        update: { isAdmin: true, leftAt: null },
-        create: {
-          chatId: chat.id,
-          userId: teacher.userId,
-          isAdmin: true,
+      // If group already has a different teacher, we'll update it (old teacher's ChatParticipant remains but new one is added)
+      // Update group.teacherId (this is the canonical source of truth)
+      const group = await tx.group.update({
+        where: { id: groupId },
+        data: { teacherId },
+        include: {
+          center: { select: { id: true, name: true } },
+          teacher: {
+            include: {
+              user: {
+                select: { id: true, firstName: true, lastName: true, email: true },
+              },
+            },
+          },
         },
       });
-    }
 
-    return group;
+      // Ensure group chat exists and teacher is added as participant
+      let chat = await tx.chat.findUnique({
+        where: { groupId },
+      });
+
+      // Create chat if it doesn't exist
+      if (!chat) {
+        chat = await tx.chat.create({
+          data: {
+            type: 'GROUP',
+            name: group.name,
+            groupId,
+          },
+        });
+
+        // Add teacher as admin
+        await tx.chatParticipant.create({
+          data: {
+            chatId: chat.id,
+            userId: teacher.userId,
+            isAdmin: true,
+          },
+        });
+      } else {
+        // Add teacher to existing chat (upsert ensures idempotency)
+        await tx.chatParticipant.upsert({
+          where: {
+            chatId_userId: { chatId: chat.id, userId: teacher.userId },
+          },
+          update: { isAdmin: true, leftAt: null },
+          create: {
+            chatId: chat.id,
+            userId: teacher.userId,
+            isAdmin: true,
+          },
+        });
+      }
+
+      return group;
+    });
   }
 
   async addStudent(groupId: string, studentId: string) {

@@ -12,6 +12,13 @@ export interface Lesson {
   status: LessonStatus;
   vocabularySent: boolean;
   vocabularySentAt?: string;
+  feedbacksCompleted?: boolean;
+  absenceMarked?: boolean;
+  absenceMarkedAt?: string;
+  voiceSent?: boolean;
+  voiceSentAt?: string;
+  textSent?: boolean;
+  textSentAt?: string;
   completedAt?: string;
   group: {
     id: string;
@@ -58,6 +65,8 @@ export interface LessonFilters {
   status?: LessonStatus;
   dateFrom?: string;
   dateTo?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface CreateLessonDto {
@@ -84,14 +93,13 @@ export interface CompleteLessonDto {
 export interface CreateRecurringLessonsDto {
   groupId: string;
   teacherId: string;
-  schedule: {
-    dayOfWeek: number;
-    time: string;
-  }[];
+  weekdays: number[]; // Array of 0-6 (Sunday-Saturday)
+  startTime: string; // "09:00"
+  endTime: string; // "10:30"
   startDate: string;
   endDate: string;
-  duration?: number;
   topic?: string;
+  description?: string;
 }
 
 export interface LessonStatistics {

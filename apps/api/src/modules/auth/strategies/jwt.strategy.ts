@@ -22,6 +22,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   /**
+   * Log authentication diagnostics (dev only)
+   */
+  private logAuthDiagnostics(context: string, details: Record<string, unknown>) {
+    if (process.env.NODE_ENV !== 'production') {
+      this.logger.debug(`[JWT Auth] ${context}`, details);
+    }
+  }
+
+  /**
    * Checks if an error is a database connection error.
    */
   private isDatabaseConnectionError(error: unknown): boolean {
@@ -61,9 +70,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload): Promise<JwtPayload> {
     try {
+      // Diagnostics: Log successful token extraction (dev only)
+      this.logAuthDiagnostics('Token validated', {
+        userId: payload.sub,
+        email: payload.email,
+        role: payload.role,
+      });
+
       const user = await this.usersService.findById(payload.sub);
 
       if (!user || user.status !== 'ACTIVE') {
+        this.logAuthDiagnostics('User validation failed', {
+          userId: payload.sub,
+          userExists: !!user,
+          userStatus: user?.status,
+        });
         throw new UnauthorizedException('User not found or inactive');
       }
 

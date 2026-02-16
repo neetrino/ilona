@@ -5,10 +5,12 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { ChatList } from './ChatList';
 import { StudentChatList } from './StudentChatList';
+import { TeacherChatList } from './TeacherChatList';
 import { ChatWindow } from './ChatWindow';
 import { useChatStore } from '../store/chat.store';
 import { useSocket, useChats, useCreateDirectChat } from '../hooks';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
+import { fetchChat } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 
@@ -29,6 +31,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const { data: teachers = [], isLoading: isLoadingTeachers } = useMyTeachers(user?.role === 'STUDENT');
   const isInitialMount = useRef(true);
   const isStudent = user?.role === 'STUDENT';
+  const isTeacher = user?.role === 'TEACHER';
 
   // Get returnTo from query params
   const returnToParam = searchParams.get('returnTo');
@@ -70,6 +73,9 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   // Initialize socket connection
   useSocket();
 
+  // Get conversationId from URL (support both chatId and conversationId for backward compatibility)
+  const conversationIdFromUrl = searchParams.get('conversationId') || searchParams.get('chatId');
+
   // Restore chat from URL on initial mount when chats are loaded
   useEffect(() => {
     if (isLoadingChats || !isInitialMount.current) return;
@@ -81,7 +87,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
       return;
     }
     
-    const chatIdFromUrl = searchParams.get('chatId');
+    const chatIdFromUrl = conversationIdFromUrl;
     
     // Handle teacherId param for student DM
     if (isStudent && typeFromUrl === 'dm' && teacherIdFromUrl && teachers.length > 0) {
@@ -128,35 +134,55 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
         setActiveChat(chatFromList);
         setMobileListVisible(false);
       } else {
-        // Chat not found in list, remove from URL
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete('chatId');
-        router.replace(`${pathname}?${params.toString()}`);
+        // Chat not found in list, try to fetch it directly (for teachers, chat might exist but not be in groups/students lists yet)
+        if (isTeacher || !isStudent) {
+          // Try to fetch the chat directly
+          fetchChat(chatIdFromUrl)
+            .then((chat) => {
+              setActiveChat(chat);
+              setMobileListVisible(false);
+            })
+            .catch(() => {
+              // Chat doesn't exist or user doesn't have access, remove from URL
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete('chatId');
+              params.delete('conversationId');
+              router.replace(`${pathname}?${params.toString()}`);
+            });
+        } else {
+          // For students, remove chatId if not found
+          const params = new URLSearchParams(searchParams.toString());
+          params.delete('chatId');
+          params.delete('conversationId');
+          router.replace(`${pathname}?${params.toString()}`);
+        }
       }
       isInitialMount.current = false;
     } else if (!chatIdFromUrl && !teacherIdFromUrl) {
       isInitialMount.current = false;
     }
-  }, [chats, isLoadingChats, isLoadingTeachers, teachers, searchParams, setActiveChat, setMobileListVisible, router, pathname, isStudent, createDirectChat]);
+  }, [chats, isLoadingChats, isLoadingTeachers, teachers, searchParams, setActiveChat, setMobileListVisible, router, pathname, isStudent, createDirectChat, conversationIdFromUrl]);
 
   // Sync URL when activeChat changes (but skip on initial mount)
   useEffect(() => {
     if (isInitialMount.current) return;
     
-    const chatIdFromUrl = searchParams.get('chatId');
+    const chatIdFromUrl = conversationIdFromUrl;
     if (activeChat) {
       if (activeChat.id !== chatIdFromUrl) {
         const params = new URLSearchParams(searchParams.toString());
-        params.set('chatId', activeChat.id);
+        params.set('conversationId', activeChat.id);
+        params.delete('chatId'); // Remove old chatId param for consistency
         router.replace(`${pathname}?${params.toString()}`);
       }
     } else if (chatIdFromUrl) {
-      // activeChat is null but URL has chatId - remove it
+      // activeChat is null but URL has conversationId/chatId - remove it
       const params = new URLSearchParams(searchParams.toString());
       params.delete('chatId');
+      params.delete('conversationId');
       router.replace(`${pathname}?${params.toString()}`);
     }
-  }, [activeChat, searchParams, router, pathname]);
+  }, [activeChat, searchParams, router, pathname, conversationIdFromUrl]);
 
   const handleSelectChat = (chat: Chat) => {
     setActiveChat(chat);
@@ -165,7 +191,8 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
     const params = new URLSearchParams(searchParams.toString());
     params.delete('type');
     params.delete('teacherId');
-    params.set('chatId', chat.id);
+    params.set('conversationId', chat.id);
+    params.delete('chatId'); // Remove old chatId param for consistency
     router.replace(`${pathname}?${params.toString()}`);
   };
 
@@ -175,6 +202,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
     // Update URL
     const params = new URLSearchParams(searchParams.toString());
     params.delete('chatId');
+    params.delete('conversationId');
     router.replace(`${pathname}?${params.toString()}`);
   };
 
@@ -227,6 +255,8 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
         >
           {isStudent ? (
             <StudentChatList onSelectChat={handleSelectChat} />
+          ) : isTeacher ? (
+            <TeacherChatList onSelectChat={handleSelectChat} />
           ) : (
             <ChatList onSelectChat={handleSelectChat} />
           )}

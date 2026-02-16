@@ -6,6 +6,7 @@ import { useChats, useSocket } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import { formatMessagePreview } from '../utils';
 
 interface ChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -22,8 +23,20 @@ export function ChatList({ onSelectChat }: ChatListProps) {
   // Socket for online status
   const { isConnected, isUserOnline } = useSocket();
 
+  // Sort chats by lastMessageAt (newest first), then filter by search
+  const sortedChats = [...chats].sort((a, b) => {
+    // Use lastMessageAt if available, otherwise fall back to lastMessage.createdAt, then updatedAt
+    const aTime = a.lastMessageAt 
+      ? new Date(a.lastMessageAt).getTime()
+      : (a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : new Date(a.updatedAt).getTime());
+    const bTime = b.lastMessageAt 
+      ? new Date(b.lastMessageAt).getTime()
+      : (b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : new Date(b.updatedAt).getTime());
+    return bTime - aTime; // DESC order (newest first)
+  });
+
   // Filter chats by search
-  const filteredChats = chats.filter((chat) => {
+  const filteredChats = sortedChats.filter((chat) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
 
@@ -46,6 +59,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
       return {
         name: chat.name || chat.group?.name || 'Group Chat',
         avatar: chat.name?.[0] || chat.group?.name?.[0] || 'G',
+        avatarUrl: null,
         isGroup: true,
       };
     }
@@ -61,6 +75,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
       avatar: otherParticipant
         ? `${otherParticipant.user.firstName[0]}${otherParticipant.user.lastName[0]}`
         : '?',
+      avatarUrl: otherParticipant?.user.avatarUrl || null,
       isGroup: false,
       otherUserId: otherParticipant?.userId,
     };
@@ -185,16 +200,24 @@ export function ChatList({ onSelectChat }: ChatListProps) {
               >
                 {/* Avatar */}
                 <div className="relative">
-                  <div
-                    className={cn(
-                      'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold',
-                      info.isGroup
-                        ? 'bg-gradient-to-br from-purple-500 to-purple-600'
-                        : 'bg-primary'
-                    )}
-                  >
-                    {info.avatar}
-                  </div>
+                  {info.avatarUrl ? (
+                    <img
+                      src={info.avatarUrl}
+                      alt={info.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className={cn(
+                        'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold',
+                        info.isGroup
+                          ? 'bg-gradient-to-br from-purple-500 to-purple-600'
+                          : 'bg-primary'
+                      )}
+                    >
+                      {info.avatar}
+                    </div>
+                  )}
                   {!info.isGroup && isOnline && (
                     <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
                   )}
@@ -222,7 +245,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
                         hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500'
                       )}
                     >
-                      {chat.lastMessage?.content || 'No messages yet'}
+                      {formatMessagePreview(chat.lastMessage)}
                     </p>
                     {hasUnread && (
                       <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">

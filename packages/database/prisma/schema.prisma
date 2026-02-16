@@ -8,8 +8,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url       = env("DATABASE_URL")      // Pooled connection for application (with pgbouncer)
+  directUrl = env("DIRECT_URL")        // Direct connection for migrations only
 }
 
 // ============================================
@@ -229,6 +229,12 @@ model Lesson {
   vocabularySent     Boolean      @default(false)
   vocabularySentAt   DateTime?
   feedbacksCompleted Boolean      @default(false)
+  absenceMarked      Boolean      @default(false)
+  absenceMarkedAt    DateTime?
+  voiceSent          Boolean      @default(false)
+  voiceSentAt        DateTime?
+  textSent           Boolean      @default(false)
+  textSentAt         DateTime?
   completedAt        DateTime?
   notes              String?
   createdAt          DateTime     @default(now())

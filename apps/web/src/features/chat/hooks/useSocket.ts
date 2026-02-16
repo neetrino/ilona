@@ -31,7 +31,7 @@ interface UseSocketOptions {
 }
 
 export function useSocket(options: UseSocketOptions = {}) {
-  const { tokens } = useAuthStore();
+  const { tokens, refreshToken: refreshTokenFn } = useAuthStore();
   const token = tokens?.accessToken;
   const queryClient = useQueryClient();
   const [isConnected, setIsConnected] = useState(false);
@@ -43,12 +43,50 @@ export function useSocket(options: UseSocketOptions = {}) {
   useEffect(() => {
     if (!token) return;
 
-    initSocket({
-      token,
-      onConnect: () => setIsConnected(true),
-      onDisconnect: () => setIsConnected(false),
-      onError: (error) => console.error('[useSocket] Error:', error),
-    });
+    let socketInitialized = false;
+
+    const initializeSocket = async (currentToken: string) => {
+      if (socketInitialized) return;
+      
+      initSocket({
+        token: currentToken,
+        onConnect: () => {
+          setIsConnected(true);
+          socketInitialized = true;
+        },
+        onDisconnect: () => {
+          setIsConnected(false);
+          socketInitialized = false;
+        },
+        onError: (error) => {
+          console.error('[useSocket] Error:', error);
+        },
+        onTokenExpired: async () => {
+          try {
+            const refreshed = await refreshTokenFn?.();
+            if (refreshed) {
+              const newTokens = useAuthStore.getState().tokens;
+              return newTokens?.accessToken || null;
+            }
+          } catch (refreshError) {
+            console.error('[useSocket] Failed to refresh token:', refreshError);
+          }
+          return null;
+        },
+      });
+    };
+
+    void initializeSocket(token);
+
+    // Cleanup on unmount or token change
+    return () => {
+      disconnectSocket();
+    };
+  }, [token, refreshTokenFn, queryClient]);
+
+  // Subscribe to events (separate effect to avoid re-subscribing on token change)
+  useEffect(() => {
+    if (!token) return;
 
     // Subscribe to events
     const unsubscribers: (() => void)[] = [];
@@ -94,21 +132,43 @@ export function useSocket(options: UseSocketOptions = {}) {
           }
         );
 
-        // Update chat list
+        // Update chat list with new message, lastMessageAt, and unreadCount
+        // Also re-sort by lastMessageAt to move conversation to top
         queryClient.setQueryData(
           chatKeys.list(),
           (oldData: Chat[] | undefined) => {
             if (!oldData) return oldData;
 
-            return oldData.map((chat) => {
+            const { user } = useAuthStore.getState();
+            const isFromOtherUser = message.senderId !== user?.id;
+
+            const updatedChats = oldData.map((chat) => {
               if (chat.id === message.chatId) {
+                // Increment unreadCount if message is from another user
+                const newUnreadCount = isFromOtherUser 
+                  ? (chat.unreadCount || 0) + 1 
+                  : chat.unreadCount;
+
                 return {
                   ...chat,
                   lastMessage: message,
+                  lastMessageAt: message.createdAt,
                   updatedAt: message.createdAt,
+                  unreadCount: newUnreadCount,
                 };
               }
               return chat;
+            });
+
+            // Re-sort by lastMessageAt (newest first)
+            return updatedChats.sort((a, b) => {
+              const aTime = a.lastMessageAt 
+                ? new Date(a.lastMessageAt).getTime()
+                : (a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : new Date(a.updatedAt).getTime());
+              const bTime = b.lastMessageAt 
+                ? new Date(b.lastMessageAt).getTime()
+                : (b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : new Date(b.updatedAt).getTime());
+              return bTime - aTime; // DESC order
             });
           }
         );
@@ -141,7 +201,7 @@ export function useSocket(options: UseSocketOptions = {}) {
       })
     );
 
-    // Message deleted
+    // Message deleted (hard delete - remove completely)
     unsubscribers.push(
       onSocketEvent('message:deleted', (data) => {
         queryClient.setQueryData(
@@ -149,15 +209,12 @@ export function useSocket(options: UseSocketOptions = {}) {
           (oldData: { pages: { items: Message[] }[] } | undefined) => {
             if (!oldData) return oldData;
 
+            // Remove the message completely from all pages
             return {
               ...oldData,
               pages: oldData.pages.map((page) => ({
                 ...page,
-                items: page.items.map((m) =>
-                  m.id === data.messageId
-                    ? { ...m, content: null, isSystem: true }
-                    : m
-                ),
+                items: page.items.filter((m) => m.id !== data.messageId),
               })),
             };
           }
@@ -209,6 +266,10 @@ export function useSocket(options: UseSocketOptions = {}) {
       })
     );
 
+    // Chat read event - update cache when chat is marked as read
+    // Note: This is handled in markAsRead callback, but we keep this for completeness
+    // (in case other clients mark as read, though we don't need to update our cache for that)
+
     // Cleanup
     return () => {
       unsubscribers.forEach((unsub) => unsub());
@@ -249,8 +310,24 @@ export function useSocket(options: UseSocketOptions = {}) {
 
   // Mark as read
   const markAsRead = useCallback(async (chatId: string) => {
-    return emitMarkAsRead(chatId);
-  }, []);
+    const result = await emitMarkAsRead(chatId);
+    
+    // Update cache after marking as read (set unreadCount to 0 for this chat)
+    // This prevents infinite loops by updating cache directly instead of invalidating
+    if (result.success) {
+      queryClient.setQueryData(
+        chatKeys.list(),
+        (oldData: Array<{ id: string; unreadCount?: number }> | undefined) => {
+          if (!oldData) return oldData;
+          return oldData.map((chat) =>
+            chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
+          );
+        }
+      );
+    }
+    
+    return result;
+  }, [queryClient]);
 
   // Join chat
   const joinChat = useCallback(async (chatId: string) => {

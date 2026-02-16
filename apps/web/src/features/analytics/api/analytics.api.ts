@@ -135,3 +135,7 @@ export async function fetchLessonsOverview(
   
   return api.get<LessonsOverview>(url);
 }
+
+export async function unlockAnalytics(password: string): Promise<{ success: boolean }> {
+  return api.post<{ success: boolean }>(`${ANALYTICS_ENDPOINT}/unlock`, { password });
+}
