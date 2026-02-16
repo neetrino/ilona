@@ -312,12 +312,12 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
   return (
     <div className="flex flex-col h-full">
       {/* Tabs */}
-      <div className="p-4 border-b border-slate-200">
-        <div className="flex gap-2">
+      <div className="p-2 border-b border-slate-200">
+        <div className="flex gap-1">
           <button
             onClick={() => onTabChange('groups')}
             className={cn(
-              'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
+              'flex-1 px-2 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5',
               activeTab === 'groups'
                 ? 'bg-slate-900 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -328,7 +328,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               <Badge 
                 variant="error" 
                 className={cn(
-                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
+                  "min-w-[18px] h-4 flex items-center justify-center px-1 text-xs",
                   activeTab === 'groups' && "bg-red-500 text-white"
                 )}
               >
@@ -339,7 +339,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
           <button
             onClick={() => onTabChange('teachers')}
             className={cn(
-              'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
+              'flex-1 px-2 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5',
               activeTab === 'teachers'
                 ? 'bg-slate-900 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -350,7 +350,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               <Badge 
                 variant="error" 
                 className={cn(
-                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
+                  "min-w-[18px] h-4 flex items-center justify-center px-1 text-xs",
                   activeTab === 'teachers' && "bg-red-500 text-white"
                 )}
               >
@@ -361,7 +361,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
           <button
             onClick={() => onTabChange('students')}
             className={cn(
-              'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
+              'flex-1 px-2 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5',
               activeTab === 'students'
                 ? 'bg-slate-900 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -372,7 +372,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               <Badge 
                 variant="error" 
                 className={cn(
-                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
+                  "min-w-[18px] h-4 flex items-center justify-center px-1 text-xs",
                   activeTab === 'students' && "bg-red-500 text-white"
                 )}
               >
