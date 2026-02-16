@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useChats, useSocket, useCreateDirectChat, useStudentAdmin } from '../hooks';
+import { useChats, useSocket, useCreateDirectChat, useStudentAdmin, useStudentUnreadCounts } from '../hooks';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { formatMessagePreview } from '../utils';
+import { Badge } from '@/shared/components/ui/badge';
 
 interface StudentChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -27,6 +28,9 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
 
   // Fetch admin
   const { data: admin, isLoading: isLoadingAdmin } = useStudentAdmin();
+
+  // Get unread counts for tabs
+  const { counts: unreadCounts } = useStudentUnreadCounts();
 
   // Create direct chat mutation
   const createDirectChat = useCreateDirectChat();
@@ -123,6 +127,15 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  // Get unread count for a specific user ID
+  const getUserUnreadCount = (userId: string): number => {
+    const chat = chats.find((c) => {
+      if (c.type !== 'DIRECT') return false;
+      return c.participants.some((p) => p.userId === userId);
+    });
+    return chat?.unreadCount || 0;
+  };
+
   // Handle teacher click - create or open DM
   const handleTeacherClick = async (teacherUserId: string) => {
     try {
@@ -195,35 +208,68 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
           <button
             onClick={() => setActiveTab('chats')}
             className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2',
               activeTab === 'chats'
                 ? 'bg-primary/20 text-primary'
                 : 'text-slate-600 hover:bg-slate-100'
             )}
           >
             Chats
+            {unreadCounts.chats > 0 && (
+              <Badge 
+                variant="error" 
+                className={cn(
+                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
+                  activeTab === 'chats' && "bg-red-500 text-white"
+                )}
+              >
+                {unreadCounts.chats}
+              </Badge>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('teachers')}
             className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2',
               activeTab === 'teachers'
                 ? 'bg-primary/20 text-primary'
                 : 'text-slate-600 hover:bg-slate-100'
             )}
           >
             My Teachers
+            {unreadCounts.teachers > 0 && (
+              <Badge 
+                variant="error" 
+                className={cn(
+                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
+                  activeTab === 'teachers' && "bg-red-500 text-white"
+                )}
+              >
+                {unreadCounts.teachers}
+              </Badge>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('admin')}
             className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2',
               activeTab === 'admin'
                 ? 'bg-primary/20 text-primary'
                 : 'text-slate-600 hover:bg-slate-100'
             )}
           >
             Admin
+            {unreadCounts.admin > 0 && (
+              <Badge 
+                variant="error" 
+                className={cn(
+                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
+                  activeTab === 'admin' && "bg-red-500 text-white"
+                )}
+              >
+                {unreadCounts.admin}
+              </Badge>
+            )}
           </button>
         </div>
 
@@ -533,9 +579,16 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                     </div>
                     <div className="flex items-center justify-between">
                       {teacher.phone && (
-                        <p className="text-sm text-slate-500 truncate">
-                          {teacher.phone}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-slate-500 truncate">
+                            {teacher.phone}
+                          </p>
+                          {getUserUnreadCount(teacher.userId) > 0 && (
+                            <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-semibold rounded-full flex-shrink-0 min-w-[20px] text-center">
+                              {getUserUnreadCount(teacher.userId)}
+                            </span>
+                          )}
+                        </div>
                       )}
                       {existingChat && (
                         <span className="text-xs text-primary font-medium">

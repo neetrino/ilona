@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useTeacherGroups, useTeacherStudents, useTeacherAdmin, useSocket, useCreateDirectChat } from '../hooks';
+import { useTeacherGroups, useTeacherStudents, useTeacherAdmin, useSocket, useCreateDirectChat, useTeacherUnreadCounts } from '../hooks';
 import { fetchGroupChat } from '../api/chat.api';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { formatMessagePreview } from '../utils';
+import { Badge } from '@/shared/components/ui/badge';
 
 interface TeacherChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -27,6 +28,9 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
     activeTab === 'students' ? searchQuery : undefined
   );
   const { data: admin, isLoading: isLoadingAdmin } = useTeacherAdmin();
+
+  // Get unread counts for tabs
+  const { counts: unreadCounts } = useTeacherUnreadCounts();
 
   // Create direct chat mutation
   const createDirectChat = useCreateDirectChat();
@@ -155,13 +159,24 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
               setSearchQuery(''); // Clear search when switching tabs
             }}
             className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2',
               activeTab === 'groups'
                 ? 'bg-primary/20 text-primary'
                 : 'text-slate-600 hover:bg-slate-100'
             )}
           >
             Groups
+            {unreadCounts.groups > 0 && (
+              <Badge 
+                variant="error" 
+                className={cn(
+                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
+                  activeTab === 'groups' && "bg-red-500 text-white"
+                )}
+              >
+                {unreadCounts.groups}
+              </Badge>
+            )}
           </button>
           <button
             onClick={() => {
@@ -169,13 +184,24 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
               setSearchQuery(''); // Clear search when switching tabs
             }}
             className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2',
               activeTab === 'students'
                 ? 'bg-primary/20 text-primary'
                 : 'text-slate-600 hover:bg-slate-100'
             )}
           >
             Students
+            {unreadCounts.students > 0 && (
+              <Badge 
+                variant="error" 
+                className={cn(
+                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
+                  activeTab === 'students' && "bg-red-500 text-white"
+                )}
+              >
+                {unreadCounts.students}
+              </Badge>
+            )}
           </button>
           <button
             onClick={() => {
@@ -183,13 +209,24 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
               setSearchQuery(''); // Clear search when switching tabs
             }}
             className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2',
               activeTab === 'admin'
                 ? 'bg-primary/20 text-primary'
                 : 'text-slate-600 hover:bg-slate-100'
             )}
           >
             Admin
+            {unreadCounts.admin > 0 && (
+              <Badge 
+                variant="error" 
+                className={cn(
+                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
+                  activeTab === 'admin' && "bg-red-500 text-white"
+                )}
+              >
+                {unreadCounts.admin}
+              </Badge>
+            )}
           </button>
         </div>
 

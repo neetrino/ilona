@@ -87,6 +87,15 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
     return name[0]?.toUpperCase() || '?';
   };
 
+  // Get unread count for a specific user ID
+  const getUserUnreadCount = (userId: string): number => {
+    const chat = chats.find((c) => {
+      if (c.type !== 'DIRECT') return false;
+      return c.participants.some((p) => p.userId === userId);
+    });
+    return chat?.unreadCount || 0;
+  };
+
   // Render list items
   const renderStudents = () => {
     if (isLoading) {
@@ -144,7 +153,14 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-slate-900 truncate">{student.name}</h3>
               {student.phone && (
-                <p className="text-sm text-slate-500 truncate">{student.phone}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-slate-500 truncate">{student.phone}</p>
+                  {getUserUnreadCount(student.id) > 0 && (
+                    <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-semibold rounded-full flex-shrink-0 min-w-[20px] text-center">
+                      {getUserUnreadCount(student.id)}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </button>
@@ -209,7 +225,14 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-slate-900 truncate">{teacher.name}</h3>
               {teacher.phone && (
-                <p className="text-sm text-slate-500 truncate">{teacher.phone}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-slate-500 truncate">{teacher.phone}</p>
+                  {getUserUnreadCount(teacher.id) > 0 && (
+                    <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-semibold rounded-full flex-shrink-0 min-w-[20px] text-center">
+                      {getUserUnreadCount(teacher.id)}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </button>

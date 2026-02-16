@@ -14,6 +14,8 @@ export {
   useTeacherAdmin,
   useStudentAdmin,
   useAdminUnreadCounts,
+  useTeacherUnreadCounts,
+  useStudentUnreadCounts,
   chatKeys,
 } from './useChat';
 
