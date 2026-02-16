@@ -250,3 +250,10 @@ export interface StudentAdmin {
 export async function fetchStudentAdmin(): Promise<StudentAdmin | null> {
   return api.get<StudentAdmin | null>(`${CHAT_ENDPOINT}/student/admin`);
 }
+
+/**
+ * Mark a chat as read
+ */
+export async function markChatAsRead(chatId: string): Promise<{ success: boolean }> {
+  return api.post<{ success: boolean }>(`${CHAT_ENDPOINT}/${chatId}/read`);
+}

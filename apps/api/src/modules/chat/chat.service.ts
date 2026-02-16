@@ -85,6 +85,7 @@ export class ChatService {
             select: { messages: true },
           },
         },
+        // Initial order by updatedAt (will be re-sorted by lastMessageAt after processing)
         orderBy: { updatedAt: 'desc' },
       });
 
@@ -141,19 +142,31 @@ export class ChatService {
         unreadCounts.map(uc => [uc.chatId, uc.count])
       );
 
-      // Map results with unread counts
-      return chats.map(chat => {
+      // Map results with unread counts and lastMessageAt
+      const chatsWithMetadata = chats.map(chat => {
         const lastReadAt = participantMap.get(chat.id);
         // If no lastReadAt, all messages are unread
         const unreadCount = lastReadAt === undefined || lastReadAt === null
           ? chat._count.messages
           : (unreadCountMap.get(chat.id) ?? 0);
 
+        const lastMessage = chat.messages[0] || null;
+        // lastMessageAt is the timestamp of the last message, or chat.updatedAt if no messages
+        const lastMessageAt = lastMessage?.createdAt || chat.updatedAt;
+
         return {
           ...chat,
           unreadCount,
-          lastMessage: chat.messages[0] || null,
+          lastMessage,
+          lastMessageAt,
         };
+      });
+
+      // Sort by lastMessageAt DESC (newest first)
+      return chatsWithMetadata.sort((a, b) => {
+        const aTime = a.lastMessageAt.getTime();
+        const bTime = b.lastMessageAt.getTime();
+        return bTime - aTime; // DESC order
       });
     } catch (error) {
       this.logger.error(`Failed to get user chats for user ${userId}:`, error);

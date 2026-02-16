@@ -23,8 +23,20 @@ export function ChatList({ onSelectChat }: ChatListProps) {
   // Socket for online status
   const { isConnected, isUserOnline } = useSocket();
 
+  // Sort chats by lastMessageAt (newest first), then filter by search
+  const sortedChats = [...chats].sort((a, b) => {
+    // Use lastMessageAt if available, otherwise fall back to lastMessage.createdAt, then updatedAt
+    const aTime = a.lastMessageAt 
+      ? new Date(a.lastMessageAt).getTime()
+      : (a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : new Date(a.updatedAt).getTime());
+    const bTime = b.lastMessageAt 
+      ? new Date(b.lastMessageAt).getTime()
+      : (b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : new Date(b.updatedAt).getTime());
+    return bTime - aTime; // DESC order (newest first)
+  });
+
   // Filter chats by search
-  const filteredChats = chats.filter((chat) => {
+  const filteredChats = sortedChats.filter((chat) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
 

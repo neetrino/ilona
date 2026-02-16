@@ -60,6 +60,7 @@ export interface Chat {
   };
   participants: ChatParticipant[];
   lastMessage?: Message | null;
+  lastMessageAt?: string; // Timestamp of last message for sorting
   unreadCount?: number;
   isActive?: boolean;
   createdAt: string;

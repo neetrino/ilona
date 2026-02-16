@@ -277,6 +277,8 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Track last marked conversation to prevent duplicate mark-as-read calls
+  const lastMarkedConversationIdRef = useRef<string | null>(null);
 
   const { getDraft, setDraft, clearDraft, getTypingUsers, addTypingUser } = useChatStore();
   // Initialize input as empty - drafts will be loaded in useEffect when chat changes
@@ -323,12 +325,29 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
-  // Mark as read when opening chat
+  // Mark as read when opening chat (with guards to prevent infinite loops)
   useEffect(() => {
-    if (chat.id && isConnected) {
-      markAsRead(chat.id);
+    // Only mark as read if:
+    // 1. chat.id exists
+    // 2. socket is connected
+    // 3. conversationId changed (not the same conversation)
+    // 4. conversation has unread messages
+    // 5. We haven't already marked this conversation as read
+    if (
+      chat.id &&
+      isConnected &&
+      chat.id !== lastMarkedConversationIdRef.current &&
+      (chat.unreadCount || 0) > 0
+    ) {
+      lastMarkedConversationIdRef.current = chat.id;
+      markAsRead(chat.id).catch((error) => {
+        // Reset ref on error so we can retry
+        if (error) {
+          lastMarkedConversationIdRef.current = null;
+        }
+      });
     }
-  }, [chat.id, isConnected, markAsRead]);
+  }, [chat.id, chat.unreadCount, isConnected, markAsRead]);
 
   // Reset input value when chat changes - only load user's own draft, never from messages
   // This is critical: input must NEVER be populated from incoming messages or lastMessage

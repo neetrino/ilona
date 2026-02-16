@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
   fetchChats,
   fetchChat,
@@ -97,6 +98,7 @@ export function useAddMessageToCache() {
   const queryClient = useQueryClient();
 
   return (chatId: string, message: unknown) => {
+    // Update messages cache
     queryClient.setQueryData(
       chatKeys.messages(chatId),
       (oldData: { pages: { items: unknown[] }[] } | undefined) => {
@@ -117,8 +119,50 @@ export function useAddMessageToCache() {
       }
     );
 
-    // Also update the chat list with the last message
-    queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+    // Update chat list cache with new lastMessage and lastMessageAt
+    // This prevents unnecessary refetches and keeps the conversation at the top
+    queryClient.setQueryData(
+      chatKeys.list(),
+      (oldData: Array<{ id: string; lastMessage?: unknown; lastMessageAt?: string; unreadCount?: number; updatedAt: string }> | undefined) => {
+        if (!oldData) return oldData;
+
+        const messageWithDate = message as { createdAt: string; senderId?: string };
+        const now = new Date().toISOString();
+        const lastMessageAt = messageWithDate?.createdAt || now;
+
+        // Get current user to check if message is from another user
+        const { user } = useAuthStore.getState();
+        const isFromOtherUser = messageWithDate?.senderId && messageWithDate.senderId !== user?.id;
+
+        return oldData.map((chat) => {
+          if (chat.id === chatId) {
+            // Update lastMessage, lastMessageAt, and updatedAt
+            // Also increment unreadCount if message is from another user
+            const newUnreadCount = isFromOtherUser 
+              ? (chat.unreadCount || 0) + 1 
+              : chat.unreadCount;
+
+            return {
+              ...chat,
+              lastMessage: message,
+              lastMessageAt,
+              updatedAt: now,
+              unreadCount: newUnreadCount,
+            };
+          }
+          return chat;
+        }).sort((a, b) => {
+          // Re-sort by lastMessageAt (newest first)
+          const aTime = a.lastMessageAt 
+            ? new Date(a.lastMessageAt).getTime()
+            : (a.lastMessage && 'createdAt' in a.lastMessage ? new Date((a.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(a.updatedAt).getTime());
+          const bTime = b.lastMessageAt 
+            ? new Date(b.lastMessageAt).getTime()
+            : (b.lastMessage && 'createdAt' in b.lastMessage ? new Date((b.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(b.updatedAt).getTime());
+          return bTime - aTime; // DESC order
+        });
+      }
+    );
   };
 }
 
@@ -167,6 +211,28 @@ export function useRemoveMessageFromCache() {
             items: page.items.filter((msg) => msg.id !== messageId),
           })),
         };
+      }
+    );
+  };
+}
+
+/**
+ * Hook to update chat unread count in cache after mark-as-read
+ * This prevents infinite loops by updating cache directly instead of invalidating
+ */
+export function useUpdateChatUnreadCount() {
+  const queryClient = useQueryClient();
+
+  return (chatId: string, unreadCount: number) => {
+    // Update the chat list cache
+    queryClient.setQueryData(
+      chatKeys.list(),
+      (oldData: Array<{ id: string; unreadCount?: number }> | undefined) => {
+        if (!oldData) return oldData;
+
+        return oldData.map((chat) =>
+          chat.id === chatId ? { ...chat, unreadCount } : chat
+        );
       }
     );
   };
