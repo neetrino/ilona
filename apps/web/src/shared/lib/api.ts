@@ -277,9 +277,17 @@ class ApiClient {
 
     if (!response.ok) {
       const errorData = data as ApiErrorResponse;
-      const message = Array.isArray(errorData.message) 
-        ? errorData.message[0] 
-        : errorData.message || errorData.error || 'An error occurred';
+      let message: string;
+      
+      // Provide user-friendly messages for common errors
+      if (response.status === 503) {
+        message = 'Service is temporarily unavailable. Please try again later.';
+      } else {
+        message = Array.isArray(errorData.message) 
+          ? errorData.message[0] 
+          : errorData.message || errorData.error || 'An error occurred';
+      }
+      
       throw new ApiError(
         message,
         response.status,

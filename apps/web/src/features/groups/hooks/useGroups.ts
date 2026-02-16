@@ -35,6 +35,19 @@ export function useGroups(filters?: GroupFilters) {
   return useQuery({
     queryKey: groupKeys.list(filters),
     queryFn: () => fetchGroups(filters),
+    // Don't retry on 503 (Service Unavailable) errors
+    retry: (failureCount, error) => {
+      // Don't retry if it's a 503 error (service unavailable)
+      if (error instanceof ApiError && error.statusCode === 503) {
+        return false;
+      }
+      // Don't retry if it's a 401 error (authentication issue)
+      if (error instanceof ApiError && error.statusCode === 401) {
+        return false;
+      }
+      // Retry up to 2 times for other errors
+      return failureCount < 2;
+    },
   });
 }
 
@@ -46,6 +59,23 @@ export function useGroup(id: string, enabled = true) {
     queryKey: groupKeys.detail(id),
     queryFn: () => fetchGroup(id),
     enabled: enabled && !!id,
+    // Don't retry on 503 (Service Unavailable) or 404 (Not Found) errors
+    retry: (failureCount, error) => {
+      // Don't retry if it's a 503 error (service unavailable)
+      if (error instanceof ApiError && error.statusCode === 503) {
+        return false;
+      }
+      // Don't retry if it's a 404 error (group not found)
+      if (error instanceof ApiError && error.statusCode === 404) {
+        return false;
+      }
+      // Don't retry if it's a 401 error (authentication issue)
+      if (error instanceof ApiError && error.statusCode === 401) {
+        return false;
+      }
+      // Retry up to 2 times for other errors
+      return failureCount < 2;
+    },
   });
 }
 
