@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useAuthStore, getDashboardPath } from '../store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { Button } from '@/shared/components/ui/button';
@@ -20,6 +21,7 @@ export function LoginForm() {
   const tRoles = useTranslations('roles');
   const { data: logoData, isLoading: isLoadingLogo } = useLogo();
   const logoUrl = logoData?.logoUrl;
+  const shouldReduceMotion = useReducedMotion();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +41,20 @@ export function LoginForm() {
   return (
     <Card className="w-full shadow-2xl border-border/50 bg-card backdrop-blur-sm">
       <CardHeader className="space-y-3 text-center pb-6 px-6 pt-8 sm:px-8 sm:pt-10">
-        <div className="mx-auto w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-transform duration-300 hover:scale-105 overflow-hidden bg-primary">
+        <motion.div
+          className="mx-auto w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg overflow-hidden bg-primary"
+          initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
+          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0.2 }
+              : {
+                  duration: 0.35,
+                  ease: [0.16, 1, 0.3, 1], // cubic-bezier ease-out
+                }
+          }
+          whileHover={shouldReduceMotion ? undefined : { scale: 1.05, y: -2 }}
+        >
           {logoUrl ? (
             <>
               <img
@@ -67,7 +82,7 @@ export function LoginForm() {
               )}
             </div>
           )}
-        </div>
+        </motion.div>
         <CardTitle className="text-3xl font-semibold text-foreground tracking-tight">
           {tHome('title')}
         </CardTitle>
