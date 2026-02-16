@@ -344,6 +344,7 @@ class ApiClient {
           Array.isArray(errorData.message) ? errorData.message : undefined
         );
       }
+    }
 
     if (!response.ok) {
       const errorData = data as ApiErrorResponse;
@@ -364,6 +365,8 @@ class ApiClient {
         Array.isArray(errorData.message) ? errorData.message : undefined
       );
     }
+
+    return data as T;
   }
 
   /**
