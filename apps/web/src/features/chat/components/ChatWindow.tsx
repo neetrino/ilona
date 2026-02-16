@@ -338,19 +338,43 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
     };
   }, [chat.id, inputValue, setDraft]);
 
+  // Get other participant for direct chats
+  const getOtherParticipant = () => {
+    if (chat.type === 'GROUP') return null;
+    return chat.participants.find((p) => p.userId !== user?.id);
+  };
+
   // Get chat title
   const getChatTitle = () => {
     if (chat.type === 'GROUP') {
       return chat.name || chat.group?.name || 'Group Chat';
     }
-    const other = chat.participants.find((p) => p.userId !== user?.id);
+    const other = getOtherParticipant();
     return other ? `${other.user.firstName} ${other.user.lastName}` : 'Chat';
+  };
+
+  // Get avatar URL for chat header
+  const getChatAvatarUrl = () => {
+    if (chat.type === 'GROUP') return null;
+    const other = getOtherParticipant();
+    return other?.user.avatarUrl || null;
+  };
+
+  // Get avatar initials for fallback
+  const getChatAvatarInitials = () => {
+    if (chat.type === 'GROUP') {
+      const name = chat.name || chat.group?.name || 'Group Chat';
+      return name[0] || 'G';
+    }
+    const other = getOtherParticipant();
+    if (!other) return '?';
+    return `${other.user.firstName[0] || ''}${other.user.lastName[0] || ''}` || '?';
   };
 
   // Get online status for direct chats
   const getOnlineStatus = () => {
     if (chat.type === 'GROUP') return null;
-    const other = chat.participants.find((p) => p.userId !== user?.id);
+    const other = getOtherParticipant();
     if (!other) return null;
     return isUserOnline(chat.id, other.userId);
   };
@@ -500,15 +524,25 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
         )}
 
         {/* Avatar */}
-        <div
-          className={cn(
-            'w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold',
-            chat.type === 'GROUP'
-              ? 'bg-gradient-to-br from-purple-500 to-purple-600'
-              : 'bg-primary'
+        <div className="relative">
+          {getChatAvatarUrl() ? (
+            <img
+              src={getChatAvatarUrl()!}
+              alt={getChatTitle()}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div
+              className={cn(
+                'w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold',
+                chat.type === 'GROUP'
+                  ? 'bg-gradient-to-br from-purple-500 to-purple-600'
+                  : 'bg-primary'
+              )}
+            >
+              {getChatAvatarInitials()}
+            </div>
           )}
-        >
-          {getChatTitle()[0]}
         </div>
 
         {/* Title */}
@@ -615,8 +649,18 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
                 >
                   {/* Avatar (only for others) */}
                   {!isOwn && (
-                    <div className="w-8 h-8 rounded-full bg-slate-300 flex items-center justify-center text-slate-600 text-sm font-medium flex-shrink-0">
-                      {message.sender?.firstName?.[0] || '?'}
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {message.sender?.avatarUrl ? (
+                        <img
+                          src={message.sender.avatarUrl}
+                          alt={`${message.sender.firstName} ${message.sender.lastName}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-300 flex items-center justify-center text-slate-600 text-sm font-medium">
+                          {message.sender?.firstName?.[0] || '?'}
+                        </div>
+                      )}
                     </div>
                   )}
 

@@ -47,6 +47,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
       return {
         name: chat.name || chat.group?.name || 'Group Chat',
         avatar: chat.name?.[0] || chat.group?.name?.[0] || 'G',
+        avatarUrl: null,
         isGroup: true,
       };
     }
@@ -62,6 +63,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
       avatar: otherParticipant
         ? `${otherParticipant.user.firstName[0]}${otherParticipant.user.lastName[0]}`
         : '?',
+      avatarUrl: otherParticipant?.user.avatarUrl || null,
       isGroup: false,
       otherUserId: otherParticipant?.userId,
     };
@@ -186,16 +188,24 @@ export function ChatList({ onSelectChat }: ChatListProps) {
               >
                 {/* Avatar */}
                 <div className="relative">
-                  <div
-                    className={cn(
-                      'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold',
-                      info.isGroup
-                        ? 'bg-gradient-to-br from-purple-500 to-purple-600'
-                        : 'bg-primary'
-                    )}
-                  >
-                    {info.avatar}
-                  </div>
+                  {info.avatarUrl ? (
+                    <img
+                      src={info.avatarUrl}
+                      alt={info.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className={cn(
+                        'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold',
+                        info.isGroup
+                          ? 'bg-gradient-to-br from-purple-500 to-purple-600'
+                          : 'bg-primary'
+                      )}
+                    >
+                      {info.avatar}
+                    </div>
+                  )}
                   {!info.isGroup && isOnline && (
                     <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
                   )}
