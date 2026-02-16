@@ -12,8 +12,9 @@ import {
   fetchGroupChat,
   fetchTeacherGroups,
   fetchTeacherStudents,
+  fetchTeacherAdmin,
 } from '../api/chat.api';
-import type { AdminChatUser, AdminChatGroup, TeacherGroup, TeacherStudent } from '../api/chat.api';
+import type { AdminChatUser, AdminChatGroup, TeacherGroup, TeacherStudent, TeacherAdmin } from '../api/chat.api';
 
 // Query keys
 export const chatKeys = {
@@ -30,6 +31,7 @@ export const chatKeys = {
   // Teacher chat lists
   teacherGroups: (search?: string) => [...chatKeys.all, 'teacher', 'groups', search] as const,
   teacherStudents: (search?: string) => [...chatKeys.all, 'teacher', 'students', search] as const,
+  teacherAdmin: () => [...chatKeys.all, 'teacher', 'admin'] as const,
 };
 
 /**
@@ -75,7 +77,12 @@ export function useCreateDirectChat() {
   return useMutation({
     mutationFn: (participantId: string) => createDirectChat(participantId),
     onSuccess: () => {
+      // Invalidate all chat-related queries to ensure both sides see the conversation
       queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+      // Invalidate teacher-specific queries
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'teacher'] });
+      // Invalidate admin-specific queries
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
     },
   });
 }
@@ -217,6 +224,17 @@ export function useTeacherStudents(search?: string) {
   return useQuery({
     queryKey: chatKeys.teacherStudents(search),
     queryFn: () => fetchTeacherStudents(search),
+    staleTime: 60 * 1000, // Cache for 1 minute
+  });
+}
+
+/**
+ * Teacher-only: Hook to fetch admin user info for direct messaging
+ */
+export function useTeacherAdmin() {
+  return useQuery({
+    queryKey: chatKeys.teacherAdmin(),
+    queryFn: () => fetchTeacherAdmin(),
     staleTime: 60 * 1000, // Cache for 1 minute
   });
 }

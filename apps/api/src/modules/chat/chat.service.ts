@@ -590,7 +590,7 @@ export class ChatService {
       throw new NotFoundException('User not found');
     }
 
-    // For direct chats with one participant, validate student-teacher relationship
+    // For direct chats with one participant, validate relationships
     if (dto.participantIds.length === 1) {
       const participantId = dto.participantIds[0];
       const participant = await this.prisma.user.findUnique({
@@ -602,52 +602,90 @@ export class ChatService {
         throw new NotFoundException('Participant not found');
       }
 
-      // If student is trying to DM a teacher, validate assignment
-      if (creator.role === UserRole.STUDENT && participant.role === UserRole.TEACHER) {
-        const canDM = await this.validateStudentTeacherDM(creatorId, participantId);
-        if (!canDM) {
-          throw new ForbiddenException('You can only message teachers assigned to you');
+      // Allow Admin ↔ Teacher and Admin ↔ Student direct messaging (no validation needed)
+      const isAdminInvolved = creator.role === UserRole.ADMIN || participant.role === UserRole.ADMIN;
+      
+      if (!isAdminInvolved) {
+        // If student is trying to DM a teacher, validate assignment
+        if (creator.role === UserRole.STUDENT && participant.role === UserRole.TEACHER) {
+          const canDM = await this.validateStudentTeacherDM(creatorId, participantId);
+          if (!canDM) {
+            throw new ForbiddenException('You can only message teachers assigned to you');
+          }
         }
-      }
 
-      // If teacher is trying to DM a student, validate assignment (reverse check)
-      if (creator.role === UserRole.TEACHER && participant.role === UserRole.STUDENT) {
-        const canDM = await this.validateStudentTeacherDM(participantId, creatorId);
-        if (!canDM) {
-          throw new ForbiddenException('You can only message students assigned to you');
+        // If teacher is trying to DM a student, validate assignment (reverse check)
+        if (creator.role === UserRole.TEACHER && participant.role === UserRole.STUDENT) {
+          const canDM = await this.validateStudentTeacherDM(participantId, creatorId);
+          if (!canDM) {
+            throw new ForbiddenException('You can only message students assigned to you');
+          }
         }
       }
     }
 
     // Check if direct chat already exists between these users
+    // For 1:1 chats, find a DIRECT chat that has exactly these two participants
     if (dto.participantIds.length === 1) {
-      const existingChat = await this.prisma.chat.findFirst({
+      const participantId = dto.participantIds[0];
+      const userIds = [creatorId, participantId].sort(); // Sort for consistent lookup
+      
+      // Find all direct chats where creator is a participant
+      const chatsWithCreator = await this.prisma.chat.findMany({
         where: {
           type: ChatType.DIRECT,
           participants: {
-            every: {
-              userId: { in: [creatorId, dto.participantIds[0]] },
+            some: {
+              userId: creatorId,
+              leftAt: null,
             },
           },
         },
         include: {
           participants: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  firstName: true,
-                  lastName: true,
-                  avatarUrl: true,
-                },
-              },
+            where: { leftAt: null },
+            select: {
+              userId: true,
             },
           },
         },
       });
 
+      // Check if any of these chats has exactly these two participants
+      const existingChat = chatsWithCreator.find((chat) => {
+        const participantUserIds = chat.participants.map(p => p.userId).sort();
+        return participantUserIds.length === 2 &&
+               participantUserIds[0] === userIds[0] &&
+               participantUserIds[1] === userIds[1];
+      });
+
       if (existingChat) {
-        return existingChat;
+        // Return the full chat with all relations
+        const fullChat = await this.prisma.chat.findUnique({
+          where: { id: existingChat.id },
+          include: {
+            participants: {
+              where: { leftAt: null },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+        
+        if (!fullChat) {
+          // This shouldn't happen, but handle it gracefully
+          throw new NotFoundException('Chat not found');
+        }
+        
+        return fullChat;
       }
     }
 
@@ -692,6 +730,7 @@ export class ChatService {
     const chat = await this.getChatById(dto.chatId, senderId, senderRole);
 
     // Additional permission check for direct chats: validate student-teacher relationship
+    // Admin ↔ Teacher and Admin ↔ Student messaging is always allowed
     if (chat.type === ChatType.DIRECT) {
       const sender = await this.prisma.user.findUnique({
         where: { id: senderId },
@@ -707,19 +746,24 @@ export class ChatService {
             select: { role: true },
           });
 
-          // If student is sending to teacher, validate assignment
-          if (sender.role === UserRole.STUDENT && otherUser?.role === UserRole.TEACHER) {
-            const canDM = await this.validateStudentTeacherDM(senderId, otherParticipant.userId);
-            if (!canDM) {
-              throw new ForbiddenException('You can only message teachers assigned to you');
+          // Allow Admin ↔ Teacher and Admin ↔ Student messaging (no validation needed)
+          const isAdminInvolved = sender.role === UserRole.ADMIN || otherUser?.role === UserRole.ADMIN;
+          
+          if (!isAdminInvolved) {
+            // If student is sending to teacher, validate assignment
+            if (sender.role === UserRole.STUDENT && otherUser?.role === UserRole.TEACHER) {
+              const canDM = await this.validateStudentTeacherDM(senderId, otherParticipant.userId);
+              if (!canDM) {
+                throw new ForbiddenException('You can only message teachers assigned to you');
+              }
             }
-          }
 
-          // If teacher is sending to student, validate assignment
-          if (sender.role === UserRole.TEACHER && otherUser?.role === UserRole.STUDENT) {
-            const canDM = await this.validateStudentTeacherDM(otherParticipant.userId, senderId);
-            if (!canDM) {
-              throw new ForbiddenException('You can only message students assigned to you');
+            // If teacher is sending to student, validate assignment
+            if (sender.role === UserRole.TEACHER && otherUser?.role === UserRole.STUDENT) {
+              const canDM = await this.validateStudentTeacherDM(otherParticipant.userId, senderId);
+              if (!canDM) {
+                throw new ForbiddenException('You can only message students assigned to you');
+              }
             }
           }
         }
@@ -1896,5 +1940,121 @@ export class ChatService {
     });
 
     return studentsWithChat;
+  }
+
+  /**
+   * Get admin user info for Teacher Chat
+   * Returns the first active admin user (or null if none exists)
+   * Also includes existing direct chat info if one exists
+   */
+  async getAdminForTeacher(teacherUserId: string) {
+    // Find the first active admin user
+    const adminUser = await this.prisma.user.findFirst({
+      where: {
+        role: UserRole.ADMIN,
+        status: 'ACTIVE',
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+      },
+      orderBy: {
+        createdAt: 'asc', // Get the first admin (primary admin)
+      },
+    });
+
+    if (!adminUser) {
+      return null;
+    }
+
+    // Check if a direct chat already exists between teacher and admin
+    const userIds = [teacherUserId, adminUser.id].sort();
+    
+    const chatsWithTeacher = await this.prisma.chat.findMany({
+      where: {
+        type: ChatType.DIRECT,
+        participants: {
+          some: {
+            userId: teacherUserId,
+            leftAt: null,
+          },
+        },
+      },
+      include: {
+        participants: {
+          where: { leftAt: null },
+          select: {
+            userId: true,
+            lastReadAt: true,
+          },
+        },
+        messages: {
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+          where: {
+            NOT: {
+              AND: [
+                { content: null },
+                { isSystem: true },
+              ],
+            },
+          },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: { messages: true },
+        },
+      },
+    });
+
+    // Find the chat with exactly these two participants
+    const existingChat = chatsWithTeacher.find((chat) => {
+      const participantUserIds = chat.participants.map(p => p.userId).sort();
+      return participantUserIds.length === 2 &&
+             participantUserIds[0] === userIds[0] &&
+             participantUserIds[1] === userIds[1];
+    });
+
+    // Get unread count if chat exists
+    let unreadCount = 0;
+    if (existingChat) {
+      const teacherParticipant = existingChat.participants.find(p => p.userId === teacherUserId);
+      const lastReadAt = teacherParticipant?.lastReadAt;
+      
+      if (lastReadAt) {
+        unreadCount = await this.prisma.message.count({
+          where: {
+            chatId: existingChat.id,
+            createdAt: { gt: lastReadAt },
+            senderId: { not: teacherUserId },
+          },
+        });
+      } else {
+        // If no lastReadAt, all messages are unread
+        unreadCount = existingChat._count.messages;
+      }
+    }
+
+    return {
+      id: adminUser.id,
+      firstName: adminUser.firstName,
+      lastName: adminUser.lastName,
+      name: `${adminUser.firstName} ${adminUser.lastName}`,
+      avatarUrl: adminUser.avatarUrl,
+      chatId: existingChat?.id || null,
+      lastMessage: existingChat?.messages[0] || null,
+      unreadCount,
+      updatedAt: existingChat?.updatedAt || null,
+    };
   }
 }

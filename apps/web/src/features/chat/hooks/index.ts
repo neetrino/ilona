@@ -11,6 +11,7 @@ export {
   useAdminGroups,
   useTeacherGroups,
   useTeacherStudents,
+  useTeacherAdmin,
   chatKeys,
 } from './useChat';
 

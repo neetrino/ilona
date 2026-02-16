@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useTeacherGroups, useTeacherStudents, useSocket, useCreateDirectChat } from '../hooks';
+import { useTeacherGroups, useTeacherStudents, useTeacherAdmin, useSocket, useCreateDirectChat } from '../hooks';
 import { fetchGroupChat } from '../api/chat.api';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
@@ -26,6 +26,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
   const { data: students = [], isLoading: isLoadingStudents } = useTeacherStudents(
     activeTab === 'students' ? searchQuery : undefined
   );
+  const { data: admin, isLoading: isLoadingAdmin } = useTeacherAdmin();
 
   // Create direct chat mutation
   const createDirectChat = useCreateDirectChat();
@@ -96,8 +97,27 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
     }
   };
 
+  // Handle admin click - create or open DM
+  const handleAdminClick = async (adminUserId: string, chatId: string | null) => {
+    try {
+      if (chatId) {
+        // Chat exists, fetch it
+        const { fetchChat } = await import('../api/chat.api');
+        const chat = await fetchChat(chatId);
+        onSelectChat(chat);
+      } else {
+        // Create new direct chat
+        const newChat = await createDirectChat.mutateAsync(adminUserId);
+        onSelectChat(newChat);
+      }
+    } catch (error) {
+      console.error('Failed to open admin chat:', error);
+    }
+  };
+
   const isLoading = activeTab === 'groups' ? isLoadingGroups : isLoadingStudents;
   const hasData = activeTab === 'groups' ? groups.length > 0 : students.length > 0;
+  const hasAdmin = admin !== null && admin !== undefined;
 
   return (
     <div className="flex flex-col h-full">
@@ -174,6 +194,78 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
+        {/* Admin Contact - Always show at top if available */}
+        {hasAdmin && admin && (
+          <div className="border-b border-slate-200">
+            <button
+              onClick={() => handleAdminClick(admin.id, admin.chatId || null)}
+              disabled={createDirectChat.isPending}
+              className={cn(
+                'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
+                activeChat?.id === admin.chatId && 'bg-primary/10 hover:bg-primary/10',
+                createDirectChat.isPending && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              {/* Avatar */}
+              <div className="relative">
+                {admin.avatarUrl ? (
+                  <img
+                    src={admin.avatarUrl}
+                    alt={admin.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
+                    {admin.firstName?.[0]}{admin.lastName?.[0]}
+                  </div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <h3
+                    className={cn(
+                      'font-medium truncate',
+                      (admin.unreadCount || 0) > 0 ? 'text-slate-900' : 'text-slate-700'
+                    )}
+                  >
+                    {admin.name}
+                  </h3>
+                  {admin.chatId && admin.updatedAt && (
+                    <span className="text-xs text-slate-500 flex-shrink-0">
+                      {formatTime(admin.lastMessage?.createdAt || admin.updatedAt)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  {admin.chatId ? (
+                    <>
+                      <p
+                        className={cn(
+                          'text-sm truncate',
+                          (admin.unreadCount || 0) > 0 ? 'text-slate-700 font-medium' : 'text-slate-500'
+                        )}
+                      >
+                        {formatMessagePreview(admin.lastMessage)}
+                      </p>
+                      {(admin.unreadCount || 0) > 0 && (
+                        <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
+                          {admin.unreadCount}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-slate-500 italic">
+                      Click to start conversation
+                    </p>
+                  )}
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (

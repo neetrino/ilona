@@ -190,3 +190,33 @@ export async function fetchTeacherStudents(search?: string): Promise<TeacherStud
   const url = query ? `${CHAT_ENDPOINT}/teacher/students?${query}` : `${CHAT_ENDPOINT}/teacher/students`;
   return api.get<TeacherStudent[]>(url);
 }
+
+/**
+ * Teacher-only: Fetch admin user info for direct messaging
+ */
+export interface TeacherAdmin {
+  id: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  avatarUrl?: string | null;
+  chatId: string | null;
+  lastMessage?: {
+    id: string;
+    type?: string;
+    content: string | null;
+    fileName?: string | null;
+    createdAt: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  } | null;
+  unreadCount: number;
+  updatedAt: string | null;
+}
+
+export async function fetchTeacherAdmin(): Promise<TeacherAdmin | null> {
+  return api.get<TeacherAdmin | null>(`${CHAT_ENDPOINT}/teacher/admin`);
+}

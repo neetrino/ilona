@@ -203,7 +203,8 @@ describe('ChatService', () => {
         'user-1',
       );
 
-      expect(result.type).toBe(ChatType.DIRECT);
+      expect(result).not.toBeNull();
+      expect(result?.type).toBe(ChatType.DIRECT);
     });
 
     it('should return existing chat if already exists', async () => {
