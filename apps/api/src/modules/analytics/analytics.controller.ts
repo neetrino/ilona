@@ -21,7 +21,7 @@ export class AnalyticsController {
   }
 
   @Get('teachers')
-  @UseGuards(JwtAuthGuard, RolesGuard, AnalyticsUnlockGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async getTeacherPerformance(
     @Query('dateFrom') dateFrom?: string,
@@ -34,14 +34,14 @@ export class AnalyticsController {
   }
 
   @Get('students/risk')
-  @UseGuards(JwtAuthGuard, RolesGuard, AnalyticsUnlockGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async getStudentRiskAnalytics() {
     return this.analyticsService.getStudentRiskAnalytics();
   }
 
   @Get('revenue')
-  @UseGuards(JwtAuthGuard, RolesGuard, AnalyticsUnlockGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async getRevenueAnalytics(@Query('months') months?: string) {
     return this.analyticsService.getRevenueAnalytics(
@@ -50,7 +50,7 @@ export class AnalyticsController {
   }
 
   @Get('attendance')
-  @UseGuards(JwtAuthGuard, RolesGuard, AnalyticsUnlockGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async getAttendanceOverview(
     @Query('dateFrom') dateFrom?: string,
