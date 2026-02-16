@@ -279,7 +279,8 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { getDraft, setDraft, clearDraft, getTypingUsers, addTypingUser } = useChatStore();
-  const [inputValue, setInputValue] = useState(getDraft(chat.id));
+  // Initialize input as empty - drafts will be loaded in useEffect when chat changes
+  const [inputValue, setInputValue] = useState('');
   const [showVocabularyModal, setShowVocabularyModal] = useState(false);
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
@@ -329,14 +330,33 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
     }
   }, [chat.id, isConnected, markAsRead]);
 
-  // Save draft on unmount
+  // Reset input value when chat changes - only load user's own draft, never from messages
+  // This is critical: input must NEVER be populated from incoming messages or lastMessage
+  useEffect(() => {
+    // Always reset input when switching chats
+    // Only load draft if user has previously typed something (user's own draft)
+    // NEVER use chat.lastMessage or any message content
+    const draft = getDraft(chat.id);
+    // Only set draft if it exists and is not empty (user's own typed content)
+    // This ensures incoming messages never appear in the input
+    setInputValue(draft || '');
+  }, [chat.id, getDraft]);
+
+  // Save draft on unmount - only save if user has typed something
+  // This ensures we never accidentally save incoming messages as drafts
   useEffect(() => {
     return () => {
+      // Only save draft if input has content (user's typed text)
+      // This is safe because inputValue is only set by user typing or from a previous draft
+      // It is NEVER set from incoming messages or chat.lastMessage
       if (inputValue.trim()) {
         setDraft(chat.id, inputValue);
+      } else {
+        // Clear draft if input is empty
+        clearDraft(chat.id);
       }
     };
-  }, [chat.id, inputValue, setDraft]);
+  }, [chat.id, inputValue, setDraft, clearDraft]);
 
   // Get other participant for direct chats
   const getOtherParticipant = () => {
