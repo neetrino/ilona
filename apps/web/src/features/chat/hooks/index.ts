@@ -13,6 +13,7 @@ export {
   useTeacherStudents,
   useTeacherAdmin,
   useStudentAdmin,
+  useAdminUnreadCounts,
   chatKeys,
 } from './useChat';
 

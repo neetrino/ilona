@@ -45,6 +45,8 @@ export interface SocketOptions {
  */
 export function initSocket(options: SocketOptions): Socket {
   if (socket?.connected) {
+    // Socket already connected, call onConnect callback to sync state
+    options.onConnect?.();
     return socket;
   }
 

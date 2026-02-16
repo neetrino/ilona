@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
@@ -317,4 +318,58 @@ export function useStudentAdmin() {
     queryFn: () => fetchStudentAdmin(),
     staleTime: 60 * 1000, // Cache for 1 minute
   });
+}
+
+/**
+ * Hook to calculate unread message counts per section (Groups/Teachers/Students)
+ * Used for admin chat sidebar badges
+ */
+export function useAdminUnreadCounts() {
+  const { user } = useAuthStore();
+  const { data: chats = [], isLoading } = useChats();
+
+  const counts = React.useMemo(() => {
+    if (!user || !chats.length) {
+      return {
+        groups: 0,
+        teachers: 0,
+        students: 0,
+      };
+    }
+
+    let groupsUnread = 0;
+    let teachersUnread = 0;
+    let studentsUnread = 0;
+
+    chats.forEach((chat) => {
+      const unreadCount = chat.unreadCount || 0;
+      if (unreadCount === 0) return;
+
+      if (chat.type === 'GROUP') {
+        groupsUnread += unreadCount;
+      } else if (chat.type === 'DIRECT') {
+        // Find the other participant (not the current user)
+        const otherParticipant = chat.participants.find(
+          (p) => p.userId !== user.id
+        );
+        
+        if (otherParticipant?.user?.role === 'TEACHER') {
+          teachersUnread += unreadCount;
+        } else if (otherParticipant?.user?.role === 'STUDENT') {
+          studentsUnread += unreadCount;
+        }
+      }
+    });
+
+    return {
+      groups: groupsUnread,
+      teachers: teachersUnread,
+      students: studentsUnread,
+    };
+  }, [chats, user]);
+
+  return {
+    counts,
+    isLoading,
+  };
 }

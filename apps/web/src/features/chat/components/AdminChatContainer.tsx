@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { AdminChatList } from './AdminChatList';
 import { ChatWindow } from './ChatWindow';
 import { useChatStore } from '../store/chat.store';
-import { useSocket, useChatDetail } from '../hooks';
+import { useSocket, useChatDetail, chatKeys } from '../hooks';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 
@@ -176,9 +177,30 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
     }
   };
 
+  const queryClient = useQueryClient();
+
   const handleSelectChat = (chat: Chat) => {
     setActiveChat(chat);
     setMobileListVisible(false);
+    
+    // Add/update chat in cache so groupUnreadMap can access it
+    queryClient.setQueryData(
+      chatKeys.list(),
+      (oldData: Chat[] | undefined) => {
+        if (!oldData) return [chat];
+        
+        const existingIndex = oldData.findIndex((c) => c.id === chat.id);
+        if (existingIndex >= 0) {
+          // Update existing chat
+          const updated = [...oldData];
+          updated[existingIndex] = chat;
+          return updated;
+        }
+        // Add new chat to the list
+        return [chat, ...oldData];
+      }
+    );
+    
     // Update URL immediately
     const params = new URLSearchParams(searchParams.toString());
     params.set('conversationId', chat.id);

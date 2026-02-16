@@ -319,7 +319,6 @@ export default function TeacherCalendarPage() {
           )}
         </div>
       </div>
-      console.log("hello");
       {/* Legend */}
       {viewMode !== 'list' && (
         <div className="flex items-center gap-4 mb-4 text-sm">

@@ -89,8 +89,9 @@ export default function StudentsPage() {
   const pageSize = 10;
 
   // Fetch teachers, groups, and centers for filters and dropdowns
-  const { data: teachersData } = useTeachers({ take: 100, status: 'ACTIVE' });
-  const { data: groupsData } = useGroups({ take: 100, isActive: true });
+  // Reduced take limits for better performance - filters don't need 100 items
+  const { data: teachersData } = useTeachers({ take: 50, status: 'ACTIVE' });
+  const { data: groupsData } = useGroups({ take: 50, isActive: true });
   const { data: centersData } = useCenters({ isActive: true });
 
   // Convert filters to arrays for API
