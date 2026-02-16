@@ -25,17 +25,6 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
   const { counts: unreadCounts } = useAdminUnreadCounts();
   const { data: chats = [] } = useChats();
 
-  // Create a map of groupId -> unreadCount for GROUP type chats
-  const groupUnreadMap = useMemo(() => {
-    const map = new Map<string, number>();
-    chats.forEach((chat) => {
-      if (chat.type === 'GROUP' && chat.groupId && (chat.unreadCount || 0) > 0) {
-        map.set(chat.groupId, chat.unreadCount || 0);
-      }
-    });
-    return map;
-  }, [chats]);
-
   // Reset search query when tab changes
   useEffect(() => {
     setSearchQuery('');
@@ -56,6 +45,26 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
                     activeTab === 'teachers' ? isLoadingTeachers : 
                     activeTab === 'groups' ? isLoadingGroups :
                     false;
+
+  // Create a map of groupId -> unreadCount for GROUP type chats
+  const groupUnreadMap = useMemo(() => {
+    const map = new Map<string, number>();
+    chats.forEach((chat) => {
+      if (chat.type === 'GROUP' && chat.groupId && (chat.unreadCount || 0) > 0) {
+        map.set(chat.groupId, chat.unreadCount || 0);
+      }
+    });
+    return map;
+  }, [chats]);
+
+  // Get unread count for a specific user ID
+  const getUserUnreadCount = (userId: string): number => {
+    const chat = chats.find((c) => {
+      if (c.type !== 'DIRECT') return false;
+      return c.participants.some((p) => p.userId === userId);
+    });
+    return chat?.unreadCount || 0;
+  };
 
   // Handle selecting a student/teacher (create or open DM)
   const handleSelectUser = async (userId: string) => {
@@ -85,15 +94,6 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
     return name[0]?.toUpperCase() || '?';
-  };
-
-  // Get unread count for a specific user ID
-  const getUserUnreadCount = (userId: string): number => {
-    const chat = chats.find((c) => {
-      if (c.type !== 'DIRECT') return false;
-      return c.participants.some((p) => p.userId === userId);
-    });
-    return chat?.unreadCount || 0;
   };
 
   // Render list items
@@ -151,16 +151,16 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-slate-900 truncate">{student.name}</h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-medium text-slate-900 truncate">{student.name}</h3>
+                {getUserUnreadCount(student.id) > 0 && (
+                  <Badge variant="error" className="flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                    {getUserUnreadCount(student.id)}
+                  </Badge>
+                )}
+              </div>
               {student.phone && (
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-slate-500 truncate">{student.phone}</p>
-                  {getUserUnreadCount(student.id) > 0 && (
-                    <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-semibold rounded-full flex-shrink-0 min-w-[20px] text-center">
-                      {getUserUnreadCount(student.id)}
-                    </span>
-                  )}
-                </div>
+                <p className="text-sm text-slate-500 truncate">{student.phone}</p>
               )}
             </div>
           </button>
@@ -223,16 +223,16 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-slate-900 truncate">{teacher.name}</h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-medium text-slate-900 truncate">{teacher.name}</h3>
+                {getUserUnreadCount(teacher.id) > 0 && (
+                  <Badge variant="error" className="flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                    {getUserUnreadCount(teacher.id)}
+                  </Badge>
+                )}
+              </div>
               {teacher.phone && (
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-slate-500 truncate">{teacher.phone}</p>
-                  {getUserUnreadCount(teacher.id) > 0 && (
-                    <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-semibold rounded-full flex-shrink-0 min-w-[20px] text-center">
-                      {getUserUnreadCount(teacher.id)}
-                    </span>
-                  )}
-                </div>
+                <p className="text-sm text-slate-500 truncate">{teacher.phone}</p>
               )}
             </div>
           </button>
@@ -278,36 +278,33 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
 
     return (
       <div className="divide-y divide-slate-100">
-        {groups.map((group) => {
-          const groupUnreadCount = groupUnreadMap.get(group.id) || 0;
-          return (
-            <button
-              key={group.id}
-              onClick={() => handleSelectGroup(group.id)}
-              className={cn(
-                'w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left',
-                activeChat?.type === 'GROUP' && activeChat?.groupId === group.id && 'bg-primary/10 hover:bg-primary/10'
-              )}
-            >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                {getAvatar(group.name)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-medium text-slate-900 truncate">{group.name}</h3>
-                  {groupUnreadCount > 0 && (
-                    <Badge variant="error" className="flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5">
-                      {groupUnreadCount}
-                    </Badge>
-                  )}
-                </div>
-                {group.center && (
-                  <p className="text-sm text-slate-500 truncate">{group.center.name}</p>
+        {groups.map((group) => (
+          <button
+            key={group.id}
+            onClick={() => handleSelectGroup(group.id)}
+            className={cn(
+              'w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left',
+              activeChat?.type === 'GROUP' && activeChat?.groupId === group.id && 'bg-primary/10 hover:bg-primary/10'
+            )}
+          >
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+              {getAvatar(group.name)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-medium text-slate-900 truncate">{group.name}</h3>
+                {(groupUnreadMap.get(group.id) || 0) > 0 && (
+                  <Badge variant="error" className="flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                    {groupUnreadMap.get(group.id)}
+                  </Badge>
                 )}
               </div>
-            </button>
-          );
-        })}
+              {group.center && (
+                <p className="text-sm text-slate-500 truncate">{group.center.name}</p>
+              )}
+            </div>
+          </button>
+        ))}
       </div>
     );
   };
