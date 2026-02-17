@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import type { ActionPercents, SystemSettingsWithPercents } from '@ilona/types';
 
 @Injectable()
 export class SettingsService {
@@ -23,9 +24,12 @@ export class SettingsService {
         SELECT "logoUrl" FROM "system_settings" LIMIT 1
       `;
       this.logoUrlColumnChecked = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If column doesn't exist, add it
-      if (error?.message?.includes('does not exist') || error?.code === '42703') {
+      if (
+        (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('does not exist')) ||
+        (error && typeof error === 'object' && 'code' in error && error.code === '42703')
+      ) {
         try {
           this.logger.log('Adding missing logoUrl column to system_settings table...');
           await this.prisma.$executeRaw`
@@ -60,6 +64,7 @@ export class SettingsService {
       // If no settings exist, create default settings
       if (!settings) {
         try {
+          // Type assertion needed until Prisma client is regenerated after migration
           settings = await this.prisma.systemSettings.create({
             data: {
               vocabDeductionPercent: 10,
@@ -67,7 +72,11 @@ export class SettingsService {
               maxUnjustifiedAbsences: 3,
               paymentDueDays: 5,
               lessonReminderHours: 24,
-            },
+              absencePercent: 25,
+              feedbacksPercent: 25,
+              voicePercent: 25,
+              textPercent: 25,
+            } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
           });
         } catch (createError) {
           this.logger.error(
@@ -133,6 +142,129 @@ export class SettingsService {
     } catch (error) {
       this.logger.error(
         `Failed to get logo URL: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get action percent settings
+   */
+  async getActionPercents(): Promise<ActionPercents> {
+    try {
+      const settings = await this.getSystemSettings();
+      const settingsWithPercents = settings as unknown as SystemSettingsWithPercents;
+      const absencePercent = settingsWithPercents.absencePercent ?? 25;
+      const feedbacksPercent = settingsWithPercents.feedbacksPercent ?? 25;
+      const voicePercent = settingsWithPercents.voicePercent ?? 25;
+      const textPercent = settingsWithPercents.textPercent ?? 25;
+      
+      return {
+        absencePercent,
+        feedbacksPercent,
+        voicePercent,
+        textPercent,
+        total: absencePercent + feedbacksPercent + voicePercent + textPercent,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get action percents: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Update action percent settings
+   * Validates that the total equals exactly 100
+   */
+  async updateActionPercents(data: {
+    absencePercent: number;
+    feedbacksPercent: number;
+    voicePercent: number;
+    textPercent: number;
+  }) {
+    try {
+      // Validate each percent is between 0 and 100
+      const percents = [
+        { name: 'absencePercent', value: data.absencePercent },
+        { name: 'feedbacksPercent', value: data.feedbacksPercent },
+        { name: 'voicePercent', value: data.voicePercent },
+        { name: 'textPercent', value: data.textPercent },
+      ];
+
+      for (const percent of percents) {
+        if (percent.value < 0 || percent.value > 100) {
+          throw new BadRequestException(
+            `${percent.name} must be between 0 and 100. Received: ${percent.value}`
+          );
+        }
+        // Ensure it's an integer
+        if (!Number.isInteger(percent.value)) {
+          throw new BadRequestException(
+            `${percent.name} must be an integer. Received: ${percent.value}`
+          );
+        }
+      }
+
+      // Validate total equals exactly 100
+      const total = data.absencePercent + data.feedbacksPercent + data.voicePercent + data.textPercent;
+      if (total !== 100) {
+        throw new BadRequestException(
+          `Total must equal exactly 100. Current total: ${total}`
+        );
+      }
+
+      // Get or create settings
+      let settings = await this.prisma.systemSettings.findFirst();
+
+      if (!settings) {
+        // Type assertion needed until Prisma client is regenerated after migration
+        settings = await this.prisma.systemSettings.create({
+          data: {
+            vocabDeductionPercent: 10,
+            feedbackDeductionPercent: 5,
+            maxUnjustifiedAbsences: 3,
+            paymentDueDays: 5,
+            lessonReminderHours: 24,
+            absencePercent: data.absencePercent,
+            feedbacksPercent: data.feedbacksPercent,
+            voicePercent: data.voicePercent,
+            textPercent: data.textPercent,
+          } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
+        });
+      } else {
+        // Update using transaction for atomicity
+        // Type assertion needed until Prisma client is regenerated after migration
+        settings = await this.prisma.$transaction(async (tx) => {
+          return tx.systemSettings.update({
+            where: { id: settings!.id },
+            data: {
+              absencePercent: data.absencePercent,
+              feedbacksPercent: data.feedbacksPercent,
+              voicePercent: data.voicePercent,
+              textPercent: data.textPercent,
+            } as unknown as Parameters<typeof tx.systemSettings.update>[0]['data'],
+          });
+        });
+      }
+
+      const settingsWithPercents = settings as unknown as SystemSettingsWithPercents;
+      return {
+        absencePercent: settingsWithPercents.absencePercent,
+        feedbacksPercent: settingsWithPercents.feedbacksPercent,
+        voicePercent: settingsWithPercents.voicePercent,
+        textPercent: settingsWithPercents.textPercent,
+        total: settingsWithPercents.absencePercent + settingsWithPercents.feedbacksPercent + settingsWithPercents.voicePercent + settingsWithPercents.textPercent,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(
+        `Failed to update action percents: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error.stack : undefined,
       );
       throw error;

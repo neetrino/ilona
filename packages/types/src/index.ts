@@ -10,5 +10,6 @@ export * from './attendance.types';
 export * from './chat.types';
 export * from './finance.types';
 export * from './api.types';
+export * from './settings.types';
 
 

@@ -4,12 +4,17 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SettingsService } from '../settings/settings.service';
 import { Prisma, SalaryStatus, LessonStatus } from '@prisma/client';
 import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
+import type { ActionWeights, CompletedActions, LessonActionData } from '@ilona/types';
 
 @Injectable()
 export class SalariesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly settingsService: SettingsService,
+  ) {}
 
   /**
    * Recalculate and update salary record for a teacher for a specific month
@@ -42,9 +47,37 @@ export class SalariesService {
   }
 
   /**
+   * Get action weights from settings (single source of truth)
+   */
+  private async getActionWeights(): Promise<ActionWeights> {
+    const settings = await this.settingsService.getActionPercents();
+    return {
+      absence: settings.absencePercent,
+      feedbacks: settings.feedbacksPercent,
+      voice: settings.voicePercent,
+      text: settings.textPercent,
+    };
+  }
+
+  /**
+   * Calculate earned percent for a lesson based on completed actions and weights
+   */
+  private calculateEarnedPercent(
+    completedActions: CompletedActions,
+    weights: ActionWeights,
+  ): number {
+    let earnedPercent = 0;
+    if (completedActions.absence) earnedPercent += weights.absence;
+    if (completedActions.feedbacks) earnedPercent += weights.feedbacks;
+    if (completedActions.voice) earnedPercent += weights.voice;
+    if (completedActions.text) earnedPercent += weights.text;
+    return earnedPercent;
+  }
+
+  /**
    * Calculate monthly salary from lessons for a teacher
    * This is the single source of truth for salary calculation
-   * Returns: SUM of (baseSalary * completedActions / 4) for all lessons in the month
+   * Returns: SUM of (baseSalary * earnedPercent / 100) for all lessons in the month
    * Salary is calculated per lesson (fixed price per class), NOT per hour
    * Salary updates immediately when ANY of the 4 actions is completed, without requiring "Lesson Complete"
    */
@@ -88,7 +121,7 @@ export class SalariesService {
         feedbacksCompleted: true,
         voiceSent: true,
         textSent: true,
-      } as any,
+      },
     });
 
     // Get other deductions for this period (from Deduction table)
@@ -116,7 +149,10 @@ export class SalariesService {
       }
     });
 
-    // Calculate total salary from all lessons using proportional calculation
+    // Get action weights from settings (single source of truth)
+    const weights = await this.getActionWeights();
+
+    // Calculate total salary from all lessons using weighted calculation
     // Base salary is per lesson (fixed price), NOT per hour
     let totalSalary = 0;
 
@@ -124,16 +160,21 @@ export class SalariesService {
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
-      // Calculate completed actions (4 total)
-      const completedActions = [
-        lesson.absenceMarked ?? false,
-        lesson.feedbacksCompleted ?? false,
-        lesson.voiceSent ?? false,
-        lesson.textSent ?? false,
-      ].filter(Boolean).length;
+      // Calculate completed actions with their weights
+      // Type assertion needed until Prisma client is regenerated
+      const lessonData = lesson as { id: string; absenceMarked: boolean | null; feedbacksCompleted: boolean | null; voiceSent: boolean | null; textSent: boolean | null };
+      const completedActions = {
+        absence: lessonData.absenceMarked ?? false,
+        feedbacks: lessonData.feedbacksCompleted ?? false,
+        voice: lessonData.voiceSent ?? false,
+        text: lessonData.textSent ?? false,
+      };
 
-      // Proportional calculation: earned = baseSalary * (completedActions / 4)
-      const earned = baseSalary * (completedActions / 4);
+      // Calculate earned percent based on completed actions and their weights
+      const earnedPercent = this.calculateEarnedPercent(completedActions, weights);
+
+      // Calculate earned amount: baseSalary * earnedPercent / 100
+      const earned = baseSalary * (earnedPercent / 100);
 
       // Get other deductions for this lesson
       const lessonId = typeof lesson.id === 'string' ? lesson.id : String(lesson.id);
@@ -399,25 +440,26 @@ export class SalariesService {
         feedbacksCompleted: true,
         voiceSent: true,
         textSent: true,
-      } as any,
+      },
     });
 
     // Calculate action breakdown
+    const lessonDataList = lessons as unknown as LessonActionData[];
     const actionBreakdown = {
       absenceMarked: {
-        completed: lessons.filter((l: any) => l.absenceMarked ?? false).length,
+        completed: lessonDataList.filter((l) => l.absenceMarked ?? false).length,
         required: lessons.length,
       },
       feedbacksCompleted: {
-        completed: lessons.filter((l: any) => l.feedbacksCompleted ?? false).length,
+        completed: lessonDataList.filter((l) => l.feedbacksCompleted ?? false).length,
         required: lessons.length,
       },
       voiceSent: {
-        completed: lessons.filter((l: any) => l.voiceSent ?? false).length,
+        completed: lessonDataList.filter((l) => l.voiceSent ?? false).length,
         required: lessons.length,
       },
       textSent: {
-        completed: lessons.filter((l: any) => l.textSent ?? false).length,
+        completed: lessonDataList.filter((l) => l.textSent ?? false).length,
         required: lessons.length,
       },
     };
@@ -526,7 +568,7 @@ export class SalariesService {
         absenceMarked: true,
         voiceSent: true,
         textSent: true,
-      } as any, // Type assertion needed until Prisma Client is regenerated
+      },
     });
 
     const lessonsCount = lessons.length;
@@ -556,10 +598,13 @@ export class SalariesService {
       }
     });
 
+    // Get action weights from settings (single source of truth)
+    const weights = await this.getActionWeights();
+
     // Calculate using the same per-lesson method as calculateMonthlySalaryFromLessons
     // This ensures idempotency and consistency
     // Base salary is per lesson (fixed price), NOT per hour
-    // Use proportional calculation: earned = baseSalary * (completedActions / 4)
+    // Use weighted calculation: earned = baseSalary * earnedPercent / 100
     let totalBaseSalary = 0;
     let totalEarned = 0;
     let totalOtherDeduction = 0;
@@ -571,20 +616,33 @@ export class SalariesService {
       const baseSalary = lessonRate;
       totalBaseSalary += baseSalary;
 
-      // Calculate completed actions (4 total)
-      const completedActions = [
-        lesson.absenceMarked ?? false,
-        lesson.feedbacksCompleted ?? false,
-        lesson.voiceSent ?? false,
-        lesson.textSent ?? false,
+      // Calculate completed actions with their weights
+      // Type assertion needed until Prisma client is regenerated
+      const lessonData = lesson as { id: string; absenceMarked: boolean | null; feedbacksCompleted: boolean | null; voiceSent: boolean | null; textSent: boolean | null };
+      const completedActions = {
+        absence: lessonData.absenceMarked ?? false,
+        feedbacks: lessonData.feedbacksCompleted ?? false,
+        voice: lessonData.voiceSent ?? false,
+        text: lessonData.textSent ?? false,
+      };
+
+      // Count completed actions for obligations tracking
+      const completedCount = [
+        completedActions.absence,
+        completedActions.feedbacks,
+        completedActions.voice,
+        completedActions.text,
       ].filter(Boolean).length;
       
       const totalActions = 4;
       totalObligationsRequired += totalActions;
-      totalObligationsCompleted += completedActions;
+      totalObligationsCompleted += completedCount;
 
-      // Proportional calculation: earned = baseSalary * (completedActions / 4)
-      const earned = baseSalary * (completedActions / totalActions);
+      // Calculate earned percent based on completed actions and their weights
+      const earnedPercent = this.calculateEarnedPercent(completedActions, weights);
+
+      // Calculate earned amount: baseSalary * earnedPercent / 100
+      const earned = baseSalary * (earnedPercent / 100);
       totalEarned += earned;
 
       // Get other deductions for this lesson
@@ -719,7 +777,11 @@ export class SalariesService {
       throw new NotFoundException(`Salary record with ID ${id} not found`);
     }
 
-    const updateData: any = {};
+    const updateData: {
+      status?: SalaryStatus;
+      paidAt?: Date | null;
+      notes?: string | null;
+    } = {};
     
     if (dto.status !== undefined) {
       // Validate that only PENDING or PAID are allowed (not PROCESSING)
@@ -938,26 +1000,45 @@ export class SalariesService {
       ? Number(teacher.lessonRateAMD) 
       : Number(teacher.hourlyRate); // Fallback for backward compatibility
 
-    // Calculate per-lesson breakdown using proportional calculation
+    // Get action weights from settings (single source of truth)
+    const weights = await this.getActionWeights();
+
+    // Calculate per-lesson breakdown using weighted calculation
     // Base salary is per lesson (fixed price), NOT per hour
-    const lessonBreakdown = lessons.map((lesson: any) => {
+    const lessonBreakdown = lessons.map((lesson) => {
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
-      // Calculate completed actions (4 total)
-      const completedActions = [
-        lesson.absenceMarked ?? false,
-        lesson.feedbacksCompleted ?? false,
-        lesson.voiceSent ?? false,
-        lesson.textSent ?? false,
+      // Calculate completed actions with their weights
+      const lessonData = lesson as unknown as LessonActionData & { 
+        topic?: string | null; 
+        scheduledAt: Date; 
+        group?: { name: string } | null;
+      };
+      const completedActions: CompletedActions = {
+        absence: lessonData.absenceMarked ?? false,
+        feedbacks: lessonData.feedbacksCompleted ?? false,
+        voice: lessonData.voiceSent ?? false,
+        text: lessonData.textSent ?? false,
+      };
+
+      // Count completed actions for obligations tracking
+      const completedCount = [
+        completedActions.absence,
+        completedActions.feedbacks,
+        completedActions.voice,
+        completedActions.text,
       ].filter(Boolean).length;
       const totalActions = 4;
 
-      // Proportional calculation: earned = baseSalary * (completedActions / 4)
-      const earned = baseSalary * (completedActions / totalActions);
+      // Calculate earned percent based on completed actions and their weights
+      const earnedPercent = this.calculateEarnedPercent(completedActions, weights);
+
+      // Calculate earned amount: baseSalary * earnedPercent / 100
+      const earned = baseSalary * (earnedPercent / 100);
 
       // Get other deductions for this lesson
-      const otherDeductionForLesson = deductionsByLessonId.get(lesson.id) || 0;
+      const otherDeductionForLesson = deductionsByLessonId.get(lessonData.id) || 0;
 
       // Total = earned - other deductions
       const total = Math.max(0, earned - otherDeductionForLesson);
@@ -966,13 +1047,13 @@ export class SalariesService {
       const deduction = baseSalary - earned + otherDeductionForLesson;
 
       // Lesson name: use topic if available, otherwise use group name + date
-      const lessonName = lesson.topic || lesson.group?.name || 'Untitled Lesson';
+      const lessonName = lessonData.topic || lessonData.group?.name || 'Untitled Lesson';
 
       return {
-        lessonId: lesson.id,
+        lessonId: lessonData.id,
         lessonName,
-        lessonDate: lesson.scheduledAt, // Use scheduledAt instead of completedAt
-        obligationCompleted: completedActions,
+        lessonDate: lessonData.scheduledAt, // Use scheduledAt instead of completedAt
+        obligationCompleted: completedCount,
         obligationTotal: totalActions,
         salary: baseSalary,
         deduction: deduction,

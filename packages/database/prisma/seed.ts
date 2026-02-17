@@ -25,6 +25,10 @@ async function main() {
       maxUnjustifiedAbsences: 3,
       paymentDueDays: 5,
       lessonReminderHours: 24,
+      absencePercent: 25,
+      feedbacksPercent: 25,
+      voicePercent: 25,
+      textPercent: 25,
     },
   });
 

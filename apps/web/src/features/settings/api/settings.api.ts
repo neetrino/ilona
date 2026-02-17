@@ -124,3 +124,46 @@ export async function uploadLogo(file: File): Promise<{ logoUrl: string; key: st
 export async function deleteLogo(): Promise<{ success: boolean }> {
   return api.post<{ success: boolean; message: string }>('/settings/logo/delete');
 }
+
+/**
+ * Get action percent settings (Admin only)
+ */
+export async function fetchActionPercents(): Promise<{
+  absencePercent: number;
+  feedbacksPercent: number;
+  voicePercent: number;
+  textPercent: number;
+  total: number;
+}> {
+  return api.get<{
+    absencePercent: number;
+    feedbacksPercent: number;
+    voicePercent: number;
+    textPercent: number;
+    total: number;
+  }>('/settings/action-percents');
+}
+
+/**
+ * Update action percent settings (Admin only)
+ */
+export async function updateActionPercents(data: {
+  absencePercent: number;
+  feedbacksPercent: number;
+  voicePercent: number;
+  textPercent: number;
+}): Promise<{
+  absencePercent: number;
+  feedbacksPercent: number;
+  voicePercent: number;
+  textPercent: number;
+  total: number;
+}> {
+  return api.put<{
+    absencePercent: number;
+    feedbacksPercent: number;
+    voicePercent: number;
+    textPercent: number;
+    total: number;
+  }>('/settings/action-percents', data);
+}

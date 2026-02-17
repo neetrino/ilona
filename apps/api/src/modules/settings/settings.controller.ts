@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Body,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -178,6 +180,52 @@ export class SettingsController {
         `Failed to delete logo: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw new InternalServerErrorException('Failed to delete logo. Please try again later.');
+    }
+  }
+
+  /**
+   * Get action percent settings (Admin only)
+   */
+  @Get('action-percents')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get action percent settings (Admin only)' })
+  async getActionPercents() {
+    try {
+      return await this.settingsService.getActionPercents();
+    } catch (error) {
+      this.logger.error(
+        `Failed to get action percents: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Failed to retrieve action percent settings. Please try again later.');
+    }
+  }
+
+  /**
+   * Update action percent settings (Admin only)
+   */
+  @Put('action-percents')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update action percent settings (Admin only)' })
+  async updateActionPercents(
+    @Body() body: {
+      absencePercent: number;
+      feedbacksPercent: number;
+      voicePercent: number;
+      textPercent: number;
+    },
+  ) {
+    try {
+      return await this.settingsService.updateActionPercents(body);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(
+        `Failed to update action percents: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Failed to update action percent settings. Please try again later.');
     }
   }
 }
