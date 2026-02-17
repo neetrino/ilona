@@ -48,7 +48,6 @@ import {
   usePayments,
   useSalaries,
   useProcessPayment,
-  useProcessSalary,
   useUpdateSalaryStatus,
   useDeleteSalaries,
   type Payment,
@@ -112,7 +111,6 @@ export default function FinancePage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   
   const t = useTranslations('finance');
-  const tTeachers = useTranslations('teachers');
   const pageSize = 10;
 
   // Update URL params when filters change
@@ -198,7 +196,6 @@ export default function FinancePage() {
 
   // Mutations
   const processPayment = useProcessPayment();
-  const processSalary = useProcessSalary();
   const updateSalaryStatus = useUpdateSalaryStatus();
   const deleteSalaries = useDeleteSalaries();
 
@@ -221,14 +218,6 @@ export default function FinancePage() {
     }
   };
 
-  // Handle process salary
-  const handleProcessSalary = async (id: string) => {
-    try {
-      await processSalary.mutateAsync(id);
-    } catch (err) {
-      console.error('Failed to process salary:', err);
-    }
-  };
 
   // Format month/year
   const formatMonth = (month: number, year: number) => {
@@ -303,8 +292,9 @@ export default function FinancePage() {
       await deleteSalaries.mutateAsync(Array.from(selectedSalaryIds));
       setSelectedSalaryIds(new Set());
       setIsDeleteDialogOpen(false);
-    } catch (err: any) {
-      setDeleteError(err?.message || 'Failed to delete salary records. Please try again.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete salary records. Please try again.';
+      setDeleteError(errorMessage);
     }
   };
 

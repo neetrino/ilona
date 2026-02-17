@@ -15,12 +15,6 @@ interface AbsenceTabProps {
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
-interface AttendanceItem {
-  studentId: string;
-  isPresent: boolean;
-  absenceType?: AbsenceType;
-}
-
 export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const queryClient = useQueryClient();
   const { data: lesson } = useLesson(lessonId);
@@ -30,11 +24,8 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const [hasChanges, setHasChanges] = useState(false);
 
   // Declare students before useEffect that uses it
-  const students = lesson?.group?.students || [];
-  // Transform studentsWithAttendance to a flat array of attendances for easier lookup
-  const lessonAttendances = attendanceData?.studentsWithAttendance
-    ?.map((swa) => swa.attendance)
-    .filter((att): att is NonNullable<typeof att> => att !== null) || [];
+  // Get students from attendanceData instead of lesson.group (which doesn't have students in the type)
+  const students = attendanceData?.studentsWithAttendance?.map(swa => swa.student) || [];
 
   // Initialize attendance state from saved data - only prefill students with saved attendance
   useEffect(() => {
@@ -82,11 +73,16 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
     // Only save students that have been explicitly marked (filter out unmarked students)
     const attendances = students
       .filter((student) => attendance[student.id] !== undefined)
-      .map((student) => ({
-        studentId: student.id,
-        isPresent: attendance[student.id]!.isPresent,
-        absenceType: attendance[student.id]!.absenceType,
-      }));
+      .map((student) => {
+        const att = attendance[student.id];
+        if (!att) return null;
+        return {
+          studentId: student.id,
+          isPresent: att.isPresent,
+          absenceType: att.absenceType,
+        };
+      })
+      .filter((att): att is NonNullable<typeof att> => att !== null);
 
     try {
       await markBulkAttendance.mutateAsync({
