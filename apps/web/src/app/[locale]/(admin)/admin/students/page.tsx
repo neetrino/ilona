@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { StatCard, DataTable, Badge, Button, FilterDropdown, ActionButtons } from '@/shared/components/ui';
+import { StatCard, DataTable, Button, FilterDropdown, ActionButtons } from '@/shared/components/ui';
 import { 
   useStudents, 
   useDeleteStudent, 
@@ -81,8 +81,8 @@ export default function StudentsPage() {
   const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth() + 1); // 1-12
   const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
   const params = useParams();
-  const router = useRouter();
-  const locale = params.locale as string;
+  const _router = useRouter();
+  const _locale = params.locale as string;
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const tTeachers = useTranslations('teachers');
@@ -307,7 +307,7 @@ export default function StudentsPage() {
     try {
       await updateStudent.mutateAsync({
         id: student.id,
-        data: { status: newStatus as 'ACTIVE' | 'INACTIVE' },
+        data: { status: newStatus },
       });
       setDeactivateSuccess(true);
       

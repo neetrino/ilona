@@ -34,7 +34,7 @@ export function formatTime(date: Date | string, locale: string = 'en'): string {
 /**
  * Format currency (AMD only)
  */
-export function formatCurrency(amount: number, currency: string = 'AMD'): string {
+export function formatCurrency(amount: number, _currency: string = 'AMD'): string {
   // Always use AMD, ignore currency parameter
   return new Intl.NumberFormat('hy-AM', {
     style: 'currency',

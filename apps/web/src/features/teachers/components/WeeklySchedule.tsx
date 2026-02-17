@@ -74,7 +74,7 @@ export function WeeklySchedule({ value, onChange, error }: WeeklyScheduleProps) 
   const removeTimeRange = (day: DayOfWeek, index: number) => {
     const newSchedule = { ...schedule };
     if (newSchedule[day]) {
-      const ranges = [...newSchedule[day]!];
+      const ranges = [...newSchedule[day]];
       ranges.splice(index, 1);
       if (ranges.length === 0) {
         delete newSchedule[day];
@@ -136,7 +136,7 @@ export function WeeklySchedule({ value, onChange, error }: WeeklyScheduleProps) 
   };
 
   const hasActiveDays = Object.keys(schedule).length > 0;
-  const hasErrors = Object.keys(dayErrors).length > 0 || !!error;
+  const _hasErrors = Object.keys(dayErrors).length > 0 || !!error;
 
   return (
     <div className="space-y-4">

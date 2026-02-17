@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChats } from '@/features/chat/hooks';
 import { cn } from '@/shared/lib/utils';
 

@@ -555,7 +555,7 @@ export function WeekAttendanceGrid({
                     {weekDates.map((date) => {
                       const dateStr = formatDateString(date);
                       const dayLessons = lessonsByDate[dateStr] || [];
-                      const { status, lessonId } = getCellStatus(student.id, date);
+                      const { status, lessonId: _lessonId } = getCellStatus(student.id, date);
                       const hasPendingChange = pendingChanges[dateStr]?.has(student.id) || false;
                       const isDateSaving = isSaving[dateStr] || false;
                       const hasLessons = dayLessons.length > 0;

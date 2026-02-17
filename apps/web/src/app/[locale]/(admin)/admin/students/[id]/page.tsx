@@ -13,7 +13,6 @@ import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { UserStatus } from '@/types';
-import { getErrorMessage } from '@/shared/lib/api';
 
 // Extended Student type with attendances (from API response)
 interface StudentWithAttendances extends Student {
@@ -48,7 +47,7 @@ type UpdateStudentFormData = z.infer<typeof updateStudentSchema>;
 
 export default function StudentProfilePage() {
   const t = useTranslations('students');
-  const tCommon = useTranslations('common');
+  const _tCommon = useTranslations('common');
   const params = useParams();
   const router = useRouter();
   const studentId = params.id as string;
@@ -59,7 +58,7 @@ export default function StudentProfilePage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { data: student, isLoading, error, refetch } = useStudent(studentId);
-  const { data: statistics, isLoading: isLoadingStats } = useStudentStatistics(studentId, !!student);
+  const { data: statistics, isLoading: _isLoadingStats } = useStudentStatistics(studentId, !!student);
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ take: 100, isActive: true });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE', take: 100 });
   const updateStudent = useUpdateStudent();
@@ -72,7 +71,6 @@ export default function StudentProfilePage() {
     handleSubmit,
     formState: { errors, isDirty },
     reset,
-    watch,
   } = useForm<UpdateStudentFormData>({
     resolver: zodResolver(updateStudentSchema),
     defaultValues: {
@@ -102,7 +100,7 @@ export default function StudentProfilePage() {
         firstName: student.user?.firstName || '',
         lastName: student.user?.lastName || '',
         phone: student.user?.phone || '',
-        status: (student.user?.status || 'ACTIVE') as UserStatus,
+        status: student.user?.status || 'ACTIVE',
         groupId: student.groupId || '',
         teacherId: student.teacherId || '',
         parentName: student.parentName || '',

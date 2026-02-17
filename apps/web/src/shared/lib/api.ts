@@ -1,4 +1,4 @@
-import { decodeJwt, isTokenExpired, expiresWithin } from './jwt-utils';
+import { expiresWithin } from './jwt-utils';
 
 // Get API URL from environment or construct from current host
 function getApiUrl(): string {
@@ -212,7 +212,7 @@ class ApiClient {
     options: FetchOptions = {},
     isRetry = false
   ): Promise<T> {
-    const { token: explicitToken, skipAuthRefresh, retryCount = 0, ...fetchOptions } = options;
+    const { token: explicitToken, skipAuthRefresh, retryCount: _retryCount = 0, ...fetchOptions } = options;
     
     // If refresh has permanently failed, don't retry
     if (this.refreshFailed && !skipAuthRefresh && !endpoint.startsWith('/auth/')) {
@@ -239,7 +239,7 @@ class ApiClient {
       }
     }
 
-    let token = explicitToken || this.getToken();
+    const token = explicitToken || this.getToken();
 
     // If we're currently refreshing and this is not a retry, queue the request
     if (this.isRefreshing && !skipAuthRefresh && !endpoint.startsWith('/auth/') && !isRetry) {
@@ -470,9 +470,8 @@ class ApiClient {
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include', // Include cookies if refresh token is in cookie
+          credentials: 'include',
           body: JSON.stringify({ refreshToken }),
-          credentials: 'include', // Include cookies in refresh request
         });
 
         // If refresh endpoint returns 401/403, refresh token is invalid - don't retry

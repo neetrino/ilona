@@ -11,13 +11,11 @@ import {
   fetchAdminStudents,
   fetchAdminTeachers,
   fetchAdminGroups,
-  fetchGroupChat,
   fetchTeacherGroups,
   fetchTeacherStudents,
   fetchTeacherAdmin,
   fetchStudentAdmin,
 } from '../api/chat.api';
-import type { AdminChatUser, AdminChatGroup, TeacherGroup, TeacherStudent, TeacherAdmin, StudentAdmin } from '../api/chat.api';
 
 // Query keys
 export const chatKeys = {
@@ -156,10 +154,10 @@ export function useAddMessageToCache() {
           // Re-sort by lastMessageAt (newest first)
           const aTime = a.lastMessageAt 
             ? new Date(a.lastMessageAt).getTime()
-            : (a.lastMessage && 'createdAt' in a.lastMessage ? new Date((a.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(a.updatedAt).getTime());
+            : (a.lastMessage && typeof a.lastMessage === 'object' && 'createdAt' in a.lastMessage ? new Date((a.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(a.updatedAt).getTime());
           const bTime = b.lastMessageAt 
             ? new Date(b.lastMessageAt).getTime()
-            : (b.lastMessage && 'createdAt' in b.lastMessage ? new Date((b.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(b.updatedAt).getTime());
+            : (b.lastMessage && typeof b.lastMessage === 'object' && 'createdAt' in b.lastMessage ? new Date((b.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(b.updatedAt).getTime());
           return bTime - aTime; // DESC order
         });
       }

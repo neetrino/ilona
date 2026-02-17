@@ -16,7 +16,7 @@ export default function AdminProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations('settings');
   const tCommon = useTranslations('common');
-  const locale = useLocale() as Locale;
+  const _locale = useLocale() as Locale;
 
   const uploadAvatarMutation = useUploadAvatar();
   const deleteAvatarMutation = useDeleteAvatar();

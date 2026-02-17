@@ -15,7 +15,7 @@ interface TeacherChatListProps {
 }
 
 export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
-  const { user } = useAuthStore();
+  const { user: _user } = useAuthStore();
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'admin' | 'groups' | 'students'>('groups');

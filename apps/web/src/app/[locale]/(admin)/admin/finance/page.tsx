@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
