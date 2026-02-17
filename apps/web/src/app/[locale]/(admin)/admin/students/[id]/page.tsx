@@ -209,7 +209,8 @@ export default function StudentProfilePage() {
         } else if (response?.status === 409) {
           message = 'This record was modified by another user. Please refresh and try again.';
         } else if (response?.status === 400) {
-        message = 'Invalid data. Please check your input and try again.';
+          message = 'Invalid data. Please check your input and try again.';
+        }
       }
       
       setErrorMessage(message);
