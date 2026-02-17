@@ -217,7 +217,8 @@ export default function StudentProfilePage() {
       setSuccessMessage(null);
       
       // If there's a conflict, refetch the latest data
-      if (error?.response?.status === 409) {
+      if (error && typeof error === 'object' && 'response' in error &&
+          (error as { response?: { status?: number } }).response?.status === 409) {
         setTimeout(() => {
           setIsEditMode(false);
         }, 2000);
