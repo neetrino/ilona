@@ -27,7 +27,8 @@
     "db:push": "pnpm --filter @ilona/database db:push",
     "db:migrate": "pnpm --filter @ilona/database db:migrate",
     "db:studio": "pnpm --filter @ilona/database db:studio",
-    "db:seed": "pnpm --filter @ilona/database db:seed"
+    "db:seed": "pnpm --filter @ilona/database db:seed",
+    "build:api": "pnpm --filter @ilona/types build && pnpm --filter @ilona/api build"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.6.0",
