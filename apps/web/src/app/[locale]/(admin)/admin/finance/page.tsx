@@ -26,9 +26,9 @@ export default function FinancePage() {
   const searchParams = useSearchParams();
   
   // Initialize state from URL params
-  const [activeTab, setActiveTab] = useState<'payments' | 'salaries' | 'salaries2'>(() => {
+  const [activeTab, setActiveTab] = useState<'payments' | 'salaries'>(() => {
     const tabFromUrl = searchParams.get('tab');
-    return (tabFromUrl === 'payments' || tabFromUrl === 'salaries' || tabFromUrl === 'salaries2') ? tabFromUrl : 'payments';
+    return (tabFromUrl === 'payments' || tabFromUrl === 'salaries') ? tabFromUrl : 'payments';
   });
   const [paymentsPage, setPaymentsPage] = useState(() => {
     const page = parseInt(searchParams.get('paymentsPage') || '0', 10);
@@ -70,7 +70,7 @@ export default function FinancePage() {
   }, [router, pathname, searchParams]);
 
   // Handle tab change
-  const handleTabChange = (tab: 'payments' | 'salaries' | 'salaries2') => {
+  const handleTabChange = (tab: 'payments' | 'salaries') => {
     setActiveTab(tab);
     updateUrlParams({ tab });
   };
@@ -520,16 +520,6 @@ export default function FinancePage() {
           >
             Teacher Salaries ({totalSalaries})
           </button>
-          <button
-            onClick={() => handleTabChange('salaries2')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'salaries2'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            Teacher Salaries2
-          </button>
         </div>
 
         {/* Actions */}
@@ -542,7 +532,7 @@ export default function FinancePage() {
               type="search"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder={`Search ${activeTab === 'payments' ? 'payments' : activeTab === 'salaries' ? 'salaries' : 'salaries2'}...`}
+              placeholder={`Search ${activeTab === 'payments' ? 'payments' : 'salaries'}...`}
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
@@ -638,7 +628,7 @@ export default function FinancePage() {
               </div>
             </div>
           </>
-        ) : activeTab === 'salaries' ? (
+        ) : (
           <>
             <DataTable
               columns={salaryColumns}
@@ -675,10 +665,6 @@ export default function FinancePage() {
               </div>
             </div>
           </>
-        ) : (
-          <div className="bg-white rounded-xl border border-slate-200 p-8">
-            {/* Teacher Salaries2 - Empty for now */}
-          </div>
         )}
 
         {/* Info Cards */}
