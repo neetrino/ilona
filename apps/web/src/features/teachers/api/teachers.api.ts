@@ -85,3 +85,25 @@ export async function deleteTeachers(ids: string[]): Promise<{ success: boolean;
     body: JSON.stringify({ ids }),
   });
 }
+
+/**
+ * Fetch teacher obligation details
+ */
+export interface ObligationItem {
+  key: string;
+  label: string;
+  done: boolean;
+  completedCount: number;
+  totalCount: number;
+  doneAt?: string;
+}
+
+export interface TeacherObligationDetails {
+  total: number;
+  completed: number;
+  items: ObligationItem[];
+}
+
+export async function fetchTeacherObligation(teacherId: string): Promise<TeacherObligationDetails> {
+  return api.get<TeacherObligationDetails>(`${TEACHERS_ENDPOINT}/${teacherId}/obligation`);
+}
