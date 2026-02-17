@@ -277,13 +277,14 @@ export default function FinancePage() {
     {
       key: 'teacher',
       header: t('teacher'),
+      className: 'text-left',
       render: (salary: SalaryRecord) => {
         const firstName = salary.teacher?.user?.firstName || '';
         const lastName = salary.teacher?.user?.lastName || '';
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold">
+            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold flex-shrink-0">
               {initials}
             </div>
             <span className="font-semibold text-slate-800">
@@ -298,7 +299,9 @@ export default function FinancePage() {
       header: tTeachers('lessons'),
       className: 'text-center',
       render: (salary: SalaryRecord) => (
-        <span className="text-slate-700">{salary.lessonsCount}</span>
+        <div className="text-center">
+          <span className="text-slate-700">{salary.lessonsCount}</span>
+        </div>
       ),
     },
     {
@@ -315,21 +318,23 @@ export default function FinancePage() {
           }
         })() : null);
         
-        if (obligationsInfo && obligationsInfo.completed !== undefined && obligationsInfo.required !== undefined) {
-          return (
-            <span className="text-slate-700 font-medium">
-              {obligationsInfo.completed}/{obligationsInfo.required}
-            </span>
-          );
-        }
-        
-        return <span className="text-slate-400">-</span>;
+        return (
+          <div className="text-center">
+            {obligationsInfo && obligationsInfo.completed !== undefined && obligationsInfo.required !== undefined ? (
+              <span className="text-slate-700 font-medium">
+                {obligationsInfo.completed}/{obligationsInfo.required}
+              </span>
+            ) : (
+              <span className="text-slate-400">-</span>
+            )}
+          </div>
+        );
       },
     },
     {
       key: 'gross',
       header: t('salaryAmount'),
-      className: 'text-right',
+      className: 'text-left',
       render: (salary: SalaryRecord) => {
         const amount = typeof salary.grossAmount === 'string' ? parseFloat(salary.grossAmount) : Number(salary.grossAmount);
         return (
@@ -347,7 +352,7 @@ export default function FinancePage() {
     {
       key: 'deductions',
       header: 'Deductions',
-      className: 'text-right',
+      className: 'text-left',
       render: (salary: SalaryRecord) => {
         const amount = typeof salary.totalDeductions === 'string' ? parseFloat(salary.totalDeductions) : Number(salary.totalDeductions);
         return amount > 0 ? (
@@ -374,7 +379,7 @@ export default function FinancePage() {
     {
       key: 'net',
       header: t('netSalary'),
-      className: 'text-right',
+      className: 'text-left',
       render: (salary: SalaryRecord) => {
         const amount = typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
         return (
@@ -392,6 +397,7 @@ export default function FinancePage() {
     {
       key: 'status',
       header: t('status'),
+      className: 'text-left',
       render: (salary: SalaryRecord) => (
         <div className="w-32">
           <InlineSelect
@@ -417,6 +423,7 @@ export default function FinancePage() {
     {
       key: 'actions',
       header: t('actions'),
+      className: 'text-left',
       render: (salary: SalaryRecord) => (
         <Button 
           variant="ghost" 
