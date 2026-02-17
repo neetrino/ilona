@@ -38,7 +38,8 @@ export interface TeacherProfile {
   userId: string;
   bio?: string | null;
   specialization?: string | null;
-  hourlyRate: number;
+  hourlyRate: number; // Legacy field, kept for backward compatibility
+  lessonRateAMD?: number | null; // Fixed price per lesson (primary field for salary calculation)
   workingDays: string[];
   workingHours?: {
     MON?: Array<{ start: string; end: string }>;
@@ -115,7 +116,8 @@ export interface UpdateUserDto {
 export interface CreateTeacherDto extends CreateUserDto {
   bio?: string;
   specialization?: string;
-  hourlyRate: number;
+  hourlyRate: number; // Legacy field, kept for backward compatibility
+  lessonRateAMD?: number; // Fixed price per lesson (primary field for salary calculation)
   workingDays: string[];
 }
 

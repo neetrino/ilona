@@ -162,7 +162,8 @@ model Teacher {
   userId        String   @unique
   bio           String?
   specialization String?
-  hourlyRate    Decimal  @db.Decimal(10, 2)
+  hourlyRate    Decimal  @db.Decimal(10, 2) // Legacy field, kept for backward compatibility
+  lessonRateAMD Decimal? @db.Decimal(10, 2) // Fixed price per lesson (primary field for salary calculation)
   workingDays   String[] // ["MON", "TUE", "WED", "THU", "FRI"]
   workingHours  Json?    // { MON: [{ start: "09:00", end: "13:00" }, { start: "14:00", end: "18:00" }], TUE: [...], ... }
   hireDate      DateTime @default(now())

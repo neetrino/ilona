@@ -281,10 +281,14 @@ export class TeachersService {
         deductionAmount: 0,
       };
       
-      // Calculate base salary (hourly rate * total hours from completed lessons)
-      const teacherLessonsWithDuration = allCompletedLessons.filter(l => l.teacherId === teacher.id);
-      const totalHours = teacherLessonsWithDuration.reduce((sum, l) => sum + (l.duration || 60) / 60, 0);
-      const baseSalary = totalHours * Number(teacher.hourlyRate || 0);
+      // Calculate base salary (per lesson, not per hour)
+      const teacherLessons = allCompletedLessons.filter(l => l.teacherId === teacher.id);
+      const lessonsCount = teacherLessons.length;
+      // Use lessonRateAMD if set, otherwise fall back to hourlyRate (assuming 1 hour = 1 lesson)
+      const lessonRate = teacher.lessonRateAMD 
+        ? Number(teacher.lessonRateAMD) 
+        : Number(teacher.hourlyRate || 0);
+      const baseSalary = lessonsCount * lessonRate;
       
       // Final cost = base salary - deduction
       const finalCost = Math.max(0, baseSalary - obligations.deductionAmount);
@@ -577,6 +581,7 @@ export class TeachersService {
           bio: dto.bio,
           specialization: dto.specialization,
           hourlyRate: dto.hourlyRate,
+          lessonRateAMD: dto.lessonRateAMD ?? undefined,
           workingDays: dto.workingDays ?? ['MON', 'TUE', 'WED', 'THU', 'FRI'],
           workingHours: dto.workingHours ?? undefined,
         },
@@ -623,6 +628,7 @@ export class TeachersService {
         bio: dto.bio,
         specialization: dto.specialization,
         hourlyRate: dto.hourlyRate,
+        lessonRateAMD: dto.lessonRateAMD,
         workingDays: dto.workingDays,
         workingHours: dto.workingHours,
       },

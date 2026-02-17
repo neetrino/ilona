@@ -15,21 +15,27 @@ export class SalariesService {
    * Calculate monthly salary from completed lessons for a teacher
    * This is the single source of truth for salary calculation
    * Returns: SUM of (baseSalary - totalDeduction) for all completed lessons in the month
+   * Salary is calculated per lesson (fixed price per class), NOT per hour
    */
   private async calculateMonthlySalaryFromLessons(teacherId: string, month: Date): Promise<number> {
     // Get start and end of month
     const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
     const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59);
 
-    // Get teacher with hourly rate
+    // Get teacher with lesson rate (per lesson, not per hour)
     const teacher = await this.prisma.teacher.findUnique({
       where: { id: teacherId },
-      select: { hourlyRate: true },
+      select: { lessonRateAMD: true, hourlyRate: true }, // Keep hourlyRate for backward compatibility
     });
 
     if (!teacher) {
       return 0;
     }
+
+    // Get lesson rate: use lessonRateAMD if set, otherwise fall back to hourlyRate (assuming 1 hour = 1 lesson)
+    const lessonRate = teacher.lessonRateAMD 
+      ? Number(teacher.lessonRateAMD) 
+      : Number(teacher.hourlyRate); // Fallback for backward compatibility
 
     // Get completed lessons for this month
     const lessons = await this.prisma.lesson.findMany({
@@ -43,7 +49,6 @@ export class SalariesService {
       },
       select: {
         id: true,
-        duration: true,
         absenceMarked: true,
         feedbacksCompleted: true,
         voiceSent: true,
@@ -77,13 +82,12 @@ export class SalariesService {
     });
 
     // Calculate total salary from all completed lessons
-    const hourlyRate = Number(teacher.hourlyRate);
+    // Base salary is per lesson (fixed price), NOT per hour
     let totalSalary = 0;
 
     for (const lesson of lessons) {
-      const duration = typeof lesson.duration === 'number' ? lesson.duration : 0;
-      const hours = duration / 60;
-      const baseSalary = hours * hourlyRate;
+      // Base salary = lessonRateAMD (fixed price per lesson)
+      const baseSalary = lessonRate;
 
       // Calculate obligations (4 total)
       const obligations = [
@@ -95,8 +99,8 @@ export class SalariesService {
       const completedObligations = obligations.filter(Boolean).length;
       const totalObligations = 4;
 
-      // Calculate obligation-based deduction
-      // Each missing obligation deducts 10% of base salary
+      // Calculate obligation-based deduction per lesson
+      // Each missing obligation deducts 10% of base salary (40% total if all 4 missing)
       const missingObligations = totalObligations - completedObligations;
       const obligationDeduction = (missingObligations / totalObligations) * baseSalary * 0.4;
 
@@ -411,9 +415,10 @@ export class SalariesService {
   /**
    * Generate salary record for a teacher for a month
    * Uses the same per-lesson calculation as calculateMonthlySalaryFromLessons for consistency
+   * Salary is calculated per lesson (fixed price per class), NOT per hour
    */
   async generateSalaryRecord(teacherId: string, month: Date) {
-    // Get teacher with hourly rate
+    // Get teacher with lesson rate (per lesson, not per hour)
     const teacher = await this.prisma.teacher.findUnique({
       where: { id: teacherId },
       include: {
@@ -426,6 +431,11 @@ export class SalariesService {
     if (!teacher) {
       throw new BadRequestException(`Teacher with ID ${teacherId} not found`);
     }
+
+    // Get lesson rate: use lessonRateAMD if set, otherwise fall back to hourlyRate (assuming 1 hour = 1 lesson)
+    const lessonRate = teacher.lessonRateAMD 
+      ? Number(teacher.lessonRateAMD) 
+      : Number(teacher.hourlyRate); // Fallback for backward compatibility
 
     // Get start and end of month
     const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
@@ -443,7 +453,6 @@ export class SalariesService {
       },
       select: { 
         id: true,
-        duration: true,
         feedbacksCompleted: true,
         absenceMarked: true,
         voiceSent: true,
@@ -480,7 +489,7 @@ export class SalariesService {
 
     // Calculate using the same per-lesson method as calculateMonthlySalaryFromLessons
     // This ensures idempotency and consistency
-    const hourlyRate = Number(teacher.hourlyRate);
+    // Base salary is per lesson (fixed price), NOT per hour
     let totalBaseSalary = 0;
     let totalObligationDeduction = 0;
     let totalOtherDeduction = 0;
@@ -488,9 +497,8 @@ export class SalariesService {
     let totalObligationsRequired = 0;
 
     for (const lesson of lessons) {
-      const duration = typeof lesson.duration === 'number' ? lesson.duration : 0;
-      const hours = duration / 60;
-      const baseSalary = hours * hourlyRate;
+      // Base salary = lessonRateAMD (fixed price per lesson)
+      const baseSalary = lessonRate;
       totalBaseSalary += baseSalary;
 
       // Calculate obligations (4 total)
@@ -505,8 +513,8 @@ export class SalariesService {
       totalObligationsRequired += totalObligations;
       totalObligationsCompleted += completedObligations;
 
-      // Calculate obligation-based deduction
-      // Each missing obligation deducts 10% of base salary
+      // Calculate obligation-based deduction per lesson
+      // Each missing obligation deducts 10% of base salary (40% total if all 4 missing)
       const missingObligations = totalObligations - completedObligations;
       const obligationDeduction = (missingObligations / totalObligations) * baseSalary * 0.4;
       totalObligationDeduction += obligationDeduction;
@@ -854,11 +862,16 @@ export class SalariesService {
       }
     });
 
+    // Get lesson rate: use lessonRateAMD if set, otherwise fall back to hourlyRate (assuming 1 hour = 1 lesson)
+    const lessonRate = teacher.lessonRateAMD 
+      ? Number(teacher.lessonRateAMD) 
+      : Number(teacher.hourlyRate); // Fallback for backward compatibility
+
     // Calculate per-lesson breakdown
-    const hourlyRate = Number(teacher.hourlyRate);
+    // Base salary is per lesson (fixed price), NOT per hour
     const lessonBreakdown = lessons.map((lesson: any) => {
-      const hours = (lesson.duration || 0) / 60;
-      const baseSalary = hours * hourlyRate;
+      // Base salary = lessonRateAMD (fixed price per lesson)
+      const baseSalary = lessonRate;
 
       // Calculate obligations (4 total)
       const obligations = [
@@ -870,8 +883,8 @@ export class SalariesService {
       const completedObligations = obligations.filter(Boolean).length;
       const totalObligations = 4;
 
-      // Calculate obligation-based deduction
-      // Each missing obligation deducts 10% of base salary
+      // Calculate obligation-based deduction per lesson
+      // Each missing obligation deducts 10% of base salary (40% total if all 4 missing)
       const missingObligations = totalObligations - completedObligations;
       const obligationDeduction = (missingObligations / totalObligations) * baseSalary * 0.4;
 

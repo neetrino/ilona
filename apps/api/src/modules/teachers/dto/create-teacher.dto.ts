@@ -48,7 +48,12 @@ export class CreateTeacherDto {
 
   @IsNumber()
   @Min(0)
-  hourlyRate!: number;
+  hourlyRate!: number; // Legacy field, kept for backward compatibility
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  lessonRateAMD?: number; // Fixed price per lesson (primary field for salary calculation)
 
   @IsArray()
   @IsOptional()
