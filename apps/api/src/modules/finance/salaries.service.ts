@@ -693,4 +693,47 @@ export class SalariesService {
       },
     });
   }
+
+  /**
+   * Exclude lessons from salary calculation by changing their status to CANCELLED
+   * This removes them from salary breakdown without deleting the lessons
+   */
+  async excludeLessonsFromSalary(lessonIds: string[]) {
+    if (!lessonIds || lessonIds.length === 0) {
+      throw new BadRequestException('Lesson IDs array is required and cannot be empty');
+    }
+
+    // Verify all lessons exist and are COMPLETED
+    const lessons = await this.prisma.lesson.findMany({
+      where: {
+        id: { in: lessonIds },
+        status: LessonStatus.COMPLETED,
+      },
+      select: { id: true },
+    });
+
+    if (lessons.length !== lessonIds.length) {
+      const foundIds = new Set(lessons.map((l) => l.id));
+      const missingIds = lessonIds.filter((id) => !foundIds.has(id));
+      throw new NotFoundException(
+        `Some lessons not found or not completed: ${missingIds.join(', ')}`
+      );
+    }
+
+    // Change status to CANCELLED to exclude from salary calculation
+    const result = await this.prisma.lesson.updateMany({
+      where: {
+        id: { in: lessonIds },
+        status: LessonStatus.COMPLETED,
+      },
+      data: {
+        status: LessonStatus.CANCELLED,
+      },
+    });
+
+    return {
+      count: result.count,
+      lessonIds: lessonIds,
+    };
+  }
 }

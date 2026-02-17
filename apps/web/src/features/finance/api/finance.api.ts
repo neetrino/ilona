@@ -153,6 +153,15 @@ export async function deleteSalaries(ids: string[]): Promise<{ count: number }> 
   });
 }
 
+/**
+ * Exclude lessons from salary calculation (changes lesson status to CANCELLED)
+ */
+export async function excludeLessonsFromSalary(lessonIds: string[]): Promise<{ count: number; lessonIds: string[] }> {
+  return api.delete<{ count: number; lessonIds: string[] }>('/finance/salaries/breakdown/exclude', {
+    body: JSON.stringify({ ids: lessonIds }),
+  });
+}
+
 // ============ DEDUCTIONS ============
 
 /**

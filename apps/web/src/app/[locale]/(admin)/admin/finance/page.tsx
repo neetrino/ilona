@@ -88,11 +88,25 @@ export default function FinancePage() {
   });
   const [selectedSalaryId, setSelectedSalaryId] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  // Initialize breakdown modal state from URL
   const [selectedSalaryForBreakdown, setSelectedSalaryForBreakdown] = useState<{
     teacherId: string;
     teacherName: string;
     month: string;
-  } | null>(null);
+  } | null>(() => {
+    const breakdownTeacherId = searchParams.get('breakdownTeacherId');
+    const breakdownMonth = searchParams.get('breakdownMonth');
+    const breakdownTeacherName = searchParams.get('breakdownTeacherName');
+    
+    if (breakdownTeacherId && breakdownMonth && breakdownTeacherName) {
+      return {
+        teacherId: breakdownTeacherId,
+        teacherName: decodeURIComponent(breakdownTeacherName),
+        month: breakdownMonth,
+      };
+    }
+    return null;
+  });
   const [selectedSalaryIds, setSelectedSalaryIds] = useState<Set<string>>(new Set());
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -500,11 +514,18 @@ export default function FinancePage() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedSalaryForBreakdown({
+              const breakdownData = {
                 teacherId: salary.teacherId,
                 teacherName,
                 month: monthStr,
-              });
+              };
+              setSelectedSalaryForBreakdown(breakdownData);
+              // Update URL to persist state
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('breakdownTeacherId', salary.teacherId);
+              params.set('breakdownMonth', monthStr);
+              params.set('breakdownTeacherName', encodeURIComponent(teacherName));
+              router.push(`${pathname}?${params.toString()}`, { scroll: false });
             }}
             className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
             aria-label="View breakdown"
@@ -816,7 +837,16 @@ export default function FinancePage() {
             teacherName={selectedSalaryForBreakdown.teacherName}
             month={selectedSalaryForBreakdown.month}
             open={!!selectedSalaryForBreakdown}
-            onClose={() => setSelectedSalaryForBreakdown(null)}
+            onClose={() => {
+              setSelectedSalaryForBreakdown(null);
+              // Remove breakdown params from URL
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete('breakdownTeacherId');
+              params.delete('breakdownMonth');
+              params.delete('breakdownTeacherName');
+              const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+              router.push(newUrl, { scroll: false });
+            }}
           />
         )}
 

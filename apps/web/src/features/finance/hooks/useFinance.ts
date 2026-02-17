@@ -17,6 +17,7 @@ import {
   fetchSalaryBreakdown,
   deleteSalary,
   deleteSalaries,
+  excludeLessonsFromSalary,
 } from '../api/finance.api';
 import type {
   PaymentFilters,
@@ -205,6 +206,21 @@ export function useDeleteSalaries() {
   return useMutation({
     mutationFn: (ids: string[]) => deleteSalaries(ids),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
+export function useExcludeLessonsFromSalary() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (lessonIds: string[]) => excludeLessonsFromSalary(lessonIds),
+    onSuccess: () => {
+      // Invalidate all salary breakdown queries
+      queryClient.invalidateQueries({ queryKey: [...financeKeys.salaries(), 'breakdown'] });
+      // Invalidate salary list to update Level 1 totals
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
       queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
     },

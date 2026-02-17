@@ -16,6 +16,7 @@ export {
   useSalaryBreakdown,
   useDeleteSalary,
   useDeleteSalaries,
+  useExcludeLessonsFromSalary,
   // Deductions
   useDeductions,
   // Keys

@@ -336,6 +336,15 @@ export class FinanceController {
     return this.salariesService.deleteMany(ids);
   }
 
+  @Delete('salaries/breakdown/exclude')
+  @Roles(UserRole.ADMIN)
+  async excludeLessonsFromSalary(@Body('ids') ids: string[]) {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException('ids array is required and cannot be empty');
+    }
+    return this.salariesService.excludeLessonsFromSalary(ids);
+  }
+
   // ============ DEDUCTIONS ============
 
   @Get('deductions')
