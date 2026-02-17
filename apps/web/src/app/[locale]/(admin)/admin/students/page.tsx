@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { List, LayoutGrid } from 'lucide-react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button, FilterDropdown, ActionButtons } from '@/shared/components/ui';
+import { cn } from '@/shared/lib/utils';
 import { 
   useStudents, 
   useDeleteStudent, 
@@ -20,6 +22,8 @@ import { useGroups } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { formatCurrency } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
+
+type ViewMode = 'list' | 'board';
 
 // Component for select all checkbox with indeterminate state
 function SelectAllCheckbox({
@@ -55,7 +59,103 @@ function SelectAllCheckbox({
   );
 }
 
+interface StudentCardProps {
+  student: Student;
+  onEdit: () => void;
+  onDelete: () => void;
+  onDeactivate: () => void;
+}
+
+function StudentCard({ student, onEdit, onDelete, onDeactivate }: StudentCardProps) {
+  const firstName = student.user?.firstName || '';
+  const lastName = student.user?.lastName || '';
+  const fullName = `${firstName} ${lastName}`.trim();
+  const phone = student.user?.phone || 'No phone';
+  const teacherName = student.teacher
+    ? `${student.teacher.user.firstName} ${student.teacher.user.lastName}`
+    : null;
+  const monthlyFee = typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) : Number(student.monthlyFee || 0);
+  const attendance = student.attendanceSummary;
+  const isActive = student.user?.status === 'ACTIVE';
+
+  return (
+    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+      {/* Student Header */}
+      <div className="mb-3">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h4 className="font-semibold text-slate-800 text-sm leading-tight flex-1">
+            {fullName}
+          </h4>
+          <ActionButtons
+            onEdit={onEdit}
+            onDisable={onDeactivate}
+            onDelete={onDelete}
+            isActive={isActive}
+            size="sm"
+            ariaLabels={{
+              edit: 'Edit student',
+              disable: isActive ? 'Deactivate student' : 'Activate student',
+              delete: 'Delete student',
+            }}
+            titles={{
+              edit: 'Edit student',
+              disable: isActive ? 'Deactivate student' : 'Activate student',
+              delete: 'Delete student',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Student Details */}
+      <div className="space-y-2 text-xs">
+        <div className="flex items-center gap-2 text-slate-600">
+          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg>
+          <span className="truncate" title={phone}>{phone}</span>
+        </div>
+
+        {teacherName && (
+          <div className="flex items-center gap-2 text-slate-600">
+            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span className="truncate" title={teacherName}>{teacherName}</span>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 text-slate-600">
+          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{formatCurrency(monthlyFee)}</span>
+        </div>
+
+        {student.groupId && attendance && (
+          <div className="flex items-center gap-2 text-slate-600">
+            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span>{attendance.totalClasses}/{attendance.absences}</span>
+          </div>
+        )}
+
+        {!isActive && (
+          <div className="pt-1">
+            <Badge variant="warning" className="text-xs py-0.5 px-2">
+              Inactive
+            </Badge>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function StudentsPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
@@ -81,13 +181,42 @@ export default function StudentsPage() {
   const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth() + 1); // 1-12
   const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
   const params = useParams();
-  const router = useRouter();
   const locale = params.locale as string;
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const tTeachers = useTranslations('teachers');
   const tStatus = useTranslations('status');
   const pageSize = 10;
+
+  // View mode state with URL persistence
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const modeFromUrl = searchParams.get('view');
+    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
+      return modeFromUrl;
+    }
+    return 'list'; // Default to list view
+  });
+
+  // Update URL when view mode changes
+  const updateViewModeInUrl = (mode: ViewMode) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode !== 'list') {
+      params.set('view', mode);
+    } else {
+      params.delete('view');
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  // Sync view mode from URL
+  useEffect(() => {
+    const modeFromUrl = searchParams.get('view');
+    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
+      setViewMode(modeFromUrl);
+    } else if (!modeFromUrl) {
+      setViewMode('list');
+    }
+  }, [searchParams]);
 
   // Fetch teachers, groups, and centers for filters and dropdowns
   // Reduced take limits for better performance - filters don't need 100 items
@@ -109,14 +238,15 @@ export default function StudentsPage() {
     [selectedStatusIds]
   );
 
-  // Fetch students with search, pagination, and filters
+  // Fetch students - for board view, fetch max allowed (100); for list view, use pagination
+  const shouldFetchAll = viewMode === 'board';
   const { 
     data: studentsData, 
     isLoading,
     error 
   } = useStudents({ 
-    skip: page * pageSize,
-    take: pageSize,
+    skip: shouldFetchAll ? 0 : page * pageSize,
+    take: shouldFetchAll ? 100 : pageSize, // API max is 100
     search: searchQuery || undefined,
     teacherIds: teacherIdsArray,
     centerIds: centerIdsArray,
@@ -134,6 +264,34 @@ export default function StudentsPage() {
   const students = studentsData?.items || [];
   const totalStudents = studentsData?.total || 0;
   const totalPages = studentsData?.totalPages || 1;
+  const allCenters = centersData?.items || [];
+
+  // Group students by center for board view
+  const studentsByCenter = useMemo(() => {
+    if (viewMode !== 'board') return {};
+    
+    const grouped: Record<string, Student[]> = {};
+    
+    // Initialize all centers
+    allCenters.forEach(center => {
+      grouped[center.id] = [];
+    });
+    
+    // Add unassigned students column
+    grouped['unassigned'] = [];
+    
+    // Assign students to their centers
+    students.forEach(student => {
+      const centerId = student.group?.center?.id;
+      if (centerId && grouped[centerId]) {
+        grouped[centerId].push(student);
+      } else {
+        grouped['unassigned'].push(student);
+      }
+    });
+    
+    return grouped;
+  }, [students, allCenters, viewMode]);
 
   // Handle sorting
   const handleSort = (key: string) => {
@@ -675,6 +833,49 @@ export default function StudentsPage() {
                 Delete All ({selectedStudentIds.size})
               </Button>
             )}
+            {/* View Mode Toggle */}
+            <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
+              <button
+                onClick={() => {
+                  setViewMode('list');
+                  updateViewModeInUrl('list');
+                  setPage(0); // Reset pagination when switching views
+                  // Clear selection when switching views
+                  setSelectedStudentIds(new Set());
+                }}
+                className={cn(
+                  'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
+                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  viewMode === 'list'
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'text-slate-700 hover:bg-slate-100'
+                )}
+                aria-pressed={viewMode === 'list'}
+              >
+                <List className="w-4 h-4" />
+                List
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode('board');
+                  updateViewModeInUrl('board');
+                  setPage(0); // Reset pagination when switching views
+                  // Clear selection when switching views
+                  setSelectedStudentIds(new Set());
+                }}
+                className={cn(
+                  'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
+                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  viewMode === 'board'
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'text-slate-700 hover:bg-slate-100'
+                )}
+                aria-pressed={viewMode === 'board'}
+              >
+                <LayoutGrid className="w-4 h-4" />
+                Board
+              </button>
+            </div>
             <Button 
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium"
               onClick={() => setIsAddStudentOpen(true)}
@@ -766,45 +967,142 @@ export default function StudentsPage() {
           </div>
         </div>
 
-        {/* Students Table */}
-        <DataTable
-          columns={studentColumns}
-          data={students}
-          keyExtractor={(student) => student.id}
-          isLoading={isLoading}
-          emptyMessage={searchQuery ? "No students match your search" : "No students found"}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSort={handleSort}
-        />
+        {/* Students View */}
+        {viewMode === 'list' ? (
+          <>
+            {/* Students Table */}
+            <DataTable
+              columns={studentColumns}
+              data={students}
+              keyExtractor={(student) => student.id}
+              isLoading={isLoading}
+              emptyMessage={searchQuery ? "No students match your search" : "No students found"}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+            />
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between text-sm text-slate-500">
-          <span>
-            Showing {Math.min(page * pageSize + 1, totalStudents)}-{Math.min((page + 1) * pageSize, totalStudents)} of {totalStudents} students
-          </span>
-          <div className="flex items-center gap-2">
-            <button 
-              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
-              disabled={page === 0}
-              onClick={() => handlePageChange(Math.max(0, page - 1))}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <span>Page {page + 1} of {totalPages || 1}</span>
-            <button 
-              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
-              disabled={page >= totalPages - 1}
-              onClick={() => handlePageChange(page + 1)}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+            {/* Pagination */}
+            <div className="flex items-center justify-between text-sm text-slate-500">
+              <span>
+                Showing {Math.min(page * pageSize + 1, totalStudents)}-{Math.min((page + 1) * pageSize, totalStudents)} of {totalStudents} students
+              </span>
+              <div className="flex items-center gap-2">
+                <button 
+                  className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
+                  disabled={page === 0}
+                  onClick={() => handlePageChange(Math.max(0, page - 1))}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <span>Page {page + 1} of {totalPages || 1}</span>
+                <button 
+                  className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+                  disabled={page >= totalPages - 1}
+                  onClick={() => handlePageChange(page + 1)}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Board View */
+          <div className="w-full overflow-x-auto">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-slate-500">Loading students...</div>
+              </div>
+            ) : allCenters.length === 0 && studentsByCenter['unassigned']?.length === 0 ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-slate-500">No students found.</div>
+              </div>
+            ) : (
+              <div className="flex gap-4 pb-4 min-w-max">
+                {/* Center Columns */}
+                {allCenters
+                  .filter((center) => {
+                    // When searching/filtering, only show centers with matching students
+                    const centerStudents = studentsByCenter[center.id] || [];
+                    return centerStudents.length > 0;
+                  })
+                  .map((center) => {
+                    const centerStudents = studentsByCenter[center.id] || [];
+                    return (
+                      <div
+                        key={center.id}
+                        className="flex-shrink-0 w-80 bg-slate-50 rounded-xl border border-slate-200 flex flex-col"
+                      >
+                        {/* Column Header */}
+                        <div className="p-4 border-b border-slate-200 bg-white rounded-t-xl">
+                          <h3 className="font-semibold text-slate-800">{center.name}</h3>
+                          <p className="text-sm text-slate-500 mt-1">
+                            {centerStudents.length} {centerStudents.length === 1 ? 'student' : 'students'}
+                          </p>
+                        </div>
+
+                        {/* Column Content */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
+                          {centerStudents.length === 0 ? (
+                            <div className="text-center py-8 text-slate-400 text-sm">
+                              No students
+                            </div>
+                          ) : (
+                            centerStudents.map((student) => (
+                              <StudentCard
+                                key={student.id}
+                                student={student}
+                                onEdit={() => handleEditClick(student)}
+                                onDelete={() => handleDeleteClick(student)}
+                                onDeactivate={() => handleDeactivateClick(student)}
+                              />
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                {/* Unassigned Students Column */}
+                {studentsByCenter['unassigned'] && studentsByCenter['unassigned'].length > 0 && (
+                  <div className="flex-shrink-0 w-80 bg-slate-50 rounded-xl border border-slate-200 flex flex-col">
+                    {/* Column Header */}
+                    <div className="p-4 border-b border-slate-200 bg-white rounded-t-xl">
+                      <h3 className="font-semibold text-slate-800">Unassigned</h3>
+                      <p className="text-sm text-slate-500 mt-1">
+                        {studentsByCenter['unassigned'].length} {studentsByCenter['unassigned'].length === 1 ? 'student' : 'students'}
+                      </p>
+                    </div>
+
+                    {/* Column Content */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
+                      {studentsByCenter['unassigned'].map((student) => (
+                        <StudentCard
+                          key={student.id}
+                          student={student}
+                          onEdit={() => handleEditClick(student)}
+                          onDelete={() => handleDeleteClick(student)}
+                          onDeactivate={() => handleDeactivateClick(student)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {searchQuery && allCenters.filter((center) => {
+                  const centerStudents = studentsByCenter[center.id] || [];
+                  return centerStudents.length > 0;
+                }).length === 0 && (!studentsByCenter['unassigned'] || studentsByCenter['unassigned'].length === 0) && (
+                  <div className="flex items-center justify-center py-12 w-full">
+                    <div className="text-slate-500">No students match your search</div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
