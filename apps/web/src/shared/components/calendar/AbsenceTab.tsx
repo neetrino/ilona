@@ -30,12 +30,12 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
     ?.map((swa) => swa.attendance)
     .filter((att): att is NonNullable<typeof att> => att !== null) || [];
 
-  // Initialize attendance state from saved data - must prefill ALL students
+  // Initialize attendance state from saved data - only prefill students with saved attendance
   useEffect(() => {
     if (students.length > 0 && attendanceData) {
       const initial: Record<string, { isPresent: boolean; absenceType?: AbsenceType }> = {};
       
-      // Initialize all students with their saved attendance or default to present
+      // Initialize only students with saved attendance (do not default to present)
       students.forEach((student) => {
         // Find saved attendance from studentsWithAttendance array
         const studentWithAttendance = attendanceData.studentsWithAttendance?.find(
@@ -44,18 +44,13 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
         const savedAttendance = studentWithAttendance?.attendance;
         
         if (savedAttendance) {
-          // Use saved attendance
+          // Use saved attendance - only set state for students with saved data
           initial[student.id] = {
             isPresent: savedAttendance.isPresent,
             absenceType: savedAttendance.absenceType || undefined,
           };
-        } else {
-          // Default to present if no saved attendance
-          initial[student.id] = {
-            isPresent: true,
-            absenceType: undefined,
-          };
         }
+        // If no saved attendance, don't set any value - student will show as 'not_marked'
       });
       
       setAttendance(initial);
@@ -78,11 +73,14 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const handleSave = async () => {
     if (!lesson) return;
 
-    const attendances = students.map((student) => ({
-      studentId: student.id,
-      isPresent: attendance[student.id]?.isPresent ?? true,
-      absenceType: attendance[student.id]?.absenceType,
-    }));
+    // Only save students that have been explicitly marked (filter out unmarked students)
+    const attendances = students
+      .filter((student) => attendance[student.id] !== undefined)
+      .map((student) => ({
+        studentId: student.id,
+        isPresent: attendance[student.id]!.isPresent,
+        absenceType: attendance[student.id]!.absenceType,
+      }));
 
     try {
       await markBulkAttendance.mutateAsync({
