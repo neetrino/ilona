@@ -1,11 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui';
 import { useSalary } from '../hooks/useFinance';
-import type { SalaryRecord } from '../types';
 
 interface SalaryDetailsModalProps {
   salaryId: string | null;
@@ -14,7 +12,6 @@ interface SalaryDetailsModalProps {
 }
 
 export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsModalProps) {
-  const t = useTranslations('finance');
   const { data: salary, isLoading } = useSalary(salaryId || '', !!salaryId && open);
 
   // Prevent body scroll when modal is open
@@ -130,14 +127,7 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
             <div>
               <h3 className="font-semibold text-slate-800 mb-2">Period</h3>
               <p className="text-slate-700">
-                {formatMonth(
-                  (salary as any).month instanceof Date 
-                    ? (salary as any).month 
-                    : typeof (salary as any).month === 'string'
-                    ? (salary as any).month
-                    : salary.month,
-                  (salary as any).year
-                )}
+                {formatMonth(salary.month, salary.year)}
               </p>
             </div>
 

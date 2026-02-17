@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Button } from '@/shared/components/ui';
 import { DataTable } from '@/shared/components/ui';
 import { useSalaryBreakdown, useExcludeLessonsFromSalary, financeKeys } from '../hooks/useFinance';
@@ -57,7 +56,6 @@ export function SalaryBreakdownModal({
   open,
   onClose,
 }: SalaryBreakdownModalProps) {
-  const t = useTranslations('finance');
   const queryClient = useQueryClient();
   const { data: breakdown, isLoading, error, refetch } = useSalaryBreakdown(teacherId, month, open && !!teacherId);
   const excludeLessons = useExcludeLessonsFromSalary();
@@ -197,8 +195,9 @@ export function SalaryBreakdownModal({
       await refetch();
       // Also invalidate salary list to update Level 1 totals
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
-    } catch (err: any) {
-      setDeleteError(err?.message || 'Failed to exclude lessons from salary. Please try again.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to exclude lessons from salary. Please try again.';
+      setDeleteError(errorMessage);
     }
   };
 
