@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useAdminStudents, useAdminTeachers, useAdminGroups, useCreateDirectChat } from '../hooks';
+import { useAdminStudents, useAdminTeachers, useAdminGroups, useCreateDirectChat, useAdminUnreadCounts, useChats } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import { fetchGroupChat, createDirectChat } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import { Badge } from '@/shared/components/ui/badge';
 
 type AdminChatTab = 'students' | 'teachers' | 'groups';
 
@@ -21,6 +22,8 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
   const createDirectChatMutation = useCreateDirectChat();
+  const { counts: unreadCounts } = useAdminUnreadCounts();
+  const { data: chats = [] } = useChats();
 
   // Reset search query when tab changes
   useEffect(() => {
@@ -42,6 +45,26 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
                     activeTab === 'teachers' ? isLoadingTeachers : 
                     activeTab === 'groups' ? isLoadingGroups :
                     false;
+
+  // Create a map of groupId -> unreadCount for GROUP type chats
+  const groupUnreadMap = useMemo(() => {
+    const map = new Map<string, number>();
+    chats.forEach((chat) => {
+      if (chat.type === 'GROUP' && chat.groupId && (chat.unreadCount || 0) > 0) {
+        map.set(chat.groupId, chat.unreadCount || 0);
+      }
+    });
+    return map;
+  }, [chats]);
+
+  // Get unread count for a specific user ID
+  const getUserUnreadCount = (userId: string): number => {
+    const chat = chats.find((c) => {
+      if (c.type !== 'DIRECT') return false;
+      return c.participants.some((p) => p.userId === userId);
+    });
+    return chat?.unreadCount || 0;
+  };
 
   // Handle selecting a student/teacher (create or open DM)
   const handleSelectUser = async (userId: string) => {
@@ -128,7 +151,14 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-slate-900 truncate">{student.name}</h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-medium text-slate-900 truncate">{student.name}</h3>
+                {getUserUnreadCount(student.id) > 0 && (
+                  <Badge variant="error" className="flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                    {getUserUnreadCount(student.id)}
+                  </Badge>
+                )}
+              </div>
               {student.phone && (
                 <p className="text-sm text-slate-500 truncate">{student.phone}</p>
               )}
@@ -193,7 +223,14 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-slate-900 truncate">{teacher.name}</h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-medium text-slate-900 truncate">{teacher.name}</h3>
+                {getUserUnreadCount(teacher.id) > 0 && (
+                  <Badge variant="error" className="flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                    {getUserUnreadCount(teacher.id)}
+                  </Badge>
+                )}
+              </div>
               {teacher.phone && (
                 <p className="text-sm text-slate-500 truncate">{teacher.phone}</p>
               )}
@@ -254,7 +291,14 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               {getAvatar(group.name)}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-slate-900 truncate">{group.name}</h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-medium text-slate-900 truncate">{group.name}</h3>
+                {(groupUnreadMap.get(group.id) || 0) > 0 && (
+                  <Badge variant="error" className="flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                    {groupUnreadMap.get(group.id)}
+                  </Badge>
+                )}
+              </div>
               {group.center && (
                 <p className="text-sm text-slate-500 truncate">{group.center.name}</p>
               )}
@@ -268,40 +312,73 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
   return (
     <div className="flex flex-col h-full">
       {/* Tabs */}
-      <div className="p-4 border-b border-slate-200">
-        <div className="flex gap-2">
+      <div className="p-2 border-b border-slate-200">
+        <div className="flex gap-1">
           <button
             onClick={() => onTabChange('groups')}
             className={cn(
-              'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+              'flex-1 px-2 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5',
               activeTab === 'groups'
                 ? 'bg-slate-900 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             )}
           >
             Groups
+            {unreadCounts.groups > 0 && (
+              <Badge 
+                variant="error" 
+                className={cn(
+                  "min-w-[18px] h-4 flex items-center justify-center px-1 text-xs",
+                  activeTab === 'groups' && "bg-red-500 text-white"
+                )}
+              >
+                {unreadCounts.groups}
+              </Badge>
+            )}
           </button>
           <button
             onClick={() => onTabChange('teachers')}
             className={cn(
-              'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+              'flex-1 px-2 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5',
               activeTab === 'teachers'
                 ? 'bg-slate-900 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             )}
           >
             Teachers
+            {unreadCounts.teachers > 0 && (
+              <Badge 
+                variant="error" 
+                className={cn(
+                  "min-w-[18px] h-4 flex items-center justify-center px-1 text-xs",
+                  activeTab === 'teachers' && "bg-red-500 text-white"
+                )}
+              >
+                {unreadCounts.teachers}
+              </Badge>
+            )}
           </button>
           <button
             onClick={() => onTabChange('students')}
             className={cn(
-              'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+              'flex-1 px-2 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5',
               activeTab === 'students'
                 ? 'bg-slate-900 text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             )}
           >
             Students
+            {unreadCounts.students > 0 && (
+              <Badge 
+                variant="error" 
+                className={cn(
+                  "min-w-[18px] h-4 flex items-center justify-center px-1 text-xs",
+                  activeTab === 'students' && "bg-red-500 text-white"
+                )}
+              >
+                {unreadCounts.students}
+              </Badge>
+            )}
           </button>
         </div>
       </div>

@@ -7,6 +7,7 @@ import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle,
 import { useUpdateLesson, useLesson, type UpdateLessonDto } from '@/features/lessons';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { getErrorMessage } from '@/shared/lib/api';
 
 const updateLessonSchema = z.object({
   date: z.string().min(1, 'Date is required'),
@@ -103,16 +104,9 @@ export function EditLessonForm({ open, onOpenChange, lessonId }: EditLessonFormP
         onOpenChange(false);
         setSuccessMessage(null);
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle error
-      let message = 'Failed to update lesson. Please try again.';
-      if (error?.message) {
-        message = Array.isArray(error.message) ? error.message[0] : error.message;
-      } else if (error?.response?.data?.message) {
-        message = Array.isArray(error.response.data.message) 
-          ? error.response.data.message[0] 
-          : error.response.data.message;
-      }
+      const message = getErrorMessage(error, 'Failed to update lesson. Please try again.');
       setErrorMessage(message);
       setSuccessMessage(null);
     }

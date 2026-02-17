@@ -50,6 +50,40 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Extract error message from unknown error type
+ * Handles ApiError, Error, and unknown types safely
+ */
+export function getErrorMessage(error: unknown, fallback = 'An error occurred'): string {
+  if (error instanceof ApiError) {
+    return error.message;
+  }
+  
+  if (error instanceof Error) {
+    return error.message;
+  }
+  
+  // Handle axios-like error structure
+  if (error && typeof error === 'object' && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: string } } }).response;
+    if (response?.data?.message) {
+      return typeof response.data.message === 'string' 
+        ? response.data.message 
+        : response.data.message[0] || fallback;
+    }
+  }
+  
+  // Handle error objects with message property
+  if (error && typeof error === 'object' && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string') {
+      return message;
+    }
+  }
+  
+  return fallback;
+}
+
 type TokenRefreshCallback = () => Promise<boolean>;
 type SessionExpiredCallback = () => void; // Called when refresh fails (non-blocking)
 type TokenGetter = () => string | null;
@@ -344,6 +378,7 @@ class ApiClient {
           Array.isArray(errorData.message) ? errorData.message : undefined
         );
       }
+    }
 
     if (!response.ok) {
       const errorData = data as ApiErrorResponse;
@@ -364,6 +399,8 @@ class ApiClient {
         Array.isArray(errorData.message) ? errorData.message : undefined
       );
     }
+
+    return data as T;
   }
 
   /**

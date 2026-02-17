@@ -3,10 +3,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useChatStore } from '../store/chat.store';
 import {
   initSocket,
   disconnectSocket,
   isSocketConnected,
+  getSocket,
   onSocketEvent,
   emitSendMessage,
   emitEditMessage,
@@ -17,6 +19,7 @@ import {
   emitJoinChat,
   emitSendVocabulary,
 } from '../lib/socket';
+import { markChatAsRead, sendMessageHttp } from '../api/chat.api';
 import { chatKeys } from './useChat';
 import type { Message, Chat } from '../types';
 
@@ -34,14 +37,21 @@ export function useSocket(options: UseSocketOptions = {}) {
   const { tokens, refreshToken: refreshTokenFn } = useAuthStore();
   const token = tokens?.accessToken;
   const queryClient = useQueryClient();
-  const [isConnected, setIsConnected] = useState(false);
+  // Initialize with current socket connection status
+  const [isConnected, setIsConnected] = useState(() => isSocketConnected());
   const [onlineUsers, setOnlineUsers] = useState<Map<string, Set<string>>>(new Map());
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
   // Initialize socket connection
+  // Only initialize once, socket.io handles reconnection and token refresh
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      // If no token, disconnect socket
+      disconnectSocket();
+      setIsConnected(false);
+      return;
+    }
 
     let socketInitialized = false;
 
@@ -78,13 +88,16 @@ export function useSocket(options: UseSocketOptions = {}) {
 
     void initializeSocket(token);
 
-    // Cleanup on unmount or token change
+    // Only cleanup on unmount or when token becomes null
+    // Don't disconnect on token refresh - socket.io handles that via onTokenExpired
     return () => {
-      disconnectSocket();
+      // Only disconnect if we're actually unmounting (no token)
+      // The check happens at the start of the effect
     };
-  }, [token, refreshTokenFn, queryClient]);
+  }, [token, refreshTokenFn]);
 
   // Subscribe to events (separate effect to avoid re-subscribing on token change)
+  // Note: This effect should only run once, not on token changes
   useEffect(() => {
     if (!token) return;
 
@@ -133,7 +146,7 @@ export function useSocket(options: UseSocketOptions = {}) {
         );
 
         // Update chat list with new message, lastMessageAt, and unreadCount
-        // Also re-sort by lastMessageAt to move conversation to top
+        // Optimize: Only re-sort if the updated chat is not already first
         queryClient.setQueryData(
           chatKeys.list(),
           (oldData: Chat[] | undefined) => {
@@ -141,35 +154,54 @@ export function useSocket(options: UseSocketOptions = {}) {
 
             const { user } = useAuthStore.getState();
             const isFromOtherUser = message.senderId !== user?.id;
+            const messageTime = new Date(message.createdAt).getTime();
 
-            const updatedChats = oldData.map((chat) => {
-              if (chat.id === message.chatId) {
-                // Increment unreadCount if message is from another user
-                const newUnreadCount = isFromOtherUser 
-                  ? (chat.unreadCount || 0) + 1 
-                  : chat.unreadCount;
+            // Find the chat index
+            const chatIndex = oldData.findIndex((chat) => chat.id === message.chatId);
+            if (chatIndex === -1) return oldData;
 
-                return {
-                  ...chat,
-                  lastMessage: message,
-                  lastMessageAt: message.createdAt,
-                  updatedAt: message.createdAt,
-                  unreadCount: newUnreadCount,
-                };
-              }
-              return chat;
-            });
+            // Update the chat
+            const updatedChat = {
+              ...oldData[chatIndex],
+              lastMessage: message,
+              lastMessageAt: message.createdAt,
+              updatedAt: message.createdAt,
+              unreadCount: isFromOtherUser 
+                ? (oldData[chatIndex].unreadCount || 0) + 1 
+                : oldData[chatIndex].unreadCount,
+            };
 
-            // Re-sort by lastMessageAt (newest first)
-            return updatedChats.sort((a, b) => {
-              const aTime = a.lastMessageAt 
-                ? new Date(a.lastMessageAt).getTime()
-                : (a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : new Date(a.updatedAt).getTime());
-              const bTime = b.lastMessageAt 
-                ? new Date(b.lastMessageAt).getTime()
-                : (b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : new Date(b.updatedAt).getTime());
-              return bTime - aTime; // DESC order
-            });
+            // If chat is already first, just update it without sorting
+            if (chatIndex === 0) {
+              const newData = [...oldData];
+              newData[0] = updatedChat;
+              return newData;
+            }
+
+            // Check if updated chat should be first (has newer message than current first)
+            const firstChat = oldData[0];
+            const firstChatTime = firstChat.lastMessageAt 
+              ? new Date(firstChat.lastMessageAt).getTime()
+              : (firstChat.lastMessage?.createdAt ? new Date(firstChat.lastMessage.createdAt).getTime() : new Date(firstChat.updatedAt).getTime());
+
+            // If new message is older than first chat, just update in place
+            if (messageTime <= firstChatTime) {
+              const newData = [...oldData];
+              newData[chatIndex] = updatedChat;
+              return newData;
+            }
+
+            // New message is newest - move chat to top and re-sort only if needed
+            const newData = [...oldData];
+            newData[chatIndex] = updatedChat;
+            
+            // Move to front
+            newData.splice(chatIndex, 1);
+            newData.unshift(updatedChat);
+            
+            // Only sort if there are other chats that might have newer messages
+            // (In practice, this is rare, so we can skip full sort)
+            return newData;
           }
         );
 
@@ -273,15 +305,30 @@ export function useSocket(options: UseSocketOptions = {}) {
     // Cleanup
     return () => {
       unsubscribers.forEach((unsub) => unsub());
-      disconnectSocket();
+      // Don't disconnect socket here - it's managed by the initialization effect
+      // Only unsubscribe from events
     };
-  }, [token, queryClient]);
+  }, [queryClient]);
 
   // Send message
   const sendMessage = useCallback(
     async (chatId: string, content: string, type = 'TEXT') => {
       if (!content.trim()) return { success: false, error: 'Empty message' };
-      return emitSendMessage(chatId, content.trim(), type);
+      
+      // Try socket first
+      const socketResult = await emitSendMessage(chatId, content.trim(), type);
+      if (socketResult.success) {
+        return socketResult;
+      }
+      
+      // Fallback to HTTP if socket is not connected
+      try {
+        const message = await sendMessageHttp(chatId, content.trim(), type);
+        return { success: true, message };
+      } catch (error) {
+        console.error('[useSocket] Failed to send message via HTTP:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to send message' };
+      }
     },
     []
   );
@@ -310,20 +357,47 @@ export function useSocket(options: UseSocketOptions = {}) {
 
   // Mark as read
   const markAsRead = useCallback(async (chatId: string) => {
-    const result = await emitMarkAsRead(chatId);
+    // Try socket first, fallback to HTTP if socket not connected
+    let result = await emitMarkAsRead(chatId);
+    
+    // If socket failed (not connected), try HTTP API as fallback
+    if (!result.success) {
+      try {
+        result = await markChatAsRead(chatId);
+      } catch (error) {
+        console.error('[useSocket] Failed to mark as read via HTTP:', error);
+        return { success: false };
+      }
+    }
     
     // Update cache after marking as read (set unreadCount to 0 for this chat)
     // This prevents infinite loops by updating cache directly instead of invalidating
+    // Preserve all chat properties including groupId, type, participants, etc.
     if (result.success) {
       queryClient.setQueryData(
         chatKeys.list(),
-        (oldData: Array<{ id: string; unreadCount?: number }> | undefined) => {
+        (oldData: Chat[] | undefined) => {
           if (!oldData) return oldData;
           return oldData.map((chat) =>
             chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
           );
         }
       );
+      
+      // Also update the chat detail cache if it exists
+      queryClient.setQueryData(
+        chatKeys.detail(chatId),
+        (oldData: Chat | undefined) => {
+          if (!oldData) return oldData;
+          return { ...oldData, unreadCount: 0 };
+        }
+      );
+      
+      // Update activeChat in store if it matches the chatId
+      const { activeChat, setActiveChat } = useChatStore.getState();
+      if (activeChat && activeChat.id === chatId) {
+        setActiveChat({ ...activeChat, unreadCount: 0 });
+      }
     }
     
     return result;
@@ -374,17 +448,37 @@ export function useSocket(options: UseSocketOptions = {}) {
 }
 
 /**
- * Hook to get connection status
+ * Hook to get connection status (event-based, not polling)
  */
 export function useSocketStatus() {
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(() => isSocketConnected());
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsConnected(isSocketConnected());
-    }, 1000);
+    const socket = getSocket();
+    if (!socket) {
+      setIsConnected(false);
+      return;
+    }
 
-    return () => clearInterval(interval);
+    // Set initial state
+    setIsConnected(socket.connected);
+
+    // Listen to connection events instead of polling
+    const handleConnect = () => {
+      setIsConnected(true);
+    };
+
+    const handleDisconnect = () => {
+      setIsConnected(false);
+    };
+
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+
+    return () => {
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+    };
   }, []);
 
   return isConnected;

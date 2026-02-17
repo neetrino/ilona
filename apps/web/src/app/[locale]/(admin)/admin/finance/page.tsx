@@ -192,13 +192,6 @@ export default function FinancePage() {
       },
     },
     {
-      key: 'month',
-      header: t('month'),
-      render: (payment: Payment) => (
-        <span className="text-slate-700">{formatMonth(payment.month, payment.year)}</span>
-      ),
-    },
-    {
       key: 'amount',
       header: t('amount'),
       className: 'text-right',
@@ -219,11 +212,14 @@ export default function FinancePage() {
     {
       key: 'dueDate',
       header: t('dueDate'),
-      render: (payment: Payment) => (
-        <span className="text-slate-500">
-          {new Date(payment.dueDate).toLocaleDateString()}
-        </span>
-      ),
+      render: (payment: Payment) => {
+        const date = new Date(payment.dueDate);
+        return (
+          <span className="text-slate-500">
+            {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </span>
+        );
+      },
     },
     {
       key: 'status',

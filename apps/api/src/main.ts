@@ -121,15 +121,17 @@ async function bootstrap() {
   }
 
   // Start server - listen on all interfaces (0.0.0.0) to allow network access
-  const port = configService.get<number>('API_PORT', 4000);
-  const host = nodeEnv === 'production' ? '0.0.0.0' : '0.0.0.0'; // Listen on all interfaces
-  await app.listen(port, host);
+  // Render (и другие PaaS) задают порт через PORT
+  const port =
+    nodeEnv === 'production' && process.env.PORT
+      ? Number(process.env.PORT)
+      : Number(configService.get('API_PORT', 4000));
+  
+  await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 Application is running on: http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/${apiPrefix}`);
-  console.log(`📚 Swagger docs: http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/${apiPrefix}/docs`);
-  if (host === '0.0.0.0') {
-    console.log(`🌐 Network access: http://<your-ip>:${port}/${apiPrefix}`);
-  }
+  console.log(`🚀 Application is running on: http://localhost:${port}/${apiPrefix}`);
+  console.log(`📚 Swagger docs: http://localhost:${port}/${apiPrefix}/docs`);
+  console.log(`🌐 Network access: http://<your-ip>:${port}/${apiPrefix}`);
 }
 
 bootstrap();

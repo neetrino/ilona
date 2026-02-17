@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
@@ -317,4 +318,149 @@ export function useStudentAdmin() {
     queryFn: () => fetchStudentAdmin(),
     staleTime: 60 * 1000, // Cache for 1 minute
   });
+}
+
+/**
+ * Hook to calculate unread message counts per section (Groups/Teachers/Students)
+ * Used for admin chat sidebar badges
+ */
+export function useAdminUnreadCounts() {
+  const { user } = useAuthStore();
+  const { data: chats = [], isLoading } = useChats();
+
+  const counts = React.useMemo(() => {
+    if (!user || !chats.length) {
+      return {
+        groups: 0,
+        teachers: 0,
+        students: 0,
+      };
+    }
+
+    let groupsUnread = 0;
+    let teachersUnread = 0;
+    let studentsUnread = 0;
+
+    chats.forEach((chat) => {
+      const unreadCount = chat.unreadCount || 0;
+      if (unreadCount === 0) return;
+
+      if (chat.type === 'GROUP') {
+        groupsUnread += unreadCount;
+      } else if (chat.type === 'DIRECT') {
+        // Find the other participant (not the current user)
+        const otherParticipant = chat.participants.find(
+          (p) => p.userId !== user.id
+        );
+        
+        if (otherParticipant?.user?.role === 'TEACHER') {
+          teachersUnread += unreadCount;
+        } else if (otherParticipant?.user?.role === 'STUDENT') {
+          studentsUnread += unreadCount;
+        }
+      }
+    });
+
+    return {
+      groups: groupsUnread,
+      teachers: teachersUnread,
+      students: studentsUnread,
+    };
+  }, [chats, user]);
+
+  return {
+    counts,
+    isLoading,
+  };
+}
+
+/**
+ * Hook to calculate unread message counts per section (Groups/Students/Admin)
+ * Used for teacher chat sidebar badges
+ */
+export function useTeacherUnreadCounts() {
+  const { data: groups = [], isLoading: isLoadingGroups } = useTeacherGroups();
+  const { data: students = [], isLoading: isLoadingStudents } = useTeacherStudents();
+  const { data: admin, isLoading: isLoadingAdmin } = useTeacherAdmin();
+
+  const counts = React.useMemo(() => {
+    const groupsUnread = groups.reduce((sum, group) => sum + (group.unreadCount || 0), 0);
+    const studentsUnread = students.reduce((sum, student) => sum + (student.unreadCount || 0), 0);
+    const adminUnread = admin?.unreadCount || 0;
+
+    return {
+      groups: groupsUnread,
+      students: studentsUnread,
+      admin: adminUnread,
+    };
+  }, [groups, students, admin]);
+
+  return {
+    counts,
+    isLoading: isLoadingGroups || isLoadingStudents || isLoadingAdmin,
+  };
+}
+
+/**
+ * Hook to calculate unread message counts per section (Chats/My Teachers/Admin)
+ * Used for student chat sidebar badges
+ */
+export function useStudentUnreadCounts() {
+  const { user } = useAuthStore();
+  const { data: chats = [], isLoading: isLoadingChats } = useChats();
+  const { data: admin, isLoading: isLoadingAdmin } = useStudentAdmin();
+
+  const counts = React.useMemo(() => {
+    if (!user) {
+      return {
+        chats: 0,
+        teachers: 0,
+        admin: 0,
+      };
+    }
+
+    // Calculate unread for chats (excluding admin chats)
+    let chatsUnread = 0;
+    let teachersUnread = 0;
+
+    chats.forEach((chat) => {
+      const unreadCount = chat.unreadCount || 0;
+      if (unreadCount === 0) return;
+
+      if (chat.type === 'GROUP') {
+        // Group chats count towards "Chats" tab
+        chatsUnread += unreadCount;
+      } else if (chat.type === 'DIRECT') {
+        // Find the other participant (not the current user)
+        const otherParticipant = chat.participants.find(
+          (p) => p.userId !== user.id
+        );
+        
+        // Exclude admin from chats count (admin has its own tab)
+        if (otherParticipant?.user?.role === 'ADMIN') {
+          // Admin is handled separately
+          return;
+        } else if (otherParticipant?.user?.role === 'TEACHER') {
+          // Teachers count towards "My Teachers" tab
+          teachersUnread += unreadCount;
+        } else {
+          // Other direct chats count towards "Chats" tab
+          chatsUnread += unreadCount;
+        }
+      }
+    });
+
+    const adminUnread = admin?.unreadCount || 0;
+
+    return {
+      chats: chatsUnread,
+      teachers: teachersUnread,
+      admin: adminUnread,
+    };
+  }, [chats, admin, user]);
+
+  return {
+    counts,
+    isLoading: isLoadingChats || isLoadingAdmin,
+  };
 }

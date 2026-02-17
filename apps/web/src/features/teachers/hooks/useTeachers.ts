@@ -15,6 +15,7 @@ import type {
   CreateTeacherDto,
   UpdateTeacherDto,
   Teacher,
+  TeachersResponse,
 } from '../types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { settingsKeys } from '@/features/settings/hooks/useSettings';
@@ -127,8 +128,9 @@ export function useUpdateTeacher() {
       // Optimistically update all list queries
       previousLists.forEach(([queryKey, oldData]) => {
         if (oldData && typeof oldData === 'object' && 'items' in oldData) {
-          const items = (oldData as any).items || [];
-          const updatedItems = items.map((item: any) => {
+          const response = oldData as TeachersResponse;
+          const items = response.items || [];
+          const updatedItems = items.map((item: Teacher) => {
             if (item.id === id) {
               return {
                 ...item,
@@ -144,7 +146,7 @@ export function useUpdateTeacher() {
             return item;
           });
           queryClient.setQueryData(queryKey, {
-            ...oldData,
+            ...response,
             items: updatedItems,
           });
         }

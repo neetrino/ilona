@@ -8,6 +8,7 @@ import { useCreateStudent, type CreateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/shared/lib/api';
 
 const createStudentSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -156,9 +157,9 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
         onOpenChange(false);
         setSuccessMessage(null);
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle error
-      const message = error?.response?.data?.message || error?.message || 'Failed to create student. Please try again.';
+      const message = getErrorMessage(error, 'Failed to create student. Please try again.');
       setErrorMessage(message);
       setSuccessMessage(null);
     }

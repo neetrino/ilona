@@ -8,6 +8,7 @@ import { useCreateLesson, type CreateLessonDto } from '@/features/lessons';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/shared/lib/api';
 
 const createLessonSchema = z.object({
   groupId: z.string().min(1, 'Please select a group'),
@@ -111,8 +112,8 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
       setTimeout(() => {
         onOpenChange(false);
       }, 1500);
-    } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || err?.message || 'Failed to create lesson. Please try again.';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Failed to create lesson. Please try again.');
       setErrorMessage(errorMsg);
       setSuccessMessage(null);
     }
@@ -307,6 +308,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
     </Dialog>
   );
 }
+
 
 
 

@@ -45,6 +45,8 @@ export interface SocketOptions {
  */
 export function initSocket(options: SocketOptions): Socket {
   if (socket?.connected) {
+    // Socket already connected, call onConnect callback to sync state
+    options.onConnect?.();
     return socket;
   }
 
@@ -274,12 +276,12 @@ export function onSocketEvent<K extends keyof SocketEvents>(
   event: K,
   handler: EventHandler<SocketEvents[K]>
 ): () => void {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-  socket?.on(event, handler as any);
+  // Type assertion needed for socket.io event typing compatibility
+  // Socket.io's event system requires this pattern for type-safe event handling
+  socket?.on(event, handler as EventHandler<SocketEvents[K]>);
 
   // Return unsubscribe function
   return () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-    socket?.off(event, handler as any);
+    socket?.off(event, handler as EventHandler<SocketEvents[K]>);
   };
 }

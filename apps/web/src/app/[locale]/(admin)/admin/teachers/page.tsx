@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
+import { getErrorMessage } from '@/shared/lib/api';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 
@@ -138,11 +139,14 @@ export default function TeachersPage() {
   // Get all teachers from API
   const allTeachers = teachersData?.items || [];
   
-  // Apply filters client-side
-  const filteredTeachers = allTeachers.filter((teacher) => {
-    // Status filter is handled by API, but we keep this for branch filter
-    // Branch filter
-    if (selectedBranchIds.size > 0) {
+  // Apply filters client-side with memoization for performance
+  const filteredTeachers = useMemo(() => {
+    if (selectedBranchIds.size === 0) {
+      return allTeachers; // No filtering needed
+    }
+
+    return allTeachers.filter((teacher) => {
+      // Branch filter
       const teacherCenters = teacher.centers || 
         Array.from(
           new Map(
@@ -155,18 +159,24 @@ export default function TeachersPage() {
       const hasMatchingBranch = Array.from(selectedBranchIds).some(branchId => 
         teacherCenterIds.has(branchId)
       );
-      if (!hasMatchingBranch) return false;
-    }
+      return hasMatchingBranch;
+    });
+  }, [allTeachers, selectedBranchIds]);
 
-    return true;
-  });
-
-  // Apply pagination to filtered results
-  const startIndex = page * pageSize;
-  const endIndex = startIndex + pageSize;
-  const teachers = filteredTeachers.slice(startIndex, endIndex);
-  const totalTeachers = filteredTeachers.length;
-  const totalPages = Math.ceil(totalTeachers / pageSize);
+  // Apply pagination to filtered results with memoization
+  const { teachers, totalTeachers, totalPages } = useMemo(() => {
+    const startIndex = page * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedTeachers = filteredTeachers.slice(startIndex, endIndex);
+    const total = filteredTeachers.length;
+    const totalPagesCount = Math.ceil(total / pageSize);
+    
+    return {
+      teachers: paginatedTeachers,
+      totalTeachers: total,
+      totalPages: totalPagesCount,
+    };
+  }, [filteredTeachers, page, pageSize]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -290,8 +300,8 @@ export default function TeachersPage() {
       setTimeout(() => {
         setDeleteSuccess(false);
       }, 3000);
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to delete teacher. Please try again.';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete teacher. Please try again.');
       setDeleteError(message);
     }
   };
@@ -325,8 +335,8 @@ export default function TeachersPage() {
         setBulkDeleteSuccess(false);
         setDeletedCount(0);
       }, 3000);
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to delete teachers. Please try again.';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete teachers. Please try again.');
       setBulkDeleteError(message);
     }
   };
@@ -350,8 +360,8 @@ export default function TeachersPage() {
       setTimeout(() => {
         setDeactivateSuccess(false);
       }, 3000);
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} teacher. Please try again.`;
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} teacher. Please try again.`);
       setDeactivateError(message);
     }
   };

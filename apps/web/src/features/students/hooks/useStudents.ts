@@ -18,6 +18,8 @@ import type {
   StudentFilters,
   CreateStudentDto,
   UpdateStudentDto,
+  Student,
+  StudentsResponse,
 } from '../types';
 
 // Query keys
@@ -104,11 +106,12 @@ export function useUpdateStudent() {
 
       // Optimistically update the detail query
       if (previousStudent) {
+        const student = previousStudent as Student;
         queryClient.setQueryData(studentKeys.detail(id), {
-          ...previousStudent,
+          ...student,
           ...(data.status && {
             user: {
-              ...(previousStudent as any).user,
+              ...student.user,
               status: data.status,
             },
           }),
@@ -118,8 +121,9 @@ export function useUpdateStudent() {
       // Optimistically update all list queries
       previousLists.forEach(([queryKey, oldData]) => {
         if (oldData && typeof oldData === 'object' && 'items' in oldData) {
-          const items = (oldData as any).items || [];
-          const updatedItems = items.map((item: any) => {
+          const response = oldData as StudentsResponse;
+          const items = response.items || [];
+          const updatedItems = items.map((item: Student) => {
             if (item.id === id) {
               return {
                 ...item,
@@ -134,7 +138,7 @@ export function useUpdateStudent() {
             return item;
           });
           queryClient.setQueryData(queryKey, {
-            ...oldData,
+            ...response,
             items: updatedItems,
           });
         }
@@ -143,8 +147,9 @@ export function useUpdateStudent() {
       // Optimistically update my-assigned queries
       previousMyAssigned.forEach(([queryKey, oldData]) => {
         if (oldData && typeof oldData === 'object' && 'items' in oldData) {
-          const items = (oldData as any).items || [];
-          const updatedItems = items.map((item: any) => {
+          const response = oldData as StudentsResponse;
+          const items = response.items || [];
+          const updatedItems = items.map((item: Student) => {
             if (item.id === id) {
               return {
                 ...item,
@@ -159,7 +164,7 @@ export function useUpdateStudent() {
             return item;
           });
           queryClient.setQueryData(queryKey, {
-            ...oldData,
+            ...response,
             items: updatedItems,
           });
         }

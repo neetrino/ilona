@@ -6,6 +6,7 @@ import { List, LayoutGrid, Pencil, Trash2, Ban } from 'lucide-react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
+import { getErrorMessage } from '@/shared/lib/api';
 
 // Component for select all checkbox with indeterminate state
 function SelectAllCheckbox({
@@ -267,9 +268,9 @@ export default function GroupsPage() {
       await deleteGroup.mutateAsync(deleteGroupId);
       setDeleteGroupId(null);
       setDeleteGroupError(null);
-    } catch (err: any) {
-      const message = err?.message || err?.response?.data?.message || 'Failed to delete group. Please try again.';
-      setDeleteGroupError(Array.isArray(message) ? message[0] : message);
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete group. Please try again.');
+      setDeleteGroupError(message);
     }
   };
 
@@ -348,8 +349,8 @@ export default function GroupsPage() {
         try {
           await deleteGroup.mutateAsync(id);
           successCount++;
-        } catch (err: any) {
-          const message = err?.message || err?.response?.data?.message || 'Failed to delete group.';
+        } catch (err: unknown) {
+          const message = getErrorMessage(err, 'Failed to delete group.');
           lastError = message;
         }
       }
@@ -370,8 +371,8 @@ export default function GroupsPage() {
       if (lastError && successCount < count) {
         setBulkDeleteError(`Deleted ${successCount} of ${count} groups. ${lastError}`);
       }
-    } catch (err: any) {
-      const message = err?.message || err?.response?.data?.message || 'Failed to delete groups. Please try again.';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete groups. Please try again.');
       setBulkDeleteError(message);
     }
   };
@@ -592,8 +593,8 @@ export default function GroupsPage() {
         try {
           await deleteCenter.mutateAsync(id);
           successCount++;
-        } catch (err: any) {
-          const message = err?.message || err?.response?.data?.message || 'Failed to delete center.';
+        } catch (err: unknown) {
+          const message = getErrorMessage(err, 'Failed to delete center.');
           lastError = message;
         }
       }
@@ -614,8 +615,8 @@ export default function GroupsPage() {
       if (lastError && successCount < count) {
         setBulkDeleteCentersError(`Deleted ${successCount} of ${count} centers. ${lastError}`);
       }
-    } catch (err: any) {
-      const message = err?.message || err?.response?.data?.message || 'Failed to delete centers. Please try again.';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete centers. Please try again.');
       setBulkDeleteCentersError(message);
     }
   };
@@ -632,9 +633,9 @@ export default function GroupsPage() {
       await deleteCenter.mutateAsync(deleteCenterId);
       setDeleteCenterId(null);
       setDeleteCenterError(null);
-    } catch (err: any) {
-      const message = err?.message || err?.response?.data?.message || 'Failed to delete center. Please try again.';
-      setDeleteCenterError(Array.isArray(message) ? message[0] : message);
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete center. Please try again.');
+      setDeleteCenterError(message);
     }
   };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Badge, Button } from '@/shared/components/ui';
@@ -34,18 +34,19 @@ export default function TeacherStudentProfilePage() {
   };
 
   // Refetch data when page becomes visible
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        refetch();
-      }
-    };
+  // Use useCallback to stabilize the handler reference
+  const handleVisibilityChange = useCallback(() => {
+    if (!document.hidden) {
+      refetch();
+    }
+  }, [refetch]);
 
+  useEffect(() => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [refetch]);
+  }, [handleVisibilityChange]);
 
   // Loading state
   if (isLoading) {

@@ -9,6 +9,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { Locale } from '@/config/i18n';
 import { useLogo, useUploadLogo, useDeleteLogo } from '@/features/settings/hooks/useSettings';
+import { getErrorMessage } from '@/shared/lib/api';
 
 type SettingsTab = 'security' | 'notifications' | 'system';
 
@@ -397,8 +398,8 @@ function LogoUploadSection() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    } catch (error: any) {
-      setUploadError(error?.message || 'Failed to upload logo. Please try again.');
+    } catch (error: unknown) {
+      setUploadError(getErrorMessage(error, 'Failed to upload logo. Please try again.'));
     }
   };
 
@@ -411,8 +412,8 @@ function LogoUploadSection() {
     try {
       await deleteLogo.mutateAsync();
       setPreviewUrl(null);
-    } catch (error: any) {
-      setUploadError(error?.message || 'Failed to delete logo. Please try again.');
+    } catch (error: unknown) {
+      setUploadError(getErrorMessage(error, 'Failed to delete logo. Please try again.'));
     }
   };
 

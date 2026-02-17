@@ -199,7 +199,7 @@ function VocabularyModal({
         <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-purple-600 to-purple-700">
           <h3 className="text-lg font-semibold text-white flex items-center gap-2">
             <span>📚</span>
-            Send Vocabulary (Բdelays)
+            Send Vocabulary (Բառեր)
           </h3>
           <p className="text-sm text-purple-200 mt-1">
             Add today's vocabulary words for your students
@@ -275,6 +275,7 @@ function VocabularyModal({
 export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   const { user } = useAuthStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // Track last marked conversation to prevent duplicate mark-as-read calls
@@ -315,39 +316,63 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
         addTypingUser(chatId, userId);
       }
     },
+    onNewMessage: (message) => {
+      // When a new message arrives while chat is open, mark as read immediately
+      // This ensures messages are marked as seen even if user doesn't reply
+      if (message.chatId === chat.id && message.senderId !== user?.id) {
+        // Only mark as read if message is from another user
+        markAsRead(chat.id).catch((error) => {
+          console.error('[ChatWindow] Failed to mark new message as read:', error);
+        });
+      }
+    },
   });
 
   // Flatten messages from infinite query
   const messages = messagesData?.pages.flatMap((page) => page.items) || [];
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom on new messages, but only if user is near bottom
+  // This prevents interrupting user when they're reading old messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!messagesEndRef.current || !messagesContainerRef.current) return;
+    
+    const container = messagesContainerRef.current;
+    const isNearBottom = 
+      container.scrollHeight - container.scrollTop - container.clientHeight < 200;
+    
+    // Only scroll if user is near bottom (within 200px) or if it's the first load
+    if (isNearBottom || messages.length === 0) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages.length]);
 
   // Mark as read when opening chat (with guards to prevent infinite loops)
+  // Mark as read when chat is opened, regardless of unreadCount or whether user replies
+  // This ensures messages are marked as seen when user views the chat
+  // Use ref for markAsRead to avoid dependency issues
+  const markAsReadRef = useRef(markAsRead);
+  markAsReadRef.current = markAsRead;
+
   useEffect(() => {
-    // Only mark as read if:
+    // Mark as read if:
     // 1. chat.id exists
-    // 2. socket is connected
-    // 3. conversationId changed (not the same conversation)
-    // 4. conversation has unread messages
-    // 5. We haven't already marked this conversation as read
+    // 2. conversationId changed (not the same conversation)
+    // 3. Messages query has finished loading (either loaded messages or confirmed empty)
+    // 4. We haven't already marked this conversation as read
+    // Note: markAsRead will use HTTP fallback if socket is not connected
     if (
       chat.id &&
-      isConnected &&
       chat.id !== lastMarkedConversationIdRef.current &&
-      (chat.unreadCount || 0) > 0
+      !isLoading // Wait for messages to finish loading (even if empty)
     ) {
       lastMarkedConversationIdRef.current = chat.id;
-      markAsRead(chat.id).catch((error) => {
-        // Reset ref on error so we can retry
-        if (error) {
-          lastMarkedConversationIdRef.current = null;
-        }
+      markAsReadRef.current(chat.id).catch((error) => {
+        console.error('[ChatWindow] Failed to mark as read:', error);
+        // Don't reset ref on error - only reset if chat actually changes
+        // This prevents infinite retry loops
       });
     }
-  }, [chat.id, chat.unreadCount, isConnected, markAsRead]);
+  }, [chat.id, isLoading]);
 
   // Reset input value when chat changes - only load user's own draft, never from messages
   // This is critical: input must NEVER be populated from incoming messages or lastMessage
@@ -450,7 +475,7 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   // Handle send
   const handleSend = useCallback(async () => {
     const content = inputValue.trim();
-    if (!content || !isConnected) return;
+    if (!content) return; // Allow sending even if socket is not connected (will use HTTP fallback)
 
     setInputValue('');
     clearDraft(chat.id);
@@ -461,7 +486,7 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
       console.error('Failed to send message:', result.error);
       setInputValue(content); // Restore on failure
     }
-  }, [inputValue, chat.id, isConnected, sendMessage, clearDraft, stopTyping]);
+  }, [inputValue, chat.id, sendMessage, clearDraft, stopTyping]);
 
   // Handle key press
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -631,7 +656,7 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
         {/* Load more button */}
         {hasNextPage && (
           <div className="text-center">
@@ -815,10 +840,10 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
           {/* Send button */}
           <button
             onClick={handleSend}
-            disabled={!inputValue.trim() || !isConnected}
+            disabled={!inputValue.trim()}
             className={cn(
               'p-2 rounded-lg flex-shrink-0 transition-colors',
-              inputValue.trim() && isConnected
+              inputValue.trim()
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                 : 'bg-slate-100 text-slate-400'
             )}
