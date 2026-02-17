@@ -11,6 +11,7 @@ export {
   useSalaries,
   useSalary,
   useProcessSalary,
+  useUpdateSalaryStatus,
   useGenerateMonthlySalaries,
   // Deductions
   useDeductions,

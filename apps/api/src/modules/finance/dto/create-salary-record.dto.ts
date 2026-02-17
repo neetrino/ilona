@@ -43,3 +43,14 @@ export class ProcessSalaryDto {
   @MaxLength(500)
   notes?: string;
 }
+
+export class UpdateSalaryDto {
+  @IsString()
+  @IsOptional()
+  status?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(500)
+  notes?: string;
+}

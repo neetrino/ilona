@@ -61,6 +61,12 @@ export interface SalaryRecord {
     missing: number;
     completionRate: number;
   };
+  actionBreakdown?: {
+    absenceMarked: { completed: number; required: number };
+    feedbacksCompleted: { completed: number; required: number };
+    voiceSent: { completed: number; required: number };
+    textSent: { completed: number; required: number };
+  };
   teacher: {
     id: string;
     user: {

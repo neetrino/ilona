@@ -5,12 +5,15 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
+import { InlineSelect } from '@/features/students/components/InlineSelect';
+import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
 import {
   useFinanceDashboard,
   usePayments,
   useSalaries,
   useProcessPayment,
   useProcessSalary,
+  useUpdateSalaryStatus,
   type Payment,
   type SalaryRecord,
   type PaymentStatus,
@@ -44,6 +47,8 @@ export default function FinancePage() {
     const status = searchParams.get('salaryStatus') as SalaryStatus | null;
     return status && ['PENDING', 'PAID'].includes(status) ? status : '';
   });
+  const [selectedSalaryId, setSelectedSalaryId] = useState<string | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
   const t = useTranslations('finance');
   const tTeachers = useTranslations('teachers');
@@ -133,6 +138,7 @@ export default function FinancePage() {
   // Mutations
   const processPayment = useProcessPayment();
   const processSalary = useProcessSalary();
+  const updateSalaryStatus = useUpdateSalaryStatus();
 
   const payments = paymentsData?.items || [];
   const totalPayments = paymentsData?.total || 0;
@@ -288,13 +294,6 @@ export default function FinancePage() {
       },
     },
     {
-      key: 'period',
-      header: t('period'),
-      render: (salary: SalaryRecord) => (
-        <span className="text-slate-700">{formatMonth(salary.month, salary.year)}</span>
-      ),
-    },
-    {
       key: 'lessons',
       header: tTeachers('lessons'),
       className: 'text-center',
@@ -394,31 +393,42 @@ export default function FinancePage() {
       key: 'status',
       header: t('status'),
       render: (salary: SalaryRecord) => (
-        salary.status === 'PAID' ? (
-          <Badge variant="success">Paid</Badge>
-        ) : (
-          <Badge variant="warning">Pending</Badge>
-        )
+        <div className="w-32">
+          <InlineSelect
+            value={salary.status}
+            options={[
+              { id: 'PENDING', label: 'Pending' },
+              { id: 'PAID', label: 'Paid' },
+            ]}
+            onChange={async (newStatus) => {
+              if (newStatus && newStatus !== salary.status) {
+                await updateSalaryStatus.mutateAsync({
+                  id: salary.id,
+                  status: newStatus as SalaryStatus,
+                });
+              }
+            }}
+            disabled={updateSalaryStatus.isPending}
+            className="w-full"
+          />
+        </div>
       ),
     },
     {
       key: 'actions',
       header: t('actions'),
       render: (salary: SalaryRecord) => (
-        salary.status === 'PENDING' ? (
-          <Button 
-            size="sm" 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
-            onClick={() => handleProcessSalary(salary.id)}
-            disabled={processSalary.isPending}
-          >
-            Process
-          </Button>
-        ) : (
-          <Button variant="ghost" size="sm" className="text-primary text-sm">
-            Details
-          </Button>
-        )
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-primary text-sm"
+          onClick={() => {
+            setSelectedSalaryId(salary.id);
+            setIsDetailModalOpen(true);
+          }}
+        >
+          Detail
+        </Button>
       ),
     },
   ];
@@ -692,6 +702,16 @@ export default function FinancePage() {
             </div>
           </div>
         </div>
+
+        {/* Salary Details Modal */}
+        <SalaryDetailsModal
+          salaryId={selectedSalaryId}
+          open={isDetailModalOpen}
+          onClose={() => {
+            setIsDetailModalOpen(false);
+            setSelectedSalaryId(null);
+          }}
+        />
       </div>
     </DashboardLayout>
   );

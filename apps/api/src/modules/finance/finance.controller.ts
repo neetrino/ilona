@@ -23,7 +23,7 @@ import {
   ProcessPaymentDto,
 } from './dto/create-payment.dto';
 import { CreateDeductionDto } from './dto/create-deduction.dto';
-import { CreateSalaryRecordDto, ProcessSalaryDto } from './dto/create-salary-record.dto';
+import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('finance')
@@ -264,6 +264,12 @@ export class FinanceController {
   @Roles(UserRole.ADMIN)
   async getSalary(@Param('id') id: string) {
     return this.salariesService.findById(id);
+  }
+
+  @Patch('salaries/:id')
+  @Roles(UserRole.ADMIN)
+  async updateSalary(@Param('id') id: string, @Body() dto: UpdateSalaryDto) {
+    return this.salariesService.update(id, dto);
   }
 
   @Post('salaries')

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, SalaryStatus, LessonStatus } from '@prisma/client';
-import { CreateSalaryRecordDto, ProcessSalaryDto } from './dto/create-salary-record.dto';
+import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
 
 @Injectable()
 export class SalariesService {
@@ -85,7 +85,7 @@ export class SalariesService {
   }
 
   /**
-   * Get salary record by ID
+   * Get salary record by ID with action breakdown
    */
   async findById(id: string) {
     const record = await this.prisma.salaryRecord.findUnique({
@@ -111,7 +111,64 @@ export class SalariesService {
       throw new NotFoundException(`Salary record with ID ${id} not found`);
     }
 
-    return record;
+    // Get start and end of month
+    const monthDate = new Date(record.month);
+    const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59);
+
+    // Get completed lessons with obligation status for action breakdown
+    const lessons = await this.prisma.lesson.findMany({
+      where: {
+        teacherId: record.teacherId,
+        status: LessonStatus.COMPLETED,
+        completedAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      select: {
+        absenceMarked: true,
+        feedbacksCompleted: true,
+        voiceSent: true,
+        textSent: true,
+      } as any,
+    });
+
+    // Calculate action breakdown
+    const actionBreakdown = {
+      absenceMarked: {
+        completed: lessons.filter((l: any) => l.absenceMarked ?? false).length,
+        required: lessons.length,
+      },
+      feedbacksCompleted: {
+        completed: lessons.filter((l: any) => l.feedbacksCompleted ?? false).length,
+        required: lessons.length,
+      },
+      voiceSent: {
+        completed: lessons.filter((l: any) => l.voiceSent ?? false).length,
+        required: lessons.length,
+      },
+      textSent: {
+        completed: lessons.filter((l: any) => l.textSent ?? false).length,
+        required: lessons.length,
+      },
+    };
+
+    // Parse obligations info from notes
+    let obligationsInfo = null;
+    if (record.notes) {
+      try {
+        obligationsInfo = JSON.parse(record.notes);
+      } catch {
+        // If parsing fails, ignore
+      }
+    }
+
+    return {
+      ...record,
+      obligationsInfo,
+      actionBreakdown,
+    };
   }
 
   /**
@@ -300,7 +357,13 @@ export class SalariesService {
    * Process salary payment
    */
   async processSalary(id: string, dto: ProcessSalaryDto) {
-    const record = await this.findById(id);
+    const record = await this.prisma.salaryRecord.findUnique({
+      where: { id },
+    });
+
+    if (!record) {
+      throw new NotFoundException(`Salary record with ID ${id} not found`);
+    }
 
     if (record.status === SalaryStatus.PAID) {
       throw new BadRequestException('Salary is already paid');
@@ -313,6 +376,56 @@ export class SalariesService {
         paidAt: new Date(),
         notes: dto.notes || record.notes,
       },
+      include: {
+        teacher: {
+          include: {
+            user: {
+              select: { firstName: true, lastName: true, email: true },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Update salary record
+   */
+  async update(id: string, dto: UpdateSalaryDto) {
+    const record = await this.prisma.salaryRecord.findUnique({
+      where: { id },
+    });
+
+    if (!record) {
+      throw new NotFoundException(`Salary record with ID ${id} not found`);
+    }
+
+    const updateData: any = {};
+    
+    if (dto.status) {
+      const validStatuses = [SalaryStatus.PENDING, SalaryStatus.PAID];
+      if (!validStatuses.includes(dto.status as SalaryStatus)) {
+        throw new BadRequestException(`Invalid status: ${dto.status}`);
+      }
+      updateData.status = dto.status as SalaryStatus;
+      
+      // If setting to PAID, set paidAt
+      if (dto.status === SalaryStatus.PAID && record.status !== SalaryStatus.PAID) {
+        updateData.paidAt = new Date();
+      }
+      // If setting to PENDING from PAID, clear paidAt
+      if (dto.status === SalaryStatus.PENDING && record.status === SalaryStatus.PAID) {
+        updateData.paidAt = null;
+      }
+    }
+
+    if (dto.notes !== undefined) {
+      updateData.notes = dto.notes;
+    }
+
+    return this.prisma.salaryRecord.update({
+      where: { id },
+      data: updateData,
       include: {
         teacher: {
           include: {

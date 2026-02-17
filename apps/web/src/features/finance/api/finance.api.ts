@@ -116,6 +116,13 @@ export async function processSalary(id: string): Promise<SalaryRecord> {
 }
 
 /**
+ * Update salary status
+ */
+export async function updateSalaryStatus(id: string, status: string): Promise<SalaryRecord> {
+  return api.patch<SalaryRecord>(`/finance/salaries/${id}`, { status });
+}
+
+/**
  * Generate monthly salaries
  */
 export async function generateMonthlySalaries(month: number, year: number): Promise<SalaryRecord[]> {

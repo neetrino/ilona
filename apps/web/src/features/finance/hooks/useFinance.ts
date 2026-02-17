@@ -11,6 +11,7 @@ import {
   fetchSalaries,
   fetchSalary,
   processSalary,
+  updateSalaryStatus,
   generateMonthlySalaries,
   fetchDeductions,
 } from '../api/finance.api';
@@ -130,6 +131,19 @@ export function useProcessSalary() {
   return useMutation({
     mutationFn: (id: string) => processSalary(id),
     onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaryDetail(id) });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
+export function useUpdateSalaryStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => updateSalaryStatus(id, status),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: financeKeys.salaryDetail(id) });
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
       queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
