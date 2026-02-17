@@ -3,14 +3,21 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLessonDto, UpdateLessonDto, CompleteLessonDto } from './dto';
 import { Prisma, LessonStatus, UserRole } from '@prisma/client';
+import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => SalariesService))
+    private readonly salariesService: SalariesService,
+  ) {}
 
   /**
    * Computes if a lesson is locked for teacher editing (midnight lock rule)
@@ -652,42 +659,84 @@ export class LessonsService {
   }
 
   async markAbsenceComplete(id: string) {
-    // Verify lesson exists
-    await this.findById(id);
+    // Verify lesson exists and get lesson data
+    const lesson = await this.findById(id);
 
-    return this.prisma.lesson.update({
+    const wasAlreadyMarked = lesson.absenceMarked;
+    const updated = await this.prisma.lesson.update({
       where: { id },
       data: {
         absenceMarked: true,
         absenceMarkedAt: new Date(),
       },
     });
+
+    // Trigger salary recalculation if this is a new completion
+    if (!wasAlreadyMarked && lesson.scheduledAt) {
+      const lessonMonth = new Date(lesson.scheduledAt);
+      await this.salariesService.recalculateSalaryForMonth(
+        lesson.teacherId,
+        lessonMonth,
+      ).catch(() => {
+        // Silently fail to avoid breaking the update
+      });
+    }
+
+    return updated;
   }
 
   async markVoiceSent(id: string) {
-    // Verify lesson exists
-    await this.findById(id);
+    // Verify lesson exists and get lesson data
+    const lesson = await this.findById(id);
 
-    return this.prisma.lesson.update({
+    const wasAlreadySent = lesson.voiceSent;
+    const updated = await this.prisma.lesson.update({
       where: { id },
       data: {
         voiceSent: true,
         voiceSentAt: new Date(),
       },
     });
+
+    // Trigger salary recalculation if this is a new completion
+    if (!wasAlreadySent && lesson.scheduledAt) {
+      const lessonMonth = new Date(lesson.scheduledAt);
+      await this.salariesService.recalculateSalaryForMonth(
+        lesson.teacherId,
+        lessonMonth,
+      ).catch(() => {
+        // Silently fail to avoid breaking the update
+      });
+    }
+
+    return updated;
   }
 
   async markTextSent(id: string) {
-    // Verify lesson exists
-    await this.findById(id);
+    // Verify lesson exists and get lesson data
+    const lesson = await this.findById(id);
 
-    return this.prisma.lesson.update({
+    const wasAlreadySent = lesson.textSent;
+    const updated = await this.prisma.lesson.update({
       where: { id },
       data: {
         textSent: true,
         textSentAt: new Date(),
       },
     });
+
+    // Trigger salary recalculation if this is a new completion
+    if (!wasAlreadySent && lesson.scheduledAt) {
+      const lessonMonth = new Date(lesson.scheduledAt);
+      await this.salariesService.recalculateSalaryForMonth(
+        lesson.teacherId,
+        lessonMonth,
+      ).catch(() => {
+        // Silently fail to avoid breaking the update
+      });
+    }
+
+    return updated;
   }
 
   async delete(id: string) {

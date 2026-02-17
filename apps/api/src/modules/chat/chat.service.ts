@@ -4,11 +4,14 @@ import {
   ForbiddenException,
   BadRequestException,
   Logger,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, ChatType, MessageType, UserRole } from '@prisma/client';
 import { CreateChatDto, SendMessageDto, UpdateMessageDto } from './dto';
 import { StorageService } from '../storage/storage.service';
+import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()
 export class ChatService {
@@ -17,6 +20,8 @@ export class ChatService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
+    @Inject(forwardRef(() => SalariesService))
+    private readonly salariesService: SalariesService,
   ) {}
 
   /**
@@ -821,26 +826,62 @@ export class ChatService {
 
       // Mark voice or text as sent based on message type
       if (messageType === MessageType.VOICE) {
-        await this.prisma.lesson.update({
+        const lesson = await this.prisma.lesson.findUnique({
           where: { id: lessonId },
-          data: {
-            voiceSent: true,
-            voiceSentAt: new Date(),
-          },
-        }).catch(() => {
-          // Silently fail if lesson doesn't exist or update fails
-        });
+          select: { teacherId: true, scheduledAt: true, voiceSent: true },
+        }).catch(() => null);
+
+        if (lesson && !lesson.voiceSent) {
+          await this.prisma.lesson.update({
+            where: { id: lessonId },
+            data: {
+              voiceSent: true,
+              voiceSentAt: new Date(),
+            },
+          }).catch(() => {
+            // Silently fail if lesson doesn't exist or update fails
+          });
+
+          // Trigger salary recalculation if this is a new completion
+          if (lesson.scheduledAt) {
+            const lessonMonth = new Date(lesson.scheduledAt);
+            await this.salariesService.recalculateSalaryForMonth(
+              lesson.teacherId,
+              lessonMonth,
+            ).catch(() => {
+              // Silently fail to avoid breaking message sending
+            });
+          }
+        }
       } else if (messageType === MessageType.TEXT && dto.metadata.fromLessonDetail) {
         // Only mark text as sent if it's explicitly from lesson detail page
-        await this.prisma.lesson.update({
+        const lesson = await this.prisma.lesson.findUnique({
           where: { id: lessonId },
-          data: {
-            textSent: true,
-            textSentAt: new Date(),
-          },
-        }).catch(() => {
-          // Silently fail if lesson doesn't exist or update fails
-        });
+          select: { teacherId: true, scheduledAt: true, textSent: true },
+        }).catch(() => null);
+
+        if (lesson && !lesson.textSent) {
+          await this.prisma.lesson.update({
+            where: { id: lessonId },
+            data: {
+              textSent: true,
+              textSentAt: new Date(),
+            },
+          }).catch(() => {
+            // Silently fail if lesson doesn't exist or update fails
+          });
+
+          // Trigger salary recalculation if this is a new completion
+          if (lesson.scheduledAt) {
+            const lessonMonth = new Date(lesson.scheduledAt);
+            await this.salariesService.recalculateSalaryForMonth(
+              lesson.teacherId,
+              lessonMonth,
+            ).catch(() => {
+              // Silently fail to avoid breaking message sending
+            });
+          }
+        }
       }
     }
 

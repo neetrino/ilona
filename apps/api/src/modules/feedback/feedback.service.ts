@@ -3,14 +3,21 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFeedbackDto, UpdateFeedbackDto } from './dto';
 import { UserRole } from '@prisma/client';
+import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()
 export class FeedbackService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => SalariesService))
+    private readonly salariesService: SalariesService,
+  ) {}
 
   /**
    * Get feedback by lesson ID
@@ -213,10 +220,20 @@ export class FeedbackService {
         
         // If all students have feedback, mark feedbacksCompleted as true
         if (studentCount > 0 && feedbackCount >= studentCount) {
+          const wasAlreadyCompleted = lessonWithGroup.feedbacksCompleted;
           await this.prisma.lesson.update({
             where: { id: dto.lessonId },
             data: { feedbacksCompleted: true },
           });
+
+          // Trigger salary recalculation if this is a new completion
+          if (!wasAlreadyCompleted && lessonWithGroup.scheduledAt) {
+            const lessonMonth = new Date(lessonWithGroup.scheduledAt);
+            await this.salariesService.recalculateSalaryForMonth(
+              lessonWithGroup.teacherId,
+              lessonMonth,
+            );
+          }
         }
       }
 
@@ -264,10 +281,20 @@ export class FeedbackService {
       
       // If all students have feedback, mark feedbacksCompleted as true
       if (studentCount > 0 && feedbackCount >= studentCount) {
+        const wasAlreadyCompleted = lessonWithGroup.feedbacksCompleted;
         await this.prisma.lesson.update({
           where: { id: dto.lessonId },
           data: { feedbacksCompleted: true },
         });
+
+        // Trigger salary recalculation if this is a new completion
+        if (!wasAlreadyCompleted && lessonWithGroup.scheduledAt) {
+          const lessonMonth = new Date(lessonWithGroup.scheduledAt);
+          await this.salariesService.recalculateSalaryForMonth(
+            lessonWithGroup.teacherId,
+            lessonMonth,
+          );
+        }
       }
     }
 
@@ -364,6 +391,7 @@ export class FeedbackService {
     if (lessonWithGroup) {
       const studentCount = lessonWithGroup.group.students.length;
       const feedbackCount = lessonWithGroup.feedbacks.length;
+      const wasCompleted = lessonWithGroup.feedbacksCompleted;
       
       // If not all students have feedback, mark feedbacksCompleted as false
       if (studentCount > 0 && feedbackCount < studentCount) {
@@ -371,6 +399,15 @@ export class FeedbackService {
           where: { id: feedback.lessonId },
           data: { feedbacksCompleted: false },
         });
+
+        // Trigger salary recalculation if status changed from completed to incomplete
+        if (wasCompleted && lessonWithGroup.scheduledAt) {
+          const lessonMonth = new Date(lessonWithGroup.scheduledAt);
+          await this.salariesService.recalculateSalaryForMonth(
+            lessonWithGroup.teacherId,
+            lessonMonth,
+          );
+        }
       }
     }
 

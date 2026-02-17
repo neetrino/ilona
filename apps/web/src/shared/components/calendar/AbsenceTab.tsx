@@ -94,6 +94,9 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
       // Invalidate both detail and list queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: lessonKeys.detail(lesson.id) });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+      // Invalidate salary queries to reflect immediate salary updates
+      queryClient.invalidateQueries({ queryKey: ['finance', 'salaries'] });
+      queryClient.invalidateQueries({ queryKey: ['finance', 'salaries', 'breakdown'] });
 
       setHasChanges(false);
       alert('Attendance saved successfully!');

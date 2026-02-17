@@ -12,10 +12,41 @@ export class SalariesService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Calculate monthly salary from completed lessons for a teacher
+   * Recalculate and update salary record for a teacher for a specific month
+   * This is called automatically when lesson actions are updated
+   */
+  async recalculateSalaryForMonth(teacherId: string, month: Date): Promise<void> {
+    try {
+      // Get start of month
+      const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+      
+      // Check if salary record exists for this month
+      const existing = await this.prisma.salaryRecord.findFirst({
+        where: {
+          teacherId,
+          month: startOfMonth,
+        },
+      });
+
+      if (existing) {
+        // Recalculate and update existing record
+        await this.generateSalaryRecord(teacherId, month);
+      }
+      // If no record exists, we don't create one automatically
+      // It will be created when explicitly requested via generateSalaryRecord
+    } catch (error) {
+      // Silently fail to avoid breaking action updates
+      // Log error in production
+      console.error(`Failed to recalculate salary for teacher ${teacherId}, month ${month}:`, error);
+    }
+  }
+
+  /**
+   * Calculate monthly salary from lessons for a teacher
    * This is the single source of truth for salary calculation
-   * Returns: SUM of (baseSalary - totalDeduction) for all completed lessons in the month
+   * Returns: SUM of (baseSalary * completedActions / 4) for all lessons in the month
    * Salary is calculated per lesson (fixed price per class), NOT per hour
+   * Salary updates immediately when ANY of the 4 actions is completed, without requiring "Lesson Complete"
    */
   private async calculateMonthlySalaryFromLessons(teacherId: string, month: Date): Promise<number> {
     // Get start and end of month
@@ -37,14 +68,18 @@ export class SalariesService {
       ? Number(teacher.lessonRateAMD) 
       : Number(teacher.hourlyRate); // Fallback for backward compatibility
 
-    // Get completed lessons for this month
+    // Get ALL lessons for this month (not just completed ones)
+    // Filter by scheduledAt to include all lessons scheduled in this month
     const lessons = await this.prisma.lesson.findMany({
       where: {
         teacherId,
-        status: LessonStatus.COMPLETED,
-        completedAt: {
+        scheduledAt: {
           gte: startOfMonth,
           lte: endOfMonth,
+        },
+        // Exclude cancelled lessons
+        status: {
+          not: LessonStatus.CANCELLED,
         },
       },
       select: {
@@ -81,7 +116,7 @@ export class SalariesService {
       }
     });
 
-    // Calculate total salary from all completed lessons
+    // Calculate total salary from all lessons using proportional calculation
     // Base salary is per lesson (fixed price), NOT per hour
     let totalSalary = 0;
 
@@ -89,30 +124,23 @@ export class SalariesService {
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
-      // Calculate obligations (4 total)
-      const obligations = [
+      // Calculate completed actions (4 total)
+      const completedActions = [
         lesson.absenceMarked ?? false,
         lesson.feedbacksCompleted ?? false,
         lesson.voiceSent ?? false,
         lesson.textSent ?? false,
-      ];
-      const completedObligations = obligations.filter(Boolean).length;
-      const totalObligations = 4;
+      ].filter(Boolean).length;
 
-      // Calculate obligation-based deduction per lesson
-      // Each missing obligation deducts 10% of base salary (40% total if all 4 missing)
-      const missingObligations = totalObligations - completedObligations;
-      const obligationDeduction = (missingObligations / totalObligations) * baseSalary * 0.4;
+      // Proportional calculation: earned = baseSalary * (completedActions / 4)
+      const earned = baseSalary * (completedActions / 4);
 
       // Get other deductions for this lesson
       const lessonId = typeof lesson.id === 'string' ? lesson.id : String(lesson.id);
       const otherDeductionForLesson = deductionsByLessonId.get(lessonId) || 0;
 
-      // Total deduction = obligation deduction + other deductions
-      const totalDeduction = obligationDeduction + otherDeductionForLesson;
-
-      // Total = base salary - total deduction
-      const lessonTotal = Math.max(0, baseSalary - totalDeduction);
+      // Total = earned - other deductions
+      const lessonTotal = Math.max(0, earned - otherDeductionForLesson);
       totalSalary += lessonTotal;
     }
 
@@ -246,19 +274,54 @@ export class SalariesService {
             return null;
           }
 
-          // For PENDING status or no status filter, return default entry
-          // Return synthetic salary record with defaults
+          // For PENDING status or no status filter, calculate actual salary from lessons
+          // Return synthetic salary record with computed salary
           const monthDate = dateFrom || new Date(); // Use dateFrom if provided, otherwise current month
           const defaultMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+
+          // Calculate actual salary from lessons (even if no record exists yet)
+          const computedSalary = await this.calculateMonthlySalaryFromLessons(
+            teacher.id,
+            defaultMonth
+          );
+
+          // Get lessons count for this month
+          const startOfMonth = new Date(defaultMonth.getFullYear(), defaultMonth.getMonth(), 1);
+          const endOfMonth = new Date(defaultMonth.getFullYear(), defaultMonth.getMonth() + 1, 0, 23, 59, 59);
+          
+          const lessonsCount = await this.prisma.lesson.count({
+            where: {
+              teacherId: teacher.id,
+              scheduledAt: {
+                gte: startOfMonth,
+                lte: endOfMonth,
+              },
+              status: {
+                not: LessonStatus.CANCELLED,
+              },
+            },
+          });
+
+          // Get teacher's lesson rate for grossAmount calculation
+          const teacherWithRate = await this.prisma.teacher.findUnique({
+            where: { id: teacher.id },
+            select: { lessonRateAMD: true, hourlyRate: true },
+          });
+
+          const lessonRate = teacherWithRate?.lessonRateAMD 
+            ? Number(teacherWithRate.lessonRateAMD) 
+            : Number(teacherWithRate?.hourlyRate || 0);
+
+          const grossAmount = lessonsCount * lessonRate;
 
           return {
             id: `placeholder-${teacher.id}`, // Synthetic ID
             teacherId: teacher.id,
             month: defaultMonth,
-            lessonsCount: 0,
-            grossAmount: 0,
-            totalDeductions: 0,
-            netAmount: 0,
+            lessonsCount,
+            grossAmount,
+            totalDeductions: Math.max(0, grossAmount - computedSalary),
+            netAmount: computedSalary, // Use computed salary, not 0
             status: SalaryStatus.PENDING,
             paidAt: null,
             notes: null,
@@ -318,14 +381,17 @@ export class SalariesService {
     const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
     const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59);
 
-    // Get completed lessons with obligation status for action breakdown
+    // Get ALL lessons for this month (not just completed ones) for action breakdown
     const lessons = await this.prisma.lesson.findMany({
       where: {
         teacherId: record.teacherId,
-        status: LessonStatus.COMPLETED,
-        completedAt: {
+        scheduledAt: {
           gte: startOfMonth,
           lte: endOfMonth,
+        },
+        // Exclude cancelled lessons
+        status: {
+          not: LessonStatus.CANCELLED,
         },
       },
       select: {
@@ -441,14 +507,17 @@ export class SalariesService {
     const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
     const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59);
 
-    // Get completed lessons with obligation status
+    // Get ALL lessons for this month (not just completed ones)
     const lessons = await this.prisma.lesson.findMany({
       where: {
         teacherId,
-        status: LessonStatus.COMPLETED,
-        completedAt: {
+        scheduledAt: {
           gte: startOfMonth,
           lte: endOfMonth,
+        },
+        // Exclude cancelled lessons
+        status: {
+          not: LessonStatus.CANCELLED,
         },
       },
       select: { 
@@ -490,8 +559,9 @@ export class SalariesService {
     // Calculate using the same per-lesson method as calculateMonthlySalaryFromLessons
     // This ensures idempotency and consistency
     // Base salary is per lesson (fixed price), NOT per hour
+    // Use proportional calculation: earned = baseSalary * (completedActions / 4)
     let totalBaseSalary = 0;
-    let totalObligationDeduction = 0;
+    let totalEarned = 0;
     let totalOtherDeduction = 0;
     let totalObligationsCompleted = 0;
     let totalObligationsRequired = 0;
@@ -501,23 +571,21 @@ export class SalariesService {
       const baseSalary = lessonRate;
       totalBaseSalary += baseSalary;
 
-      // Calculate obligations (4 total)
-      const obligations = [
+      // Calculate completed actions (4 total)
+      const completedActions = [
         lesson.absenceMarked ?? false,
         lesson.feedbacksCompleted ?? false,
         lesson.voiceSent ?? false,
         lesson.textSent ?? false,
-      ];
-      const completedObligations = obligations.filter(Boolean).length;
-      const totalObligations = 4;
-      totalObligationsRequired += totalObligations;
-      totalObligationsCompleted += completedObligations;
+      ].filter(Boolean).length;
+      
+      const totalActions = 4;
+      totalObligationsRequired += totalActions;
+      totalObligationsCompleted += completedActions;
 
-      // Calculate obligation-based deduction per lesson
-      // Each missing obligation deducts 10% of base salary (40% total if all 4 missing)
-      const missingObligations = totalObligations - completedObligations;
-      const obligationDeduction = (missingObligations / totalObligations) * baseSalary * 0.4;
-      totalObligationDeduction += obligationDeduction;
+      // Proportional calculation: earned = baseSalary * (completedActions / 4)
+      const earned = baseSalary * (completedActions / totalActions);
+      totalEarned += earned;
 
       // Get other deductions for this lesson
       const lessonId = typeof lesson.id === 'string' ? lesson.id : String(lesson.id);
@@ -525,10 +593,10 @@ export class SalariesService {
       totalOtherDeduction += otherDeductionForLesson;
     }
 
-    // Calculate totals using the same formula as calculateMonthlySalaryFromLessons
+    // Calculate totals using proportional calculation
     const grossAmount = totalBaseSalary; // Base salary is the gross (before deductions)
-    const totalDeductions = totalObligationDeduction + totalOtherDeduction;
-    const netAmount = Math.max(0, totalBaseSalary - totalDeductions);
+    const totalDeductions = totalOtherDeduction; // Only other deductions, no obligation-based deductions
+    const netAmount = Math.max(0, totalEarned - totalDeductions);
 
     // Check if record already exists for this month
     // Use exact month match to leverage the unique constraint [teacherId, month]
@@ -806,14 +874,17 @@ export class SalariesService {
     const startOfMonth = new Date(year, monthNum - 1, 1);
     const endOfMonth = new Date(year, monthNum, 0, 23, 59, 59);
 
-    // Get completed lessons for this month
+    // Get ALL lessons for this month (not just completed ones)
     const lessons = await this.prisma.lesson.findMany({
       where: {
         teacherId,
-        status: LessonStatus.COMPLETED,
-        completedAt: {
+        scheduledAt: {
           gte: startOfMonth,
           lte: endOfMonth,
+        },
+        // Exclude cancelled lessons
+        status: {
+          not: LessonStatus.CANCELLED,
         },
       },
       select: {
@@ -833,7 +904,7 @@ export class SalariesService {
         },
       },
       orderBy: {
-        completedAt: 'asc',
+        scheduledAt: 'asc',
       },
     });
 
@@ -867,35 +938,32 @@ export class SalariesService {
       ? Number(teacher.lessonRateAMD) 
       : Number(teacher.hourlyRate); // Fallback for backward compatibility
 
-    // Calculate per-lesson breakdown
+    // Calculate per-lesson breakdown using proportional calculation
     // Base salary is per lesson (fixed price), NOT per hour
     const lessonBreakdown = lessons.map((lesson: any) => {
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
-      // Calculate obligations (4 total)
-      const obligations = [
+      // Calculate completed actions (4 total)
+      const completedActions = [
         lesson.absenceMarked ?? false,
         lesson.feedbacksCompleted ?? false,
         lesson.voiceSent ?? false,
         lesson.textSent ?? false,
-      ];
-      const completedObligations = obligations.filter(Boolean).length;
-      const totalObligations = 4;
+      ].filter(Boolean).length;
+      const totalActions = 4;
 
-      // Calculate obligation-based deduction per lesson
-      // Each missing obligation deducts 10% of base salary (40% total if all 4 missing)
-      const missingObligations = totalObligations - completedObligations;
-      const obligationDeduction = (missingObligations / totalObligations) * baseSalary * 0.4;
+      // Proportional calculation: earned = baseSalary * (completedActions / 4)
+      const earned = baseSalary * (completedActions / totalActions);
 
       // Get other deductions for this lesson
       const otherDeductionForLesson = deductionsByLessonId.get(lesson.id) || 0;
 
-      // Total deduction = obligation deduction + other deductions
-      const totalDeduction = obligationDeduction + otherDeductionForLesson;
+      // Total = earned - other deductions
+      const total = Math.max(0, earned - otherDeductionForLesson);
 
-      // Total = base salary - total deduction
-      const total = Math.max(0, baseSalary - totalDeduction);
+      // Deduction = baseSalary - earned (implicit deduction for missing actions)
+      const deduction = baseSalary - earned + otherDeductionForLesson;
 
       // Lesson name: use topic if available, otherwise use group name + date
       const lessonName = lesson.topic || lesson.group?.name || 'Untitled Lesson';
@@ -903,11 +971,11 @@ export class SalariesService {
       return {
         lessonId: lesson.id,
         lessonName,
-        lessonDate: lesson.completedAt || lesson.scheduledAt,
-        obligationCompleted: completedObligations,
-        obligationTotal: totalObligations,
+        lessonDate: lesson.scheduledAt, // Use scheduledAt instead of completedAt
+        obligationCompleted: completedActions,
+        obligationTotal: totalActions,
         salary: baseSalary,
-        deduction: totalDeduction,
+        deduction: deduction,
         total,
       };
     });
