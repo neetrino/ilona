@@ -5,7 +5,9 @@ import {
   IsOptional,
   Min,
   MaxLength,
+  IsEnum,
 } from 'class-validator';
+import { SalaryStatus } from '@prisma/client';
 
 export class CreateSalaryRecordDto {
   @IsString()
@@ -45,9 +47,9 @@ export class ProcessSalaryDto {
 }
 
 export class UpdateSalaryDto {
-  @IsString()
+  @IsEnum(SalaryStatus)
   @IsOptional()
-  status?: string;
+  status?: SalaryStatus;
 
   @IsString()
   @IsOptional()

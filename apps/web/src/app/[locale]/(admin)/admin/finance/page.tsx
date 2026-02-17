@@ -26,9 +26,9 @@ export default function FinancePage() {
   const searchParams = useSearchParams();
   
   // Initialize state from URL params
-  const [activeTab, setActiveTab] = useState<'payments' | 'salaries'>(() => {
+  const [activeTab, setActiveTab] = useState<'payments' | 'salaries' | 'salaries2'>(() => {
     const tabFromUrl = searchParams.get('tab');
-    return (tabFromUrl === 'payments' || tabFromUrl === 'salaries') ? tabFromUrl : 'payments';
+    return (tabFromUrl === 'payments' || tabFromUrl === 'salaries' || tabFromUrl === 'salaries2') ? tabFromUrl : 'payments';
   });
   const [paymentsPage, setPaymentsPage] = useState(() => {
     const page = parseInt(searchParams.get('paymentsPage') || '0', 10);
@@ -70,7 +70,7 @@ export default function FinancePage() {
   }, [router, pathname, searchParams]);
 
   // Handle tab change
-  const handleTabChange = (tab: 'payments' | 'salaries') => {
+  const handleTabChange = (tab: 'payments' | 'salaries' | 'salaries2') => {
     setActiveTab(tab);
     updateUrlParams({ tab });
   };
@@ -148,7 +148,7 @@ export default function FinancePage() {
   const totalSalaries = salariesData?.total || 0;
   const salariesTotalPages = salariesData?.totalPages || 1;
 
-  const isLoading = activeTab === 'payments' ? isLoadingPayments : isLoadingSalaries;
+  const isLoading = activeTab === 'payments' ? isLoadingPayments : activeTab === 'salaries' ? isLoadingSalaries : false;
 
   // Handle process payment
   const handleProcessPayment = async (id: string) => {
@@ -408,10 +408,15 @@ export default function FinancePage() {
             ]}
             onChange={async (newStatus) => {
               if (newStatus && newStatus !== salary.status) {
-                await updateSalaryStatus.mutateAsync({
-                  id: salary.id,
-                  status: newStatus as SalaryStatus,
-                });
+                try {
+                  await updateSalaryStatus.mutateAsync({
+                    id: salary.id,
+                    status: newStatus as SalaryStatus,
+                  });
+                } catch (error) {
+                  console.error('Failed to update salary status:', error);
+                  // The mutation will handle error state, but we can add toast notification here if needed
+                }
               }
             }}
             disabled={updateSalaryStatus.isPending}
@@ -515,6 +520,16 @@ export default function FinancePage() {
           >
             Teacher Salaries ({totalSalaries})
           </button>
+          <button
+            onClick={() => handleTabChange('salaries2')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'salaries2'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Teacher Salaries2
+          </button>
         </div>
 
         {/* Actions */}
@@ -527,7 +542,7 @@ export default function FinancePage() {
               type="search"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder={`Search ${activeTab === 'payments' ? 'payments' : 'salaries'}...`}
+              placeholder={`Search ${activeTab === 'payments' ? 'payments' : activeTab === 'salaries' ? 'salaries' : 'salaries2'}...`}
               className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
@@ -538,7 +553,7 @@ export default function FinancePage() {
               onChange={(e) => {
                 if (activeTab === 'payments') {
                   handlePaymentStatusChange(e.target.value as PaymentStatus | '');
-                } else {
+                } else if (activeTab === 'salaries') {
                   handleSalaryStatusChange(e.target.value as SalaryStatus | '');
                 }
               }}
@@ -553,12 +568,12 @@ export default function FinancePage() {
                   <option value="CANCELLED">{t('cancelled')}</option>
                   <option value="REFUNDED">{t('refunded')}</option>
                 </>
-              ) : (
+              ) : activeTab === 'salaries' ? (
                 <>
                   <option value="PENDING">Pending</option>
                   <option value="PAID">Paid</option>
                 </>
-              )}
+              ) : null}
             </select>
             <svg 
               className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" 
@@ -573,11 +588,11 @@ export default function FinancePage() {
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium">
               + Record Payment
             </Button>
-          ) : (
+          ) : activeTab === 'salaries' ? (
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium">
               Generate Monthly
             </Button>
-          )}
+          ) : null}
           <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
             <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -623,7 +638,7 @@ export default function FinancePage() {
               </div>
             </div>
           </>
-        ) : (
+        ) : activeTab === 'salaries' ? (
           <>
             <DataTable
               columns={salaryColumns}
@@ -660,6 +675,10 @@ export default function FinancePage() {
               </div>
             </div>
           </>
+        ) : (
+          <div className="bg-white rounded-xl border border-slate-200 p-8">
+            {/* Teacher Salaries2 - Empty for now */}
+          </div>
         )}
 
         {/* Info Cards */}

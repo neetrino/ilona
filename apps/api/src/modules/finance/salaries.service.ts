@@ -402,12 +402,13 @@ export class SalariesService {
 
     const updateData: any = {};
     
-    if (dto.status) {
-      const validStatuses = [SalaryStatus.PENDING, SalaryStatus.PAID];
-      if (!validStatuses.includes(dto.status as SalaryStatus)) {
-        throw new BadRequestException(`Invalid status: ${dto.status}`);
+    if (dto.status !== undefined) {
+      // Validate that only PENDING or PAID are allowed (not PROCESSING)
+      const validStatuses: SalaryStatus[] = [SalaryStatus.PENDING, SalaryStatus.PAID];
+      if (!validStatuses.includes(dto.status)) {
+        throw new BadRequestException(`Invalid status: ${dto.status}. Only PENDING and PAID are allowed.`);
       }
-      updateData.status = dto.status as SalaryStatus;
+      updateData.status = dto.status;
       
       // If setting to PAID, set paidAt
       if (dto.status === SalaryStatus.PAID && record.status !== SalaryStatus.PAID) {
