@@ -711,8 +711,8 @@ export default function StudentProfilePage() {
                         : 'N/A'}
                     </p>
                   </div>
-                  <Badge variant={attendance.status === 'PRESENT' ? 'success' : 'warning'}>
-                    {attendance.status}
+                  <Badge variant={attendance.isPresent ? 'success' : 'warning'}>
+                    {attendance.isPresent ? 'PRESENT' : (attendance.absenceType || 'ABSENT')}
                   </Badge>
                 </div>
               ))}
