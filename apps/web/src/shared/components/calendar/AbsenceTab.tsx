@@ -15,6 +15,12 @@ interface AbsenceTabProps {
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
+interface AttendanceItem {
+  studentId: string;
+  isPresent: boolean;
+  absenceType?: AbsenceType;
+}
+
 export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const queryClient = useQueryClient();
   const { data: lesson } = useLesson(lessonId);
@@ -100,8 +106,8 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
 
       setHasChanges(false);
       alert('Attendance saved successfully!');
-    } catch (error) {
-      console.error('Failed to save attendance:', error);
+    } catch (err: unknown) {
+      console.error('Failed to save attendance:', err);
       alert('Failed to save attendance. Please try again.');
     }
   };

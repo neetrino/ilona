@@ -13,7 +13,6 @@ import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { UserStatus } from '@/types';
-import { getErrorMessage } from '@/shared/lib/api';
 
 // Extended Student type with attendances (from API response)
 interface StudentWithAttendances extends Student {
@@ -48,7 +47,7 @@ type UpdateStudentFormData = z.infer<typeof updateStudentSchema>;
 
 export default function StudentProfilePage() {
   const t = useTranslations('students');
-  const tCommon = useTranslations('common');
+  const _tCommon = useTranslations('common');
   const params = useParams();
   const router = useRouter();
   const studentId = params.id as string;
@@ -59,7 +58,7 @@ export default function StudentProfilePage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { data: student, isLoading, error, refetch } = useStudent(studentId);
-  const { data: statistics, isLoading: isLoadingStats } = useStudentStatistics(studentId, !!student);
+  const { data: statistics, isLoading: _isLoadingStats } = useStudentStatistics(studentId, !!student);
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ take: 100, isActive: true });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE', take: 100 });
   const updateStudent = useUpdateStudent();
@@ -72,7 +71,6 @@ export default function StudentProfilePage() {
     handleSubmit,
     formState: { errors, isDirty },
     reset,
-    watch,
   } = useForm<UpdateStudentFormData>({
     resolver: zodResolver(updateStudentSchema),
     defaultValues: {
@@ -102,7 +100,7 @@ export default function StudentProfilePage() {
         firstName: student.user?.firstName || '',
         lastName: student.user?.lastName || '',
         phone: student.user?.phone || '',
-        status: (student.user?.status || 'ACTIVE') as UserStatus,
+        status: student.user?.status || 'ACTIVE',
         groupId: student.groupId || '',
         teacherId: student.teacherId || '',
         parentName: student.parentName || '',
@@ -209,14 +207,16 @@ export default function StudentProfilePage() {
         } else if (response?.status === 409) {
           message = 'This record was modified by another user. Please refresh and try again.';
         } else if (response?.status === 400) {
-        message = 'Invalid data. Please check your input and try again.';
+          message = 'Invalid data. Please check your input and try again.';
+        }
       }
       
       setErrorMessage(message);
       setSuccessMessage(null);
       
       // If there's a conflict, refetch the latest data
-      if (error?.response?.status === 409) {
+      if (error && typeof error === 'object' && 'response' in error &&
+          (error as { response?: { status?: number } }).response?.status === 409) {
         setTimeout(() => {
           setIsEditMode(false);
         }, 2000);
@@ -693,7 +693,7 @@ export default function StudentProfilePage() {
         </div>
 
         {/* Recent Activity */}
-        {(student as StudentWithAttendances).attendances && (student as StudentWithAttendances).attendances.length > 0 && (
+        {(student as StudentWithAttendances).attendances && (student as StudentWithAttendances).attendances!.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <h3 className="text-lg font-semibold text-slate-800 mb-4">Recent Attendance</h3>
             <div className="space-y-3">
@@ -709,8 +709,8 @@ export default function StudentProfilePage() {
                         : 'N/A'}
                     </p>
                   </div>
-                  <Badge variant={attendance.status === 'PRESENT' ? 'success' : 'warning'}>
-                    {attendance.status}
+                  <Badge variant={attendance.isPresent ? 'success' : 'warning'}>
+                    {attendance.isPresent ? 'PRESENT' : (attendance.absenceType || 'ABSENT')}
                   </Badge>
                 </div>
               ))}

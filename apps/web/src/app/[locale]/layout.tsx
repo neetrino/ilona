@@ -33,7 +33,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <SetLangAttribute locale={locale} />
+      <SetLangAttribute locale={locale as Locale} />
       <QueryProvider>
         {children}
       </QueryProvider>

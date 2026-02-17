@@ -46,7 +46,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    watch,
   } = useForm<UpdateGroupFormData>({
     resolver: zodResolver(updateGroupSchema),
     defaultValues: {

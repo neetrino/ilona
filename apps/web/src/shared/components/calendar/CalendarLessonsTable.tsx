@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { cn } from '@/shared/lib/utils';
-import { Button } from '@/shared/components/ui/button';
 import { ActionButtons } from '@/shared/components/ui/action-buttons';
 import { Eye, Check } from 'lucide-react';
 

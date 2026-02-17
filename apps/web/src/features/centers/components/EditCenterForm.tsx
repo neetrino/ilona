@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
-import { useUpdateCenter, useCenter, type UpdateCenterDto, type Center } from '@/features/centers';
+import { useUpdateCenter, useCenter, type UpdateCenterDto } from '@/features/centers';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 

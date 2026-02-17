@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
 import type { Lesson } from '@/features/lessons';
-import type { StudentWithAttendance, AbsenceType } from '@/features/attendance';
+import type { AbsenceType } from '@/features/attendance';
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
@@ -562,7 +562,7 @@ export function AttendanceGrid({
                       const isFocused = focusedCell?.studentId === student.id && focusedCell?.lessonId === lesson.id;
                       const hasPendingChange = pendingChanges[lesson.id]?.has(student.id) || false;
                       const isLessonSaving = isSaving?.[lesson.id] || false;
-                      const hasLessonChanges = pendingChanges[lesson.id] && pendingChanges[lesson.id].size > 0;
+                      const _hasLessonChanges = pendingChanges[lesson.id] && pendingChanges[lesson.id].size > 0;
 
                       const cellKey = `${student.id}-${lesson.id}`;
                       return (

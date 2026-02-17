@@ -357,7 +357,7 @@ export default function TeachersPage() {
     try {
       await updateTeacher.mutateAsync({
         id: teacher.id,
-        data: { status: newStatus as 'ACTIVE' | 'INACTIVE' },
+        data: { status: newStatus },
       });
       setDeactivateSuccess(true);
       

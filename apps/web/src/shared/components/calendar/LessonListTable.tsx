@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { ArrowUpDown, ArrowUp, ArrowDown, Pencil } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
@@ -24,7 +23,7 @@ interface LessonListTableProps {
   onSort?: (key: string) => void;
 }
 
-const statusConfig: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
+const _statusConfig: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
   SCHEDULED: { label: 'Scheduled', variant: 'info' },
   IN_PROGRESS: { label: 'In Progress', variant: 'warning' },
   COMPLETED: { label: 'Completed', variant: 'success' },
@@ -326,7 +325,7 @@ export function LessonListTable({
                   <td className="px-4 py-3">
                     <Checkbox
                       checked={selectedLessons.has(lesson.id)}
-                      onCheckedChange={(checked) => handleSelectLesson(lesson.id, checked as boolean)}
+                      onCheckedChange={(checked) => handleSelectLesson(lesson.id, checked === true)}
                     />
                   </td>
                   <td className="px-4 py-3">

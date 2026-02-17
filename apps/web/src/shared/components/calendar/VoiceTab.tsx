@@ -24,7 +24,7 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleRecorded = async (file: File, durationSec: number, mimeType: string) => {
+  const handleRecorded = async (file: File, durationSec: number, _mimeType: string) => {
     if (!lesson || !lesson.group) {
       alert('Lesson or group not found');
       return;

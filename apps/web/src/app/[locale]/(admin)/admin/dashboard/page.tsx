@@ -11,13 +11,13 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const locale = params.locale as string;
   const t = useTranslations('dashboard');
-  const tCommon = useTranslations('common');
-  const tNav = useTranslations('nav');
+  const _tCommon = useTranslations('common');
+  const _tNav = useTranslations('nav');
   
   // Fetch dashboard stats
   const { 
     data: stats, 
-    isLoading: isLoadingStats,
+    isLoading: _isLoadingStats,
     error: statsError 
   } = useAdminDashboardStats();
 

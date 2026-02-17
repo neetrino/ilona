@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useCreateTeacher, type CreateTeacherDto } from '@/features/teachers';
-import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from './WeeklySchedule';
+import { WeeklySchedule } from './WeeklySchedule';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 

@@ -18,7 +18,7 @@ interface ChatWindowProps {
 function VoiceMessagePlayer({
   fileUrl,
   duration,
-  fileName,
+  fileName: _fileName,
 }: {
   fileUrl: string;
   duration?: number;
@@ -538,13 +538,6 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
     });
   };
 
-  // Format duration for voice messages (seconds to MM:SS)
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const onlineStatus = getOnlineStatus();
 
   // Format date separator
@@ -591,7 +584,7 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
         <div className="relative">
           {getChatAvatarUrl() ? (
             <img
-              src={getChatAvatarUrl()!}
+              src={getChatAvatarUrl() ?? ''}
               alt={getChatTitle()}
               className="w-10 h-10 rounded-full object-cover"
             />

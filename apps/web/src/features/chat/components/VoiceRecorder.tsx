@@ -9,7 +9,7 @@ interface VoiceRecorderProps {
   conversationId: string;
 }
 
-export function VoiceRecorder({ onRecorded, onCancel, conversationId }: VoiceRecorderProps) {
+export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversationId }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [durationSec, setDurationSec] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -221,9 +221,9 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId }: VoiceRec
 
       recorder.onstop = async () => {
         // Request data if supported
-        if (recorder.state !== 'inactive' && 'requestData' in recorder) {
+        if (recorder.state !== 'inactive' && 'requestData' in recorder && typeof (recorder as MediaRecorder & { requestData: () => void }).requestData === 'function') {
           try {
-            (recorder as any).requestData();
+            (recorder as MediaRecorder & { requestData: () => void }).requestData();
           } catch (e) {
             // Ignore if not supported
           }

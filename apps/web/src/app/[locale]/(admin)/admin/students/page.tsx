@@ -465,7 +465,7 @@ export default function StudentsPage() {
     try {
       await updateStudent.mutateAsync({
         id: student.id,
-        data: { status: newStatus as 'ACTIVE' | 'INACTIVE' },
+        data: { status: newStatus },
       });
       setDeactivateSuccess(true);
       

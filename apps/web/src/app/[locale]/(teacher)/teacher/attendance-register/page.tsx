@@ -46,7 +46,7 @@ interface AttendanceCell {
 
 export default function TeacherAttendanceRegisterPage() {
   const t = useTranslations('attendance');
-  const router = useRouter();
+  const _router = useRouter();
   
   // View mode state
   const [viewMode, setViewMode] = useState<ViewMode>('day');
@@ -362,7 +362,7 @@ export default function TeacherAttendanceRegisterPage() {
   };
 
   // Handle save success
-  const handleSaveSuccess = (id: string) => {
+  const handleSaveSuccess = (_id: string) => {
     setSaveMessages({ type: 'success', message: t('attendanceSaved') });
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);
@@ -373,7 +373,7 @@ export default function TeacherAttendanceRegisterPage() {
   };
 
   // Handle save error
-  const handleSaveError = (id: string, error: string) => {
+  const handleSaveError = (_id: string, error: string) => {
     setSaveMessages({ type: 'error', message: t('failedToSaveAttendance', { error }) });
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);

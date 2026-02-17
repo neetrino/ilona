@@ -5,8 +5,6 @@ import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigat
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyAssignedStudents } from '@/features/students/hooks/useStudents';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
-import type { Student } from '@/features/students/types';
-import type { Group } from '@/features/groups/types';
 import { cn } from '@/shared/lib/utils';
 import Link from 'next/link';
 
@@ -70,7 +68,7 @@ export default function TeacherStudentsPage() {
     take: 100,
     groupId: validSelectedGroupId || undefined,
   });
-  const students = (studentsData?.items || []) as Student[];
+  const students = studentsData?.items || [];
 
   // Get selected group details
   const selectedGroup = useMemo(() => {
