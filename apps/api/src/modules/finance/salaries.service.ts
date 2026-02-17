@@ -12,6 +12,110 @@ export class SalariesService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * Calculate monthly salary from completed lessons for a teacher
+   * This is the single source of truth for salary calculation
+   * Returns: SUM of (baseSalary - totalDeduction) for all completed lessons in the month
+   */
+  private async calculateMonthlySalaryFromLessons(teacherId: string, month: Date): Promise<number> {
+    // Get start and end of month
+    const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+    const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59);
+
+    // Get teacher with hourly rate
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
+      select: { hourlyRate: true },
+    });
+
+    if (!teacher) {
+      return 0;
+    }
+
+    // Get completed lessons for this month
+    const lessons = await this.prisma.lesson.findMany({
+      where: {
+        teacherId,
+        status: LessonStatus.COMPLETED,
+        completedAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      select: {
+        id: true,
+        duration: true,
+        absenceMarked: true,
+        feedbacksCompleted: true,
+        voiceSent: true,
+        textSent: true,
+      } as any,
+    });
+
+    // Get other deductions for this period (from Deduction table)
+    const otherDeductions = await this.prisma.deduction.findMany({
+      where: {
+        teacherId,
+        appliedAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      select: {
+        id: true,
+        amount: true,
+        lessonId: true,
+      },
+    });
+
+    // Create a map of lessonId -> deductions
+    const deductionsByLessonId = new Map<string, number>();
+    otherDeductions.forEach((deduction) => {
+      if (deduction.lessonId) {
+        const current = deductionsByLessonId.get(deduction.lessonId) || 0;
+        deductionsByLessonId.set(deduction.lessonId, current + Number(deduction.amount));
+      }
+    });
+
+    // Calculate total salary from all completed lessons
+    const hourlyRate = Number(teacher.hourlyRate);
+    let totalSalary = 0;
+
+    for (const lesson of lessons) {
+      const duration = typeof lesson.duration === 'number' ? lesson.duration : 0;
+      const hours = duration / 60;
+      const baseSalary = hours * hourlyRate;
+
+      // Calculate obligations (4 total)
+      const obligations = [
+        lesson.absenceMarked ?? false,
+        lesson.feedbacksCompleted ?? false,
+        lesson.voiceSent ?? false,
+        lesson.textSent ?? false,
+      ];
+      const completedObligations = obligations.filter(Boolean).length;
+      const totalObligations = 4;
+
+      // Calculate obligation-based deduction
+      // Each missing obligation deducts 10% of base salary
+      const missingObligations = totalObligations - completedObligations;
+      const obligationDeduction = (missingObligations / totalObligations) * baseSalary * 0.4;
+
+      // Get other deductions for this lesson
+      const lessonId = typeof lesson.id === 'string' ? lesson.id : String(lesson.id);
+      const otherDeductionForLesson = deductionsByLessonId.get(lessonId) || 0;
+
+      // Total deduction = obligation deduction + other deductions
+      const totalDeduction = obligationDeduction + otherDeductionForLesson;
+
+      // Total = base salary - total deduction
+      const lessonTotal = Math.max(0, baseSalary - totalDeduction);
+      totalSalary += lessonTotal;
+    }
+
+    return totalSalary;
+  }
+
+  /**
    * Get all salary records
    */
   async findAll(params?: {
@@ -59,24 +163,33 @@ export class SalariesService {
       this.prisma.salaryRecord.count({ where }),
     ]);
 
-    // Parse obligations info from notes for each item
-    const itemsWithObligations = items.map((item) => {
-      let obligationsInfo = null;
-      if (item.notes) {
-        try {
-          obligationsInfo = JSON.parse(item.notes);
-        } catch {
-          // If parsing fails, ignore
+    // Calculate computed salary for each item from completed lessons
+    const itemsWithComputedSalary = await Promise.all(
+      items.map(async (item) => {
+        // Parse obligations info from notes
+        let obligationsInfo = null;
+        if (item.notes) {
+          try {
+            obligationsInfo = JSON.parse(item.notes);
+          } catch {
+            // If parsing fails, ignore
+          }
         }
-      }
-      return {
-        ...item,
-        obligationsInfo,
-      };
-    });
+
+        // Calculate salary from completed lessons (single source of truth)
+        const computedSalary = await this.calculateMonthlySalaryFromLessons(item.teacherId, item.month);
+
+        return {
+          ...item,
+          // Override netAmount with computed salary from completed lessons
+          netAmount: computedSalary,
+          obligationsInfo,
+        };
+      })
+    );
 
     return {
-      items: itemsWithObligations,
+      items: itemsWithComputedSalary,
       total,
       page: Math.floor(skip / take) + 1,
       pageSize: take,

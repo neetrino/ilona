@@ -25,6 +25,7 @@ import type {
   CompleteLessonDto,
   CreateRecurringLessonsDto,
 } from '../types';
+import { financeKeys } from '@/features/finance/hooks/useFinance';
 
 // Query keys
 export const lessonKeys = {
@@ -177,6 +178,8 @@ export function useCompleteLesson() {
       queryClient.invalidateQueries({ queryKey: lessonKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.all });
+      // Invalidate salary queries since completing a lesson affects salary calculation
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
     },
   });
 }
