@@ -28,25 +28,41 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     improvements?: string;
   }>>({});
 
+  // Initialize feedbacks for ALL students - prefill saved data, empty for others
   useEffect(() => {
-    if (existingFeedbacks.length > 0) {
+    if (students.length > 0) {
       const initial: Record<string, {
         content: string;
         rating?: number;
         strengths?: string;
         improvements?: string;
       }> = {};
-      existingFeedbacks.forEach((fb) => {
-        initial[fb.studentId] = {
-          content: fb.content || '',
-          rating: fb.rating || undefined,
-          strengths: fb.strengths || '',
-          improvements: fb.improvements || '',
-        };
+      
+      // Initialize all students with their saved feedback or empty values
+      students.forEach((student) => {
+        const savedFeedback = existingFeedbacks.find((f) => f.studentId === student.id);
+        if (savedFeedback) {
+          // Use saved feedback
+          initial[student.id] = {
+            content: savedFeedback.content || '',
+            rating: savedFeedback.rating || undefined,
+            strengths: savedFeedback.strengths || '',
+            improvements: savedFeedback.improvements || '',
+          };
+        } else {
+          // Initialize with empty values for students without feedback
+          initial[student.id] = {
+            content: '',
+            rating: undefined,
+            strengths: '',
+            improvements: '',
+          };
+        }
       });
+      
       setFeedbacks(initial);
     }
-  }, [existingFeedbacks]);
+  }, [existingFeedbacks, students]);
 
   const handleFeedbackChange = (studentId: string, field: string, value: string | number) => {
     setFeedbacks((prev) => ({
@@ -77,8 +93,9 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
         improvements: feedback.improvements,
       });
 
-      // Invalidate queries
+      // Invalidate both detail and list queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: lessonKeys.detail(lesson.id) });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
       
       alert('Feedback saved successfully!');
     } catch (error) {
@@ -89,8 +106,17 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
 
   if (isLoadingLesson || isLoadingFeedbacks) {
     return (
-      <div className="flex items-center justify-center p-12">
+      <div className="flex flex-col items-center justify-center p-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="mt-4 text-sm text-slate-500">Loading feedback data...</p>
+      </div>
+    );
+  }
+
+  if (!lesson) {
+    return (
+      <div className="p-6 text-center text-slate-500">
+        <p>Lesson not found</p>
       </div>
     );
   }
@@ -98,9 +124,11 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-800">Student Feedbacks</h3>
+        <h3 className="text-lg font-semibold text-slate-800">Edit Student Feedbacks</h3>
         <p className="text-sm text-slate-500 mt-1">
-          Provide feedback for each student in this lesson
+          {existingFeedbacks.length > 0
+            ? 'Update or add feedback for students in this lesson'
+            : 'Provide feedback for each student in this lesson'}
         </p>
       </div>
 

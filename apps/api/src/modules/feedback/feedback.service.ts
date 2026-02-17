@@ -184,7 +184,7 @@ export class FeedbackService {
 
     if (existingFeedback) {
       // Update existing feedback
-      return this.prisma.feedback.update({
+      const updatedFeedback = await this.prisma.feedback.update({
         where: { id: existingFeedback.id },
         data: {
           content: dto.content,
@@ -193,6 +193,34 @@ export class FeedbackService {
           improvements: dto.improvements,
         },
       });
+
+      // Check if all students in the group have feedback
+      const lessonWithGroup = await this.prisma.lesson.findUnique({
+        where: { id: dto.lessonId },
+        include: {
+          group: {
+            include: {
+              students: true,
+            },
+          },
+          feedbacks: true,
+        },
+      });
+
+      if (lessonWithGroup) {
+        const studentCount = lessonWithGroup.group.students.length;
+        const feedbackCount = lessonWithGroup.feedbacks.length;
+        
+        // If all students have feedback, mark feedbacksCompleted as true
+        if (studentCount > 0 && feedbackCount >= studentCount) {
+          await this.prisma.lesson.update({
+            where: { id: dto.lessonId },
+            data: { feedbacksCompleted: true },
+          });
+        }
+      }
+
+      return updatedFeedback;
     }
 
     // Get teacher ID
@@ -205,7 +233,7 @@ export class FeedbackService {
     }
 
     // Create new feedback
-    return this.prisma.feedback.create({
+    const newFeedback = await this.prisma.feedback.create({
       data: {
         lessonId: dto.lessonId,
         studentId: dto.studentId,
@@ -216,6 +244,34 @@ export class FeedbackService {
         improvements: dto.improvements,
       },
     });
+
+    // Check if all students in the group have feedback
+    const lessonWithGroup = await this.prisma.lesson.findUnique({
+      where: { id: dto.lessonId },
+      include: {
+        group: {
+          include: {
+            students: true,
+          },
+        },
+        feedbacks: true,
+      },
+    });
+
+    if (lessonWithGroup) {
+      const studentCount = lessonWithGroup.group.students.length;
+      const feedbackCount = lessonWithGroup.feedbacks.length;
+      
+      // If all students have feedback, mark feedbacksCompleted as true
+      if (studentCount > 0 && feedbackCount >= studentCount) {
+        await this.prisma.lesson.update({
+          where: { id: dto.lessonId },
+          data: { feedbacksCompleted: true },
+        });
+      }
+    }
+
+    return newFeedback;
   }
 
   /**
@@ -287,9 +343,38 @@ export class FeedbackService {
       }
     }
 
-    return this.prisma.feedback.delete({
+    // Delete the feedback
+    await this.prisma.feedback.delete({
       where: { id },
     });
+
+    // Check if feedbacksCompleted should be set to false
+    const lessonWithGroup = await this.prisma.lesson.findUnique({
+      where: { id: feedback.lessonId },
+      include: {
+        group: {
+          include: {
+            students: true,
+          },
+        },
+        feedbacks: true,
+      },
+    });
+
+    if (lessonWithGroup) {
+      const studentCount = lessonWithGroup.group.students.length;
+      const feedbackCount = lessonWithGroup.feedbacks.length;
+      
+      // If not all students have feedback, mark feedbacksCompleted as false
+      if (studentCount > 0 && feedbackCount < studentCount) {
+        await this.prisma.lesson.update({
+          where: { id: feedback.lessonId },
+          data: { feedbacksCompleted: false },
+        });
+      }
+    }
+
+    return feedback;
   }
 }
 

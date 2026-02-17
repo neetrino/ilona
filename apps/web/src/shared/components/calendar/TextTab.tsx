@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useLesson } from '@/features/lessons';
 import { fetchGroupChat, sendMessageHttp } from '@/features/chat/api/chat.api';
+import { api } from '@/shared/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import { Button } from '@/shared/components/ui/button';
@@ -42,8 +43,10 @@ export function TextTab({ lessonId }: TextTabProps) {
         },
       });
 
-      // Invalidate lesson query to refresh data
+      // Mark text as sent and invalidate both detail and list queries to ensure consistency
+      await api.patch(`/lessons/${lesson.id}/text-sent`);
       queryClient.invalidateQueries({ queryKey: lessonKeys.detail(lesson.id) });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
 
       setText('');
       alert('Text message sent successfully!');
@@ -74,9 +77,13 @@ export function TextTab({ lessonId }: TextTabProps) {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-800">Send Text Message</h3>
+        <h3 className="text-lg font-semibold text-slate-800">
+          {lesson.textSent ? 'Edit Text Message' : 'Send Text Message'}
+        </h3>
         <p className="text-sm text-slate-500 mt-1">
-          Write a text message that will be sent to the group chat
+          {lesson.textSent
+            ? 'Send a new text message to replace the existing one'
+            : 'Write a text message that will be sent to the group chat'}
         </p>
       </div>
 
