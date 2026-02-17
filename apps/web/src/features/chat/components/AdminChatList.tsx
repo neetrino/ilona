@@ -16,7 +16,6 @@ interface AdminChatListProps {
   onTabChange: (tab: AdminChatTab) => void;
   onSelectChat: (chat: Chat) => void;
 }
-console.log("h3llo");
 
 export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminChatListProps) {
   const { user } = useAuthStore();

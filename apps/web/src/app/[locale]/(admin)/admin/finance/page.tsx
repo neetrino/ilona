@@ -194,7 +194,6 @@ export default function FinancePage() {
     {
       key: 'amount',
       header: t('amount'),
-      className: 'text-right',
       render: (payment: Payment) => {
         const amount = typeof payment.amount === 'string' ? parseFloat(payment.amount) : Number(payment.amount);
         return (
