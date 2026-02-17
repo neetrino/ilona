@@ -1,4 +1,5 @@
 export type LessonStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'MISSED';
+export type CompletionStatus = 'DONE' | 'IN_PROCESS' | null;
 
 export interface Lesson {
   id: string;
@@ -20,6 +21,9 @@ export interface Lesson {
   textSent?: boolean;
   textSentAt?: string;
   completedAt?: string;
+  // Computed fields from backend
+  isLockedForTeacher?: boolean;
+  completionStatus?: CompletionStatus;
   group: {
     id: string;
     name: string;

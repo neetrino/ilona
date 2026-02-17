@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLesson } from '@/features/lessons';
 import { useLessonFeedback, useCreateOrUpdateFeedback } from '@/features/feedback';
 import { Button } from '@/shared/components/ui/button';
@@ -28,9 +28,46 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     improvements?: string;
   }>>({});
 
+  // Create stable keys for comparison to prevent infinite loops
+  const studentsKey = useMemo(() => 
+    students.map(s => s.id).sort().join(','), 
+    [students]
+  );
+  const feedbacksKey = useMemo(() => 
+    existingFeedbacks.map(f => 
+      `${f.studentId}-${f.content || ''}-${f.rating || ''}-${f.strengths || ''}-${f.improvements || ''}`
+    ).sort().join('|'), 
+    [existingFeedbacks]
+  );
+
+  // Store current arrays in refs to avoid stale closures
+  const studentsRef = useRef(students);
+  const feedbacksRef = useRef(existingFeedbacks);
+  const lastProcessedRef = useRef<{ studentsKey: string; feedbacksKey: string }>({
+    studentsKey: '',
+    feedbacksKey: '',
+  });
+
+  // Update refs when arrays change
+  useEffect(() => {
+    studentsRef.current = students;
+    feedbacksRef.current = existingFeedbacks;
+  }, [students, existingFeedbacks]);
+
   // Initialize feedbacks for ALL students - prefill saved data, empty for others
   useEffect(() => {
-    if (students.length > 0) {
+    // Skip if data hasn't actually changed
+    if (
+      lastProcessedRef.current.studentsKey === studentsKey &&
+      lastProcessedRef.current.feedbacksKey === feedbacksKey
+    ) {
+      return;
+    }
+
+    const currentStudents = studentsRef.current;
+    const currentFeedbacks = feedbacksRef.current;
+
+    if (currentStudents.length > 0) {
       const initial: Record<string, {
         content: string;
         rating?: number;
@@ -39,8 +76,8 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       }> = {};
       
       // Initialize all students with their saved feedback or empty values
-      students.forEach((student) => {
-        const savedFeedback = existingFeedbacks.find((f) => f.studentId === student.id);
+      currentStudents.forEach((student) => {
+        const savedFeedback = currentFeedbacks.find((f) => f.studentId === student.id);
         if (savedFeedback) {
           // Use saved feedback
           initial[student.id] = {
@@ -61,8 +98,9 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       });
       
       setFeedbacks(initial);
+      lastProcessedRef.current = { studentsKey, feedbacksKey };
     }
-  }, [existingFeedbacks, students]);
+  }, [studentsKey, feedbacksKey]);
 
   const handleFeedbackChange = (studentId: string, field: string, value: string | number) => {
     setFeedbacks((prev) => ({
