@@ -46,13 +46,13 @@ export default function CalendarPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  // Initialize view mode from URL query params, with fallback to 'week'
+  // Initialize view mode from URL query params, with fallback to 'list'
   const [viewMode, setViewMode] = useState<'week' | 'list'>(() => {
     const viewFromUrl = searchParams.get('view');
     if (viewFromUrl === 'week' || viewFromUrl === 'list') {
       return viewFromUrl;
     }
-    return 'week'; // Default to week view
+    return 'list'; // Default to list view
   });
   
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -65,13 +65,14 @@ export default function CalendarPage() {
     
     // Update URL to persist the selection
     const params = new URLSearchParams(searchParams.toString());
-    if (mode === 'week') {
-      // Remove 'view' param for default week view to keep URL clean
+    if (mode === 'list') {
+      // Remove 'view' param for default list view to keep URL clean
       params.delete('view');
     } else {
       params.set('view', mode);
     }
-    router.push(`${pathname}?${params.toString()}`);
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl);
   };
   
   // Sync view mode from URL (for browser back/forward navigation)
@@ -80,7 +81,7 @@ export default function CalendarPage() {
     if (viewFromUrl === 'week' || viewFromUrl === 'list') {
       setViewMode(viewFromUrl);
     } else if (!viewFromUrl) {
-      setViewMode('week');
+      setViewMode('list');
     }
   }, [searchParams]);
   
@@ -229,16 +230,6 @@ export default function CalendarPage() {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => updateViewModeInUrl('week')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
-                viewMode === 'week' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Week
-            </button>
-            <button
               onClick={() => updateViewModeInUrl('list')}
               className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
                 viewMode === 'list' 
@@ -247,6 +238,16 @@ export default function CalendarPage() {
               }`}
             >
               List
+            </button>
+            <button
+              onClick={() => updateViewModeInUrl('week')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
+                viewMode === 'week' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Week
             </button>
             <Button 
               onClick={() => setIsAddLessonOpen(true)}
