@@ -6,4 +6,4 @@ export default function Home() {
   redirect(`/${defaultLocale}`);
 }
 
-
+console.log("here");
