@@ -1,12 +1,48 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
 import { InlineSelect } from '@/features/students/components/InlineSelect';
 import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
+import { SalaryBreakdownModal } from '@/features/finance/components/SalaryBreakdownModal';
+import { ChevronRight } from 'lucide-react';
+
+// Component for select all checkbox with indeterminate state
+function SelectAllCheckbox({
+  checked,
+  indeterminate,
+  onChange,
+  disabled,
+}: {
+  checked: boolean;
+  indeterminate: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+}) {
+  const checkboxRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
+
+  return (
+    <input
+      ref={checkboxRef}
+      type="checkbox"
+      className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      checked={checked}
+      onChange={onChange}
+      onClick={(e) => e.stopPropagation()}
+      disabled={disabled}
+      aria-label="Select all"
+    />
+  );
+}
 import {
   useFinanceDashboard,
   usePayments,
@@ -14,11 +50,14 @@ import {
   useProcessPayment,
   useProcessSalary,
   useUpdateSalaryStatus,
+  useDeleteSalaries,
   type Payment,
   type SalaryRecord,
   type PaymentStatus,
   type SalaryStatus,
 } from '@/features/finance';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
+import { Trash2 } from 'lucide-react';
 
 export default function FinancePage() {
   const router = useRouter();
@@ -49,6 +88,14 @@ export default function FinancePage() {
   });
   const [selectedSalaryId, setSelectedSalaryId] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedSalaryForBreakdown, setSelectedSalaryForBreakdown] = useState<{
+    teacherId: string;
+    teacherName: string;
+    month: string;
+  } | null>(null);
+  const [selectedSalaryIds, setSelectedSalaryIds] = useState<Set<string>>(new Set());
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   
   const t = useTranslations('finance');
   const tTeachers = useTranslations('teachers');
@@ -139,6 +186,7 @@ export default function FinancePage() {
   const processPayment = useProcessPayment();
   const processSalary = useProcessSalary();
   const updateSalaryStatus = useUpdateSalaryStatus();
+  const deleteSalaries = useDeleteSalaries();
 
   const payments = paymentsData?.items || [];
   const totalPayments = paymentsData?.total || 0;
@@ -172,6 +220,78 @@ export default function FinancePage() {
   const formatMonth = (month: number, year: number) => {
     const date = new Date(year, month - 1);
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  // Format month from salary record (month field is a Date)
+  const formatMonthFromSalary = (salary: SalaryRecord) => {
+    const monthDate = typeof salary.month === 'string' ? new Date(salary.month) : (salary.month as any);
+    if (monthDate instanceof Date) {
+      return monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+    // Fallback to month/year if available
+    if (salary.month && salary.year) {
+      return formatMonth(salary.month, salary.year);
+    }
+    return 'Unknown';
+  };
+
+  // Get month string in YYYY-MM format from salary record
+  const getMonthString = (salary: SalaryRecord): string => {
+    const monthDate = typeof salary.month === 'string' ? new Date(salary.month) : (salary.month as any);
+    if (monthDate instanceof Date) {
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth() + 1;
+      return `${year}-${String(month).padStart(2, '0')}`;
+    }
+    // Fallback
+    if (salary.year && salary.month) {
+      return `${salary.year}-${String(salary.month).padStart(2, '0')}`;
+    }
+    return '';
+  };
+
+  // Checkbox handlers for Level 1
+  const allSalariesSelected = salaries.length > 0 && selectedSalaryIds.size === salaries.length;
+  const someSalariesSelected = selectedSalaryIds.size > 0 && selectedSalaryIds.size < salaries.length;
+
+  const handleSelectAllSalaries = () => {
+    if (allSalariesSelected) {
+      setSelectedSalaryIds(new Set());
+    } else {
+      setSelectedSalaryIds(new Set(salaries.map((s) => s.id)));
+    }
+  };
+
+  const handleSelectOneSalary = (salaryId: string, checked: boolean) => {
+    const newSet = new Set(selectedSalaryIds);
+    if (checked) {
+      newSet.add(salaryId);
+    } else {
+      newSet.delete(salaryId);
+    }
+    setSelectedSalaryIds(newSet);
+  };
+
+  // Handle delete button click
+  const handleDeleteClick = () => {
+    if (selectedSalaryIds.size === 0) return;
+    setDeleteError(null);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (selectedSalaryIds.size === 0) return;
+
+    setDeleteError(null);
+
+    try {
+      await deleteSalaries.mutateAsync(Array.from(selectedSalaryIds));
+      setSelectedSalaryIds(new Set());
+      setIsDeleteDialogOpen(false);
+    } catch (err: any) {
+      setDeleteError(err?.message || 'Failed to delete salary records. Please try again.');
+    }
   };
 
   const paymentColumns = [
@@ -275,111 +395,53 @@ export default function FinancePage() {
 
   const salaryColumns = [
     {
+      key: 'checkbox',
+      header: (
+        <SelectAllCheckbox
+          checked={allSalariesSelected}
+          indeterminate={someSalariesSelected}
+          onChange={handleSelectAllSalaries}
+          disabled={isLoadingSalaries}
+        />
+      ),
+      className: 'w-12',
+      render: (salary: SalaryRecord) => (
+        <input
+          type="checkbox"
+          checked={selectedSalaryIds.has(salary.id)}
+          onChange={(e) => handleSelectOneSalary(salary.id, e.target.checked)}
+          onClick={(e) => e.stopPropagation()}
+          className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+          aria-label={`Select salary for ${salary.teacher?.user?.firstName} ${salary.teacher?.user?.lastName}`}
+        />
+      ),
+    },
+    {
       key: 'teacher',
-      header: t('teacher'),
+      header: 'Teacher Name',
       className: 'text-left',
       render: (salary: SalaryRecord) => {
         const firstName = salary.teacher?.user?.firstName || '';
         const lastName = salary.teacher?.user?.lastName || '';
-        const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold flex-shrink-0">
-              {initials}
-            </div>
-            <span className="font-semibold text-slate-800">
-              {firstName} {lastName}
-            </span>
-          </div>
+          <span className="font-semibold text-slate-800">
+            {firstName} {lastName}
+          </span>
         );
       },
     },
     {
-      key: 'lessons',
-      header: tTeachers('lessons'),
-      className: 'text-center',
+      key: 'month',
+      header: 'Month',
+      className: 'text-left',
       render: (salary: SalaryRecord) => (
-        <div className="text-center">
-          <span className="text-slate-700">{salary.lessonsCount}</span>
-        </div>
+        <span className="text-slate-700">{formatMonthFromSalary(salary)}</span>
       ),
     },
     {
-      key: 'obligations',
-      header: 'Obligations',
-      className: 'text-center',
-      render: (salary: SalaryRecord) => {
-        // Use obligationsInfo from response or parse from notes
-        const obligationsInfo = salary.obligationsInfo || (salary.notes ? (() => {
-          try {
-            return JSON.parse(salary.notes);
-          } catch {
-            return null;
-          }
-        })() : null);
-        
-        return (
-          <div className="text-center">
-            {obligationsInfo && obligationsInfo.completed !== undefined && obligationsInfo.required !== undefined ? (
-              <span className="text-slate-700 font-medium">
-                {obligationsInfo.completed}/{obligationsInfo.required}
-              </span>
-            ) : (
-              <span className="text-slate-400">-</span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: 'gross',
-      header: t('salaryAmount'),
-      className: 'text-left',
-      render: (salary: SalaryRecord) => {
-        const amount = typeof salary.grossAmount === 'string' ? parseFloat(salary.grossAmount) : Number(salary.grossAmount);
-        return (
-          <span className="text-slate-700">
-            {new Intl.NumberFormat('hy-AM', {
-              style: 'currency',
-              currency: 'AMD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(amount)}
-          </span>
-        );
-      },
-    },
-    {
-      key: 'deductions',
-      header: 'Deductions',
-      className: 'text-left',
-      render: (salary: SalaryRecord) => {
-        const amount = typeof salary.totalDeductions === 'string' ? parseFloat(salary.totalDeductions) : Number(salary.totalDeductions);
-        return amount > 0 ? (
-          <span className="text-red-500 font-medium">
-            -{new Intl.NumberFormat('hy-AM', {
-              style: 'currency',
-              currency: 'AMD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(amount)}
-          </span>
-        ) : (
-          <span className="text-slate-400">
-            {new Intl.NumberFormat('hy-AM', {
-              style: 'currency',
-              currency: 'AMD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(0)}
-          </span>
-        );
-      },
-    },
-    {
-      key: 'net',
-      header: t('netSalary'),
-      className: 'text-left',
+      key: 'salary',
+      header: 'Salary',
+      className: 'text-right',
       render: (salary: SalaryRecord) => {
         const amount = typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
         return (
@@ -396,7 +458,7 @@ export default function FinancePage() {
     },
     {
       key: 'status',
-      header: t('status'),
+      header: 'Status',
       className: 'text-left',
       render: (salary: SalaryRecord) => (
         <div className="w-32">
@@ -415,7 +477,6 @@ export default function FinancePage() {
                   });
                 } catch (error) {
                   console.error('Failed to update salary status:', error);
-                  // The mutation will handle error state, but we can add toast notification here if needed
                 }
               }
             }}
@@ -426,22 +487,32 @@ export default function FinancePage() {
       ),
     },
     {
-      key: 'actions',
-      header: t('actions'),
+      key: 'action',
+      header: 'Action',
       className: 'text-left',
-      render: (salary: SalaryRecord) => (
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-primary text-sm"
-          onClick={() => {
-            setSelectedSalaryId(salary.id);
-            setIsDetailModalOpen(true);
-          }}
-        >
-          Detail
-        </Button>
-      ),
+      render: (salary: SalaryRecord) => {
+        const firstName = salary.teacher?.user?.firstName || '';
+        const lastName = salary.teacher?.user?.lastName || '';
+        const teacherName = `${firstName} ${lastName}`;
+        const monthStr = getMonthString(salary);
+        
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedSalaryForBreakdown({
+                teacherId: salary.teacherId,
+                teacherName,
+                month: monthStr,
+              });
+            }}
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            aria-label="View breakdown"
+          >
+            <ChevronRight className="w-5 h-5 text-slate-600" />
+          </button>
+        );
+      },
     },
   ];
 
@@ -579,9 +650,22 @@ export default function FinancePage() {
               + Record Payment
             </Button>
           ) : activeTab === 'salaries' ? (
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium">
-              Generate Monthly
-            </Button>
+            <>
+              {selectedSalaryIds.size > 0 && (
+                <Button
+                  variant="destructive"
+                  className="px-6 py-3 rounded-xl font-medium flex items-center gap-2"
+                  onClick={handleDeleteClick}
+                  disabled={deleteSalaries.isPending}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete ({selectedSalaryIds.size})
+                </Button>
+              )}
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium">
+                Generate Monthly
+              </Button>
+            </>
           ) : null}
           <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
             <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -724,6 +808,55 @@ export default function FinancePage() {
             setSelectedSalaryId(null);
           }}
         />
+
+        {/* Salary Breakdown Modal (Level 2) */}
+        {selectedSalaryForBreakdown && (
+          <SalaryBreakdownModal
+            teacherId={selectedSalaryForBreakdown.teacherId}
+            teacherName={selectedSalaryForBreakdown.teacherName}
+            month={selectedSalaryForBreakdown.month}
+            open={!!selectedSalaryForBreakdown}
+            onClose={() => setSelectedSalaryForBreakdown(null)}
+          />
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Salary Records</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete {selectedSalaryIds.size} salary record{selectedSalaryIds.size > 1 ? 's' : ''}? This action cannot be undone and will permanently remove the selected record{selectedSalaryIds.size > 1 ? 's' : ''}.
+              </DialogDescription>
+            </DialogHeader>
+            {deleteError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{deleteError}</p>
+              </div>
+            )}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setDeleteError(null);
+                }}
+                disabled={deleteSalaries.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDeleteConfirm}
+                disabled={deleteSalaries.isPending}
+              >
+                {deleteSalaries.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

@@ -10,6 +10,7 @@ import type {
   FinanceDashboard,
   CreatePaymentDto,
   ProcessPaymentDto,
+  SalaryBreakdown,
 } from '../types';
 
 // ============ DASHBOARD ============
@@ -127,6 +128,29 @@ export async function updateSalaryStatus(id: string, status: string): Promise<Sa
  */
 export async function generateMonthlySalaries(month: number, year: number): Promise<SalaryRecord[]> {
   return api.post<SalaryRecord[]>('/finance/salaries/generate-monthly', { month, year });
+}
+
+/**
+ * Fetch salary breakdown for a teacher and month
+ */
+export async function fetchSalaryBreakdown(teacherId: string, month: string): Promise<SalaryBreakdown> {
+  return api.get<SalaryBreakdown>(`/finance/salaries/${teacherId}/breakdown?month=${month}`);
+}
+
+/**
+ * Delete a salary record
+ */
+export async function deleteSalary(id: string): Promise<void> {
+  return api.delete<void>(`/finance/salaries/${id}`);
+}
+
+/**
+ * Delete multiple salary records
+ */
+export async function deleteSalaries(ids: string[]): Promise<{ count: number }> {
+  return api.delete<{ count: number }>('/finance/salaries', {
+    body: JSON.stringify({ ids }),
+  });
 }
 
 // ============ DEDUCTIONS ============

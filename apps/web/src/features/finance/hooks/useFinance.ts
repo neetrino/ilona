@@ -14,6 +14,9 @@ import {
   updateSalaryStatus,
   generateMonthlySalaries,
   fetchDeductions,
+  fetchSalaryBreakdown,
+  deleteSalary,
+  deleteSalaries,
 } from '../api/finance.api';
 import type {
   PaymentFilters,
@@ -37,6 +40,7 @@ export const financeKeys = {
   salaries: () => [...financeKeys.all, 'salaries'] as const,
   salariesList: (filters?: SalaryFilters) => [...financeKeys.salaries(), 'list', filters] as const,
   salaryDetail: (id: string) => [...financeKeys.salaries(), 'detail', id] as const,
+  salaryBreakdown: (teacherId: string, month: string) => [...financeKeys.salaries(), 'breakdown', teacherId, month] as const,
   
   // Deductions
   deductions: () => [...financeKeys.all, 'deductions'] as const,
@@ -170,5 +174,39 @@ export function useDeductions(params?: { teacherId?: string; skip?: number; take
   return useQuery({
     queryKey: financeKeys.deductionsList(params),
     queryFn: () => fetchDeductions(params),
+  });
+}
+
+// ============ SALARY BREAKDOWN ============
+
+export function useSalaryBreakdown(teacherId: string | null, month: string | null, enabled = true) {
+  return useQuery({
+    queryKey: financeKeys.salaryBreakdown(teacherId || '', month || ''),
+    queryFn: () => fetchSalaryBreakdown(teacherId!, month!),
+    enabled: enabled && !!teacherId && !!month,
+  });
+}
+
+export function useDeleteSalary() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteSalary(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
+export function useDeleteSalaries() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => deleteSalaries(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
   });
 }

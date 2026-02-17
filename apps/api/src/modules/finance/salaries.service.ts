@@ -523,4 +523,174 @@ export class SalariesService {
       errorDetails: errors,
     };
   }
+
+  /**
+   * Get salary breakdown by teacher and month (lesson-level details)
+   */
+  async getSalaryBreakdown(teacherId: string, month: string) {
+    // Parse month string (YYYY-MM format)
+    const [year, monthNum] = month.split('-').map(Number);
+    if (!year || !monthNum || monthNum < 1 || monthNum > 12) {
+      throw new BadRequestException('Invalid month format. Expected YYYY-MM');
+    }
+
+    // Get teacher
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!teacher) {
+      throw new NotFoundException(`Teacher with ID ${teacherId} not found`);
+    }
+
+    // Get start and end of month
+    const startOfMonth = new Date(year, monthNum - 1, 1);
+    const endOfMonth = new Date(year, monthNum, 0, 23, 59, 59);
+
+    // Get completed lessons for this month
+    const lessons = await this.prisma.lesson.findMany({
+      where: {
+        teacherId,
+        status: LessonStatus.COMPLETED,
+        completedAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      select: {
+        id: true,
+        topic: true,
+        scheduledAt: true,
+        completedAt: true,
+        duration: true,
+        absenceMarked: true,
+        feedbacksCompleted: true,
+        voiceSent: true,
+        textSent: true,
+        group: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        completedAt: 'asc',
+      },
+    });
+
+    // Get other deductions for this period (from Deduction table)
+    const otherDeductions = await this.prisma.deduction.findMany({
+      where: {
+        teacherId,
+        appliedAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      select: {
+        id: true,
+        amount: true,
+        lessonId: true,
+      },
+    });
+
+    // Create a map of lessonId -> deductions
+    const deductionsByLessonId = new Map<string, number>();
+    otherDeductions.forEach((deduction) => {
+      if (deduction.lessonId) {
+        const current = deductionsByLessonId.get(deduction.lessonId) || 0;
+        deductionsByLessonId.set(deduction.lessonId, current + Number(deduction.amount));
+      }
+    });
+
+    // Calculate per-lesson breakdown
+    const hourlyRate = Number(teacher.hourlyRate);
+    const lessonBreakdown = lessons.map((lesson: any) => {
+      const hours = (lesson.duration || 0) / 60;
+      const baseSalary = hours * hourlyRate;
+
+      // Calculate obligations (4 total)
+      const obligations = [
+        lesson.absenceMarked ?? false,
+        lesson.feedbacksCompleted ?? false,
+        lesson.voiceSent ?? false,
+        lesson.textSent ?? false,
+      ];
+      const completedObligations = obligations.filter(Boolean).length;
+      const totalObligations = 4;
+
+      // Calculate obligation-based deduction
+      // Each missing obligation deducts 10% of base salary
+      const missingObligations = totalObligations - completedObligations;
+      const obligationDeduction = (missingObligations / totalObligations) * baseSalary * 0.4;
+
+      // Get other deductions for this lesson
+      const otherDeductionForLesson = deductionsByLessonId.get(lesson.id) || 0;
+
+      // Total deduction = obligation deduction + other deductions
+      const totalDeduction = obligationDeduction + otherDeductionForLesson;
+
+      // Total = base salary - total deduction
+      const total = Math.max(0, baseSalary - totalDeduction);
+
+      // Lesson name: use topic if available, otherwise use group name + date
+      const lessonName = lesson.topic || lesson.group?.name || 'Untitled Lesson';
+
+      return {
+        lessonId: lesson.id,
+        lessonName,
+        lessonDate: lesson.completedAt || lesson.scheduledAt,
+        obligationCompleted: completedObligations,
+        obligationTotal: totalObligations,
+        salary: baseSalary,
+        deduction: totalDeduction,
+        total,
+      };
+    });
+
+    return {
+      teacherId,
+      teacherName: `${teacher.user.firstName} ${teacher.user.lastName}`,
+      month: month,
+      lessons: lessonBreakdown,
+    };
+  }
+
+  /**
+   * Delete a salary record
+   */
+  async delete(id: string) {
+    const record = await this.prisma.salaryRecord.findUnique({
+      where: { id },
+    });
+
+    if (!record) {
+      throw new NotFoundException(`Salary record with ID ${id} not found`);
+    }
+
+    return this.prisma.salaryRecord.delete({
+      where: { id },
+    });
+  }
+
+  /**
+   * Delete multiple salary records
+   */
+  async deleteMany(ids: string[]) {
+    return this.prisma.salaryRecord.deleteMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
 }
