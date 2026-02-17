@@ -6,7 +6,6 @@ import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateLesson, useLesson, type UpdateLessonDto } from '@/features/lessons';
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
 import { getErrorMessage } from '@/shared/lib/api';
 
 const updateLessonSchema = z.object({
@@ -27,8 +26,6 @@ interface EditLessonFormProps {
 }
 
 export function EditLessonForm({ open, onOpenChange, lessonId }: EditLessonFormProps) {
-  const t = useTranslations('calendar');
-  const tCommon = useTranslations('common');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const updateLesson = useUpdateLesson();

@@ -9,9 +9,8 @@ import { z } from 'zod';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Badge, Button, Input, Label } from '@/shared/components/ui';
 import { useTeacher, useUpdateTeacher, type UpdateTeacherDto } from '@/features/teachers';
-import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
+import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType, type DayOfWeek } from '@/features/teachers/components/WeeklySchedule';
 import type { UserStatus } from '@/types';
-import { getErrorMessage } from '@/shared/lib/api';
 
 const updateTeacherSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
@@ -72,7 +71,7 @@ const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'S
 
 export default function TeacherProfilePage() {
   const t = useTranslations('teachers');
-  const tCommon = useTranslations('common');
+  const _tCommon = useTranslations('common');
   const params = useParams();
   const router = useRouter();
   const teacherId = params.id as string;
@@ -123,7 +122,7 @@ export default function TeacherProfilePage() {
           const oldHours = teacher.workingHours as { start: string; end: string };
           workingHoursValue = {};
           (teacher.workingDays || []).forEach((day) => {
-            workingHoursValue![day as keyof WeeklyScheduleType] = [
+            workingHoursValue![day as DayOfWeek] = [
               { start: oldHours.start, end: oldHours.end },
             ];
           });
@@ -134,7 +133,7 @@ export default function TeacherProfilePage() {
         firstName: teacher.user?.firstName || '',
         lastName: teacher.user?.lastName || '',
         phone: teacher.user?.phone || '',
-        status: (teacher.user?.status || 'ACTIVE') as UserStatus,
+        status: teacher.user?.status || 'ACTIVE',
         hourlyRate,
         workingDays: teacher.workingDays || [],
         workingHours: workingHoursValue,
@@ -234,16 +233,17 @@ export default function TeacherProfilePage() {
           message = response.data.message;
         } else if (response?.status === 409) {
           message = 'This record was modified by another user. Please refresh and try again.';
+        } else if (response?.status === 400) {
+          message = 'Invalid data. Please check your input and try again.';
         }
-      } else if (error?.response?.status === 400) {
-        message = 'Invalid data. Please check your input and try again.';
       }
       
       setErrorMessage(message);
       setSuccessMessage(null);
       
       // If there's a conflict, refetch the latest data
-      if (error?.response?.status === 409) {
+      if (error && typeof error === 'object' && 'response' in error &&
+          (error as { response?: { status?: number } }).response?.status === 409) {
         // Refetch will happen automatically via query invalidation
         // But we can also manually trigger it
         setTimeout(() => {

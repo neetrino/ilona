@@ -4,21 +4,21 @@ import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button, Badge } from '@/shared/components/ui';
+import { Button } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { cn } from '@/shared/lib/utils';
 
 type SettingsTab = 'security' | 'notifications' | 'teaching';
 
 export default function TeacherSettingsPage() {
-  const { user, logout } = useAuthStore();
+  const { user: _user, logout } = useAuthStore();
   const router = useRouter();
-  const pathname = usePathname();
-  const locale = useLocale();
+  const _pathname = usePathname();
+  const _locale = useLocale();
   const [activeTab, setActiveTab] = useState<SettingsTab>('security');
   const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('settings');
-  const tRoles = useTranslations('roles');
+  const _tRoles = useTranslations('roles');
 
   const handleLogout = () => {
     logout();

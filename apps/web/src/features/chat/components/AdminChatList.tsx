@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useAdminStudents, useAdminTeachers, useAdminGroups, useCreateDirectChat, useAdminUnreadCounts, useChats } from '../hooks';
+import { useAdminStudents, useAdminTeachers, useAdminGroups, useAdminUnreadCounts, useChats } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import { fetchGroupChat, createDirectChat } from '../api/chat.api';
 import type { Chat } from '../types';
@@ -18,10 +18,9 @@ interface AdminChatListProps {
 }
 
 export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminChatListProps) {
-  const { user } = useAuthStore();
+  const { user: _user } = useAuthStore();
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const createDirectChatMutation = useCreateDirectChat();
   const { counts: unreadCounts } = useAdminUnreadCounts();
   const { data: chats = [] } = useChats();
 

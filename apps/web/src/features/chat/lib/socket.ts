@@ -92,7 +92,7 @@ export function initSocket(options: SocketOptions): Socket {
       if (options.onTokenExpired) {
         try {
           const newToken = await options.onTokenExpired();
-          if (newToken) {
+          if (newToken && socket) {
             // Reconnect with new token
             socket.auth = { token: newToken };
             socket.connect();
@@ -276,12 +276,12 @@ export function onSocketEvent<K extends keyof SocketEvents>(
   event: K,
   handler: EventHandler<SocketEvents[K]>
 ): () => void {
-  // Type assertion needed for socket.io event typing compatibility
-  // Socket.io's event system requires this pattern for type-safe event handling
-  socket?.on(event, handler as EventHandler<SocketEvents[K]>);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+  socket?.on(event, handler as any);
 
   // Return unsubscribe function
   return () => {
-    socket?.off(event, handler as EventHandler<SocketEvents[K]>);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+    socket?.off(event, handler as any);
   };
 }

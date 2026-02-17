@@ -14,14 +14,14 @@ import { getErrorMessage } from '@/shared/lib/api';
 type SettingsTab = 'security' | 'notifications' | 'system';
 
 export default function SettingsPage() {
-  const { user, logout } = useAuthStore();
+  const { user: _user, logout } = useAuthStore();
   const router = useRouter();
-  const pathname = usePathname();
+  const _pathname = usePathname();
   const [activeTab, setActiveTab] = useState<SettingsTab>('security');
   const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('settings');
-  const tCommon = useTranslations('common');
-  const locale = useLocale() as Locale;
+  const _tCommon = useTranslations('common');
+  const _locale = useLocale() as Locale;
 
   const handleLogout = () => {
     logout();
@@ -338,7 +338,7 @@ export default function SettingsPage() {
  * Logo Upload Section Component
  */
 function LogoUploadSection() {
-  const t = useTranslations('settings');
+  const _t = useTranslations('settings');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);

@@ -444,7 +444,7 @@ export default function AdminAttendanceRegisterPage() {
   };
 
   // Handle save success
-  const handleSaveSuccess = (id: string) => {
+  const handleSaveSuccess = (_id: string) => {
     setSaveMessages({ type: 'success', message: 'Attendance saved successfully' });
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);

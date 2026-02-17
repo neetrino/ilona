@@ -1,15 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLesson } from '@/features/lessons';
 import { useLessonFeedback, useCreateOrUpdateFeedback } from '@/features/feedback';
 import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 
 interface FeedbacksTabProps {
   lessonId: string;
+}
+
+interface FeedbackItem {
+  studentId: string;
+  content?: string;
+  rating?: number;
+  strengths?: string;
+  improvements?: string;
+}
+
+interface StudentItem {
+  id: string;
+  user: { firstName: string; lastName: string };
 }
 
 export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
@@ -18,8 +30,27 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
   const { data: feedbacksData, isLoading: isLoadingFeedbacks } = useLessonFeedback(lessonId);
   const createOrUpdateFeedback = useCreateOrUpdateFeedback();
 
-  const students = lesson?.group?.students || [];
-  const existingFeedbacks = feedbacksData?.feedbacks || [];
+  const existingFeedbacks: FeedbackItem[] = useMemo(() => {
+    const list = feedbacksData?.studentsWithFeedback ?? [];
+    return list.map((item) => ({
+      studentId: item.student.id,
+      content: item.feedback?.content,
+      rating: item.feedback?.rating ?? undefined,
+      strengths: item.feedback?.strengths ?? undefined,
+      improvements: item.feedback?.improvements ?? undefined,
+    }));
+  }, [feedbacksData]);
+
+  const students: StudentItem[] = useMemo(() => {
+    const list = feedbacksData?.studentsWithFeedback ?? [];
+    return list.map((item) => ({
+      id: item.student.id,
+      user: {
+        firstName: item.student.user.firstName,
+        lastName: item.student.user.lastName,
+      },
+    }));
+  }, [feedbacksData]);
 
   const [feedbacks, setFeedbacks] = useState<Record<string, {
     content: string;
@@ -36,14 +67,14 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
         strengths?: string;
         improvements?: string;
       }> = {};
-      existingFeedbacks.forEach((fb) => {
+      for (const fb of existingFeedbacks) {
         initial[fb.studentId] = {
           content: fb.content || '',
           rating: fb.rating || undefined,
           strengths: fb.strengths || '',
           improvements: fb.improvements || '',
         };
-      });
+      }
       setFeedbacks(initial);
     }
   }, [existingFeedbacks]);
@@ -81,8 +112,8 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       queryClient.invalidateQueries({ queryKey: lessonKeys.detail(lesson.id) });
       
       alert('Feedback saved successfully!');
-    } catch (error) {
-      console.error('Failed to save feedback:', error);
+    } catch (err: unknown) {
+      console.error('Failed to save feedback:', err);
       alert('Failed to save feedback. Please try again.');
     }
   };

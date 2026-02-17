@@ -76,7 +76,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       setValue('firstName', student.user?.firstName || '');
       setValue('lastName', student.user?.lastName || '');
       setValue('phone', student.user?.phone || '');
-      setValue('status', (student.user?.status || 'ACTIVE') as UserStatus);
+      setValue('status', student.user?.status || 'ACTIVE');
       setValue('groupId', student.groupId || '');
       setValue('teacherId', student.teacherId || '');
       setValue('parentName', student.parentName || '');

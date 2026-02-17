@@ -4,8 +4,7 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button, Input } from '@/shared/components/ui';
-import { unlockAnalytics } from '../api/analytics.api'; 
-import { cn } from '@/shared/lib/utils';
+import { unlockAnalytics } from '../api/analytics.api';
 
 interface AnalyticsLockScreenProps {
   onUnlock: () => void;
@@ -13,7 +12,7 @@ interface AnalyticsLockScreenProps {
 
 export function AnalyticsLockScreen({ onUnlock }: AnalyticsLockScreenProps) {
   const router = useRouter();
-  const t = useTranslations('analytics');
+  const _t = useTranslations('analytics');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

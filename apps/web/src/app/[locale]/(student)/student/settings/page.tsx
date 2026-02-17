@@ -11,10 +11,10 @@ import { cn } from '@/shared/lib/utils';
 type SettingsTab = 'security' | 'notifications';
 
 export default function StudentSettingsPage() {
-  const { user, logout } = useAuthStore();
+  const { user: _user, logout } = useAuthStore();
   const router = useRouter();
-  const pathname = usePathname();
-  const locale = useLocale();
+  const _pathname = usePathname();
+  const _locale = useLocale();
   const [activeTab, setActiveTab] = useState<SettingsTab>('security');
   const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('settings');

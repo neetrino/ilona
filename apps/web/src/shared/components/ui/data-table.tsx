@@ -52,7 +52,7 @@ export function DataTable<T>({
             {columns.map((column) => {
               const isSorted = sortBy === column.key;
               const isAscending = isSorted && sortOrder === 'asc';
-              const isDescending = isSorted && sortOrder === 'desc';
+              const _isDescending = isSorted && sortOrder === 'desc';
               
               // Extract header text for aria-label (handle both string and ReactNode)
               const headerText = typeof column.header === 'string' 

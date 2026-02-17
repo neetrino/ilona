@@ -15,6 +15,12 @@ interface AbsenceTabProps {
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
+interface AttendanceItem {
+  studentId: string;
+  isPresent: boolean;
+  absenceType?: AbsenceType;
+}
+
 export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const queryClient = useQueryClient();
   const { data: lesson } = useLesson(lessonId);
@@ -24,20 +30,35 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    if (attendanceData?.attendances) {
+    const list = attendanceData?.studentsWithAttendance ?? [];
+    if (list.length > 0) {
       const initial: Record<string, { isPresent: boolean; absenceType?: AbsenceType }> = {};
-      attendanceData.attendances.forEach((att) => {
-        initial[att.studentId] = {
-          isPresent: att.isPresent,
-          absenceType: att.absenceType || undefined,
+      for (const item of list) {
+        const studentId = item.student.id;
+        const att = item.attendance;
+        initial[studentId] = {
+          isPresent: att?.isPresent ?? true,
+          absenceType: att?.absenceType ?? undefined,
         };
-      });
+      }
       setAttendance(initial);
     }
   }, [attendanceData]);
 
-  const students = lesson?.group?.students || [];
-  const lessonAttendances = attendanceData?.attendances || [];
+  const students: Array<{ id: string; user: { firstName: string; lastName: string } }> = (
+    attendanceData?.studentsWithAttendance ?? []
+  ).map((item) => ({
+    id: item.student.id,
+    user: {
+      firstName: item.student.user.firstName,
+      lastName: item.student.user.lastName,
+    },
+  }));
+  const lessonAttendances: AttendanceItem[] = (attendanceData?.studentsWithAttendance ?? []).map((item) => ({
+    studentId: item.student.id,
+    isPresent: item.attendance?.isPresent ?? true,
+    absenceType: item.attendance?.absenceType ?? undefined,
+  }));
 
   const handleAttendanceChange = (studentId: string, status: AttendanceStatus) => {
     setHasChanges(true);
@@ -73,8 +94,8 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
 
       setHasChanges(false);
       alert('Attendance saved successfully!');
-    } catch (error) {
-      console.error('Failed to save attendance:', error);
+    } catch (err: unknown) {
+      console.error('Failed to save attendance:', err);
       alert('Failed to save attendance. Please try again.');
     }
   };

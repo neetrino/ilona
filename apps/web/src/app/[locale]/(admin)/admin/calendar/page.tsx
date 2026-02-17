@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { StatCard, Badge, Button } from '@/shared/components/ui';
+import { StatCard, Button } from '@/shared/components/ui';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { useLessons, useLessonStatistics, useCancelLesson, AddLessonForm, type Lesson, type LessonStatus } from '@/features/lessons';
 
@@ -33,7 +33,7 @@ function formatDate(date: Date): string {
 }
 
 // Status badge config
-const statusConfig: Record<LessonStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
+const _statusConfig: Record<LessonStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
   SCHEDULED: { label: 'Scheduled', variant: 'info' },
   IN_PROGRESS: { label: 'In Progress', variant: 'warning' },
   COMPLETED: { label: 'Completed', variant: 'success' },

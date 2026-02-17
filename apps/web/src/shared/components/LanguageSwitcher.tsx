@@ -15,7 +15,7 @@ export function LanguageSwitcher() {
 
   // Save current locale to localStorage when it changes
   useEffect(() => {
-    if (locale && locales.includes(locale as Locale)) {
+    if (locale && locales.includes(locale)) {
       localStorage.setItem(LOCALE_STORAGE_KEY, locale);
     }
   }, [locale]);

@@ -4,10 +4,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
-import { useUpdateTeacher, useTeacher, type UpdateTeacherDto, type Teacher } from '@/features/teachers';
+import { useUpdateTeacher, useTeacher, type UpdateTeacherDto } from '@/features/teachers';
 import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from './WeeklySchedule';
 import { useState, useEffect } from 'react';
-import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
 
 const updateTeacherSchema = z.object({
