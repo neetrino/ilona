@@ -116,7 +116,8 @@ export class SalariesService {
   }
 
   /**
-   * Get all salary records
+   * Get all salary records - teacher-based (includes ALL teachers)
+   * Returns one entry per teacher with their most recent salary record, or defaults if none exists
    */
   async findAll(params?: {
     skip?: number;
@@ -128,72 +129,156 @@ export class SalariesService {
   }) {
     const { skip = 0, take = 50, teacherId, status, dateFrom, dateTo } = params || {};
 
-    const where: Prisma.SalaryRecordWhereInput = {};
+    // Start from Teachers table to include ALL teachers
+    const teacherWhere: Prisma.TeacherWhereInput = {};
+    if (teacherId) {
+      teacherWhere.id = teacherId;
+    }
+    // Filter by user status if needed (only active teachers by default)
+    teacherWhere.user = {
+      status: 'ACTIVE', // Only show active teachers
+    };
 
-    if (teacherId) where.teacherId = teacherId;
-    if (status) where.status = status;
+    // Get all teachers (with pagination)
+    const [teachers, totalTeachers] = await Promise.all([
+      this.prisma.teacher.findMany({
+        where: teacherWhere,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      }),
+      this.prisma.teacher.count({ where: teacherWhere }),
+    ]);
+
+    const teacherIds = teachers.map(t => t.id);
+
+    // Get most recent salary record for each teacher (or all if date filters are applied)
+    const salaryWhere: Prisma.SalaryRecordWhereInput = {
+      teacherId: { in: teacherIds },
+    };
+
+    if (status) {
+      salaryWhere.status = status;
+    }
     if (dateFrom || dateTo) {
-      where.month = {
+      salaryWhere.month = {
         ...(dateFrom && { gte: dateFrom }),
         ...(dateTo && { lte: dateTo }),
       };
     }
 
-    const [items, total] = await Promise.all([
-      this.prisma.salaryRecord.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { month: 'desc' },
-        include: {
-          teacher: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                },
+    // Get salary records for these teachers
+    const salaryRecords = await this.prisma.salaryRecord.findMany({
+      where: salaryWhere,
+      include: {
+        teacher: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
               },
             },
           },
         },
-      }),
-      this.prisma.salaryRecord.count({ where }),
-    ]);
+      },
+      orderBy: { month: 'desc' },
+    });
 
-    // Calculate computed salary for each item from completed lessons
+    // Create a map of teacherId -> most recent salary record
+    const salaryMap = new Map<string, typeof salaryRecords[0]>();
+    salaryRecords.forEach(record => {
+      const existing = salaryMap.get(record.teacherId);
+      if (!existing || record.month > existing.month) {
+        salaryMap.set(record.teacherId, record);
+      }
+    });
+
+    // Build response: one entry per teacher
     const itemsWithComputedSalary = await Promise.all(
-      items.map(async (item) => {
-        // Parse obligations info from notes
-        let obligationsInfo = null;
-        if (item.notes) {
-          try {
-            obligationsInfo = JSON.parse(item.notes);
-          } catch {
-            // If parsing fails, ignore
+      teachers.map(async (teacher) => {
+        const salaryRecord = salaryMap.get(teacher.id);
+
+        if (salaryRecord) {
+          // Teacher has salary record(s) matching the filters
+          // Parse obligations info from notes
+          let obligationsInfo = null;
+          if (salaryRecord.notes) {
+            try {
+              obligationsInfo = JSON.parse(salaryRecord.notes);
+            } catch {
+              // If parsing fails, ignore
+            }
           }
+
+          // Calculate salary from completed lessons (single source of truth)
+          const computedSalary = await this.calculateMonthlySalaryFromLessons(
+            salaryRecord.teacherId,
+            salaryRecord.month
+          );
+
+          return {
+            ...salaryRecord,
+            // Override netAmount with computed salary from completed lessons
+            netAmount: computedSalary,
+            obligationsInfo,
+          };
+        } else {
+          // Teacher has no salary records matching the filters
+          // If filtering by PAID status, exclude teachers with no records (they can't be PAID)
+          if (status === SalaryStatus.PAID) {
+            return null;
+          }
+
+          // For PENDING status or no status filter, return default entry
+          // Return synthetic salary record with defaults
+          const monthDate = dateFrom || new Date(); // Use dateFrom if provided, otherwise current month
+          const defaultMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+
+          return {
+            id: `placeholder-${teacher.id}`, // Synthetic ID
+            teacherId: teacher.id,
+            month: defaultMonth,
+            lessonsCount: 0,
+            grossAmount: 0,
+            totalDeductions: 0,
+            netAmount: 0,
+            status: SalaryStatus.PENDING,
+            paidAt: null,
+            notes: null,
+            createdAt: teacher.createdAt,
+            updatedAt: teacher.updatedAt,
+            teacher: {
+              id: teacher.id,
+              user: teacher.user,
+            },
+            obligationsInfo: null,
+          };
         }
-
-        // Calculate salary from completed lessons (single source of truth)
-        const computedSalary = await this.calculateMonthlySalaryFromLessons(item.teacherId, item.month);
-
-        return {
-          ...item,
-          // Override netAmount with computed salary from completed lessons
-          netAmount: computedSalary,
-          obligationsInfo,
-        };
       })
     );
 
+    // Filter out null entries (teachers excluded by status filter)
+    const filteredItems = itemsWithComputedSalary.filter(item => item !== null) as typeof itemsWithComputedSalary;
+
     return {
-      items: itemsWithComputedSalary,
-      total,
+      items: filteredItems,
+      total: totalTeachers,
       page: Math.floor(skip / take) + 1,
       pageSize: take,
-      totalPages: Math.ceil(total / take),
+      totalPages: Math.ceil(totalTeachers / take),
     };
   }
 

@@ -19,6 +19,7 @@ import type {
 } from '../types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { settingsKeys } from '@/features/settings/hooks/useSettings';
+import { financeKeys } from '@/features/finance/hooks/useFinance';
 
 // Query keys
 export const teacherKeys = {
@@ -86,6 +87,8 @@ export function useCreateTeacher() {
     onSuccess: () => {
       // Invalidate teachers list to refetch
       queryClient.invalidateQueries({ queryKey: teacherKeys.lists() });
+      // Invalidate salaries query so new teacher appears in Teacher Salaries list
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
     },
   });
 }
