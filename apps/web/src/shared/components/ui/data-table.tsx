@@ -9,7 +9,6 @@ interface Column<T> {
   sortable?: boolean;
   render?: (item: T, index?: number) => React.ReactNode;
   className?: string;
-  width?: string; // CSS width value (e.g., '200px', '15%', 'auto')
 }
 
 interface DataTableProps<T> {
@@ -47,13 +46,7 @@ export function DataTable<T>({
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed min-w-[800px]">
-        <colgroup>
-          {columns.map((column) => (
-            <col key={column.key} style={{ width: column.width || 'auto' }} />
-          ))}
-        </colgroup>
+      <table className="w-full table-fixed">
         <thead>
           <tr className="border-b border-slate-100">
             {columns.map((column) => {
@@ -66,18 +59,12 @@ export function DataTable<T>({
                 ? column.header 
                 : column.key.charAt(0).toUpperCase() + column.key.slice(1).replace(/([A-Z])/g, ' $1');
               
-              // Extract padding classes from column className
-              const paddingMatch = column.className?.match(/(pr-\d+|pl-\d+|px-\d+)/);
-              const paddingClass = paddingMatch ? paddingMatch[0] : '';
-              
               return (
                 <th
                   key={column.key}
                   className={cn(
-                    'px-4 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider',
-                    column.className?.includes('text-right') ? 'text-right' : 
-                    column.className?.includes('text-center') ? 'text-center' : 'text-left',
-                    paddingClass && paddingClass
+                    'px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider',
+                    column.className
                   )}
                 >
                   {column.sortable && onSort ? (
@@ -85,9 +72,7 @@ export function DataTable<T>({
                       type="button"
                       onClick={() => onSort(column.key)}
                       className={cn(
-                        'flex items-center gap-1.5 w-full text-xs font-semibold uppercase hover:bg-slate-50 rounded-md px-0 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
-                        column.className?.includes('text-right') ? 'text-right justify-end' : 
-                        column.className?.includes('text-center') ? 'text-center justify-center' : 'text-left justify-start',
+                        'flex items-center gap-1.5 w-full text-left text-xs font-semibold uppercase hover:bg-slate-50 rounded-md px-0 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
                         isSorted && 'text-slate-700'
                       )}
                       aria-label={
@@ -114,8 +99,7 @@ export function DataTable<T>({
                   ) : (
                     <div className={cn(
                       'flex items-center gap-1.5 text-xs font-semibold uppercase',
-                      column.className?.includes('text-right') ? 'justify-end' :
-                      column.className?.includes('text-center') ? 'justify-center' : 'justify-start'
+                      column.className?.includes('text-center') && 'justify-center'
                     )}>
                       {column.header}
                     </div>
@@ -143,15 +127,7 @@ export function DataTable<T>({
                 )}
               >
                 {columns.map((column) => (
-                  <td 
-                    key={column.key} 
-                    className={cn(
-                      'px-4 py-4 align-middle',
-                      column.className?.includes('text-right') ? 'text-right' : 
-                      column.className?.includes('text-center') ? 'text-center' : 'text-left',
-                      column.className
-                    )}
-                  >
+                  <td key={column.key} className={cn('px-6 py-4', column.className)}>
                     {column.render
                       ? column.render(item, index)
                       : (item as Record<string, unknown>)[column.key] as React.ReactNode}
@@ -162,7 +138,6 @@ export function DataTable<T>({
           )}
         </tbody>
       </table>
-      </div>
     </div>
   );
 }

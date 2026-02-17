@@ -172,21 +172,20 @@ export default function FinancePage() {
     {
       key: 'student',
       header: t('student'),
-      width: '32%',
       render: (payment: Payment) => {
         const firstName = payment.student?.user?.firstName || '';
         const lastName = payment.student?.user?.lastName || '';
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold">
               {initials}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-slate-800 truncate">
+            <div>
+              <p className="font-semibold text-slate-800">
                 {firstName} {lastName}
               </p>
-              <p className="text-sm text-slate-500 truncate">{payment.student?.user?.email || ''}</p>
+              <p className="text-sm text-slate-500">{payment.student?.user?.email || ''}</p>
             </div>
           </div>
         );
@@ -195,32 +194,28 @@ export default function FinancePage() {
     {
       key: 'amount',
       header: t('amount'),
-      width: '18%',
-      className: 'text-left',
+      className: 'text-right',
       render: (payment: Payment) => {
         const amount = typeof payment.amount === 'string' ? parseFloat(payment.amount) : Number(payment.amount);
         return (
-          <div className="text-left pl-0">
-            <span className="font-semibold text-slate-800 tabular-nums whitespace-nowrap">
-              {new Intl.NumberFormat('hy-AM', {
-                style: 'currency',
-                currency: 'AMD',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              }).format(amount)}
-            </span>
-          </div>
+          <span className="font-semibold text-slate-800">
+            {new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(amount)}
+          </span>
         );
       },
     },
     {
       key: 'dueDate',
       header: t('dueDate'),
-      width: '15%',
       render: (payment: Payment) => {
         const date = new Date(payment.dueDate);
         return (
-          <span className="text-slate-500 whitespace-nowrap">
+          <span className="text-slate-500">
             {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </span>
         );
@@ -229,7 +224,6 @@ export default function FinancePage() {
     {
       key: 'status',
       header: t('status'),
-      width: '18%',
       render: (payment: Payment) => {
         switch (payment.status) {
           case 'PAID':
@@ -255,20 +249,18 @@ export default function FinancePage() {
     {
       key: 'actions',
       header: t('actions'),
-      width: '18%',
-      className: 'text-left',
       render: (payment: Payment) => (
         payment.status !== 'PAID' && payment.status !== 'CANCELLED' ? (
           <Button 
             size="sm" 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm whitespace-nowrap"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
             onClick={() => handleProcessPayment(payment.id)}
             disabled={processPayment.isPending}
           >
             {t('markPaid')}
           </Button>
         ) : (
-          <Button variant="ghost" size="sm" className="text-primary text-sm whitespace-nowrap">
+          <Button variant="ghost" size="sm" className="text-primary text-sm">
             {t('view')}
           </Button>
         )
