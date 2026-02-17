@@ -50,6 +50,7 @@ import {
   EditTeacherForm,
   DeleteConfirmationDialog,
   TeacherDetailsDrawer,
+  ObligationDetailsModal,
   type Teacher 
 } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
@@ -93,6 +94,10 @@ export default function TeachersPage() {
   const teacherIdFromUrl = searchParams.get('teacherId');
   const [selectedTeacherIdForDetails, setSelectedTeacherIdForDetails] = useState<string | null>(teacherIdFromUrl);
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(!!teacherIdFromUrl);
+  
+  // Obligation modal state
+  const [isObligationModalOpen, setIsObligationModalOpen] = useState(false);
+  const [selectedTeacherForObligation, setSelectedTeacherForObligation] = useState<Teacher | null>(null);
 
   // Debounce search query (300ms delay)
   useEffect(() => {
@@ -560,10 +565,23 @@ export default function TeachersPage() {
       render: (teacher: Teacher) => {
         const doneCount = teacher.obligationsDoneCount ?? 0;
         const total = teacher.obligationsTotal ?? 4;
+        const firstName = teacher.user?.firstName || '';
+        const lastName = teacher.user?.lastName || '';
+        const teacherName = `${firstName} ${lastName}`.trim() || 'Teacher';
+        
         return (
-          <span className="text-slate-700 font-medium" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            className="text-slate-700 font-medium hover:text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 rounded px-1 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedTeacherForObligation(teacher);
+              setIsObligationModalOpen(true);
+            }}
+            aria-label={`View obligation details for ${teacherName}`}
+          >
             {doneCount}/{total}
-          </span>
+          </button>
         );
       },
     },
@@ -980,6 +998,19 @@ export default function TeachersPage() {
         teacherId={selectedTeacherIdForDetails}
         open={isDetailsDrawerOpen}
         onClose={handleDetailsDrawerClose}
+      />
+
+      {/* Obligation Details Modal */}
+      <ObligationDetailsModal
+        open={isObligationModalOpen}
+        onOpenChange={(open) => {
+          setIsObligationModalOpen(open);
+          if (!open) {
+            setSelectedTeacherForObligation(null);
+          }
+        }}
+        teacherId={selectedTeacherForObligation?.id || null}
+        teacherName={selectedTeacherForObligation ? `${selectedTeacherForObligation.user?.firstName || ''} ${selectedTeacherForObligation.user?.lastName || ''}`.trim() : undefined}
       />
     </DashboardLayout>
   );

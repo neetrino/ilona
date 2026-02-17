@@ -8,6 +8,7 @@ import {
   Body,
   Param,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { FinanceService } from './finance.service';
 import { PaymentsService } from './payments.service';
@@ -23,7 +24,7 @@ import {
   ProcessPaymentDto,
 } from './dto/create-payment.dto';
 import { CreateDeductionDto } from './dto/create-deduction.dto';
-import { CreateSalaryRecordDto, ProcessSalaryDto } from './dto/create-salary-record.dto';
+import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('finance')
@@ -266,6 +267,12 @@ export class FinanceController {
     return this.salariesService.findById(id);
   }
 
+  @Patch('salaries/:id')
+  @Roles(UserRole.ADMIN)
+  async updateSalary(@Param('id') id: string, @Body() dto: UpdateSalaryDto) {
+    return this.salariesService.update(id, dto);
+  }
+
   @Post('salaries')
   @Roles(UserRole.ADMIN)
   async createSalary(@Body() dto: CreateSalaryRecordDto) {
@@ -300,6 +307,42 @@ export class FinanceController {
   @Roles(UserRole.ADMIN)
   async getTeacherSalarySummary(@Param('teacherId') teacherId: string) {
     return this.salariesService.getTeacherSalarySummary(teacherId);
+  }
+
+  @Get('salaries/:teacherId/breakdown')
+  @Roles(UserRole.ADMIN)
+  async getSalaryBreakdown(
+    @Param('teacherId') teacherId: string,
+    @Query('month') month: string,
+  ) {
+    if (!month) {
+      throw new BadRequestException('Month parameter is required (format: YYYY-MM)');
+    }
+    return this.salariesService.getSalaryBreakdown(teacherId, month);
+  }
+
+  @Delete('salaries/:id')
+  @Roles(UserRole.ADMIN)
+  async deleteSalary(@Param('id') id: string) {
+    return this.salariesService.delete(id);
+  }
+
+  @Delete('salaries')
+  @Roles(UserRole.ADMIN)
+  async deleteSalaries(@Body('ids') ids: string[]) {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException('ids array is required');
+    }
+    return this.salariesService.deleteMany(ids);
+  }
+
+  @Delete('salaries/breakdown/exclude')
+  @Roles(UserRole.ADMIN)
+  async excludeLessonsFromSalary(@Body('ids') ids: string[]) {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException('ids array is required and cannot be empty');
+    }
+    return this.salariesService.excludeLessonsFromSalary(ids);
   }
 
   // ============ DEDUCTIONS ============

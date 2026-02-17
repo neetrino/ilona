@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
 
@@ -26,26 +27,103 @@ export function InlineSelect({
   const [error, setError] = useState<string | null>(null);
   const [localValue, setLocalValue] = useState(value);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<{ top: number; left: number; width: number; placement: 'bottom' | 'top' } | null>(null);
 
   // Sync local value with prop
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
 
-  // Close dropdown when clicking outside
+  // Calculate dropdown position and handle click outside
   useEffect(() => {
+    if (!isOpen || !buttonRef.current) {
+      setPosition(null);
+      return;
+    }
+
+    function updatePosition() {
+      if (!buttonRef.current) return;
+
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const scrollY = window.scrollY;
+      const scrollX = window.scrollX;
+      
+      // Estimate dropdown height (placeholder + options, each ~36px)
+      const estimatedItemHeight = 36;
+      const estimatedDropdownHeight = (options.length + 1) * estimatedItemHeight + 8; // +1 for placeholder, +8 for padding
+      const maxDropdownHeight = 240; // max-h-60 = 240px
+      const dropdownHeight = Math.min(estimatedDropdownHeight, maxDropdownHeight);
+      
+      const spaceBelow = viewportHeight - buttonRect.bottom;
+      const spaceAbove = buttonRect.top;
+      
+      // Determine placement: prefer bottom, but flip to top if not enough space
+      const placement: 'bottom' | 'top' = spaceBelow >= Math.min(dropdownHeight, 150) || spaceBelow >= spaceAbove ? 'bottom' : 'top';
+      
+      let top: number;
+      if (placement === 'bottom') {
+        // Position below the button with a small gap
+        top = buttonRect.bottom + scrollY + 4;
+      } else {
+        // Position above the button - calculate from button top minus dropdown height
+        top = buttonRect.top + scrollY - dropdownHeight - 4;
+        // Ensure it doesn't go above viewport
+        if (top < scrollY + 4) {
+          top = scrollY + 4;
+        }
+      }
+      
+      // Calculate left position, ensuring it stays within viewport
+      let left = buttonRect.left + scrollX;
+      // Ensure dropdown doesn't overflow right edge
+      if (left + buttonRect.width > viewportWidth + scrollX - 4) {
+        left = viewportWidth + scrollX - buttonRect.width - 4;
+      }
+      // Ensure dropdown doesn't overflow left edge
+      if (left < scrollX + 4) {
+        left = scrollX + 4;
+      }
+      
+      setPosition({
+        top,
+        left,
+        width: buttonRect.width,
+        placement,
+      });
+    }
+
+    updatePosition();
+    
+    // Update position on scroll or resize
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        buttonRef.current && 
+        !buttonRef.current.contains(event.target as Node) &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
 
-    if (isOpen) {
+    // Use a small delay to avoid immediate close on open
+    const timeoutId = setTimeout(() => {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
+    }, 0);
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [isOpen]);
 
   const handleSelect = async (newValue: string | null) => {
@@ -76,9 +154,51 @@ export function InlineSelect({
   const selectedOption = options.find(opt => opt.id === localValue);
   const displayText = selectedOption ? selectedOption.label : placeholder;
 
+  const dropdownMenu = isOpen && !disabled && !isLoading && position && typeof window !== 'undefined' ? (
+    createPortal(
+      <div
+        ref={menuRef}
+        className="fixed z-[9999] bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto"
+        style={{
+          top: `${position.top}px`,
+          left: `${position.left}px`,
+          width: `${position.width}px`,
+        }}
+      >
+        <div className="py-1">
+          <button
+            type="button"
+            onClick={() => handleSelect(null)}
+            className={cn(
+              'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors',
+              !localValue && 'bg-primary/10 font-medium'
+            )}
+          >
+            {placeholder}
+          </button>
+          {options.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => handleSelect(option.id)}
+              className={cn(
+                'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors',
+                localValue === option.id && 'bg-primary/10 font-medium'
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>,
+      document.body
+    )
+  ) : null;
+
   return (
     <div className={cn('relative', className)} ref={dropdownRef}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => !disabled && !isLoading && setIsOpen(!isOpen)}
         disabled={disabled || isLoading}
@@ -124,35 +244,7 @@ export function InlineSelect({
         </div>
       </button>
 
-      {isOpen && !disabled && !isLoading && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-          <div className="py-1">
-            <button
-              type="button"
-              onClick={() => handleSelect(null)}
-              className={cn(
-                'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors',
-                !localValue && 'bg-primary/10 font-medium'
-              )}
-            >
-              {placeholder}
-            </button>
-            {options.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => handleSelect(option.id)}
-                className={cn(
-                  'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors',
-                  localValue === option.id && 'bg-primary/10 font-medium'
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {dropdownMenu}
 
       {error && (
         <div className="absolute -bottom-6 left-0 text-xs text-red-600 whitespace-nowrap">

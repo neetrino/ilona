@@ -12,7 +12,12 @@ export {
   useSalaries,
   useSalary,
   useProcessSalary,
+  useUpdateSalaryStatus,
   useGenerateMonthlySalaries,
+  useSalaryBreakdown,
+  useDeleteSalary,
+  useDeleteSalaries,
+  useExcludeLessonsFromSalary,
   // Deductions
   useDeductions,
   // Keys
@@ -50,4 +55,6 @@ export type {
   FinanceDashboard,
   CreatePaymentDto,
   ProcessPaymentDto,
+  SalaryBreakdown,
+  SalaryBreakdownLesson,
 } from './types';

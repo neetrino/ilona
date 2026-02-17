@@ -61,6 +61,12 @@ export interface SalaryRecord {
     missing: number;
     completionRate: number;
   };
+  actionBreakdown?: {
+    absenceMarked: { completed: number; required: number };
+    feedbacksCompleted: { completed: number; required: number };
+    voiceSent: { completed: number; required: number };
+    textSent: { completed: number; required: number };
+  };
   teacher: {
     id: string;
     user: {
@@ -148,4 +154,22 @@ export interface CreatePaymentDto {
 
 export interface ProcessPaymentDto {
   paidAt?: string;
+}
+
+export interface SalaryBreakdownLesson {
+  lessonId: string;
+  lessonName: string;
+  lessonDate: string;
+  obligationCompleted: number;
+  obligationTotal: number;
+  salary: number;
+  deduction: number;
+  total: number;
+}
+
+export interface SalaryBreakdown {
+  teacherId: string;
+  teacherName: string;
+  month: string;
+  lessons: SalaryBreakdownLesson[];
 }

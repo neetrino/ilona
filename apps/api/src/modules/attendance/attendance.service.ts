@@ -2,14 +2,21 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MarkAttendanceDto, BulkAttendanceDto } from './dto';
 import { Prisma, AbsenceType } from '@prisma/client';
+import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()
 export class AttendanceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => SalariesService))
+    private readonly salariesService: SalariesService,
+  ) {}
 
   async getByLesson(lessonId: string) {
     const lesson = await this.prisma.lesson.findUnique({
@@ -197,6 +204,44 @@ export class AttendanceService {
     // Check if student has too many unjustified absences (for notifications)
     if (!isPresent && absenceType === 'UNJUSTIFIED') {
       await this.checkAbsenceThreshold(studentId);
+    }
+
+    // Check if all students have attendance marked, then mark absence as complete
+    const lessonWithAttendances = await this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+      include: {
+        group: {
+          include: {
+            students: true,
+          },
+        },
+        attendances: true,
+      },
+    });
+
+    if (lessonWithAttendances) {
+      const studentCount = lessonWithAttendances.group.students.length;
+      const attendanceCount = lessonWithAttendances.attendances.length;
+      
+      // If all students have attendance marked, update lesson.absenceMarked
+      if (studentCount > 0 && attendanceCount >= studentCount && !lessonWithAttendances.absenceMarked) {
+        await this.prisma.lesson.update({
+          where: { id: lessonId },
+          data: {
+            absenceMarked: true,
+            absenceMarkedAt: new Date(),
+          },
+        });
+
+        // Trigger salary recalculation for the lesson's month
+        if (lessonWithAttendances.scheduledAt) {
+          const lessonMonth = new Date(lessonWithAttendances.scheduledAt);
+          await this.salariesService.recalculateSalaryForMonth(
+            lessonWithAttendances.teacherId,
+            lessonMonth,
+          );
+        }
+      }
     }
 
     return attendance;

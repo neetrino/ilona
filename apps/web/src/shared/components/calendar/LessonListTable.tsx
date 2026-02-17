@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
@@ -8,6 +8,7 @@ import { Checkbox } from '@/shared/components/ui/checkbox';
 import { ArrowUpDown, ArrowUp, ArrowDown, Pencil } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 interface LessonListTableProps {
   lessons: Lesson[];
@@ -135,6 +136,23 @@ export function LessonListTable({
   const router = useRouter();
   const locale = useLocale();
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
+  const { user } = useAuthStore();
+  const isTeacher = user?.role === 'TEACHER';
+
+  // Sort lessons: Done lessons go to bottom, within same status group maintain existing order
+  const sortedLessons = useMemo(() => {
+    const sorted = [...lessons];
+    sorted.sort((a, b) => {
+      // If both have completionStatus, Done goes to bottom
+      if (a.completionStatus === 'DONE' && b.completionStatus !== 'DONE') return 1;
+      if (a.completionStatus !== 'DONE' && b.completionStatus === 'DONE') return -1;
+      // If both are IN_PROCESS or both are Done, maintain original order (by scheduledAt)
+      const aTime = new Date(a.scheduledAt).getTime();
+      const bTime = new Date(b.scheduledAt).getTime();
+      return bTime - aTime; // Most recent first within same status
+    });
+    return sorted;
+  }, [lessons]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -228,6 +246,7 @@ export function LessonListTable({
                 />
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Lesson Name</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[120px]">Status</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
                 {onSort ? (
                   <button
@@ -273,18 +292,33 @@ export function LessonListTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {lessons.map((lesson) => {
+            {sortedLessons.map((lesson) => {
               const teacherName = lesson.teacher?.user
                 ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
                 : 'Unknown';
               
               const dateStatus = getLessonDateStatus(lesson.scheduledAt);
-              const rowClassName = cn(
-                'transition-colors',
-                dateStatus === 'today' && 'bg-green-50 hover:bg-green-100',
-                dateStatus === 'past' && 'bg-slate-50 hover:bg-slate-100',
-                dateStatus === 'future' && 'hover:bg-slate-50'
-              );
+              
+              // Determine row color based on completionStatus
+              const getRowColor = () => {
+                if (lesson.completionStatus === 'DONE') {
+                  return 'bg-green-50 hover:bg-green-100';
+                } else if (lesson.completionStatus === 'IN_PROCESS') {
+                  return 'bg-yellow-50 hover:bg-yellow-100';
+                }
+                // Future lessons or no completion status
+                if (dateStatus === 'today') {
+                  return 'bg-blue-50 hover:bg-blue-100';
+                } else if (dateStatus === 'past') {
+                  return 'bg-slate-50 hover:bg-slate-100';
+                }
+                return 'hover:bg-slate-50';
+              };
+
+              const rowClassName = cn('transition-colors', getRowColor());
+              
+              // Check if lesson is locked for teacher
+              const isLocked = isTeacher && lesson.isLockedForTeacher;
 
               return (
                 <tr key={lesson.id} className={rowClassName}>
@@ -301,6 +335,18 @@ export function LessonListTable({
                         <p className="text-sm text-slate-500">{lesson.topic}</p>
                       )}
                     </div>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {lesson.completionStatus === 'DONE' && (
+                      <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">
+                        Ավարտված
+                      </Badge>
+                    )}
+                    {lesson.completionStatus === 'IN_PROCESS' && (
+                      <Badge variant="warning" className="bg-yellow-100 text-yellow-700 border-yellow-200">
+                        In Process
+                      </Badge>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div>
@@ -368,7 +414,12 @@ export function LessonListTable({
                           variant="ghost"
                           size="sm"
                           onClick={() => onEdit(lesson.id)}
-                          className="text-slate-600 hover:text-slate-700"
+                          disabled={isLocked}
+                          className={cn(
+                            "text-slate-600 hover:text-slate-700",
+                            isLocked && "opacity-50 cursor-not-allowed"
+                          )}
+                          title={isLocked ? "This lesson is locked for editing" : "Edit"}
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
@@ -378,7 +429,12 @@ export function LessonListTable({
                           variant="ghost"
                           size="sm"
                           onClick={() => onDelete(lesson.id)}
-                          className="text-red-600 hover:text-red-700"
+                          disabled={isLocked}
+                          className={cn(
+                            "text-red-600 hover:text-red-700",
+                            isLocked && "opacity-75 cursor-not-allowed"
+                          )}
+                          title={isLocked ? "This lesson is locked and cannot be deleted" : "Delete"}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

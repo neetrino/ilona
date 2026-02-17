@@ -204,13 +204,23 @@ export default function TeacherCalendarPage() {
   };
 
   // Fetch lessons using main endpoint (automatically scoped by backend for teachers)
-  const { data: lessonsData, isLoading } = useLessons({
+  // Refetch every minute to update lock status and completion status
+  const { data: lessonsData, isLoading, refetch } = useLessons({
     dateFrom: formatDate(dateFrom),
     dateTo: formatDate(dateTo),
     take: 100,
     sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
     sortOrder: sortBy === 'scheduledAt' ? sortOrder : undefined,
   });
+
+  // Set up automatic refetch every minute for time-based updates (midnight lock, status changes)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 60000); // 1 minute
+
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   const lessons = lessonsData?.items || [];
 

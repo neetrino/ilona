@@ -11,6 +11,7 @@ import {
   fetchGroupAttendanceReport,
 } from '../api/attendance.api';
 import type { MarkAttendanceDto, BulkAttendanceDto, AbsenceType } from '../types';
+import { financeKeys } from '@/features/finance/hooks';
 
 // Query keys
 export const attendanceKeys = {
@@ -63,6 +64,9 @@ export function useMarkAttendance() {
     onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: attendanceKeys.lesson(data.lessonId) });
       queryClient.invalidateQueries({ queryKey: attendanceKeys.atRisk() });
+      // Invalidate salary queries to reflect immediate salary updates
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaryBreakdown('', '') });
     },
   });
 }
@@ -78,6 +82,9 @@ export function useMarkBulkAttendance() {
     onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: attendanceKeys.lesson(data.lessonId) });
       queryClient.invalidateQueries({ queryKey: attendanceKeys.atRisk() });
+      // Invalidate salary queries to reflect immediate salary updates
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaryBreakdown('', '') });
     },
   });
 }

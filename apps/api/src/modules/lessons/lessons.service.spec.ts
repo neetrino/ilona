@@ -66,7 +66,14 @@ describe('LessonsService', () => {
       teacher: { findUnique: vi.fn() },
     };
 
-    lessonsService = new LessonsService(mockPrismaService as never);
+    const mockSalariesService = {
+      recalculateSalaryForMonth: vi.fn().mockResolvedValue(undefined),
+    };
+
+    lessonsService = new LessonsService(
+      mockPrismaService as never,
+      mockSalariesService as never,
+    );
   });
 
   describe('findById', () => {

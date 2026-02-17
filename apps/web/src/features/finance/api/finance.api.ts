@@ -10,6 +10,7 @@ import type {
   FinanceDashboard,
   CreatePaymentDto,
   ProcessPaymentDto,
+  SalaryBreakdown,
 } from '../types';
 
 // ============ DASHBOARD ============
@@ -116,10 +117,49 @@ export async function processSalary(id: string): Promise<SalaryRecord> {
 }
 
 /**
+ * Update salary status
+ */
+export async function updateSalaryStatus(id: string, status: string): Promise<SalaryRecord> {
+  return api.patch<SalaryRecord>(`/finance/salaries/${id}`, { status });
+}
+
+/**
  * Generate monthly salaries
  */
 export async function generateMonthlySalaries(month: number, year: number): Promise<SalaryRecord[]> {
   return api.post<SalaryRecord[]>('/finance/salaries/generate-monthly', { month, year });
+}
+
+/**
+ * Fetch salary breakdown for a teacher and month
+ */
+export async function fetchSalaryBreakdown(teacherId: string, month: string): Promise<SalaryBreakdown> {
+  return api.get<SalaryBreakdown>(`/finance/salaries/${teacherId}/breakdown?month=${month}`);
+}
+
+/**
+ * Delete a salary record
+ */
+export async function deleteSalary(id: string): Promise<void> {
+  return api.delete<void>(`/finance/salaries/${id}`);
+}
+
+/**
+ * Delete multiple salary records
+ */
+export async function deleteSalaries(ids: string[]): Promise<{ count: number }> {
+  return api.delete<{ count: number }>('/finance/salaries', {
+    body: JSON.stringify({ ids }),
+  });
+}
+
+/**
+ * Exclude lessons from salary calculation (changes lesson status to CANCELLED)
+ */
+export async function excludeLessonsFromSalary(lessonIds: string[]): Promise<{ count: number; lessonIds: string[] }> {
+  return api.delete<{ count: number; lessonIds: string[] }>('/finance/salaries/breakdown/exclude', {
+    body: JSON.stringify({ ids: lessonIds }),
+  });
 }
 
 // ============ DEDUCTIONS ============

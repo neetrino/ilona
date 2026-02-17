@@ -46,13 +46,13 @@ export default function CalendarPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  // Initialize view mode from URL query params, with fallback to 'week'
+  // Initialize view mode from URL query params, with fallback to 'list'
   const [viewMode, setViewMode] = useState<'week' | 'list'>(() => {
     const viewFromUrl = searchParams.get('view');
     if (viewFromUrl === 'week' || viewFromUrl === 'list') {
       return viewFromUrl;
     }
-    return 'week'; // Default to week view
+    return 'list'; // Default to list view
   });
   
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -65,13 +65,14 @@ export default function CalendarPage() {
     
     // Update URL to persist the selection
     const params = new URLSearchParams(searchParams.toString());
-    if (mode === 'week') {
-      // Remove 'view' param for default week view to keep URL clean
+    if (mode === 'list') {
+      // Remove 'view' param for default list view to keep URL clean
       params.delete('view');
     } else {
       params.set('view', mode);
     }
-    router.push(`${pathname}?${params.toString()}`);
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl);
   };
   
   // Sync view mode from URL (for browser back/forward navigation)
@@ -80,7 +81,7 @@ export default function CalendarPage() {
     if (viewFromUrl === 'week' || viewFromUrl === 'list') {
       setViewMode(viewFromUrl);
     } else if (!viewFromUrl) {
-      setViewMode('week');
+      setViewMode('list');
     }
   }, [searchParams]);
   
@@ -88,14 +89,25 @@ export default function CalendarPage() {
   const dateFrom = formatDate(weekDates[0]);
 
   // Fetch lessons for the week
+  // Refetch every minute to update lock status and completion status
   const { 
     data: lessonsData, 
-    isLoading 
+    isLoading,
+    refetch
   } = useLessons({ 
     dateFrom,
     dateTo: formatDate(new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000)),
     take: 100,
   });
+
+  // Set up automatic refetch every minute for time-based updates (midnight lock, status changes)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 60000); // 1 minute
+
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   // Fetch statistics
   const { data: stats } = useLessonStatistics();
@@ -229,16 +241,6 @@ export default function CalendarPage() {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => updateViewModeInUrl('week')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
-                viewMode === 'week' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Week
-            </button>
-            <button
               onClick={() => updateViewModeInUrl('list')}
               className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
                 viewMode === 'list' 
@@ -247,6 +249,16 @@ export default function CalendarPage() {
               }`}
             >
               List
+            </button>
+            <button
+              onClick={() => updateViewModeInUrl('week')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
+                viewMode === 'week' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Week
             </button>
             <Button 
               onClick={() => setIsAddLessonOpen(true)}
@@ -303,30 +315,42 @@ export default function CalendarPage() {
                       <p className="text-xs text-slate-400 text-center py-4">No lessons</p>
                     ) : (
                       <div className="space-y-2">
-                        {dayLessons.map(lesson => (
-                          <div 
-                            key={lesson.id}
-                            className={`p-2 rounded-lg text-xs border-l-4 ${
-                              lesson.status === 'COMPLETED' 
-                                ? 'bg-green-50 border-green-500'
-                                : lesson.status === 'IN_PROGRESS'
-                                ? 'bg-amber-50 border-amber-500'
-                                : lesson.status === 'CANCELLED' || lesson.status === 'MISSED'
-                                ? 'bg-slate-100 border-slate-400'
-                                : 'bg-blue-50 border-blue-500'
-                            }`}
-                          >
-                            <p className="font-medium text-slate-800 truncate">
-                              {formatTime(lesson.scheduledAt)}
-                            </p>
-                            <p className="text-slate-600 truncate">
-                              {lesson.group?.name || 'Unknown'}
-                            </p>
-                            <p className="text-slate-500 truncate">
-                              {lesson.topic || 'No topic'}
-                            </p>
-                          </div>
-                        ))}
+                        {dayLessons.map(lesson => {
+                          // Determine color based on completionStatus for past lessons
+                          const getLessonColor = () => {
+                            if (lesson.completionStatus === 'DONE') {
+                              return 'bg-green-50 border-green-500';
+                            } else if (lesson.completionStatus === 'IN_PROCESS') {
+                              return 'bg-yellow-50 border-yellow-500';
+                            }
+                            // Future lessons or no completion status - use status-based colors
+                            if (lesson.status === 'COMPLETED') {
+                              return 'bg-green-50 border-green-500';
+                            } else if (lesson.status === 'IN_PROGRESS') {
+                              return 'bg-amber-50 border-amber-500';
+                            } else if (lesson.status === 'CANCELLED' || lesson.status === 'MISSED') {
+                              return 'bg-slate-100 border-slate-400';
+                            }
+                            return 'bg-blue-50 border-blue-500';
+                          };
+
+                          return (
+                            <div 
+                              key={lesson.id}
+                              className={`p-2 rounded-lg text-xs border-l-4 ${getLessonColor()}`}
+                            >
+                              <p className="font-medium text-slate-800 truncate">
+                                {formatTime(lesson.scheduledAt)}
+                              </p>
+                              <p className="text-slate-600 truncate">
+                                {lesson.group?.name || 'Unknown'}
+                              </p>
+                              <p className="text-slate-500 truncate">
+                                {lesson.topic || 'No topic'}
+                              </p>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

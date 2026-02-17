@@ -3,14 +3,102 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLessonDto, UpdateLessonDto, CompleteLessonDto } from './dto';
 import { Prisma, LessonStatus, UserRole } from '@prisma/client';
+import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => SalariesService))
+    private readonly salariesService: SalariesService,
+  ) {}
+
+  /**
+   * Computes if a lesson is locked for teacher editing (midnight lock rule)
+   * A lesson is locked if the current date is after the lesson's date
+   */
+  private isLockedForTeacher(lessonDate: Date): boolean {
+    const now = new Date();
+    const lessonDay = new Date(lessonDate);
+    lessonDay.setHours(0, 0, 0, 0);
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    return today > lessonDay;
+  }
+
+  /**
+   * Computes if a lesson has ended (end time < now)
+   */
+  private isLessonPast(scheduledAt: Date, duration: number): boolean {
+    const endTime = new Date(scheduledAt.getTime() + duration * 60 * 1000);
+    return endTime < new Date();
+  }
+
+  /**
+   * Computes if all required actions are completed
+   */
+  private areActionsComplete(lesson: {
+    absenceMarked: boolean;
+    feedbacksCompleted: boolean;
+    voiceSent: boolean;
+    textSent: boolean;
+  }): boolean {
+    return lesson.absenceMarked && lesson.feedbacksCompleted && lesson.voiceSent && lesson.textSent;
+  }
+
+  /**
+   * Computes the completion status for a past lesson
+   * Returns 'DONE' if actions are complete or locked, 'IN_PROCESS' otherwise
+   */
+  private getCompletionStatus(
+    lesson: {
+      scheduledAt: Date;
+      duration: number;
+      absenceMarked: boolean;
+      feedbacksCompleted: boolean;
+      voiceSent: boolean;
+      textSent: boolean;
+    },
+  ): 'DONE' | 'IN_PROCESS' | null {
+    const isPast = this.isLessonPast(lesson.scheduledAt, lesson.duration);
+    if (!isPast) {
+      return null; // Future lessons don't have completion status
+    }
+
+    const actionsComplete = this.areActionsComplete(lesson);
+    const actionsLocked = this.isLockedForTeacher(lesson.scheduledAt);
+
+    if (actionsComplete || actionsLocked) {
+      return 'DONE';
+    }
+    return 'IN_PROCESS';
+  }
+
+  /**
+   * Enriches lesson with computed fields
+   */
+  private enrichLesson(lesson: any) {
+    const completionStatus = this.getCompletionStatus({
+      scheduledAt: lesson.scheduledAt,
+      duration: lesson.duration,
+      absenceMarked: lesson.absenceMarked,
+      feedbacksCompleted: lesson.feedbacksCompleted,
+      voiceSent: lesson.voiceSent,
+      textSent: lesson.textSent,
+    });
+
+    return {
+      ...lesson,
+      isLockedForTeacher: this.isLockedForTeacher(lesson.scheduledAt),
+      completionStatus,
+    };
+  }
 
   async findAll(params?: {
     skip?: number;
@@ -148,8 +236,11 @@ export class LessonsService {
       this.prisma.lesson.count({ where }),
     ]);
 
+    // Enrich lessons with computed fields
+    const enrichedItems = items.map((lesson) => this.enrichLesson(lesson));
+
     return {
-      items,
+      items: enrichedItems,
       total,
       page: Math.floor(skip / take) + 1,
       pageSize: take,
@@ -254,7 +345,8 @@ export class LessonsService {
       }
     }
 
-    return lesson;
+    // Enrich lesson with computed fields
+    return this.enrichLesson(lesson);
   }
 
   async findByTeacher(teacherId: string, dateFrom?: Date, dateTo?: Date) {
@@ -567,42 +659,84 @@ export class LessonsService {
   }
 
   async markAbsenceComplete(id: string) {
-    // Verify lesson exists
-    await this.findById(id);
+    // Verify lesson exists and get lesson data
+    const lesson = await this.findById(id);
 
-    return this.prisma.lesson.update({
+    const wasAlreadyMarked = lesson.absenceMarked;
+    const updated = await this.prisma.lesson.update({
       where: { id },
       data: {
         absenceMarked: true,
         absenceMarkedAt: new Date(),
       },
     });
+
+    // Trigger salary recalculation if this is a new completion
+    if (!wasAlreadyMarked && lesson.scheduledAt) {
+      const lessonMonth = new Date(lesson.scheduledAt);
+      await this.salariesService.recalculateSalaryForMonth(
+        lesson.teacherId,
+        lessonMonth,
+      ).catch(() => {
+        // Silently fail to avoid breaking the update
+      });
+    }
+
+    return updated;
   }
 
   async markVoiceSent(id: string) {
-    // Verify lesson exists
-    await this.findById(id);
+    // Verify lesson exists and get lesson data
+    const lesson = await this.findById(id);
 
-    return this.prisma.lesson.update({
+    const wasAlreadySent = lesson.voiceSent;
+    const updated = await this.prisma.lesson.update({
       where: { id },
       data: {
         voiceSent: true,
         voiceSentAt: new Date(),
       },
     });
+
+    // Trigger salary recalculation if this is a new completion
+    if (!wasAlreadySent && lesson.scheduledAt) {
+      const lessonMonth = new Date(lesson.scheduledAt);
+      await this.salariesService.recalculateSalaryForMonth(
+        lesson.teacherId,
+        lessonMonth,
+      ).catch(() => {
+        // Silently fail to avoid breaking the update
+      });
+    }
+
+    return updated;
   }
 
   async markTextSent(id: string) {
-    // Verify lesson exists
-    await this.findById(id);
+    // Verify lesson exists and get lesson data
+    const lesson = await this.findById(id);
 
-    return this.prisma.lesson.update({
+    const wasAlreadySent = lesson.textSent;
+    const updated = await this.prisma.lesson.update({
       where: { id },
       data: {
         textSent: true,
         textSentAt: new Date(),
       },
     });
+
+    // Trigger salary recalculation if this is a new completion
+    if (!wasAlreadySent && lesson.scheduledAt) {
+      const lessonMonth = new Date(lesson.scheduledAt);
+      await this.salariesService.recalculateSalaryForMonth(
+        lesson.teacherId,
+        lessonMonth,
+      ).catch(() => {
+        // Silently fail to avoid breaking the update
+      });
+    }
+
+    return updated;
   }
 
   async delete(id: string) {

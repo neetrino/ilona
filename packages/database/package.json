@@ -22,6 +22,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset",
     "db:apply-obligations": "node scripts/apply-migration.js",
+    "db:add-lesson-rate": "dotenv -e ../../.env.local -- tsx scripts/add-lesson-rate-column.ts",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist node_modules"
   },

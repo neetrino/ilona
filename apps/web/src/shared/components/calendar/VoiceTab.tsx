@@ -63,8 +63,10 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
         },
       });
 
-      // Invalidate lesson query to refresh data
+      // Mark voice as sent and invalidate both detail and list queries to ensure consistency
+      await api.patch(`/lessons/${lesson.id}/voice-sent`);
       queryClient.invalidateQueries({ queryKey: lessonKeys.detail(lesson.id) });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
 
       // Navigate to chat if navigation metadata is available
       if (messageResponse.navigation?.conversationId) {
@@ -120,9 +122,13 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-800">Record Voice Message</h3>
+        <h3 className="text-lg font-semibold text-slate-800">
+          {lesson.voiceSent ? 'Edit Voice Message' : 'Record Voice Message'}
+        </h3>
         <p className="text-sm text-slate-500 mt-1">
-          Record a voice message that will be sent to the group chat
+          {lesson.voiceSent
+            ? 'Record a new voice message to replace the existing one'
+            : 'Record a voice message that will be sent to the group chat'}
         </p>
       </div>
 

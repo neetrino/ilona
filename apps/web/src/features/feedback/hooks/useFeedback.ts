@@ -12,6 +12,7 @@ import type {
   CreateFeedbackDto,
   UpdateFeedbackDto,
 } from '../types';
+import { financeKeys } from '@/features/finance/hooks';
 
 // Query keys
 export const feedbackKeys = {
@@ -65,6 +66,9 @@ export function useCreateOrUpdateFeedback() {
       queryClient.invalidateQueries({
         queryKey: feedbackKeys.student(variables.studentId),
       });
+      // Invalidate salary queries to reflect immediate salary updates
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaryBreakdown('', '') });
     },
   });
 }
@@ -86,6 +90,9 @@ export function useUpdateFeedback() {
       queryClient.invalidateQueries({
         queryKey: feedbackKeys.student(data.studentId),
       });
+      // Invalidate salary queries to reflect immediate salary updates
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaryBreakdown('', '') });
     },
   });
 }
@@ -101,6 +108,9 @@ export function useDeleteFeedback() {
     onSuccess: () => {
       // Invalidate all feedback queries
       queryClient.invalidateQueries({ queryKey: feedbackKeys.all });
+      // Invalidate salary queries to reflect immediate salary updates
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaryBreakdown('', '') });
     },
   });
 }

@@ -73,6 +73,12 @@ export class TeachersController {
     );
   }
 
+  @Get(':id/obligation')
+  @Roles(UserRole.ADMIN)
+  async getObligationDetails(@Param('id') id: string) {
+    return this.teachersService.getObligationDetails(id);
+  }
+
   @Post()
   @Roles(UserRole.ADMIN)
   async create(@Body() dto: CreateTeacherDto) {

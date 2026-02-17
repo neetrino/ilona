@@ -29,36 +29,41 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const [attendance, setAttendance] = useState<Record<string, { isPresent: boolean; absenceType?: AbsenceType }>>({});
   const [hasChanges, setHasChanges] = useState(false);
 
-  useEffect(() => {
-    const list = attendanceData?.studentsWithAttendance ?? [];
-    if (list.length > 0) {
-      const initial: Record<string, { isPresent: boolean; absenceType?: AbsenceType }> = {};
-      for (const item of list) {
-        const studentId = item.student.id;
-        const att = item.attendance;
-        initial[studentId] = {
-          isPresent: att?.isPresent ?? true,
-          absenceType: att?.absenceType ?? undefined,
-        };
-      }
-      setAttendance(initial);
-    }
-  }, [attendanceData]);
+  // Declare students before useEffect that uses it
+  const students = lesson?.group?.students || [];
+  // Transform studentsWithAttendance to a flat array of attendances for easier lookup
+  const lessonAttendances = attendanceData?.studentsWithAttendance
+    ?.map((swa) => swa.attendance)
+    .filter((att): att is NonNullable<typeof att> => att !== null) || [];
 
-  const students: Array<{ id: string; user: { firstName: string; lastName: string } }> = (
-    attendanceData?.studentsWithAttendance ?? []
-  ).map((item) => ({
-    id: item.student.id,
-    user: {
-      firstName: item.student.user.firstName,
-      lastName: item.student.user.lastName,
-    },
-  }));
-  const lessonAttendances: AttendanceItem[] = (attendanceData?.studentsWithAttendance ?? []).map((item) => ({
-    studentId: item.student.id,
-    isPresent: item.attendance?.isPresent ?? true,
-    absenceType: item.attendance?.absenceType ?? undefined,
-  }));
+  // Initialize attendance state from saved data - only prefill students with saved attendance
+  useEffect(() => {
+    if (students.length > 0 && attendanceData) {
+      const initial: Record<string, { isPresent: boolean; absenceType?: AbsenceType }> = {};
+      
+      // Initialize only students with saved attendance (do not default to present)
+      students.forEach((student) => {
+        // Find saved attendance from studentsWithAttendance array
+        const studentWithAttendance = attendanceData.studentsWithAttendance?.find(
+          (swa) => swa.student.id === student.id
+        );
+        const savedAttendance = studentWithAttendance?.attendance;
+        
+        if (savedAttendance) {
+          // Use saved attendance - only set state for students with saved data
+          initial[student.id] = {
+            isPresent: savedAttendance.isPresent,
+            absenceType: savedAttendance.absenceType || undefined,
+          };
+        }
+        // If no saved attendance, don't set any value - student will show as 'not_marked'
+      });
+      
+      setAttendance(initial);
+      // Reset hasChanges since we're loading saved data
+      setHasChanges(false);
+    }
+  }, [attendanceData, students]);
 
   const handleAttendanceChange = (studentId: string, status: AttendanceStatus) => {
     setHasChanges(true);
@@ -74,11 +79,14 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const handleSave = async () => {
     if (!lesson) return;
 
-    const attendances = students.map((student) => ({
-      studentId: student.id,
-      isPresent: attendance[student.id]?.isPresent ?? true,
-      absenceType: attendance[student.id]?.absenceType,
-    }));
+    // Only save students that have been explicitly marked (filter out unmarked students)
+    const attendances = students
+      .filter((student) => attendance[student.id] !== undefined)
+      .map((student) => ({
+        studentId: student.id,
+        isPresent: attendance[student.id]!.isPresent,
+        absenceType: attendance[student.id]!.absenceType,
+      }));
 
     try {
       await markBulkAttendance.mutateAsync({
@@ -89,8 +97,12 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
       // Mark absence as complete
       await markAbsenceComplete(lesson.id);
       
-      // Invalidate lesson query to refresh data
+      // Invalidate both detail and list queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: lessonKeys.detail(lesson.id) });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+      // Invalidate salary queries to reflect immediate salary updates
+      queryClient.invalidateQueries({ queryKey: ['finance', 'salaries'] });
+      queryClient.invalidateQueries({ queryKey: ['finance', 'salaries', 'breakdown'] });
 
       setHasChanges(false);
       alert('Attendance saved successfully!');
@@ -103,7 +115,11 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const getStatus = (studentId: string): AttendanceStatus => {
     const att = attendance[studentId];
     if (!att) {
-      const existing = lessonAttendances.find((a) => a.studentId === studentId);
+      // Fallback to saved data if state not initialized yet
+      const studentWithAttendance = attendanceData?.studentsWithAttendance?.find(
+        (swa) => swa.student.id === studentId
+      );
+      const existing = studentWithAttendance?.attendance;
       if (existing) {
         return existing.isPresent
           ? 'present'
@@ -113,6 +129,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
       }
       return 'not_marked';
     }
+    // Use current state (which includes saved data)
     return att.isPresent
       ? 'present'
       : att.absenceType === 'JUSTIFIED'
@@ -122,8 +139,17 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12">
+      <div className="flex flex-col items-center justify-center p-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="mt-4 text-sm text-slate-500">Loading attendance data...</p>
+      </div>
+    );
+  }
+
+  if (attendanceData && students.length === 0) {
+    return (
+      <div className="p-6 text-center text-slate-500">
+        <p>No students in this lesson's group</p>
       </div>
     );
   }
@@ -132,16 +158,20 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-800">Mark Attendance</h3>
+          <h3 className="text-lg font-semibold text-slate-800">Edit Attendance</h3>
           <p className="text-sm text-slate-500 mt-1">
-            Mark attendance for all students in this lesson
+            {attendanceData?.summary && attendanceData.summary.notMarked < attendanceData.summary.total
+              ? 'Update attendance marks for students in this lesson'
+              : 'Mark attendance for all students in this lesson'}
           </p>
         </div>
-        {hasChanges && (
-          <Button onClick={handleSave} disabled={markBulkAttendance.isPending}>
-            {markBulkAttendance.isPending ? 'Saving...' : 'Save Attendance'}
-          </Button>
-        )}
+        <Button 
+          onClick={handleSave} 
+          disabled={markBulkAttendance.isPending || students.length === 0}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          {markBulkAttendance.isPending ? 'Saving...' : hasChanges ? 'Save Changes' : 'Save Attendance'}
+        </Button>
       </div>
 
       <div className="space-y-2">

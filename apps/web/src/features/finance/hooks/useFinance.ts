@@ -11,8 +11,13 @@ import {
   fetchSalaries,
   fetchSalary,
   processSalary,
+  updateSalaryStatus,
   generateMonthlySalaries,
   fetchDeductions,
+  fetchSalaryBreakdown,
+  deleteSalary,
+  deleteSalaries,
+  excludeLessonsFromSalary,
 } from '../api/finance.api';
 import type {
   PaymentFilters,
@@ -36,6 +41,7 @@ export const financeKeys = {
   salaries: () => [...financeKeys.all, 'salaries'] as const,
   salariesList: (filters?: SalaryFilters) => [...financeKeys.salaries(), 'list', filters] as const,
   salaryDetail: (id: string) => [...financeKeys.salaries(), 'detail', id] as const,
+  salaryBreakdown: (teacherId: string, month: string) => [...financeKeys.salaries(), 'breakdown', teacherId, month] as const,
   
   // Deductions
   deductions: () => [...financeKeys.all, 'deductions'] as const,
@@ -137,6 +143,19 @@ export function useProcessSalary() {
   });
 }
 
+export function useUpdateSalaryStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => updateSalaryStatus(id, status),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaryDetail(id) });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
 export function useGenerateMonthlySalaries() {
   const queryClient = useQueryClient();
 
@@ -156,5 +175,54 @@ export function useDeductions(params?: { teacherId?: string; skip?: number; take
   return useQuery({
     queryKey: financeKeys.deductionsList(params),
     queryFn: () => fetchDeductions(params),
+  });
+}
+
+// ============ SALARY BREAKDOWN ============
+
+export function useSalaryBreakdown(teacherId: string | null, month: string | null, enabled = true) {
+  return useQuery({
+    queryKey: financeKeys.salaryBreakdown(teacherId || '', month || ''),
+    queryFn: () => fetchSalaryBreakdown(teacherId!, month!),
+    enabled: enabled && !!teacherId && !!month,
+  });
+}
+
+export function useDeleteSalary() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteSalary(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
+export function useDeleteSalaries() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => deleteSalaries(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
+export function useExcludeLessonsFromSalary() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (lessonIds: string[]) => excludeLessonsFromSalary(lessonIds),
+    onSuccess: () => {
+      // Invalidate all salary breakdown queries
+      queryClient.invalidateQueries({ queryKey: [...financeKeys.salaries(), 'breakdown'] });
+      // Invalidate salary list to update Level 1 totals
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
   });
 }

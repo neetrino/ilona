@@ -29,6 +29,9 @@ describe('ChatService', () => {
   let mockStorageService: {
     delete: Mock;
   };
+  let mockSalariesService: {
+    recalculateSalaryForMonth: Mock;
+  };
 
   const mockChat = {
     id: 'chat-1',
@@ -126,7 +129,15 @@ describe('ChatService', () => {
       delete: vi.fn().mockResolvedValue(undefined),
     };
 
-    chatService = new ChatService(mockPrismaService as never, mockStorageService as never);
+    mockSalariesService = {
+      recalculateSalaryForMonth: vi.fn().mockResolvedValue(undefined),
+    };
+
+    chatService = new ChatService(
+      mockPrismaService as never,
+      mockStorageService as never,
+      mockSalariesService as never,
+    );
   });
 
   describe('getUserChats', () => {

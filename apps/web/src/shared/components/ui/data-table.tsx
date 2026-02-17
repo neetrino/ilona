@@ -59,12 +59,18 @@ export function DataTable<T>({
                 ? column.header 
                 : column.key.charAt(0).toUpperCase() + column.key.slice(1).replace(/([A-Z])/g, ' $1');
               
+              // Determine alignment from className
+              const isCenter = column.className?.includes('text-center');
+              const isRight = column.className?.includes('text-right');
+              const headerAlignment = isRight ? 'text-right' : isCenter ? 'text-center' : 'text-left';
+              const headerJustify = isRight ? 'justify-end' : isCenter ? 'justify-center' : 'justify-start';
+              
               return (
                 <th
                   key={column.key}
                   className={cn(
-                    'px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider',
-                    column.className
+                    'px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider',
+                    headerAlignment
                   )}
                 >
                   {column.sortable && onSort ? (
@@ -72,8 +78,9 @@ export function DataTable<T>({
                       type="button"
                       onClick={() => onSort(column.key)}
                       className={cn(
-                        'flex items-center gap-1.5 w-full text-left text-xs font-semibold uppercase hover:bg-slate-50 rounded-md px-0 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
-                        isSorted && 'text-slate-700'
+                        'flex items-center gap-1.5 w-full text-xs font-semibold uppercase hover:bg-slate-50 rounded-md px-0 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
+                        isSorted && 'text-slate-700',
+                        headerJustify
                       )}
                       aria-label={
                         !isSorted
@@ -99,7 +106,7 @@ export function DataTable<T>({
                   ) : (
                     <div className={cn(
                       'flex items-center gap-1.5 text-xs font-semibold uppercase',
-                      column.className?.includes('text-center') && 'justify-center'
+                      headerJustify
                     )}>
                       {column.header}
                     </div>
