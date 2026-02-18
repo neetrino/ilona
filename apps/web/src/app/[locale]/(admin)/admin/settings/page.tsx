@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button, Badge } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -16,12 +16,29 @@ type SettingsTab = 'security' | 'notifications' | 'system' | 'percent';
 export default function SettingsPage() {
   const { user: _user, logout } = useAuthStore();
   const router = useRouter();
-  const _pathname = usePathname();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<SettingsTab>('security');
   const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('settings');
   const _tCommon = useTranslations('common');
   const _locale = useLocale() as Locale;
+
+  // Initialize activeTab from URL params on mount
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab') as SettingsTab | null;
+    if (tabFromUrl && ['security', 'notifications', 'system', 'percent'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
+  // Update URL when tab changes
+  const handleTabChange = (tab: SettingsTab) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const handleLogout = () => {
     logout();
@@ -107,7 +124,7 @@ export default function SettingsPage() {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${
                   activeTab === tab.id
                     ? 'bg-primary/10 text-primary'
