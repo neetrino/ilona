@@ -220,13 +220,13 @@ export default function TeachersPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       return modeFromUrl;
     }
-    return 'list'; // Default to list view
+    return 'board'; // Default to board view
   });
 
   // Update URL when view mode changes
   const updateViewModeInUrl = (mode: ViewMode) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (mode !== 'list') {
+    if (mode !== 'board') {
       params.set('view', mode);
     } else {
       params.delete('view');
@@ -240,7 +240,7 @@ export default function TeachersPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       setViewMode(modeFromUrl);
     } else if (!modeFromUrl) {
-      setViewMode('list');
+      setViewMode('board');
     }
   }, [searchParams]);
 
@@ -860,27 +860,7 @@ export default function TeachersPage() {
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex-shrink-0 flex items-center gap-2 bg-slate-100 rounded-lg p-1">
-            <button
-              onClick={() => {
-                setViewMode('list');
-                updateViewModeInUrl('list');
-                setPage(0); // Reset pagination when switching views
-                // Clear selection when switching views
-                setSelectedTeacherIds(new Set());
-              }}
-              className={cn(
-                'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-                'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-                viewMode === 'list'
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'text-slate-700 hover:bg-slate-100'
-              )}
-              aria-pressed={viewMode === 'list'}
-            >
-              <List className="w-4 h-4" />
-              List
-            </button>
+          <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
             <button
               onClick={() => {
                 setViewMode('board');
@@ -900,6 +880,26 @@ export default function TeachersPage() {
             >
               <LayoutGrid className="w-4 h-4" />
               Board
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('list');
+                updateViewModeInUrl('list');
+                setPage(0); // Reset pagination when switching views
+                // Clear selection when switching views
+                setSelectedTeacherIds(new Set());
+              }}
+              className={cn(
+                'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
+                'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                viewMode === 'list'
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'text-slate-700 hover:bg-slate-100'
+              )}
+              aria-pressed={viewMode === 'list'}
+            >
+              <List className="w-4 h-4" />
+              List
             </button>
           </div>
 
