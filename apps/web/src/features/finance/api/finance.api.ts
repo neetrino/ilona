@@ -169,6 +169,24 @@ export async function excludeLessonsFromSalary(lessonIds: string[]): Promise<{ c
   });
 }
 
+/**
+ * Fetch obligation details for a specific lesson
+ */
+export interface LessonObligation {
+  lessonId: string;
+  absenceDone: boolean;
+  feedbacksDone: boolean;
+  voiceDone: boolean;
+  textDone: boolean;
+  completedActionsCount: number;
+  totalActions: number;
+  updatedAt: string;
+}
+
+export async function fetchLessonObligation(lessonId: string): Promise<LessonObligation> {
+  return api.get<LessonObligation>(`/finance/salaries/lessons/${lessonId}/obligation`);
+}
+
 // ============ DEDUCTIONS ============
 
 /**

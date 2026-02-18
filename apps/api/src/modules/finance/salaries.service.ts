@@ -1141,4 +1141,52 @@ export class SalariesService {
       lessonIds: lessonIds,
     };
   }
+
+  /**
+   * Get obligation details for a specific lesson
+   * Returns which of the 4 actions (Absence, Feedbacks, Voice, Text) are completed
+   */
+  async getLessonObligation(lessonId: string) {
+    const lesson = await this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+      select: {
+        id: true,
+        absenceMarked: true,
+        absenceMarkedAt: true,
+        feedbacksCompleted: true,
+        voiceSent: true,
+        voiceSentAt: true,
+        textSent: true,
+        textSentAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!lesson) {
+      throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
+    }
+
+    const absenceDone = lesson.absenceMarked ?? false;
+    const feedbacksDone = lesson.feedbacksCompleted ?? false;
+    const voiceDone = lesson.voiceSent ?? false;
+    const textDone = lesson.textSent ?? false;
+
+    const completedActionsCount = [
+      absenceDone,
+      feedbacksDone,
+      voiceDone,
+      textDone,
+    ].filter(Boolean).length;
+
+    return {
+      lessonId: lesson.id,
+      absenceDone,
+      feedbacksDone,
+      voiceDone,
+      textDone,
+      completedActionsCount,
+      totalActions: 4,
+      updatedAt: lesson.updatedAt.toISOString(),
+    };
+  }
 }

@@ -7,6 +7,7 @@ import { useSalaryBreakdown, useExcludeLessonsFromSalary, financeKeys } from '..
 import type { SalaryBreakdownLesson } from '../types';
 import { Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { ObligationDetailsModal } from './ObligationDetailsModal';
 
 interface SalaryBreakdownModalProps {
   teacherId: string | null;
@@ -65,6 +66,8 @@ export function SalaryBreakdownModal({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [selectedLessonIdForObligation, setSelectedLessonIdForObligation] = useState<string | null>(null);
+  const [isObligationModalOpen, setIsObligationModalOpen] = useState(false);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -253,9 +256,17 @@ export function SalaryBreakdownModal({
       header: 'Obligation',
       className: 'text-center',
       render: (lesson: SalaryBreakdownLesson) => (
-        <span className="text-slate-700 font-medium">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedLessonIdForObligation(lesson.lessonId);
+            setIsObligationModalOpen(true);
+          }}
+          className="text-slate-700 font-medium hover:text-primary hover:underline cursor-pointer transition-colors"
+          aria-label={`View obligation details for ${lesson.lessonName}`}
+        >
           {lesson.obligationCompleted}/{lesson.obligationTotal}
-        </span>
+        </button>
       ),
     },
     {
@@ -404,6 +415,16 @@ export function SalaryBreakdownModal({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Obligation Details Modal */}
+      <ObligationDetailsModal
+        lessonId={selectedLessonIdForObligation}
+        open={isObligationModalOpen}
+        onClose={() => {
+          setIsObligationModalOpen(false);
+          setSelectedLessonIdForObligation(null);
+        }}
+      />
     </>
   );
 }

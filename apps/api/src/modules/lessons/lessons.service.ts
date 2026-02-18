@@ -91,7 +91,7 @@ export class LessonsService {
   private isActionLocked(
     actionCompleted: boolean,
     lessonStatus: LessonStatus,
-    completedAt: Date | null | undefined,
+    _completedAt: Date | null | undefined,
     scheduledAt: Date,
   ): boolean {
     // If action is completed, it's not locked (shows green checkmark)
@@ -121,9 +121,6 @@ export class LessonsService {
       voiceSent: lesson.voiceSent,
       textSent: lesson.textSent,
     });
-
-    const isManuallyCompleted = lesson.status === 'COMPLETED' && lesson.completedAt;
-    const isDayPassed = this.isLockedForTeacher(lesson.scheduledAt);
 
     return {
       ...lesson,
