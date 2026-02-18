@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { StatCard, DataTable, Badge, Button } from '@/shared/components/ui';
+import { StatCard, DataTable, Button } from '@/shared/components/ui';
 import { InlineSelect } from '@/features/students/components/InlineSelect';
 import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
 import { SalaryBreakdownModal } from '@/features/finance/components/SalaryBreakdownModal';
@@ -47,7 +47,7 @@ import {
   useFinanceDashboard,
   usePayments,
   useSalaries,
-  useProcessPayment,
+  useUpdatePaymentStatus,
   useUpdateSalaryStatus,
   useDeleteSalaries,
   type Payment,
@@ -195,7 +195,7 @@ export default function FinancePage() {
   });
 
   // Mutations
-  const processPayment = useProcessPayment();
+  const updatePaymentStatus = useUpdatePaymentStatus();
   const updateSalaryStatus = useUpdateSalaryStatus();
   const deleteSalaries = useDeleteSalaries();
 
@@ -208,15 +208,6 @@ export default function FinancePage() {
   const salariesTotalPages = salariesData?.totalPages || 1;
 
   const isLoading = activeTab === 'payments' ? isLoadingPayments : activeTab === 'salaries' ? isLoadingSalaries : false;
-
-  // Handle process payment
-  const handleProcessPayment = async (id: string) => {
-    try {
-      await processPayment.mutateAsync({ id });
-    } catch (err) {
-      console.error('Failed to process payment:', err);
-    }
-  };
 
 
   // Format month/year
@@ -353,46 +344,34 @@ export default function FinancePage() {
     {
       key: 'status',
       header: t('status'),
-      render: (payment: Payment) => {
-        switch (payment.status) {
-          case 'PAID':
-            return <Badge variant="success">{t('paid')}</Badge>;
-          case 'PENDING':
-            return <Badge variant="warning">{t('pending')}</Badge>;
-          case 'OVERDUE':
-            return (
-              <div className="flex items-center gap-2">
-                <span className="text-red-500">!</span>
-                <Badge variant="error">{t('overdue')}</Badge>
-              </div>
-            );
-          case 'CANCELLED':
-            return <Badge variant="default">{t('cancelled')}</Badge>;
-          case 'REFUNDED':
-            return <Badge variant="info">{t('refunded')}</Badge>;
-          default:
-            return <Badge variant="default">{payment.status}</Badge>;
-        }
-      },
-    },
-    {
-      key: 'actions',
-      header: t('actions'),
+      className: 'text-left',
       render: (payment: Payment) => (
-        payment.status !== 'PAID' && payment.status !== 'CANCELLED' ? (
-          <Button 
-            size="sm" 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
-            onClick={() => handleProcessPayment(payment.id)}
-            disabled={processPayment.isPending}
-          >
-            {t('markPaid')}
-          </Button>
-        ) : (
-          <Button variant="ghost" size="sm" className="text-primary text-sm">
-            {t('view')}
-          </Button>
-        )
+        <div className="w-32">
+          <InlineSelect
+            value={payment.status}
+            options={[
+              { id: 'PENDING', label: t('pending') },
+              { id: 'PAID', label: t('paid') },
+              { id: 'OVERDUE', label: t('overdue') },
+              { id: 'CANCELLED', label: t('cancelled') },
+              { id: 'REFUNDED', label: t('refunded') },
+            ]}
+            onChange={async (newStatus) => {
+              if (newStatus && newStatus !== payment.status) {
+                try {
+                  await updatePaymentStatus.mutateAsync({
+                    id: payment.id,
+                    status: newStatus as PaymentStatus,
+                  });
+                } catch (error) {
+                  console.error('Failed to update payment status:', error);
+                }
+              }
+            }}
+            disabled={updatePaymentStatus.isPending}
+            className="w-full"
+          />
+        </div>
       ),
     },
   ];

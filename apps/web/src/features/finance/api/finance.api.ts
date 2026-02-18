@@ -75,6 +75,13 @@ export async function processPayment(id: string, data?: ProcessPaymentDto): Prom
 }
 
 /**
+ * Update a payment
+ */
+export async function updatePayment(id: string, data: { status?: string; amount?: number; dueDate?: string; notes?: string }): Promise<Payment> {
+  return api.put<Payment>(`/finance/payments/${id}`, data);
+}
+
+/**
  * Cancel a payment
  */
 export async function cancelPayment(id: string): Promise<Payment> {
