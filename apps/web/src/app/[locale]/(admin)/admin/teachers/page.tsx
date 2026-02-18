@@ -573,7 +573,7 @@ export default function TeachersPage() {
     >
       <div className="space-y-6">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StatCard
             title={t('totalTeachers')}
             value={totalTeachers}
@@ -583,14 +583,6 @@ export default function TeachersPage() {
             title={t('activeTeachers')}
             value={activeTeachers || totalTeachers}
             change={{ value: '+2.1%', type: 'positive' }}
-          />
-          <StatCard
-            title={t('totalLessons')}
-            value={totalLessons}
-          />
-          <StatCard
-            title={t('avgLessonsPerTeacher')}
-            value={filteredTeachers.length > 0 ? Math.round(totalLessons / filteredTeachers.length) : 0}
           />
         </div>
 
