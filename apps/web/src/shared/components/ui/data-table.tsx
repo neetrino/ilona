@@ -70,7 +70,8 @@ export function DataTable<T>({
                   key={column.key}
                   className={cn(
                     'px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider',
-                    headerAlignment
+                    column.className, // Apply column className to header for width/padding consistency
+                    headerAlignment // Apply alignment last to ensure it takes precedence
                   )}
                 >
                   {column.sortable && onSort ? (

@@ -427,13 +427,13 @@ export default function TeachersPage() {
           aria-label={`Select ${teacher.user?.firstName} ${teacher.user?.lastName}`}
         />
       ),
-      className: '!pl-4 !pr-2 w-12',
+      className: '!pl-4 !pr-2 !w-12',
     },
     {
       key: 'teacher',
       header: t('title'),
       sortable: true,
-      className: '!pl-0 !pr-4',
+      className: '!pl-4 !pr-4 !min-w-[280px]',
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
@@ -442,19 +442,19 @@ export default function TeachersPage() {
         const isActive = teacher.user?.status === 'ACTIVE';
         return (
           <div className={cn("flex items-center gap-3", !isActive && "opacity-60")} onClick={(e) => e.stopPropagation()}>
-            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-slate-600 font-semibold", isActive ? "bg-slate-200" : "bg-slate-100")}>
+            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-slate-600 font-semibold flex-shrink-0", isActive ? "bg-slate-200" : "bg-slate-100")}>
               {initials}
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className={cn("font-semibold", isActive ? "text-slate-800" : "text-slate-500")}>
+                <p className={cn("font-semibold text-slate-800", !isActive && "text-slate-500")}>
                   {firstName} {lastName}
                 </p>
                 {!isActive && (
                   <span className="text-xs text-slate-400 font-normal">({tStatus('inactive')})</span>
                 )}
               </div>
-              <p className={cn("text-sm", isActive ? "text-slate-500" : "text-slate-400")}>{phone}</p>
+              <p className={cn("text-sm text-slate-500", !isActive && "text-slate-400")}>{phone}</p>
             </div>
           </div>
         );
@@ -463,6 +463,7 @@ export default function TeachersPage() {
     {
       key: 'center',
       header: t('center'),
+      className: '!pl-4 !pr-4 !min-w-[180px]',
       render: (teacher: Teacher) => {
         // Use centers field if available (from backend), otherwise extract from groups
         const centers = teacher.centers || 
@@ -502,20 +503,22 @@ export default function TeachersPage() {
       key: 'students',
       header: t('students'),
       sortable: true,
-      className: 'text-left',
+      className: '!pl-4 !pr-4 !min-w-[100px] text-center',
       render: (teacher: Teacher) => {
         const studentCount = teacher._count?.students || 0;
         return (
-          <span className="text-slate-700 font-medium" onClick={(e) => e.stopPropagation()}>
-            {studentCount}
-          </span>
+          <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+            <span className="text-slate-700 font-medium">
+              {studentCount}
+            </span>
+          </div>
         );
       },
     },
     {
       key: 'hourlyRate',
       header: t('rate'),
-      className: 'text-left',
+      className: '!pl-4 !pr-4 !min-w-[140px]',
       render: (teacher: Teacher) => {
         const rate = typeof teacher.hourlyRate === 'string' ? parseFloat(teacher.hourlyRate) : Number(teacher.hourlyRate || 0);
         return (
@@ -533,29 +536,31 @@ export default function TeachersPage() {
     {
       key: 'actions',
       header: t('actions'),
-      className: '!w-[140px] !min-w-[140px] !max-w-[140px] !px-3 !py-4 text-left',
+      className: '!pl-4 !pr-7 !w-[140px] !min-w-[140px] !max-w-[140px]',
       render: (teacher: Teacher) => {
         const isActive = teacher.user?.status === 'ACTIVE';
         const isDeactivating = updateTeacher.isPending;
         
         return (
-          <ActionButtons
-            onEdit={() => handleEditClick(teacher)}
-            onDisable={() => handleDeactivateClick(teacher)}
-            onDelete={() => handleDeleteClick(teacher)}
-            isActive={isActive}
-            disabled={isDeactivating || deleteTeacher.isPending}
-            ariaLabels={{
-              edit: tCommon('edit'),
-              disable: isActive ? t('deactivate') : t('activate'),
-              delete: tCommon('delete'),
-            }}
-            titles={{
-              edit: tCommon('edit'),
-              disable: isActive ? t('deactivate') : t('activate'),
-              delete: tCommon('delete'),
-            }}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <ActionButtons
+              onEdit={() => handleEditClick(teacher)}
+              onDisable={() => handleDeactivateClick(teacher)}
+              onDelete={() => handleDeleteClick(teacher)}
+              isActive={isActive}
+              disabled={isDeactivating || deleteTeacher.isPending}
+              ariaLabels={{
+                edit: tCommon('edit'),
+                disable: isActive ? t('deactivate') : t('activate'),
+                delete: tCommon('delete'),
+              }}
+              titles={{
+                edit: tCommon('edit'),
+                disable: isActive ? t('deactivate') : t('activate'),
+                delete: tCommon('delete'),
+              }}
+            />
+          </div>
         );
       },
     },
