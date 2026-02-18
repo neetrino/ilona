@@ -248,6 +248,12 @@ export class LessonsController {
     return this.lessonsService.markTextSent(id);
   }
 
+  @Delete('bulk')
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  async deleteBulk(@Body() body: { lessonIds: string[] }, @CurrentUser() user?: JwtPayload) {
+    return this.lessonsService.deleteBulk(body.lessonIds, user?.sub, user?.role);
+  }
+
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   async delete(@Param('id') id: string) {

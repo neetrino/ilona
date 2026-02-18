@@ -6,7 +6,7 @@ import { useLocale } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Badge } from '@/shared/components/ui/badge';
-import { ArrowUpDown, ArrowUp, ArrowDown, Pencil } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Pencil, CheckCircle2 } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -17,6 +17,7 @@ interface LessonListTableProps {
   onBulkDelete?: (lessonIds: string[]) => void;
   onEdit?: (lessonId: string) => void;
   onDelete?: (lessonId: string) => void;
+  onComplete?: (lessonId: string) => void;
   onObligationClick?: (lessonId: string, obligation: 'absence' | 'feedback' | 'voice' | 'text') => void;
   hideTeacherColumn?: boolean;
   sortBy?: string;
@@ -76,26 +77,45 @@ function getLessonDateStatus(scheduledAt: string): 'past' | 'today' | 'future' {
 
 function StatusIndicator({
   completed,
+  isLocked,
   onClick,
   label,
   count,
 }: {
   completed: boolean;
+  isLocked?: boolean;
   onClick: () => void;
   label: string;
   count?: number;
 }) {
+  // Priority logic:
+  // 1. If action is completed → GREEN ✓
+  // 2. Else if locked (manually completed OR day passed) → RED X (non-editable)
+  // 3. Else → GRAY X (editable)
+  
+  const isEditable = !completed && !isLocked;
+  const isRedX = !completed && isLocked;
+
   return (
     <button
       onClick={onClick}
+      disabled={isLocked}
       className={cn(
         'inline-flex items-center justify-center min-w-[32px] h-6 px-1.5 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
         completed
-          ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-          : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+          ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer'
+          : isRedX
+          ? 'bg-red-100 text-red-700 border border-red-300 cursor-not-allowed'
+          : 'bg-slate-50 text-slate-400 hover:bg-slate-100 cursor-pointer'
       )}
-      title={label}
-      aria-label={`${label}: ${completed ? 'Completed' : 'Not completed'}${count !== undefined ? ` (${count})` : ''}`}
+      title={
+        completed
+          ? `${label}: Completed`
+          : isLocked
+          ? `${label}: Locked (cannot be edited)`
+          : `${label}: Not completed (click to edit)`
+      }
+      aria-label={`${label}: ${completed ? 'Completed' : isLocked ? 'Locked' : 'Not completed'}${count !== undefined ? ` (${count})` : ''}`}
     >
       {completed ? (
         <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -113,7 +133,7 @@ function StatusIndicator({
       {count !== undefined && count > 0 && (
         <span className={cn(
           'ml-1 text-xs font-medium',
-          completed ? 'text-emerald-700' : 'text-slate-500'
+          completed ? 'text-emerald-700' : isRedX ? 'text-red-600' : 'text-slate-500'
         )}>
           {count}
         </span>
@@ -128,6 +148,7 @@ export function LessonListTable({
   onBulkDelete,
   onEdit,
   onDelete,
+  onComplete,
   onObligationClick,
   hideTeacherColumn = false,
   sortBy,
@@ -176,7 +197,7 @@ export function LessonListTable({
   const handleBulkDelete = () => {
     if (selectedLessons.size > 0 && onBulkDelete) {
       onBulkDelete(Array.from(selectedLessons));
-      setSelectedLessons(new Set());
+      // Don't clear selection here - let parent handle it after confirmation
     }
   };
 
@@ -364,6 +385,7 @@ export function LessonListTable({
                     <div className="flex items-center justify-center">
                       <StatusIndicator
                         completed={lesson.absenceMarked || false}
+                        isLocked={lesson.isAbsenceLocked || (lesson.status === 'COMPLETED' && !lesson.absenceMarked)}
                         onClick={() => onObligationClick?.(lesson.id, 'absence')}
                         label="Absence"
                       />
@@ -373,6 +395,7 @@ export function LessonListTable({
                     <div className="flex items-center justify-center">
                       <StatusIndicator
                         completed={lesson.feedbacksCompleted || false}
+                        isLocked={lesson.isFeedbackLocked || (lesson.status === 'COMPLETED' && !lesson.feedbacksCompleted)}
                         onClick={() => onObligationClick?.(lesson.id, 'feedback')}
                         label="Feedbacks"
                         count={lesson._count?.feedbacks}
@@ -383,6 +406,7 @@ export function LessonListTable({
                     <div className="flex items-center justify-center">
                       <StatusIndicator
                         completed={lesson.voiceSent || false}
+                        isLocked={lesson.isVoiceLocked || (lesson.status === 'COMPLETED' && !lesson.voiceSent)}
                         onClick={() => onObligationClick?.(lesson.id, 'voice')}
                         label="Voice"
                       />
@@ -392,6 +416,7 @@ export function LessonListTable({
                     <div className="flex items-center justify-center">
                       <StatusIndicator
                         completed={lesson.textSent || false}
+                        isLocked={lesson.isTextLocked || (lesson.status === 'COMPLETED' && !lesson.textSent)}
                         onClick={() => onObligationClick?.(lesson.id, 'text')}
                         label="Text"
                       />
@@ -410,6 +435,33 @@ export function LessonListTable({
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </Button>
+                      {onComplete && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onComplete(lesson.id)}
+                          disabled={lesson.status === 'COMPLETED' || isLocked}
+                          className={cn(
+                            lesson.status === 'COMPLETED'
+                              ? "text-green-600 cursor-default"
+                              : "text-green-600 hover:text-green-700",
+                            isLocked && "opacity-50 cursor-not-allowed"
+                          )}
+                          title={
+                            lesson.status === 'COMPLETED'
+                              ? "Lesson already completed"
+                              : isLocked
+                              ? "This lesson is locked"
+                              : "Mark lesson as completed"
+                          }
+                        >
+                          {lesson.status === 'COMPLETED' ? (
+                            <CheckCircle2 className="w-4 h-4 fill-current" />
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4" />
+                          )}
+                        </Button>
+                      )}
                       {onEdit && (
                         <Button
                           variant="ghost"

@@ -17,6 +17,7 @@ import {
   markLessonMissed,
   markVocabularySent,
   deleteLesson,
+  deleteLessonsBulk,
 } from '../api/lessons.api';
 import type {
   LessonFilters,
@@ -175,9 +176,12 @@ export function useCompleteLesson() {
     mutationFn: ({ id, data }: { id: string; data?: CompleteLessonDto }) =>
       completeLesson(id, data),
     onSuccess: (_, { id }) => {
+      // Invalidate all lesson queries to ensure UI updates immediately
       queryClient.invalidateQueries({ queryKey: lessonKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.all });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.today() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.myLessons() });
       // Invalidate salary queries since completing a lesson affects salary calculation
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
     },
@@ -241,6 +245,21 @@ export function useDeleteLesson() {
     mutationFn: (id: string) => deleteLesson(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Hook to delete multiple lessons (bulk delete)
+ */
+export function useDeleteLessonsBulk() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (lessonIds: string[]) => deleteLessonsBulk(lessonIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.all });
     },
   });
 }

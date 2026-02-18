@@ -81,6 +81,35 @@ export class LessonsService {
   }
 
   /**
+   * Determines if an action should be locked (red X)
+   * Priority:
+   * 1. If action is completed → not locked (green checkmark)
+   * 2. Else if lesson is manually completed → locked (red X)
+   * 3. Else if lesson day has passed (00:00) → locked (red X)
+   * 4. Else → not locked (gray X, editable)
+   */
+  private isActionLocked(
+    actionCompleted: boolean,
+    lessonStatus: LessonStatus,
+    completedAt: Date | null | undefined,
+    scheduledAt: Date,
+  ): boolean {
+    // If action is completed, it's not locked (shows green checkmark)
+    if (actionCompleted) {
+      return false;
+    }
+
+    // If lesson is manually marked as completed, lock all unfinished actions
+    // Check status first - if COMPLETED, lock regardless of completedAt (it should always exist but be defensive)
+    if (lessonStatus === 'COMPLETED') {
+      return true;
+    }
+
+    // If lesson day has passed (00:00), lock unfinished actions
+    return this.isLockedForTeacher(scheduledAt);
+  }
+
+  /**
    * Enriches lesson with computed fields
    */
   private enrichLesson(lesson: any) {
@@ -93,10 +122,38 @@ export class LessonsService {
       textSent: lesson.textSent,
     });
 
+    const isManuallyCompleted = lesson.status === 'COMPLETED' && lesson.completedAt;
+    const isDayPassed = this.isLockedForTeacher(lesson.scheduledAt);
+
     return {
       ...lesson,
       isLockedForTeacher: this.isLockedForTeacher(lesson.scheduledAt),
       completionStatus,
+      // Action lock states (for red X indicators)
+      isAbsenceLocked: this.isActionLocked(
+        lesson.absenceMarked || false,
+        lesson.status,
+        lesson.completedAt,
+        lesson.scheduledAt,
+      ),
+      isFeedbackLocked: this.isActionLocked(
+        lesson.feedbacksCompleted || false,
+        lesson.status,
+        lesson.completedAt,
+        lesson.scheduledAt,
+      ),
+      isVoiceLocked: this.isActionLocked(
+        lesson.voiceSent || false,
+        lesson.status,
+        lesson.completedAt,
+        lesson.scheduledAt,
+      ),
+      isTextLocked: this.isActionLocked(
+        lesson.textSent || false,
+        lesson.status,
+        lesson.completedAt,
+        lesson.scheduledAt,
+      ),
     };
   }
 
@@ -462,21 +519,8 @@ export class LessonsService {
       throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
     }
 
-    // Check for time conflicts
-    const conflictingLesson = await this.prisma.lesson.findFirst({
-      where: {
-        teacherId: dto.teacherId,
-        scheduledAt: {
-          gte: new Date(new Date(dto.scheduledAt).getTime() - (dto.duration || 60) * 60000),
-          lte: new Date(new Date(dto.scheduledAt).getTime() + (dto.duration || 60) * 60000),
-        },
-        status: { notIn: ['CANCELLED', 'MISSED'] },
-      },
-    });
-
-    if (conflictingLesson) {
-      throw new BadRequestException('Teacher has a conflicting lesson at this time');
-    }
+    // Allow creating lessons even if they already exist (user can create lessons whenever they want)
+    // Removed time conflict check to allow duplicate lessons
 
     return this.prisma.lesson.create({
       data: {
@@ -606,14 +650,45 @@ export class LessonsService {
       throw new BadRequestException('Lesson cannot be completed');
     }
 
-    return this.prisma.lesson.update({
+    const updated = await this.prisma.lesson.update({
       where: { id },
       data: {
         status: 'COMPLETED',
         completedAt: new Date(),
         notes: dto.notes,
       },
+      include: {
+        group: {
+          select: {
+            id: true,
+            name: true,
+            level: true,
+            center: { select: { id: true, name: true } },
+          },
+        },
+        teacher: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            attendances: true,
+            feedbacks: true,
+          },
+        },
+      },
     });
+
+    // Return enriched lesson with computed lock states
+    return this.enrichLesson(updated);
   }
 
   async cancelLesson(id: string, reason?: string) {
@@ -740,15 +815,89 @@ export class LessonsService {
   }
 
   async delete(id: string) {
-    const lesson = await this.findById(id);
-
-    if (lesson.status === 'COMPLETED') {
-      throw new BadRequestException('Cannot delete completed lesson');
-    }
-
+    // Allow deletion of any lesson regardless of status
     return this.prisma.lesson.delete({
       where: { id },
     });
+  }
+
+  async deleteBulk(lessonIds: string[], currentUserId?: string, userRole?: UserRole) {
+    // Validate input
+    if (!lessonIds || !Array.isArray(lessonIds) || lessonIds.length === 0) {
+      throw new BadRequestException('lessonIds must be a non-empty array');
+    }
+
+    // For teachers, validate ownership of all lessons
+    let currentTeacherId: string | null = null;
+    if (userRole === UserRole.TEACHER && currentUserId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId: currentUserId },
+        select: { id: true },
+      });
+
+      if (!teacher) {
+        throw new ForbiddenException('Teacher profile not found');
+      }
+
+      currentTeacherId = teacher.id;
+
+      // Check that all lessons belong to this teacher
+      const lessons = await this.prisma.lesson.findMany({
+        where: {
+          id: { in: lessonIds },
+        },
+        select: {
+          id: true,
+          teacherId: true,
+          status: true,
+        },
+      });
+
+      // Check if all requested lessons exist
+      const foundIds = new Set(lessons.map((l) => l.id));
+      const missingIds = lessonIds.filter((id) => !foundIds.has(id));
+      if (missingIds.length > 0) {
+        throw new NotFoundException(`Lessons not found: ${missingIds.join(', ')}`);
+      }
+
+      // Check ownership
+      const unauthorizedLessons = lessons.filter((l) => l.teacherId !== currentTeacherId);
+      if (unauthorizedLessons.length > 0) {
+        throw new ForbiddenException(
+          `You don't have permission to delete ${unauthorizedLessons.length} lesson(s)`,
+        );
+      }
+    } else if (userRole === UserRole.ADMIN) {
+      // Admin can delete any lessons
+      const lessons = await this.prisma.lesson.findMany({
+        where: {
+          id: { in: lessonIds },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      const foundIds = new Set(lessons.map((l) => l.id));
+      const missingIds = lessonIds.filter((id) => !foundIds.has(id));
+      if (missingIds.length > 0) {
+        throw new NotFoundException(`Lessons not found: ${missingIds.join(', ')}`);
+      }
+    } else {
+      throw new ForbiddenException('You do not have permission to delete lessons');
+    }
+
+    // Delete lessons (cascade will handle attendance and feedback records)
+    const result = await this.prisma.lesson.deleteMany({
+      where: {
+        id: { in: lessonIds },
+      },
+    });
+
+    return {
+      success: true,
+      deletedCount: result.count,
+    };
   }
 
   // Schedule helper - create recurring lessons
@@ -826,48 +975,25 @@ export class LessonsService {
       );
     }
 
-    // Fetch existing lessons in the date range to check for duplicates
-    const existingLessons = await this.prisma.lesson.findMany({
-      where: {
+    // Create lessons from all potential dates (allow duplicates - user can create lessons whenever they want)
+    for (const scheduledAt of potentialLessons) {
+      lessons.push({
         groupId,
         teacherId,
-        scheduledAt: {
-          gte: startDate,
-          lte: endDateWithTime,
-        },
-      },
-      select: {
-        scheduledAt: true,
-      },
-    });
-
-    // Create a set of existing lesson times (rounded to minute) for quick lookup
-    const existingTimes = new Set(
-      existingLessons.map((lesson) => {
-        const date = new Date(lesson.scheduledAt);
-        // Round to minute precision
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-      })
-    );
-
-    // Filter out duplicates
-    for (const scheduledAt of potentialLessons) {
-      const timeKey = `${scheduledAt.getFullYear()}-${String(scheduledAt.getMonth() + 1).padStart(2, '0')}-${String(scheduledAt.getDate()).padStart(2, '0')}T${String(scheduledAt.getHours()).padStart(2, '0')}:${String(scheduledAt.getMinutes()).padStart(2, '0')}`;
-      
-      if (!existingTimes.has(timeKey)) {
-        lessons.push({
-          groupId,
-          teacherId,
-          scheduledAt: scheduledAt.toISOString(),
-          duration,
-          topic,
-          description,
-        });
-      }
+        scheduledAt: scheduledAt.toISOString(),
+        duration,
+        topic,
+        description,
+      });
     }
 
     if (lessons.length === 0) {
-      throw new BadRequestException('No lessons would be created with the provided parameters');
+      const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const selectedWeekdays = weekdays.map(wd => weekdayNames[wd]).join(', ');
+      
+      throw new BadRequestException(
+        `No lessons match the selected weekdays (${selectedWeekdays}) in the date range ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}.`
+      );
     }
 
     return this.createBulk(lessons);

@@ -4,12 +4,15 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
-import { useLessons, type Lesson } from '@/features/lessons';
+import { useLessons, useDeleteLessonsBulk, useCompleteLesson, type Lesson } from '@/features/lessons';
 import { AddCourseForm } from '@/features/lessons/components/AddCourseForm';
 import { EditLessonForm } from '@/features/lessons/components/EditLessonForm';
+import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/BulkDeleteConfirmationDialog';
+import { CompleteLessonDialog } from '@/features/lessons/components/CompleteLessonDialog';
 import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/shared/lib/utils';
 import { useTranslations } from 'next-intl';
+import { getErrorMessage } from '@/shared/lib/api';
 
 type ViewMode = 'week' | 'month' | 'list';
 
@@ -76,24 +79,61 @@ function StatusDot({ status }: { status: string }) {
   return <span className={cn('w-2 h-2 rounded-full inline-block', colors[status] || colors.SCHEDULED)} />;
 }
 
-function LessonBlock({ lesson }: { lesson: Lesson }) {
+function LessonBlock({ 
+  lesson, 
+  onComplete 
+}: { 
+  lesson: Lesson;
+  onComplete?: (lessonId: string) => void;
+}) {
   const time = new Date(lesson.scheduledAt).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
   });
 
+  const isCompleted = lesson.status === 'COMPLETED';
+
   return (
     <div className={cn(
-      'p-2 rounded-lg text-xs mb-1 cursor-pointer transition-colors',
-      lesson.status === 'COMPLETED' ? 'bg-green-100 hover:bg-green-200' :
+      'p-2 rounded-lg text-xs mb-1 transition-colors group',
+      isCompleted ? 'bg-green-100 hover:bg-green-200' :
       lesson.status === 'IN_PROGRESS' ? 'bg-yellow-100 hover:bg-yellow-200' :
       lesson.status === 'CANCELLED' ? 'bg-red-100 hover:bg-red-200' :
       'bg-blue-100 hover:bg-blue-200'
     )}>
-      <div className="flex items-center gap-1 mb-1">
-        <StatusDot status={lesson.status} />
-        <span className="font-medium">{time}</span>
+      <div className="flex items-center justify-between gap-1 mb-1">
+        <div className="flex items-center gap-1">
+          <StatusDot status={lesson.status} />
+          <span className="font-medium">{time}</span>
+        </div>
+        {onComplete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onComplete(lesson.id);
+            }}
+            disabled={isCompleted}
+            className={cn(
+              'opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded',
+              isCompleted
+                ? 'text-green-600 cursor-default opacity-100'
+                : 'text-green-600 hover:text-green-700 hover:bg-green-200'
+            )}
+            title={isCompleted ? 'Lesson completed' : 'Mark as completed'}
+            aria-label={isCompleted ? 'Lesson completed' : 'Mark lesson as completed'}
+          >
+            {isCompleted ? (
+              <svg className="w-3.5 h-3.5 fill-current" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+          </button>
+        )}
       </div>
       <p className="truncate font-medium">{lesson.group?.name}</p>
       {lesson.topic && <p className="truncate text-slate-500">{lesson.topic}</p>}
@@ -122,6 +162,15 @@ export default function TeacherCalendarPage() {
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('scheduledAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
+  const [bulkDeleteSuccess, setBulkDeleteSuccess] = useState(false);
+  const [deletedCount, setDeletedCount] = useState<number>(0);
+  const [completingLessonId, setCompletingLessonId] = useState<string | null>(null);
+  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
+  const [completeError, setCompleteError] = useState<string | null>(null);
+  const [completeSuccess, setCompleteSuccess] = useState(false);
   
   // Update URL when view mode changes
   const updateViewModeInUrl = (mode: ViewMode) => {
@@ -213,6 +262,12 @@ export default function TeacherCalendarPage() {
     sortOrder: sortBy === 'scheduledAt' ? sortOrder : undefined,
   });
 
+  // Bulk delete mutation
+  const deleteLessonsBulk = useDeleteLessonsBulk();
+  
+  // Complete lesson mutation
+  const completeLesson = useCompleteLesson();
+
   // Set up automatic refetch every minute for time-based updates (midnight lock, status changes)
   useEffect(() => {
     const interval = setInterval(() => {
@@ -252,6 +307,73 @@ export default function TeacherCalendarPage() {
       return `${weekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
     }
     return currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  // Handle bulk delete click
+  const handleBulkDeleteClick = (lessonIds: string[]) => {
+    setSelectedLessonIds(lessonIds);
+    setBulkDeleteError(null);
+    setBulkDeleteSuccess(false);
+    setIsBulkDeleteDialogOpen(true);
+  };
+
+  // Handle bulk delete confirmation
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedLessonIds.length === 0) return;
+
+    setBulkDeleteError(null);
+    setBulkDeleteSuccess(false);
+
+    const count = selectedLessonIds.length;
+    try {
+      await deleteLessonsBulk.mutateAsync(selectedLessonIds);
+      setDeletedCount(count);
+      setBulkDeleteSuccess(true);
+      setIsBulkDeleteDialogOpen(false);
+      setSelectedLessonIds([]);
+      
+      // Clear success message after a delay
+      setTimeout(() => {
+        setBulkDeleteSuccess(false);
+        setDeletedCount(0);
+      }, 3000);
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to delete lessons. Please try again.');
+      setBulkDeleteError(message);
+    }
+  };
+
+  // Handle complete lesson click
+  const handleCompleteClick = (lessonId: string) => {
+    setCompletingLessonId(lessonId);
+    setCompleteError(null);
+    setCompleteSuccess(false);
+    setIsCompleteDialogOpen(true);
+  };
+
+  // Handle complete lesson confirmation
+  const handleCompleteConfirm = async () => {
+    if (!completingLessonId) return;
+
+    setCompleteError(null);
+    setCompleteSuccess(false);
+
+    try {
+      await completeLesson.mutateAsync({ id: completingLessonId, data: undefined });
+      // Force immediate refetch to update UI with lock states
+      await refetch();
+      setCompleteSuccess(true);
+      setIsCompleteDialogOpen(false);
+      setCompletingLessonId(null);
+      
+      // Clear success message after a delay
+      setTimeout(() => {
+        setCompleteSuccess(false);
+      }, 3000);
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to complete lesson. Please try again.');
+      setCompleteError(message);
+    }
   };
 
   return (
@@ -358,9 +480,11 @@ export default function TeacherCalendarPage() {
             lessons={lessons}
             isLoading={isLoading}
             onEdit={(lessonId) => setEditingLessonId(lessonId)}
+            onComplete={handleCompleteClick}
             onObligationClick={(lessonId, obligation) => {
               router.push(`/teacher/calendar/${lessonId}?tab=${obligation}`);
             }}
+            onBulkDelete={handleBulkDeleteClick}
             hideTeacherColumn={true}
             sortBy={sortBy}
             sortOrder={sortOrder}
@@ -381,6 +505,21 @@ export default function TeacherCalendarPage() {
               lessonId={editingLessonId}
             />
           )}
+          <BulkDeleteConfirmationDialog
+            open={isBulkDeleteDialogOpen}
+            onOpenChange={(open) => {
+              setIsBulkDeleteDialogOpen(open);
+              if (!open) {
+                setBulkDeleteError(null);
+                setBulkDeleteSuccess(false);
+                setSelectedLessonIds([]);
+              }
+            }}
+            onConfirm={handleBulkDeleteConfirm}
+            lessonCount={selectedLessonIds.length}
+            isLoading={deleteLessonsBulk.isPending}
+            error={bulkDeleteError}
+          />
         </>
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -412,7 +551,7 @@ export default function TeacherCalendarPage() {
                     {dayLessons
                       .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
                       .map((lesson) => (
-                        <LessonBlock key={lesson.id} lesson={lesson} />
+                        <LessonBlock key={lesson.id} lesson={lesson} onComplete={handleCompleteClick} />
                       ))}
                     {dayLessons.length === 0 && (
                       <p className="text-xs text-slate-400 text-center py-4">{t('noLessons') || 'No lessons'}</p>
@@ -456,16 +595,7 @@ export default function TeacherCalendarPage() {
                           {date.getDate()}
                         </p>
                         {dayLessons.slice(0, 2).map((lesson) => (
-                          <div key={lesson.id} className={cn(
-                            'text-xs p-1 rounded mb-0.5 truncate',
-                            lesson.status === 'COMPLETED' ? 'bg-green-100' :
-                            lesson.status === 'CANCELLED' ? 'bg-red-100' :
-                            'bg-blue-100'
-                          )}>
-                            {new Date(lesson.scheduledAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                            {' '}
-                            {lesson.group?.name}
-                          </div>
+                          <LessonBlock key={lesson.id} lesson={lesson} onComplete={handleCompleteClick} />
                         ))}
                         {dayLessons.length > 2 && (
                           <p className="text-xs text-slate-500">+{dayLessons.length - 2} more</p>
@@ -478,6 +608,50 @@ export default function TeacherCalendarPage() {
             </div>
           </div>
           )}
+        </div>
+      )}
+
+      {/* Success/Error Messages */}
+      {bulkDeleteSuccess && (
+        <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
+          <p className="text-sm text-green-600 font-medium">
+            {deletedCount > 0 
+              ? `Deleted ${deletedCount} ${deletedCount === 1 ? 'lesson' : 'lessons'} successfully!`
+              : 'Lessons deleted successfully!'}
+          </p>
+        </div>
+      )}
+      {bulkDeleteError && !isBulkDeleteDialogOpen && (
+        <div className="fixed bottom-4 right-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg z-50">
+          <p className="text-sm text-red-600 font-medium">{bulkDeleteError}</p>
+        </div>
+      )}
+
+      {/* Complete Lesson Dialog */}
+      <CompleteLessonDialog
+        open={isCompleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsCompleteDialogOpen(open);
+          if (!open) {
+            setCompletingLessonId(null);
+            setCompleteError(null);
+            setCompleteSuccess(false);
+          }
+        }}
+        onConfirm={handleCompleteConfirm}
+        lessonName={
+          completingLessonId
+            ? lessons.find((l) => l.id === completingLessonId)?.group?.name || undefined
+            : undefined
+        }
+        isLoading={completeLesson.isPending}
+        error={completeError}
+      />
+
+      {/* Complete Success Message */}
+      {completeSuccess && (
+        <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
+          <p className="text-sm text-green-600 font-medium">Lesson marked as completed successfully!</p>
         </div>
       )}
     </DashboardLayout>
