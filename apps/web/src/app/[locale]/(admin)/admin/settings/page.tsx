@@ -18,19 +18,37 @@ export default function SettingsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<SettingsTab>('security');
+  
+  // Initialize activeTab from URL params immediately to avoid flash
+  const getInitialTab = (): SettingsTab => {
+    const tabFromUrl = searchParams.get('tab') as SettingsTab | null;
+    if (tabFromUrl && ['security', 'notifications', 'system', 'percent'].includes(tabFromUrl)) {
+      return tabFromUrl;
+    }
+    return 'security';
+  };
+  
+  const [activeTab, setActiveTab] = useState<SettingsTab>(getInitialTab);
   const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('settings');
   const _tCommon = useTranslations('common');
   const _locale = useLocale() as Locale;
 
-  // Initialize activeTab from URL params on mount
+  // Sync activeTab with URL when URL changes (e.g., browser back/forward)
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab') as SettingsTab | null;
     if (tabFromUrl && ['security', 'notifications', 'system', 'percent'].includes(tabFromUrl)) {
-      setActiveTab(tabFromUrl);
+      setActiveTab((currentTab) => {
+        // Only update if different to avoid unnecessary re-renders
+        return tabFromUrl !== currentTab ? tabFromUrl : currentTab;
+      });
+    } else {
+      // If URL has no tab param, reset to security
+      setActiveTab((currentTab) => {
+        return currentTab !== 'security' ? 'security' : currentTab;
+      });
     }
-  }, [searchParams]);
+  }, [searchParams]); // Only depend on searchParams to sync with URL changes
 
   // Update URL when tab changes
   const handleTabChange = (tab: SettingsTab) => {
