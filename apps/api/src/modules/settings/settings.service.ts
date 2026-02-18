@@ -133,12 +133,118 @@ export class SettingsService {
   }
 
   /**
-   * Get logo URL
+   * Extract storage key from URL (for backward compatibility)
+   * Handles both old URL format and new key format
+   */
+  private extractKeyFromUrl(value: string | null): string | null {
+    if (!value) {
+      return null;
+    }
+
+    // If it's already a key (format: "settings/uuid.ext" or "settings/logo.ext")
+    // Keys don't contain "http://" or "https://" or "/api/"
+    if (!value.includes('://') && !value.startsWith('/api/')) {
+      return value;
+    }
+
+    // Extract key from URL patterns:
+    // - http://localhost:4000/api/storage/file/settings/uuid.ext -> settings/uuid.ext
+    // - https://domain.com/api/storage/file/settings/uuid.ext -> settings/uuid.ext
+    // - https://pub-xxx.r2.dev/settings/uuid.ext -> settings/uuid.ext
+    // - https://files.example.com/settings/uuid.ext -> settings/uuid.ext
+    
+    try {
+      // Try to extract from /storage/file/ path
+      const storageFileMatch = value.match(/\/storage\/file\/(.+)$/);
+      if (storageFileMatch) {
+        return decodeURIComponent(storageFileMatch[1]);
+      }
+
+      // Try to extract from R2 public URL (path after domain)
+      const url = new URL(value);
+      const pathname = url.pathname;
+      if (pathname.startsWith('/')) {
+        const key = pathname.substring(1);
+        // Validate it looks like a storage key (starts with settings/, avatars/, etc.)
+        if (key.match(/^(settings|avatars|chat|documents)\//)) {
+          return key;
+        }
+      }
+    } catch {
+      // If URL parsing fails, try manual extraction
+      const parts = value.split('/');
+      const settingsIndex = parts.findIndex(p => p === 'settings');
+      if (settingsIndex >= 0 && settingsIndex < parts.length - 1) {
+        return parts.slice(settingsIndex).join('/');
+      }
+    }
+
+    // If we can't extract, return null (will need to re-upload)
+    this.logger.warn(`Could not extract key from logo URL: ${value}`);
+    return null;
+  }
+
+  /**
+   * Get logo key (stored in logoUrl column)
+   * Handles backward compatibility with old URL format
+   */
+  async getLogoKey(): Promise<{ logoKey: string | null }> {
+    try {
+      await this.ensureLogoUrlColumn();
+      const settings = await this.getSystemSettings();
+      const storedValue = settings.logoUrl;
+      
+      // Extract key from stored value (handles both URL and key formats)
+      const logoKey = this.extractKeyFromUrl(storedValue);
+      
+      return { logoKey };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get logo key: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Update logo key (stored in logoUrl column)
+   * Stores the R2/storage key, not a URL
+   */
+  async updateLogoKey(logoKey: string | null): Promise<void> {
+    try {
+      await this.ensureLogoUrlColumn();
+
+      let settings = await this.prisma.systemSettings.findFirst();
+
+      if (!settings) {
+        await this.prisma.systemSettings.create({
+          data: { logoUrl: logoKey },
+        });
+      } else {
+        await this.prisma.systemSettings.update({
+          where: { id: settings.id },
+          data: { logoUrl: logoKey },
+        });
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to update logo key: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get logo URL (deprecated - kept for backward compatibility)
+   * Now returns the proxy URL instead of stored URL
    */
   async getLogoUrl(): Promise<{ logoUrl: string | null }> {
     try {
-      const settings = await this.getSystemSettings();
-      return { logoUrl: settings.logoUrl ?? null };
+      const { logoKey } = await this.getLogoKey();
+      // Return proxy URL that works in all environments
+      return { logoUrl: logoKey ? '/api/settings/logo/image' : null };
     } catch (error) {
       this.logger.error(
         `Failed to get logo URL: ${error instanceof Error ? error.message : String(error)}`,

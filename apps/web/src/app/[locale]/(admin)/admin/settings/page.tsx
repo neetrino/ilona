@@ -9,6 +9,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { Locale } from '@/config/i18n';
 import { useLogo, useUploadLogo, useDeleteLogo, useActionPercents, useUpdateActionPercents } from '@/features/settings/hooks/useSettings';
+import { getFullApiUrl } from '@/shared/lib/api';
 import { getErrorMessage } from '@/shared/lib/api';
 
 type SettingsTab = 'security' | 'notifications' | 'system' | 'percent';
@@ -396,7 +397,7 @@ function LogoUploadSection() {
   const uploadLogo = useUploadLogo();
   const deleteLogo = useDeleteLogo();
 
-  const currentLogoUrl = logoData?.logoUrl || null;
+  const currentLogoUrl = getFullApiUrl(logoData?.logoUrl) || null;
 
   // Set preview when logo data changes
   useEffect(() => {

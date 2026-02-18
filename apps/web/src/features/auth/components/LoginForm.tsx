@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useAuthStore, getDashboardPath } from '../store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
+import { getFullApiUrl } from '@/shared/lib/api';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -20,7 +21,7 @@ export function LoginForm() {
   const tHome = useTranslations('home');
   const tRoles = useTranslations('roles');
   const { data: logoData, isLoading: isLoadingLogo } = useLogo();
-  const logoUrl = logoData?.logoUrl;
+  const logoUrl = getFullApiUrl(logoData?.logoUrl);
   const shouldReduceMotion = useReducedMotion();
 
   const handleSubmit = async (e: React.FormEvent) => {
