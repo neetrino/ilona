@@ -50,7 +50,6 @@ import {
   EditTeacherForm,
   DeleteConfirmationDialog,
   TeacherDetailsDrawer,
-  ObligationDetailsModal,
   type Teacher 
 } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
@@ -94,10 +93,6 @@ export default function TeachersPage() {
   const teacherIdFromUrl = searchParams.get('teacherId');
   const [selectedTeacherIdForDetails, setSelectedTeacherIdForDetails] = useState<string | null>(teacherIdFromUrl);
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(!!teacherIdFromUrl);
-  
-  // Obligation modal state
-  const [isObligationModalOpen, setIsObligationModalOpen] = useState(false);
-  const [selectedTeacherForObligation, setSelectedTeacherForObligation] = useState<Teacher | null>(null);
 
   // Debounce search query (300ms delay)
   useEffect(() => {
@@ -466,28 +461,6 @@ export default function TeachersPage() {
       },
     },
     {
-      key: 'groups',
-      header: t('assignedGroups'),
-      render: (teacher: Teacher) => {
-        const groups = teacher.groups || [];
-        return (
-          <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
-            {groups.slice(0, 2).map((group) => (
-              <Badge key={group.id} variant="info">
-                {group.name}
-              </Badge>
-            ))}
-            {groups.length > 2 && (
-              <Badge variant="default">+{groups.length - 2}</Badge>
-            )}
-            {groups.length === 0 && (
-              <span className="text-slate-400 text-sm">{t('noGroups')}</span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
       key: 'center',
       header: t('center'),
       render: (teacher: Teacher) => {
@@ -553,79 +526,6 @@ export default function TeachersPage() {
               minimumFractionDigits: 0,
               maximumFractionDigits: 0,
             }).format(rate)}/hr
-          </span>
-        );
-      },
-    },
-    {
-      key: 'obligation',
-      header: t('obligation') || 'Obligation',
-      sortable: true,
-      className: 'text-center',
-      render: (teacher: Teacher) => {
-        const doneCount = teacher.obligationsDoneCount ?? 0;
-        const total = teacher.obligationsTotal ?? 4;
-        const firstName = teacher.user?.firstName || '';
-        const lastName = teacher.user?.lastName || '';
-        const teacherName = `${firstName} ${lastName}`.trim() || 'Teacher';
-        
-        return (
-          <button
-            type="button"
-            className="text-slate-700 font-medium hover:text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 rounded px-1 transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedTeacherForObligation(teacher);
-              setIsObligationModalOpen(true);
-            }}
-            aria-label={`View obligation details for ${teacherName}`}
-          >
-            {doneCount}/{total}
-          </button>
-        );
-      },
-    },
-    {
-      key: 'deduction',
-      header: t('deduction') || 'Deduction',
-      sortable: true,
-      className: 'text-right',
-      render: (teacher: Teacher) => {
-        const deduction = teacher.deductionAmount ?? 0;
-        if (deduction === 0) {
-          return (
-            <span className="text-slate-500" onClick={(e) => e.stopPropagation()}>
-              —
-            </span>
-          );
-        }
-        return (
-          <span className="text-red-600 font-medium" onClick={(e) => e.stopPropagation()}>
-            {new Intl.NumberFormat('hy-AM', {
-              style: 'currency',
-              currency: 'AMD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(-deduction)}
-          </span>
-        );
-      },
-    },
-    {
-      key: 'cost',
-      header: t('cost') || 'Cost',
-      sortable: true,
-      className: 'text-right',
-      render: (teacher: Teacher) => {
-        const finalCost = teacher.finalCost ?? 0;
-        return (
-          <span className="text-slate-700 font-medium" onClick={(e) => e.stopPropagation()}>
-            {new Intl.NumberFormat('hy-AM', {
-              style: 'currency',
-              currency: 'AMD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(finalCost)}
           </span>
         );
       },
@@ -998,19 +898,6 @@ export default function TeachersPage() {
         teacherId={selectedTeacherIdForDetails}
         open={isDetailsDrawerOpen}
         onClose={handleDetailsDrawerClose}
-      />
-
-      {/* Obligation Details Modal */}
-      <ObligationDetailsModal
-        open={isObligationModalOpen}
-        onOpenChange={(open) => {
-          setIsObligationModalOpen(open);
-          if (!open) {
-            setSelectedTeacherForObligation(null);
-          }
-        }}
-        teacherId={selectedTeacherForObligation?.id || null}
-        teacherName={selectedTeacherForObligation ? `${selectedTeacherForObligation.user?.firstName || ''} ${selectedTeacherForObligation.user?.lastName || ''}`.trim() : undefined}
       />
     </DashboardLayout>
   );

@@ -651,32 +651,6 @@ export default function TeacherProfilePage() {
           </div>
         </div>
 
-        {/* Assigned Groups */}
-        {teacher.groups && teacher.groups.length > 0 && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Assigned Groups</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {teacher.groups.map((group) => (
-                <div key={group.id} className="border border-slate-200 rounded-lg p-4 hover:border-primary/30 transition-colors">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-slate-800">{group.name}</h4>
-                    {group.level && (
-                      <Badge variant="default">{group.level}</Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* No Groups Message */}
-        {(!teacher.groups || teacher.groups.length === 0) && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Assigned Groups</h3>
-            <p className="text-slate-500">No groups assigned to this teacher.</p>
-          </div>
-        )}
 
         {/* Edit Mode Actions */}
         {isEditMode && (

@@ -223,57 +223,6 @@ export function TeacherDetailsDrawer({
                 </div>
               )}
 
-              {/* Assigned Groups */}
-              <div className="space-y-4">
-                <h4 className="font-semibold text-slate-800 text-lg">
-                  {t('assignedGroups')} ({groups.length})
-                </h4>
-                {groups.length === 0 ? (
-                  <p className="text-slate-400 text-sm">{t('noGroups')}</p>
-                ) : (
-                  <div className="border border-slate-200 rounded-lg overflow-hidden">
-                    <div className="max-h-[400px] overflow-y-auto">
-                      <div className="divide-y divide-slate-100">
-                        {groups.map((group) => (
-                          <div key={group.id} className="p-4 hover:bg-slate-50 transition-colors">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <h5 className="font-semibold text-slate-800">{group.name}</h5>
-                                  {group.level && (
-                                    <Badge variant="info" className="text-xs">
-                                      {group.level}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="space-y-1 text-sm text-slate-600">
-                                  {group.center && (
-                                    <div className="flex items-center gap-1.5">
-                                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                      </svg>
-                                      <span>{group.center.name}</span>
-                                    </div>
-                                  )}
-                                  {group._count?.students !== undefined && (
-                                    <div className="flex items-center gap-1.5">
-                                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                      </svg>
-                                      <span>{group._count.students} {group._count.students === 1 ? 'student' : 'students'}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
 
               {/* Statistics */}
               {teacher._count && (
