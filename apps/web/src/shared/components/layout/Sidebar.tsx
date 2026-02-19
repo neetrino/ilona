@@ -110,10 +110,10 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
     case 'ADMIN':
       return [
         { label: t('dashboard'), href: '/admin/dashboard', icon: icons.dashboard },
+        { label: t('groups'), href: '/admin/groups', icon: icons.groups },
         { label: t('teachers'), href: '/admin/teachers', icon: icons.teachers },
         { label: t('students'), href: '/admin/students', icon: icons.students },
         { label: t('finance'), href: '/admin/finance', icon: icons.finance },
-        { label: t('groups'), href: '/admin/groups', icon: icons.groups },
         { label: t('calendar'), href: '/admin/calendar', icon: icons.calendar },
         { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
         { label: t('analytics'), href: '/admin/analytics', icon: icons.analytics },

@@ -144,8 +144,14 @@ export function useUploadLogo() {
 
   return useMutation({
     mutationFn: (file: File) => uploadLogo(file),
-    onSuccess: () => {
-      // Invalidate logo query so all users see the new logo immediately
+    onSuccess: (result) => {
+      // Immediately update the query data with the new logo URL for instant UI update
+      // This prevents the UI from reverting to the old logo while the query refetches
+      queryClient.setQueryData(settingsKeys.logo(), {
+        logoUrl: result.logoUrl,
+      });
+      
+      // Also invalidate to ensure all components get the fresh data
       queryClient.invalidateQueries({ queryKey: settingsKeys.logo() });
       queryClient.invalidateQueries({ queryKey: settingsKeys.public() });
     },
@@ -161,7 +167,12 @@ export function useDeleteLogo() {
   return useMutation({
     mutationFn: () => deleteLogo(),
     onSuccess: () => {
-      // Invalidate logo query so all users see the logo removed
+      // Immediately update the query data to remove the logo for instant UI update
+      queryClient.setQueryData(settingsKeys.logo(), {
+        logoUrl: null,
+      });
+      
+      // Also invalidate to ensure all components get the fresh data
       queryClient.invalidateQueries({ queryKey: settingsKeys.logo() });
       queryClient.invalidateQueries({ queryKey: settingsKeys.public() });
     },

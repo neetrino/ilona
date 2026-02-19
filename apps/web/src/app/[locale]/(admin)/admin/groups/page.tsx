@@ -14,7 +14,15 @@ export default function GroupsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  const [activeTab, setActiveTab] = useState<TabType>('groups');
+  // Initialize active tab from URL
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl === 'groups' || tabFromUrl === 'centers') {
+      return tabFromUrl;
+    }
+    return 'groups';
+  });
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const [centerSearchQuery, setCenterSearchQuery] = useState('');
@@ -29,15 +37,27 @@ export default function GroupsPage() {
     return 'list';
   });
 
+  // Update URL helper function
+  const updateUrl = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === '') {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   // Update URL when view mode changes
   const updateViewModeInUrl = (mode: ViewMode) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode !== 'list') {
-      params.set('view', mode);
-    } else {
-      params.delete('view');
-    }
-    router.push(`${pathname}?${params.toString()}`);
+    updateUrl({ view: mode !== 'list' ? mode : null });
+  };
+
+  // Update URL when tab changes
+  const updateTabInUrl = (tab: TabType) => {
+    updateUrl({ tab: tab !== 'groups' ? tab : null });
   };
 
   // Sync view mode from URL
@@ -47,6 +67,16 @@ export default function GroupsPage() {
       setViewMode(modeFromUrl);
     } else if (!modeFromUrl) {
       setViewMode('list');
+    }
+  }, [searchParams]);
+
+  // Sync active tab from URL
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl === 'groups' || tabFromUrl === 'centers') {
+      setActiveTab(tabFromUrl);
+    } else if (!tabFromUrl) {
+      setActiveTab('groups');
     }
   }, [searchParams]);
 
@@ -71,7 +101,10 @@ export default function GroupsPage() {
         <div className="border-b border-slate-200">
           <nav className="flex gap-4">
             <button
-              onClick={() => setActiveTab('centers')}
+              onClick={() => {
+                setActiveTab('centers');
+                updateTabInUrl('centers');
+              }}
               className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
                 activeTab === 'centers'
                   ? 'border-primary text-primary'
@@ -81,7 +114,10 @@ export default function GroupsPage() {
               Centers / Branches
             </button>
             <button
-              onClick={() => setActiveTab('groups')}
+              onClick={() => {
+                setActiveTab('groups');
+                updateTabInUrl('groups');
+              }}
               className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
                 activeTab === 'groups'
                   ? 'border-primary text-primary'
@@ -99,6 +135,8 @@ export default function GroupsPage() {
             onSearchChange={handleCenterSearchChange}
             centerPage={centerPage}
             setCenterPage={setCenterPage}
+            updateUrl={updateUrl}
+            searchParams={searchParams}
           />
         )}
 
@@ -111,6 +149,8 @@ export default function GroupsPage() {
             viewMode={viewMode}
             setViewMode={setViewMode}
             updateViewModeInUrl={updateViewModeInUrl}
+            updateUrl={updateUrl}
+            searchParams={searchParams}
           />
         )}
       </div>

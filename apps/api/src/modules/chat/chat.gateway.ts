@@ -138,6 +138,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string; content: string; type?: string; metadata?: Record<string, unknown> },
   ) {
     try {
+      // CRITICAL: Validate client.user is set and has required fields
+      if (!client.user || !client.user.sub) {
+        console.error('[ChatGateway] handleSendMessage: client.user is missing or invalid', {
+          hasUser: !!client.user,
+          userId: client.user?.sub,
+        });
+        return { success: false, error: 'Authentication required' };
+      }
+
+      // CRITICAL: Log sender identity for debugging (dev only)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[ChatGateway] handleSendMessage: Sending message', {
+          senderId: client.user.sub,
+          senderRole: client.user.role,
+          senderEmail: client.user.email,
+          chatId: data.chatId,
+        });
+      }
+
       const message = await this.chatService.sendMessage(
         {
           chatId: data.chatId,
@@ -293,6 +312,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string; words: string[] },
   ) {
     try {
+      // CRITICAL: Validate client.user is set and has required fields
+      if (!client.user || !client.user.sub) {
+        console.error('[ChatGateway] handleSendVocabulary: client.user is missing or invalid', {
+          hasUser: !!client.user,
+          userId: client.user?.sub,
+        });
+        return { success: false, error: 'Authentication required' };
+      }
+
       const message = await this.chatService.sendVocabularyMessage(
         data.chatId,
         client.user.sub,

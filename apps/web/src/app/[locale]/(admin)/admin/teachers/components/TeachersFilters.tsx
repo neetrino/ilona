@@ -23,7 +23,15 @@ interface TeachersFiltersProps {
   tCommon: ReturnType<typeof useTranslations<'common'>>;
   tStatus: ReturnType<typeof useTranslations<'status'>>;
   isDeleting: boolean;
+  // Pagination props
+  page?: number;
+  totalPages?: number;
+  totalTeachers?: number;
+  onPageChange?: (page: number) => void;
+  isUpdating?: boolean;
 }
+
+const PAGE_SIZE = 10;
 
 export function TeachersFilters({
   searchQuery,
@@ -42,9 +50,15 @@ export function TeachersFilters({
   tCommon,
   tStatus,
   isDeleting,
+  page = 0,
+  totalPages = 1,
+  totalTeachers = 0,
+  onPageChange,
+  isUpdating = false,
 }: TeachersFiltersProps) {
   return (
-    <div className="flex items-end gap-4">
+    <div className="space-y-4">
+      <div className="flex items-end gap-4">
       {/* Search by Keywords */}
       <div className="flex-1">
         <label className="block text-sm font-medium text-slate-500 mb-1.5">
@@ -173,6 +187,41 @@ export function TeachersFilters({
           {t('addTeacher')}
         </Button>
       </div>
+      </div>
+
+      {/* Pagination - shown only in list view */}
+      {viewMode === 'list' && onPageChange && (
+        <div className="flex items-center justify-between text-sm text-slate-500">
+          <span>
+            {t('showing', {
+              start: page * PAGE_SIZE + 1,
+              end: Math.min((page + 1) * PAGE_SIZE, totalTeachers),
+              total: totalTeachers
+            })}
+          </span>
+          <div className="flex items-center gap-2">
+            <button 
+              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
+              disabled={page === 0 || isDeleting || isUpdating}
+              onClick={() => onPageChange(Math.max(0, page - 1))}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span>{t('page', { current: page + 1, total: totalPages })}</span>
+            <button 
+              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+              disabled={page >= totalPages - 1 || isDeleting || isUpdating}
+              onClick={() => onPageChange(page + 1)}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -77,6 +77,8 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const conversationIdFromUrl = searchParams.get('conversationId') || searchParams.get('chatId');
 
   // Restore chat from URL on initial mount when chats are loaded
+  // CRITICAL: Only restore if conversationId is explicitly in URL (user navigated with it)
+  // Do NOT auto-select based on unread messages, first chat, or last sender
   useEffect(() => {
     if (isLoadingChats || !isInitialMount.current) return;
     
@@ -88,6 +90,17 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
     }
     
     const chatIdFromUrl = conversationIdFromUrl;
+    
+    // If no chatId in URL, ensure no chat is selected (neutral state)
+    // This prevents auto-selection when opening chat via FloatingChatWidget
+    if (!chatIdFromUrl && !teacherIdFromUrl) {
+      // Explicitly clear activeChat if it was set (e.g., from previous session state)
+      if (activeChat) {
+        setActiveChat(null);
+      }
+      isInitialMount.current = false;
+      return;
+    }
     
     // Handle teacherId param for student DM
     if (isStudent && typeFromUrl === 'dm' && teacherIdFromUrl && teachers.length > 0) {
@@ -158,10 +171,9 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
         }
       }
       isInitialMount.current = false;
-    } else if (!chatIdFromUrl && !teacherIdFromUrl) {
-      isInitialMount.current = false;
     }
-  }, [chats, isLoadingChats, isLoadingTeachers, teachers, searchParams, setActiveChat, setMobileListVisible, router, pathname, isStudent, createDirectChat, conversationIdFromUrl]);
+    // Note: If no chatIdFromUrl and no teacherIdFromUrl, we already handled it above
+  }, [chats, isLoadingChats, isLoadingTeachers, teachers, searchParams, setActiveChat, setMobileListVisible, router, pathname, isStudent, createDirectChat, conversationIdFromUrl, activeChat]);
 
   // Sync URL when activeChat changes (but skip on initial mount)
   useEffect(() => {

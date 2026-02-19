@@ -8,7 +8,6 @@ import {
   DeleteConfirmationDialog,
   TeacherDetailsDrawer,
 } from '@/features/teachers';
-import { TeachersStats } from './components/TeachersStats';
 import { TeachersFilters } from './components/TeachersFilters';
 import { TeachersList } from './components/TeachersList';
 import { TeachersBoard } from './components/TeachersBoard';
@@ -50,7 +49,6 @@ export default function TeachersPage() {
     teachersByCenter,
     filteredTeachers,
     centersData,
-    activeTeachers,
     totalLessons,
     
     // Loading states
@@ -112,13 +110,6 @@ export default function TeachersPage() {
       subtitle={t('subtitle')}
     >
       <div className="space-y-6">
-        {/* Stats Grid */}
-        <TeachersStats 
-          totalTeachers={totalTeachers}
-          activeTeachers={activeTeachers}
-          t={t}
-        />
-
         {/* Search, Filter & Actions Bar */}
         <TeachersFilters
           searchQuery={searchQuery}
@@ -137,6 +128,11 @@ export default function TeachersPage() {
           tCommon={tCommon}
           tStatus={tStatus}
           isDeleting={deleteTeachers.isPending || deleteTeacher.isPending}
+          page={page}
+          totalPages={totalPages}
+          totalTeachers={totalTeachers}
+          onPageChange={handlePageChange}
+          isUpdating={updateTeacher.isPending}
         />
 
         {/* Bulk Delete Button (shown when teachers are selected) */}
@@ -156,10 +152,6 @@ export default function TeachersPage() {
         {viewMode === 'list' ? (
           <TeachersList
             teachers={teachers}
-            totalTeachers={totalTeachers}
-            totalPages={totalPages}
-            page={page}
-            onPageChange={handlePageChange}
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
