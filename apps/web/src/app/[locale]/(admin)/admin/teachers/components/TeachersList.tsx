@@ -1,0 +1,128 @@
+'use client';
+
+import { DataTable } from '@/shared/components/ui';
+import { createTeachersTableColumns } from './TeachersTableColumns';
+import type { Teacher } from '@/features/teachers';
+
+interface TeachersListProps {
+  teachers: Teacher[];
+  totalTeachers: number;
+  totalPages: number;
+  page: number;
+  onPageChange: (page: number) => void;
+  sortBy: string | undefined;
+  sortOrder: 'asc' | 'desc';
+  onSort: (key: string) => void;
+  onRowClick: (teacher: Teacher) => void;
+  allSelected: boolean;
+  someSelected: boolean;
+  selectedTeacherIds: Set<string>;
+  onSelectAll: () => void;
+  onToggleSelect: (teacherId: string) => void;
+  onEdit: (teacher: Teacher) => void;
+  onDelete: (teacher: Teacher) => void;
+  onDeactivate: (teacher: Teacher) => void;
+  isLoading: boolean;
+  isDeleting: boolean;
+  isUpdating: boolean;
+  searchQuery: string;
+  t: (key: string) => string;
+  tCommon: (key: string) => string;
+  tStatus: (key: string) => string;
+}
+
+const PAGE_SIZE = 10;
+
+export function TeachersList({
+  teachers,
+  totalTeachers,
+  totalPages,
+  page,
+  onPageChange,
+  sortBy,
+  sortOrder,
+  onSort,
+  onRowClick,
+  allSelected,
+  someSelected,
+  selectedTeacherIds,
+  onSelectAll,
+  onToggleSelect,
+  onEdit,
+  onDelete,
+  onDeactivate,
+  isLoading,
+  isDeleting,
+  isUpdating,
+  searchQuery,
+  t,
+  tCommon,
+  tStatus,
+}: TeachersListProps) {
+  const teacherColumns = createTeachersTableColumns({
+    t,
+    tCommon,
+    tStatus,
+    allSelected,
+    someSelected,
+    selectedTeacherIds,
+    onSelectAll,
+    onToggleSelect,
+    onEdit,
+    onDelete,
+    onDeactivate,
+    isDeleting: isDeleting || isUpdating,
+    isUpdating,
+    isLoading,
+  });
+
+  return (
+    <>
+      {/* Teachers Table */}
+      <DataTable
+        columns={teacherColumns}
+        data={teachers}
+        keyExtractor={(teacher) => teacher.id}
+        isLoading={isLoading}
+        emptyMessage={searchQuery ? t('noTeachersMatch') : t('noTeachersFound')}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={onSort}
+        onRowClick={onRowClick}
+      />
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between text-sm text-slate-500">
+        <span>
+          {t('showing', {
+            start: page * PAGE_SIZE + 1,
+            end: Math.min((page + 1) * PAGE_SIZE, totalTeachers),
+            total: totalTeachers
+          })}
+        </span>
+        <div className="flex items-center gap-2">
+          <button 
+            className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
+            disabled={page === 0 || isDeleting || isUpdating}
+            onClick={() => onPageChange(Math.max(0, page - 1))}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <span>{t('page', { current: page + 1, total: totalPages })}</span>
+          <button 
+            className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+            disabled={page >= totalPages - 1 || isDeleting || isUpdating}
+            onClick={() => onPageChange(page + 1)}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+

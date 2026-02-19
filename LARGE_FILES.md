@@ -71,12 +71,13 @@ This document lists all project source files that exceed **650 lines of code**.
 - **Feature:** Groups & Centers Management
 - **Status:** Refactored into: GroupsTab component, CentersTab component, GroupCard component, CenterCard component, useGroupsManagement hook, useCentersManagement hook
 
-### 7. Teachers Page
+### 7. Teachers Page ✅ DONE
 - **File Path:** `apps/web/src/app/[locale]/(admin)/admin/teachers/page.tsx`
 - **File Name:** `page.tsx`
-- **Total Lines:** 1,240
+- **Total Lines:** 278 (was 1,240)
 - **Category:** Frontend Page Component
 - **Feature:** Teachers Management
+- **Status:** Refactored into: TeachersList component, TeachersBoard component, TeachersFilters component, TeachersStats component, TeachersInfoCards component, TeachersMessages component, TeachersTableColumns utility
 
 ### 8. Students Page
 - **File Path:** `apps/web/src/app/[locale]/(admin)/admin/students/page.tsx`
