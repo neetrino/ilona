@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { useGroups } from '@/features/groups';
 import { useLessons } from '@/features/lessons';
@@ -15,7 +15,6 @@ import {
   type ViewMode,
 } from '@/features/attendance/utils/dateUtils';
 import type { Lesson } from '@/features/lessons';
-import type { Student } from '@/features/students';
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 

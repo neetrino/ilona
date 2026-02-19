@@ -68,7 +68,7 @@ export function useLessonActions(refetch: () => void) {
     try {
       await completeLesson.mutateAsync({ id: completingLessonId, data: undefined });
       // Force immediate refetch to update UI with lock states
-      await refetch();
+      refetch();
       setCompleteSuccess(true);
       setIsCompleteDialogOpen(false);
       setCompletingLessonId(null);

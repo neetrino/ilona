@@ -1,7 +1,6 @@
 'use client';
 
 import { TeacherCard } from './TeacherCard';
-import { getTeacherCenters } from '../utils';
 import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
 
@@ -33,7 +32,6 @@ export function TeachersBoard({
   }
 
   const allCenters = centersData || [];
-  const hasTeachers = Object.values(teachersByCenter).some(teachers => teachers.length > 0);
 
   if (allCenters.length === 0 && (!teachersByCenter['unassigned'] || teachersByCenter['unassigned'].length === 0)) {
     return (

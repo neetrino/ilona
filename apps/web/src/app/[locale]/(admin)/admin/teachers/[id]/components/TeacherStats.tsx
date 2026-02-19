@@ -2,6 +2,8 @@
 
 import { Input } from '@/shared/components/ui';
 import type { Teacher } from '@/features/teachers';
+import type { UseFormRegister } from 'react-hook-form';
+import type { UpdateTeacherFormData } from '../schemas';
 
 interface TeacherStatsProps {
   teacher: Teacher;
@@ -10,7 +12,7 @@ interface TeacherStatsProps {
   errors?: {
     hourlyRate?: { message?: string };
   };
-  register: any;
+  register: UseFormRegister<UpdateTeacherFormData>;
 }
 
 export function TeacherStats({

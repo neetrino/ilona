@@ -27,3 +27,4 @@ export function CalendarLegend({ t }: CalendarLegendProps) {
   );
 }
 
+

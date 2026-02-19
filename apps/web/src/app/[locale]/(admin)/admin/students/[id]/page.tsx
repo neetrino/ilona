@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
-import { useStudent, useStudentStatistics, useUpdateStudent, type UpdateStudentDto, type Student } from '@/features/students';
+import { useStudent, useStudentStatistics, useUpdateStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { StudentProfileHeader } from './components/StudentProfileHeader';
@@ -316,7 +316,6 @@ export default function StudentProfilePage() {
           initials={initials}
           errors={errors}
           register={register}
-          onEditClick={() => setIsEditMode(true)}
         />
 
         {/* Stats Grid */}

@@ -4,6 +4,7 @@ import { List, LayoutGrid } from 'lucide-react';
 import { Button } from '@/shared/components/ui';
 import { FilterDropdown } from '@/shared/components/ui/filter-dropdown';
 import { cn } from '@/shared/lib/utils';
+import type { useTranslations } from 'next-intl';
 
 interface TeachersFiltersProps {
   searchQuery: string;
@@ -18,9 +19,9 @@ interface TeachersFiltersProps {
   centersData?: Array<{ id: string; name: string }>;
   isLoadingCenters: boolean;
   centersError: unknown;
-  t: (key: string) => string;
-  tCommon: (key: string) => string;
-  tStatus: (key: string) => string;
+  t: ReturnType<typeof useTranslations<'teachers'>>;
+  tCommon: ReturnType<typeof useTranslations<'common'>>;
+  tStatus: ReturnType<typeof useTranslations<'status'>>;
   isDeleting: boolean;
 }
 

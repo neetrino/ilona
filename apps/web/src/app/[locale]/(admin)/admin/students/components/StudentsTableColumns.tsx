@@ -30,7 +30,6 @@ interface StudentsTableColumnsProps {
 }
 
 export function createStudentsTableColumns({
-  t,
   tCommon,
   tTeachers,
   allSelected,

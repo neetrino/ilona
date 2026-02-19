@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCenters, useDeleteCenter, useToggleCenterActive, type CenterWithCount } from '@/features/centers';
+import { useCenters, useDeleteCenter, useToggleCenterActive } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 
 const PAGE_SIZE = 10;

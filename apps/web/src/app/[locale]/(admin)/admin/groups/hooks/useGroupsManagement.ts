@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useGroups, useDeleteGroup, useToggleGroupActive, type Group } from '@/features/groups';
-import { useCenters, type CenterWithCount } from '@/features/centers';
+import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 
 const PAGE_SIZE = 10;

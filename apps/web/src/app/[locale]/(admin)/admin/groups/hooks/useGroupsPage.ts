@@ -5,14 +5,12 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { 
   useGroups, 
   useDeleteGroup, 
-  useToggleGroupActive, 
-  type Group 
+  useToggleGroupActive
 } from '@/features/groups';
 import { 
   useCenters, 
   useDeleteCenter, 
-  useToggleCenterActive,
-  type CenterWithCount 
+  useToggleCenterActive
 } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { groupGroupsByCenter, calculateGroupStats } from '../utils';

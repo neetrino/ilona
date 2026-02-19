@@ -1,11 +1,12 @@
 'use client';
 
 import { StatCard } from '@/shared/components/ui';
+import type { useTranslations } from 'next-intl';
 
 interface TeachersStatsProps {
   totalTeachers: number;
   activeTeachers: number;
-  t: (key: string) => string;
+  t: ReturnType<typeof useTranslations<'teachers'>>;
 }
 
 export function TeachersStats({ totalTeachers, activeTeachers, t }: TeachersStatsProps) {

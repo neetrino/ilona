@@ -12,6 +12,8 @@ import {
   useUpdatePaymentStatus,
   useUpdateSalaryStatus,
   useDeleteSalaries,
+  type PaymentStatus,
+  type SalaryStatus,
 } from '@/features/finance';
 import { useFinancePage } from './hooks/useFinancePage';
 import { FinanceStats } from './components/FinanceStats';
@@ -80,9 +82,25 @@ export default function FinancePage() {
   });
 
   // Mutations
-  const updatePaymentStatus = useUpdatePaymentStatus();
-  const updateSalaryStatus = useUpdateSalaryStatus();
+  const updatePaymentStatusMutation = useUpdatePaymentStatus();
+  const updateSalaryStatusMutation = useUpdateSalaryStatus();
   const deleteSalaries = useDeleteSalaries();
+
+  // Wrap updatePaymentStatus to match expected interface
+  const updatePaymentStatus = {
+    mutateAsync: async (params: { id: string; status: PaymentStatus }) => {
+      await updatePaymentStatusMutation.mutateAsync({ id: params.id, status: params.status });
+    },
+    isPending: updatePaymentStatusMutation.isPending,
+  };
+
+  // Wrap updateSalaryStatus to match expected interface
+  const updateSalaryStatus = {
+    mutateAsync: async (params: { id: string; status: SalaryStatus }) => {
+      await updateSalaryStatusMutation.mutateAsync({ id: params.id, status: params.status });
+    },
+    isPending: updateSalaryStatusMutation.isPending,
+  };
 
   const payments = paymentsData?.items || [];
   const totalPayments = paymentsData?.total || 0;

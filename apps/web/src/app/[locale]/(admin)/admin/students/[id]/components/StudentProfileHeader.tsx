@@ -1,8 +1,9 @@
 'use client';
 
-import { Badge, Button, Input, Label } from '@/shared/components/ui';
+import { Badge, Input, Label } from '@/shared/components/ui';
 import type { Student } from '@/features/students';
-import type { UserStatus } from '@/types';
+import type { UseFormRegister } from 'react-hook-form';
+import type { UpdateStudentFormData } from '../schemas';
 
 interface StudentProfileHeaderProps {
   student: Student;
@@ -15,8 +16,7 @@ interface StudentProfileHeaderProps {
     lastName?: { message?: string };
     status?: { message?: string };
   };
-  register: any;
-  onEditClick: () => void;
+  register: UseFormRegister<UpdateStudentFormData>;
 }
 
 export function StudentProfileHeader({
@@ -27,7 +27,6 @@ export function StudentProfileHeader({
   initials,
   errors,
   register,
-  onEditClick,
 }: StudentProfileHeaderProps) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">

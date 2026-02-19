@@ -214,7 +214,6 @@ export default function AdminAttendanceRegisterPage() {
               students={data.students}
               filteredLessons={data.filteredLessons}
               attendanceData={data.attendanceData}
-              attendanceQueries={data.attendanceQueries}
               isLoadingLessons={data.isLoadingLessons}
               isLoadingStudents={data.isLoadingStudents}
               isLoadingAttendance={data.isLoadingAttendance}
