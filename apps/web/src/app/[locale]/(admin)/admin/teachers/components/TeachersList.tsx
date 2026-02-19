@@ -7,10 +7,6 @@ import type { useTranslations } from 'next-intl';
 
 interface TeachersListProps {
   teachers: Teacher[];
-  totalTeachers: number;
-  totalPages: number;
-  page: number;
-  onPageChange: (page: number) => void;
   sortBy: string | undefined;
   sortOrder: 'asc' | 'desc';
   onSort: (key: string) => void;
@@ -32,14 +28,8 @@ interface TeachersListProps {
   tStatus: ReturnType<typeof useTranslations<'status'>>;
 }
 
-const PAGE_SIZE = 10;
-
 export function TeachersList({
   teachers,
-  totalTeachers,
-  totalPages,
-  page,
-  onPageChange,
   sortBy,
   sortOrder,
   onSort,

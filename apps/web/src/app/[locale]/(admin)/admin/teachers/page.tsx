@@ -49,7 +49,6 @@ export default function TeachersPage() {
     teachersByCenter,
     filteredTeachers,
     centersData,
-    activeTeachers,
     totalLessons,
     
     // Loading states
@@ -153,10 +152,6 @@ export default function TeachersPage() {
         {viewMode === 'list' ? (
           <TeachersList
             teachers={teachers}
-            totalTeachers={totalTeachers}
-            totalPages={totalPages}
-            page={page}
-            onPageChange={handlePageChange}
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}

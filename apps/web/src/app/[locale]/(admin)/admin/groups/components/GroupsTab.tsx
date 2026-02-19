@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react';
 import { List, LayoutGrid } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { GroupCard, CreateGroupForm, EditGroupForm, DeleteConfirmationDialog, type Group } from '@/features/groups';
