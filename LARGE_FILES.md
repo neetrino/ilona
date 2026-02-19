@@ -119,12 +119,13 @@ This document lists all project source files that exceed **650 lines of code**.
 - **Feature:** Teacher Attendance Management
 - **Status:** Refactored into: useTeacherAttendanceData hook, useTeacherAttendanceNavigation hook, reuses admin attendance-register components (DayView, WeekView, MonthView, AttendanceControls, AttendanceStats, SaveMessages, AttendanceEmptyGroupState)
 
-### 13. API Library
+### 13. API Library ✅ DONE
 - **File Path:** `apps/web/src/shared/lib/api.ts`
 - **File Name:** `api.ts`
-- **Total Lines:** 696
+- **Total Lines:** 25 (was 696)
 - **Category:** Frontend Library/Utility
 - **Feature:** API Client & Utilities
+- **Status:** Refactored into: api-config.ts, api-errors.ts, api-client.ts, api-url-utils.ts
 
 ### 14. Chat Window Component
 - **File Path:** `apps/web/src/features/chat/components/ChatWindow.tsx`
