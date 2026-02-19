@@ -143,12 +143,13 @@ This document lists all project source files that exceed **650 lines of code**.
 - **Feature:** Student Details View
 - **Status:** Refactored into: StudentProfileHeader component, StudentStats component, StudentDetails component, StudentNotes component, StudentAttendance component, schemas file
 
-### 16. Teacher Detail Page
+### 16. Teacher Detail Page ✅ DONE
 - **File Path:** `apps/web/src/app/[locale]/(admin)/admin/teachers/[id]/page.tsx`
 - **File Name:** `page.tsx`
-- **Total Lines:** 680
+- **Total Lines:** 371 (was 680)
 - **Category:** Frontend Page Component
 - **Feature:** Teacher Details View
+- **Status:** Refactored into: TeacherProfileHeader component, TeacherStats component, TeacherDetails component, schemas file
 
 ### 17. Teacher Calendar Page
 - **File Path:** `apps/web/src/app/[locale]/(teacher)/teacher/calendar/page.tsx`

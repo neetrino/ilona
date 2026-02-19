@@ -5,69 +5,15 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Badge, Button, Input, Label } from '@/shared/components/ui';
+import { Button } from '@/shared/components/ui';
 import { useTeacher, useUpdateTeacher, type UpdateTeacherDto } from '@/features/teachers';
-import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType, type DayOfWeek } from '@/features/teachers/components/WeeklySchedule';
+import { type WeeklySchedule as WeeklyScheduleType, type DayOfWeek } from '@/features/teachers/components/WeeklySchedule';
+import { TeacherProfileHeader } from './components/TeacherProfileHeader';
+import { TeacherStats } from './components/TeacherStats';
+import { TeacherDetails } from './components/TeacherDetails';
+import { updateTeacherSchema, type UpdateTeacherFormData } from './schemas';
 import type { UserStatus } from '@/types';
-
-const updateTeacherSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
-  phone: z.string().max(50, 'Phone must be at most 50 characters').optional().or(z.literal('')),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
-  hourlyRate: z.number().min(0, 'Hourly rate must be positive'),
-  workingDays: z.array(z.string()).optional(),
-  workingHours: z
-    .object({
-      MON: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      TUE: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      WED: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      THU: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      FRI: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      SAT: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      SUN: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-    })
-    .optional()
-    .refine(
-      (val) => {
-        if (!val) return true;
-        const hasDays = Object.keys(val).length > 0;
-        if (!hasDays) return false;
-        // Validate each day's time ranges
-        for (const day of Object.keys(val)) {
-          const ranges = val[day as keyof typeof val];
-          if (ranges && Array.isArray(ranges)) {
-            for (const range of ranges) {
-              if (range.start >= range.end) return false;
-            }
-            // Check for overlaps
-            for (let i = 0; i < ranges.length; i++) {
-              for (let j = i + 1; j < ranges.length; j++) {
-                const r1 = ranges[i];
-                const r2 = ranges[j];
-                if (
-                  (r1.start < r2.end && r1.end > r2.start) ||
-                  (r2.start < r1.end && r2.end > r1.start)
-                ) {
-                  return false;
-                }
-              }
-            }
-          }
-        }
-        return true;
-      },
-      {
-        message: 'At least one day must be selected with valid, non-overlapping time ranges',
-      }
-    ),
-});
-
-type UpdateTeacherFormData = z.infer<typeof updateTeacherSchema>;
-
-const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export default function TeacherProfilePage() {
   const t = useTranslations('teachers');
@@ -364,292 +310,37 @@ export default function TeacherProfilePage() {
         )}
 
         {/* Profile Header */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <div className="flex items-start gap-6">
-            <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
-              {initials}
-            </div>
-            <div className="flex-1">
-              {isEditMode ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">
-                        First Name <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="firstName"
-                        {...register('firstName')}
-                        error={errors.firstName?.message}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">
-                        Last Name <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="lastName"
-                        {...register('lastName')}
-                        error={errors.lastName?.message}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status <span className="text-red-500">*</span></Label>
-                    <select
-                      id="status"
-                      {...register('status')}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      <option value="ACTIVE">Active</option>
-                      <option value="INACTIVE">Inactive</option>
-                      <option value="SUSPENDED">Suspended</option>
-                    </select>
-                    {errors.status && (
-                      <p className="text-sm text-red-600">{errors.status.message}</p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold text-slate-800">
-                      {firstName} {lastName}
-                    </h2>
-                    <Badge variant={teacher.user?.status === 'ACTIVE' ? 'success' : 'warning'}>
-                      {teacher.user?.status || 'UNKNOWN'}
-                    </Badge>
-                  </div>
-                  <p className="text-slate-500 mb-4">{teacher.user?.email || ''}</p>
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    {teacher.user?.phone && (
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                        {teacher.user.phone}
-                      </div>
-                    )}
-                    {teacher.user?.lastLoginAt && (
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Last login: {new Date(teacher.user.lastLoginAt).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+        <TeacherProfileHeader
+          teacher={teacher}
+          isEditMode={isEditMode}
+          firstName={firstName}
+          lastName={lastName}
+          initials={initials}
+          errors={errors}
+          register={register}
+          onEditClick={() => setIsEditMode(true)}
+        />
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-slate-500">Total Groups</span>
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <p className="text-3xl font-bold text-slate-800">{teacher._count?.groups || 0}</p>
-          </div>
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-slate-500">Total Lessons</span>
-              <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <p className="text-3xl font-bold text-slate-800">{teacher._count?.lessons || 0}</p>
-          </div>
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-slate-500">Hourly Rate</span>
-              <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            {isEditMode ? (
-              <div className="space-y-2">
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  {...register('hourlyRate', { valueAsNumber: true })}
-                  error={errors.hourlyRate?.message}
-                  className="text-2xl font-bold"
-                />
-              </div>
-            ) : (
-              <p className="text-3xl font-bold text-slate-800">
-                {new Intl.NumberFormat('hy-AM', {
-                  style: 'currency',
-                  currency: 'AMD',
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                }).format(hourlyRate)}/hr
-              </p>
-            )}
-          </div>
-        </div>
+        <TeacherStats
+          teacher={teacher}
+          hourlyRate={hourlyRate}
+          isEditMode={isEditMode}
+          errors={errors}
+          register={register}
+        />
 
         {/* Details Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Personal Information */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Personal Information</h3>
-            <div className="space-y-4">
-              {isEditMode ? (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      {...register('phone')}
-                      error={errors.phone?.message}
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <label className="text-sm font-medium text-slate-500">First Name</label>
-                    <p className="text-slate-800 mt-1">{firstName}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-500">Last Name</label>
-                    <p className="text-slate-800 mt-1">{lastName}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-500">Email</label>
-                    <p className="text-slate-800 mt-1">{teacher.user?.email || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-500">Phone</label>
-                    <p className="text-slate-800 mt-1">{teacher.user?.phone || 'N/A'}</p>
-                  </div>
-                </>
-              )}
-              <div>
-                <label className="text-sm font-medium text-slate-500">Member Since</label>
-                <p className="text-slate-800 mt-1">
-                  {teacher.user?.createdAt 
-                    ? new Date(teacher.user.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })
-                    : 'N/A'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Professional Information */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Professional Information</h3>
-            <div className="space-y-4">
-              {isEditMode ? (
-                <>
-                  <div className="space-y-2">
-                    <Label>Working Days</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {DAYS_OF_WEEK.map((day) => {
-                        const watchedDays = watch('workingDays') || [];
-                        const isSelected = watchedDays.includes(day);
-                        return (
-                          <button
-                            key={day}
-                            type="button"
-                            onClick={() => {
-                              const currentDays = watch('workingDays') || [];
-                              const newDays = isSelected
-                                ? currentDays.filter((d) => d !== day)
-                                : [...currentDays, day];
-                              setValue('workingDays', newDays, { shouldDirty: true });
-                            }}
-                            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                              isSelected
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                            }`}
-                          >
-                            {day}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <WeeklySchedule
-                      value={watch('workingHours')}
-                      onChange={(schedule) => setValue('workingHours', schedule)}
-                      error={errors.workingHours?.message}
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  {teacher.workingHours && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-500 mb-2 block">Working Schedule</label>
-                      <div className="space-y-2">
-                        {(() => {
-                          // Handle both old and new formats
-                          let schedule: WeeklyScheduleType | null = null;
-                          if ('MON' in teacher.workingHours || 'TUE' in teacher.workingHours) {
-                            schedule = teacher.workingHours as WeeklyScheduleType;
-                          } else if ('start' in teacher.workingHours && 'end' in teacher.workingHours) {
-                            // Old format
-                            const oldHours = teacher.workingHours as { start: string; end: string };
-                            schedule = {};
-                            (teacher.workingDays || []).forEach((day) => {
-                              schedule![day as keyof WeeklyScheduleType] = [
-                                { start: oldHours.start, end: oldHours.end },
-                              ];
-                            });
-                          }
-                          
-                          if (!schedule || Object.keys(schedule).length === 0) {
-                            return <p className="text-slate-400 text-sm italic">No working hours set</p>;
-                          }
-                          
-                          const DAY_LABELS: Record<string, string> = {
-                            MON: 'Monday',
-                            TUE: 'Tuesday',
-                            WED: 'Wednesday',
-                            THU: 'Thursday',
-                            FRI: 'Friday',
-                            SAT: 'Saturday',
-                            SUN: 'Sunday',
-                          };
-                          
-                          return Object.entries(schedule).map(([day, ranges]) => (
-                            <div key={day} className="border border-slate-200 rounded-lg p-3 bg-slate-50">
-                              <div className="font-medium text-slate-700 mb-1">{DAY_LABELS[day] || day}</div>
-                              <div className="flex flex-wrap gap-2">
-                                {ranges.map((range, idx) => (
-                                  <Badge key={idx} variant="info">
-                                    {range.start} - {range.end}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          ));
-                        })()}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+        <TeacherDetails
+          teacher={teacher}
+          isEditMode={isEditMode}
+          firstName={firstName}
+          lastName={lastName}
+          errors={errors}
+          register={register}
+          watch={watch}
+          setValue={setValue}
+        />
 
 
         {/* Edit Mode Actions */}
