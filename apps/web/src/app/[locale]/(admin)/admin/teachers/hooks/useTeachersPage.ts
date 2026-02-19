@@ -121,12 +121,14 @@ export function useTeachersPage() {
     sortOrder: sortOrder,
   });
 
-  // Fetch centers for branch filter
+  // Fetch centers for branch filter - fetch ALL centers (max 100 per API limit)
   const { 
     data: centersData, 
     isLoading: isLoadingCenters,
     error: centersError 
-  } = useCenters();
+  } = useCenters({
+    take: 100, // Maximum allowed by backend API
+  });
 
   // Mutations
   const deleteTeacher = useDeleteTeacher();

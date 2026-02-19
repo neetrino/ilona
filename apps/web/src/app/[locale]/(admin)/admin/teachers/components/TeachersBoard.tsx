@@ -41,52 +41,49 @@ export function TeachersBoard({
     );
   }
 
+  // Sort centers by name to ensure consistent ordering
+  const sortedCenters = [...allCenters].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <div className="w-full overflow-x-auto">
       <div className="flex gap-4 pb-4 min-w-max">
-        {/* Center Columns */}
-        {allCenters
-          .filter((center) => {
-            // When searching/filtering, only show centers with matching teachers
-            const centerTeachers = teachersByCenter[center.id] || [];
-            return centerTeachers.length > 0;
-          })
-          .map((center) => {
-            const centerTeachers = teachersByCenter[center.id] || [];
-            return (
-              <div
-                key={center.id}
-                className="flex-shrink-0 w-80 bg-slate-50 rounded-xl border border-slate-200 flex flex-col"
-              >
-                {/* Column Header */}
-                <div className="p-4 border-b border-slate-200 bg-white rounded-t-xl">
-                  <h3 className="font-semibold text-slate-800">{center.name}</h3>
-                  <p className="text-sm text-slate-500 mt-1">
-                    {centerTeachers.length} {centerTeachers.length === 1 ? 'teacher' : 'teachers'}
-                  </p>
-                </div>
-
-                {/* Column Content */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
-                  {centerTeachers.length === 0 ? (
-                    <div className="text-center py-8 text-slate-400 text-sm">
-                      No teachers
-                    </div>
-                  ) : (
-                    centerTeachers.map((teacher) => (
-                      <TeacherCard
-                        key={teacher.id}
-                        teacher={teacher}
-                        onEdit={() => onEdit(teacher)}
-                        onDelete={() => onDelete(teacher)}
-                        onDeactivate={() => onDeactivate(teacher)}
-                      />
-                    ))
-                  )}
-                </div>
+        {/* Center Columns - Show ALL centers, even if they have no teachers */}
+        {sortedCenters.map((center) => {
+          const centerTeachers = teachersByCenter[center.id] || [];
+          return (
+            <div
+              key={center.id}
+              className="flex-shrink-0 w-80 bg-slate-50 rounded-xl border border-slate-200 flex flex-col"
+            >
+              {/* Column Header */}
+              <div className="p-4 border-b border-slate-200 bg-white rounded-t-xl">
+                <h3 className="font-semibold text-slate-800">{center.name}</h3>
+                <p className="text-sm text-slate-500 mt-1">
+                  {centerTeachers.length} {centerTeachers.length === 1 ? 'teacher' : 'teachers'}
+                </p>
               </div>
-            );
-          })}
+
+              {/* Column Content */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
+                {centerTeachers.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400 text-sm">
+                    No teachers yet
+                  </div>
+                ) : (
+                  centerTeachers.map((teacher) => (
+                    <TeacherCard
+                      key={teacher.id}
+                      teacher={teacher}
+                      onEdit={() => onEdit(teacher)}
+                      onDelete={() => onDelete(teacher)}
+                      onDeactivate={() => onDeactivate(teacher)}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        })}
         
         {/* Unassigned Teachers Column */}
         {teachersByCenter['unassigned'] && teachersByCenter['unassigned'].length > 0 && (
@@ -114,10 +111,11 @@ export function TeachersBoard({
           </div>
         )}
         
-        {searchQuery && allCenters.filter((center) => {
+        {/* Show message when searching and no teachers match in any center */}
+        {searchQuery && sortedCenters.every((center) => {
           const centerTeachers = teachersByCenter[center.id] || [];
-          return centerTeachers.length > 0;
-        }).length === 0 && (!teachersByCenter['unassigned'] || teachersByCenter['unassigned'].length === 0) && (
+          return centerTeachers.length === 0;
+        }) && (!teachersByCenter['unassigned'] || teachersByCenter['unassigned'].length === 0) && (
           <div className="flex items-center justify-center py-12 w-full">
             <div className="text-slate-500">No teachers match your search</div>
           </div>
