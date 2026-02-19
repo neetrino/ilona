@@ -4,6 +4,8 @@ import { Badge, Input, Label } from '@/shared/components/ui';
 import type { Student } from '@/features/students';
 import type { Group } from '@/features/groups';
 import type { Teacher } from '@/features/teachers';
+import type { UseFormRegister } from 'react-hook-form';
+import type { UpdateStudentFormData } from '../schemas';
 
 interface StudentDetailsProps {
   student: Student;
@@ -20,7 +22,7 @@ interface StudentDetailsProps {
     parentPhone?: { message?: string };
     parentEmail?: { message?: string };
   };
-  register: any;
+  register: UseFormRegister<UpdateStudentFormData>;
 }
 
 export function StudentDetails({

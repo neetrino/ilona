@@ -93,7 +93,6 @@ function StatusIndicator({
   // 2. Else if locked (manually completed OR day passed) → RED X (non-editable)
   // 3. Else → GRAY X (editable)
   
-  const isEditable = !completed && !isLocked;
   const isRedX = !completed && isLocked;
 
   return (

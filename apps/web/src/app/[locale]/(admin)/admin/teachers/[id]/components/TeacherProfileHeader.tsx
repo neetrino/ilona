@@ -2,6 +2,8 @@
 
 import { Badge, Input, Label } from '@/shared/components/ui';
 import type { Teacher } from '@/features/teachers';
+import type { UseFormRegister } from 'react-hook-form';
+import type { UpdateTeacherFormData } from '../schemas';
 
 interface TeacherProfileHeaderProps {
   teacher: Teacher;
@@ -14,8 +16,7 @@ interface TeacherProfileHeaderProps {
     lastName?: { message?: string };
     status?: { message?: string };
   };
-  register: any;
-  onEditClick: () => void;
+  register: UseFormRegister<UpdateTeacherFormData>;
 }
 
 export function TeacherProfileHeader({
@@ -26,7 +27,6 @@ export function TeacherProfileHeader({
   initials,
   errors,
   register,
-  onEditClick,
 }: TeacherProfileHeaderProps) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">

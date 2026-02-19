@@ -5,13 +5,9 @@ import { ChevronRight } from 'lucide-react';
 import { SelectAllCheckbox } from '../components/SelectAllCheckbox';
 import type { Payment, SalaryRecord, PaymentStatus, SalaryStatus } from '@/features/finance';
 
-// Format month from salary record (month field is a Date)
+// Format month from salary record (month field is a number)
 function formatMonthFromSalary(salary: SalaryRecord) {
-  const monthDate = typeof salary.month === 'string' ? new Date(salary.month) : (salary.month as any);
-  if (monthDate instanceof Date) {
-    return monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  }
-  // Fallback to month/year if available
+  // month is a number (1-12), year is also a number
   if (salary.month && salary.year) {
     const date = new Date(salary.year, salary.month - 1);
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -21,13 +17,7 @@ function formatMonthFromSalary(salary: SalaryRecord) {
 
 // Get month string in YYYY-MM format from salary record
 function getMonthString(salary: SalaryRecord): string {
-  const monthDate = typeof salary.month === 'string' ? new Date(salary.month) : (salary.month as any);
-  if (monthDate instanceof Date) {
-    const year = monthDate.getFullYear();
-    const month = monthDate.getMonth() + 1;
-    return `${year}-${String(month).padStart(2, '0')}`;
-  }
-  // Fallback
+  // month is a number (1-12), year is also a number
   if (salary.year && salary.month) {
     return `${salary.year}-${String(salary.month).padStart(2, '0')}`;
   }

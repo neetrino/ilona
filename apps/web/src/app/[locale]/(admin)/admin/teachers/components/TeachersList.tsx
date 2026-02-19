@@ -3,6 +3,7 @@
 import { DataTable } from '@/shared/components/ui';
 import { createTeachersTableColumns } from './TeachersTableColumns';
 import type { Teacher } from '@/features/teachers';
+import type { useTranslations } from 'next-intl';
 
 interface TeachersListProps {
   teachers: Teacher[];
@@ -26,9 +27,9 @@ interface TeachersListProps {
   isDeleting: boolean;
   isUpdating: boolean;
   searchQuery: string;
-  t: (key: string) => string;
-  tCommon: (key: string) => string;
-  tStatus: (key: string) => string;
+  t: ReturnType<typeof useTranslations<'teachers'>>;
+  tCommon: ReturnType<typeof useTranslations<'common'>>;
+  tStatus: ReturnType<typeof useTranslations<'status'>>;
 }
 
 const PAGE_SIZE = 10;

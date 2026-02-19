@@ -32,7 +32,6 @@ export function StudentsBoard({
   }
 
   const allCenters = centersData || [];
-  const hasStudents = Object.values(studentsByCenter).some(students => students.length > 0);
 
   if (allCenters.length === 0 && (!studentsByCenter['unassigned'] || studentsByCenter['unassigned'].length === 0)) {
     return (

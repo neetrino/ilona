@@ -22,12 +22,9 @@ export default function StudentsPage() {
     students,
     totalStudents,
     totalPages,
-    allCenters,
     studentsByCenter,
     isLoading,
-    error,
     teachersData,
-    groupsData,
     centersData,
     
     // State
@@ -75,7 +72,6 @@ export default function StudentsPage() {
     totalFees,
     
     // Handlers
-    setSearchQuery,
     handleSearchChange,
     handlePageChange,
     setViewMode,
@@ -113,7 +109,6 @@ export default function StudentsPage() {
     t,
     tCommon,
     tTeachers,
-    tStatus,
     
     // Constants
     pageSize,

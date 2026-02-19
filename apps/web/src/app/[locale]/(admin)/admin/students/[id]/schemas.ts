@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { UserStatus } from '@/types';
 
 export const updateStudentSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),

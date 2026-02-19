@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMessages, useSocket } from '../hooks';
 import { useChatStore } from '../store/chat.store';
-import type { Chat, Message } from '../types';
+import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { api } from '@/shared/lib/api';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';

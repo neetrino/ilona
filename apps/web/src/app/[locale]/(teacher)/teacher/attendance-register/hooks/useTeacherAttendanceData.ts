@@ -14,7 +14,6 @@ import {
   type ViewMode,
 } from '@/features/attendance/utils/dateUtils';
 import type { Lesson } from '@/features/lessons';
-import type { Student } from '@/features/students';
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 

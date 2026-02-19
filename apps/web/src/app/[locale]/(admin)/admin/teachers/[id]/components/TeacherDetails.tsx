@@ -4,6 +4,8 @@ import { Badge, Input, Label } from '@/shared/components/ui';
 import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
 import type { Teacher } from '@/features/teachers';
 import { DAYS_OF_WEEK } from '../schemas';
+import type { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
+import type { UpdateTeacherFormData } from '../schemas';
 
 interface TeacherDetailsProps {
   teacher: Teacher;
@@ -14,9 +16,9 @@ interface TeacherDetailsProps {
     phone?: { message?: string };
     workingHours?: { message?: string };
   };
-  register: any;
-  watch: any;
-  setValue: any;
+  register: UseFormRegister<UpdateTeacherFormData>;
+  watch: UseFormWatch<UpdateTeacherFormData>;
+  setValue: UseFormSetValue<UpdateTeacherFormData>;
 }
 
 export function TeacherDetails({
@@ -91,16 +93,16 @@ export function TeacherDetails({
                 <Label>Working Days</Label>
                 <div className="flex flex-wrap gap-2">
                   {DAYS_OF_WEEK.map((day) => {
-                    const watchedDays = watch('workingDays') || [];
+                    const watchedDays: string[] = watch('workingDays') || [];
                     const isSelected = watchedDays.includes(day);
                     return (
                       <button
                         key={day}
                         type="button"
                         onClick={() => {
-                          const currentDays = watch('workingDays') || [];
-                          const newDays = isSelected
-                            ? currentDays.filter((d: string) => d !== day)
+                          const currentDays: string[] = watch('workingDays') || [];
+                          const newDays: string[] = isSelected
+                            ? currentDays.filter((d) => d !== day)
                             : [...currentDays, day];
                           setValue('workingDays', newDays, { shouldDirty: true });
                         }}

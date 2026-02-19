@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import type { useTranslations } from 'next-intl';
 
 interface TeachersInfoCardsProps {
   filteredTeachers: Array<{ _count?: { lessons?: number } }>;
   totalLessons: number;
   locale: string;
-  t: (key: string, params?: Record<string, unknown>) => string;
+  t: ReturnType<typeof useTranslations<'teachers'>>;
 }
 
 export function TeachersInfoCards({ filteredTeachers, totalLessons, locale, t }: TeachersInfoCardsProps) {

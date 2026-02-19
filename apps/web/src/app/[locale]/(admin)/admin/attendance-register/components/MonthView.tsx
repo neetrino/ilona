@@ -5,7 +5,6 @@ import { MonthViewCalendar } from './MonthViewCalendar';
 import { AttendanceContextHeader } from './AttendanceContextHeader';
 import { AttendanceLoadingState } from './AttendanceLoadingState';
 import { AttendanceEmptyState } from './AttendanceEmptyState';
-import { formatDateDisplay } from '@/features/attendance/utils/dateUtils';
 import type { Group } from '@/features/groups';
 import type { Lesson } from '@/features/lessons';
 import type { Student } from '@/features/students';
@@ -19,7 +18,6 @@ interface MonthViewProps {
   students: Student[];
   filteredLessons: Lesson[];
   attendanceData: Record<string, Record<string, AttendanceCell>>;
-  attendanceQueries: Array<{ isLoading: boolean; isError: boolean }>;
   isLoadingLessons: boolean;
   isLoadingStudents: boolean;
   isLoadingAttendance: boolean;
@@ -44,7 +42,6 @@ export function MonthView({
   students,
   filteredLessons,
   attendanceData,
-  attendanceQueries,
   isLoadingLessons,
   isLoadingStudents,
   isLoadingAttendance,

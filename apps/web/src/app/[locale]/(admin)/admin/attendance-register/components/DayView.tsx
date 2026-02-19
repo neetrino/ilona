@@ -5,7 +5,6 @@ import { AttendanceContextHeader } from './AttendanceContextHeader';
 import { AttendanceLoadingState } from './AttendanceLoadingState';
 import { AttendanceErrorState } from './AttendanceErrorState';
 import { AttendanceEmptyState } from './AttendanceEmptyState';
-import { formatDateDisplay } from '@/features/attendance/utils/dateUtils';
 import type { Group } from '@/features/groups';
 import type { Lesson } from '@/features/lessons';
 import type { Student } from '@/features/students';

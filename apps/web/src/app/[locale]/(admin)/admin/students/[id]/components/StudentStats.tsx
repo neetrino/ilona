@@ -3,6 +3,8 @@
 import { Input } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { StudentStatistics } from '@/features/students';
+import type { UseFormRegister } from 'react-hook-form';
+import type { UpdateStudentFormData } from '../schemas';
 
 interface StudentStatsProps {
   monthlyFee: number;
@@ -11,7 +13,7 @@ interface StudentStatsProps {
   errors?: {
     monthlyFee?: { message?: string };
   };
-  register: any;
+  register: UseFormRegister<UpdateStudentFormData>;
 }
 
 export function StudentStats({

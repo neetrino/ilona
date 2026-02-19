@@ -1,7 +1,6 @@
 'use client';
 
-import { cn } from '@/shared/lib/utils';
-import { formatDateDisplay, formatWeekRange } from '@/features/attendance/utils/dateUtils';
+import { formatDateDisplay } from '@/features/attendance/utils/dateUtils';
 import type { Group } from '@/features/groups';
 
 interface AttendanceContextHeaderProps {
@@ -76,5 +75,6 @@ export function AttendanceContextHeader({
     </div>
   );
 }
+
 
 

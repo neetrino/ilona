@@ -1,6 +1,8 @@
 'use client';
 
 import type { Student } from '@/features/students';
+import type { UseFormRegister } from 'react-hook-form';
+import type { UpdateStudentFormData } from '../schemas';
 
 interface StudentNotesProps {
   student: Student;
@@ -8,7 +10,7 @@ interface StudentNotesProps {
   errors?: {
     notes?: { message?: string };
   };
-  register: any;
+  register: UseFormRegister<UpdateStudentFormData>;
 }
 
 export function StudentNotes({

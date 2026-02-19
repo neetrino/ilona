@@ -318,7 +318,6 @@ export default function TeacherProfilePage() {
           initials={initials}
           errors={errors}
           register={register}
-          onEditClick={() => setIsEditMode(true)}
         />
 
         {/* Stats Grid */}

@@ -6,11 +6,12 @@ import { SelectAllCheckbox } from './SelectAllCheckbox';
 import { cn } from '@/shared/lib/utils';
 import type { Teacher } from '@/features/teachers';
 import { getTeacherCenters, formatHourlyRate } from '../utils';
+import type { useTranslations } from 'next-intl';
 
 interface TeachersTableColumnsProps {
-  t: (key: string) => string;
-  tCommon: (key: string) => string;
-  tStatus: (key: string) => string;
+  t: ReturnType<typeof useTranslations<'teachers'>>;
+  tCommon: ReturnType<typeof useTranslations<'common'>>;
+  tStatus: ReturnType<typeof useTranslations<'status'>>;
   allSelected: boolean;
   someSelected: boolean;
   selectedTeacherIds: Set<string>;
