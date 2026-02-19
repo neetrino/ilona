@@ -1,190 +1,124 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { List, LayoutGrid } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { StatCard, DataTable, Badge, Button, FilterDropdown, ActionButtons } from '@/shared/components/ui';
-import { cn } from '@/shared/lib/utils';
+import { formatCurrency } from '@/shared/lib/utils';
 import { 
-  useStudents, 
-  useDeleteStudent, 
-  useUpdateStudent,
   AddStudentForm,
   EditStudentForm,
-  DeleteConfirmationDialog, 
-  InlineSelect,
-  type Student 
+  DeleteConfirmationDialog,
 } from '@/features/students';
-import { useTeachers } from '@/features/teachers';
-import { useGroups } from '@/features/groups';
-import { useCenters } from '@/features/centers';
-import { formatCurrency } from '@/shared/lib/utils';
-import { getErrorMessage } from '@/shared/lib/api';
-
-type ViewMode = 'list' | 'board';
-
-// Component for select all checkbox with indeterminate state
-function SelectAllCheckbox({
-  checked,
-  indeterminate,
-  onChange,
-  disabled,
-}: {
-  checked: boolean;
-  indeterminate: boolean;
-  onChange: () => void;
-  disabled?: boolean;
-}) {
-  const checkboxRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = indeterminate;
-    }
-  }, [indeterminate]);
-
-  return (
-    <input
-      ref={checkboxRef}
-      type="checkbox"
-      className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-      checked={checked}
-      onChange={onChange}
-      onClick={(e) => e.stopPropagation()}
-      disabled={disabled}
-      aria-label="Select all"
-    />
-  );
-}
-
-interface StudentCardProps {
-  student: Student;
-  onEdit: () => void;
-  onDelete: () => void;
-  onDeactivate: () => void;
-}
-
-function StudentCard({ student, onEdit, onDelete, onDeactivate }: StudentCardProps) {
-  const firstName = student.user?.firstName || '';
-  const lastName = student.user?.lastName || '';
-  const fullName = `${firstName} ${lastName}`.trim();
-  const phone = student.user?.phone || 'No phone';
-  const teacherName = student.teacher
-    ? `${student.teacher.user.firstName} ${student.teacher.user.lastName}`
-    : null;
-  const monthlyFee = typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) : Number(student.monthlyFee || 0);
-  const attendance = student.attendanceSummary;
-  const isActive = student.user?.status === 'ACTIVE';
-
-  return (
-    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-      {/* Student Header */}
-      <div className="mb-3">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h4 className="font-semibold text-slate-800 text-sm leading-tight flex-1">
-            {fullName}
-          </h4>
-          <ActionButtons
-            onEdit={onEdit}
-            onDisable={onDeactivate}
-            onDelete={onDelete}
-            isActive={isActive}
-            size="sm"
-            ariaLabels={{
-              edit: 'Edit student',
-              disable: isActive ? 'Deactivate student' : 'Activate student',
-              delete: 'Delete student',
-            }}
-            titles={{
-              edit: 'Edit student',
-              disable: isActive ? 'Deactivate student' : 'Activate student',
-              delete: 'Delete student',
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Student Details */}
-      <div className="space-y-2 text-xs">
-        <div className="flex items-center gap-2 text-slate-600">
-          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-          </svg>
-          <span className="truncate" title={phone}>{phone}</span>
-        </div>
-
-        {teacherName && (
-          <div className="flex items-center gap-2 text-slate-600">
-            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span className="truncate" title={teacherName}>{teacherName}</span>
-          </div>
-        )}
-
-        <div className="flex items-center gap-2 text-slate-600">
-          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{formatCurrency(monthlyFee)}</span>
-        </div>
-
-        {student.groupId && attendance && (
-          <div className="flex items-center gap-2 text-slate-600">
-            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            <span>{attendance.totalClasses}/{attendance.absences}</span>
-          </div>
-        )}
-
-        {!isActive && (
-          <div className="pt-1">
-            <Badge variant="warning" className="text-xs py-0.5 px-2">
-              Inactive
-            </Badge>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+import { StudentsStats } from './components/StudentsStats';
+import { StudentsFilters } from './components/StudentsFilters';
+import { StudentsList } from './components/StudentsList';
+import { StudentsBoard } from './components/StudentsBoard';
+import { StudentsMessages } from './components/StudentsMessages';
+import { useStudentsPage } from './hooks/useStudentsPage';
 
 export default function StudentsPage() {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(0);
-  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
-  const [isEditStudentOpen, setIsEditStudentOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [deleteSuccess, setDeleteSuccess] = useState(false);
-  const [deactivateError, setDeactivateError] = useState<string | null>(null);
-  const [deactivateSuccess, setDeactivateSuccess] = useState(false);
-  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
-  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
-  const [bulkDeleteSuccess, setBulkDeleteSuccess] = useState(false);
-  const [deletedCount, setDeletedCount] = useState<number>(0);
-  const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
-  const [selectedCenterIds, setSelectedCenterIds] = useState<Set<string>>(new Set());
-  const [selectedStatusIds, setSelectedStatusIds] = useState<Set<string>>(new Set());
-  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  // Month/year filter for attendance - default to current month
-  const now = new Date();
-  const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth() + 1); // 1-12
-  const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
-  const t = useTranslations('students');
-  const tCommon = useTranslations('common');
-  const tTeachers = useTranslations('teachers');
-  const tStatus = useTranslations('status');
-  const pageSize = 10;
+  const {
+    // Data
+    students,
+    totalStudents,
+    totalPages,
+    allCenters,
+    studentsByCenter,
+    isLoading,
+    error,
+    teachersData,
+    groupsData,
+    centersData,
+    
+    // State
+    searchQuery,
+    page,
+    viewMode,
+    sortBy,
+    sortOrder,
+    selectedStudent,
+    selectedStudentIds,
+    allSelected,
+    someSelected,
+    selectedTeacherIds,
+    selectedCenterIds,
+    selectedStatusIds,
+    selectedMonth,
+    selectedYear,
+    isAddStudentOpen,
+    isEditStudentOpen,
+    isDeleteDialogOpen,
+    isBulkDeleteDialogOpen,
+    deleteError,
+    deleteSuccess,
+    bulkDeleteError,
+    bulkDeleteSuccess,
+    deletedCount,
+    deactivateError,
+    deactivateSuccess,
+    
+    // Mutations
+    deleteStudent,
+    updateStudent,
+    
+    // Options
+    teacherOptions,
+    groupOptions,
+    centerOptions,
+    teacherFilterOptions,
+    centerFilterOptions,
+    statusFilterOptions,
+    
+    // Stats
+    activeStudents,
+    studentsWithGroup,
+    totalFees,
+    
+    // Handlers
+    setSearchQuery,
+    handleSearchChange,
+    handlePageChange,
+    setViewMode,
+    updateViewModeInUrl,
+    handleSort,
+    handleToggleSelect,
+    handleSelectAll,
+    handleBulkDeleteClick,
+    handleBulkDeleteConfirm,
+    handleDeleteClick,
+    handleDeleteConfirm,
+    handleEditClick,
+    handleDeactivateClick,
+    handleTeacherChange,
+    handleGroupChange,
+    handleCenterChange,
+    setSelectedTeacherIds,
+    setSelectedCenterIds,
+    setSelectedStatusIds,
+    setSelectedMonth,
+    setSelectedYear,
+    handleFilterChange,
+    setIsAddStudentOpen,
+    setIsEditStudentOpen,
+    setIsDeleteDialogOpen,
+    setIsBulkDeleteDialogOpen,
+    setSelectedStudent,
+    setDeleteError,
+    setBulkDeleteError,
+    setBulkDeleteSuccess,
+    setPage,
+    setSelectedStudentIds,
+    
+    // Translations
+    t,
+    tCommon,
+    tTeachers,
+    tStatus,
+    
+    // Constants
+    pageSize,
+    now,
+  } = useStudentsPage();
 
   // View mode state with URL persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -575,178 +509,39 @@ export default function StudentsPage() {
     console.error('Students fetch error:', error);
   }
 
-  const studentColumns = [
-    {
-      key: 'checkbox',
-      header: (
-        <SelectAllCheckbox
-          checked={allSelected}
-          indeterminate={someSelected}
-          onChange={handleSelectAll}
-          disabled={deleteStudent.isPending || isLoading}
-        />
-      ),
-      render: (student: Student) => (
-        <input
-          type="checkbox"
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          checked={selectedStudentIds.has(student.id)}
-          onChange={() => handleToggleSelect(student.id)}
-          onClick={(e) => e.stopPropagation()}
-          disabled={deleteStudent.isPending || isLoading}
-          aria-label={`Select ${student.user?.firstName} ${student.user?.lastName}`}
-        />
-      ),
-      className: '!pl-4 !pr-2 w-12',
-    },
-    {
-      key: 'student',
-      header: 'STUDENT',
-      sortable: true,
-      className: '!pl-0 !pr-4',
-      render: (student: Student) => {
-        const firstName = student.user?.firstName || '';
-        const lastName = student.user?.lastName || '';
-        const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
-        return (
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold">
-              {initials}
-            </div>
-            <div>
-              <p className="font-semibold text-slate-800">
-                {firstName} {lastName}
-              </p>
-              <p className="text-sm text-slate-500">
-                {student.user?.phone || 'No phone'}
-              </p>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'teacher',
-      header: 'TEACHER',
-      render: (student: Student) => (
-        <div className="min-w-[150px]">
-          <InlineSelect
-            value={student.teacherId || null}
-            options={teacherOptions}
-            onChange={(teacherId) => handleTeacherChange(student.id, teacherId)}
-            placeholder="Not assigned"
-            disabled={updateStudent.isPending}
-          />
-        </div>
-      ),
-    },
-    {
-      key: 'group',
-      header: 'GROUP',
-      render: (student: Student) => (
-        <div className="min-w-[150px]">
-          <InlineSelect
-            value={student.groupId || null}
-            options={groupOptions}
-            onChange={(groupId) => handleGroupChange(student.id, groupId)}
-            placeholder="Not assigned"
-            disabled={updateStudent.isPending}
-          />
-        </div>
-      ),
-    },
-    {
-      key: 'center',
-      header: 'CENTER',
-      render: (student: Student) => {
-        const currentCenterId = student.group?.center?.id || null;
-        return (
-          <div className="min-w-[150px]">
-            <InlineSelect
-              value={currentCenterId}
-              options={centerOptions}
-              onChange={(centerId) => handleCenterChange(student.id, centerId)}
-              placeholder="Not assigned"
-              disabled={updateStudent.isPending}
-            />
-          </div>
-        );
-      },
-    },
-    {
-      key: 'monthlyFee',
-      header: 'MONTHLY FEE',
-      sortable: true,
-      className: 'text-left',
-      render: (student: Student) => {
-        const fee = typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) : Number(student.monthlyFee || 0);
-        return (
-          <span className="text-slate-700 font-medium">
-            {formatCurrency(fee)}
-          </span>
-        );
-      },
-    },
-    {
-      key: 'absence',
-      header: 'ABSENCE',
-      sortable: true,
-      className: 'text-left',
-      render: (student: Student) => {
-        const attendance = student.attendanceSummary;
-        
-        // If student has no group, show "—"
-        if (!student.groupId) {
-          return (
-            <span className="text-slate-400 pl-4">—</span>
-          );
-        }
-        
-        // If no attendance data, show "0/0"
-        if (!attendance) {
-          return (
-            <span className="text-slate-600 pl-4">0/0</span>
-          );
-        }
-        
-        const { totalClasses, absences } = attendance;
-        return (
-          <span className="text-slate-700 font-medium pl-4">
-            {totalClasses}/{absences}
-          </span>
-        );
-      },
-    },
-    {
-      key: 'actions',
-      header: 'ACTIONS',
-      className: '!w-[160px] !min-w-[160px] !max-w-[160px] !px-3 !py-4 text-left',
-      render: (student: Student) => {
-        const isActive = student.user?.status === 'ACTIVE';
-        const isDeactivating = updateStudent.isPending;
-        
-        return (
-          <ActionButtons
-            onEdit={() => handleEditClick(student)}
-            onDisable={() => handleDeactivateClick(student)}
-            onDelete={() => handleDeleteClick(student)}
-            isActive={isActive}
-            disabled={isDeactivating || deleteStudent.isPending}
-            ariaLabels={{
-              edit: tCommon('edit'),
-              disable: isActive ? tTeachers('deactivate') : tTeachers('activate'),
-              delete: tCommon('delete'),
-            }}
-            titles={{
-              edit: tCommon('edit'),
-              disable: isActive ? tTeachers('deactivate') : tTeachers('activate'),
-              delete: tCommon('delete'),
-            }}
-          />
-        );
-      },
-    },
-  ];
+  // Handle view mode change with proper state updates
+  const handleViewModeChange = (mode: 'list' | 'board') => {
+    setViewMode(mode);
+    updateViewModeInUrl(mode);
+    setPage(0);
+    setSelectedStudentIds(new Set());
+  };
+
+  // Handle filter changes with proper callbacks
+  const handleStatusFilterChange = (ids: Set<string>) => {
+    setSelectedStatusIds(ids);
+    handleFilterChange();
+  };
+
+  const handleTeacherFilterChange = (ids: Set<string>) => {
+    setSelectedTeacherIds(ids);
+    handleFilterChange();
+  };
+
+  const handleCenterFilterChange = (ids: Set<string>) => {
+    setSelectedCenterIds(ids);
+    handleFilterChange();
+  };
+
+  const handleMonthChange = (month: number) => {
+    setSelectedMonth(month);
+    handleFilterChange();
+  };
+
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+    handleFilterChange();
+  };
 
   return (
     <DashboardLayout 
@@ -755,351 +550,87 @@ export default function StudentsPage() {
     >
       <div className="space-y-6">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <StatCard
-            title={t('totalStudents')}
-            value={totalStudents}
-            change={{ value: '+5.2%', type: 'positive' }}
-          />
-          <StatCard
-            title={t('activeStudents')}
-            value={activeStudents || totalStudents}
-            change={{ value: '+3.1%', type: 'positive' }}
-          />
-          <StatCard
-            title={t('inGroups')}
-            value={studentsWithGroup}
-            change={{ value: t('unassignedCount', { count: totalStudents - studentsWithGroup }), type: totalStudents - studentsWithGroup > 0 ? 'warning' : 'positive' }}
-          />
-          <StatCard
-            title={t('totalMonthlyFees')}
-            value={formatCurrency(totalFees)}
-          />
-        </div>
+        <StudentsStats 
+          totalStudents={totalStudents}
+          activeStudents={activeStudents}
+          studentsWithGroup={studentsWithGroup}
+          totalFees={totalFees}
+          t={t}
+        />
 
         {/* Search & Filters */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="flex-1 relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="search"
-                placeholder={t('searchPlaceholder')}
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-            </div>
-            {/* Status Filter */}
-            <div className="relative">
-              <select
-                value={selectedStatusIds.size === 1 ? Array.from(selectedStatusIds)[0] : ''}
-                onChange={(e) => {
-                  const status = e.target.value as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '';
-                  if (status) {
-                    setSelectedStatusIds(new Set([status]));
-                  } else {
-                    setSelectedStatusIds(new Set());
-                  }
-                  setPage(0);
-                  setSelectedStudentIds(new Set());
-                }}
-                className="pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer min-w-[160px]"
-              >
-                <option value="">All statuses</option>
-                <option value="ACTIVE">{tStatus('active')}</option>
-                <option value="INACTIVE">{tStatus('inactive')}</option>
-                <option value="SUSPENDED">{tStatus('suspended')}</option>
-              </select>
-              <svg 
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-            {selectedStudentIds.size > 0 && (
-              <Button
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium"
-                onClick={handleBulkDeleteClick}
-                disabled={deleteStudent.isPending || isLoading}
-              >
-                Delete All ({selectedStudentIds.size})
-              </Button>
-            )}
-            {/* View Mode Toggle */}
-            <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
-              <button
-                onClick={() => {
-                  setViewMode('list');
-                  updateViewModeInUrl('list');
-                  setPage(0); // Reset pagination when switching views
-                  // Clear selection when switching views
-                  setSelectedStudentIds(new Set());
-                }}
-                className={cn(
-                  'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-                  viewMode === 'list'
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-slate-700 hover:bg-slate-100'
-                )}
-                aria-pressed={viewMode === 'list'}
-              >
-                <List className="w-4 h-4" />
-                List
-              </button>
-              <button
-                onClick={() => {
-                  setViewMode('board');
-                  updateViewModeInUrl('board');
-                  setPage(0); // Reset pagination when switching views
-                  // Clear selection when switching views
-                  setSelectedStudentIds(new Set());
-                }}
-                className={cn(
-                  'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-                  viewMode === 'board'
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-slate-700 hover:bg-slate-100'
-                )}
-                aria-pressed={viewMode === 'board'}
-              >
-                <LayoutGrid className="w-4 h-4" />
-                Board
-              </button>
-            </div>
-            <Button 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium"
-              onClick={() => setIsAddStudentOpen(true)}
-            >
-              + {t('addStudent')}
-            </Button>
-          </div>
-
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <FilterDropdown
-              label="Status"
-              options={statusFilterOptions}
-              selectedIds={selectedStatusIds}
-              onSelectionChange={(ids) => {
-                setSelectedStatusIds(ids);
-                handleFilterChange();
-              }}
-              placeholder="All Statuses"
-            />
-            <FilterDropdown
-              label="Teacher"
-              options={teacherFilterOptions}
-              selectedIds={selectedTeacherIds}
-              onSelectionChange={(ids) => {
-                setSelectedTeacherIds(ids);
-                handleFilterChange();
-              }}
-              placeholder="All Teachers"
-              isLoading={!teachersData}
-            />
-            <FilterDropdown
-              label="Center"
-              options={centerFilterOptions}
-              selectedIds={selectedCenterIds}
-              onSelectionChange={(ids) => {
-                setSelectedCenterIds(ids);
-                handleFilterChange();
-              }}
-              placeholder="All Centers"
-              isLoading={!centersData}
-            />
-            {/* Month Filter */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-700">Month</label>
-              <select
-                value={selectedMonth}
-                onChange={(e) => {
-                  setSelectedMonth(Number(e.target.value));
-                  handleFilterChange();
-                }}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                <option value={1}>January</option>
-                <option value={2}>February</option>
-                <option value={3}>March</option>
-                <option value={4}>April</option>
-                <option value={5}>May</option>
-                <option value={6}>June</option>
-                <option value={7}>July</option>
-                <option value={8}>August</option>
-                <option value={9}>September</option>
-                <option value={10}>October</option>
-                <option value={11}>November</option>
-                <option value={12}>December</option>
-              </select>
-            </div>
-            {/* Year Filter */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-700">Year</label>
-              <select
-                value={selectedYear}
-                onChange={(e) => {
-                  setSelectedYear(Number(e.target.value));
-                  handleFilterChange();
-                }}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                {Array.from({ length: 5 }, (_, i) => {
-                  const year = now.getFullYear() - 2 + i;
-                  return (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
-        </div>
+        <StudentsFilters
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          selectedStatusIds={selectedStatusIds}
+          onStatusChange={handleStatusFilterChange}
+          selectedTeacherIds={selectedTeacherIds}
+          onTeacherChange={handleTeacherFilterChange}
+          selectedCenterIds={selectedCenterIds}
+          onCenterChange={handleCenterFilterChange}
+          selectedMonth={selectedMonth}
+          onMonthChange={handleMonthChange}
+          selectedYear={selectedYear}
+          onYearChange={handleYearChange}
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          onAddStudent={() => setIsAddStudentOpen(true)}
+          selectedStudentIds={selectedStudentIds}
+          onBulkDelete={handleBulkDeleteClick}
+          statusFilterOptions={statusFilterOptions}
+          teacherFilterOptions={teacherFilterOptions}
+          centerFilterOptions={centerFilterOptions}
+          isLoadingTeachers={!teachersData}
+          isLoadingCenters={!centersData}
+          isDeleting={deleteStudent.isPending || isLoading}
+          t={t}
+          now={now}
+        />
 
         {/* Students View */}
         {viewMode === 'list' ? (
-          <>
-            {/* Students Table */}
-            <DataTable
-              columns={studentColumns}
-              data={students}
-              keyExtractor={(student) => student.id}
-              isLoading={isLoading}
-              emptyMessage={searchQuery ? "No students match your search" : "No students found"}
-              sortBy={sortBy}
-              sortOrder={sortOrder}
-              onSort={handleSort}
-            />
-
-            {/* Pagination */}
-            <div className="flex items-center justify-between text-sm text-slate-500">
-              <span>
-                Showing {Math.min(page * pageSize + 1, totalStudents)}-{Math.min((page + 1) * pageSize, totalStudents)} of {totalStudents} students
-              </span>
-              <div className="flex items-center gap-2">
-                <button 
-                  className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
-                  disabled={page === 0}
-                  onClick={() => handlePageChange(Math.max(0, page - 1))}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <span>Page {page + 1} of {totalPages || 1}</span>
-                <button 
-                  className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
-                  disabled={page >= totalPages - 1}
-                  onClick={() => handlePageChange(page + 1)}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </>
+          <StudentsList
+            students={students}
+            totalStudents={totalStudents}
+            totalPages={totalPages}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+            allSelected={allSelected}
+            someSelected={someSelected}
+            selectedStudentIds={selectedStudentIds}
+            onSelectAll={handleSelectAll}
+            onToggleSelect={handleToggleSelect}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteClick}
+            onDeactivate={handleDeactivateClick}
+            onTeacherChange={handleTeacherChange}
+            onGroupChange={handleGroupChange}
+            onCenterChange={handleCenterChange}
+            teacherOptions={teacherOptions}
+            groupOptions={groupOptions}
+            centerOptions={centerOptions}
+            isLoading={isLoading}
+            isDeleting={deleteStudent.isPending}
+            isUpdating={updateStudent.isPending}
+            searchQuery={searchQuery}
+            t={t}
+            tCommon={tCommon}
+            tTeachers={tTeachers}
+          />
         ) : (
-          /* Board View */
-          <div className="w-full overflow-x-auto">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-slate-500">Loading students...</div>
-              </div>
-            ) : allCenters.length === 0 && studentsByCenter['unassigned']?.length === 0 ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-slate-500">No students found.</div>
-              </div>
-            ) : (
-              <div className="flex gap-4 pb-4 min-w-max">
-                {/* Center Columns */}
-                {allCenters
-                  .filter((center) => {
-                    // When searching/filtering, only show centers with matching students
-                    const centerStudents = studentsByCenter[center.id] || [];
-                    return centerStudents.length > 0;
-                  })
-                  .map((center) => {
-                    const centerStudents = studentsByCenter[center.id] || [];
-                    return (
-                      <div
-                        key={center.id}
-                        className="flex-shrink-0 w-80 bg-slate-50 rounded-xl border border-slate-200 flex flex-col"
-                      >
-                        {/* Column Header */}
-                        <div className="p-4 border-b border-slate-200 bg-white rounded-t-xl">
-                          <h3 className="font-semibold text-slate-800">{center.name}</h3>
-                          <p className="text-sm text-slate-500 mt-1">
-                            {centerStudents.length} {centerStudents.length === 1 ? 'student' : 'students'}
-                          </p>
-                        </div>
-
-                        {/* Column Content */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
-                          {centerStudents.length === 0 ? (
-                            <div className="text-center py-8 text-slate-400 text-sm">
-                              No students
-                            </div>
-                          ) : (
-                            centerStudents.map((student) => (
-                              <StudentCard
-                                key={student.id}
-                                student={student}
-                                onEdit={() => handleEditClick(student)}
-                                onDelete={() => handleDeleteClick(student)}
-                                onDeactivate={() => handleDeactivateClick(student)}
-                              />
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                {/* Unassigned Students Column */}
-                {studentsByCenter['unassigned'] && studentsByCenter['unassigned'].length > 0 && (
-                  <div className="flex-shrink-0 w-80 bg-slate-50 rounded-xl border border-slate-200 flex flex-col">
-                    {/* Column Header */}
-                    <div className="p-4 border-b border-slate-200 bg-white rounded-t-xl">
-                      <h3 className="font-semibold text-slate-800">Unassigned</h3>
-                      <p className="text-sm text-slate-500 mt-1">
-                        {studentsByCenter['unassigned'].length} {studentsByCenter['unassigned'].length === 1 ? 'student' : 'students'}
-                      </p>
-                    </div>
-
-                    {/* Column Content */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
-                      {studentsByCenter['unassigned'].map((student) => (
-                        <StudentCard
-                          key={student.id}
-                          student={student}
-                          onEdit={() => handleEditClick(student)}
-                          onDelete={() => handleDeleteClick(student)}
-                          onDeactivate={() => handleDeactivateClick(student)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {searchQuery && allCenters.filter((center) => {
-                  const centerStudents = studentsByCenter[center.id] || [];
-                  return centerStudents.length > 0;
-                }).length === 0 && (!studentsByCenter['unassigned'] || studentsByCenter['unassigned'].length === 0) && (
-                  <div className="flex items-center justify-center py-12 w-full">
-                    <div className="text-slate-500">No students match your search</div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <StudentsBoard
+            studentsByCenter={studentsByCenter}
+            centersData={centersData?.items}
+            isLoading={isLoading}
+            searchQuery={searchQuery}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteClick}
+            onDeactivate={handleDeactivateClick}
+          />
         )}
 
         {/* Info Cards */}
@@ -1118,7 +649,10 @@ export default function StudentsPage() {
                     ? `${totalStudents - studentsWithGroup} students are not assigned to any group. Assign them to start their learning journey.`
                     : 'All students are assigned to groups. Great work!'}
                 </p>
-                <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90">
+                <button 
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90"
+                  onClick={() => router.push('/admin/groups')}
+                >
                   Manage Groups
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -1141,7 +675,10 @@ export default function StudentsPage() {
                   Total monthly fees: {formatCurrency(totalFees)}. 
                   Monitor payment status in the Finance section.
                 </p>
-                <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90">
+                <button 
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90"
+                  onClick={() => router.push('/admin/finance')}
+                >
                   View Finance
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -1152,6 +689,17 @@ export default function StudentsPage() {
           </div>
         </div>
       </div>
+
+      {/* Success/Error Messages */}
+      <StudentsMessages
+        deleteSuccess={deleteSuccess}
+        deleteError={deleteError}
+        bulkDeleteSuccess={bulkDeleteSuccess}
+        bulkDeleteError={bulkDeleteError}
+        deletedCount={deletedCount}
+        deactivateSuccess={deactivateSuccess}
+        deactivateError={deactivateError}
+      />
 
       {/* Add Student Modal */}
       <AddStudentForm 
@@ -1176,7 +724,14 @@ export default function StudentsPage() {
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) {
+            setSelectedStudent(null);
+            setDeleteError(null);
+            setDeleteSuccess(false);
+          }
+        }}
         onConfirm={handleDeleteConfirm}
         studentName={selectedStudent ? `${selectedStudent.user?.firstName || ''} ${selectedStudent.user?.lastName || ''}`.trim() : undefined}
         isLoading={deleteStudent.isPending}
@@ -1199,37 +754,6 @@ export default function StudentsPage() {
         error={bulkDeleteError || undefined}
         title="Delete Students"
       />
-
-      {/* Success Messages */}
-      {deleteSuccess && (
-        <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
-          <p className="text-sm text-green-600">Student deleted successfully!</p>
-        </div>
-      )}
-      {bulkDeleteSuccess && (
-        <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
-          <p className="text-sm text-green-600 font-medium">
-            {deletedCount > 0 
-              ? `${deletedCount} ${deletedCount === 1 ? 'student' : 'students'} deleted successfully!`
-              : 'Students deleted successfully!'}
-          </p>
-        </div>
-      )}
-      {deactivateSuccess && (
-        <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
-          <p className="text-sm text-green-600">Student status updated successfully!</p>
-        </div>
-      )}
-      {bulkDeleteError && (
-        <div className="fixed bottom-4 right-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg z-50">
-          <p className="text-sm text-red-600 font-medium">{bulkDeleteError}</p>
-        </div>
-      )}
-      {deactivateError && (
-        <div className="fixed bottom-4 right-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg z-50">
-          <p className="text-sm text-red-600">{deactivateError}</p>
-        </div>
-      )}
     </DashboardLayout>
   );
 }
