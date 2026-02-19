@@ -10,10 +10,13 @@ import {
   fetchLogo,
   uploadLogo,
   deleteLogo,
+  fetchActionPercents,
+  updateActionPercents,
 } from '../api/settings.api';
 import type { UpdateProfileDto, ChangePasswordDto } from '../types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { teacherKeys } from '@/features/teachers';
+import { financeKeys } from '@/features/finance/hooks/useFinance';
 
 // Query keys
 export const settingsKeys = {
@@ -21,6 +24,7 @@ export const settingsKeys = {
   profile: () => [...settingsKeys.all, 'profile'] as const,
   logo: () => [...settingsKeys.all, 'logo'] as const,
   public: () => [...settingsKeys.all, 'public'] as const,
+  actionPercents: () => [...settingsKeys.all, 'action-percents'] as const,
 };
 
 /**
@@ -160,6 +164,40 @@ export function useDeleteLogo() {
       // Invalidate logo query so all users see the logo removed
       queryClient.invalidateQueries({ queryKey: settingsKeys.logo() });
       queryClient.invalidateQueries({ queryKey: settingsKeys.public() });
+    },
+  });
+}
+
+/**
+ * Hook to fetch action percent settings (Admin only)
+ */
+export function useActionPercents() {
+  return useQuery({
+    queryKey: settingsKeys.actionPercents(),
+    queryFn: () => fetchActionPercents(),
+  });
+}
+
+/**
+ * Hook to update action percent settings (Admin only)
+ */
+export function useUpdateActionPercents() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: {
+      absencePercent: number;
+      feedbacksPercent: number;
+      voicePercent: number;
+      textPercent: number;
+    }) => updateActionPercents(data),
+    onSuccess: () => {
+      // Invalidate action percents query
+      queryClient.invalidateQueries({ queryKey: settingsKeys.actionPercents() });
+      
+      // Invalidate all salary-related queries so finance recalculates immediately
+      queryClient.invalidateQueries({ queryKey: ['finance', 'salaries'] });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
     },
   });
 }

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
+import { getFullApiUrl } from '@/shared/lib/api';
 
 interface NavItem {
   label: string;
@@ -157,7 +158,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const { data: logoData, isLoading: isLoadingLogo } = useLogo();
 
   const navItems = getNavItems(userRole, t);
-  const logoUrl = logoData?.logoUrl;
+  const logoUrl = getFullApiUrl(logoData?.logoUrl);
 
   const isActive = (href: string) => {
     // Extract the path without locale

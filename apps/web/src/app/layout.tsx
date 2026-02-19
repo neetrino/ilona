@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   description: 'English Learning Center Management Platform',
 };
 
-
 export default function RootLayout({
   children,
 }: {

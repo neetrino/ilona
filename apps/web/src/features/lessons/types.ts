@@ -24,6 +24,11 @@ export interface Lesson {
   // Computed fields from backend
   isLockedForTeacher?: boolean;
   completionStatus?: CompletionStatus;
+  // Action lock states (for red X indicators)
+  isAbsenceLocked?: boolean;
+  isFeedbackLocked?: boolean;
+  isVoiceLocked?: boolean;
+  isTextLocked?: boolean;
   group: {
     id: string;
     name: string;

@@ -29,20 +29,16 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
 
   // Initialize attendance state from saved data - only prefill students with saved attendance
   useEffect(() => {
-    if (students.length > 0 && attendanceData) {
+    if (attendanceData?.studentsWithAttendance && attendanceData.studentsWithAttendance.length > 0) {
       const initial: Record<string, { isPresent: boolean; absenceType?: AbsenceType }> = {};
       
       // Initialize only students with saved attendance (do not default to present)
-      students.forEach((student) => {
-        // Find saved attendance from studentsWithAttendance array
-        const studentWithAttendance = attendanceData.studentsWithAttendance?.find(
-          (swa) => swa.student.id === student.id
-        );
-        const savedAttendance = studentWithAttendance?.attendance;
+      attendanceData.studentsWithAttendance.forEach((swa) => {
+        const savedAttendance = swa.attendance;
         
         if (savedAttendance) {
           // Use saved attendance - only set state for students with saved data
-          initial[student.id] = {
+          initial[swa.student.id] = {
             isPresent: savedAttendance.isPresent,
             absenceType: savedAttendance.absenceType || undefined,
           };
@@ -54,7 +50,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
       // Reset hasChanges since we're loading saved data
       setHasChanges(false);
     }
-  }, [attendanceData, students]);
+  }, [attendanceData]);
 
   const handleAttendanceChange = (studentId: string, status: AttendanceStatus) => {
     setHasChanges(true);

@@ -2,6 +2,9 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Body,
+  Res,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -9,11 +12,13 @@ import {
   InternalServerErrorException,
   PayloadTooLargeException,
   UnsupportedMediaTypeException,
+  NotFoundException,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
   Logger,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -22,6 +27,7 @@ import { Roles, Public } from '../../common/decorators';
 import { UserRole } from '@prisma/client';
 import { SettingsService } from './settings.service';
 import { StorageService } from '../storage/storage.service';
+import * as path from 'path';
 
 // Max file size: 5MB for logo
 const MAX_LOGO_SIZE = 5 * 1024 * 1024; // 5MB
@@ -44,19 +50,80 @@ export class SettingsController {
 
   /**
    * Get current logo URL (public - accessible to all)
+   * Returns a stable proxy URL that works in all environments
    */
   @Get('logo')
   @Public()
   @ApiOperation({ summary: 'Get current logo URL (public - all roles)' })
   async getLogo() {
     try {
-      return await this.settingsService.getLogoUrl();
+      const { logoKey } = await this.settingsService.getLogoKey();
+      
+      // Always return the proxy URL, which works in all environments (localhost, IP, domain)
+      // This ensures the logo is accessible regardless of how the app is accessed
+      return {
+        logoUrl: logoKey ? '/api/settings/logo/image' : null,
+      };
     } catch (error) {
       this.logger.error(
         `Failed to get logo: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error.stack : undefined,
       );
       throw new InternalServerErrorException('Failed to retrieve logo. Please try again later.');
+    }
+  }
+
+  /**
+   * Serve logo image (public - accessible to all)
+   * This endpoint proxies the logo from R2/local storage, ensuring it works in all environments
+   */
+  @Get('logo/image')
+  @Public()
+  @ApiOperation({ summary: 'Serve logo image (public - all roles)' })
+  async getLogoImage(@Res() res: Response) {
+    try {
+      const { logoKey } = await this.settingsService.getLogoKey();
+      
+      if (!logoKey) {
+        throw new NotFoundException('Logo not found');
+      }
+
+      // Get file from storage service
+      const fileBuffer = await this.storageService.getFile(logoKey);
+      
+      if (!fileBuffer) {
+        throw new NotFoundException('Logo file not found in storage');
+      }
+
+      // Determine content type from file extension
+      const ext = path.extname(logoKey).toLowerCase();
+      const contentTypeMap: Record<string, string> = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+        '.gif': 'image/gif',
+      };
+      
+      const contentType = contentTypeMap[ext] || 'image/png';
+      
+      // Set headers for caching and CORS
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // Cache for 1 year
+      res.send(fileBuffer);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(
+        `Failed to serve logo image: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Failed to serve logo. Please try again later.');
     }
   }
 
@@ -117,13 +184,15 @@ export class SettingsController {
         'settings',
       );
 
-      // Update system settings with the logo URL
-      const { logoUrl } = await this.settingsService.updateLogoUrl(result.url);
+      // Store the R2 key (not the URL) in the database
+      // This ensures we can retrieve the file regardless of environment
+      await this.settingsService.updateLogoKey(result.key);
 
+      // Return the proxy URL that works in all environments
       return {
         success: true,
         data: {
-          logoUrl,
+          logoUrl: '/api/settings/logo/image', // Stable proxy URL
           key: result.key,
           mimeType: result.mimeType,
           fileSize: result.fileSize,
@@ -155,19 +224,24 @@ export class SettingsController {
   @ApiOperation({ summary: 'Delete logo (Admin only)' })
   async deleteLogo() {
     try {
-      // Get current logo to delete from storage
-      const { logoUrl } = await this.settingsService.getLogoUrl();
+      // Get current logo key to delete from storage
+      const { logoKey } = await this.settingsService.getLogoKey();
 
-      if (logoUrl) {
-        // Extract key from URL if it's a storage key
-        // Logo URL format: either public URL or storage key
-        // If it's a public URL, we need to extract the key
-        // For now, we'll just clear the database reference
-        // The old file in R2 will remain (can be cleaned up manually or via cron)
+      if (logoKey) {
+        try {
+          // Delete the file from R2/local storage
+          await this.storageService.delete(logoKey);
+          this.logger.log(`Logo deleted from storage: ${logoKey}`);
+        } catch (deleteError) {
+          // Log error but don't fail - the file might not exist or already be deleted
+          this.logger.warn(
+            `Failed to delete logo file from storage: ${deleteError instanceof Error ? deleteError.message : String(deleteError)}`,
+          );
+        }
       }
 
-      // Clear logo URL in database
-      await this.settingsService.updateLogoUrl(null);
+      // Clear logo key in database
+      await this.settingsService.updateLogoKey(null);
 
       return {
         success: true,
@@ -178,6 +252,52 @@ export class SettingsController {
         `Failed to delete logo: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw new InternalServerErrorException('Failed to delete logo. Please try again later.');
+    }
+  }
+
+  /**
+   * Get action percent settings (Admin only)
+   */
+  @Get('action-percents')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get action percent settings (Admin only)' })
+  async getActionPercents() {
+    try {
+      return await this.settingsService.getActionPercents();
+    } catch (error) {
+      this.logger.error(
+        `Failed to get action percents: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Failed to retrieve action percent settings. Please try again later.');
+    }
+  }
+
+  /**
+   * Update action percent settings (Admin only)
+   */
+  @Put('action-percents')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update action percent settings (Admin only)' })
+  async updateActionPercents(
+    @Body() body: {
+      absencePercent: number;
+      feedbacksPercent: number;
+      voicePercent: number;
+      textPercent: number;
+    },
+  ) {
+    try {
+      return await this.settingsService.updateActionPercents(body);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(
+        `Failed to update action percents: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Failed to update action percent settings. Please try again later.');
     }
   }
 }

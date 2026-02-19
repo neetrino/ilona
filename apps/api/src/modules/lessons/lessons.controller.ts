@@ -12,6 +12,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
+import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateLessonDto,
   UpdateLessonDto,
@@ -25,7 +26,10 @@ import { JwtPayload } from '../../common/types/auth.types';
 
 @Controller('lessons')
 export class LessonsController {
-  constructor(private readonly lessonsService: LessonsService) {}
+  constructor(
+    private readonly lessonsService: LessonsService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Get()
   async findAll(@Query() query: QueryLessonDto, @CurrentUser() user?: JwtPayload) {
@@ -47,7 +51,7 @@ export class LessonsController {
   @Get('my-lessons')
   @Roles(UserRole.TEACHER)
   async getMyLessons(@CurrentUser() user: JwtPayload, @Query() query: QueryLessonDto) {
-    const teacher = await this.lessonsService['prisma'].teacher.findUnique({
+    const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
     });
 
@@ -65,7 +69,7 @@ export class LessonsController {
   @Get('today')
   @Roles(UserRole.TEACHER)
   async getTodayLessons(@CurrentUser() user: JwtPayload) {
-    const teacher = await this.lessonsService['prisma'].teacher.findUnique({
+    const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
     });
 
@@ -79,7 +83,7 @@ export class LessonsController {
   @Get('upcoming')
   @Roles(UserRole.TEACHER)
   async getUpcomingLessons(@CurrentUser() user: JwtPayload, @Query('limit') limit?: number) {
-    const teacher = await this.lessonsService['prisma'].teacher.findUnique({
+    const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
     });
 
@@ -96,7 +100,7 @@ export class LessonsController {
     let teacherId: string | undefined;
 
     if (user.role === UserRole.TEACHER) {
-      const teacher = await this.lessonsService['prisma'].teacher.findUnique({
+      const teacher = await this.prisma.teacher.findUnique({
         where: { userId: user.sub },
       });
       teacherId = teacher?.id;
@@ -121,7 +125,7 @@ export class LessonsController {
   async create(@Body() dto: CreateLessonDto, @CurrentUser() user?: JwtPayload) {
     // For teachers, validate that they can only create lessons for their own groups
     if (user?.role === UserRole.TEACHER) {
-      const teacher = await this.lessonsService['prisma'].teacher.findUnique({
+      const teacher = await this.prisma.teacher.findUnique({
         where: { userId: user.sub },
         include: { groups: { select: { id: true } } },
       });
@@ -136,7 +140,7 @@ export class LessonsController {
       }
 
       // Ensure group belongs to the teacher
-      const teacherGroupIds = teacher.groups.map((g) => g.id);
+      const teacherGroupIds = teacher.groups.map((g: { id: string }) => g.id);
       if (!teacherGroupIds.includes(dto.groupId)) {
         throw new ForbiddenException('You can only create lessons for your assigned groups');
       }
@@ -160,7 +164,7 @@ export class LessonsController {
 
     // For teachers, validate that they can only create lessons for themselves
     if (user?.role === UserRole.TEACHER) {
-      const teacher = await this.lessonsService['prisma'].teacher.findUnique({
+      const teacher = await this.prisma.teacher.findUnique({
         where: { userId: user.sub },
         include: { groups: { select: { id: true } } },
       });
@@ -173,7 +177,7 @@ export class LessonsController {
       teacherId = teacher.id;
 
       // Ensure group belongs to the teacher
-      const teacherGroupIds = teacher.groups.map((g) => g.id);
+      const teacherGroupIds = teacher.groups.map((g: { id: string }) => g.id);
       if (!teacherGroupIds.includes(dto.groupId)) {
         throw new ForbiddenException('You can only create lessons for your assigned groups');
       }
@@ -246,6 +250,12 @@ export class LessonsController {
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   async markTextSent(@Param('id') id: string) {
     return this.lessonsService.markTextSent(id);
+  }
+
+  @Delete('bulk')
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  async deleteBulk(@Body() body: { lessonIds: string[] }, @CurrentUser() user?: JwtPayload) {
+    return this.lessonsService.deleteBulk(body.lessonIds, user?.sub, user?.role);
   }
 
   @Delete(':id')

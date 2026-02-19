@@ -14,5 +14,6 @@ export {
   useMarkLessonMissed,
   useMarkVocabularySent,
   useDeleteLesson,
+  useDeleteLessonsBulk,
   lessonKeys,
 } from './useLessons';

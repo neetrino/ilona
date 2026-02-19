@@ -261,18 +261,6 @@ export class FinanceController {
     });
   }
 
-  @Get('salaries/:id')
-  @Roles(UserRole.ADMIN)
-  async getSalary(@Param('id') id: string) {
-    return this.salariesService.findById(id);
-  }
-
-  @Patch('salaries/:id')
-  @Roles(UserRole.ADMIN)
-  async updateSalary(@Param('id') id: string, @Body() dto: UpdateSalaryDto) {
-    return this.salariesService.update(id, dto);
-  }
-
   @Post('salaries')
   @Roles(UserRole.ADMIN)
   async createSalary(@Body() dto: CreateSalaryRecordDto) {
@@ -297,10 +285,12 @@ export class FinanceController {
     return this.salariesService.generateMonthlySalaries(year, month);
   }
 
-  @Patch('salaries/:id/process')
+  // Specific routes must come before generic :id route to avoid route conflicts
+  // Most specific routes first (with multiple path segments)
+  @Get('salaries/lessons/:lessonId/obligation')
   @Roles(UserRole.ADMIN)
-  async processSalary(@Param('id') id: string, @Body() dto: ProcessSalaryDto) {
-    return this.salariesService.processSalary(id, dto);
+  async getLessonObligation(@Param('lessonId') lessonId: string) {
+    return this.salariesService.getLessonObligation(lessonId);
   }
 
   @Get('salaries/teacher/:teacherId/summary')
@@ -319,6 +309,25 @@ export class FinanceController {
       throw new BadRequestException('Month parameter is required (format: YYYY-MM)');
     }
     return this.salariesService.getSalaryBreakdown(teacherId, month);
+  }
+
+  // Generic routes must come after specific routes
+  @Get('salaries/:id')
+  @Roles(UserRole.ADMIN)
+  async getSalary(@Param('id') id: string) {
+    return this.salariesService.findById(id);
+  }
+
+  @Patch('salaries/:id')
+  @Roles(UserRole.ADMIN)
+  async updateSalary(@Param('id') id: string, @Body() dto: UpdateSalaryDto) {
+    return this.salariesService.update(id, dto);
+  }
+
+  @Patch('salaries/:id/process')
+  @Roles(UserRole.ADMIN)
+  async processSalary(@Param('id') id: string, @Body() dto: ProcessSalaryDto) {
+    return this.salariesService.processSalary(id, dto);
   }
 
   @Delete('salaries/:id')

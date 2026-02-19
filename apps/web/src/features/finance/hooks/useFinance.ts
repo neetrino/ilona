@@ -7,6 +7,7 @@ import {
   fetchPayment,
   createPayment,
   processPayment,
+  updatePayment,
   cancelPayment,
   fetchSalaries,
   fetchSalary,
@@ -92,6 +93,26 @@ export function useProcessPayment() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data?: ProcessPaymentDto }) =>
       processPayment(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.paymentDetail(id) });
+      queryClient.invalidateQueries({ queryKey: financeKeys.payments() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
+export function useUpdatePaymentStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      // When changing to PAID, use processPayment to ensure paidAt is set
+      if (status === 'PAID') {
+        return processPayment(id, {});
+      }
+      // For other status changes, use updatePayment
+      return updatePayment(id, { status });
+    },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: financeKeys.paymentDetail(id) });
       queryClient.invalidateQueries({ queryKey: financeKeys.payments() });

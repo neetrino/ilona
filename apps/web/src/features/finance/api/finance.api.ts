@@ -75,6 +75,13 @@ export async function processPayment(id: string, data?: ProcessPaymentDto): Prom
 }
 
 /**
+ * Update a payment
+ */
+export async function updatePayment(id: string, data: { status?: string; amount?: number; dueDate?: string; notes?: string }): Promise<Payment> {
+  return api.put<Payment>(`/finance/payments/${id}`, data);
+}
+
+/**
  * Cancel a payment
  */
 export async function cancelPayment(id: string): Promise<Payment> {
@@ -160,6 +167,24 @@ export async function excludeLessonsFromSalary(lessonIds: string[]): Promise<{ c
   return api.delete<{ count: number; lessonIds: string[] }>('/finance/salaries/breakdown/exclude', {
     body: JSON.stringify({ ids: lessonIds }),
   });
+}
+
+/**
+ * Fetch obligation details for a specific lesson
+ */
+export interface LessonObligation {
+  lessonId: string;
+  absenceDone: boolean;
+  feedbacksDone: boolean;
+  voiceDone: boolean;
+  textDone: boolean;
+  completedActionsCount: number;
+  totalActions: number;
+  updatedAt: string;
+}
+
+export async function fetchLessonObligation(lessonId: string): Promise<LessonObligation> {
+  return api.get<LessonObligation>(`/finance/salaries/lessons/${lessonId}/obligation`);
 }
 
 // ============ DEDUCTIONS ============

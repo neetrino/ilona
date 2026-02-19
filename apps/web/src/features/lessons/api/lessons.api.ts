@@ -150,3 +150,12 @@ export async function markVocabularySent(id: string): Promise<Lesson> {
 export async function deleteLesson(id: string): Promise<{ success: boolean }> {
   return api.delete<{ success: boolean }>(`${LESSONS_ENDPOINT}/${id}`);
 }
+
+/**
+ * Delete multiple lessons (bulk delete)
+ */
+export async function deleteLessonsBulk(lessonIds: string[]): Promise<{ success: boolean; deletedCount: number }> {
+  return api.delete<{ success: boolean; deletedCount: number }>(`${LESSONS_ENDPOINT}/bulk`, {
+    body: JSON.stringify({ lessonIds }),
+  });
+}

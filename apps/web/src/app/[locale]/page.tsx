@@ -7,12 +7,16 @@ import Link from 'next/link';
 import { Button } from '@/shared/components/ui/button';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
+import { useLogo } from '@/features/settings/hooks/useSettings';
+import { getFullApiUrl } from '@/shared/lib/api';
 
 export default function HomePage() {
   const t = useTranslations('home');
   const locale = useLocale();
   const router = useRouter();
   const { isAuthenticated, isHydrated, user } = useAuthStore();
+  const { data: logoData, isLoading: isLoadingLogo } = useLogo();
+  const logoUrl = getFullApiUrl(logoData?.logoUrl);
 
   // Redirect authenticated users to their dashboard
   useEffect(() => {
@@ -39,8 +43,38 @@ export default function HomePage() {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href={`/${locale}`} className="flex items-center gap-3 transition-opacity hover:opacity-80">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm transition-transform hover:scale-105">
-                <span className="text-xl text-primary-foreground font-bold">I</span>
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm transition-transform hover:scale-105 overflow-hidden">
+                {logoUrl ? (
+                  <>
+                    <img
+                      src={logoUrl}
+                      alt="Company Logo"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        // Fallback to default icon if logo fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center hidden">
+                      {isLoadingLogo ? (
+                        <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <span className="text-xl text-primary-foreground font-bold">I</span>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                    {isLoadingLogo ? (
+                      <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span className="text-xl text-primary-foreground font-bold">I</span>
+                    )}
+                  </div>
+                )}
               </div>
               <span className="text-xl font-bold text-slate-900 hidden sm:inline tracking-tight">
                 {t('title')}

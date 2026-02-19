@@ -482,6 +482,11 @@ model SystemSettings {
   paymentDueDays           Int      @default(5) // Days after month start
   lessonReminderHours      Int      @default(24) // Hours before lesson
   logoUrl                  String?  // URL to the company logo stored in R2
+  // Action percent weights (must sum to 100)
+  absencePercent           Int      @default(25) // Weight for absence action (0-100)
+  feedbacksPercent         Int      @default(25) // Weight for feedbacks action (0-100)
+  voicePercent             Int      @default(25) // Weight for voice action (0-100)
+  textPercent               Int      @default(25) // Weight for text action (0-100)
   updatedAt                DateTime @updatedAt
 
   @@map("system_settings")
