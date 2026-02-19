@@ -111,12 +111,13 @@ This document lists all project source files that exceed **650 lines of code**.
 - **Feature:** Settings Management
 - **Status:** Refactored into: SettingsSidebar component, SecurityTab component, NotificationsTab component, SystemTab component, LogoUploadSection component, PercentTab component, useSettingsPage hook
 
-### 12. Teacher Attendance Register Page
+### 12. Teacher Attendance Register Page ✅ DONE
 - **File Path:** `apps/web/src/app/[locale]/(teacher)/teacher/attendance-register/page.tsx`
 - **File Name:** `page.tsx`
-- **Total Lines:** 980
+- **Total Lines:** 150 (was 980)
 - **Category:** Frontend Page Component
 - **Feature:** Teacher Attendance Management
+- **Status:** Refactored into: useTeacherAttendanceData hook, useTeacherAttendanceNavigation hook, reuses admin attendance-register components (DayView, WeekView, MonthView, AttendanceControls, AttendanceStats, SaveMessages, AttendanceEmptyGroupState)
 
 ### 13. API Library
 - **File Path:** `apps/web/src/shared/lib/api.ts`
