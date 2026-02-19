@@ -75,8 +75,21 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   };
 
   // Restore chat from URL on initial mount
+  // CRITICAL: Only restore if conversationId is explicitly in URL (user navigated with it)
+  // Do NOT auto-select based on unread messages, first chat, or last sender
   useEffect(() => {
     if (!isInitialMount.current) return;
+    
+    // If no conversationId in URL, ensure no chat is selected (neutral state)
+    // This prevents auto-selection when opening chat via FloatingChatWidget
+    if (!conversationIdFromUrl) {
+      // Explicitly clear activeChat if it was set (e.g., from previous session state)
+      if (activeChat) {
+        setActiveChat(null);
+      }
+      isInitialMount.current = false;
+      return;
+    }
     
     if (conversationIdFromUrl) {
       if (chatFromUrl) {
@@ -121,11 +134,9 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
         isInitialMount.current = false;
       }
       // If still loading, wait for the next render
-    } else {
-      // No conversationId in URL, just mark as not initial mount
-      isInitialMount.current = false;
     }
-  }, [conversationIdFromUrl, chatFromUrl, isLoadingChatFromUrl, isChatError, setActiveChat, setMobileListVisible, searchParams, router, pathname, activeTab, user]);
+    // Note: If no conversationIdFromUrl, we already handled it above
+  }, [conversationIdFromUrl, chatFromUrl, isLoadingChatFromUrl, isChatError, setActiveChat, setMobileListVisible, searchParams, router, pathname, activeTab, user, activeChat]);
 
   // Sync URL when activeChat changes (but skip on initial mount)
   useEffect(() => {

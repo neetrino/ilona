@@ -110,44 +110,81 @@ export class MessageService {
    * Send a message
    */
   async sendMessage(dto: SendMessageDto, senderId: string, senderRole?: string) {
+    // CRITICAL: Validate senderId is provided and not empty
+    if (!senderId || senderId.trim() === '') {
+      this.logger.error('[sendMessage] senderId is missing or empty', { dto });
+      throw new BadRequestException('Sender ID is required');
+    }
+
+    // CRITICAL: Verify senderId matches a valid user in the database
+    const senderUser = await this.prisma.user.findUnique({
+      where: { id: senderId },
+      select: { id: true, role: true, status: true, email: true },
+    });
+
+    if (!senderUser) {
+      this.logger.error('[sendMessage] senderId does not match any user', { senderId, dto });
+      throw new BadRequestException('Invalid sender ID');
+    }
+
+    if (senderUser.status !== 'ACTIVE') {
+      this.logger.error('[sendMessage] sender user is not active', { senderId, status: senderUser.status });
+      throw new ForbiddenException('Sender account is not active');
+    }
+
+    // CRITICAL: If senderRole is provided, verify it matches the user's actual role
+    if (senderRole && senderUser.role !== senderRole) {
+      this.logger.error(
+        '[sendMessage] senderRole mismatch - potential security issue',
+        { senderId, providedRole: senderRole, actualRole: senderUser.role, email: senderUser.email }
+      );
+      throw new ForbiddenException('Sender role mismatch');
+    }
+
+    // Log for debugging (dev only)
+    if (process.env.NODE_ENV !== 'production') {
+      this.logger.debug('[sendMessage] Creating message', {
+        senderId,
+        senderRole: senderUser.role,
+        senderEmail: senderUser.email,
+        chatId: dto.chatId,
+      });
+    }
+
     // Verify user is participant (or admin for group chats)
-    const chat = await this.chatManagementService.getChatById(dto.chatId, senderId, senderRole);
+    const chat = await this.chatManagementService.getChatById(dto.chatId, senderId, senderUser.role);
 
     // Additional permission check for direct chats: validate student-teacher relationship
     // Admin ↔ Teacher and Admin ↔ Student messaging is always allowed
     if (chat.type === ChatType.DIRECT) {
-      const sender = await this.prisma.user.findUnique({
-        where: { id: senderId },
-        select: { role: true },
-      });
+      // Use senderUser we already fetched above instead of querying again
+      const sender = senderUser;
+      
+      // Find the other participant
+      const otherParticipant = chat.participants.find((p) => p.userId !== senderId);
+      if (otherParticipant) {
+        const otherUser = await this.prisma.user.findUnique({
+          where: { id: otherParticipant.userId },
+          select: { role: true },
+        });
 
-      if (sender) {
-        // Find the other participant
-        const otherParticipant = chat.participants.find((p) => p.userId !== senderId);
-        if (otherParticipant) {
-          const otherUser = await this.prisma.user.findUnique({
-            where: { id: otherParticipant.userId },
-            select: { role: true },
-          });
-
-          // Allow Admin ↔ Teacher and Admin ↔ Student messaging (no validation needed)
-          const isAdminInvolved = sender.role === UserRole.ADMIN || otherUser?.role === UserRole.ADMIN;
-          
-          if (!isAdminInvolved) {
-            // If student is sending to teacher, validate assignment
-            if (sender.role === UserRole.STUDENT && otherUser?.role === UserRole.TEACHER) {
-              const canDM = await this.authorizationService.validateStudentTeacherDM(senderId, otherParticipant.userId);
-              if (!canDM) {
-                throw new ForbiddenException('You can only message teachers assigned to you');
-              }
+        // Allow Admin ↔ Teacher and Admin ↔ Student messaging (no validation needed)
+        const isAdminInvolved = sender.role === UserRole.ADMIN || otherUser?.role === UserRole.ADMIN;
+        
+        if (!isAdminInvolved) {
+          // If student is sending to teacher, validate assignment
+          if (sender.role === UserRole.STUDENT && otherUser?.role === UserRole.TEACHER) {
+            const canDM = await this.authorizationService.validateStudentTeacherDM(senderId, otherParticipant.userId);
+            if (!canDM) {
+              throw new ForbiddenException('You can only message teachers assigned to you');
             }
+          }
 
-            // If teacher is sending to student, validate assignment
-            if (sender.role === UserRole.TEACHER && otherUser?.role === UserRole.STUDENT) {
-              const canDM = await this.authorizationService.validateStudentTeacherDM(otherParticipant.userId, senderId);
-              if (!canDM) {
-                throw new ForbiddenException('You can only message students assigned to you');
-              }
+          // If teacher is sending to student, validate assignment
+          if (sender.role === UserRole.TEACHER && otherUser?.role === UserRole.STUDENT) {
+            const canDM = await this.authorizationService.validateStudentTeacherDM(otherParticipant.userId, senderId);
+            if (!canDM) {
+              throw new ForbiddenException('You can only message students assigned to you');
             }
           }
         }
@@ -443,8 +480,30 @@ export class MessageService {
    * Send vocabulary message (special feature for teachers)
    */
   async sendVocabularyMessage(chatId: string, teacherId: string, vocabularyWords: string[]) {
+    // CRITICAL: Validate teacherId is provided and not empty
+    if (!teacherId || teacherId.trim() === '') {
+      this.logger.error('[sendVocabularyMessage] teacherId is missing or empty', { chatId });
+      throw new BadRequestException('Teacher ID is required');
+    }
+
+    // CRITICAL: Verify teacherId matches a valid user in the database
+    const teacherUser = await this.prisma.user.findUnique({
+      where: { id: teacherId },
+      select: { id: true, role: true, status: true, email: true },
+    });
+
+    if (!teacherUser) {
+      this.logger.error('[sendVocabularyMessage] teacherId does not match any user', { teacherId, chatId });
+      throw new BadRequestException('Invalid teacher ID');
+    }
+
+    if (teacherUser.status !== 'ACTIVE') {
+      this.logger.error('[sendVocabularyMessage] teacher user is not active', { teacherId, status: teacherUser.status });
+      throw new ForbiddenException('Teacher account is not active');
+    }
+
     // Verify teacher is participant and is admin
-    const chat = await this.chatManagementService.getChatById(chatId, teacherId);
+    const chat = await this.chatManagementService.getChatById(chatId, teacherId, teacherUser.role);
     const participant = chat.participants.find((p) => p.userId === teacherId);
     
     if (!participant?.isAdmin) {

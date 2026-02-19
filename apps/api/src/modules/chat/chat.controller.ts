@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CurrentUser, Roles } from '../../common/decorators';
@@ -72,6 +73,21 @@ export class ChatController {
     @Body() dto: SendMessageDto,
     @CurrentUser() user: JwtPayload,
   ) {
+    // CRITICAL: Validate user context is present
+    if (!user || !user.sub) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    // CRITICAL: Log sender identity for debugging (dev only)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[ChatController] sendMessage: Sending message via HTTP', {
+        senderId: user.sub,
+        senderRole: user.role,
+        senderEmail: user.email,
+        chatId: dto.chatId,
+      });
+    }
+
     return this.chatService.sendMessage(dto, user.sub, user.role);
   }
 

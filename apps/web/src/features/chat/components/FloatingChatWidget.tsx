@@ -38,6 +38,8 @@ export function FloatingChatWidget() {
     const returnTo = encodeURIComponent(currentPath);
     
     // Navigate to chat route with returnTo parameter
+    // CRITICAL: Do NOT include conversationId/chatId to prevent auto-selection
+    // The chat should open in neutral state, allowing user to manually select a conversation
     const chatPath = `/${locale}/${user.role.toLowerCase()}/chat?returnTo=${returnTo}`;
     router.push(chatPath);
   };
