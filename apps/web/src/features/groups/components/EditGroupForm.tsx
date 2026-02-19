@@ -35,7 +35,10 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
   const { data: group, isLoading } = useGroup(groupId, open);
 
   // Fetch centers and teachers for dropdowns
-  const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true });
+  const { data: centersData, isLoading: isLoadingCenters } = useCenters({ 
+    isActive: undefined, // Get all centers (active and inactive)
+    take: 100, // API max is 100, ensures we get all centers
+  });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
   
   const centers = centersData?.items || [];
