@@ -61,8 +61,11 @@ export class SettingsController {
       
       // Always return the proxy URL, which works in all environments (localhost, IP, domain)
       // This ensures the logo is accessible regardless of how the app is accessed
+      // Add cache-busting query parameter using the logoKey to ensure new uploads are fetched
+      // The key changes on every upload (UUID-based), so this effectively busts the cache
+      const cacheBuster = logoKey ? encodeURIComponent(logoKey.split('/').pop() || logoKey) : '';
       return {
-        logoUrl: logoKey ? '/api/settings/logo/image' : null,
+        logoUrl: logoKey ? `/api/settings/logo/image?v=${cacheBuster}` : null,
       };
     } catch (error) {
       this.logger.error(
@@ -109,11 +112,13 @@ export class SettingsController {
       const contentType = contentTypeMap[ext] || 'image/png';
       
       // Set headers for caching and CORS
+      // Use shorter cache time and allow revalidation since we use cache-busting query params
+      // The query param (?v=...) changes on each upload, so browsers will fetch the new image
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
       res.setHeader('Content-Type', contentType);
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // Cache for 1 year
+      res.setHeader('Cache-Control', 'public, max-age=86400, must-revalidate'); // Cache for 1 day, must revalidate
       res.send(fileBuffer);
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -188,11 +193,13 @@ export class SettingsController {
       // This ensures we can retrieve the file regardless of environment
       await this.settingsService.updateLogoKey(result.key);
 
-      // Return the proxy URL that works in all environments
+      // Return the proxy URL with cache-busting query parameter
+      // The key changes on every upload (UUID-based), so this ensures browsers fetch the new image
+      const cacheBuster = encodeURIComponent(result.key.split('/').pop() || result.key);
       return {
         success: true,
         data: {
-          logoUrl: '/api/settings/logo/image', // Stable proxy URL
+          logoUrl: `/api/settings/logo/image?v=${cacheBuster}`, // Proxy URL with cache-busting
           key: result.key,
           mimeType: result.mimeType,
           fileSize: result.fileSize,

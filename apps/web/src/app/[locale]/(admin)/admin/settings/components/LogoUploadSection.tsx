@@ -10,6 +10,7 @@ export function LogoUploadSection() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const hasLocalPreviewRef = useRef(false); // Track if we have a local file preview
   
   const { data: logoData, isLoading: isLoadingLogo } = useLogo();
   const uploadLogo = useUploadLogo();
@@ -17,10 +18,17 @@ export function LogoUploadSection() {
 
   const currentLogoUrl = getFullApiUrl(logoData?.logoUrl) || null;
 
-  // Set preview when logo data changes
+  // Set preview when logo data changes from query (but don't overwrite local preview during file selection)
   useEffect(() => {
-    if (currentLogoUrl) {
-      setPreviewUrl(currentLogoUrl);
+    // Only update preview from query data if we don't have a local preview active
+    // This prevents overwriting the preview while user is selecting a file
+    if (!hasLocalPreviewRef.current) {
+      if (currentLogoUrl) {
+        setPreviewUrl(currentLogoUrl);
+      } else {
+        // If logo was deleted, clear preview
+        setPreviewUrl(null);
+      }
     }
   }, [currentLogoUrl]);
 
@@ -43,6 +51,7 @@ export function LogoUploadSection() {
     }
 
     // Create preview
+    hasLocalPreviewRef.current = true; // Mark that we have a local preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewUrl(reader.result as string);
@@ -66,8 +75,14 @@ export function LogoUploadSection() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      // Clear local preview flag and let the query data (which was updated by the mutation) drive the display
+      // The mutation already updated the query cache with the new logoUrl, so currentLogoUrl will update
+      hasLocalPreviewRef.current = false;
+      setPreviewUrl(null);
+      // The useEffect will pick up the new currentLogoUrl from the query and set it as preview
     } catch (error: unknown) {
       setUploadError(getErrorMessage(error, 'Failed to upload logo. Please try again.'));
+      // On error, keep the preview so user can try again (don't clear hasLocalPreviewRef)
     }
   };
 
@@ -79,12 +94,17 @@ export function LogoUploadSection() {
     setUploadError(null);
     try {
       await deleteLogo.mutateAsync();
+      // Clear local preview flag since logo is deleted
+      hasLocalPreviewRef.current = false;
       setPreviewUrl(null);
+      // The useEffect will pick up the null currentLogoUrl and keep preview null
     } catch (error: unknown) {
       setUploadError(getErrorMessage(error, 'Failed to delete logo. Please try again.'));
     }
   };
 
+  // Display priority: local preview (during file selection) > query data (persisted logo)
+  // After successful upload, previewUrl is cleared, so it falls back to currentLogoUrl from query
   const displayUrl = previewUrl || currentLogoUrl;
 
   return (
