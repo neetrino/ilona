@@ -8,7 +8,6 @@ import {
   DeleteConfirmationDialog,
   TeacherDetailsDrawer,
 } from '@/features/teachers';
-import { TeachersStats } from './components/TeachersStats';
 import { TeachersFilters } from './components/TeachersFilters';
 import { TeachersList } from './components/TeachersList';
 import { TeachersBoard } from './components/TeachersBoard';
@@ -112,13 +111,6 @@ export default function TeachersPage() {
       subtitle={t('subtitle')}
     >
       <div className="space-y-6">
-        {/* Stats Grid */}
-        <TeachersStats 
-          totalTeachers={totalTeachers}
-          activeTeachers={activeTeachers}
-          t={t}
-        />
-
         {/* Search, Filter & Actions Bar */}
         <TeachersFilters
           searchQuery={searchQuery}
