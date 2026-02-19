@@ -215,7 +215,7 @@ export class SalaryBreakdownService {
       return {
         lessonId: lessonData.id,
         lessonName,
-        lessonDate: lessonData.scheduledAt, // Use scheduledAt instead of completedAt
+        lessonDate: lessonData.scheduledAt.toISOString(), // Use scheduledAt instead of completedAt, ensure ISO string format
         obligationCompleted: completedCount,
         obligationTotal: totalActions,
         salary: baseSalary,

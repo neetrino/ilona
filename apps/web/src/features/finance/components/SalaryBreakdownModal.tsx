@@ -104,8 +104,15 @@ export function SalaryBreakdownModal({
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) {
+      return '';
+    }
     const date = new Date(dateString);
+    // Check if date is valid - if not, return empty string to avoid "Invalid date"
+    if (isNaN(date.getTime())) {
+      return '';
+    }
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -114,8 +121,22 @@ export function SalaryBreakdownModal({
   };
 
   const formatMonth = (monthStr: string) => {
+    if (!monthStr || monthStr.trim() === '') {
+      return '';
+    }
     const [year, monthNum] = monthStr.split('-');
-    const date = new Date(parseInt(year), parseInt(monthNum) - 1);
+    if (!year || !monthNum) {
+      return '';
+    }
+    const yearNum = parseInt(year, 10);
+    const monthNumParsed = parseInt(monthNum, 10);
+    if (isNaN(yearNum) || isNaN(monthNumParsed) || monthNumParsed < 1 || monthNumParsed > 12) {
+      return '';
+    }
+    const date = new Date(yearNum, monthNumParsed - 1);
+    if (isNaN(date.getTime())) {
+      return '';
+    }
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
@@ -135,8 +156,10 @@ export function SalaryBreakdownModal({
     let bVal: any;
 
     if (sortBy === 'lessonDate') {
-      aVal = new Date(a.lessonDate).getTime();
-      bVal = new Date(b.lessonDate).getTime();
+      const aDate = a.lessonDate ? new Date(a.lessonDate) : new Date(0);
+      const bDate = b.lessonDate ? new Date(b.lessonDate) : new Date(0);
+      aVal = isNaN(aDate.getTime()) ? 0 : aDate.getTime();
+      bVal = isNaN(bDate.getTime()) ? 0 : bDate.getTime();
     } else if (sortBy === 'lessonName') {
       aVal = a.lessonName.toLowerCase();
       bVal = b.lessonName.toLowerCase();
@@ -312,7 +335,7 @@ export function SalaryBreakdownModal({
             <div className="flex items-center justify-between">
               <div>
                 <DialogTitle>
-                  Salary Breakdown: {teacherName} - {formatMonth(month)}
+                  Salary Breakdown: {teacherName}{month ? ` - ${formatMonth(month)}` : ''}
                 </DialogTitle>
                 <DialogDescription>
                   Detailed lesson-by-lesson breakdown of salary calculations for this month

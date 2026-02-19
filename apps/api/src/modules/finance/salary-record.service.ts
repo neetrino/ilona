@@ -137,6 +137,9 @@ export class SalaryRecordService {
             // Override netAmount with computed salary from completed lessons
             netAmount: computedSalary,
             obligationsInfo,
+            // Transform DateTime month to separate month and year numbers for frontend
+            month: salaryRecord.month.getMonth() + 1, // 1-12
+            year: salaryRecord.month.getFullYear(),
           };
         } else {
           // Teacher has no salary records matching the filters
@@ -188,7 +191,8 @@ export class SalaryRecordService {
           return {
             id: `placeholder-${teacher.id}`, // Synthetic ID
             teacherId: teacher.id,
-            month: defaultMonth,
+            month: defaultMonth.getMonth() + 1, // 1-12
+            year: defaultMonth.getFullYear(),
             lessonsCount,
             grossAmount,
             totalDeductions: Math.max(0, grossAmount - computedSalary),
