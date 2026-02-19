@@ -127,12 +127,13 @@ This document lists all project source files that exceed **650 lines of code**.
 - **Feature:** API Client & Utilities
 - **Status:** Refactored into: api-config.ts, api-errors.ts, api-client.ts, api-url-utils.ts
 
-### 14. Chat Window Component
+### 14. Chat Window Component ✅ DONE
 - **File Path:** `apps/web/src/features/chat/components/ChatWindow.tsx`
 - **File Name:** `ChatWindow.tsx`
-- **Total Lines:** 861
+- **Total Lines:** 525 (was 861)
 - **Category:** Frontend Component
 - **Feature:** Chat
+- **Status:** Refactored into: VoiceMessagePlayer component, VocabularyModal component, chat-utils utilities
 
 ### 15. Student Detail Page
 - **File Path:** `apps/web/src/app/[locale]/(admin)/admin/students/[id]/page.tsx`
