@@ -135,12 +135,13 @@ This document lists all project source files that exceed **650 lines of code**.
 - **Feature:** Chat
 - **Status:** Refactored into: VoiceMessagePlayer component, VocabularyModal component, chat-utils utilities
 
-### 15. Student Detail Page
+### 15. Student Detail Page ✅ DONE
 - **File Path:** `apps/web/src/app/[locale]/(admin)/admin/students/[id]/page.tsx`
 - **File Name:** `page.tsx`
-- **Total Lines:** 745
+- **Total Lines:** 378 (was 745)
 - **Category:** Frontend Page Component
 - **Feature:** Student Details View
+- **Status:** Refactored into: StudentProfileHeader component, StudentStats component, StudentDetails component, StudentNotes component, StudentAttendance component, schemas file
 
 ### 16. Teacher Detail Page
 - **File Path:** `apps/web/src/app/[locale]/(admin)/admin/teachers/[id]/page.tsx`
