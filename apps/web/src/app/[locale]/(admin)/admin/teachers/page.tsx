@@ -129,6 +129,11 @@ export default function TeachersPage() {
           tCommon={tCommon}
           tStatus={tStatus}
           isDeleting={deleteTeachers.isPending || deleteTeacher.isPending}
+          page={page}
+          totalPages={totalPages}
+          totalTeachers={totalTeachers}
+          onPageChange={handlePageChange}
+          isUpdating={updateTeacher.isPending}
         />
 
         {/* Bulk Delete Button (shown when teachers are selected) */}
