@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Pencil, Trash2, Ban } from 'lucide-react';
 import { StatCard, DataTable, Button } from '@/shared/components/ui';
 import { CreateCenterForm, EditCenterForm, type CenterWithCount } from '@/features/centers';
@@ -42,6 +42,8 @@ interface CentersTabProps {
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   centerPage: number;
   setCenterPage: (page: number | ((prev: number) => number)) => void;
+  updateUrl: (updates: Record<string, string | null>) => void;
+  searchParams: URLSearchParams;
 }
 
 export function CentersTab({
@@ -49,6 +51,8 @@ export function CentersTab({
   onSearchChange,
   centerPage,
   setCenterPage,
+  updateUrl,
+  searchParams,
 }: CentersTabProps) {
   const {
     centers,
@@ -83,6 +87,25 @@ export function CentersTab({
     handleBulkDeleteCentersClick,
     handleBulkDeleteCentersConfirm,
   } = useCentersManagement(centerSearchQuery, centerPage);
+
+  // Sync editCenterId from URL on mount and when URL changes
+  useEffect(() => {
+    const editCenterFromUrl = searchParams.get('editCenter');
+    if (editCenterFromUrl !== editCenterId) {
+      if (editCenterFromUrl) {
+        setEditCenterId(editCenterFromUrl);
+      } else {
+        // If URL doesn't have editCenter but state does, clear state
+        setEditCenterId(null);
+      }
+    }
+  }, [searchParams, editCenterId, setEditCenterId]);
+
+  // Update URL when editCenterId changes (but not from URL sync)
+  const handleEditCenterIdChange = (id: string | null) => {
+    setEditCenterId(id);
+    updateUrl({ editCenter: id });
+  };
 
   const pageSize = 10;
 
@@ -153,7 +176,7 @@ export function CentersTab({
       render: (center: CenterWithCount) => (
         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={() => setEditCenterId(center.id)}
+            onClick={() => handleEditCenterIdChange(center.id)}
             className="p-2 text-slate-600 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
             aria-label="Edit center"
             title="Edit center"
@@ -283,7 +306,11 @@ export function CentersTab({
       {editCenterId && (
         <EditCenterForm 
           open={!!editCenterId} 
-          onOpenChange={(open) => !open && setEditCenterId(null)} 
+          onOpenChange={(open) => {
+            if (!open) {
+              handleEditCenterIdChange(null);
+            }
+          }} 
           centerId={editCenterId}
         />
       )}

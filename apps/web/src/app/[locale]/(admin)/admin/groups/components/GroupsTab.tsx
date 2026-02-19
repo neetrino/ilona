@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { List, LayoutGrid } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { GroupCard, CreateGroupForm, EditGroupForm, DeleteConfirmationDialog, type Group } from '@/features/groups';
@@ -45,6 +46,8 @@ interface GroupsTabProps {
   viewMode: 'list' | 'board';
   setViewMode: (mode: 'list' | 'board') => void;
   updateViewModeInUrl: (mode: 'list' | 'board') => void;
+  updateUrl: (updates: Record<string, string | null>) => void;
+  searchParams: URLSearchParams;
 }
 
 export function GroupsTab({
@@ -55,6 +58,8 @@ export function GroupsTab({
   viewMode,
   setViewMode,
   updateViewModeInUrl,
+  updateUrl,
+  searchParams,
 }: GroupsTabProps) {
   const {
     groups,
@@ -93,6 +98,25 @@ export function GroupsTab({
     handleBulkDeleteGroupsClick,
     handleBulkDeleteGroupsConfirm,
   } = useGroupsManagement(viewMode, searchQuery, page);
+
+  // Sync editGroupId from URL on mount and when URL changes
+  useEffect(() => {
+    const editGroupFromUrl = searchParams.get('editGroup');
+    if (editGroupFromUrl !== editGroupId) {
+      if (editGroupFromUrl) {
+        setEditGroupId(editGroupFromUrl);
+      } else {
+        // If URL doesn't have editGroup but state does, clear state
+        setEditGroupId(null);
+      }
+    }
+  }, [searchParams, editGroupId, setEditGroupId]);
+
+  // Update URL when editGroupId changes (but not from URL sync)
+  const handleEditGroupIdChange = (id: string | null) => {
+    setEditGroupId(id);
+    updateUrl({ editGroup: id });
+  };
 
   const pageSize = 10;
 
@@ -184,7 +208,7 @@ export function GroupsTab({
       header: 'Actions',
       render: (group: Group) => (
         <ActionButtons
-          onEdit={() => setEditGroupId(group.id)}
+          onEdit={() => handleEditGroupIdChange(group.id)}
           onDisable={() => handleToggleActive(group.id)}
           onDelete={() => handleDeleteClick(group.id)}
           isActive={group.isActive}
@@ -393,7 +417,7 @@ export function GroupsTab({
                             <GroupCard
                               key={group.id}
                               group={group}
-                              onEdit={() => setEditGroupId(group.id)}
+                              onEdit={() => handleEditGroupIdChange(group.id)}
                               onDelete={() => handleDeleteClick(group.id)}
                               onToggleActive={() => handleToggleActive(group.id)}
                             />
@@ -471,7 +495,11 @@ export function GroupsTab({
       {editGroupId && (
         <EditGroupForm 
           open={!!editGroupId} 
-          onOpenChange={(open) => !open && setEditGroupId(null)} 
+          onOpenChange={(open) => {
+            if (!open) {
+              handleEditGroupIdChange(null);
+            }
+          }} 
           groupId={editGroupId}
         />
       )}
