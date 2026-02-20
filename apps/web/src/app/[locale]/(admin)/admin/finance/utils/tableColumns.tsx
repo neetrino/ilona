@@ -1,7 +1,7 @@
 'use client';
 
 import { InlineSelect } from '@/features/students/components/InlineSelect';
-import { ChevronRight } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { SelectAllCheckbox } from '../components/SelectAllCheckbox';
 import type { Payment, SalaryRecord, PaymentStatus, SalaryStatus } from '@/features/finance';
 
@@ -242,7 +242,7 @@ export function getSalaryColumns({
     {
       key: 'action',
       header: 'Action',
-      className: 'text-left',
+      className: 'text-center',
       render: (salary: SalaryRecord) => {
         const firstName = salary.teacher?.user?.firstName || '';
         const lastName = salary.teacher?.user?.lastName || '';
@@ -250,20 +250,22 @@ export function getSalaryColumns({
         const monthStr = getMonthString(salary);
         
         return (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewBreakdown({
-                teacherId: salary.teacherId,
-                teacherName,
-                month: monthStr,
-              });
-            }}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-            aria-label="View breakdown"
-          >
-            <ChevronRight className="w-5 h-5 text-slate-600" />
-          </button>
+          <div className="flex items-center justify-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewBreakdown({
+                  teacherId: salary.teacherId,
+                  teacherName,
+                  month: monthStr,
+                });
+              }}
+              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              aria-label="View breakdown"
+            >
+              <Eye className="w-5 h-5 text-slate-900" />
+            </button>
+          </div>
         );
       },
     },
