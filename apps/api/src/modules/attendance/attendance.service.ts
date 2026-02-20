@@ -2,12 +2,13 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
   Inject,
   forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MarkAttendanceDto, BulkAttendanceDto } from './dto';
-import { Prisma, AbsenceType } from '@prisma/client';
+import { Prisma, AbsenceType, UserRole } from '@prisma/client';
 import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()
@@ -18,7 +19,7 @@ export class AttendanceService {
     private readonly salariesService: SalariesService,
   ) {}
 
-  async getByLesson(lessonId: string) {
+  async getByLesson(lessonId: string, userId?: string, userRole?: UserRole) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
       include: {
@@ -60,6 +61,17 @@ export class AttendanceService {
 
     if (!lesson) {
       throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
+    }
+
+    // Authorization: Teachers can only access lessons for their assigned groups
+    if (userRole === UserRole.TEACHER && userId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId },
+      });
+
+      if (!teacher || lesson.group.teacherId !== teacher.id) {
+        throw new ForbiddenException('You do not have access to this lesson');
+      }
     }
 
     // Combine students with their attendance records
@@ -142,16 +154,35 @@ export class AttendanceService {
     };
   }
 
-  async markAttendance(dto: MarkAttendanceDto) {
+  async markAttendance(dto: MarkAttendanceDto, userId?: string, userRole?: UserRole) {
     const { lessonId, studentId, isPresent, absenceType, note } = dto;
 
     // Validate lesson exists
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
+      include: {
+        group: {
+          select: {
+            id: true,
+            teacherId: true,
+          },
+        },
+      },
     });
 
     if (!lesson) {
       throw new BadRequestException(`Lesson with ID ${lessonId} not found`);
+    }
+
+    // Authorization: Teachers can only mark attendance for their assigned groups
+    if (userRole === UserRole.TEACHER && userId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId },
+      });
+
+      if (!teacher || lesson.group.teacherId !== teacher.id) {
+        throw new ForbiddenException('You do not have access to this lesson');
+      }
     }
 
     // Validate student exists and is in the group
@@ -247,16 +278,35 @@ export class AttendanceService {
     return attendance;
   }
 
-  async markBulkAttendance(dto: BulkAttendanceDto) {
+  async markBulkAttendance(dto: BulkAttendanceDto, userId?: string, userRole?: UserRole) {
     const { lessonId, attendances } = dto;
 
     // Validate lesson
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
+      include: {
+        group: {
+          select: {
+            id: true,
+            teacherId: true,
+          },
+        },
+      },
     });
 
     if (!lesson) {
       throw new BadRequestException(`Lesson with ID ${lessonId} not found`);
+    }
+
+    // Authorization: Teachers can only mark attendance for their assigned groups
+    if (userRole === UserRole.TEACHER && userId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId },
+      });
+
+      if (!teacher || lesson.group.teacherId !== teacher.id) {
+        throw new ForbiddenException('You do not have access to this lesson');
+      }
     }
 
     // Process each attendance
@@ -279,13 +329,36 @@ export class AttendanceService {
     };
   }
 
-  async updateAbsenceType(attendanceId: string, absenceType: AbsenceType, note?: string) {
+  async updateAbsenceType(attendanceId: string, absenceType: AbsenceType, note?: string, userId?: string, userRole?: UserRole) {
     const attendance = await this.prisma.attendance.findUnique({
       where: { id: attendanceId },
+      include: {
+        lesson: {
+          include: {
+            group: {
+              select: {
+                id: true,
+                teacherId: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!attendance) {
       throw new NotFoundException(`Attendance record with ID ${attendanceId} not found`);
+    }
+
+    // Authorization: Teachers can only update attendance for their assigned groups
+    if (userRole === UserRole.TEACHER && userId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId },
+      });
+
+      if (!teacher || attendance.lesson.group.teacherId !== teacher.id) {
+        throw new ForbiddenException('You do not have access to this attendance record');
+      }
     }
 
     if (attendance.isPresent) {
@@ -298,7 +371,31 @@ export class AttendanceService {
     });
   }
 
-  async getGroupAttendanceReport(groupId: string, dateFrom: Date, dateTo: Date) {
+  async getGroupAttendanceReport(groupId: string, dateFrom: Date, dateTo: Date, userId?: string, userRole?: UserRole) {
+    // Verify group exists and check authorization
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      select: {
+        id: true,
+        teacherId: true,
+      },
+    });
+
+    if (!group) {
+      throw new NotFoundException(`Group with ID ${groupId} not found`);
+    }
+
+    // Authorization: Teachers can only access reports for their assigned groups
+    if (userRole === UserRole.TEACHER && userId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId },
+      });
+
+      if (!teacher || group.teacherId !== teacher.id) {
+        throw new ForbiddenException('You do not have access to this group');
+      }
+    }
+
     // Get all students in group
     const students = await this.prisma.student.findMany({
       where: { groupId },

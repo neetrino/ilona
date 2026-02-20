@@ -13,8 +13,8 @@ import type { AbsenceType } from '@/features/attendance';
 
 interface DayViewProps {
   group: Group | undefined;
-  groups: Group[]; // All groups for multi-group support
-  selectedGroupIds: string[]; // Selected group IDs
+  groups?: Group[]; // All groups for multi-group support (optional for backward compatibility)
+  selectedGroupIds?: string[]; // Selected group IDs (optional for backward compatibility)
   currentDate: Date;
   students: Student[];
   filteredLessons: Lesson[];
@@ -78,8 +78,11 @@ export function DayView({
   }, {} as Record<string, Student[]>);
 
   // Get selected groups in order
-  const selectedGroups = selectedGroupIds
-    .map(id => groups.find(g => g.id === id))
+  // Fallback to single group if selectedGroupIds is not provided (backward compatibility)
+  const safeSelectedGroupIds = selectedGroupIds ?? (group ? [group.id] : []);
+  const safeGroups = groups ?? (group ? [group] : []);
+  const selectedGroups = safeSelectedGroupIds
+    .map(id => safeGroups.find(g => g.id === id))
     .filter((g): g is Group => g !== undefined);
 
   // If only one group or no multi-select, show single view (backward compatibility)

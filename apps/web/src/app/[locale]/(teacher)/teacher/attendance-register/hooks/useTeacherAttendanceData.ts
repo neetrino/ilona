@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQueries } from '@tanstack/react-query';
-import { useGroups } from '@/features/groups';
+import { useMyGroups } from '@/features/groups';
 import { useLessons, useTodayLessons } from '@/features/lessons';
 import { useStudents } from '@/features/students';
 import { useMarkBulkAttendance, attendanceKeys, type AbsenceType } from '@/features/attendance';
@@ -42,9 +42,9 @@ export function useTeacherAttendanceData({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const hasAutoSelectedGroup = useRef(false);
 
-  // Fetch teacher's groups (backend filters automatically)
-  const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ take: 100, isActive: true });
-  const groups = groupsData?.items || [];
+  // Fetch teacher's groups (only groups assigned to this teacher)
+  const { data: groupsData, isLoading: isLoadingGroups } = useMyGroups();
+  const groups = groupsData || [];
 
   // Fetch today's lessons to auto-select group
   const { data: todayLessonsData } = useTodayLessons();

@@ -13,8 +13,8 @@ import type { AbsenceType } from '@/features/attendance';
 
 interface MonthViewProps {
   group: Group | undefined;
-  groups: Group[]; // All groups for multi-group support
-  selectedGroupIds: string[]; // Selected group IDs
+  groups?: Group[]; // All groups for multi-group support (optional for backward compatibility)
+  selectedGroupIds?: string[]; // Selected group IDs (optional for backward compatibility)
   currentDate: Date;
   selectedDayForMonthView: string | null;
   students: Student[];
@@ -26,7 +26,7 @@ interface MonthViewProps {
   savingLessons: Record<string, boolean>;
   hasUnsavedChanges: boolean;
   effectiveDateRange: { from: string; to: string };
-  lessonsByDate: Record<string, Lesson[]>;
+  lessonsByDate?: Record<string, Lesson[]>; // Optional for backward compatibility
   onDaySelect: (date: Date) => void;
   onLessonSave: (
     lessonId: string,
@@ -80,8 +80,11 @@ export function MonthView({
   }, {} as Record<string, Student[]>);
 
   // Get selected groups in order
-  const selectedGroups = selectedGroupIds
-    .map(id => groups.find(g => g.id === id))
+  // Fallback to single group if selectedGroupIds is not provided (backward compatibility)
+  const safeSelectedGroupIds = selectedGroupIds ?? (group ? [group.id] : []);
+  const safeGroups = groups ?? (group ? [group] : []);
+  const selectedGroups = safeSelectedGroupIds
+    .map(id => safeGroups.find(g => g.id === id))
     .filter((g): g is Group => g !== undefined);
 
   // If only one group or no multi-select, show single view (backward compatibility)
@@ -93,7 +96,7 @@ export function MonthView({
         currentDate={currentDate}
         selectedGroup={group}
         selectedDayForMonthView={selectedDayForMonthView}
-        lessonsByDate={lessonsByDate}
+        lessonsByDate={lessonsByDate ?? {}}
         hasUnsavedChanges={hasUnsavedChanges}
         onDaySelect={onDaySelect}
       />

@@ -15,13 +15,13 @@ interface AttendanceControlsProps {
   viewMode: ViewMode;
   currentDate: Date;
   selectedGroupId: string | null; // For backward compatibility
-  selectedGroupIds: string[]; // New multi-select support
+  selectedGroupIds?: string[]; // New multi-select support (optional)
   groups: Group[];
   isLoadingGroups: boolean;
   isCurrentDateToday: boolean;
   onViewModeChange: (mode: ViewMode) => void;
   onGroupChange: (groupId: string | null) => void; // For backward compatibility
-  onGroupsChange: (groupIds: string[]) => void; // New multi-select support
+  onGroupsChange?: (groupIds: string[]) => void; // New multi-select support (optional)
   onDateChange: (date: string) => void;
   onPrevious: () => void;
   onNext: () => void;
@@ -46,7 +46,8 @@ export function AttendanceControls({
 }: AttendanceControlsProps) {
   const t = useTranslations('attendance');
   // Ensure selectedGroupIds is always an array to prevent undefined errors
-  const safeSelectedGroupIds = selectedGroupIds ?? [];
+  // If selectedGroupIds is not provided, fall back to selectedGroupId (single-select mode)
+  const safeSelectedGroupIds = selectedGroupIds ?? (selectedGroupId ? [selectedGroupId] : []);
   const selectedGroupIdsSet = new Set(safeSelectedGroupIds);
 
   const groupOptions = groups.map((group) => ({
@@ -55,7 +56,13 @@ export function AttendanceControls({
   }));
 
   const handleGroupsChange = (newSelectedIds: Set<string>) => {
-    onGroupsChange(Array.from(newSelectedIds));
+    if (onGroupsChange) {
+      onGroupsChange(Array.from(newSelectedIds));
+    } else if (onGroupChange) {
+      // Fallback to single-select if onGroupsChange is not provided
+      const firstId = newSelectedIds.size > 0 ? Array.from(newSelectedIds)[0] : null;
+      onGroupChange(firstId);
+    }
   };
 
   return (
