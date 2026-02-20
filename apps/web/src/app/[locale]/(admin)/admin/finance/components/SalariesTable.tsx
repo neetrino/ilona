@@ -16,7 +16,7 @@ interface SalariesTableProps {
   };
   onSelectAll: () => void;
   onSelectOne: (salaryId: string, checked: boolean) => void;
-  onViewBreakdown: (data: { teacherId: string; teacherName: string; month: string }) => void;
+  locale: string;
 }
 
 export function SalariesTable({
@@ -28,7 +28,7 @@ export function SalariesTable({
   updateSalaryStatus,
   onSelectAll,
   onSelectOne,
-  onViewBreakdown,
+  locale,
 }: SalariesTableProps) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const columns = getSalaryColumns({
@@ -39,7 +39,7 @@ export function SalariesTable({
     updateSalaryStatus,
     onSelectAll,
     onSelectOne,
-    onViewBreakdown,
+    locale,
   });
 
   return (
