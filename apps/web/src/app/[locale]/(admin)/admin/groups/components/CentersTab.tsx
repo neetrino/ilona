@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StatCard, DataTable, Button, ActionButtons } from '@/shared/components/ui';
 import { CreateCenterForm, EditCenterForm, type CenterWithCount } from '@/features/centers';
 import { DeleteConfirmationDialog } from '@/features/groups';
@@ -87,8 +87,16 @@ export function CentersTab({
     handleBulkDeleteCentersConfirm,
   } = useCentersManagement(centerSearchQuery, centerPage);
 
+  // Ref to track if we're intentionally closing to prevent effect from reopening
+  const isClosingRef = useRef(false);
+
   // Sync editCenterId from URL on mount and when URL changes
   useEffect(() => {
+    // Skip sync if we're in the process of closing
+    if (isClosingRef.current) {
+      return;
+    }
+
     const editCenterFromUrl = searchParams.get('editCenter');
     if (editCenterFromUrl !== editCenterId) {
       if (editCenterFromUrl) {
@@ -102,8 +110,21 @@ export function CentersTab({
 
   // Update URL when editCenterId changes (but not from URL sync)
   const handleEditCenterIdChange = (id: string | null) => {
-    setEditCenterId(id);
-    updateUrl({ editCenter: id });
+    if (id === null) {
+      // We're closing - set ref to prevent effect from reopening
+      isClosingRef.current = true;
+      setEditCenterId(null);
+      updateUrl({ editCenter: null });
+      // Reset ref after a brief delay to allow URL to update
+      setTimeout(() => {
+        isClosingRef.current = false;
+      }, 100);
+    } else {
+      // Opening - clear ref and update state/URL
+      isClosingRef.current = false;
+      setEditCenterId(id);
+      updateUrl({ editCenter: id });
+    }
   };
 
   const pageSize = 10;

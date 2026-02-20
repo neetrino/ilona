@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { List, LayoutGrid } from 'lucide-react';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
@@ -98,8 +98,16 @@ export function GroupsTab({
     handleBulkDeleteGroupsConfirm,
   } = useGroupsManagement(viewMode, searchQuery, page);
 
+  // Ref to track if we're intentionally closing to prevent effect from reopening
+  const isClosingRef = useRef(false);
+
   // Sync editGroupId from URL on mount and when URL changes
   useEffect(() => {
+    // Skip sync if we're in the process of closing
+    if (isClosingRef.current) {
+      return;
+    }
+
     const editGroupFromUrl = searchParams.get('editGroup');
     if (editGroupFromUrl !== editGroupId) {
       if (editGroupFromUrl) {
@@ -113,8 +121,21 @@ export function GroupsTab({
 
   // Update URL when editGroupId changes (but not from URL sync)
   const handleEditGroupIdChange = (id: string | null) => {
-    setEditGroupId(id);
-    updateUrl({ editGroup: id });
+    if (id === null) {
+      // We're closing - set ref to prevent effect from reopening
+      isClosingRef.current = true;
+      setEditGroupId(null);
+      updateUrl({ editGroup: null });
+      // Reset ref after a brief delay to allow URL to update
+      setTimeout(() => {
+        isClosingRef.current = false;
+      }, 100);
+    } else {
+      // Opening - clear ref and update state/URL
+      isClosingRef.current = false;
+      setEditGroupId(id);
+      updateUrl({ editGroup: id });
+    }
   };
 
   const pageSize = 10;
