@@ -76,6 +76,7 @@ export interface LessonFilters {
   dateTo?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  search?: string;
 }
 
 export interface CreateLessonDto {

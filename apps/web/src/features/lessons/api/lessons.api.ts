@@ -27,6 +27,7 @@ export async function fetchLessons(filters?: LessonFilters): Promise<LessonsResp
   if (filters?.dateTo) params.append('dateTo', filters.dateTo);
   if (filters?.sortBy) params.append('sortBy', filters.sortBy);
   if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
+  if (filters?.search) params.append('q', filters.search);
 
   const query = params.toString();
   const url = query ? `${LESSONS_ENDPOINT}?${query}` : LESSONS_ENDPOINT;

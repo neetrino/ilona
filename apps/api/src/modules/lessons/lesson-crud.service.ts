@@ -29,10 +29,11 @@ export class LessonCrudService {
     dateTo?: Date;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    search?: string;
     currentUserId?: string;
     userRole?: UserRole;
   }) {
-    const { skip = 0, take = 50, groupId, teacherId, status, dateFrom, dateTo, sortBy, sortOrder, currentUserId, userRole } = params || {};
+    const { skip = 0, take = 50, groupId, teacherId, status, dateFrom, dateTo, sortBy, sortOrder, search, currentUserId, userRole } = params || {};
 
     const where: Prisma.LessonWhereInput = {};
 
@@ -95,6 +96,25 @@ export class LessonCrudService {
       additionalFilters.scheduledAt = {};
       if (dateFrom) additionalFilters.scheduledAt.gte = dateFrom;
       if (dateTo) additionalFilters.scheduledAt.lte = dateTo;
+    }
+
+    // Search query - search in group name, topic, teacher name
+    if (search && search.trim()) {
+      const searchTerm = search.trim();
+      additionalFilters.OR = [
+        { topic: { contains: searchTerm, mode: 'insensitive' } },
+        { group: { name: { contains: searchTerm, mode: 'insensitive' } } },
+        {
+          teacher: {
+            user: {
+              OR: [
+                { firstName: { contains: searchTerm, mode: 'insensitive' } },
+                { lastName: { contains: searchTerm, mode: 'insensitive' } },
+              ],
+            },
+          },
+        },
+      ];
     }
 
     // Combine all conditions with AND

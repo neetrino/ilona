@@ -42,6 +42,10 @@ export class QueryLessonDto {
   @IsOptional()
   @IsEnum(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc';
+
+  @IsOptional()
+  @IsString()
+  q?: string;
 }
 
 

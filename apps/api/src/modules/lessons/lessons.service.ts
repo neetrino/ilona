@@ -31,6 +31,7 @@ export class LessonsService {
     dateTo?: Date;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    search?: string;
     currentUserId?: string;
     userRole?: any;
   }) {

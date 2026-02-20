@@ -43,6 +43,7 @@ export class LessonsController {
       dateTo: query.dateTo ? new Date(query.dateTo) : undefined,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
+      search: query.q,
       currentUserId: user?.sub,
       userRole: user?.role,
     });
