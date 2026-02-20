@@ -1,7 +1,5 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UsersService } from '../users/users.service';
-import * as bcrypt from 'bcrypt';
 
 // Date utility functions
 function subMonths(date: Date, months: number): Date {
@@ -36,7 +34,6 @@ function endOfDay(date: Date): Date {
 export class AnalyticsService {
   constructor(
     private prisma: PrismaService,
-    private usersService: UsersService,
   ) {}
 
   /**
@@ -407,22 +404,4 @@ export class AnalyticsService {
     };
   }
 
-  /**
-   * Verify user password and unlock analytics access
-   */
-  async verifyPasswordAndUnlock(userId: string, password: string): Promise<void> {
-    // Get user with password hash by finding user by ID first to get email, then by email to get passwordHash
-    const userWithId = await this.usersService.findById(userId);
-    const user = await this.usersService.findByEmail(userWithId.email);
-
-    if (!user || !user.passwordHash) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid password');
-    }
-  }
 }
