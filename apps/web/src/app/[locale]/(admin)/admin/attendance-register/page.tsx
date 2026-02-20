@@ -55,23 +55,18 @@ export default function AdminAttendanceRegisterPage() {
     }
   };
 
-  // Auto-select first group with a lesson today on initial load
+  // Auto-select all groups on initial load
   useEffect(() => {
     if (
       !data.hasAutoSelectedGroup.current &&
-      data.todayLessons.length > 0 &&
       data.groups.length > 0 &&
       nav.selectedGroupIds.length === 0
     ) {
-      const groupWithLesson = data.groups.find((group) =>
-        data.todayLessons.some((lesson) => lesson.groupId === group.id)
-      );
-      if (groupWithLesson) {
-        nav.handleGroupsChange([groupWithLesson.id]);
-        data.hasAutoSelectedGroup.current = true;
-      }
+      const allGroupIds = data.groups.map((group) => group.id);
+      nav.handleGroupsChange(allGroupIds);
+      data.hasAutoSelectedGroup.current = true;
     }
-  }, [data.todayLessons, data.groups, nav.selectedGroupIds, data.hasAutoSelectedGroup]);
+  }, [data.groups, nav.selectedGroupIds, data.hasAutoSelectedGroup, nav]);
 
   // Get week dates for week view
   const weekDates = useMemo(() => {

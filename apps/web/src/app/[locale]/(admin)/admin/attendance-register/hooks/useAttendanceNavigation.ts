@@ -29,13 +29,13 @@ export function useAttendanceNavigation({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Initialize view mode from URL query params, with fallback to 'day'
+  // Initialize view mode from URL query params, with fallback to 'week'
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const modeFromUrl = searchParams.get('viewMode');
     if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'month') {
       return modeFromUrl;
     }
-    return 'day';
+    return 'week';
   });
 
   // Date state
@@ -72,7 +72,7 @@ export function useAttendanceNavigation({
   // Update URL query params when viewMode changes
   const updateViewModeInUrl = (mode: ViewMode) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (mode !== 'day') {
+    if (mode !== 'week') {
       params.set('viewMode', mode);
     } else {
       params.delete('viewMode');
@@ -112,8 +112,8 @@ export function useAttendanceNavigation({
       });
     } else if (!modeFromUrl) {
       setViewMode((currentMode) => {
-        if (currentMode !== 'day') {
-          return 'day';
+        if (currentMode !== 'week') {
+          return 'week';
         }
         return currentMode;
       });
