@@ -33,10 +33,13 @@ export class LessonsController {
 
   @Get()
   async findAll(@Query() query: QueryLessonDto, @CurrentUser() user?: JwtPayload) {
+    // Handle both single groupId (backward compatibility) and groupIds array
+    const groupIds = query.groupIds || (query.groupId ? [query.groupId] : undefined);
     return this.lessonsService.findAll({
       skip: query.skip,
       take: query.take,
       groupId: query.groupId,
+      groupIds,
       teacherId: query.teacherId,
       status: query.status as LessonStatus,
       dateFrom: query.dateFrom ? new Date(query.dateFrom) : undefined,

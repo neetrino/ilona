@@ -313,7 +313,14 @@
     "switchGroups": "փոխել խմբերը",
     "navigate": "նավարկել",
     "selectDifferentDay": "ընտրել այլ օր",
-    "failedToSaveAttendance": "Չհաջողվեց պահպանել հաճախելիությունը: {error}"
+    "failedToSaveAttendance": "Չհաջողվեց պահպանել հաճախելիությունը: {error}",
+    "selectAll": "Ընտրել բոլորը",
+    "clearAll": "Մաքրել բոլորը",
+    "groupsSelected": "{count} խումբ ընտրված",
+    "noGroupsAvailable": "Խմբեր չկան",
+    "searchGroups": "Փնտրել խմբեր...",
+    "noGroupsFound": "Խմբեր չգտնվեցին",
+    "selectGroupsToViewAttendance": "Ընտրեք խումբ(եր) հաճախելիությունը դիտելու համար"
   },
   "chat": {
     "title": "Զրույց",

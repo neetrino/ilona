@@ -13,6 +13,8 @@ import type { AbsenceType } from '@/features/attendance';
 
 interface WeekViewProps {
   group: Group | undefined;
+  groups: Group[]; // All groups for multi-group support
+  selectedGroupIds: string[]; // Selected group IDs
   currentDate: Date;
   students: Student[];
   filteredLessons: Lesson[];
@@ -35,6 +37,8 @@ interface WeekViewProps {
 
 export function WeekView({
   group,
+  groups,
+  selectedGroupIds,
   currentDate,
   students,
   filteredLessons,
@@ -51,43 +55,129 @@ export function WeekView({
   onSaveError,
   onUnsavedChangesChange,
 }: WeekViewProps) {
-  return (
-    <div className="bg-white rounded-xl border-2 border-slate-300 p-6 shadow-sm">
-      <AttendanceContextHeader
-        group={group || null}
-        weekRange={formatWeekRange(currentDate)}
-        viewMode="week"
-        lessonsCount={filteredLessons.length}
-        studentsCount={students.length}
-        hasUnsavedChanges={hasUnsavedChanges}
-      />
+  // Group lessons and students by groupId
+  const lessonsByGroup = filteredLessons.reduce((acc, lesson) => {
+    const groupId = lesson.groupId;
+    if (!acc[groupId]) {
+      acc[groupId] = [];
+    }
+    acc[groupId].push(lesson);
+    return acc;
+  }, {} as Record<string, Lesson[]>);
 
-      {isLoadingLessons || isLoadingStudents || isLoadingAttendance ? (
-        <AttendanceLoadingState isLoadingAttendance={isLoadingAttendance} />
-      ) : attendanceQueries.some((q) => q.isError) ? (
-        <AttendanceErrorState />
-      ) : (
-        <WeekAttendanceGrid
-          students={students.map((s) => ({
-            id: s.id,
-            user: {
-              id: s.user.id,
-              firstName: s.user.firstName,
-              lastName: s.user.lastName,
-              avatarUrl: s.user.avatarUrl,
-            },
-          }))}
-          lessons={filteredLessons}
-          initialAttendance={attendanceData}
-          onDaySave={onDaySave}
-          isLoading={isLoadingAttendance}
-          isSaving={savingLessons}
-          weekDates={weekDates}
-          onSaveSuccess={onSaveSuccess}
-          onSaveError={onSaveError}
-          onUnsavedChangesChange={onUnsavedChangesChange}
+  const studentsByGroup = students.reduce((acc, student) => {
+    const groupId = student.groupId || student.group?.id;
+    if (!groupId) return acc;
+    if (!acc[groupId]) {
+      acc[groupId] = [];
+    }
+    acc[groupId].push(student);
+    return acc;
+  }, {} as Record<string, Student[]>);
+
+  // Get selected groups in order
+  const selectedGroups = selectedGroupIds
+    .map(id => groups.find(g => g.id === id))
+    .filter((g): g is Group => g !== undefined);
+
+  // If only one group or no multi-select, show single view (backward compatibility)
+  if (selectedGroups.length <= 1) {
+    return (
+      <div className="bg-white rounded-xl border-2 border-slate-300 p-6 shadow-sm">
+        <AttendanceContextHeader
+          group={group || null}
+          weekRange={formatWeekRange(currentDate)}
+          viewMode="week"
+          lessonsCount={filteredLessons.length}
+          studentsCount={students.length}
+          hasUnsavedChanges={hasUnsavedChanges}
         />
-      )}
+
+        {isLoadingLessons || isLoadingStudents || isLoadingAttendance ? (
+          <AttendanceLoadingState isLoadingAttendance={isLoadingAttendance} />
+        ) : attendanceQueries.some((q) => q.isError) ? (
+          <AttendanceErrorState />
+        ) : (
+          <WeekAttendanceGrid
+            students={students.map((s) => ({
+              id: s.id,
+              user: {
+                id: s.user.id,
+                firstName: s.user.firstName,
+                lastName: s.user.lastName,
+                avatarUrl: s.user.avatarUrl,
+              },
+            }))}
+            lessons={filteredLessons}
+            initialAttendance={attendanceData}
+            onDaySave={onDaySave}
+            isLoading={isLoadingAttendance}
+            isSaving={savingLessons}
+            weekDates={weekDates}
+            onSaveSuccess={onSaveSuccess}
+            onSaveError={onSaveError}
+            onUnsavedChangesChange={onUnsavedChangesChange}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Multi-group view: show each group separately
+  return (
+    <div className="space-y-6">
+      {selectedGroups.map((selectedGroup, index) => {
+        const groupLessons = lessonsByGroup[selectedGroup.id] || [];
+        const groupStudents = studentsByGroup[selectedGroup.id] || [];
+        
+        // Filter attendance data for this group's lessons
+        const groupAttendanceData: Record<string, Record<string, AttendanceCell>> = {};
+        groupLessons.forEach(lesson => {
+          if (attendanceData[lesson.id]) {
+            groupAttendanceData[lesson.id] = attendanceData[lesson.id];
+          }
+        });
+
+        return (
+          <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-slate-300 p-6 shadow-sm">
+            <AttendanceContextHeader
+              group={selectedGroup}
+              weekRange={formatWeekRange(currentDate)}
+              viewMode="week"
+              lessonsCount={groupLessons.length}
+              studentsCount={groupStudents.length}
+              hasUnsavedChanges={hasUnsavedChanges}
+            />
+
+            {isLoadingLessons || isLoadingStudents || isLoadingAttendance ? (
+              <AttendanceLoadingState isLoadingAttendance={isLoadingAttendance} />
+            ) : attendanceQueries.some((q) => q.isError) ? (
+              <AttendanceErrorState />
+            ) : (
+              <WeekAttendanceGrid
+                students={groupStudents.map((s) => ({
+                  id: s.id,
+                  user: {
+                    id: s.user.id,
+                    firstName: s.user.firstName,
+                    lastName: s.user.lastName,
+                    avatarUrl: s.user.avatarUrl,
+                  },
+                }))}
+                lessons={groupLessons}
+                initialAttendance={groupAttendanceData}
+                onDaySave={onDaySave}
+                isLoading={isLoadingAttendance}
+                isSaving={savingLessons}
+                weekDates={weekDates}
+                onSaveSuccess={onSaveSuccess}
+                onSaveError={onSaveError}
+                onUnsavedChangesChange={onUnsavedChangesChange}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

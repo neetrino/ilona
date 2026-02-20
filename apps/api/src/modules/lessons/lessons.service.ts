@@ -25,6 +25,7 @@ export class LessonsService {
     skip?: number;
     take?: number;
     groupId?: string;
+    groupIds?: string[];
     teacherId?: string;
     status?: any;
     dateFrom?: Date;

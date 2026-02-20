@@ -70,6 +70,7 @@ export interface LessonFilters {
   skip?: number;
   take?: number;
   groupId?: string;
+  groupIds?: string[];
   teacherId?: string;
   status?: LessonStatus;
   dateFrom?: string;

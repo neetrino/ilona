@@ -25,6 +25,7 @@ export class StudentsService {
     take?: number;
     search?: string;
     groupId?: string;
+    groupIds?: string[];
     status?: UserStatus;
     statusIds?: UserStatus[];
     teacherId?: string;

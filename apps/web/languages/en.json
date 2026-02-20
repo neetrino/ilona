@@ -313,7 +313,14 @@
     "switchGroups": "switch groups",
     "navigate": "navigate",
     "selectDifferentDay": "select a different day",
-    "failedToSaveAttendance": "Failed to save attendance: {error}"
+    "failedToSaveAttendance": "Failed to save attendance: {error}",
+    "selectAll": "Select All",
+    "clearAll": "Clear All",
+    "groupsSelected": "{count} groups selected",
+    "noGroupsAvailable": "No groups available",
+    "searchGroups": "Search groups...",
+    "noGroupsFound": "No groups found",
+    "selectGroupsToViewAttendance": "Select group(s) to view attendance"
   },
   "chat": {
     "title": "Chat",
