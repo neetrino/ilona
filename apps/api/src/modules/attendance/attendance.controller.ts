@@ -107,7 +107,7 @@ export class AttendanceController {
   async updateAbsenceType(
     @Param('id') id: string,
     @Body('absenceType') absenceType: AbsenceType,
-    @Body('note') note?: string,
+    @Body('note') note: string | undefined,
     @CurrentUser() user: JwtPayload,
   ) {
     return this.attendanceService.updateAbsenceType(id, absenceType, note, user.sub, user.role);

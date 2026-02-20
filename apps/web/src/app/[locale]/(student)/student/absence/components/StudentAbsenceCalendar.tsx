@@ -11,8 +11,6 @@ import {
   isCurrentMonth,
   getPreviousMonth,
   getNextMonth,
-  getMonthStart,
-  getMonthEnd,
 } from '@/features/attendance/utils/dateUtils';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -175,7 +173,6 @@ export function StudentAbsenceCalendar({
           const isInCurrentMonth = isCurrentMonth(date, currentMonth);
           const isTodayDate = isToday(date);
           const status = getDayStatus(date);
-          const dateStr = formatDateString(date);
 
           // Determine day styling
           let dayClassName = 'p-4 border-2 rounded-lg text-center transition-all min-h-[100px] flex flex-col items-center justify-center';

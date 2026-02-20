@@ -129,7 +129,7 @@ export function WeekView({
   // Multi-group view: show each group separately
   return (
     <div className="space-y-6">
-      {selectedGroups.map((selectedGroup, index) => {
+      {selectedGroups.map((selectedGroup) => {
         const groupLessons = lessonsByGroup[selectedGroup.id] || [];
         const groupStudents = studentsByGroup[selectedGroup.id] || [];
         

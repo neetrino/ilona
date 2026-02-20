@@ -92,9 +92,6 @@ export function MultiSelectGroupDropdown({
     return t('groupsSelected', { count: selectedIds.size });
   };
 
-  const allFilteredSelected = filteredOptions.length > 0 && filteredOptions.every((opt) => selectedIds.has(opt.id));
-  const someFilteredSelected = filteredOptions.some((opt) => selectedIds.has(opt.id));
-
   return (
     <div className={cn('relative', className)} ref={dropdownRef}>
       {label && (

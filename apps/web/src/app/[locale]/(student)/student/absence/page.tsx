@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMonthAttendance } from './hooks/useMonthAttendance';
 import { StudentAbsenceCalendar } from './components/StudentAbsenceCalendar';
-import { cn } from '@/shared/lib/utils';
 
 export default function StudentAbsencePage() {
   const t = useTranslations('attendance');

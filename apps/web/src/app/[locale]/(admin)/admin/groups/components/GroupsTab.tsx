@@ -414,7 +414,7 @@ export function GroupsTab({
                 .map((center) => {
                   const centerGroups = groupsByCenter[center.id] || [];
                   const primaryColor = center.colorHex || '#253046'; // Default color
-                  const lightColor = lightenColor(center.colorHex);
+                  const lightColor = lightenColor(primaryColor);
                   const textColor = getContrastColor(primaryColor);
                   
                   return (
