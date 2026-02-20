@@ -55,6 +55,18 @@ export default function CalendarPage() {
     return 'list'; // Default to list view
   });
   
+  // Initialize sort state from URL query params
+  const [sortBy, setSortBy] = useState<string | undefined>(() => {
+    return searchParams.get('sortBy') || undefined;
+  });
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(() => {
+    const order = searchParams.get('sortOrder');
+    if (order === 'asc' || order === 'desc') {
+      return order;
+    }
+    return undefined;
+  });
+  
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
   
@@ -83,7 +95,39 @@ export default function CalendarPage() {
     } else if (!viewFromUrl) {
       setViewMode('list');
     }
+    
+    // Sync sort state from URL
+    const sortByFromUrl = searchParams.get('sortBy');
+    const sortOrderFromUrl = searchParams.get('sortOrder');
+    setSortBy(sortByFromUrl || undefined);
+    if (sortOrderFromUrl === 'asc' || sortOrderFromUrl === 'desc') {
+      setSortOrder(sortOrderFromUrl);
+    } else {
+      setSortOrder(undefined);
+    }
   }, [searchParams]);
+  
+  // Handle sort toggle
+  const handleSort = (key: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (sortBy === key && sortOrder) {
+      // Toggle order if already sorting by this column
+      const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      setSortOrder(newOrder);
+      params.set('sortBy', key);
+      params.set('sortOrder', newOrder);
+    } else {
+      // Start sorting by this column (default to ascending)
+      setSortBy(key);
+      setSortOrder('asc');
+      params.set('sortBy', key);
+      params.set('sortOrder', 'asc');
+    }
+    
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl);
+  };
   
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
   const dateFrom = formatDate(weekDates[0]);
@@ -98,6 +142,8 @@ export default function CalendarPage() {
     dateFrom,
     dateTo: formatDate(new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000)),
     take: 100,
+    sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
+    sortOrder: sortOrder,
   });
 
   // Set up automatic refetch every minute for time-based updates (midnight lock, status changes)
@@ -365,6 +411,9 @@ export default function CalendarPage() {
           <LessonListTable
             lessons={lessons}
             isLoading={isLoading}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
             onObligationClick={(lessonId, obligation) => {
               router.push(`/admin/calendar/${lessonId}?tab=${obligation}`);
             }}

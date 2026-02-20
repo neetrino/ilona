@@ -160,20 +160,37 @@ export function LessonListTable({
   const { user } = useAuthStore();
   const isTeacher = user?.role === 'TEACHER';
 
-  // Sort lessons: Done lessons go to bottom, within same status group maintain existing order
+  // Sort lessons: Respect server-side sort order when sorting by scheduledAt
+  // Otherwise, apply completion status grouping
   const sortedLessons = useMemo(() => {
     const sorted = [...lessons];
-    sorted.sort((a, b) => {
-      // If both have completionStatus, Done goes to bottom
-      if (a.completionStatus === 'DONE' && b.completionStatus !== 'DONE') return 1;
-      if (a.completionStatus !== 'DONE' && b.completionStatus === 'DONE') return -1;
-      // If both are IN_PROCESS or both are Done, maintain original order (by scheduledAt)
-      const aTime = new Date(a.scheduledAt).getTime();
-      const bTime = new Date(b.scheduledAt).getTime();
-      return bTime - aTime; // Most recent first within same status
-    });
+    
+    // If explicitly sorting by scheduledAt, respect the server sort order
+    if (sortBy === 'scheduledAt' && sortOrder) {
+      sorted.sort((a, b) => {
+        const aTime = new Date(a.scheduledAt).getTime();
+        const bTime = new Date(b.scheduledAt).getTime();
+        // Apply completion status grouping as secondary sort
+        if (a.completionStatus === 'DONE' && b.completionStatus !== 'DONE') return 1;
+        if (a.completionStatus !== 'DONE' && b.completionStatus === 'DONE') return -1;
+        // Then sort by scheduledAt according to sortOrder
+        return sortOrder === 'asc' ? aTime - bTime : bTime - aTime;
+      });
+    } else {
+      // Default behavior: Done lessons go to bottom, then sort by scheduledAt desc
+      sorted.sort((a, b) => {
+        // If both have completionStatus, Done goes to bottom
+        if (a.completionStatus === 'DONE' && b.completionStatus !== 'DONE') return 1;
+        if (a.completionStatus !== 'DONE' && b.completionStatus === 'DONE') return -1;
+        // If both are IN_PROCESS or both are Done, maintain original order (by scheduledAt)
+        const aTime = new Date(a.scheduledAt).getTime();
+        const bTime = new Date(b.scheduledAt).getTime();
+        return bTime - aTime; // Most recent first within same status
+      });
+    }
+    
     return sorted;
-  }, [lessons]);
+  }, [lessons, sortBy, sortOrder]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
