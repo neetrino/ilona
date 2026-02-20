@@ -7,7 +7,6 @@ import { getWeekDates } from '@/features/attendance/utils/dateUtils';
 import { useAttendanceData } from './hooks/useAttendanceData';
 import { useAttendanceNavigation } from './hooks/useAttendanceNavigation';
 import { AttendanceControls } from './components/AttendanceControls';
-import { AttendanceStats } from './components/AttendanceStats';
 import { SaveMessages } from './components/SaveMessages';
 import { AttendanceEmptyGroupState } from './components/AttendanceEmptyGroupState';
 import { MonthViewCalendar } from './components/MonthViewCalendar';
@@ -135,9 +134,6 @@ export default function AdminAttendanceRegisterPage() {
           onNext={nav.handleNext}
           onGoToToday={goToToday}
         />
-
-        {/* Statistics */}
-        {nav.selectedGroupId && <AttendanceStats stats={data.stats} />}
 
         {/* Month View Calendar */}
         {nav.viewMode === 'month' &&
