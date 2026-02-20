@@ -8,7 +8,7 @@ interface FinanceInfoCardsProps {
 
 export function FinanceInfoCards({ dashboard }: FinanceInfoCardsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
       <div className="bg-white rounded-2xl border border-slate-200 p-6">
         <div className="flex items-start gap-4">
           <div className="p-3 bg-amber-50 rounded-xl">
