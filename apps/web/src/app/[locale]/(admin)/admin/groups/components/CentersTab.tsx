@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { Pencil, Trash2, Ban } from 'lucide-react';
-import { StatCard, DataTable, Button } from '@/shared/components/ui';
+import { StatCard, DataTable, Button, ActionButtons } from '@/shared/components/ui';
 import { CreateCenterForm, EditCenterForm, type CenterWithCount } from '@/features/centers';
 import { DeleteConfirmationDialog } from '@/features/groups';
 import { useCentersManagement } from '../hooks/useCentersManagement';
@@ -174,32 +173,22 @@ export function CentersTab({
       key: 'actions',
       header: 'Actions',
       render: (center: CenterWithCount) => (
-        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => handleEditCenterIdChange(center.id)}
-            className="p-2 text-slate-600 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-            aria-label="Edit center"
-            title="Edit center"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleDeleteCenterClick(center.id)}
-            className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            aria-label="Delete center"
-            title="Delete center"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleToggleCenterActive(center.id)}
-            className="p-2 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-            aria-label={center.isActive ? 'Deactivate center' : 'Activate center'}
-            title={center.isActive ? 'Deactivate center' : 'Activate center'}
-          >
-            <Ban className="w-4 h-4" />
-          </button>
-        </div>
+        <ActionButtons
+          onEdit={() => handleEditCenterIdChange(center.id)}
+          onDisable={() => handleToggleCenterActive(center.id)}
+          onDelete={() => handleDeleteCenterClick(center.id)}
+          isActive={center.isActive}
+          ariaLabels={{
+            edit: 'Edit center',
+            disable: center.isActive ? 'Deactivate center' : 'Activate center',
+            delete: 'Delete center',
+          }}
+          titles={{
+            edit: 'Edit center',
+            disable: center.isActive ? 'Deactivate center' : 'Activate center',
+            delete: 'Delete center',
+          }}
+        />
       ),
     },
   ];

@@ -1,7 +1,7 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ActionPercents, SystemSettingsWithPercents, PenaltyAmounts } from '@ilona/types';
-import type { Prisma, SystemSettings } from '@prisma/client';
+import type { SystemSettings } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 

@@ -118,9 +118,10 @@ export function ActionButtons({
           disabled={disabled || editDisabled}
           className={cn(
             padding,
-            'text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors',
+            'text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-150 ease-out',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1'
+            'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
+            'active:scale-95'
           )}
         >
           <Pencil className={iconSize} aria-hidden="true" />
@@ -137,9 +138,10 @@ export function ActionButtons({
           disabled={disabled || deleteDisabled}
           className={cn(
             padding,
-            'text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors',
+            'text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-150 ease-out',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1'
+            'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
+            'active:scale-95'
           )}
         >
           <Trash2 className={iconSize} aria-hidden="true" />
@@ -170,13 +172,13 @@ export function ActionButtons({
             title={titles?.disable || (isActive ? 'Deactivate' : 'Activate')}
           />
           <div className={cn(
-            'w-9 h-5 rounded-full transition-colors duration-200',
+            'w-9 h-5 rounded-full transition-colors duration-150 ease-out',
             'peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-slate-400 peer-focus:ring-offset-1',
             isActive ? 'bg-green-500' : 'bg-slate-300',
             (disabled || disableDisabled) && 'opacity-50'
           )}>
             <div className={cn(
-              'absolute top-[2px] left-[2px] bg-white rounded-full h-4 w-4 transition-transform duration-200',
+              'absolute top-[2px] left-[2px] bg-white rounded-full h-4 w-4 transition-transform duration-150 ease-out',
               'border border-slate-300',
               isActive && 'translate-x-4'
             )} />
