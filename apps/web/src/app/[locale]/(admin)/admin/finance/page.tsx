@@ -186,6 +186,11 @@ export default function FinancePage() {
           onSalaryStatusChange={handleSalaryStatusChange}
           onDeleteClick={handleDeleteClick}
           isDeleting={deleteSalaries.isPending}
+          page={activeTab === 'payments' ? paymentsPage : salariesPage}
+          pageSize={pageSize}
+          totalPages={activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages}
+          total={activeTab === 'payments' ? totalPayments : totalSalaries}
+          onPageChange={activeTab === 'payments' ? handlePaymentsPageChange : handleSalariesPageChange}
         />
 
         {/* Table */}
@@ -193,28 +198,18 @@ export default function FinancePage() {
           <PaymentsTable
             payments={payments}
             isLoading={isLoading || isLoadingDashboard}
-            page={paymentsPage}
-            pageSize={pageSize}
-            totalPages={paymentsTotalPages}
-            total={totalPayments}
             updatePaymentStatus={updatePaymentStatus}
-            onPageChange={handlePaymentsPageChange}
           />
         ) : (
           <SalariesTable
             salaries={salaries}
             isLoading={isLoading || isLoadingDashboard}
-            page={salariesPage}
-            pageSize={pageSize}
-            totalPages={salariesTotalPages}
-            total={totalSalaries}
             allSalariesSelected={allSalariesSelected}
             someSalariesSelected={someSalariesSelected}
             selectedSalaryIds={selectedSalaryIds}
             updateSalaryStatus={updateSalaryStatus}
             onSelectAll={handleSelectAllSalaries}
             onSelectOne={handleSelectOneSalary}
-            onPageChange={handleSalariesPageChange}
             onViewBreakdown={handleViewBreakdown}
           />
         )}
