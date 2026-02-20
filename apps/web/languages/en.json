@@ -15,6 +15,8 @@
     "next": "Next",
     "submit": "Submit",
     "close": "Close",
+    "retry": "Retry",
+    "today": "Today",
     "yes": "Yes",
     "no": "No",
     "all": "All",
@@ -320,7 +322,12 @@
     "noGroupsAvailable": "No groups available",
     "searchGroups": "Search groups...",
     "noGroupsFound": "No groups found",
-    "selectGroupsToViewAttendance": "Select group(s) to view attendance"
+    "selectGroupsToViewAttendance": "Select group(s) to view attendance",
+    "viewAttendanceRecord": "View your attendance record and absences.",
+    "attentionRequired": "Attention Required",
+    "errorLoadingAttendance": "Error Loading Attendance",
+    "failedToLoadAttendance": "Failed to load attendance data. Please try again.",
+    "noLesson": "No lesson"
   },
   "chat": {
     "title": "Chat",

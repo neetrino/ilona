@@ -45,7 +45,9 @@ export function AttendanceControls({
   onGoToToday,
 }: AttendanceControlsProps) {
   const t = useTranslations('attendance');
-  const selectedGroupIdsSet = new Set(selectedGroupIds);
+  // Ensure selectedGroupIds is always an array to prevent undefined errors
+  const safeSelectedGroupIds = selectedGroupIds ?? [];
+  const selectedGroupIdsSet = new Set(safeSelectedGroupIds);
 
   const groupOptions = groups.map((group) => ({
     id: group.id,
@@ -63,7 +65,7 @@ export function AttendanceControls({
         <ViewModeSelector
           value={viewMode}
           onChange={onViewModeChange}
-          disabled={selectedGroupIds.length === 0}
+          disabled={safeSelectedGroupIds.length === 0}
         />
       </div>
 
@@ -92,7 +94,7 @@ export function AttendanceControls({
                 onChange={(e) => onDateChange(e.target.value)}
                 max={getTodayDate()}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                disabled={selectedGroupIds.length === 0}
+                disabled={safeSelectedGroupIds.length === 0}
               />
             </>
           )}
@@ -104,7 +106,7 @@ export function AttendanceControls({
                   onClick={onPrevious}
                   variant="outline"
                   size="sm"
-                  disabled={selectedGroupIds.length === 0}
+                  disabled={safeSelectedGroupIds.length === 0}
                   className="px-3"
                 >
                   ←
@@ -116,7 +118,7 @@ export function AttendanceControls({
                   onClick={onNext}
                   variant="outline"
                   size="sm"
-                  disabled={selectedGroupIds.length === 0}
+                  disabled={safeSelectedGroupIds.length === 0}
                   className="px-3"
                 >
                   →
@@ -132,7 +134,7 @@ export function AttendanceControls({
                   onClick={onPrevious}
                   variant="outline"
                   size="sm"
-                  disabled={selectedGroupIds.length === 0}
+                  disabled={safeSelectedGroupIds.length === 0}
                   className="px-3"
                 >
                   ←
@@ -144,7 +146,7 @@ export function AttendanceControls({
                   onClick={onNext}
                   variant="outline"
                   size="sm"
-                  disabled={selectedGroupIds.length === 0}
+                  disabled={safeSelectedGroupIds.length === 0}
                   className="px-3"
                 >
                   →
