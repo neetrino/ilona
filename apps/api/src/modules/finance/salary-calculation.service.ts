@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
 import { LessonStatus } from '@prisma/client';
-import type { ActionWeights, CompletedActions } from '@ilona/types';
+import type { ActionWeights, CompletedActions, PenaltyAmounts } from '@ilona/types';
 
 /**
  * Service responsible for salary calculation logic
@@ -15,7 +15,7 @@ export class SalaryCalculationService {
   ) {}
 
   /**
-   * Get action weights from settings (single source of truth)
+   * Get action weights from settings (DEPRECATED - kept for backward compatibility)
    */
   async getActionWeights(): Promise<ActionWeights> {
     const settings = await this.settingsService.getActionPercents();
@@ -28,7 +28,14 @@ export class SalaryCalculationService {
   }
 
   /**
-   * Calculate earned percent for a lesson based on completed actions and weights
+   * Get penalty amounts from settings (single source of truth)
+   */
+  async getPenaltyAmounts(): Promise<PenaltyAmounts> {
+    return await this.settingsService.getPenaltyAmounts();
+  }
+
+  /**
+   * Calculate earned percent for a lesson based on completed actions and weights (DEPRECATED)
    */
   calculateEarnedPercent(
     completedActions: CompletedActions,
@@ -40,6 +47,35 @@ export class SalaryCalculationService {
     if (completedActions.voice) earnedPercent += weights.voice;
     if (completedActions.text) earnedPercent += weights.text;
     return earnedPercent;
+  }
+
+  /**
+   * Calculate deduction amount for a lesson based on missing actions and penalty amounts
+   * Returns the sum of penalties for actions that were NOT completed
+   */
+  calculateDeduction(
+    completedActions: CompletedActions,
+    penalties: PenaltyAmounts,
+  ): number {
+    let deduction = 0;
+    if (!completedActions.absence) deduction += penalties.penaltyAbsenceAmd;
+    if (!completedActions.feedbacks) deduction += penalties.penaltyFeedbackAmd;
+    if (!completedActions.voice) deduction += penalties.penaltyVoiceAmd;
+    if (!completedActions.text) deduction += penalties.penaltyTextAmd;
+    return deduction;
+  }
+
+  /**
+   * Calculate payable amount for a lesson
+   * payable = lessonRate - deduction, clamped at 0
+   */
+  calculatePayableAmount(
+    lessonRate: number,
+    completedActions: CompletedActions,
+    penalties: PenaltyAmounts,
+  ): number {
+    const deduction = this.calculateDeduction(completedActions, penalties);
+    return Math.max(0, lessonRate - deduction);
   }
 
   /**
@@ -117,10 +153,10 @@ export class SalaryCalculationService {
       }
     });
 
-    // Get action weights from settings (single source of truth)
-    const weights = await this.getActionWeights();
+    // Get penalty amounts from settings (single source of truth)
+    const penalties = await this.getPenaltyAmounts();
 
-    // Calculate total salary from all lessons using weighted calculation
+    // Calculate total salary from all lessons using fixed penalty system
     // Base salary is per lesson (fixed price), NOT per hour
     let totalSalary = 0;
 
@@ -128,7 +164,7 @@ export class SalaryCalculationService {
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
-      // Calculate completed actions with their weights
+      // Calculate completed actions
       // Type assertion needed until Prisma client is regenerated
       const lessonData = lesson as { id: string; absenceMarked: boolean | null; feedbacksCompleted: boolean | null; voiceSent: boolean | null; textSent: boolean | null };
       const completedActions = {
@@ -138,18 +174,15 @@ export class SalaryCalculationService {
         text: lessonData.textSent ?? false,
       };
 
-      // Calculate earned percent based on completed actions and their weights
-      const earnedPercent = this.calculateEarnedPercent(completedActions, weights);
-
-      // Calculate earned amount: baseSalary * earnedPercent / 100
-      const earned = baseSalary * (earnedPercent / 100);
+      // Calculate payable amount: lessonRate - penalties for missing actions
+      const payable = this.calculatePayableAmount(baseSalary, completedActions, penalties);
 
       // Get other deductions for this lesson
       const lessonId = typeof lesson.id === 'string' ? lesson.id : String(lesson.id);
       const otherDeductionForLesson = deductionsByLessonId.get(lessonId) || 0;
 
-      // Total = earned - other deductions
-      const lessonTotal = Math.max(0, earned - otherDeductionForLesson);
+      // Total = payable - other deductions
+      const lessonTotal = Math.max(0, payable - otherDeductionForLesson);
       totalSalary += lessonTotal;
     }
 

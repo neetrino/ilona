@@ -29,6 +29,10 @@ async function main() {
       feedbacksPercent: 25,
       voicePercent: 25,
       textPercent: 25,
+      penaltyAbsenceAmd: 1000,
+      penaltyFeedbackAmd: 1000,
+      penaltyVoiceAmd: 1000,
+      penaltyTextAmd: 1000,
     },
   });
 

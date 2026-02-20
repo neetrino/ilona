@@ -162,16 +162,16 @@ export class SalaryBreakdownService {
       ? Number(teacher.lessonRateAMD) 
       : Number(teacher.hourlyRate); // Fallback for backward compatibility
 
-    // Get action weights from settings (single source of truth)
-    const weights = await this.calculationService.getActionWeights();
+    // Get penalty amounts from settings (single source of truth)
+    const penalties = await this.calculationService.getPenaltyAmounts();
 
-    // Calculate per-lesson breakdown using weighted calculation
+    // Calculate per-lesson breakdown using fixed penalty system
     // Base salary is per lesson (fixed price), NOT per hour
     const lessonBreakdown = lessons.map((lesson) => {
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
-      // Calculate completed actions with their weights
+      // Calculate completed actions
       const lessonData = lesson as unknown as LessonActionData & { 
         id: string;
         topic?: string | null; 
@@ -194,20 +194,20 @@ export class SalaryBreakdownService {
       ].filter(Boolean).length;
       const totalActions = 4;
 
-      // Calculate earned percent based on completed actions and their weights
-      const earnedPercent = this.calculationService.calculateEarnedPercent(completedActions, weights);
+      // Calculate deduction from penalties for missing actions
+      const penaltyDeduction = this.calculationService.calculateDeduction(completedActions, penalties);
 
-      // Calculate earned amount: baseSalary * earnedPercent / 100
-      const earned = baseSalary * (earnedPercent / 100);
+      // Calculate payable amount: lessonRate - penalty deduction
+      const payable = this.calculationService.calculatePayableAmount(baseSalary, completedActions, penalties);
 
       // Get other deductions for this lesson
       const otherDeductionForLesson = deductionsByLessonId.get(lessonData.id) || 0;
 
-      // Total = earned - other deductions
-      const total = Math.max(0, earned - otherDeductionForLesson);
+      // Total = payable - other deductions
+      const total = Math.max(0, payable - otherDeductionForLesson);
 
-      // Deduction = baseSalary - earned (implicit deduction for missing actions)
-      const deduction = baseSalary - earned + otherDeductionForLesson;
+      // Deduction = penalty deduction + other deductions
+      const deduction = penaltyDeduction + otherDeductionForLesson;
 
       // Lesson name: use topic if available, otherwise use group name + date
       const lessonName = lessonData.topic || lessonData.group?.name || 'Untitled Lesson';

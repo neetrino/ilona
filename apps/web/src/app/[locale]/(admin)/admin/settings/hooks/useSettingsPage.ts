@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
-type SettingsTab = 'security' | 'notifications' | 'system' | 'percent';
+type SettingsTab = 'security' | 'notifications' | 'system' | 'penalty';
 
 export function useSettingsPage() {
   const router = useRouter();
@@ -13,7 +13,7 @@ export function useSettingsPage() {
   // Initialize activeTab from URL params immediately to avoid flash
   const getInitialTab = (): SettingsTab => {
     const tabFromUrl = searchParams.get('tab') as SettingsTab | null;
-    if (tabFromUrl && ['security', 'notifications', 'system', 'percent'].includes(tabFromUrl)) {
+    if (tabFromUrl && ['security', 'notifications', 'system', 'penalty'].includes(tabFromUrl)) {
       return tabFromUrl;
     }
     return 'security';
@@ -25,7 +25,7 @@ export function useSettingsPage() {
   // Sync activeTab with URL when URL changes (e.g., browser back/forward)
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab') as SettingsTab | null;
-    if (tabFromUrl && ['security', 'notifications', 'system', 'percent'].includes(tabFromUrl)) {
+    if (tabFromUrl && ['security', 'notifications', 'system', 'penalty'].includes(tabFromUrl)) {
       setActiveTab((currentTab) => {
         // Only update if different to avoid unnecessary re-renders
         return tabFromUrl !== currentTab ? tabFromUrl : currentTab;

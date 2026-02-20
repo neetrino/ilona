@@ -1,11 +1,38 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { ActionPercents, SystemSettingsWithPercents } from '@ilona/types';
+import type { ActionPercents, SystemSettingsWithPercents, PenaltyAmounts } from '@ilona/types';
+import type { Prisma, SystemSettings } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+
+/**
+ * Type for Prisma error with code and message
+ */
+interface PrismaError extends Error {
+  code?: string;
+  message: string;
+}
+
+/**
+ * Type for values that can be converted to numbers (Decimal, number, null, undefined)
+ */
+type ConvertibleToNumber = Decimal | number | null | undefined;
+
+/**
+ * Type for SystemSettings with optional penalty fields (for backward compatibility)
+ */
+type SystemSettingsWithOptionalPenalties = SystemSettings & {
+  penaltyAbsenceAmd?: Decimal | number;
+  penaltyFeedbackAmd?: Decimal | number;
+  penaltyVoiceAmd?: Decimal | number;
+  penaltyTextAmd?: Decimal | number;
+};
 
 @Injectable()
 export class SettingsService {
   private readonly logger = new Logger(SettingsService.name);
   private logoUrlColumnChecked = false;
+  private penaltyColumnsChecked = false;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -52,32 +79,136 @@ export class SettingsService {
   }
 
   /**
+   * Ensure penalty columns exist in system_settings table
+   * This is a migration workaround for when Prisma migrations haven't been run
+   */
+  private async ensurePenaltyColumns(): Promise<void> {
+    if (this.penaltyColumnsChecked) {
+      return;
+    }
+
+    try {
+      // Check if penalty columns exist by trying to query one of them
+      await this.prisma.$queryRaw`
+        SELECT "penaltyAbsenceAmd" FROM "system_settings" LIMIT 1
+      `;
+      this.penaltyColumnsChecked = true;
+    } catch (error: unknown) {
+      // If columns don't exist, add them
+      // Check for PostgreSQL error code 42703 (undefined column) or Prisma error P2021 (column not found)
+      const errorMessage = error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' 
+        ? error.message 
+        : '';
+      const errorCode = error && typeof error === 'object' && 'code' in error 
+        ? String(error.code) 
+        : '';
+      
+      // Check for PrismaClientKnownRequestError with code P2021 (column not found)
+      const isPrismaColumnError = error instanceof PrismaClientKnownRequestError && error.code === 'P2021';
+      
+      if (
+        isPrismaColumnError ||
+        errorMessage.includes('does not exist') ||
+        errorMessage.includes('penaltyAbsenceAmd') ||
+        errorCode === '42703' ||
+        errorCode === 'P2021'
+      ) {
+        try {
+          this.logger.log('Adding missing penalty columns to system_settings table...');
+          await this.prisma.$executeRaw`
+            DO $$ 
+            BEGIN
+              IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'system_settings' AND column_name = 'penaltyAbsenceAmd') THEN
+                ALTER TABLE "system_settings" ADD COLUMN "penaltyAbsenceAmd" DECIMAL(10, 2) NOT NULL DEFAULT 1000;
+              END IF;
+              
+              IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'system_settings' AND column_name = 'penaltyFeedbackAmd') THEN
+                ALTER TABLE "system_settings" ADD COLUMN "penaltyFeedbackAmd" DECIMAL(10, 2) NOT NULL DEFAULT 1000;
+              END IF;
+              
+              IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'system_settings' AND column_name = 'penaltyVoiceAmd') THEN
+                ALTER TABLE "system_settings" ADD COLUMN "penaltyVoiceAmd" DECIMAL(10, 2) NOT NULL DEFAULT 1000;
+              END IF;
+              
+              IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'system_settings' AND column_name = 'penaltyTextAmd') THEN
+                ALTER TABLE "system_settings" ADD COLUMN "penaltyTextAmd" DECIMAL(10, 2) NOT NULL DEFAULT 1000;
+              END IF;
+            END $$;
+          `;
+          this.logger.log('Successfully added penalty columns');
+          this.penaltyColumnsChecked = true;
+        } catch (migrationError) {
+          this.logger.error(
+            `Failed to add penalty columns: ${migrationError instanceof Error ? migrationError.message : String(migrationError)}`,
+          );
+          // Don't throw - mark as checked to avoid infinite retries
+          this.penaltyColumnsChecked = true;
+        }
+      } else {
+        // Some other error - might be that table doesn't exist, etc.
+        // Mark as checked to avoid infinite retries
+        this.penaltyColumnsChecked = true;
+      }
+    }
+  }
+
+  /**
    * Get system settings (singleton - there should only be one record)
    */
   async getSystemSettings() {
     try {
       // Ensure logoUrl column exists before querying
       await this.ensureLogoUrlColumn();
+      // Ensure penalty columns exist before querying
+      await this.ensurePenaltyColumns();
 
       let settings = await this.prisma.systemSettings.findFirst();
 
       // If no settings exist, create default settings
       if (!settings) {
         try {
-          // Type assertion needed until Prisma client is regenerated after migration
-          settings = await this.prisma.systemSettings.create({
-            data: {
-              vocabDeductionPercent: 10,
-              feedbackDeductionPercent: 5,
-              maxUnjustifiedAbsences: 3,
-              paymentDueDays: 5,
-              lessonReminderHours: 24,
-              absencePercent: 25,
-              feedbacksPercent: 25,
-              voicePercent: 25,
-              textPercent: 25,
-            } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
-          });
+          // Try to create with all fields first
+          try {
+            // Type assertion needed until Prisma client is regenerated after migration
+            settings = await this.prisma.systemSettings.create({
+              data: {
+                vocabDeductionPercent: 10,
+                feedbackDeductionPercent: 5,
+                maxUnjustifiedAbsences: 3,
+                paymentDueDays: 5,
+                lessonReminderHours: 24,
+                absencePercent: 25,
+                feedbacksPercent: 25,
+                voicePercent: 25,
+                textPercent: 25,
+                penaltyAbsenceAmd: 1000,
+                penaltyFeedbackAmd: 1000,
+                penaltyVoiceAmd: 1000,
+                penaltyTextAmd: 1000,
+              } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
+            });
+          } catch (penaltyError: unknown) {
+            // If penalty columns don't exist yet, try creating without them
+            const error = penaltyError as PrismaError;
+            if (error?.message?.includes('penalty') || error?.code === 'P2002') {
+              this.logger.warn('Penalty columns may not exist, trying to create settings without them');
+              settings = await this.prisma.systemSettings.create({
+                data: {
+                  vocabDeductionPercent: 10,
+                  feedbackDeductionPercent: 5,
+                  maxUnjustifiedAbsences: 3,
+                  paymentDueDays: 5,
+                  lessonReminderHours: 24,
+                  absencePercent: 25,
+                  feedbacksPercent: 25,
+                  voicePercent: 25,
+                  textPercent: 25,
+                } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
+              });
+            } else {
+              throw penaltyError;
+            }
+          }
         } catch (createError) {
           this.logger.error(
             `Failed to create default system settings: ${createError instanceof Error ? createError.message : String(createError)}`,
@@ -192,7 +323,7 @@ export class SettingsService {
     try {
       await this.ensureLogoUrlColumn();
       const settings = await this.getSystemSettings();
-      const storedValue = settings.logoUrl;
+      const storedValue = (settings as SystemSettingsWithOptionalPenalties).logoUrl;
       
       // Extract key from stored value (handles both URL and key formats)
       const logoKey = this.extractKeyFromUrl(storedValue);
@@ -203,7 +334,10 @@ export class SettingsService {
         `Failed to get logo key: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error.stack : undefined,
       );
-      throw error;
+      // Return null instead of throwing to prevent 500 errors
+      // This allows the frontend to handle missing logo gracefully
+      this.logger.warn('Returning null logo key due to error');
+      return { logoKey: null };
     }
   }
 
@@ -371,6 +505,153 @@ export class SettingsService {
       }
       this.logger.error(
         `Failed to update action percents: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get penalty amounts from settings
+   */
+  async getPenaltyAmounts(): Promise<PenaltyAmounts> {
+    try {
+      const settings = await this.getSystemSettings();
+      
+      // Convert Decimal to number (Prisma Decimal has toNumber() method)
+      const convertToNumber = (value: ConvertibleToNumber): number => {
+        if (value == null) return 1000;
+        if (typeof value === 'number') return value;
+        if (value instanceof Decimal) {
+          return value.toNumber();
+        }
+        // Fallback for other types
+        const num = Number(value);
+        return isNaN(num) ? 1000 : num;
+      };
+      
+      // Access the fields directly from the Prisma result
+      // Use optional chaining and type assertion to handle missing fields gracefully
+      const settingsWithPenalties = settings as SystemSettingsWithOptionalPenalties;
+      const penaltyAbsenceAmd = convertToNumber(settingsWithPenalties.penaltyAbsenceAmd);
+      const penaltyFeedbackAmd = convertToNumber(settingsWithPenalties.penaltyFeedbackAmd);
+      const penaltyVoiceAmd = convertToNumber(settingsWithPenalties.penaltyVoiceAmd);
+      const penaltyTextAmd = convertToNumber(settingsWithPenalties.penaltyTextAmd);
+      
+      return {
+        penaltyAbsenceAmd,
+        penaltyFeedbackAmd,
+        penaltyVoiceAmd,
+        penaltyTextAmd,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get penalty amounts: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      // Return default values instead of throwing to prevent 500 errors
+      // This allows the frontend to still function even if penalty settings aren't configured
+      this.logger.warn('Returning default penalty amounts due to error');
+      return {
+        penaltyAbsenceAmd: 1000,
+        penaltyFeedbackAmd: 1000,
+        penaltyVoiceAmd: 1000,
+        penaltyTextAmd: 1000,
+      };
+    }
+  }
+
+  /**
+   * Update penalty amounts in settings
+   * Validates that each amount is >= 0
+   */
+  async updatePenaltyAmounts(data: {
+    penaltyAbsenceAmd: number;
+    penaltyFeedbackAmd: number;
+    penaltyVoiceAmd: number;
+    penaltyTextAmd: number;
+  }) {
+    try {
+      // Validate each penalty is >= 0
+      const penalties = [
+        { name: 'penaltyAbsenceAmd', value: data.penaltyAbsenceAmd },
+        { name: 'penaltyFeedbackAmd', value: data.penaltyFeedbackAmd },
+        { name: 'penaltyVoiceAmd', value: data.penaltyVoiceAmd },
+        { name: 'penaltyTextAmd', value: data.penaltyTextAmd },
+      ];
+
+      for (const penalty of penalties) {
+        if (penalty.value < 0) {
+          throw new BadRequestException(
+            `${penalty.name} must be >= 0. Received: ${penalty.value}`
+          );
+        }
+      }
+
+      // Get or create settings
+      let settings = await this.prisma.systemSettings.findFirst();
+
+      if (!settings) {
+        // Type assertion needed until Prisma client is regenerated after migration
+        settings = await this.prisma.systemSettings.create({
+          data: {
+            vocabDeductionPercent: 10,
+            feedbackDeductionPercent: 5,
+            maxUnjustifiedAbsences: 3,
+            paymentDueDays: 5,
+            lessonReminderHours: 24,
+            penaltyAbsenceAmd: data.penaltyAbsenceAmd,
+            penaltyFeedbackAmd: data.penaltyFeedbackAmd,
+            penaltyVoiceAmd: data.penaltyVoiceAmd,
+            penaltyTextAmd: data.penaltyTextAmd,
+          } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
+        });
+      } else {
+        // Update using transaction for atomicity
+        // Type assertion needed until Prisma client is regenerated after migration
+        settings = await this.prisma.$transaction(async (tx) => {
+          return tx.systemSettings.update({
+            where: { id: settings!.id },
+            data: {
+              penaltyAbsenceAmd: data.penaltyAbsenceAmd,
+              penaltyFeedbackAmd: data.penaltyFeedbackAmd,
+              penaltyVoiceAmd: data.penaltyVoiceAmd,
+              penaltyTextAmd: data.penaltyTextAmd,
+            } as unknown as Parameters<typeof tx.systemSettings.update>[0]['data'],
+          });
+        });
+      }
+
+      // Convert Decimal to number (Prisma Decimal has toNumber() method)
+      const convertToNumber = (value: ConvertibleToNumber): number => {
+        if (value == null) return 0;
+        if (typeof value === 'number') return value;
+        if (value instanceof Decimal) {
+          return value.toNumber();
+        }
+        // Fallback for other types
+        const num = Number(value);
+        return isNaN(num) ? 0 : num;
+      };
+      
+      const settingsWithPenalties = settings as SystemSettingsWithOptionalPenalties;
+      const penaltyAbsenceAmd = convertToNumber(settingsWithPenalties.penaltyAbsenceAmd);
+      const penaltyFeedbackAmd = convertToNumber(settingsWithPenalties.penaltyFeedbackAmd);
+      const penaltyVoiceAmd = convertToNumber(settingsWithPenalties.penaltyVoiceAmd);
+      const penaltyTextAmd = convertToNumber(settingsWithPenalties.penaltyTextAmd);
+      
+      return {
+        penaltyAbsenceAmd: convertToNumber(penaltyAbsenceAmd),
+        penaltyFeedbackAmd: convertToNumber(penaltyFeedbackAmd),
+        penaltyVoiceAmd: convertToNumber(penaltyVoiceAmd),
+        penaltyTextAmd: convertToNumber(penaltyTextAmd),
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(
+        `Failed to update penalty amounts: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error.stack : undefined,
       );
       throw error;
