@@ -281,11 +281,11 @@ export class SettingsController {
   }
 
   /**
-   * Update action percent settings (Admin only)
+   * Update action percent settings (Admin only) - DEPRECATED
    */
   @Put('action-percents')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Update action percent settings (Admin only)' })
+  @ApiOperation({ summary: 'Update action percent settings (Admin only) - DEPRECATED' })
   async updateActionPercents(
     @Body() body: {
       absencePercent: number;
@@ -305,6 +305,52 @@ export class SettingsController {
         error instanceof Error ? error.stack : undefined,
       );
       throw new InternalServerErrorException('Failed to update action percent settings. Please try again later.');
+    }
+  }
+
+  /**
+   * Get penalty amounts (Admin only)
+   */
+  @Get('penalties')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get penalty amounts (Admin only)' })
+  async getPenalties() {
+    try {
+      return await this.settingsService.getPenaltyAmounts();
+    } catch (error) {
+      this.logger.error(
+        `Failed to get penalties: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Failed to retrieve penalty settings. Please try again later.');
+    }
+  }
+
+  /**
+   * Update penalty amounts (Admin only)
+   */
+  @Put('penalties')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update penalty amounts (Admin only)' })
+  async updatePenalties(
+    @Body() body: {
+      penaltyAbsenceAmd: number;
+      penaltyFeedbackAmd: number;
+      penaltyVoiceAmd: number;
+      penaltyTextAmd: number;
+    },
+  ) {
+    try {
+      return await this.settingsService.updatePenaltyAmounts(body);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(
+        `Failed to update penalties: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Failed to update penalty settings. Please try again later.');
     }
   }
 }

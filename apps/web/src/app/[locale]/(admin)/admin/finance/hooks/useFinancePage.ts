@@ -33,25 +33,6 @@ export function useFinancePage() {
   });
   const [selectedSalaryId, setSelectedSalaryId] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  // Initialize breakdown modal state from URL
-  const [selectedSalaryForBreakdown, setSelectedSalaryForBreakdown] = useState<{
-    teacherId: string;
-    teacherName: string;
-    month: string;
-  } | null>(() => {
-    const breakdownTeacherId = searchParams.get('breakdownTeacherId');
-    const breakdownMonth = searchParams.get('breakdownMonth');
-    const breakdownTeacherName = searchParams.get('breakdownTeacherName');
-    
-    if (breakdownTeacherId && breakdownMonth && breakdownTeacherName) {
-      return {
-        teacherId: breakdownTeacherId,
-        teacherName: decodeURIComponent(breakdownTeacherName),
-        month: breakdownMonth,
-      };
-    }
-    return null;
-  });
   const [selectedSalaryIds, setSelectedSalaryIds] = useState<Set<string>>(new Set());
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -114,29 +95,6 @@ export function useFinancePage() {
     updateUrlParams({ salariesPage: page || null });
   }, [updateUrlParams]);
 
-  // Handle salary breakdown view
-  const handleViewBreakdown = useCallback((salary: { teacherId: string; teacherName: string; month: string }) => {
-    setSelectedSalaryForBreakdown(salary);
-    // Update URL to persist state
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('breakdownTeacherId', salary.teacherId);
-    params.set('breakdownMonth', salary.month);
-    params.set('breakdownTeacherName', encodeURIComponent(salary.teacherName));
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [router, pathname, searchParams]);
-
-  // Handle breakdown modal close
-  const handleBreakdownClose = useCallback(() => {
-    setSelectedSalaryForBreakdown(null);
-    // Remove breakdown params from URL
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('breakdownTeacherId');
-    params.delete('breakdownMonth');
-    params.delete('breakdownTeacherName');
-    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.push(newUrl, { scroll: false });
-  }, [router, pathname, searchParams]);
-
   return {
     // State
     activeTab,
@@ -147,7 +105,6 @@ export function useFinancePage() {
     salaryStatus,
     selectedSalaryId,
     isDetailModalOpen,
-    selectedSalaryForBreakdown,
     selectedSalaryIds,
     isDeleteDialogOpen,
     deleteError,
@@ -164,8 +121,6 @@ export function useFinancePage() {
     handleSalaryStatusChange,
     handlePaymentsPageChange,
     handleSalariesPageChange,
-    handleViewBreakdown,
-    handleBreakdownClose,
     // Router utilities
     router,
     pathname,

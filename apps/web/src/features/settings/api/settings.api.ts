@@ -145,7 +145,7 @@ export async function fetchActionPercents(): Promise<{
 }
 
 /**
- * Update action percent settings (Admin only)
+ * Update action percent settings (Admin only) - DEPRECATED
  */
 export async function updateActionPercents(data: {
   absencePercent: number;
@@ -166,4 +166,43 @@ export async function updateActionPercents(data: {
     textPercent: number;
     total: number;
   }>('/settings/action-percents', data);
+}
+
+/**
+ * Get penalty amounts (Admin only)
+ */
+export async function fetchPenalties(): Promise<{
+  penaltyAbsenceAmd: number;
+  penaltyFeedbackAmd: number;
+  penaltyVoiceAmd: number;
+  penaltyTextAmd: number;
+}> {
+  return api.get<{
+    penaltyAbsenceAmd: number;
+    penaltyFeedbackAmd: number;
+    penaltyVoiceAmd: number;
+    penaltyTextAmd: number;
+  }>('/settings/penalties');
+}
+
+/**
+ * Update penalty amounts (Admin only)
+ */
+export async function updatePenalties(data: {
+  penaltyAbsenceAmd: number;
+  penaltyFeedbackAmd: number;
+  penaltyVoiceAmd: number;
+  penaltyTextAmd: number;
+}): Promise<{
+  penaltyAbsenceAmd: number;
+  penaltyFeedbackAmd: number;
+  penaltyVoiceAmd: number;
+  penaltyTextAmd: number;
+}> {
+  return api.put<{
+    penaltyAbsenceAmd: number;
+    penaltyFeedbackAmd: number;
+    penaltyVoiceAmd: number;
+    penaltyTextAmd: number;
+  }>('/settings/penalties', data);
 }

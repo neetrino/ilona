@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Button } from '@/shared/components/ui';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { useLessons, useLessonStatistics, useCancelLesson, AddLessonForm, type Lesson, type LessonStatus } from '@/features/lessons';
+import { useTeachers } from '@/features/teachers';
+import { CalendarFilters } from './components/CalendarFilters';
 
 // Helper to get week dates
 function getWeekDates(date: Date): Date[] {
@@ -55,8 +57,43 @@ export default function CalendarPage() {
     return 'list'; // Default to list view
   });
   
+  // Initialize sort state from URL query params
+  const [sortBy, setSortBy] = useState<string | undefined>(() => {
+    return searchParams.get('sortBy') || undefined;
+  });
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(() => {
+    const order = searchParams.get('sortOrder');
+    if (order === 'asc' || order === 'desc') {
+      return order;
+    }
+    return undefined;
+  });
+
+  // Initialize filter state from URL query params
+  const [searchQuery, setSearchQuery] = useState<string>(() => {
+    return searchParams.get('q') || '';
+  });
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>(() => {
+    return searchParams.get('teacherId') || '';
+  });
+  
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
+
+  // Fetch teachers for dropdown
+  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ 
+    status: 'ACTIVE', 
+    take: 100 
+  });
+
+  // Prepare teacher options
+  const teacherOptions = useMemo(() => {
+    if (!teachersData?.items) return [];
+    return teachersData.items.map(teacher => ({
+      id: teacher.id,
+      label: `${teacher.user.firstName} ${teacher.user.lastName}`,
+    }));
+  }, [teachersData]);
   
   // Update URL when view mode changes
   const updateViewModeInUrl = (mode: 'week' | 'list') => {
@@ -83,7 +120,43 @@ export default function CalendarPage() {
     } else if (!viewFromUrl) {
       setViewMode('list');
     }
+    
+    // Sync sort state from URL
+    const sortByFromUrl = searchParams.get('sortBy');
+    const sortOrderFromUrl = searchParams.get('sortOrder');
+    setSortBy(sortByFromUrl || undefined);
+    if (sortOrderFromUrl === 'asc' || sortOrderFromUrl === 'desc') {
+      setSortOrder(sortOrderFromUrl);
+    } else {
+      setSortOrder(undefined);
+    }
+
+    // Sync filter state from URL
+    setSearchQuery(searchParams.get('q') || '');
+    setSelectedTeacherId(searchParams.get('teacherId') || '');
   }, [searchParams]);
+  
+  // Handle sort toggle
+  const handleSort = (key: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (sortBy === key && sortOrder) {
+      // Toggle order if already sorting by this column
+      const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      setSortOrder(newOrder);
+      params.set('sortBy', key);
+      params.set('sortOrder', newOrder);
+    } else {
+      // Start sorting by this column (default to ascending)
+      setSortBy(key);
+      setSortOrder('asc');
+      params.set('sortBy', key);
+      params.set('sortOrder', 'asc');
+    }
+    
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl);
+  };
   
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
   const dateFrom = formatDate(weekDates[0]);
@@ -98,6 +171,10 @@ export default function CalendarPage() {
     dateFrom,
     dateTo: formatDate(new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000)),
     take: 100,
+    sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
+    sortOrder: sortOrder,
+    search: searchQuery || undefined,
+    teacherId: selectedTeacherId || undefined,
   });
 
   // Set up automatic refetch every minute for time-based updates (midnight lock, status changes)
@@ -178,12 +255,49 @@ export default function CalendarPage() {
   // Week header
   const weekHeader = `${weekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
+  // Handle filter changes and update URL - memoized to prevent infinite loops
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set('q', value);
+    } else {
+      params.delete('q');
+    }
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl);
+  }, [searchParams, pathname, router]);
+
+  const handleTeacherChange = useCallback((teacherId: string) => {
+    setSelectedTeacherId(teacherId);
+    const params = new URLSearchParams(searchParams.toString());
+    if (teacherId) {
+      params.set('teacherId', teacherId);
+    } else {
+      params.delete('teacherId');
+    }
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl);
+  }, [searchParams, pathname, router]);
+
   return (
     <DashboardLayout 
       title="Lesson Calendar" 
       subtitle="Schedule and manage lessons across all groups."
     >
       <div className="space-y-6">
+        {/* Filters */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200">
+          <CalendarFilters
+            searchQuery={searchQuery}
+            selectedTeacherId={selectedTeacherId}
+            teacherOptions={teacherOptions}
+            isLoadingTeachers={isLoadingTeachers}
+            onSearchChange={handleSearchChange}
+            onTeacherChange={handleTeacherChange}
+          />
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <StatCard
@@ -312,7 +426,9 @@ export default function CalendarPage() {
                         <div className="h-16 bg-slate-200 rounded-lg" />
                       </div>
                     ) : dayLessons.length === 0 ? (
-                      <p className="text-xs text-slate-400 text-center py-4">No lessons</p>
+                      <p className="text-xs text-slate-400 text-center py-4">
+                        {searchQuery || selectedTeacherId ? 'No lessons match filters' : 'No lessons'}
+                      </p>
                     ) : (
                       <div className="space-y-2">
                         {dayLessons.map(lesson => {
@@ -362,18 +478,39 @@ export default function CalendarPage() {
 
         {/* List View */}
         {viewMode === 'list' && (
-          <LessonListTable
-            lessons={lessons}
-            isLoading={isLoading}
-            onObligationClick={(lessonId, obligation) => {
-              router.push(`/admin/calendar/${lessonId}?tab=${obligation}`);
-            }}
-            onDelete={(lessonId) => {
-              if (confirm('Are you sure you want to delete this lesson?')) {
-                handleCancel(lessonId);
-              }
-            }}
-          />
+          <>
+            {isLoading ? (
+              <div className="bg-white rounded-xl border border-slate-200 p-8">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-12 bg-slate-200 rounded-lg" />
+                  <div className="h-12 bg-slate-200 rounded-lg" />
+                  <div className="h-12 bg-slate-200 rounded-lg" />
+                </div>
+              </div>
+            ) : lessons.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+                <p className="text-slate-500">
+                  {searchQuery || selectedTeacherId ? 'No lessons match the current filters' : 'No lessons found'}
+                </p>
+              </div>
+            ) : (
+              <LessonListTable
+                lessons={lessons}
+                isLoading={isLoading}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+                onObligationClick={(lessonId, obligation) => {
+                  router.push(`/admin/calendar/${lessonId}?tab=${obligation}`);
+                }}
+                onDelete={(lessonId) => {
+                  if (confirm('Are you sure you want to delete this lesson?')) {
+                    handleCancel(lessonId);
+                  }
+                }}
+              />
+            )}
+          </>
         )}
 
         {/* Quick Actions */}

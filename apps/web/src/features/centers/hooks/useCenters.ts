@@ -9,7 +9,7 @@ import {
   deleteCenter,
   toggleCenterActive,
 } from '../api/centers.api';
-import type { CenterFilters, CreateCenterDto, UpdateCenterDto } from '../types';
+import type { CenterFilters, CreateCenterDto, UpdateCenterDto, CentersResponse, CenterWithCount } from '../types';
 
 // Query keys
 export const centerKeys = {
@@ -95,7 +95,61 @@ export function useToggleCenterActive() {
 
   return useMutation({
     mutationFn: (id: string) => toggleCenterActive(id),
+    // Optimistic update for better UX
+    onMutate: async (id) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: centerKeys.detail(id) });
+      await queryClient.cancelQueries({ queryKey: centerKeys.lists() });
+
+      // Snapshot previous values
+      const previousCenter = queryClient.getQueryData(centerKeys.detail(id));
+      const previousLists = queryClient.getQueriesData({ queryKey: centerKeys.lists() });
+
+      // Optimistically update the detail query
+      if (previousCenter) {
+        const center = previousCenter as CenterWithCount;
+        queryClient.setQueryData(centerKeys.detail(id), {
+          ...center,
+          isActive: !center.isActive,
+        });
+      }
+
+      // Optimistically update all list queries
+      previousLists.forEach(([queryKey, oldData]) => {
+        if (oldData && typeof oldData === 'object' && 'items' in oldData) {
+          const response = oldData as CentersResponse;
+          const items = response.items || [];
+          const updatedItems = items.map((item: CenterWithCount) => {
+            if (item.id === id) {
+              return {
+                ...item,
+                isActive: !item.isActive,
+              };
+            }
+            return item;
+          });
+          queryClient.setQueryData(queryKey, {
+            ...response,
+            items: updatedItems,
+          });
+        }
+      });
+
+      return { previousCenter, previousLists };
+    },
+    onError: (err, id, context) => {
+      // Rollback on error
+      if (context?.previousCenter) {
+        queryClient.setQueryData(centerKeys.detail(id), context.previousCenter);
+      }
+      if (context?.previousLists) {
+        context.previousLists.forEach(([queryKey, oldData]) => {
+          queryClient.setQueryData(queryKey, oldData);
+        });
+      }
+    },
     onSuccess: (_, id) => {
+      // Invalidate to refetch and ensure consistency
       queryClient.invalidateQueries({ queryKey: centerKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: centerKeys.lists() });
     },

@@ -112,7 +112,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             </div>
             <div className="flex-1 min-w-0 text-left">
               <p className="font-semibold text-slate-800 truncate">
-                {user?.role === 'ADMIN' ? 'Admin' : user?.role === 'TEACHER' ? 'Teacher' : user?.role === 'STUDENT' ? 'Student' : user?.firstName || tNav('user')}
+                {user?.role === 'ADMIN' ? 'Admin' : user?.role === 'TEACHER' ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Teacher' : user?.role === 'STUDENT' ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Student' : user?.firstName || tNav('user')}
               </p>
             </div>
           </button>

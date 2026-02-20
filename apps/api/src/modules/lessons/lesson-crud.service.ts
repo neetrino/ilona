@@ -23,16 +23,18 @@ export class LessonCrudService {
     skip?: number;
     take?: number;
     groupId?: string;
+    groupIds?: string[];
     teacherId?: string;
     status?: LessonStatus;
     dateFrom?: Date;
     dateTo?: Date;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    search?: string;
     currentUserId?: string;
     userRole?: UserRole;
   }) {
-    const { skip = 0, take = 50, groupId, teacherId, status, dateFrom, dateTo, sortBy, sortOrder, currentUserId, userRole } = params || {};
+    const { skip = 0, take = 50, groupId, groupIds, teacherId, status, dateFrom, dateTo, sortBy, sortOrder, search, currentUserId, userRole } = params || {};
 
     const where: Prisma.LessonWhereInput = {};
 
@@ -81,7 +83,12 @@ export class LessonCrudService {
 
     // Admin can see all lessons, but can still filter
     const additionalFilters: Prisma.LessonWhereInput = {};
-    if (groupId) additionalFilters.groupId = groupId;
+    // Support both single groupId (backward compatibility) and groupIds array
+    if (groupIds && groupIds.length > 0) {
+      additionalFilters.groupId = { in: groupIds };
+    } else if (groupId) {
+      additionalFilters.groupId = groupId;
+    }
     if (teacherId) {
       // For teachers, ensure they can only query their own teacherId
       if (userRole === UserRole.TEACHER && currentTeacherId && teacherId !== currentTeacherId) {
@@ -95,6 +102,25 @@ export class LessonCrudService {
       additionalFilters.scheduledAt = {};
       if (dateFrom) additionalFilters.scheduledAt.gte = dateFrom;
       if (dateTo) additionalFilters.scheduledAt.lte = dateTo;
+    }
+
+    // Search query - search in group name, topic, teacher name
+    if (search && search.trim()) {
+      const searchTerm = search.trim();
+      additionalFilters.OR = [
+        { topic: { contains: searchTerm, mode: 'insensitive' } },
+        { group: { name: { contains: searchTerm, mode: 'insensitive' } } },
+        {
+          teacher: {
+            user: {
+              OR: [
+                { firstName: { contains: searchTerm, mode: 'insensitive' } },
+                { lastName: { contains: searchTerm, mode: 'insensitive' } },
+              ],
+            },
+          },
+        },
+      ];
     }
 
     // Combine all conditions with AND
@@ -554,6 +580,7 @@ export class LessonCrudService {
     };
   }
 }
+
 
 
 

@@ -21,12 +21,16 @@ export async function fetchLessons(filters?: LessonFilters): Promise<LessonsResp
   if (filters?.skip !== undefined) params.append('skip', String(filters.skip));
   if (filters?.take !== undefined) params.append('take', String(filters.take));
   if (filters?.groupId) params.append('groupId', filters.groupId);
+  if (filters?.groupIds && filters.groupIds.length > 0) {
+    filters.groupIds.forEach(id => params.append('groupIds', id));
+  }
   if (filters?.teacherId) params.append('teacherId', filters.teacherId);
   if (filters?.status) params.append('status', filters.status);
   if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
   if (filters?.dateTo) params.append('dateTo', filters.dateTo);
   if (filters?.sortBy) params.append('sortBy', filters.sortBy);
   if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
+  if (filters?.search) params.append('q', filters.search);
 
   const query = params.toString();
   const url = query ? `${LESSONS_ENDPOINT}?${query}` : LESSONS_ENDPOINT;

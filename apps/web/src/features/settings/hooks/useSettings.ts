@@ -12,6 +12,8 @@ import {
   deleteLogo,
   fetchActionPercents,
   updateActionPercents,
+  fetchPenalties,
+  updatePenalties,
 } from '../api/settings.api';
 import type { UpdateProfileDto, ChangePasswordDto } from '../types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -25,6 +27,7 @@ export const settingsKeys = {
   logo: () => [...settingsKeys.all, 'logo'] as const,
   public: () => [...settingsKeys.all, 'public'] as const,
   actionPercents: () => [...settingsKeys.all, 'action-percents'] as const,
+  penalties: () => [...settingsKeys.all, 'penalties'] as const,
 };
 
 /**
@@ -190,7 +193,7 @@ export function useActionPercents() {
 }
 
 /**
- * Hook to update action percent settings (Admin only)
+ * Hook to update action percent settings (Admin only) - DEPRECATED
  */
 export function useUpdateActionPercents() {
   const queryClient = useQueryClient();
@@ -205,6 +208,40 @@ export function useUpdateActionPercents() {
     onSuccess: () => {
       // Invalidate action percents query
       queryClient.invalidateQueries({ queryKey: settingsKeys.actionPercents() });
+      
+      // Invalidate all salary-related queries so finance recalculates immediately
+      queryClient.invalidateQueries({ queryKey: ['finance', 'salaries'] });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+    },
+  });
+}
+
+/**
+ * Hook to fetch penalty amounts (Admin only)
+ */
+export function usePenalties() {
+  return useQuery({
+    queryKey: settingsKeys.penalties(),
+    queryFn: () => fetchPenalties(),
+  });
+}
+
+/**
+ * Hook to update penalty amounts (Admin only)
+ */
+export function useUpdatePenalties() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: {
+      penaltyAbsenceAmd: number;
+      penaltyFeedbackAmd: number;
+      penaltyVoiceAmd: number;
+      penaltyTextAmd: number;
+    }) => updatePenalties(data),
+    onSuccess: () => {
+      // Invalidate penalties query
+      queryClient.invalidateQueries({ queryKey: settingsKeys.penalties() });
       
       // Invalidate all salary-related queries so finance recalculates immediately
       queryClient.invalidateQueries({ queryKey: ['finance', 'salaries'] });

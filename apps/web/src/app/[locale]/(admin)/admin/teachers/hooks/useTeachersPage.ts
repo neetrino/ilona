@@ -70,7 +70,7 @@ export function useTeachersPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       return modeFromUrl;
     }
-    return 'board'; // Default to board view
+    return 'list'; // Default to list view
   });
   
   // Details drawer state
@@ -94,7 +94,7 @@ export function useTeachersPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       setViewMode(modeFromUrl);
     } else if (!modeFromUrl) {
-      setViewMode('board');
+      setViewMode('list');
     }
   }, [searchParams]);
 
@@ -243,7 +243,7 @@ export function useTeachersPage() {
 
   const updateViewModeInUrl = (mode: ViewMode) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (mode !== 'board') {
+    if (mode !== 'list') {
       params.set('view', mode);
     } else {
       params.delete('view');

@@ -47,8 +47,11 @@ export class AttendanceController {
   }
 
   @Get('lesson/:lessonId')
-  async getByLesson(@Param('lessonId') lessonId: string) {
-    return this.attendanceService.getByLesson(lessonId);
+  async getByLesson(
+    @Param('lessonId') lessonId: string,
+    @CurrentUser() user?: JwtPayload,
+  ) {
+    return this.attendanceService.getByLesson(lessonId, user?.sub, user?.role);
   }
 
   @Get('student/:studentId')
@@ -67,11 +70,12 @@ export class AttendanceController {
   async getGroupReport(
     @Param('groupId') groupId: string,
     @Query() query: QueryAttendanceDto,
+    @CurrentUser() user: JwtPayload,
   ) {
     const dateFrom = query.dateFrom ? new Date(query.dateFrom) : new Date(new Date().setMonth(new Date().getMonth() - 1));
     const dateTo = query.dateTo ? new Date(query.dateTo) : new Date();
 
-    return this.attendanceService.getGroupAttendanceReport(groupId, dateFrom, dateTo);
+    return this.attendanceService.getGroupAttendanceReport(groupId, dateFrom, dateTo, user.sub, user.role);
   }
 
   @Get('at-risk')
@@ -82,14 +86,20 @@ export class AttendanceController {
 
   @Post()
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async markAttendance(@Body() dto: MarkAttendanceDto) {
-    return this.attendanceService.markAttendance(dto);
+  async markAttendance(
+    @Body() dto: MarkAttendanceDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.attendanceService.markAttendance(dto, user.sub, user.role);
   }
 
   @Post('bulk')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async markBulkAttendance(@Body() dto: BulkAttendanceDto) {
-    return this.attendanceService.markBulkAttendance(dto);
+  async markBulkAttendance(
+    @Body() dto: BulkAttendanceDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.attendanceService.markBulkAttendance(dto, user.sub, user.role);
   }
 
   @Patch(':id/absence-type')
@@ -97,9 +107,10 @@ export class AttendanceController {
   async updateAbsenceType(
     @Param('id') id: string,
     @Body('absenceType') absenceType: AbsenceType,
-    @Body('note') note?: string,
+    @Body('note') note: string | undefined,
+    @CurrentUser() user: JwtPayload,
   ) {
-    return this.attendanceService.updateAbsenceType(id, absenceType, note);
+    return this.attendanceService.updateAbsenceType(id, absenceType, note, user.sub, user.role);
   }
 }
 

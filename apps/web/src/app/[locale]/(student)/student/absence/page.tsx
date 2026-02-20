@@ -1,70 +1,26 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { useStudentAttendance } from '@/features/attendance';
-import { useMyProfile } from '@/features/students';
-import { cn } from '@/shared/lib/utils';
-
-function AbsenceTypeBadge({ type }: { type: 'JUSTIFIED' | 'UNJUSTIFIED' | null | undefined }) {
-  if (!type) {
-    return (
-      <span className="px-2 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700">
-        Not Specified
-      </span>
-    );
-  }
-
-  const isJustified = type === 'JUSTIFIED';
-
-  return (
-    <span className={cn(
-      'px-2 py-1 text-xs font-medium rounded-full',
-      isJustified ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-    )}>
-      {isJustified ? 'Justified' : 'Unjustified'}
-    </span>
-  );
-}
+import { useMonthAttendance } from './hooks/useMonthAttendance';
+import { StudentAbsenceCalendar } from './components/StudentAbsenceCalendar';
 
 export default function StudentAbsencePage() {
-  // Get date range for last 3 months (memoized to prevent query key changes)
-  const { dateFrom, dateTo } = useMemo(() => {
-    const today = new Date();
-    const threeMonthsAgo = new Date(today);
-    threeMonthsAgo.setMonth(today.getMonth() - 3);
-    return {
-      dateFrom: threeMonthsAgo.toISOString(),
-      dateTo: today.toISOString(),
-    };
-  }, []);
+  const t = useTranslations('attendance');
+  const tCommon = useTranslations('common');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Fetch current student profile to get studentId
-  const { data: studentProfile, isLoading: isLoadingProfile, error: profileError, refetch: refetchProfile } = useMyProfile();
-
-  // Fetch attendance history using studentId
-  const { 
-    data: attendanceData, 
-    isLoading: isLoadingAttendance, 
-    error: attendanceError,
-    refetch: refetchAttendance 
-  } = useStudentAttendance(
-    studentProfile?.id || '',
-    dateFrom,
-    dateTo,
-    !!studentProfile?.id // Only enable when studentId is available
-  );
-
-  const isLoading = isLoadingProfile || isLoadingAttendance;
-  const error = profileError || attendanceError;
+  // Fetch attendance for the current month
+  const {
+    data: attendanceData,
+    isLoading,
+    error,
+    refetch,
+  } = useMonthAttendance(currentMonth);
 
   const handleRetry = () => {
-    if (profileError) {
-      refetchProfile();
-    }
-    if (attendanceError) {
-      refetchAttendance();
-    }
+    refetch();
   };
 
   const statistics = attendanceData?.statistics || {
@@ -76,13 +32,10 @@ export default function StudentAbsencePage() {
     attendanceRate: 0,
   };
 
-  // Filter to only show absences
-  const absences = (attendanceData?.attendances || []).filter((a) => !a.isPresent);
-
   return (
     <DashboardLayout
-      title="Absence History"
-      subtitle="View your attendance record and absences."
+      title={t('absenceHistory') || 'Absence History'}
+      subtitle={t('viewAttendanceRecord') || 'View your attendance record and absences.'}
     >
       {/* Statistics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
@@ -94,7 +47,7 @@ export default function StudentAbsencePage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Attendance Rate</p>
+              <p className="text-sm text-slate-500">{t('attendanceRate')}</p>
               {isLoading ? (
                 <div className="h-6 w-16 bg-slate-200 rounded animate-pulse" />
               ) : (
@@ -114,7 +67,7 @@ export default function StudentAbsencePage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Present</p>
+              <p className="text-sm text-slate-500">{t('present')}</p>
               {isLoading ? (
                 <div className="h-6 w-12 bg-slate-200 rounded animate-pulse" />
               ) : (
@@ -134,7 +87,7 @@ export default function StudentAbsencePage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Justified</p>
+              <p className="text-sm text-slate-500">{t('justified')}</p>
               {isLoading ? (
                 <div className="h-6 w-8 bg-slate-200 rounded animate-pulse" />
               ) : (
@@ -152,7 +105,7 @@ export default function StudentAbsencePage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Unjustified</p>
+              <p className="text-sm text-slate-500">{t('unjustified')}</p>
               {isLoading ? (
                 <div className="h-6 w-8 bg-slate-200 rounded animate-pulse" />
               ) : (
@@ -173,105 +126,47 @@ export default function StudentAbsencePage() {
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-red-800">Attention Required</p>
+              <p className="font-semibold text-red-800">
+                {t('attentionRequired') || 'Attention Required'}
+              </p>
               <p className="text-sm text-red-600">
-                You have {statistics.absentUnjustified} unjustified absences. Please contact administration to discuss your attendance.
+                {t('unjustifiedAbsencesWarning', { count: statistics.absentUnjustified }) ||
+                  `You have ${statistics.absentUnjustified} unjustified absences. Please contact administration to discuss your attendance.`}
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Absences List */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="p-4 border-b border-slate-200">
-          <h3 className="font-semibold text-slate-800">Absence History</h3>
-          <p className="text-sm text-slate-500">Last 3 months</p>
+      {/* Calendar */}
+      {error ? (
+        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-slate-800 mb-1">
+            {t('errorLoadingAttendance') || 'Error Loading Attendance'}
+          </h3>
+          <p className="text-sm text-slate-500 mb-4">
+            {error instanceof Error ? error.message : t('failedToLoadAttendance') || 'Failed to load attendance data. Please try again.'}
+          </p>
+          <button
+            onClick={handleRetry}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            {tCommon('retry') || 'Retry'}
+          </button>
         </div>
-
-        <div className="divide-y divide-slate-100">
-          {isLoading ? (
-            <div className="p-4 space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse flex items-center justify-between">
-                  <div>
-                    <div className="h-4 bg-slate-200 rounded w-32 mb-2" />
-                    <div className="h-3 bg-slate-200 rounded w-24" />
-                  </div>
-                  <div className="h-6 bg-slate-200 rounded w-20" />
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-1">Error Loading Attendance</h3>
-              <p className="text-sm text-slate-500 mb-4">
-                {error instanceof Error ? error.message : 'Failed to load absence data. Please try again.'}
-              </p>
-              <button
-                onClick={handleRetry}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-              >
-                Retry
-              </button>
-            </div>
-          ) : absences.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-1">Perfect Attendance!</h3>
-              <p className="text-sm text-slate-500">You have no absences in the last 3 months. Great job!</p>
-            </div>
-          ) : (
-            absences.map((absence) => {
-              const lessonDate = new Date(absence.lesson.scheduledAt);
-
-              return (
-                <div key={absence.id} className="p-4 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold text-slate-800">
-                          {lessonDate.toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </p>
-                        <AbsenceTypeBadge type={absence.absenceType} />
-                      </div>
-                      <p className="text-sm text-slate-500">
-                        {absence.lesson.group.name}
-                        {absence.lesson.topic && ` - ${absence.lesson.topic}`}
-                      </p>
-                      {absence.note && (
-                        <p className="text-xs text-slate-400 mt-1 italic">{absence.note}</p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-slate-500">
-                        {lessonDate.toLocaleTimeString('en-US', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
+      ) : (
+        <StudentAbsenceCalendar
+          attendanceData={attendanceData}
+          isLoading={isLoading}
+          currentMonth={currentMonth}
+          onMonthChange={setCurrentMonth}
+        />
+      )}
     </DashboardLayout>
   );
 }

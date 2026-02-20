@@ -7,86 +7,123 @@ import { Prisma } from '@prisma/client';
 export class CentersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Normalizes hex color from #RGB to #RRGGBB format
+   */
+  private normalizeHexColor(hex?: string): string | undefined {
+    if (!hex || hex.trim() === '') return undefined;
+    
+    // Remove # if present
+    const cleanHex = hex.replace('#', '').trim();
+    
+    // If empty after removing #, return undefined
+    if (cleanHex.length === 0) return undefined;
+    
+    // If 3 characters, expand to 6
+    if (cleanHex.length === 3) {
+      return `#${cleanHex.split('').map(c => c + c).join('')}`.toUpperCase();
+    }
+    
+    // If 6 characters, just normalize case
+    if (cleanHex.length === 6) {
+      return `#${cleanHex.toUpperCase()}`;
+    }
+    
+    // Invalid format, return as-is (validation will catch it)
+    return hex;
+  }
+
   async findAll(params?: {
     skip?: number;
     take?: number;
     search?: string;
     isActive?: boolean;
   }) {
-    const { skip = 0, take = 50, search, isActive } = params || {};
+    try {
+      const { skip = 0, take = 50, search, isActive } = params || {};
 
-    const where: Prisma.CenterWhereInput = {};
+      const where: Prisma.CenterWhereInput = {};
 
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { address: { contains: search, mode: 'insensitive' } },
-      ];
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { address: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      if (isActive !== undefined) {
+        where.isActive = isActive;
+      }
+
+      const [items, total] = await Promise.all([
+        this.prisma.center.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { name: 'asc' },
+          include: {
+            _count: {
+              select: { groups: true },
+            },
+          },
+        }),
+        this.prisma.center.count({ where }),
+      ]);
+
+      return {
+        items,
+        total,
+        page: Math.floor(skip / take) + 1,
+        pageSize: take,
+        totalPages: Math.ceil(total / take),
+      };
+    } catch (error) {
+      throw error;
     }
+  }
 
-    if (isActive !== undefined) {
-      where.isActive = isActive;
-    }
-
-    const [items, total] = await Promise.all([
-      this.prisma.center.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { name: 'asc' },
+  async findById(id: string) {
+    try {
+      const center = await this.prisma.center.findUnique({
+        where: { id },
         include: {
+          groups: {
+            include: {
+              teacher: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      firstName: true,
+                      lastName: true,
+                      email: true,
+                      avatarUrl: true,
+                    },
+                  },
+                },
+              },
+              _count: {
+                select: { students: true, lessons: true },
+              },
+            },
+          },
           _count: {
             select: { groups: true },
           },
         },
-      }),
-      this.prisma.center.count({ where }),
-    ]);
+      });
 
-    return {
-      items,
-      total,
-      page: Math.floor(skip / take) + 1,
-      pageSize: take,
-      totalPages: Math.ceil(total / take),
-    };
-  }
+      if (!center) {
+        throw new NotFoundException(`Center with ID ${id} not found`);
+      }
 
-  async findById(id: string) {
-    const center = await this.prisma.center.findUnique({
-      where: { id },
-      include: {
-        groups: {
-          include: {
-            teacher: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    firstName: true,
-                    lastName: true,
-                    email: true,
-                    avatarUrl: true,
-                  },
-                },
-              },
-            },
-            _count: {
-              select: { students: true, lessons: true },
-            },
-          },
-        },
-        _count: {
-          select: { groups: true },
-        },
-      },
-    });
-
-    if (!center) {
-      throw new NotFoundException(`Center with ID ${id} not found`);
+      return center;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw error;
     }
-
-    return center;
   }
 
   async create(dto: CreateCenterDto) {
@@ -111,6 +148,7 @@ export class CentersService {
         phone: dto.phone,
         email: dto.email,
         description: dto.description,
+        colorHex: this.normalizeHexColor(dto.colorHex),
         isActive: dto.isActive ?? true,
       },
     });
@@ -138,9 +176,15 @@ export class CentersService {
       }
     }
 
+    // Normalize colorHex if provided
+    const updateData = { ...dto };
+    if (dto.colorHex !== undefined) {
+      updateData.colorHex = this.normalizeHexColor(dto.colorHex);
+    }
+
     return this.prisma.center.update({
       where: { id },
-      data: dto,
+      data: updateData,
     });
   }
 

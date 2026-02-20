@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
@@ -12,7 +12,6 @@ import {
   type TeacherPerformance,
   type StudentRisk,
 } from '@/features/analytics';
-import { AnalyticsLockScreen } from '@/features/analytics/components/AnalyticsLockScreen';
 import { cn } from '@/shared/lib/utils';
 
 type TabType = 'overview' | 'teachers' | 'students' | 'revenue';
@@ -151,32 +150,13 @@ export default function AdminAnalyticsPage() {
   const tCommon = useTranslations('common');
   const t = useTranslations('analytics');
   const [activeTab, setActiveTab] = useState<TabType>('overview');
-  const [isUnlocked, setIsUnlocked] = useState(false);
 
-  // Check if analytics is unlocked on mount
-  // Since we want no persistence after refresh, we always start locked
-  // The cookie check happens on the backend via the guard
-  useEffect(() => {
-    // On page load/refresh, always require password
-    setIsUnlocked(false);
-  }, []);
-
-  // Fetch data only when unlocked (disabled when locked to prevent 403 errors)
-  const { data: teachers = [], isLoading: isLoadingTeachers } = useTeacherPerformance(undefined, undefined, { 
-    enabled: isUnlocked 
-  });
-  const { data: students = [], isLoading: isLoadingStudents } = useStudentRisk({ 
-    enabled: isUnlocked 
-  });
-  const { data: revenue = [], isLoading: isLoadingRevenue } = useRevenueAnalytics(6, { 
-    enabled: isUnlocked 
-  });
-  const { data: attendance, isLoading: isLoadingAttendance } = useAttendanceOverview(undefined, undefined, { 
-    enabled: isUnlocked 
-  });
-  const { data: lessons, isLoading: isLoadingLessons } = useLessonsOverview(undefined, undefined, { 
-    enabled: isUnlocked 
-  });
+  // Fetch data
+  const { data: teachers = [], isLoading: isLoadingTeachers } = useTeacherPerformance(undefined, undefined);
+  const { data: students = [], isLoading: isLoadingStudents } = useStudentRisk();
+  const { data: revenue = [], isLoading: isLoadingRevenue } = useRevenueAnalytics(6);
+  const { data: attendance, isLoading: isLoadingAttendance } = useAttendanceOverview(undefined, undefined);
+  const { data: lessons, isLoading: isLoadingLessons } = useLessonsOverview(undefined, undefined);
 
   // Calculate totals
   const totalIncome = revenue.reduce((sum, r) => sum + r.income, 0);
@@ -190,11 +170,6 @@ export default function AdminAnalyticsPage() {
     { id: 'students', label: 'Student Risk' },
     { id: 'revenue', label: 'Revenue' },
   ];
-
-  // Show lock screen if not unlocked
-  if (!isUnlocked) {
-    return <AnalyticsLockScreen onUnlock={() => setIsUnlocked(true)} />;
-  }
 
   return (
     <DashboardLayout

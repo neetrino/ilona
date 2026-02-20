@@ -13,7 +13,7 @@ interface MonthViewCalendarProps {
   currentDate: Date;
   selectedGroup: Group | undefined;
   selectedDayForMonthView: string | null;
-  lessonsByDate: Record<string, Lesson[]>;
+  lessonsByDate?: Record<string, Lesson[]>; // Optional for backward compatibility
   hasUnsavedChanges: boolean;
   onDaySelect: (date: Date) => void;
 }
@@ -52,7 +52,7 @@ export function MonthViewCalendar({
         {monthDates.map((date, idx) => {
           const dateStr = formatDateString(date);
           const isInCurrentMonth = isCurrentMonth(date, currentDate);
-          const dayLessons = lessonsByDate[dateStr] || [];
+          const dayLessons = (lessonsByDate && lessonsByDate[dateStr]) || [];
           const hasLessons = dayLessons.length > 0;
           const isSelected = selectedDayForMonthView === dateStr;
           const isTodayDate = isToday(date);
@@ -96,6 +96,7 @@ export function MonthViewCalendar({
     </div>
   );
 }
+
 
 
 

@@ -19,6 +19,7 @@ export class StudentCrudService {
     take?: number;
     search?: string;
     groupId?: string;
+    groupIds?: string[];
     status?: UserStatus;
     statusIds?: UserStatus[];
     teacherId?: string;
@@ -30,7 +31,7 @@ export class StudentCrudService {
     month?: number;
     year?: number;
   }) {
-    const { skip = 0, take = 50, search, groupId, status, statusIds, teacherId, teacherIds, centerId, centerIds, sortBy, sortOrder = 'asc' } = params || {};
+    const { skip = 0, take = 50, search, groupId, groupIds, status, statusIds, teacherId, teacherIds, centerId, centerIds, sortBy, sortOrder = 'asc' } = params || {};
 
     const where: Prisma.StudentWhereInput = {};
     const userWhere: Prisma.UserWhereInput = {};
@@ -54,7 +55,10 @@ export class StudentCrudService {
       where.user = userWhere;
     }
 
-    if (groupId) {
+    // Support both single groupId (backward compatibility) and groupIds array
+    if (groupIds && groupIds.length > 0) {
+      where.groupId = { in: groupIds };
+    } else if (groupId) {
       where.groupId = groupId;
     }
 
@@ -641,6 +645,7 @@ export class StudentCrudService {
     return { success: true };
   }
 }
+
 
 
 

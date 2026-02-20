@@ -14,7 +14,7 @@ export function FinanceStats({ dashboard, isLoading }: FinanceStatsProps) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="h-24 bg-slate-100 rounded-xl animate-pulse" />
         ))}
@@ -23,7 +23,7 @@ export function FinanceStats({ dashboard, isLoading }: FinanceStatsProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
       <StatCard
         title={t('totalRevenue')}
         value={new Intl.NumberFormat('hy-AM', {

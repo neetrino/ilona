@@ -25,12 +25,14 @@ export class LessonsService {
     skip?: number;
     take?: number;
     groupId?: string;
+    groupIds?: string[];
     teacherId?: string;
     status?: any;
     dateFrom?: Date;
     dateTo?: Date;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    search?: string;
     currentUserId?: string;
     userRole?: any;
   }) {

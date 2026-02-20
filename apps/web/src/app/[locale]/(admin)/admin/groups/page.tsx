@@ -47,7 +47,8 @@ export default function GroupsPage() {
         params.set(key, value);
       }
     });
-    router.push(`${pathname}?${params.toString()}`);
+    // Use replace instead of push to avoid history stack issues and prevent flicker
+    router.replace(`${pathname}?${params.toString()}`);
   };
 
   // Update URL when view mode changes

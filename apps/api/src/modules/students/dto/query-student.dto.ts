@@ -24,6 +24,16 @@ export class QueryStudentDto {
   groupId?: string;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (!value) return undefined;
+    if (Array.isArray(value)) return value;
+    return [value];
+  })
+  @IsArray()
+  @IsString({ each: true })
+  groupIds?: string[];
+
+  @IsOptional()
   @IsString()
   status?: string;
 

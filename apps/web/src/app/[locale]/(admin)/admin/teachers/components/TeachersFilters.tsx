@@ -135,20 +135,6 @@ export function TeachersFilters({
       {/* View Mode Toggle */}
       <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
         <button
-          onClick={() => onViewModeChange('board')}
-          className={cn(
-            'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-            viewMode === 'board'
-              ? 'bg-primary text-primary-foreground shadow-md'
-              : 'text-slate-700 hover:bg-slate-100'
-          )}
-          aria-pressed={viewMode === 'board'}
-        >
-          <LayoutGrid className="w-4 h-4" />
-          Board
-        </button>
-        <button
           onClick={() => onViewModeChange('list')}
           className={cn(
             'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
@@ -161,6 +147,20 @@ export function TeachersFilters({
         >
           <List className="w-4 h-4" />
           List
+        </button>
+        <button
+          onClick={() => onViewModeChange('board')}
+          className={cn(
+            'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
+            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+            viewMode === 'board'
+              ? 'bg-primary text-primary-foreground shadow-md'
+              : 'text-slate-700 hover:bg-slate-100'
+          )}
+          aria-pressed={viewMode === 'board'}
+        >
+          <LayoutGrid className="w-4 h-4" />
+          Board
         </button>
       </div>
 

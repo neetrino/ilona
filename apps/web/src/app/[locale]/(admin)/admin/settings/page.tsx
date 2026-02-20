@@ -9,7 +9,7 @@ import { SettingsSidebar } from './components/SettingsSidebar';
 import { SecurityTab } from './components/SecurityTab';
 import { NotificationsTab } from './components/NotificationsTab';
 import { SystemTab } from './components/SystemTab';
-import { PercentTab } from './components/PercentTab';
+import { PenaltyTab } from './components/PenaltyTab';
 
 export default function SettingsPage() {
   const { logout } = useAuthStore();
@@ -51,8 +51,8 @@ export default function SettingsPage() {
             <SystemTab />
           )}
 
-          {activeTab === 'percent' && (
-            <PercentTab />
+          {activeTab === 'penalty' && (
+            <PenaltyTab />
           )}
         </div>
       </div>

@@ -1,9 +1,11 @@
 'use client';
 
 import { InlineSelect } from '@/features/students/components/InlineSelect';
-import { ChevronRight } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { SelectAllCheckbox } from '../components/SelectAllCheckbox';
 import type { Payment, SalaryRecord, PaymentStatus, SalaryStatus } from '@/features/finance';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 // Format month from salary record (month field is a number)
 function formatMonthFromSalary(salary: SalaryRecord) {
@@ -22,6 +24,45 @@ function getMonthString(salary: SalaryRecord): string {
     return `${salary.year}-${String(salary.month).padStart(2, '0')}`;
   }
   return '';
+}
+
+// Component for the action cell that can use hooks
+function SalaryActionCell({ salary, locale }: { salary: SalaryRecord; locale: string }) {
+  const searchParams = useSearchParams();
+  
+  const firstName = salary.teacher?.user?.firstName || '';
+  const lastName = salary.teacher?.user?.lastName || '';
+  const teacherName = `${firstName} ${lastName}`;
+  const monthStr = getMonthString(salary);
+  
+  // Build URL with query params to preserve state
+  const tab = searchParams.get('tab');
+  const salariesPage = searchParams.get('salariesPage');
+  const salaryStatus = searchParams.get('salaryStatus');
+  const q = searchParams.get('q');
+  
+  const params = new URLSearchParams();
+  if (tab) params.set('tab', tab);
+  if (salariesPage) params.set('salariesPage', salariesPage);
+  if (salaryStatus) params.set('salaryStatus', salaryStatus);
+  if (q) params.set('q', q);
+  params.set('teacherName', encodeURIComponent(teacherName));
+  
+  const queryString = params.toString();
+  const href = `/${locale}/admin/finance/teacher-salaries/${salary.teacherId}/${monthStr}${queryString ? `?${queryString}` : ''}`;
+  
+  return (
+    <div className="flex items-center justify-center">
+      <Link
+        href={href}
+        onClick={(e) => e.stopPropagation()}
+        className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+        aria-label="View breakdown"
+      >
+        <Eye className="w-5 h-5 text-slate-900" />
+      </Link>
+    </div>
+  );
 }
 
 interface PaymentColumnsProps {
@@ -133,7 +174,7 @@ interface SalaryColumnsProps {
   };
   onSelectAll: () => void;
   onSelectOne: (salaryId: string, checked: boolean) => void;
-  onViewBreakdown: (data: { teacherId: string; teacherName: string; month: string }) => void;
+  locale: string;
 }
 
 export function getSalaryColumns({
@@ -144,7 +185,7 @@ export function getSalaryColumns({
   updateSalaryStatus,
   onSelectAll,
   onSelectOne,
-  onViewBreakdown,
+  locale,
 }: SalaryColumnsProps) {
   return [
     {
@@ -242,30 +283,10 @@ export function getSalaryColumns({
     {
       key: 'action',
       header: 'Action',
-      className: 'text-left',
-      render: (salary: SalaryRecord) => {
-        const firstName = salary.teacher?.user?.firstName || '';
-        const lastName = salary.teacher?.user?.lastName || '';
-        const teacherName = `${firstName} ${lastName}`;
-        const monthStr = getMonthString(salary);
-        
-        return (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewBreakdown({
-                teacherId: salary.teacherId,
-                teacherName,
-                month: monthStr,
-              });
-            }}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-            aria-label="View breakdown"
-          >
-            <ChevronRight className="w-5 h-5 text-slate-600" />
-          </button>
-        );
-      },
+      className: 'text-center',
+      render: (salary: SalaryRecord) => (
+        <SalaryActionCell salary={salary} locale={locale} />
+      ),
     },
   ];
 }

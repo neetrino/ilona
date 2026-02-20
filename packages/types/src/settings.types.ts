@@ -3,7 +3,7 @@
 // ============================================
 
 /**
- * Action percent weights configuration
+ * Action percent weights configuration (DEPRECATED - kept for backward compatibility)
  * Total must equal exactly 100
  */
 export interface ActionPercents {
@@ -15,13 +15,23 @@ export interface ActionPercents {
 }
 
 /**
- * Action percent weights for calculation
+ * Action percent weights for calculation (DEPRECATED - use PenaltyAmounts instead)
  */
 export interface ActionWeights {
   absence: number;
   feedbacks: number;
   voice: number;
   text: number;
+}
+
+/**
+ * Fixed penalty amounts in AMD (replaces percent-based system)
+ */
+export interface PenaltyAmounts {
+  penaltyAbsenceAmd: number;
+  penaltyFeedbackAmd: number;
+  penaltyVoiceAmd: number;
+  penaltyTextAmd: number;
 }
 
 /**
@@ -35,7 +45,7 @@ export interface CompletedActions {
 }
 
 /**
- * System settings with action percents
+ * System settings with action percents (DEPRECATED - kept for backward compatibility)
  * Extends Prisma SystemSettings model
  */
 export interface SystemSettingsWithPercents {
@@ -54,6 +64,25 @@ export interface SystemSettingsWithPercents {
 }
 
 /**
+ * System settings with penalty amounts
+ * Extends Prisma SystemSettings model
+ */
+export interface SystemSettingsWithPenalties {
+  id: string;
+  vocabDeductionPercent: number;
+  feedbackDeductionPercent: number;
+  maxUnjustifiedAbsences: number;
+  paymentDueDays: number;
+  lessonReminderHours: number;
+  logoUrl: string | null;
+  penaltyAbsenceAmd: number;
+  penaltyFeedbackAmd: number;
+  penaltyVoiceAmd: number;
+  penaltyTextAmd: number;
+  updatedAt: Date;
+}
+
+/**
  * Lesson action data for salary calculation
  */
 export interface LessonActionData {
@@ -63,6 +92,7 @@ export interface LessonActionData {
   voiceSent: boolean | null;
   textSent: boolean | null;
 }
+
 
 
 

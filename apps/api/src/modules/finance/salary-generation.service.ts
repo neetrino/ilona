@@ -124,15 +124,16 @@ export class SalaryGenerationService {
       }
     });
 
-    // Get action weights from settings (single source of truth)
-    const weights = await this.calculationService.getActionWeights();
+    // Get penalty amounts from settings (single source of truth)
+    const penalties = await this.calculationService.getPenaltyAmounts();
 
     // Calculate using the same per-lesson method as calculateMonthlySalaryFromLessons
     // This ensures idempotency and consistency
     // Base salary is per lesson (fixed price), NOT per hour
-    // Use weighted calculation: earned = baseSalary * earnedPercent / 100
+    // Use fixed penalty calculation: payable = lessonRate - sum(penalties for missing actions)
     let totalBaseSalary = 0;
-    let totalEarned = 0;
+    let totalPayable = 0;
+    let totalPenaltyDeduction = 0;
     let totalOtherDeduction = 0;
     let totalObligationsCompleted = 0;
     let totalObligationsRequired = 0;
@@ -142,7 +143,7 @@ export class SalaryGenerationService {
       const baseSalary = lessonRate;
       totalBaseSalary += baseSalary;
 
-      // Calculate completed actions with their weights
+      // Calculate completed actions
       // Type assertion needed until Prisma client is regenerated
       const lessonData = lesson as { id: string; absenceMarked: boolean | null; feedbacksCompleted: boolean | null; voiceSent: boolean | null; textSent: boolean | null };
       const completedActions: CompletedActions = {
@@ -164,12 +165,13 @@ export class SalaryGenerationService {
       totalObligationsRequired += totalActions;
       totalObligationsCompleted += completedCount;
 
-      // Calculate earned percent based on completed actions and their weights
-      const earnedPercent = this.calculationService.calculateEarnedPercent(completedActions, weights);
+      // Calculate deduction from penalties for missing actions
+      const penaltyDeduction = this.calculationService.calculateDeduction(completedActions, penalties);
+      totalPenaltyDeduction += penaltyDeduction;
 
-      // Calculate earned amount: baseSalary * earnedPercent / 100
-      const earned = baseSalary * (earnedPercent / 100);
-      totalEarned += earned;
+      // Calculate payable amount: lessonRate - penalty deduction
+      const payable = this.calculationService.calculatePayableAmount(baseSalary, completedActions, penalties);
+      totalPayable += payable;
 
       // Get other deductions for this lesson
       const lessonId = typeof lesson.id === 'string' ? lesson.id : String(lesson.id);
@@ -177,10 +179,10 @@ export class SalaryGenerationService {
       totalOtherDeduction += otherDeductionForLesson;
     }
 
-    // Calculate totals using proportional calculation
+    // Calculate totals
     const grossAmount = totalBaseSalary; // Base salary is the gross (before deductions)
-    const totalDeductions = totalOtherDeduction; // Only other deductions, no obligation-based deductions
-    const netAmount = Math.max(0, totalEarned - totalDeductions);
+    const totalDeductions = totalPenaltyDeduction + totalOtherDeduction; // Penalty deductions + other deductions
+    const netAmount = Math.max(0, totalPayable - totalOtherDeduction); // Net = payable - other deductions (penalties already applied)
 
     // Check if record already exists for this month
     // Use exact month match to leverage the unique constraint [teacherId, month]
@@ -292,6 +294,7 @@ export class SalaryGenerationService {
     };
   }
 }
+
 
 
 

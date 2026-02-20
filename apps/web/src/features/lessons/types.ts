@@ -70,12 +70,14 @@ export interface LessonFilters {
   skip?: number;
   take?: number;
   groupId?: string;
+  groupIds?: string[];
   teacherId?: string;
   status?: LessonStatus;
   dateFrom?: string;
   dateTo?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  search?: string;
 }
 
 export interface CreateLessonDto {

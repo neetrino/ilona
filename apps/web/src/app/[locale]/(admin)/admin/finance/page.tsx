@@ -1,10 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
-import { SalaryBreakdownModal } from '@/features/finance/components/SalaryBreakdownModal';
 import {
   useFinanceDashboard,
   usePayments,
@@ -25,6 +25,8 @@ import { FinanceInfoCards } from './components/FinanceInfoCards';
 
 export default function FinancePage() {
   const t = useTranslations('finance');
+  const params = useParams();
+  const locale = params.locale as string;
   const pageSize = 10;
 
   const {
@@ -37,7 +39,6 @@ export default function FinancePage() {
     salaryStatus,
     selectedSalaryId,
     isDetailModalOpen,
-    selectedSalaryForBreakdown,
     selectedSalaryIds,
     isDeleteDialogOpen,
     deleteError,
@@ -54,8 +55,6 @@ export default function FinancePage() {
     handleSalaryStatusChange,
     handlePaymentsPageChange,
     handleSalariesPageChange,
-    handleViewBreakdown,
-    handleBreakdownClose,
   } = useFinancePage();
 
   // Fetch dashboard stats
@@ -186,6 +185,11 @@ export default function FinancePage() {
           onSalaryStatusChange={handleSalaryStatusChange}
           onDeleteClick={handleDeleteClick}
           isDeleting={deleteSalaries.isPending}
+          page={activeTab === 'payments' ? paymentsPage : salariesPage}
+          pageSize={pageSize}
+          totalPages={activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages}
+          total={activeTab === 'payments' ? totalPayments : totalSalaries}
+          onPageChange={activeTab === 'payments' ? handlePaymentsPageChange : handleSalariesPageChange}
         />
 
         {/* Table */}
@@ -193,29 +197,19 @@ export default function FinancePage() {
           <PaymentsTable
             payments={payments}
             isLoading={isLoading || isLoadingDashboard}
-            page={paymentsPage}
-            pageSize={pageSize}
-            totalPages={paymentsTotalPages}
-            total={totalPayments}
             updatePaymentStatus={updatePaymentStatus}
-            onPageChange={handlePaymentsPageChange}
           />
         ) : (
           <SalariesTable
             salaries={salaries}
             isLoading={isLoading || isLoadingDashboard}
-            page={salariesPage}
-            pageSize={pageSize}
-            totalPages={salariesTotalPages}
-            total={totalSalaries}
             allSalariesSelected={allSalariesSelected}
             someSalariesSelected={someSalariesSelected}
             selectedSalaryIds={selectedSalaryIds}
             updateSalaryStatus={updateSalaryStatus}
             onSelectAll={handleSelectAllSalaries}
             onSelectOne={handleSelectOneSalary}
-            onPageChange={handleSalariesPageChange}
-            onViewBreakdown={handleViewBreakdown}
+            locale={locale}
           />
         )}
 
@@ -231,17 +225,6 @@ export default function FinancePage() {
             setSelectedSalaryId(null);
           }}
         />
-
-        {/* Salary Breakdown Modal */}
-        {selectedSalaryForBreakdown && (
-          <SalaryBreakdownModal
-            teacherId={selectedSalaryForBreakdown.teacherId}
-            teacherName={selectedSalaryForBreakdown.teacherName}
-            month={selectedSalaryForBreakdown.month}
-            open={!!selectedSalaryForBreakdown}
-            onClose={handleBreakdownClose}
-          />
-        )}
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

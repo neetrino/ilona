@@ -1,6 +1,7 @@
 import type { Center, CreateCenterDto, UpdateCenterDto } from '@ilona/types';
 
 export interface CenterWithCount extends Center {
+  colorHex?: string | null;
   _count?: {
     groups: number;
   };

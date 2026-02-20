@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { List, LayoutGrid } from 'lucide-react';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
-import { cn } from '@/shared/lib/utils';
+import { cn, lightenColor, getContrastColor } from '@/shared/lib/utils';
 import { GroupCard, CreateGroupForm, EditGroupForm, DeleteConfirmationDialog, type Group } from '@/features/groups';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
 
@@ -98,8 +98,16 @@ export function GroupsTab({
     handleBulkDeleteGroupsConfirm,
   } = useGroupsManagement(viewMode, searchQuery, page);
 
+  // Ref to track if we're intentionally closing to prevent effect from reopening
+  const isClosingRef = useRef(false);
+
   // Sync editGroupId from URL on mount and when URL changes
   useEffect(() => {
+    // Skip sync if we're in the process of closing
+    if (isClosingRef.current) {
+      return;
+    }
+
     const editGroupFromUrl = searchParams.get('editGroup');
     if (editGroupFromUrl !== editGroupId) {
       if (editGroupFromUrl) {
@@ -113,8 +121,21 @@ export function GroupsTab({
 
   // Update URL when editGroupId changes (but not from URL sync)
   const handleEditGroupIdChange = (id: string | null) => {
-    setEditGroupId(id);
-    updateUrl({ editGroup: id });
+    if (id === null) {
+      // We're closing - set ref to prevent effect from reopening
+      isClosingRef.current = true;
+      setEditGroupId(null);
+      updateUrl({ editGroup: null });
+      // Reset ref after a brief delay to allow URL to update
+      setTimeout(() => {
+        isClosingRef.current = false;
+      }, 100);
+    } else {
+      // Opening - clear ref and update state/URL
+      isClosingRef.current = false;
+      setEditGroupId(id);
+      updateUrl({ editGroup: id });
+    }
   };
 
   const pageSize = 10;
@@ -392,15 +413,34 @@ export function GroupsTab({
                 })
                 .map((center) => {
                   const centerGroups = groupsByCenter[center.id] || [];
+                  const primaryColor = center.colorHex || '#253046'; // Default color
+                  const lightColor = lightenColor(primaryColor);
+                  const textColor = getContrastColor(primaryColor);
+                  
                   return (
                     <div
                       key={center.id}
-                      className="flex-shrink-0 w-80 bg-slate-50 rounded-xl border border-slate-200 flex flex-col"
+                      className="flex-shrink-0 w-80 rounded-xl border border-slate-200 flex flex-col overflow-hidden"
+                      style={{ backgroundColor: lightColor }}
                     >
                       {/* Column Header */}
-                      <div className="p-4 border-b border-slate-200 bg-white rounded-t-xl">
-                        <h3 className="font-semibold text-slate-800">{center.name}</h3>
-                        <p className="text-sm text-slate-500 mt-1">
+                      <div 
+                        className="p-4 border-b border-slate-200 rounded-t-xl"
+                        style={{ 
+                          backgroundColor: primaryColor,
+                          borderColor: primaryColor,
+                        }}
+                      >
+                        <h3 
+                          className="font-semibold"
+                          style={{ color: textColor }}
+                        >
+                          {center.name}
+                        </h3>
+                        <p 
+                          className="text-sm mt-1"
+                          style={{ color: textColor === 'white' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.7)' }}
+                        >
                           {centerGroups.length} {centerGroups.length === 1 ? 'group' : 'groups'}
                         </p>
                       </div>

@@ -26,12 +26,15 @@ export class StudentsController {
     const teacherIds = query.teacherIds || (query.teacherId ? [query.teacherId] : undefined);
     const centerIds = query.centerIds || (query.centerId ? [query.centerId] : undefined);
     const statusIds = query.statusIds || (query.status ? [query.status] : undefined);
+    // Handle both single groupId (backward compatibility) and groupIds array
+    const groupIds = query.groupIds || (query.groupId ? [query.groupId] : undefined);
 
     return this.studentsService.findAll({
       skip: query.skip,
       take: query.take,
       search: query.search,
       groupId: query.groupId,
+      groupIds,
       status: query.status as UserStatus | undefined,
       statusIds: statusIds as UserStatus[] | undefined,
       teacherId: query.teacherId,

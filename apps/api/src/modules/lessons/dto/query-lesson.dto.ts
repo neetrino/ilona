@@ -1,5 +1,5 @@
-import { IsOptional, IsString, IsDateString, IsInt, Min, Max, IsEnum } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsDateString, IsInt, Min, Max, IsEnum, IsArray } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class QueryLessonDto {
   @IsOptional()
@@ -18,6 +18,16 @@ export class QueryLessonDto {
   @IsOptional()
   @IsString()
   groupId?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (!value) return undefined;
+    if (Array.isArray(value)) return value;
+    return [value];
+  })
+  @IsArray()
+  @IsString({ each: true })
+  groupIds?: string[];
 
   @IsOptional()
   @IsString()
@@ -42,6 +52,10 @@ export class QueryLessonDto {
   @IsOptional()
   @IsEnum(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc';
+
+  @IsOptional()
+  @IsString()
+  q?: string;
 }
 
 

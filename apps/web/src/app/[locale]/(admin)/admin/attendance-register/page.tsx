@@ -7,7 +7,6 @@ import { getWeekDates } from '@/features/attendance/utils/dateUtils';
 import { useAttendanceData } from './hooks/useAttendanceData';
 import { useAttendanceNavigation } from './hooks/useAttendanceNavigation';
 import { AttendanceControls } from './components/AttendanceControls';
-import { AttendanceStats } from './components/AttendanceStats';
 import { SaveMessages } from './components/SaveMessages';
 import { AttendanceEmptyGroupState } from './components/AttendanceEmptyGroupState';
 import { MonthViewCalendar } from './components/MonthViewCalendar';
@@ -33,7 +32,8 @@ export default function AdminAttendanceRegisterPage() {
   const data = useAttendanceData({
     viewMode: nav.viewMode,
     currentDate: nav.currentDate,
-    selectedGroupId: nav.selectedGroupId,
+    selectedGroupId: nav.selectedGroupId, // For backward compatibility
+    selectedGroupIds: nav.selectedGroupIds, // New multi-select support
     selectedDayForMonthView: nav.selectedDayForMonthView,
   });
 
@@ -50,28 +50,23 @@ export default function AdminAttendanceRegisterPage() {
         data.todayLessons.some((lesson) => lesson.groupId === group.id)
       );
       if (groupWithLesson) {
-        nav.handleGroupChange(groupWithLesson.id);
+        nav.handleGroupsChange([groupWithLesson.id]);
       }
     }
   };
 
-  // Auto-select first group with a lesson today on initial load
+  // Auto-select all groups on initial load
   useEffect(() => {
     if (
       !data.hasAutoSelectedGroup.current &&
-      data.todayLessons.length > 0 &&
       data.groups.length > 0 &&
-      !nav.selectedGroupId
+      nav.selectedGroupIds.length === 0
     ) {
-      const groupWithLesson = data.groups.find((group) =>
-        data.todayLessons.some((lesson) => lesson.groupId === group.id)
-      );
-      if (groupWithLesson) {
-        nav.handleGroupChange(groupWithLesson.id);
-        data.hasAutoSelectedGroup.current = true;
-      }
+      const allGroupIds = data.groups.map((group) => group.id);
+      nav.handleGroupsChange(allGroupIds);
+      data.hasAutoSelectedGroup.current = true;
     }
-  }, [data.todayLessons, data.groups, nav.selectedGroupId, data.hasAutoSelectedGroup]);
+  }, [data.groups, nav.selectedGroupIds, data.hasAutoSelectedGroup, nav]);
 
   // Get week dates for week view
   const weekDates = useMemo(() => {
@@ -112,7 +107,10 @@ export default function AdminAttendanceRegisterPage() {
     };
   }, []);
 
-  const selectedGroup = data.groups.find((g) => g.id === nav.selectedGroupId);
+  // For backward compatibility, get first selected group
+  const selectedGroup = nav.selectedGroupIds.length > 0
+    ? data.groups.find((g) => g.id === nav.selectedGroupIds[0])
+    : undefined;
 
   return (
     <DashboardLayout title={t('attendanceRegister')} subtitle={t('subtitle')}>
@@ -125,23 +123,22 @@ export default function AdminAttendanceRegisterPage() {
           viewMode={nav.viewMode}
           currentDate={nav.currentDate}
           selectedGroupId={nav.selectedGroupId}
+          selectedGroupIds={nav.selectedGroupIds}
           groups={data.groups}
           isLoadingGroups={data.isLoadingGroups}
           isCurrentDateToday={nav.isCurrentDateToday}
           onViewModeChange={nav.handleViewModeChange}
           onGroupChange={nav.handleGroupChange}
+          onGroupsChange={nav.handleGroupsChange}
           onDateChange={nav.handleDateChange}
           onPrevious={nav.handlePrevious}
           onNext={nav.handleNext}
           onGoToToday={goToToday}
         />
 
-        {/* Statistics */}
-        {nav.selectedGroupId && <AttendanceStats stats={data.stats} />}
-
         {/* Month View Calendar */}
         {nav.viewMode === 'month' &&
-          nav.selectedGroupId &&
+          nav.selectedGroupIds.length > 0 &&
           data.students.length > 0 && (
             <MonthViewCalendar
               currentDate={nav.currentDate}
@@ -154,11 +151,13 @@ export default function AdminAttendanceRegisterPage() {
           )}
 
         {/* Day View */}
-        {nav.selectedGroupId &&
+        {nav.selectedGroupIds.length > 0 &&
           data.students.length > 0 &&
           nav.viewMode === 'day' && (
             <DayView
               group={selectedGroup}
+              groups={data.groups}
+              selectedGroupIds={nav.selectedGroupIds}
               currentDate={nav.currentDate}
               students={data.students}
               filteredLessons={data.filteredLessons}
@@ -179,11 +178,13 @@ export default function AdminAttendanceRegisterPage() {
           )}
 
         {/* Week View */}
-        {nav.selectedGroupId &&
+        {nav.selectedGroupIds.length > 0 &&
           data.students.length > 0 &&
           nav.viewMode === 'week' && (
             <WeekView
               group={selectedGroup}
+              groups={data.groups}
+              selectedGroupIds={nav.selectedGroupIds}
               currentDate={nav.currentDate}
               students={data.students}
               filteredLessons={data.filteredLessons}
@@ -204,11 +205,13 @@ export default function AdminAttendanceRegisterPage() {
 
         {/* Month View - Selected Day Grid */}
         {nav.viewMode === 'month' &&
-          nav.selectedGroupId &&
+          nav.selectedGroupIds.length > 0 &&
           data.students.length > 0 &&
           nav.selectedDayForMonthView && (
             <MonthView
               group={selectedGroup}
+              groups={data.groups}
+              selectedGroupIds={nav.selectedGroupIds}
               currentDate={nav.currentDate}
               selectedDayForMonthView={nav.selectedDayForMonthView}
               students={data.students}
@@ -230,7 +233,7 @@ export default function AdminAttendanceRegisterPage() {
           )}
 
         {/* Empty State */}
-        {!nav.selectedGroupId && <AttendanceEmptyGroupState />}
+        {nav.selectedGroupIds.length === 0 && <AttendanceEmptyGroupState />}
       </div>
     </DashboardLayout>
   );
