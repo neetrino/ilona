@@ -14,6 +14,10 @@ const updateCenterSchema = z.object({
   phone: z.string().max(50, 'Phone must be at most 50 characters').optional().or(z.literal('')),
   email: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),
   description: z.string().max(500, 'Description must be at most 500 characters').optional().or(z.literal('')),
+  colorHex: z.union([
+    z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Must be a valid hex color (e.g., #253046)'),
+    z.literal(''),
+  ]).optional().or(z.literal('')),
   isActive: z.boolean().optional(),
 });
 
@@ -37,6 +41,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
     formState: { errors, isSubmitting },
     reset,
     watch,
+    setValue,
   } = useForm<UpdateCenterFormData>({
     resolver: zodResolver(updateCenterSchema),
     defaultValues: {
@@ -45,6 +50,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
       phone: '',
       email: '',
       description: '',
+      colorHex: '',
       isActive: true,
     },
   });
@@ -58,6 +64,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
         phone: center.phone || '',
         email: center.email || '',
         description: center.description || '',
+        colorHex: center.colorHex || '',
         isActive: center.isActive,
       });
     }
@@ -81,6 +88,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
         phone: data.phone || undefined,
         email: data.email || undefined,
         description: data.description || undefined,
+        colorHex: data.colorHex && data.colorHex.trim() !== '' ? data.colorHex : undefined,
         isActive: data.isActive,
       };
 
@@ -200,6 +208,66 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
             {errors.description && (
               <p className="text-sm text-red-600">{errors.description.message}</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="colorHex">Center Color</Label>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <input
+                  type="color"
+                  id="colorHex"
+                  value={watch('colorHex') || '#253046'}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setValue('colorHex', newValue, { shouldValidate: true });
+                  }}
+                  className="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
+                />
+              </div>
+              <div className="flex-1">
+                <Input
+                  id="colorHexText"
+                  value={watch('colorHex') || ''}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setValue('colorHex', newValue, { shouldValidate: true });
+                  }}
+                  onBlur={() => {
+                    // Normalize hex color on blur
+                    const value = watch('colorHex');
+                    if (value && value.startsWith('#')) {
+                      // Already has #, just validate
+                      return;
+                    } else if (value && !value.startsWith('#')) {
+                      // Add # if missing
+                      setValue('colorHex', `#${value}`, { shouldValidate: true });
+                    }
+                  }}
+                  error={errors.colorHex?.message}
+                  placeholder="#253046"
+                  className="font-mono"
+                />
+              </div>
+              {watch('colorHex') && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    reset({
+                      ...watch(),
+                      colorHex: '',
+                    });
+                  }}
+                  className="text-sm"
+                >
+                  Reset to default
+                </Button>
+              )}
+            </div>
+            <p className="text-sm text-slate-500">
+              Choose a color for this center's card in Board view. The header will use this color, and the body will use a lighter shade.
+            </p>
           </div>
 
           <div className="space-y-2">

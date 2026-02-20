@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsBoolean, IsEmail, MaxLength, MinLength } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsEmail, MaxLength, MinLength, Matches } from 'class-validator';
 
 export class CreateCenterDto {
   @IsString()
@@ -24,6 +24,13 @@ export class CreateCenterDto {
   @IsOptional()
   @MaxLength(500)
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  @Matches(/^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|)$/, {
+    message: 'colorHex must be a valid hex color (e.g., #253046 or #FFF) or empty string',
+  })
+  colorHex?: string;
 
   @IsBoolean()
   @IsOptional()

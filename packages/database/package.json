@@ -23,6 +23,7 @@
     "db:reset": "prisma migrate reset",
     "db:apply-obligations": "node scripts/apply-migration.js",
     "db:add-lesson-rate": "dotenv -e ../../.env.local -- tsx scripts/add-lesson-rate-column.ts",
+    "db:add-color-hex": "tsx scripts/apply-color-hex-migration.ts",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist node_modules"
   },

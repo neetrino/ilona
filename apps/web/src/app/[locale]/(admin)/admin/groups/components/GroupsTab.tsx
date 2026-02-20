@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { List, LayoutGrid } from 'lucide-react';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
-import { cn } from '@/shared/lib/utils';
+import { cn, lightenColor, getContrastColor } from '@/shared/lib/utils';
 import { GroupCard, CreateGroupForm, EditGroupForm, DeleteConfirmationDialog, type Group } from '@/features/groups';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
 
@@ -413,15 +413,34 @@ export function GroupsTab({
                 })
                 .map((center) => {
                   const centerGroups = groupsByCenter[center.id] || [];
+                  const primaryColor = center.colorHex || '#253046'; // Default color
+                  const lightColor = lightenColor(center.colorHex);
+                  const textColor = getContrastColor(primaryColor);
+                  
                   return (
                     <div
                       key={center.id}
-                      className="flex-shrink-0 w-80 bg-slate-50 rounded-xl border border-slate-200 flex flex-col"
+                      className="flex-shrink-0 w-80 rounded-xl border border-slate-200 flex flex-col overflow-hidden"
+                      style={{ backgroundColor: lightColor }}
                     >
                       {/* Column Header */}
-                      <div className="p-4 border-b border-slate-200 bg-white rounded-t-xl">
-                        <h3 className="font-semibold text-slate-800">{center.name}</h3>
-                        <p className="text-sm text-slate-500 mt-1">
+                      <div 
+                        className="p-4 border-b border-slate-200 rounded-t-xl"
+                        style={{ 
+                          backgroundColor: primaryColor,
+                          borderColor: primaryColor,
+                        }}
+                      >
+                        <h3 
+                          className="font-semibold"
+                          style={{ color: textColor }}
+                        >
+                          {center.name}
+                        </h3>
+                        <p 
+                          className="text-sm mt-1"
+                          style={{ color: textColor === 'white' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.7)' }}
+                        >
                           {centerGroups.length} {centerGroups.length === 1 ? 'group' : 'groups'}
                         </p>
                       </div>

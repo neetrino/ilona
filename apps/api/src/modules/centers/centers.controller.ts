@@ -28,14 +28,14 @@ export class CentersController {
     });
   }
 
-  @Get(':id')
-  async findById(@Param('id') id: string) {
-    return this.centersService.findById(id);
-  }
-
   @Get(':id/statistics')
   async getStatistics(@Param('id') id: string) {
     return this.centersService.getStatistics(id);
+  }
+
+  @Get(':id')
+  async findById(@Param('id') id: string) {
+    return this.centersService.findById(id);
   }
 
   @Post()

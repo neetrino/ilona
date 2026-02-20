@@ -9,6 +9,7 @@ export interface Center {
   phone?: string | null;
   email?: string | null;
   description?: string | null;
+  colorHex?: string | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -61,6 +62,7 @@ export interface CreateCenterDto {
   phone?: string;
   email?: string;
   description?: string;
+  colorHex?: string;
 }
 
 export interface UpdateCenterDto {
@@ -69,6 +71,7 @@ export interface UpdateCenterDto {
   phone?: string;
   email?: string;
   description?: string;
+  colorHex?: string;
   isActive?: boolean;
 }
 

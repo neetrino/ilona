@@ -119,6 +119,7 @@ model Center {
   phone       String?
   email       String?
   description String?
+  colorHex    String?  // Hex color for center card styling (e.g., #253046)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
