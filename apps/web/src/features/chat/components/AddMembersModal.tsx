@@ -42,7 +42,6 @@ export function AddMembersModal({
   const addCustomGroupMember = useAddCustomGroupChatMember();
 
   const isCustomGroup = !chat.groupId;
-  const addMember = isCustomGroup ? addCustomGroupMember : addGroupMember;
 
   const participantIds = new Set(chat.participants?.map((p) => p.userId) ?? []);
 

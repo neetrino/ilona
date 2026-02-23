@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMessages, useSocket, useAddMessageToCache } from '../hooks';
 import { useChatStore } from '../store/chat.store';
@@ -13,7 +12,6 @@ import { VoiceRecorder } from './VoiceRecorder';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
 import { sendMessageHttp } from '../api/chat.api';
-import { chatKeys } from '../hooks/useChat';
 import { formatTime, formatDateSeparator, shouldShowDateSeparator } from '../utils/chat-utils';
 
 interface ChatWindowProps {
@@ -46,7 +44,6 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [isUploadingVoice, setIsUploadingVoice] = useState(false);
 
-  const queryClient = useQueryClient();
   const addMessageToCache = useAddMessageToCache();
 
   // Check if user is teacher (can send vocabulary)

@@ -372,7 +372,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
               .map((chat) => {
                 const fullChat = allChats.find((c) => c.id === chat.id);
                 const unread = fullChat?.unreadCount ?? 0;
-                const lastMsg = fullChat?.lastMessage ?? (chat as Chat).lastMessage;
+                const lastMsg = fullChat?.lastMessage ?? chat.lastMessage;
                 const isActive = activeChat?.type === 'GROUP' && !activeChat?.groupId && activeChat?.id === chat.id;
                 return (
                   <button
@@ -394,7 +394,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                           {chat.name || 'Group chat'}
                         </h3>
                         <span className="text-xs text-slate-500 flex-shrink-0">
-                          {formatTime(lastMsg?.createdAt || (chat as Chat).updatedAt)}
+                          {formatTime(lastMsg?.createdAt || chat.updatedAt)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">

@@ -305,7 +305,7 @@ export function useAddGroupChatMember() {
   return useMutation({
     mutationFn: ({ groupId, userId }: { groupId: string; userId: string }) =>
       addGroupChatMember(groupId, userId),
-    onSuccess: (_data, { groupId }) => {
+    onSuccess: (_data, { groupId: _groupId }) => {
       queryClient.invalidateQueries({ queryKey: chatKeys.list() });
       queryClient.invalidateQueries({ queryKey: chatKeys.details() });
       // Invalidate group chat detail so participants refresh (we use fetchChat by id or fetchGroupChat by groupId)
