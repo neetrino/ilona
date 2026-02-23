@@ -30,6 +30,8 @@ interface UseTeacherAttendanceDataProps {
   currentDate: Date;
   selectedGroupId: string | null;
   selectedDayForMonthView: string | null;
+  /** When set, only students that have at least one cell matching this status are included. */
+  absenceFilter?: 'all' | 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked' | 'no_session';
 }
 
 export function useTeacherAttendanceData({
@@ -37,6 +39,7 @@ export function useTeacherAttendanceData({
   currentDate,
   selectedGroupId,
   selectedDayForMonthView,
+  absenceFilter = 'all',
 }: UseTeacherAttendanceDataProps) {
   const [savingLessons, setSavingLessons] = useState<Record<string, boolean>>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -180,6 +183,19 @@ export function useTeacherAttendanceData({
     return data;
   }, [filteredLessons, attendanceQueries]);
 
+  // Filter students by selected absence type (client-side)
+  const filteredStudents = useMemo(() => {
+    if (absenceFilter === 'all' || !selectedGroupId) return students;
+    if (absenceFilter === 'no_session') return [];
+    return students.filter((student) =>
+      filteredLessons.some((lesson) => {
+        const cell = attendanceData[lesson.id]?.[student.id];
+        const status: AttendanceStatus = cell?.status ?? 'not_marked';
+        return status === absenceFilter;
+      })
+    );
+  }, [students, filteredLessons, attendanceData, absenceFilter, selectedGroupId]);
+
   // Get lessons grouped by date for month view
   const lessonsByDate = useMemo(() => {
     if (viewMode !== 'month' || !selectedGroupId) return {};
@@ -286,6 +302,7 @@ export function useTeacherAttendanceData({
     filteredLessons,
     isLoadingLessons,
     students,
+    filteredStudents,
     isLoadingStudents,
     attendanceData,
     attendanceQueries,

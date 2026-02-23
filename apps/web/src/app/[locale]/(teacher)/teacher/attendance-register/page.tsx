@@ -6,7 +6,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { getWeekDates } from '@/features/attendance/utils/dateUtils';
 import { useTeacherAttendanceData } from './hooks/useTeacherAttendanceData';
 import { useTeacherAttendanceNavigation } from './hooks/useTeacherAttendanceNavigation';
-import { AttendanceControls } from '@/app/[locale]/(admin)/admin/attendance-register/components/AttendanceControls';
+import { AttendanceControls, type AbsenceFilterType } from '@/app/[locale]/(admin)/admin/attendance-register/components/AttendanceControls';
 import { AttendanceStats } from '@/app/[locale]/(admin)/admin/attendance-register/components/AttendanceStats';
 import { SaveMessages } from '@/app/[locale]/(admin)/admin/attendance-register/components/SaveMessages';
 import { AttendanceEmptyGroupState } from '@/app/[locale]/(admin)/admin/attendance-register/components/AttendanceEmptyGroupState';
@@ -18,6 +18,7 @@ export default function TeacherAttendanceRegisterPage() {
   const t = useTranslations('attendance');
   const [saveMessages, setSaveMessages] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [absenceFilter, setAbsenceFilter] = useState<AbsenceFilterType>('all');
 
   // Use navigation hook - this manages navigation state
   const [tempHasUnsavedChanges, setTempHasUnsavedChanges] = useState(false);
@@ -33,6 +34,7 @@ export default function TeacherAttendanceRegisterPage() {
     currentDate: nav.currentDate,
     selectedGroupId: nav.selectedGroupId,
     selectedDayForMonthView: nav.selectedDayForMonthView,
+    absenceFilter,
   });
 
   // Update hasUnsavedChanges in navigation when data changes
@@ -132,6 +134,9 @@ export default function TeacherAttendanceRegisterPage() {
           onPrevious={nav.handlePrevious}
           onNext={nav.handleNext}
           onGoToToday={goToToday}
+          showAbsenceTypeFilter={true}
+          absenceFilter={absenceFilter}
+          onAbsenceFilterChange={setAbsenceFilter}
         />
 
         {/* Statistics */}
@@ -145,7 +150,7 @@ export default function TeacherAttendanceRegisterPage() {
           <DayView
             group={selectedGroup}
             currentDate={nav.currentDate}
-            students={data.students}
+            students={data.filteredStudents}
             filteredLessons={data.filteredLessons}
             attendanceData={data.attendanceData}
             attendanceQueries={data.attendanceQueries}
@@ -168,7 +173,7 @@ export default function TeacherAttendanceRegisterPage() {
           <WeekView
             group={selectedGroup}
             currentDate={nav.currentDate}
-            students={data.students}
+            students={data.filteredStudents}
             filteredLessons={data.filteredLessons}
             attendanceData={data.attendanceData}
             attendanceQueries={data.attendanceQueries}
@@ -191,7 +196,7 @@ export default function TeacherAttendanceRegisterPage() {
             group={selectedGroup}
             currentDate={nav.currentDate}
             selectedDayForMonthView={nav.selectedDayForMonthView}
-            students={data.students}
+            students={data.filteredStudents}
             filteredLessons={data.filteredLessons}
             attendanceData={data.attendanceData}
             isLoadingLessons={data.isLoadingLessons}
