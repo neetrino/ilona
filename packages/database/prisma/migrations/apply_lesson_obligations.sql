@@ -22,3 +22,5 @@ ALTER TABLE "lessons" ADD COLUMN IF NOT EXISTS "textSentAt" TIMESTAMP(3);
 
 
 
+
+

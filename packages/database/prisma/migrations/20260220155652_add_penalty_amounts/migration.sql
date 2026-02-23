@@ -27,3 +27,5 @@ SET
   "penaltyVoiceAmd" = COALESCE("penaltyVoiceAmd", 1000),
   "penaltyTextAmd" = COALESCE("penaltyTextAmd", 1000);
 
+
+

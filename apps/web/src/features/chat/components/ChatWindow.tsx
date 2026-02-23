@@ -1,23 +1,27 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useMessages, useSocket } from '../hooks';
+import { useMessages, useSocket, useAddMessageToCache } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { api } from '@/shared/lib/api';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
+import { VoiceRecorder } from './VoiceRecorder';
 import { VocabularyModal } from './VocabularyModal';
+import { AddMembersModal } from './AddMembersModal';
+import { sendMessageHttp } from '../api/chat.api';
 import { formatTime, formatDateSeparator, shouldShowDateSeparator } from '../utils/chat-utils';
 
 interface ChatWindowProps {
   chat: Chat;
   onSendMessage?: (content: string, type?: string) => void;
   onBack?: () => void;
+  onChatUpdated?: (chat: Chat) => void;
 }
 
-export function ChatWindow({ chat, onBack }: ChatWindowProps) {
+export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const { user } = useAuthStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -25,17 +29,27 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // Track last marked conversation to prevent duplicate mark-as-read calls
   const lastMarkedConversationIdRef = useRef<string | null>(null);
+  // Track which chat we've done initial scroll-to-bottom for (so we only do it once per open)
+  const lastInitialScrollChatIdRef = useRef<string | null>(null);
+  // Track previous message count to detect new messages vs initial load
+  const prevMessagesLengthRef = useRef<number>(0);
 
   const { getDraft, setDraft, clearDraft, getTypingUsers, addTypingUser } = useChatStore();
   // Initialize input as empty - drafts will be loaded in useEffect when chat changes
   const [inputValue, setInputValue] = useState('');
   const [showVocabularyModal, setShowVocabularyModal] = useState(false);
+  const [showAddMembersModal, setShowAddMembersModal] = useState(false);
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [isUploadingVoice, setIsUploadingVoice] = useState(false);
+
+  const addMessageToCache = useAddMessageToCache();
 
   // Check if user is teacher (can send vocabulary)
   const isTeacher = user?.role === 'TEACHER';
   const isGroupChat = chat.type === 'GROUP';
+  const isAdmin = user?.role === 'ADMIN';
 
   // Fetch messages
   const {
@@ -76,20 +90,51 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   // Flatten messages from infinite query
   const messages = messagesData?.pages.flatMap((page) => page.items) || [];
 
-  // Scroll to bottom on new messages, but only if user is near bottom
-  // This prevents interrupting user when they're reading old messages
+  // Reset scroll state when switching chats so the new chat gets initial scroll when its messages load
   useEffect(() => {
+    lastInitialScrollChatIdRef.current = null;
+    prevMessagesLengthRef.current = 0;
+  }, [chat.id]);
+
+  // Initial open: scroll to bottom after messages are loaded and rendered (once per chat)
+  useLayoutEffect(() => {
+    if (isLoading || messages.length === 0) return;
+    if (lastInitialScrollChatIdRef.current === chat.id) return;
     if (!messagesEndRef.current || !messagesContainerRef.current) return;
-    
+
+    lastInitialScrollChatIdRef.current = chat.id;
+    prevMessagesLengthRef.current = messages.length;
+
+    const scrollToBottom = () => {
+      const container = messagesContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    };
+
+    // Run after layout is complete so scrollHeight is correct (flex/overflow can settle next frame)
+    const rafId = requestAnimationFrame(() => {
+      scrollToBottom();
+      requestAnimationFrame(scrollToBottom); // second frame for flex layouts
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [chat.id, isLoading, messages.length]);
+
+  // New messages: only auto-scroll if user is already near bottom (do not interrupt when reading older messages)
+  useEffect(() => {
+    if (!messagesEndRef.current || !messagesContainerRef.current || messages.length === 0) return;
+    // Only react when message count increased (new message arrived), not on initial load
+    if (messages.length <= prevMessagesLengthRef.current) return;
+    prevMessagesLengthRef.current = messages.length;
+
     const container = messagesContainerRef.current;
-    const isNearBottom = 
+    const isNearBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight < 200;
-    
-    // Only scroll if user is near bottom (within 200px) or if it's the first load
-    if (isNearBottom || messages.length === 0) {
+
+    if (isNearBottom) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages.length]);
+  }, [messages.length, chat.id]);
 
   // Mark as read when opening chat (with guards to prevent infinite loops)
   // Mark as read when chat is opened, regardless of unreadCount or whether user replies
@@ -120,16 +165,75 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   }, [chat.id, isLoading]);
 
   // Reset input value when chat changes - only load user's own draft, never from messages
-  // This is critical: input must NEVER be populated from incoming messages or lastMessage
   useEffect(() => {
-    // Always reset input when switching chats
-    // Only load draft if user has previously typed something (user's own draft)
-    // NEVER use chat.lastMessage or any message content
     const draft = getDraft(chat.id);
-    // Only set draft if it exists and is not empty (user's own typed content)
-    // This ensures incoming messages never appear in the input
     setInputValue(draft || '');
   }, [chat.id, getDraft]);
+
+  // Handle delete message
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingMessageId(messageId);
+    try {
+      const result = await deleteMessage(messageId);
+      if (!result.success) {
+        console.error('Failed to delete message:', result.error);
+        alert('Failed to delete message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to delete message:', error);
+      alert('Failed to delete message. Please try again.');
+    } finally {
+      setDeletingMessageId(null);
+    }
+  };
+
+  // Voice message: upload file then send message via HTTP; update cache and close recorder
+  const handleVoiceRecorded = useCallback(
+    async (file: File, durationSec: number, _mimeType: string) => {
+      setIsUploadingVoice(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const uploadResponse = await api.post<{
+          success: boolean;
+          data: { url: string; fileName: string; fileSize: number };
+        }>('/storage/chat', formData);
+
+        if (!uploadResponse.success || !uploadResponse.data) {
+          throw new Error('Failed to upload voice message');
+        }
+
+        const { url: fileUrl, fileName, fileSize } = uploadResponse.data;
+
+        const message = await sendMessageHttp(chat.id, '', 'VOICE', {
+          fileUrl,
+          fileName,
+          fileSize,
+          duration: durationSec,
+        });
+
+        addMessageToCache(chat.id, message);
+        setShowVoiceRecorder(false);
+      } catch (error) {
+        console.error('Failed to send voice message:', error);
+        const msg = error instanceof Error ? error.message : 'Failed to send voice message. Please try again.';
+        alert(msg);
+      } finally {
+        setIsUploadingVoice(false);
+      }
+    },
+    [chat.id, addMessageToCache]
+  );
+
+  // When switching chats, exit voice recorder and discard any recording
+  useEffect(() => {
+    setShowVoiceRecorder(false);
+  }, [chat.id]);
 
   // Save draft on unmount - only save if user has typed something
   // This ensures we never accidentally save incoming messages as drafts
@@ -254,27 +358,6 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
     }
   };
 
-  // Handle delete message
-  const handleDeleteMessage = async (messageId: string) => {
-    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
-      return;
-    }
-
-    setDeletingMessageId(messageId);
-    try {
-      const result = await deleteMessage(messageId);
-      if (!result.success) {
-        console.error('Failed to delete message:', result.error);
-        alert('Failed to delete message. Please try again.');
-      }
-    } catch (error) {
-      console.error('Failed to delete message:', error);
-      alert('Failed to delete message. Please try again.');
-    } finally {
-      setDeletingMessageId(null);
-    }
-  };
-
   const onlineStatus = getOnlineStatus();
 
   return (
@@ -335,6 +418,19 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Add members (Admin only, group chat only) */}
+          {isAdmin && isGroupChat && (
+            <button
+              onClick={() => setShowAddMembersModal(true)}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+              title="Add members"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3z" />
+              </svg>
+              <span className="hidden sm:inline">Add members</span>
+            </button>
+          )}
           {/* Vocabulary Button (Teachers only, Group chats only) */}
           {isTeacher && isGroupChat && (
             <button
@@ -523,42 +619,62 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
 
       {/* Input */}
       <div className="p-4 border-t border-slate-200 bg-white">
-        <div className="flex items-end gap-2">
-          {/* Attachment button */}
-          <button className="p-2 hover:bg-slate-100 rounded-lg flex-shrink-0">
-            <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-            </svg>
-          </button>
-
-          {/* Text input */}
-          <textarea
-            ref={inputRef}
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            rows={1}
-            className="flex-1 px-4 py-2 bg-slate-100 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 max-h-32"
-            style={{ minHeight: '40px' }}
-          />
-
-          {/* Send button */}
-          <button
-            onClick={handleSend}
-            disabled={!inputValue.trim()}
-            className={cn(
-              'p-2 rounded-lg flex-shrink-0 transition-colors',
-              inputValue.trim()
-                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                : 'bg-slate-100 text-slate-400'
+        {showVoiceRecorder ? (
+          <div className="space-y-2">
+            <VoiceRecorder
+              onRecorded={handleVoiceRecorded}
+              onCancel={() => setShowVoiceRecorder(false)}
+              conversationId={chat.id}
+            />
+            {isUploadingVoice && (
+              <p className="text-sm text-slate-500 text-center">Uploading voice message...</p>
             )}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-          </button>
-        </div>
+          </div>
+        ) : (
+          <div className="flex items-end gap-2">
+            {/* Text input */}
+            <textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message..."
+              rows={1}
+              className="flex-1 px-4 py-2 bg-slate-100 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 max-h-32"
+              style={{ minHeight: '40px' }}
+            />
+
+            {/* Microphone: start voice recording */}
+            <button
+              type="button"
+              onClick={() => setShowVoiceRecorder(true)}
+              className="p-2 rounded-lg flex-shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+              title="Record voice message"
+              aria-label="Record voice message"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+              </svg>
+            </button>
+
+            {/* Send button */}
+            <button
+              onClick={handleSend}
+              disabled={!inputValue.trim()}
+              className={cn(
+                'p-2 rounded-lg flex-shrink-0 transition-colors',
+                inputValue.trim()
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-slate-100 text-slate-400'
+              )}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Vocabulary Modal */}
@@ -567,6 +683,14 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
         onClose={() => setShowVocabularyModal(false)}
         onSubmit={handleSendVocabulary}
         isSubmitting={isSendingVocabulary}
+      />
+
+      {/* Add Members Modal (Admin + group chat) */}
+      <AddMembersModal
+        isOpen={showAddMembersModal}
+        onClose={() => setShowAddMembersModal(false)}
+        chat={chat}
+        onMemberAdded={onChatUpdated}
       />
     </div>
   );

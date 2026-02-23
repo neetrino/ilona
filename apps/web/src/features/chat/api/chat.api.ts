@@ -123,6 +123,71 @@ export async function fetchAdminGroups(search?: string): Promise<AdminChatGroup[
 }
 
 /**
+ * Admin-only: Fetch all registered users (for add-member picker)
+ */
+export interface AdminChatAllUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  email: string;
+  phone?: string;
+  avatarUrl?: string;
+  role: string;
+}
+
+export async function fetchAdminAllUsers(search?: string): Promise<AdminChatAllUser[]> {
+  const params = new URLSearchParams();
+  if (search) params.append('search', search);
+  const query = params.toString();
+  const url = query ? `${CHAT_ENDPOINT}/admin/users?${query}` : `${CHAT_ENDPOINT}/admin/users`;
+  return api.get<AdminChatAllUser[]>(url);
+}
+
+/**
+ * Admin-only: Add a member to a group chat (class/teaching group)
+ */
+export async function addGroupChatMember(
+  groupId: string,
+  userId: string
+): Promise<{ chatId: string; participant: { userId: string; joinedAt: string } }> {
+  return api.post<{ chatId: string; participant: { userId: string; joinedAt: string } }>(
+    `${CHAT_ENDPOINT}/group/${groupId}/members`,
+    { userId }
+  );
+}
+
+/**
+ * Admin-only: Create a custom group chat (standalone, not linked to classes)
+ */
+export async function createCustomGroupChat(data: {
+  name: string;
+  participantIds?: string[];
+}): Promise<Chat> {
+  return api.post<Chat>(`${CHAT_ENDPOINT}/custom-groups`, data);
+}
+
+/**
+ * Fetch custom group chats the current user belongs to
+ */
+export async function fetchCustomGroupChats(): Promise<Chat[]> {
+  return api.get<Chat[]>(`${CHAT_ENDPOINT}/custom-groups`);
+}
+
+/**
+ * Admin-only: Add a member to a custom group chat (by chat id)
+ */
+export async function addCustomGroupChatMember(
+  chatId: string,
+  userId: string
+): Promise<{ chatId: string; participant: { userId: string; joinedAt: string } }> {
+  return api.post<{ chatId: string; participant: { userId: string; joinedAt: string } }>(
+    `${CHAT_ENDPOINT}/custom-groups/${chatId}/members`,
+    { userId }
+  );
+}
+
+/**
  * Teacher-only: Fetch teacher's assigned groups
  */
 export interface TeacherGroup {
@@ -147,6 +212,8 @@ export interface TeacherGroup {
     };
   } | null;
   unreadCount: number;
+  /** Total message count in the group chat (fallback when unread not available). */
+  messageCount?: number;
   updatedAt: string;
 }
 

@@ -145,6 +145,50 @@ export class ChatListsService {
   }
 
   /**
+   * Get all registered users for admin (e.g. add-member picker).
+   * Returns active users across all roles. Admin-only.
+   */
+  async getAdminAllUsers(_adminId: string, search?: string) {
+    const where: Prisma.UserWhereInput = {
+      status: 'ACTIVE',
+      ...(search && search.trim() && {
+        OR: [
+          { firstName: { contains: search.trim(), mode: 'insensitive' } },
+          { lastName: { contains: search.trim(), mode: 'insensitive' } },
+          { email: { contains: search.trim(), mode: 'insensitive' } },
+          { phone: { contains: search.trim(), mode: 'insensitive' } },
+        ],
+      }),
+    };
+
+    const users = await this.prisma.user.findMany({
+      where,
+      take: 100,
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        avatarUrl: true,
+        role: true,
+      },
+    });
+
+    return users.map((u) => ({
+      id: u.id,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      name: `${u.firstName} ${u.lastName}`,
+      email: u.email,
+      phone: u.phone ?? undefined,
+      avatarUrl: u.avatarUrl ?? undefined,
+      role: u.role,
+    }));
+  }
+
+  /**
    * Get teacher's assigned groups
    * Uses the same canonical logic as GroupsService.findByTeacherUserId
    * to ensure consistency across all endpoints
@@ -240,6 +284,7 @@ export class ChatListsService {
         chatId: null,
         lastMessage: null,
         unreadCount: 0,
+        messageCount: 0,
         updatedAt: group.updatedAt,
       }));
     }
@@ -262,13 +307,12 @@ export class ChatListsService {
       participants.map(p => [p.chatId, p.lastReadAt])
     );
 
-    // Only count unread for chats with lastReadAt
+    // Chats where teacher has lastReadAt → count messages after that from others
     const chatsNeedingCount = groupsWithChats.filter(group => {
       const lastReadAt = participantMap.get(group.chat!.id);
       return lastReadAt !== undefined && lastReadAt !== null;
     });
 
-    // Batch count unread messages for all chats
     const unreadCounts = await Promise.all(
       chatsNeedingCount.map(async (group) => {
         try {
@@ -294,6 +338,38 @@ export class ChatListsService {
       unreadCounts.map(uc => [uc.chatId, uc.count])
     );
 
+    // Chats where teacher has never read (lastReadAt null/undefined) → count all messages from others
+    const chatsNeverRead = groupsWithChats.filter(group => {
+      const lastReadAt = participantMap.get(group.chat!.id);
+      return lastReadAt === undefined || lastReadAt === null;
+    });
+
+    const neverReadCounts = await Promise.all(
+      chatsNeverRead.map(async (group) => {
+        try {
+          const chat = group.chat!;
+          const count = await this.prisma.message.count({
+            where: {
+              chatId: chat.id,
+              senderId: { not: teacherUserId },
+              // Exclude soft-deleted system messages from unread count
+              NOT: {
+                AND: [{ content: null }, { isSystem: true }],
+              },
+            },
+          });
+          return { chatId: chat.id, count };
+        } catch (error) {
+          this.logger.warn(`Failed to get never-read count for group ${group.id}:`, error);
+          return { chatId: group.chat!.id, count: 0 };
+        }
+      })
+    );
+
+    const neverReadCountMap = new Map(
+      neverReadCounts.map(n => [n.chatId, n.count])
+    );
+
     // Map results with unread counts
     const groupsWithUnread = groups.map((group) => {
       if (!group.chat) {
@@ -305,15 +381,34 @@ export class ChatListsService {
           chatId: null,
           lastMessage: null,
           unreadCount: 0,
+          messageCount: 0,
           updatedAt: group.updatedAt,
         };
       }
 
       const lastReadAt = participantMap.get(group.chat.id);
-      // If no lastReadAt, all messages are unread
+      // If no lastReadAt, use count of messages from others (never read). Otherwise use unread after lastReadAt.
       const unreadCount = lastReadAt === undefined || lastReadAt === null
-        ? group.chat._count.messages
+        ? (neverReadCountMap.get(group.chat.id) ?? group.chat._count.messages)
         : (unreadCountMap.get(group.chat.id) ?? 0);
+
+      const lastMsg = group.chat.messages[0];
+      const lastMessage = lastMsg
+        ? {
+            id: lastMsg.id,
+            type: lastMsg.type,
+            content: lastMsg.content,
+            fileName: lastMsg.fileName ?? null,
+            createdAt: lastMsg.createdAt instanceof Date ? lastMsg.createdAt.toISOString() : lastMsg.createdAt,
+            sender: lastMsg.sender
+              ? {
+                  id: lastMsg.sender.id,
+                  firstName: lastMsg.sender.firstName,
+                  lastName: lastMsg.sender.lastName,
+                }
+              : null,
+          }
+        : null;
 
       return {
         id: group.id,
@@ -321,9 +416,10 @@ export class ChatListsService {
         level: group.level,
         center: group.center ? { id: group.center.id, name: group.center.name } : null,
         chatId: group.chat.id,
-        lastMessage: group.chat.messages[0] || null,
+        lastMessage,
         unreadCount,
-        updatedAt: group.chat.updatedAt,
+        messageCount: group.chat._count.messages,
+        updatedAt: group.chat.updatedAt instanceof Date ? group.chat.updatedAt.toISOString() : group.chat.updatedAt,
       };
     });
 
@@ -778,6 +874,8 @@ export class ChatListsService {
     };
   }
 }
+
+
 
 
 

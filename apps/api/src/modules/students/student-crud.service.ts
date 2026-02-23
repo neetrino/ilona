@@ -30,11 +30,44 @@ export class StudentCrudService {
     sortOrder?: 'asc' | 'desc';
     month?: number;
     year?: number;
+    currentUserId?: string;
+    userRole?: UserRole;
   }) {
-    const { skip = 0, take = 50, search, groupId, groupIds, status, statusIds, teacherId, teacherIds, centerId, centerIds, sortBy, sortOrder = 'asc' } = params || {};
+    const { skip = 0, take = 50, search, groupId, groupIds, status, statusIds, teacherId, teacherIds, centerId, centerIds, sortBy, sortOrder = 'asc', currentUserId, userRole } = params || {};
 
     const where: Prisma.StudentWhereInput = {};
     const userWhere: Prisma.UserWhereInput = {};
+
+    // Teacher scoping: only allow access to students in groups assigned to the teacher
+    let teacherGroupIds: string[] | null = null;
+    if (userRole === UserRole.TEACHER && currentUserId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId: currentUserId },
+        select: { id: true },
+      });
+      if (!teacher) {
+        return { items: [], total: 0, page: 1, pageSize: take, totalPages: 0, totalMonthlyFees: 0 };
+      }
+      const groups = await this.prisma.group.findMany({
+        where: { teacherId: teacher.id, isActive: true },
+        select: { id: true },
+      });
+      teacherGroupIds = groups.map((g) => g.id);
+
+      const requestedGroupIds = groupIds && groupIds.length > 0 ? groupIds : groupId ? [groupId] : [];
+      if (requestedGroupIds.length > 0) {
+        const notAllowed = requestedGroupIds.filter((id) => !(teacherGroupIds ?? []).includes(id));
+        if (notAllowed.length > 0) {
+          throw new ForbiddenException('You do not have access to this group');
+        }
+      } else {
+        // No group filter: restrict to teacher's groups only
+        if (teacherGroupIds.length === 0) {
+          return { items: [], total: 0, page: 1, pageSize: take, totalPages: 0, totalMonthlyFees: 0 };
+        }
+        where.groupId = { in: teacherGroupIds };
+      }
+    }
 
     if (search) {
       userWhere.OR = [
@@ -55,11 +88,13 @@ export class StudentCrudService {
       where.user = userWhere;
     }
 
-    // Support both single groupId (backward compatibility) and groupIds array
-    if (groupIds && groupIds.length > 0) {
-      where.groupId = { in: groupIds };
-    } else if (groupId) {
-      where.groupId = groupId;
+    // Support both single groupId (backward compatibility) and groupIds array (only if not already set by teacher scope)
+    if (teacherGroupIds === null) {
+      if (groupIds && groupIds.length > 0) {
+        where.groupId = { in: groupIds };
+      } else if (groupId) {
+        where.groupId = groupId;
+      }
     }
 
     // Filter by teacherId (single or multiple)

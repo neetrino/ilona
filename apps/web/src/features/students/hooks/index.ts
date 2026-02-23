@@ -8,5 +8,6 @@ export {
   useDeleteStudent,
   useMyProfile,
   useMyDashboard,
+  useMyAssignedStudents,
   studentKeys,
 } from './useStudents';

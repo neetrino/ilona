@@ -9,6 +9,7 @@ export {
   useDeleteStudent,
   useMyProfile,
   useMyDashboard,
+  useMyAssignedStudents,
   studentKeys,
 } from './hooks';
 

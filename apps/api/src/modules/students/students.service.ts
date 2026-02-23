@@ -36,6 +36,8 @@ export class StudentsService {
     sortOrder?: 'asc' | 'desc';
     month?: number;
     year?: number;
+    currentUserId?: string;
+    userRole?: UserRole;
   }) {
     return this.crudService.findAll(params);
   }

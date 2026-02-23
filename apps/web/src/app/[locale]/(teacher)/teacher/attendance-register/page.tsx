@@ -6,7 +6,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { getWeekDates } from '@/features/attendance/utils/dateUtils';
 import { useTeacherAttendanceData } from './hooks/useTeacherAttendanceData';
 import { useTeacherAttendanceNavigation } from './hooks/useTeacherAttendanceNavigation';
-import { AttendanceControls } from '@/app/[locale]/(admin)/admin/attendance-register/components/AttendanceControls';
+import { AttendanceControls, type AbsenceFilterType } from '@/app/[locale]/(admin)/admin/attendance-register/components/AttendanceControls';
 import { AttendanceStats } from '@/app/[locale]/(admin)/admin/attendance-register/components/AttendanceStats';
 import { SaveMessages } from '@/app/[locale]/(admin)/admin/attendance-register/components/SaveMessages';
 import { AttendanceEmptyGroupState } from '@/app/[locale]/(admin)/admin/attendance-register/components/AttendanceEmptyGroupState';
@@ -18,6 +18,7 @@ export default function TeacherAttendanceRegisterPage() {
   const t = useTranslations('attendance');
   const [saveMessages, setSaveMessages] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [absenceFilter, setAbsenceFilter] = useState<AbsenceFilterType>('all');
 
   // Use navigation hook - this manages navigation state
   const [tempHasUnsavedChanges, setTempHasUnsavedChanges] = useState(false);
@@ -32,7 +33,9 @@ export default function TeacherAttendanceRegisterPage() {
     viewMode: nav.viewMode,
     currentDate: nav.currentDate,
     selectedGroupId: nav.selectedGroupId,
+    selectedGroupIds: nav.selectedGroupIds,
     selectedDayForMonthView: nav.selectedDayForMonthView,
+    absenceFilter,
   });
 
   // Update hasUnsavedChanges in navigation when data changes
@@ -48,7 +51,7 @@ export default function TeacherAttendanceRegisterPage() {
         data.todayLessons.some((lesson) => lesson.groupId === group.id)
       );
       if (groupWithLesson) {
-        nav.handleGroupChange(groupWithLesson.id);
+        nav.handleGroupsChange([groupWithLesson.id]);
       }
     }
   };
@@ -59,17 +62,17 @@ export default function TeacherAttendanceRegisterPage() {
       !data.hasAutoSelectedGroup.current &&
       data.todayLessons.length > 0 &&
       data.groups.length > 0 &&
-      !nav.selectedGroupId
+      nav.selectedGroupIds.length === 0
     ) {
       const groupWithLesson = data.groups.find((group) =>
         data.todayLessons.some((lesson) => lesson.groupId === group.id)
       );
       if (groupWithLesson) {
-        nav.handleGroupChange(groupWithLesson.id);
+        nav.handleGroupsChange([groupWithLesson.id]);
         data.hasAutoSelectedGroup.current = true;
       }
     }
-  }, [data.todayLessons, data.groups, nav.selectedGroupId, data.hasAutoSelectedGroup]);
+  }, [data.todayLessons, data.groups, nav.selectedGroupIds, data.hasAutoSelectedGroup]);
 
   // Get week dates for week view
   const weekDates = useMemo(() => {
@@ -110,7 +113,9 @@ export default function TeacherAttendanceRegisterPage() {
     };
   }, []);
 
-  const selectedGroup = data.groups.find((g) => g.id === nav.selectedGroupId);
+  const selectedGroup = nav.selectedGroupIds.length > 0
+    ? data.groups.find((g) => g.id === nav.selectedGroupIds[0])
+    : undefined;
 
   return (
     <DashboardLayout title={t('attendanceRegister')} subtitle={t('subtitle')}>
@@ -123,29 +128,40 @@ export default function TeacherAttendanceRegisterPage() {
           viewMode={nav.viewMode}
           currentDate={nav.currentDate}
           selectedGroupId={nav.selectedGroupId}
+          selectedGroupIds={nav.selectedGroupIds}
           groups={data.groups}
           isLoadingGroups={data.isLoadingGroups}
           isCurrentDateToday={nav.isCurrentDateToday}
           onViewModeChange={nav.handleViewModeChange}
           onGroupChange={nav.handleGroupChange}
+          onGroupsChange={nav.handleGroupsChange}
           onDateChange={nav.handleDateChange}
           onPrevious={nav.handlePrevious}
           onNext={nav.handleNext}
           onGoToToday={goToToday}
+          showAbsenceTypeFilter={true}
+          absenceFilter={absenceFilter}
+          onAbsenceFilterChange={setAbsenceFilter}
         />
 
         {/* Statistics */}
-        {nav.selectedGroupId && <AttendanceStats stats={data.stats} />}
+        {nav.selectedGroupIds.length > 0 && <AttendanceStats stats={data.stats} />}
 
         {/* Empty State */}
-        {!nav.selectedGroupId && <AttendanceEmptyGroupState />}
+        {nav.selectedGroupIds.length === 0 && (
+          <AttendanceEmptyGroupState
+            variant={!data.isLoadingGroups && data.groups.length === 0 ? 'no_groups' : 'no_selection'}
+          />
+        )}
 
         {/* Day View */}
-        {nav.selectedGroupId && data.students.length > 0 && nav.viewMode === 'day' && (
+        {nav.selectedGroupIds.length > 0 && data.students.length > 0 && nav.viewMode === 'day' && (
           <DayView
             group={selectedGroup}
+            groups={data.groups}
+            selectedGroupIds={nav.selectedGroupIds}
             currentDate={nav.currentDate}
-            students={data.students}
+            students={data.filteredStudents}
             filteredLessons={data.filteredLessons}
             attendanceData={data.attendanceData}
             attendanceQueries={data.attendanceQueries}
@@ -164,11 +180,13 @@ export default function TeacherAttendanceRegisterPage() {
         )}
 
         {/* Week View */}
-        {nav.selectedGroupId && data.students.length > 0 && nav.viewMode === 'week' && (
+        {nav.selectedGroupIds.length > 0 && data.students.length > 0 && nav.viewMode === 'week' && (
           <WeekView
             group={selectedGroup}
+            groups={data.groups}
+            selectedGroupIds={nav.selectedGroupIds}
             currentDate={nav.currentDate}
-            students={data.students}
+            students={data.filteredStudents}
             filteredLessons={data.filteredLessons}
             attendanceData={data.attendanceData}
             attendanceQueries={data.attendanceQueries}
@@ -186,12 +204,14 @@ export default function TeacherAttendanceRegisterPage() {
         )}
 
         {/* Month View */}
-        {nav.selectedGroupId && data.students.length > 0 && nav.viewMode === 'month' && (
+        {nav.selectedGroupIds.length > 0 && data.students.length > 0 && nav.viewMode === 'month' && (
           <MonthView
             group={selectedGroup}
+            groups={data.groups}
+            selectedGroupIds={nav.selectedGroupIds}
             currentDate={nav.currentDate}
             selectedDayForMonthView={nav.selectedDayForMonthView}
-            students={data.students}
+            students={data.filteredStudents}
             filteredLessons={data.filteredLessons}
             attendanceData={data.attendanceData}
             isLoadingLessons={data.isLoadingLessons}

@@ -321,6 +321,8 @@
     "noGroupsAvailable": "Խմբեր չկան",
     "searchGroups": "Փնտրել խմբեր...",
     "noGroupsFound": "Խմբեր չգտնվեցին",
+    "noGroupsAssignedYet": "Խմբեր դեռ չեն նշանակվել",
+    "noGroupsAssignedDescription": "Ձեզ դեռ խմբեր չեն նշանակել: Դիմեք ադմինիստրատորին:",
     "selectGroupsToViewAttendance": "Ընտրեք խումբ(եր) հաճախելիությունը դիտելու համար",
     "viewAttendanceRecord": "Դիտեք ձեր հաճախելիության գրառումը և բացակայությունները:",
     "attentionRequired": "Պահանջվում է ուշադրություն",

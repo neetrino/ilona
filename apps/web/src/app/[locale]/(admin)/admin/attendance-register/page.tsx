@@ -6,7 +6,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { getWeekDates } from '@/features/attendance/utils/dateUtils';
 import { useAttendanceData } from './hooks/useAttendanceData';
 import { useAttendanceNavigation } from './hooks/useAttendanceNavigation';
-import { AttendanceControls } from './components/AttendanceControls';
+import { AttendanceControls, type AbsenceFilterType } from './components/AttendanceControls';
 import { SaveMessages } from './components/SaveMessages';
 import { AttendanceEmptyGroupState } from './components/AttendanceEmptyGroupState';
 import { MonthViewCalendar } from './components/MonthViewCalendar';
@@ -18,6 +18,7 @@ export default function AdminAttendanceRegisterPage() {
   const t = useTranslations('attendance');
   const [saveMessages, setSaveMessages] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [absenceFilter, setAbsenceFilter] = useState<AbsenceFilterType>('all');
 
   // Use navigation hook - this manages URL state and navigation
   // Start with empty data, will be updated after data loads
@@ -35,6 +36,7 @@ export default function AdminAttendanceRegisterPage() {
     selectedGroupId: nav.selectedGroupId, // For backward compatibility
     selectedGroupIds: nav.selectedGroupIds, // New multi-select support
     selectedDayForMonthView: nav.selectedDayForMonthView,
+    absenceFilter,
   });
 
   // Update hasUnsavedChanges in navigation when data changes
@@ -134,6 +136,9 @@ export default function AdminAttendanceRegisterPage() {
           onPrevious={nav.handlePrevious}
           onNext={nav.handleNext}
           onGoToToday={goToToday}
+          showAbsenceTypeFilter={true}
+          absenceFilter={absenceFilter}
+          onAbsenceFilterChange={setAbsenceFilter}
         />
 
         {/* Month View Calendar */}
@@ -159,7 +164,7 @@ export default function AdminAttendanceRegisterPage() {
               groups={data.groups}
               selectedGroupIds={nav.selectedGroupIds}
               currentDate={nav.currentDate}
-              students={data.students}
+              students={data.filteredStudents}
               filteredLessons={data.filteredLessons}
               attendanceData={data.attendanceData}
               attendanceQueries={data.attendanceQueries}
@@ -186,7 +191,7 @@ export default function AdminAttendanceRegisterPage() {
               groups={data.groups}
               selectedGroupIds={nav.selectedGroupIds}
               currentDate={nav.currentDate}
-              students={data.students}
+              students={data.filteredStudents}
               filteredLessons={data.filteredLessons}
               attendanceData={data.attendanceData}
               attendanceQueries={data.attendanceQueries}
@@ -214,7 +219,7 @@ export default function AdminAttendanceRegisterPage() {
               selectedGroupIds={nav.selectedGroupIds}
               currentDate={nav.currentDate}
               selectedDayForMonthView={nav.selectedDayForMonthView}
-              students={data.students}
+              students={data.filteredStudents}
               filteredLessons={data.filteredLessons}
               attendanceData={data.attendanceData}
               isLoadingLessons={data.isLoadingLessons}

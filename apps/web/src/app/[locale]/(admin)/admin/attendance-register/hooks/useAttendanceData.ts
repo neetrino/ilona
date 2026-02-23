@@ -32,6 +32,8 @@ interface UseAttendanceDataProps {
   selectedGroupId: string | null; // For backward compatibility
   selectedGroupIds: string[]; // New multi-select support
   selectedDayForMonthView: string | null;
+  /** When set, only students that have at least one cell matching this status are included. */
+  absenceFilter?: 'all' | 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked' | 'no_session';
 }
 
 export function useAttendanceData({
@@ -40,6 +42,7 @@ export function useAttendanceData({
   selectedGroupId, // For backward compatibility
   selectedGroupIds, // New multi-select support
   selectedDayForMonthView,
+  absenceFilter = 'all',
 }: UseAttendanceDataProps) {
   // Use selectedGroupIds if available, otherwise fall back to selectedGroupId for backward compatibility
   const effectiveGroupIds = selectedGroupIds.length > 0 ? selectedGroupIds : (selectedGroupId ? [selectedGroupId] : []);
@@ -180,6 +183,22 @@ export function useAttendanceData({
     return data;
   }, [filteredLessons, attendanceQueries]);
 
+  // Filter students by selected absence type (client-side)
+  const filteredStudents = useMemo(() => {
+    if (absenceFilter === 'all' || effectiveGroupIds.length === 0) return students;
+    if (absenceFilter === 'no_session') {
+      // No Session: we don't have a stored "no_session" status per cell; show empty list
+      return [];
+    }
+    return students.filter((student) =>
+      filteredLessons.some((lesson) => {
+        const cell = attendanceData[lesson.id]?.[student.id];
+        const status: AttendanceStatus = cell?.status ?? 'not_marked';
+        return status === absenceFilter;
+      })
+    );
+  }, [students, filteredLessons, attendanceData, absenceFilter, effectiveGroupIds]);
+
   // Get lessons grouped by date for month view
   const lessonsByDate = useMemo(() => {
     if (viewMode !== 'month' || effectiveGroupIds.length === 0) return {};
@@ -286,6 +305,7 @@ export function useAttendanceData({
     filteredLessons,
     isLoadingLessons,
     students,
+    filteredStudents,
     isLoadingStudents,
     attendanceData,
     attendanceQueries,

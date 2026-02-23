@@ -322,6 +322,8 @@
     "noGroupsAvailable": "No groups available",
     "searchGroups": "Search groups...",
     "noGroupsFound": "No groups found",
+    "noGroupsAssignedYet": "No groups assigned yet",
+    "noGroupsAssignedDescription": "You have not been assigned to any groups. Contact an administrator.",
     "selectGroupsToViewAttendance": "Select group(s) to view attendance",
     "viewAttendanceRecord": "View your attendance record and absences.",
     "attentionRequired": "Attention Required",

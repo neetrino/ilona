@@ -98,7 +98,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         })),
       });
     } catch (error) {
-      console.error('[ChatGateway] Connection error:', error);
+      const isTokenExpired = error && typeof error === 'object' && 'name' in error && (error as Error).name === 'TokenExpiredError';
+      if (isTokenExpired) {
+        console.warn('[ChatGateway] Connection rejected: token expired');
+        client.emit('connection:error', { code: 'TOKEN_EXPIRED', message: 'Token expired' });
+      } else {
+        console.error('[ChatGateway] Connection error:', error);
+      }
       client.disconnect();
     }
   }
@@ -135,7 +141,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('message:send')
   async handleSendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { chatId: string; content: string; type?: string; metadata?: Record<string, unknown> },
+    @MessageBody() data: { chatId: string; content: string; type?: string; metadata?: Record<string, unknown>; fileUrl?: string; fileName?: string; fileSize?: number; duration?: number },
   ) {
     try {
       // CRITICAL: Validate client.user is set and has required fields
@@ -145,6 +151,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           userId: client.user?.sub,
         });
         return { success: false, error: 'Authentication required' };
+      }
+
+      // Voice messages must be sent via HTTP (upload file first, then send with fileUrl)
+      if (data.type === 'VOICE') {
+        return { success: false, error: 'Voice messages must be sent via the REST API after uploading the file' };
       }
 
       // CRITICAL: Log sender identity for debugging (dev only)
@@ -176,6 +187,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.error('[ChatGateway] Send message error:', error);
       return { success: false, error: (error as Error).message };
     }
+  }
+
+  /**
+   * Broadcast a new message to all participants in a chat.
+   * Used when message is created via HTTP (e.g. voice message after file upload).
+   */
+  broadcastNewMessage(chatId: string, message: unknown): void {
+    this.server?.to(`chat:${chatId}`).emit('message:new', message);
   }
 
   @SubscribeMessage('message:edit')

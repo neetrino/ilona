@@ -10,14 +10,18 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
+import { ChatGateway } from './chat.gateway';
 import { CurrentUser, Roles } from '../../common/decorators';
 import { UserRole } from '@prisma/client';
 import { JwtPayload } from '../../common/types/auth.types';
-import { CreateChatDto, SendMessageDto, UpdateMessageDto } from './dto';
+import { CreateChatDto, SendMessageDto, UpdateMessageDto, AddGroupMemberDto, CreateCustomGroupChatDto } from './dto';
 
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   /**
    * Get all chats for current user
@@ -25,6 +29,39 @@ export class ChatController {
   @Get()
   async getMyChats(@CurrentUser() user: JwtPayload) {
     return this.chatService.getUserChats(user.sub);
+  }
+
+  /**
+   * Create a custom group chat (standalone, not linked to class groups). Admin only.
+   */
+  @Post('custom-groups')
+  @Roles(UserRole.ADMIN)
+  async createCustomGroupChat(
+    @Body() dto: CreateCustomGroupChatDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.chatService.createCustomGroupChat(user.sub, dto);
+  }
+
+  /**
+   * List custom group chats the current user belongs to.
+   */
+  @Get('custom-groups')
+  async getCustomGroupChats(@CurrentUser() user: JwtPayload) {
+    return this.chatService.getCustomGroupChats(user.sub);
+  }
+
+  /**
+   * Add a member to a custom group chat. Admin only.
+   */
+  @Post('custom-groups/:chatId/members')
+  @Roles(UserRole.ADMIN)
+  async addCustomGroupChatMember(
+    @Param('chatId') chatId: string,
+    @Body() dto: AddGroupMemberDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.chatService.addCustomGroupChatMember(chatId, dto.userId, user.sub);
   }
 
   /**
@@ -88,7 +125,12 @@ export class ChatController {
       });
     }
 
-    return this.chatService.sendMessage(dto, user.sub, user.role);
+    const message = await this.chatService.sendMessage(dto, user.sub, user.role);
+
+    // Broadcast to all chat participants (including sender's other devices) so voice messages appear in real time
+    this.chatGateway.broadcastNewMessage(dto.chatId, message);
+
+    return message;
   }
 
   /**
@@ -183,6 +225,31 @@ export class ChatController {
     @Query('search') search?: string,
   ) {
     return this.chatService.getAdminGroups(user.sub, search);
+  }
+
+  /**
+   * Get all registered users for admin (e.g. add-member picker). Admin only.
+   */
+  @Get('admin/users')
+  @Roles(UserRole.ADMIN)
+  async getAdminAllUsers(
+    @CurrentUser() user: JwtPayload,
+    @Query('search') search?: string,
+  ) {
+    return this.chatService.getAdminAllUsers(user.sub, search);
+  }
+
+  /**
+   * Add a member to a group chat. Admin only.
+   */
+  @Post('group/:groupId/members')
+  @Roles(UserRole.ADMIN)
+  async addGroupChatMember(
+    @Param('groupId') groupId: string,
+    @Body() dto: AddGroupMemberDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.chatService.addGroupChatMember(groupId, dto.userId, user.sub);
   }
 
   /**
