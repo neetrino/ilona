@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatType, UserRole } from '@prisma/client';
-import { CreateChatDto } from './dto';
+import { CreateChatDto, CreateCustomGroupChatDto } from './dto';
 import { ChatAuthorizationService } from './chat-authorization.service';
 
 /**
@@ -331,7 +331,8 @@ export class ChatManagementService {
     }
 
     // If admin is accessing a group chat and not a participant, add them
-    if (isAdminAccessingGroup && !isParticipant) {
+    // Only for class/teaching group chats (groupId set). Custom group chats are members-only.
+    if (isAdminAccessingGroup && !isParticipant && chat.groupId) {
       await this.prisma.chatParticipant.upsert({
         where: {
           chatId_userId: {
@@ -351,6 +352,11 @@ export class ChatManagementService {
 
       // Refetch chat with updated participants
       return this.getChatById(chatId, userId, userRole);
+    }
+
+    // Custom group chats (groupId=null): members-only, no admin auto-join
+    if (chat.type === ChatType.GROUP && !chat.groupId && !isParticipant) {
+      throw new ForbiddenException('You are not a participant of this chat');
     }
 
     return chat;
@@ -597,9 +603,9 @@ export class ChatManagementService {
       },
     });
 
-    // If chat doesn't exist, create it lazily (if user is authorized)
+    // If chat doesn't exist, create it lazily (Admin only - only Admin can create group chats)
     if (!chat) {
-      // First, verify the group exists and user has access
+      // First, verify the group exists
       const group = await this.prisma.group.findUnique({
         where: { id: groupId },
         select: {
@@ -618,39 +624,13 @@ export class ChatManagementService {
         throw new BadRequestException('Group is not active');
       }
 
-      // Check authorization
-      let isAuthorized = false;
-      if (userRole === UserRole.ADMIN || userRole === 'ADMIN') {
-        isAuthorized = true;
-      } else if ((userRole === UserRole.TEACHER || userRole === 'TEACHER') && userId) {
-        // Use centralized authorization check
-        const accessCheck = await this.authorizationService.canTeacherAccessGroupChat(userId, groupId);
-        isAuthorized = accessCheck.hasAccess;
-        
-        // Dev-only logging for 403 debugging
-        if (!isAuthorized && process.env.NODE_ENV !== 'production') {
-          this.logger.warn(
-            `[403] Teacher denied access to group chat (chat doesn't exist yet). ` +
-            `userId: ${userId}, groupId: ${groupId}, ` +
-            `teacherId: ${accessCheck.debug?.teacherId || 'N/A'}, ` +
-            `groupTeacherId: ${accessCheck.debug?.groupTeacherId || 'N/A'}, ` +
-            `hasLessons: ${accessCheck.debug?.hasLessons || false}`
-          );
-        }
-      } else if (userRole === UserRole.STUDENT && userId) {
-        // Check if student is a member of this group
-        const student = await this.prisma.student.findFirst({
-          where: {
-            userId,
-            groupId,
-          },
-          select: { id: true },
-        });
-        isAuthorized = !!student;
+      // Only Admin can create a new group chat; Teachers/Students get 403
+      if (userRole !== UserRole.ADMIN && userRole !== 'ADMIN') {
+        throw new ForbiddenException('Only administrators can create group chats');
       }
 
-      if (!isAuthorized) {
-        throw new ForbiddenException('You are not authorized to access this group chat');
+      if (!userId) {
+        throw new ForbiddenException('Authentication required');
       }
 
       // Create the chat
@@ -686,26 +666,8 @@ export class ChatManagementService {
         },
       });
 
-      // Add teacher as admin if exists
-      if (group.teacherId) {
-        const teacher = await this.prisma.teacher.findUnique({
-          where: { id: group.teacherId },
-          select: { userId: true },
-        });
-
-        if (teacher) {
-          await this.prisma.chatParticipant.create({
-            data: {
-              chatId: newChat.id,
-              userId: teacher.userId,
-              isAdmin: true,
-            },
-          });
-        }
-      }
-
-      // Add admin if accessing
-      if (userRole === UserRole.ADMIN && userId) {
+      // Add admin (requesting user) as participant
+      if (userId) {
         await this.prisma.chatParticipant.create({
           data: {
             chatId: newChat.id,
@@ -713,6 +675,30 @@ export class ChatManagementService {
             isAdmin: true,
           },
         });
+      }
+
+      // Add group's teacher as participant if exists
+      if (group.teacherId) {
+        const teacher = await this.prisma.teacher.findUnique({
+          where: { id: group.teacherId },
+          select: { userId: true },
+        });
+        if (teacher) {
+          await this.prisma.chatParticipant.upsert({
+            where: {
+              chatId_userId: {
+                chatId: newChat.id,
+                userId: teacher.userId,
+              },
+            },
+            update: { leftAt: null },
+            create: {
+              chatId: newChat.id,
+              userId: teacher.userId,
+              isAdmin: true,
+            },
+          });
+        }
       }
 
       // Add all students from the group as participants
@@ -846,6 +832,234 @@ export class ChatManagementService {
     }
 
     return chat;
+  }
+
+  /**
+   * Add a member to a group chat. Admin only (enforced by controller).
+   * Validates: group exists, chat exists, user exists, user not already a member.
+   */
+  async addGroupChatMember(
+    groupId: string,
+    userId: string,
+    _adminId: string,
+  ): Promise<{ chatId: string; participant: { userId: string; joinedAt: Date } }> {
+    const chat = await this.prisma.chat.findUnique({
+      where: { groupId },
+      select: { id: true },
+    });
+    if (!chat) {
+      throw new NotFoundException('Group chat not found. Open the group chat first.');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, status: true },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.status !== 'ACTIVE') {
+      throw new BadRequestException('Cannot add inactive or suspended users to the group');
+    }
+
+    const existing = await this.prisma.chatParticipant.findUnique({
+      where: {
+        chatId_userId: { chatId: chat.id, userId },
+      },
+      select: { leftAt: true },
+    });
+    if (existing && existing.leftAt === null) {
+      throw new BadRequestException('User is already a member of this group');
+    }
+
+    const participant = await this.prisma.chatParticipant.upsert({
+      where: {
+        chatId_userId: { chatId: chat.id, userId },
+      },
+      update: { leftAt: null },
+      create: {
+        chatId: chat.id,
+        userId,
+        isAdmin: false,
+      },
+      select: { userId: true, joinedAt: true },
+    });
+
+    return {
+      chatId: chat.id,
+      participant: { userId: participant.userId, joinedAt: participant.joinedAt },
+    };
+  }
+
+  /**
+   * List custom group chats (type=GROUP, groupId=null) the user belongs to.
+   */
+  async getCustomGroupChats(userId: string) {
+    const chats = await this.prisma.chat.findMany({
+      where: {
+        type: ChatType.GROUP,
+        groupId: null,
+        isActive: true,
+        participants: {
+          some: {
+            userId,
+            leftAt: null,
+          },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        participants: {
+          where: { leftAt: null },
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+                role: true,
+              },
+            },
+          },
+        },
+        messages: {
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+          where: {
+            NOT: {
+              AND: [{ content: null }, { isSystem: true }],
+            },
+          },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return chats;
+  }
+
+  /**
+   * Create a custom (standalone) group chat. Admin only. Not linked to class/teaching groups.
+   */
+  async createCustomGroupChat(
+    adminId: string,
+    dto: CreateCustomGroupChatDto,
+  ) {
+    const participantIds = dto.participantIds ?? [];
+    const allUserIds = [adminId, ...participantIds];
+    const uniqueIds = [...new Set(allUserIds)];
+
+    // Validate all users exist and are active
+    for (const uid of uniqueIds) {
+      const u = await this.prisma.user.findUnique({
+        where: { id: uid },
+        select: { id: true, status: true },
+      });
+      if (!u) {
+        throw new NotFoundException(`User not found: ${uid}`);
+      }
+      if (u.status !== 'ACTIVE') {
+        throw new BadRequestException('Cannot add inactive or suspended users to the group');
+      }
+    }
+
+    const chat = await this.prisma.chat.create({
+      data: {
+        type: ChatType.GROUP,
+        name: dto.name.trim(),
+        groupId: null, // Standalone, not linked to teaching Group
+        participants: {
+          create: uniqueIds.map((userId) => ({
+            userId,
+            isAdmin: userId === adminId,
+          })),
+        },
+      },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+                role: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return chat;
+  }
+
+  /**
+   * Add a member to a custom group chat (groupId=null). Admin only.
+   */
+  async addCustomGroupChatMember(
+    chatId: string,
+    userId: string,
+    _adminId: string,
+  ): Promise<{ chatId: string; participant: { userId: string; joinedAt: Date } }> {
+    const chat = await this.prisma.chat.findUnique({
+      where: { id: chatId },
+      select: { id: true, type: true, groupId: true },
+    });
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+    if (chat.type !== ChatType.GROUP || chat.groupId !== null) {
+      throw new BadRequestException('This endpoint is only for custom group chats');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, status: true },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.status !== 'ACTIVE') {
+      throw new BadRequestException('Cannot add inactive or suspended users to the group');
+    }
+
+    const existing = await this.prisma.chatParticipant.findUnique({
+      where: {
+        chatId_userId: { chatId, userId },
+      },
+      select: { leftAt: true },
+    });
+    if (existing && existing.leftAt === null) {
+      throw new BadRequestException('User is already a member of this group');
+    }
+
+    const participant = await this.prisma.chatParticipant.upsert({
+      where: {
+        chatId_userId: { chatId, userId },
+      },
+      update: { leftAt: null },
+      create: {
+        chatId,
+        userId,
+        isAdmin: false,
+      },
+      select: { userId: true, joinedAt: true },
+    });
+
+    return {
+      chatId,
+      participant: { userId: participant.userId, joinedAt: participant.joinedAt },
+    };
   }
 
   /**

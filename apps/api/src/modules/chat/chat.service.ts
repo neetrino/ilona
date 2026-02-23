@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateChatDto, SendMessageDto, UpdateMessageDto } from './dto';
+import { CreateChatDto, CreateCustomGroupChatDto, SendMessageDto, UpdateMessageDto } from './dto';
 import { ChatManagementService } from './chat-management.service';
 import { MessageService } from './message.service';
 import { ChatListsService } from './chat-lists.service';
@@ -81,6 +81,26 @@ export class ChatService {
 
   async getAdminGroups(adminId: string, search?: string) {
     return this.chatListsService.getAdminGroups(adminId, search);
+  }
+
+  async getAdminAllUsers(adminId: string, search?: string) {
+    return this.chatListsService.getAdminAllUsers(adminId, search);
+  }
+
+  async addGroupChatMember(groupId: string, userId: string, adminId: string) {
+    return this.chatManagementService.addGroupChatMember(groupId, userId, adminId);
+  }
+
+  async createCustomGroupChat(adminId: string, dto: CreateCustomGroupChatDto) {
+    return this.chatManagementService.createCustomGroupChat(adminId, dto);
+  }
+
+  async getCustomGroupChats(userId: string) {
+    return this.chatManagementService.getCustomGroupChats(userId);
+  }
+
+  async addCustomGroupChatMember(chatId: string, userId: string, adminId: string) {
+    return this.chatManagementService.addCustomGroupChatMember(chatId, userId, adminId);
   }
 
   async getTeacherGroups(teacherUserId: string, search?: string) {

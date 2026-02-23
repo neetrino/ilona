@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { AdminChatList } from './AdminChatList';
 import { ChatWindow } from './ChatWindow';
+import { CreateGroupChatModal } from './CreateGroupChatModal';
 import { useChatStore } from '../store/chat.store';
 import { useSocket, useChatDetail, chatKeys } from '../hooks';
 import type { Chat } from '../types';
@@ -32,6 +33,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   const validTabs: AdminChatTab[] = ['students', 'teachers', 'groups'];
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : null;
   const [activeTab, setActiveTab] = useState<AdminChatTab | null>(initialTab);
+  const [showCreateGroupChatModal, setShowCreateGroupChatModal] = useState(false);
 
   // Get conversationId from URL (support both chatId and conversationId for backward compatibility)
   const conversationIdFromUrl = searchParams.get('conversationId') || searchParams.get('chatId');
@@ -230,6 +232,22 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
     router.replace(`${pathname}?${params.toString()}`);
   };
 
+  const handleCustomGroupChatCreated = (chat: Chat) => {
+    setActiveChat(chat);
+    setMobileListVisible(false);
+    setShowCreateGroupChatModal(false);
+    queryClient.setQueryData(chatKeys.list(), (oldData: Chat[] | undefined) => {
+      if (!oldData) return [chat];
+      const existing = oldData.find((c) => c.id === chat.id);
+      if (existing) return oldData;
+      return [chat, ...oldData];
+    });
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('conversationId', chat.id);
+    if (activeTab) params.set('tab', activeTab);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
   // Check if we're in full-screen mode (when className includes rounded-none)
   const isFullScreen = className?.includes('rounded-none');
   const containerHeight = isFullScreen ? 'h-screen' : 'h-[calc(100vh-200px)]';
@@ -266,7 +284,15 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
           <span className="font-medium">Back</span>
         </button>
         <h2 className="text-lg font-semibold text-slate-800">Chat</h2>
-        <div className="w-20" /> {/* Spacer for centering */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowCreateGroupChatModal(true)}
+            className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90"
+          >
+            Create Group Chat
+          </button>
+        </div>
       </div>
 
       <div className={cn("flex flex-1 overflow-hidden", contentHeight)}>
@@ -292,7 +318,11 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
           )}
         >
           {activeChat ? (
-            <ChatWindow chat={activeChat} onBack={handleBack} />
+            <ChatWindow
+              chat={activeChat}
+              onBack={handleBack}
+              onChatUpdated={setActiveChat}
+            />
           ) : (
             <div className="flex-1 flex items-center justify-center bg-slate-50">
               <div className="text-center">
@@ -322,6 +352,12 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
           )}
         </div>
       </div>
+
+      <CreateGroupChatModal
+        isOpen={showCreateGroupChatModal}
+        onClose={() => setShowCreateGroupChatModal(false)}
+        onCreated={handleCustomGroupChatCreated}
+      />
     </div>
   );
 }

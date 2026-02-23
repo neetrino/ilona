@@ -9,15 +9,17 @@ import { cn } from '@/shared/lib/utils';
 import { api } from '@/shared/lib/api';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 import { VocabularyModal } from './VocabularyModal';
+import { AddMembersModal } from './AddMembersModal';
 import { formatTime, formatDateSeparator, shouldShowDateSeparator } from '../utils/chat-utils';
 
 interface ChatWindowProps {
   chat: Chat;
   onSendMessage?: (content: string, type?: string) => void;
   onBack?: () => void;
+  onChatUpdated?: (chat: Chat) => void;
 }
 
-export function ChatWindow({ chat, onBack }: ChatWindowProps) {
+export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const { user } = useAuthStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -34,12 +36,14 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   // Initialize input as empty - drafts will be loaded in useEffect when chat changes
   const [inputValue, setInputValue] = useState('');
   const [showVocabularyModal, setShowVocabularyModal] = useState(false);
+  const [showAddMembersModal, setShowAddMembersModal] = useState(false);
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
 
   // Check if user is teacher (can send vocabulary)
   const isTeacher = user?.role === 'TEACHER';
   const isGroupChat = chat.type === 'GROUP';
+  const isAdmin = user?.role === 'ADMIN';
 
   // Fetch messages
   const {
@@ -370,6 +374,19 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Add members (Admin only, group chat only) */}
+          {isAdmin && isGroupChat && (
+            <button
+              onClick={() => setShowAddMembersModal(true)}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+              title="Add members"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3z" />
+              </svg>
+              <span className="hidden sm:inline">Add members</span>
+            </button>
+          )}
           {/* Vocabulary Button (Teachers only, Group chats only) */}
           {isTeacher && isGroupChat && (
             <button
@@ -602,6 +619,14 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
         onClose={() => setShowVocabularyModal(false)}
         onSubmit={handleSendVocabulary}
         isSubmitting={isSendingVocabulary}
+      />
+
+      {/* Add Members Modal (Admin + group chat) */}
+      <AddMembersModal
+        isOpen={showAddMembersModal}
+        onClose={() => setShowAddMembersModal(false)}
+        chat={chat}
+        onMemberAdded={onChatUpdated}
       />
     </div>
   );

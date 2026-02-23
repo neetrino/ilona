@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useAdminStudents, useAdminTeachers, useAdminGroups, useAdminUnreadCounts, useChats } from '../hooks';
+import { useAdminStudents, useAdminTeachers, useAdminGroups, useAdminUnreadCounts, useChats, useCustomGroupChats } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import { fetchGroupChat, createDirectChat } from '../api/chat.api';
 import type { Chat } from '../types';
@@ -39,18 +39,25 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
   const { data: groups = [], isLoading: isLoadingGroups } = useAdminGroups(
     activeTab === 'groups' ? searchQuery : undefined
   );
+  const { data: customGroupChats = [], isLoading: isLoadingCustomGroups } = useCustomGroupChats(
+    activeTab === 'groups'
+  );
 
   const isLoading = activeTab === 'students' ? isLoadingStudents : 
                     activeTab === 'teachers' ? isLoadingTeachers : 
-                    activeTab === 'groups' ? isLoadingGroups :
+                    activeTab === 'groups' ? (isLoadingGroups || isLoadingCustomGroups) :
                     false;
 
-  // Create a map of groupId -> unreadCount for GROUP type chats
+  // Unread: class groups by groupId, custom group chats by chat id
   const groupUnreadMap = useMemo(() => {
     const map = new Map<string, number>();
     chats.forEach((chat) => {
-      if (chat.type === 'GROUP' && chat.groupId && (chat.unreadCount || 0) > 0) {
-        map.set(chat.groupId, chat.unreadCount || 0);
+      if (chat.type === 'GROUP' && (chat.unreadCount || 0) > 0) {
+        if (chat.groupId) {
+          map.set(chat.groupId, chat.unreadCount || 0);
+        } else {
+          map.set(chat.id, chat.unreadCount || 0);
+        }
       }
     });
     return map;
@@ -257,7 +264,24 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
       );
     }
 
-    if (groups.length === 0) {
+    const searchLower = searchQuery.trim().toLowerCase();
+    const filteredClassGroups = searchLower
+      ? groups.filter(
+          (g) =>
+            g.name.toLowerCase().includes(searchLower) ||
+            g.center?.name?.toLowerCase().includes(searchLower)
+        )
+      : groups;
+    const filteredCustomGroups = searchLower
+      ? customGroupChats.filter(
+          (c) => (c.name || '').toLowerCase().includes(searchLower)
+        )
+      : customGroupChats;
+
+    const hasCustom = filteredCustomGroups.length > 0;
+    const hasClass = filteredClassGroups.length > 0;
+
+    if (!hasCustom && !hasClass) {
       return (
         <div className="p-8 text-center">
           <div className="w-12 h-12 mx-auto mb-3 bg-slate-100 rounded-full flex items-center justify-center">
@@ -269,7 +293,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             {searchQuery ? 'No groups found' : 'No groups available'}
           </p>
           <p className="text-xs text-slate-500">
-            {searchQuery ? 'Try a different search term' : 'Groups will appear here'}
+            {searchQuery ? 'Try a different search term' : 'Create a group chat or select a class group'}
           </p>
         </div>
       );
@@ -277,7 +301,36 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
 
     return (
       <div className="divide-y divide-slate-100">
-        {groups.map((group) => (
+        {/* Custom group chats (created via "Create Group Chat") */}
+        {filteredCustomGroups.map((chat) => (
+          <button
+            key={chat.id}
+            onClick={() => onSelectChat(chat)}
+            className={cn(
+              'w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left',
+              activeChat?.type === 'GROUP' && !activeChat?.groupId && activeChat?.id === chat.id && 'bg-primary/10 hover:bg-primary/10'
+            )}
+          >
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+              {getAvatar(chat.name || 'Group')}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-medium text-slate-900 truncate">{chat.name || 'Group chat'}</h3>
+                {(groupUnreadMap.get(chat.id) || 0) > 0 && (
+                  <Badge variant="error" className="flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                    {groupUnreadMap.get(chat.id)}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-slate-500 truncate">
+                Group chat · {chat.participants?.length ?? 0} participants
+              </p>
+            </div>
+          </button>
+        ))}
+        {/* Class groups (teaching groups) */}
+        {filteredClassGroups.map((group) => (
           <button
             key={group.id}
             onClick={() => handleSelectGroup(group.id)}

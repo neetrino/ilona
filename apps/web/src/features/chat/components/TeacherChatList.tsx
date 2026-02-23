@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useTeacherGroups, useTeacherStudents, useTeacherAdmin, useSocket, useCreateDirectChat, useTeacherUnreadCounts } from '../hooks';
+import { useTeacherGroups, useTeacherStudents, useTeacherAdmin, useSocket, useCreateDirectChat, useTeacherUnreadCounts, useCustomGroupChats, useChats } from '../hooks';
 import { fetchGroupChat } from '../api/chat.api';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import { ApiError } from '@/shared/lib/api';
 import { formatMessagePreview } from '../utils';
 import { Badge } from '@/shared/components/ui/badge';
 
@@ -24,6 +25,10 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
   const { data: groups = [], isLoading: isLoadingGroups } = useTeacherGroups(
     activeTab === 'groups' ? searchQuery : undefined
   );
+  const { data: customGroupChats = [], isLoading: isLoadingCustomGroups } = useCustomGroupChats(
+    activeTab === 'groups'
+  );
+  const { data: allChats = [] } = useChats();
   const { data: students = [], isLoading: isLoadingStudents } = useTeacherStudents(
     activeTab === 'students' ? searchQuery : undefined
   );
@@ -74,12 +79,18 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
         const chat = await fetchGroupChat(groupId);
         onSelectChat(chat);
       } else {
-        // Chat doesn't exist yet, fetch group chat (it will be created if needed)
+        // Chat doesn't exist yet; only Admin can create it - Teacher will get 403
         const chat = await fetchGroupChat(groupId);
         onSelectChat(chat);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to open group chat:', error);
+      const is403 = error instanceof ApiError && error.statusCode === 403;
+      if (is403) {
+        alert('Only an administrator can create this group chat. Please ask an admin to open the group chat first.');
+      } else {
+        alert('Failed to open group chat. Please try again.');
+      }
     }
   };
 
@@ -121,9 +132,9 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
 
   const hasAdmin = admin !== null && admin !== undefined;
   const isLoading = activeTab === 'admin' ? isLoadingAdmin :
-                    activeTab === 'groups' ? isLoadingGroups : isLoadingStudents;
+                    activeTab === 'groups' ? (isLoadingGroups || isLoadingCustomGroups) : isLoadingStudents;
   const hasData = activeTab === 'admin' ? hasAdmin :
-                  activeTab === 'groups' ? groups.length > 0 : students.length > 0;
+                  activeTab === 'groups' ? (groups.length > 0 || customGroupChats.length > 0) : students.length > 0;
 
   return (
     <div className="flex flex-col h-full">
@@ -354,10 +365,67 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
             </div>
           ) : null
         ) : activeTab === 'groups' ? (
-          // Groups list
-          groups.map((group) => {
+          // Groups list: custom group chats first, then assigned class groups
+          <>
+            {customGroupChats
+              .filter((c) => !searchQuery || (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()))
+              .map((chat) => {
+                const fullChat = allChats.find((c) => c.id === chat.id);
+                const unread = fullChat?.unreadCount ?? 0;
+                const lastMsg = fullChat?.lastMessage ?? (chat as Chat).lastMessage;
+                const isActive = activeChat?.type === 'GROUP' && !activeChat?.groupId && activeChat?.id === chat.id;
+                return (
+                  <button
+                    key={chat.id}
+                    onClick={() => onSelectChat(fullChat || chat)}
+                    className={cn(
+                      'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
+                      isActive && 'bg-primary/10 hover:bg-primary/10'
+                    )}
+                  >
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
+                        {(chat.name || 'Group')[0]}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className={cn('font-medium truncate', unread > 0 ? 'text-slate-900' : 'text-slate-700')}>
+                          {chat.name || 'Group chat'}
+                        </h3>
+                        <span className="text-xs text-slate-500 flex-shrink-0">
+                          {formatTime(lastMsg?.createdAt || (chat as Chat).updatedAt)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className={cn('text-sm truncate', unread > 0 ? 'text-slate-700 font-medium' : 'text-slate-500')}>
+                          {formatMessagePreview(lastMsg)}
+                        </p>
+                        {unread > 0 && (
+                          <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
+                            {unread}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">Group chat</p>
+                    </div>
+                  </button>
+                );
+              })}
+            {groups
+              .filter(
+                (g) =>
+                  !searchQuery ||
+                  g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  g.level?.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .map((group) => {
             const isActive = activeChat?.groupId === group.id;
-            const hasUnread = (group.unreadCount || 0) > 0;
+            const unread = Math.max(0, Number(group.unreadCount) || 0);
+            const total = Math.max(0, Number(group.messageCount) || 0);
+            const hasUnread = unread > 0;
+            const showBadge = hasUnread;
+            const count = hasUnread ? unread : total;
 
             return (
               <button
@@ -369,20 +437,21 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 )}
               >
                 {/* Avatar */}
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
                     {group.name[0]}
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
+                {/* Content: group name as primary, last message + count badge */}
+                <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2 min-w-0">
                     <h3
                       className={cn(
-                        'font-medium truncate',
+                        'font-medium truncate flex-1 min-w-0',
                         hasUnread ? 'text-slate-900' : 'text-slate-700'
                       )}
+                      title={group.name}
                     >
                       {group.name}
                     </h3>
@@ -390,30 +459,32 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                       {formatTime(group.lastMessage?.createdAt || group.updatedAt)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
                     <p
                       className={cn(
-                        'text-sm truncate',
+                        'text-sm truncate flex-1 min-w-0',
                         hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500'
                       )}
                     >
                       {formatMessagePreview(group.lastMessage)}
                     </p>
-                    {hasUnread && (
-                      <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
-                        {group.unreadCount}
+                    {showBadge && (
+                      <span
+                        className="ml-1 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0 min-w-[1.25rem] text-center"
+                        aria-label={`${count} unread`}
+                      >
+                        {count}
                       </span>
                     )}
                   </div>
-                  {group.level && (
-                    <p className="text-xs text-slate-400 mt-1">
-                      {group.level}
-                    </p>
-                  )}
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {group.level ? `Class group · ${group.level}` : 'Class group'}
+                  </p>
                 </div>
               </button>
             );
-          })
+          })}
+          </>
         ) : (
           // Students list
           students.map((student) => {

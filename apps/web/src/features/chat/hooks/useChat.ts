@@ -11,6 +11,11 @@ import {
   fetchAdminStudents,
   fetchAdminTeachers,
   fetchAdminGroups,
+  fetchAdminAllUsers,
+  addGroupChatMember,
+  createCustomGroupChat,
+  fetchCustomGroupChats,
+  addCustomGroupChatMember,
   fetchTeacherGroups,
   fetchTeacherStudents,
   fetchTeacherAdmin,
@@ -29,6 +34,8 @@ export const chatKeys = {
   adminStudents: (search?: string) => [...chatKeys.all, 'admin', 'students', search] as const,
   adminTeachers: (search?: string) => [...chatKeys.all, 'admin', 'teachers', search] as const,
   adminGroups: (search?: string) => [...chatKeys.all, 'admin', 'groups', search] as const,
+  adminUsers: (search?: string) => [...chatKeys.all, 'admin', 'users', search] as const,
+  customGroupChats: () => [...chatKeys.all, 'custom-groups'] as const,
   // Teacher chat lists
   teacherGroups: (search?: string) => [...chatKeys.all, 'teacher', 'groups', search] as const,
   teacherStudents: (search?: string) => [...chatKeys.all, 'teacher', 'students', search] as const,
@@ -241,10 +248,12 @@ export function useUpdateChatUnreadCount() {
  * Admin-only: Hook to fetch students list for chat
  */
 export function useAdminStudents(search?: string) {
+  const { user } = useAuthStore();
   return useQuery({
     queryKey: chatKeys.adminStudents(search),
     queryFn: () => fetchAdminStudents(search),
     staleTime: 60 * 1000, // Cache for 1 minute
+    enabled: user?.role === 'ADMIN',
   });
 }
 
@@ -252,10 +261,12 @@ export function useAdminStudents(search?: string) {
  * Admin-only: Hook to fetch teachers list for chat
  */
 export function useAdminTeachers(search?: string) {
+  const { user } = useAuthStore();
   return useQuery({
     queryKey: chatKeys.adminTeachers(search),
     queryFn: () => fetchAdminTeachers(search),
     staleTime: 60 * 1000, // Cache for 1 minute
+    enabled: user?.role === 'ADMIN',
   });
 }
 
@@ -263,10 +274,90 @@ export function useAdminTeachers(search?: string) {
  * Admin-only: Hook to fetch groups list for chat
  */
 export function useAdminGroups(search?: string) {
+  const { user } = useAuthStore();
   return useQuery({
     queryKey: chatKeys.adminGroups(search),
     queryFn: () => fetchAdminGroups(search),
     staleTime: 60 * 1000, // Cache for 1 minute
+    enabled: user?.role === 'ADMIN',
+  });
+}
+
+/**
+ * Admin-only: Hook to fetch all users (for add-member picker)
+ */
+export function useAdminAllUsers(search?: string) {
+  const { user } = useAuthStore();
+  return useQuery({
+    queryKey: chatKeys.adminUsers(search),
+    queryFn: () => fetchAdminAllUsers(search),
+    staleTime: 60 * 1000,
+    enabled: user?.role === 'ADMIN',
+  });
+}
+
+/**
+ * Admin-only: Hook to add a member to a group chat
+ */
+export function useAddGroupChatMember() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ groupId, userId }: { groupId: string; userId: string }) =>
+      addGroupChatMember(groupId, userId),
+    onSuccess: (_data, { groupId }) => {
+      queryClient.invalidateQueries({ queryKey: chatKeys.list() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.details() });
+      // Invalidate group chat detail so participants refresh (we use fetchChat by id or fetchGroupChat by groupId)
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
+    },
+  });
+}
+
+/**
+ * Admin-only: Hook to create a custom group chat
+ */
+export function useCreateCustomGroupChat() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { name: string; participantIds?: string[] }) =>
+      createCustomGroupChat(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: chatKeys.list() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.details() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.customGroupChats() });
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
+    },
+  });
+}
+
+/**
+ * Admin-only: Hook to add a member to a custom group chat (by chat id)
+ */
+export function useAddCustomGroupChatMember() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ chatId, userId }: { chatId: string; userId: string }) =>
+      addCustomGroupChatMember(chatId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: chatKeys.list() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.details() });
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
+    },
+  });
+}
+
+/**
+ * Hook to fetch custom group chats (current user's group chats, not class groups)
+ */
+export function useCustomGroupChats(enabled = true) {
+  return useQuery({
+    queryKey: chatKeys.customGroupChats(),
+    queryFn: () => fetchCustomGroupChats(),
+    staleTime: 30 * 1000,
+    enabled,
   });
 }
 
