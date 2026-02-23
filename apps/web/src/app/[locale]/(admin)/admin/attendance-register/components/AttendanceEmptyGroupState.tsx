@@ -2,8 +2,15 @@
 
 import { useTranslations } from 'next-intl';
 
-export function AttendanceEmptyGroupState() {
+/** Teacher: show "No groups assigned" when 0 groups; "Select a group" when groups exist but none selected. Admin: always "Select group(s)". */
+export function AttendanceEmptyGroupState({
+  variant = 'no_selection',
+}: {
+  variant?: 'no_groups' | 'no_selection';
+}) {
   const t = useTranslations('attendance');
+  const isNoGroups = variant === 'no_groups';
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
       <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
@@ -16,8 +23,12 @@ export function AttendanceEmptyGroupState() {
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-slate-800 mb-1">{t('selectGroup')}</h3>
-      <p className="text-sm text-slate-500">{t('selectGroupsToViewAttendance')}</p>
+      <h3 className="text-lg font-semibold text-slate-800 mb-1">
+        {isNoGroups ? t('noGroupsAssignedYet') : t('selectGroup')}
+      </h3>
+      <p className="text-sm text-slate-500">
+        {isNoGroups ? t('noGroupsAssignedDescription') : t('selectGroupsToViewAttendance')}
+      </p>
     </div>
   );
 }

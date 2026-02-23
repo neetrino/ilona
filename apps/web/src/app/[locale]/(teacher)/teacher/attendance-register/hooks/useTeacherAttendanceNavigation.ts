@@ -30,8 +30,11 @@ export function useTeacherAttendanceNavigation({
   // Date state
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [selectedDayForMonthView, setSelectedDayForMonthView] = useState<string | null>(null);
+
+  // Backward compatibility: first selected group
+  const selectedGroupId = selectedGroupIds.length > 0 ? selectedGroupIds[0] : null;
 
   // Confirmation helper
   const confirmWithUnsavedChanges = (message: string): boolean => {
@@ -50,7 +53,7 @@ export function useTeacherAttendanceNavigation({
         todayLessons.some((lesson) => lesson.groupId === group.id)
       );
       if (groupWithLesson) {
-        setSelectedGroupId(groupWithLesson.id);
+        setSelectedGroupIds([groupWithLesson.id]);
         onGroupChange?.(groupWithLesson.id);
       }
     }
@@ -84,16 +87,29 @@ export function useTeacherAttendanceNavigation({
     setSelectedDayForMonthView(null);
   };
 
-  // Handle group change
+  // Handle group change (single - for backward compatibility)
   const handleGroupChange = (newGroupId: string | null) => {
     if (!confirmWithUnsavedChanges(
       'You have unsaved changes. Are you sure you want to switch groups? Your changes will be lost.'
     )) {
       return;
     }
-    setSelectedGroupId(newGroupId);
+    const newGroupIds = newGroupId ? [newGroupId] : [];
+    setSelectedGroupIds(newGroupIds);
     setSelectedDayForMonthView(null);
     onGroupChange?.(newGroupId);
+  };
+
+  // Handle multiple groups change
+  const handleGroupsChange = (newGroupIds: string[]) => {
+    if (!confirmWithUnsavedChanges(
+      'You have unsaved changes. Are you sure you want to switch groups? Your changes will be lost.'
+    )) {
+      return;
+    }
+    setSelectedGroupIds(newGroupIds);
+    setSelectedDayForMonthView(null);
+    onGroupChange?.(newGroupIds.length > 0 ? newGroupIds[0] : null);
   };
 
   // Navigation handlers
@@ -140,13 +156,15 @@ export function useTeacherAttendanceNavigation({
     viewMode,
     currentDate,
     selectedGroupId,
+    selectedGroupIds,
     selectedDayForMonthView,
     isCurrentDateToday,
-    setSelectedGroupId,
+    setSelectedGroupId: (id: string | null) => handleGroupChange(id),
     goToToday,
     handleViewModeChange,
     handleDateChange,
     handleGroupChange,
+    handleGroupsChange,
     handlePrevious,
     handleNext,
     handleDaySelect,

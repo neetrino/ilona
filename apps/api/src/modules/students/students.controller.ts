@@ -21,7 +21,7 @@ export class StudentsController {
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async findAll(@Query() query: QueryStudentDto) {
+  async findAll(@Query() query: QueryStudentDto, @CurrentUser() user?: JwtPayload) {
     // Handle array query params (e.g., ?teacherIds=id1&teacherIds=id2)
     const teacherIds = query.teacherIds || (query.teacherId ? [query.teacherId] : undefined);
     const centerIds = query.centerIds || (query.centerId ? [query.centerId] : undefined);
@@ -45,6 +45,8 @@ export class StudentsController {
       sortOrder: query.sortOrder,
       month: query.month,
       year: query.year,
+      currentUserId: user?.sub,
+      userRole: user?.role,
     });
   }
 

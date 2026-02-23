@@ -28,7 +28,8 @@ export interface AttendanceCell {
 interface UseTeacherAttendanceDataProps {
   viewMode: ViewMode;
   currentDate: Date;
-  selectedGroupId: string | null;
+  selectedGroupId: string | null; // backward compatibility
+  selectedGroupIds: string[];
   selectedDayForMonthView: string | null;
   /** When set, only students that have at least one cell matching this status are included. */
   absenceFilter?: 'all' | 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked' | 'no_session';
@@ -38,9 +39,13 @@ export function useTeacherAttendanceData({
   viewMode,
   currentDate,
   selectedGroupId,
+  selectedGroupIds,
   selectedDayForMonthView,
   absenceFilter = 'all',
 }: UseTeacherAttendanceDataProps) {
+  const effectiveGroupIds = selectedGroupIds.length > 0
+    ? selectedGroupIds
+    : (selectedGroupId ? [selectedGroupId] : []);
   const [savingLessons, setSavingLessons] = useState<Record<string, boolean>>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const hasAutoSelectedGroup = useRef(false);
@@ -55,16 +60,15 @@ export function useTeacherAttendanceData({
 
   // Auto-select first group with a lesson today on initial load
   useEffect(() => {
-    if (!hasAutoSelectedGroup.current && todayLessons.length > 0 && groups.length > 0 && !selectedGroupId) {
+    if (!hasAutoSelectedGroup.current && todayLessons.length > 0 && groups.length > 0 && effectiveGroupIds.length === 0) {
       const groupWithLesson = groups.find((group) =>
         todayLessons.some((lesson) => lesson.groupId === group.id)
       );
       if (groupWithLesson) {
-        // This will be handled by the parent component
         hasAutoSelectedGroup.current = true;
       }
     }
-  }, [todayLessons, groups, selectedGroupId]);
+  }, [todayLessons, groups, effectiveGroupIds.length]);
 
   // Calculate date range based on view mode
   const dateRange = useMemo(() => {
@@ -90,10 +94,9 @@ export function useTeacherAttendanceData({
     return dateRange;
   }, [viewMode, dateRange, selectedDayForMonthView]);
 
-  // Fetch lessons for selected group and date range
-  // Use UTC dates to avoid timezone shifts
+  // Fetch lessons for selected groups and date range
   const { data: lessonsData, isLoading: isLoadingLessons } = useLessons({
-    groupId: selectedGroupId || undefined,
+    groupIds: effectiveGroupIds.length > 0 ? effectiveGroupIds : undefined,
     dateFrom: effectiveDateRange.from ? new Date(effectiveDateRange.from + 'T00:00:00Z').toISOString() : undefined,
     dateTo: effectiveDateRange.to ? new Date(effectiveDateRange.to + 'T23:59:59Z').toISOString() : undefined,
     take: 1000,
@@ -102,8 +105,8 @@ export function useTeacherAttendanceData({
 
   // Filter lessons based on view mode
   const filteredLessons = useMemo(() => {
-    if (!selectedGroupId) return [];
-    
+    if (effectiveGroupIds.length === 0) return [];
+
     if (viewMode === 'day') {
       const dateStr = formatDateString(currentDate);
       return lessons.filter((lesson) => {
@@ -128,21 +131,21 @@ export function useTeacherAttendanceData({
       }
       return [];
     }
-  }, [lessons, viewMode, currentDate, selectedGroupId, selectedDayForMonthView]);
+  }, [lessons, viewMode, currentDate, effectiveGroupIds.length, selectedDayForMonthView]);
 
-  // Fetch students for selected group
+  // Fetch students for selected groups (teacher-scoped: backend GET /students enforces teacher's groups)
   const { data: studentsData, isLoading: isLoadingStudents } = useStudents({
-    groupId: selectedGroupId || undefined,
+    groupIds: effectiveGroupIds.length > 0 ? effectiveGroupIds : undefined,
     take: 100,
   });
-  const students = studentsData?.items || [];
+  const students = studentsData?.items ?? [];
 
   // Fetch attendance for filtered lessons
   const attendanceQueries = useQueries({
     queries: filteredLessons.map((lesson) => ({
       queryKey: attendanceKeys.lesson(lesson.id),
       queryFn: () => fetchLessonAttendance(lesson.id),
-      enabled: !!selectedGroupId && filteredLessons.length > 0,
+      enabled: effectiveGroupIds.length > 0 && filteredLessons.length > 0,
     })),
   });
 
@@ -185,7 +188,7 @@ export function useTeacherAttendanceData({
 
   // Filter students by selected absence type (client-side)
   const filteredStudents = useMemo(() => {
-    if (absenceFilter === 'all' || !selectedGroupId) return students;
+    if (absenceFilter === 'all' || effectiveGroupIds.length === 0) return students;
     if (absenceFilter === 'no_session') return [];
     return students.filter((student) =>
       filteredLessons.some((lesson) => {
@@ -194,11 +197,11 @@ export function useTeacherAttendanceData({
         return status === absenceFilter;
       })
     );
-  }, [students, filteredLessons, attendanceData, absenceFilter, selectedGroupId]);
+  }, [students, filteredLessons, attendanceData, absenceFilter, effectiveGroupIds.length]);
 
   // Get lessons grouped by date for month view
   const lessonsByDate = useMemo(() => {
-    if (viewMode !== 'month' || !selectedGroupId) return {};
+    if (viewMode !== 'month' || effectiveGroupIds.length === 0) return {};
     const grouped: Record<string, Lesson[]> = {};
     lessons.forEach((lesson) => {
       const lessonDate = new Date(lesson.scheduledAt).toISOString().split('T')[0];
@@ -208,7 +211,7 @@ export function useTeacherAttendanceData({
       grouped[lessonDate].push(lesson);
     });
     return grouped;
-  }, [viewMode, lessons, selectedGroupId]);
+  }, [viewMode, lessons, effectiveGroupIds.length]);
 
   // Calculate statistics
   const stats = useMemo(() => {
