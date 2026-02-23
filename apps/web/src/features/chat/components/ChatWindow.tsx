@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMessages, useSocket } from '../hooks';
 import { useChatStore } from '../store/chat.store';
@@ -25,6 +25,10 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // Track last marked conversation to prevent duplicate mark-as-read calls
   const lastMarkedConversationIdRef = useRef<string | null>(null);
+  // Track which chat we've done initial scroll-to-bottom for (so we only do it once per open)
+  const lastInitialScrollChatIdRef = useRef<string | null>(null);
+  // Track previous message count to detect new messages vs initial load
+  const prevMessagesLengthRef = useRef<number>(0);
 
   const { getDraft, setDraft, clearDraft, getTypingUsers, addTypingUser } = useChatStore();
   // Initialize input as empty - drafts will be loaded in useEffect when chat changes
@@ -76,20 +80,51 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   // Flatten messages from infinite query
   const messages = messagesData?.pages.flatMap((page) => page.items) || [];
 
-  // Scroll to bottom on new messages, but only if user is near bottom
-  // This prevents interrupting user when they're reading old messages
+  // Reset scroll state when switching chats so the new chat gets initial scroll when its messages load
   useEffect(() => {
+    lastInitialScrollChatIdRef.current = null;
+    prevMessagesLengthRef.current = 0;
+  }, [chat.id]);
+
+  // Initial open: scroll to bottom after messages are loaded and rendered (once per chat)
+  useLayoutEffect(() => {
+    if (isLoading || messages.length === 0) return;
+    if (lastInitialScrollChatIdRef.current === chat.id) return;
     if (!messagesEndRef.current || !messagesContainerRef.current) return;
-    
+
+    lastInitialScrollChatIdRef.current = chat.id;
+    prevMessagesLengthRef.current = messages.length;
+
+    const scrollToBottom = () => {
+      const container = messagesContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    };
+
+    // Run after layout is complete so scrollHeight is correct (flex/overflow can settle next frame)
+    const rafId = requestAnimationFrame(() => {
+      scrollToBottom();
+      requestAnimationFrame(scrollToBottom); // second frame for flex layouts
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [chat.id, isLoading, messages.length]);
+
+  // New messages: only auto-scroll if user is already near bottom (do not interrupt when reading older messages)
+  useEffect(() => {
+    if (!messagesEndRef.current || !messagesContainerRef.current || messages.length === 0) return;
+    // Only react when message count increased (new message arrived), not on initial load
+    if (messages.length <= prevMessagesLengthRef.current) return;
+    prevMessagesLengthRef.current = messages.length;
+
     const container = messagesContainerRef.current;
-    const isNearBottom = 
+    const isNearBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight < 200;
-    
-    // Only scroll if user is near bottom (within 200px) or if it's the first load
-    if (isNearBottom || messages.length === 0) {
+
+    if (isNearBottom) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages.length]);
+  }, [messages.length, chat.id]);
 
   // Mark as read when opening chat (with guards to prevent infinite loops)
   // Mark as read when chat is opened, regardless of unreadCount or whether user replies
