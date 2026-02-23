@@ -125,7 +125,7 @@ export function AttendanceControls({
                 value={formatDateString(currentDate)}
                 onChange={(e) => onDateChange(e.target.value)}
                 max={getTodayDate()}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
                 disabled={safeSelectedGroupIds.length === 0}
               />
             </>
@@ -199,7 +199,7 @@ export function AttendanceControls({
                 value={absenceFilter}
                 onChange={(e) => onAbsenceFilterChange(e.target.value as AbsenceFilterType)}
                 disabled={safeSelectedGroupIds.length === 0}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-slate-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
+                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
                 aria-label="Filter by absence type"
               >
                 {ABSENCE_FILTER_OPTIONS.map((opt) => (
