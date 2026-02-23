@@ -11,6 +11,24 @@ import {
 } from '@/features/attendance/utils/dateUtils';
 import type { Group } from '@/features/groups';
 
+/** Absence type filter: matches the 5 types shown in the Legend (All = no filter). */
+export type AbsenceFilterType =
+  | 'all'
+  | 'present'
+  | 'absent_justified'
+  | 'absent_unjustified'
+  | 'not_marked'
+  | 'no_session';
+
+const ABSENCE_FILTER_OPTIONS: { value: AbsenceFilterType; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'present', label: 'Present' },
+  { value: 'absent_justified', label: 'Absent (Justified)' },
+  { value: 'absent_unjustified', label: 'Absent (Unjustified)' },
+  { value: 'not_marked', label: 'Not Marked' },
+  { value: 'no_session', label: 'No Session' },
+];
+
 interface AttendanceControlsProps {
   viewMode: ViewMode;
   currentDate: Date;
@@ -26,6 +44,10 @@ interface AttendanceControlsProps {
   onPrevious: () => void;
   onNext: () => void;
   onGoToToday: () => void;
+  /** Admin-only: show absence-type filter instead of Back to Today button */
+  showAbsenceTypeFilter?: boolean;
+  absenceFilter?: AbsenceFilterType;
+  onAbsenceFilterChange?: (value: AbsenceFilterType) => void;
 }
 
 export function AttendanceControls({
@@ -43,6 +65,9 @@ export function AttendanceControls({
   onPrevious,
   onNext,
   onGoToToday,
+  showAbsenceTypeFilter = false,
+  absenceFilter = 'all',
+  onAbsenceFilterChange,
 }: AttendanceControlsProps) {
   const t = useTranslations('attendance');
   // Ensure selectedGroupIds is always an array to prevent undefined errors
@@ -163,16 +188,37 @@ export function AttendanceControls({
           )}
         </div>
 
-        {/* Back to Today Button */}
+        {/* Absence-type filter (Admin only) or Back to Today button (Teacher) */}
         <div className="flex items-end">
-          <Button
-            onClick={onGoToToday}
-            disabled={isCurrentDateToday && viewMode === 'day'}
-            variant={isCurrentDateToday && viewMode === 'day' ? 'outline' : 'default'}
-            className="w-full"
-          >
-            {isCurrentDateToday && viewMode === 'day' ? 'Today' : 'Back to Today'}
-          </Button>
+          {showAbsenceTypeFilter && onAbsenceFilterChange ? (
+            <div className="w-full">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Filter by type
+              </label>
+              <select
+                value={absenceFilter}
+                onChange={(e) => onAbsenceFilterChange(e.target.value as AbsenceFilterType)}
+                disabled={safeSelectedGroupIds.length === 0}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-slate-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
+                aria-label="Filter by absence type"
+              >
+                {ABSENCE_FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <Button
+              onClick={onGoToToday}
+              disabled={isCurrentDateToday && viewMode === 'day'}
+              variant={isCurrentDateToday && viewMode === 'day' ? 'outline' : 'default'}
+              className="w-full"
+            >
+              {isCurrentDateToday && viewMode === 'day' ? 'Today' : 'Back to Today'}
+            </Button>
+          )}
         </div>
       </div>
     </div>
