@@ -35,6 +35,7 @@ export default function FinancePage() {
     paymentsPage,
     salariesPage,
     searchQuery,
+    debouncedSearchQuery,
     paymentStatus,
     salaryStatus,
     selectedSalaryId,
@@ -60,24 +61,28 @@ export default function FinancePage() {
   // Fetch dashboard stats
   const { data: dashboard, isLoading: isLoadingDashboard } = useFinanceDashboard();
 
-  // Fetch payments
+  // Fetch payments (debounced search to avoid request on every keystroke)
   const { 
     data: paymentsData, 
-    isLoading: isLoadingPayments 
+    isLoading: isLoadingPayments,
+    isFetching: isFetchingPayments,
   } = usePayments({
     skip: paymentsPage * pageSize,
     take: pageSize,
     status: paymentStatus || undefined,
+    q: debouncedSearchQuery.trim() || undefined,
   });
 
-  // Fetch salaries
+  // Fetch salaries (debounced search)
   const {
     data: salariesData,
     isLoading: isLoadingSalaries,
+    isFetching: isFetchingSalaries,
   } = useSalaries({
     skip: salariesPage * pageSize,
     take: pageSize,
     status: salaryStatus || undefined,
+    q: debouncedSearchQuery.trim() || undefined,
   });
 
   // Mutations
@@ -185,6 +190,7 @@ export default function FinancePage() {
           onSalaryStatusChange={handleSalaryStatusChange}
           onDeleteClick={handleDeleteClick}
           isDeleting={deleteSalaries.isPending}
+          isSearching={activeTab === 'payments' ? isFetchingPayments : isFetchingSalaries}
           page={activeTab === 'payments' ? paymentsPage : salariesPage}
           pageSize={pageSize}
           totalPages={activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages}
@@ -198,6 +204,8 @@ export default function FinancePage() {
             payments={payments}
             isLoading={isLoading || isLoadingDashboard}
             updatePaymentStatus={updatePaymentStatus}
+            searchTerm={debouncedSearchQuery.trim()}
+            noResultsKey="noPaymentsMatch"
           />
         ) : (
           <SalariesTable
@@ -210,6 +218,8 @@ export default function FinancePage() {
             onSelectAll={handleSelectAllSalaries}
             onSelectOne={handleSelectOneSalary}
             locale={locale}
+            searchTerm={debouncedSearchQuery.trim()}
+            noResultsKey="noSalariesMatch"
           />
         )}
 

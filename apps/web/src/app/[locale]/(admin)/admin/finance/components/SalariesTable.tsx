@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DataTable } from '@/shared/components/ui';
 import { getSalaryColumns } from '../utils/tableColumns';
 import type { SalaryRecord, SalaryStatus } from '@/features/finance';
@@ -17,6 +18,8 @@ interface SalariesTableProps {
   onSelectAll: () => void;
   onSelectOne: (salaryId: string, checked: boolean) => void;
   locale: string;
+  searchTerm?: string;
+  noResultsKey?: string;
 }
 
 export function SalariesTable({
@@ -29,7 +32,10 @@ export function SalariesTable({
   onSelectAll,
   onSelectOne,
   locale,
+  searchTerm,
+  noResultsKey,
 }: SalariesTableProps) {
+  const t = useTranslations('finance');
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const columns = getSalaryColumns({
     allSalariesSelected,
@@ -41,6 +47,8 @@ export function SalariesTable({
     onSelectOne,
     locale,
   });
+  const emptyMessage =
+    searchTerm && noResultsKey ? t(noResultsKey) : t('noSalariesFound');
 
   return (
     <DataTable
@@ -48,7 +56,7 @@ export function SalariesTable({
       data={salaries}
       keyExtractor={(salary) => salary.id}
       isLoading={isLoading}
-      emptyMessage="No salary records found"
+      emptyMessage={emptyMessage}
     />
   );
 }

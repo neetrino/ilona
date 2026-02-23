@@ -250,6 +250,7 @@ export class FinanceController {
       status: query.status,
       dateFrom: query.dateFrom ? new Date(query.dateFrom) : undefined,
       dateTo: query.dateTo ? new Date(query.dateTo) : undefined,
+      q: query.q?.trim() || undefined,
     });
   }
 
@@ -310,12 +311,14 @@ export class FinanceController {
     @Query('take') take?: string,
     @Query('teacherId') teacherId?: string,
     @Query('status') status?: string,
+    @Query('q') q?: string,
   ) {
     return this.salariesService.findAll({
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
       teacherId,
       status: status as SalaryStatus | undefined,
+      q: q?.trim() || undefined,
     });
   }
 

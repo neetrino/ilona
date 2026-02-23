@@ -29,6 +29,7 @@ export class SalariesService {
     status?: any;
     dateFrom?: Date;
     dateTo?: Date;
+    q?: string;
   }) {
     return this.recordService.findAll(params);
   }

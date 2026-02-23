@@ -21,8 +21,9 @@ export class PaymentsService {
     status?: PaymentStatus;
     dateFrom?: Date;
     dateTo?: Date;
+    q?: string;
   }) {
-    const { skip = 0, take = 50, studentId, status, dateFrom, dateTo } = params || {};
+    const { skip = 0, take = 50, studentId, status, dateFrom, dateTo, q } = params || {};
 
     const where: Prisma.PaymentWhereInput = {};
 
@@ -32,6 +33,20 @@ export class PaymentsService {
       where.createdAt = {
         ...(dateFrom && { gte: dateFrom }),
         ...(dateTo && { lte: dateTo }),
+      };
+    }
+
+    // Search by student name or email (case-insensitive)
+    const searchTerm = typeof q === 'string' ? q.trim() : '';
+    if (searchTerm.length > 0) {
+      where.student = {
+        user: {
+          OR: [
+            { firstName: { contains: searchTerm, mode: 'insensitive' } },
+            { lastName: { contains: searchTerm, mode: 'insensitive' } },
+            { email: { contains: searchTerm, mode: 'insensitive' } },
+          ],
+        },
       };
     }
 

@@ -29,18 +29,32 @@ export class SalaryRecordService {
     status?: SalaryStatus;
     dateFrom?: Date;
     dateTo?: Date;
+    q?: string;
   }) {
-    const { skip = 0, take = 50, teacherId, status, dateFrom, dateTo } = params || {};
+    const { skip = 0, take = 50, teacherId, status, dateFrom, dateTo, q } = params || {};
 
     // Start from Teachers table to include ALL teachers
     const teacherWhere: Prisma.TeacherWhereInput = {};
     if (teacherId) {
       teacherWhere.id = teacherId;
     }
-    // Filter by user status if needed (only active teachers by default)
-    teacherWhere.user = {
-      status: 'ACTIVE', // Only show active teachers
-    };
+    // Filter by user status (only active teachers) and optional search by name/email
+    const searchTerm = typeof q === 'string' ? q.trim() : '';
+    teacherWhere.user =
+      searchTerm.length > 0
+        ? {
+            AND: [
+              { status: 'ACTIVE' },
+              {
+                OR: [
+                  { firstName: { contains: searchTerm, mode: 'insensitive' } },
+                  { lastName: { contains: searchTerm, mode: 'insensitive' } },
+                  { email: { contains: searchTerm, mode: 'insensitive' } },
+                ],
+              },
+            ],
+          }
+        : { status: 'ACTIVE' };
 
     // Get all teachers (with pagination)
     const [teachers, totalTeachers] = await Promise.all([

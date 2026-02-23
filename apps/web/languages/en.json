@@ -393,7 +393,10 @@
     "period": "Period",
     "salaryAmount": "Salary Amount",
     "deductionsAmount": "Deductions",
-    "netSalary": "Net Salary"
+    "netSalary": "Net Salary",
+    "noPaymentsMatch": "No payments match your search.",
+    "noSalariesMatch": "No salary records match your search.",
+    "noSalariesFound": "No salary records found"
   },
   "analytics": {
     "title": "Analytics",
