@@ -1,15 +1,19 @@
 'use client';
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useMessages, useSocket } from '../hooks';
+import { useMessages, useSocket, useAddMessageToCache } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { api } from '@/shared/lib/api';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
+import { VoiceRecorder } from './VoiceRecorder';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
+import { sendMessageHttp } from '../api/chat.api';
+import { chatKeys } from '../hooks/useChat';
 import { formatTime, formatDateSeparator, shouldShowDateSeparator } from '../utils/chat-utils';
 
 interface ChatWindowProps {
@@ -39,6 +43,11 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const [showAddMembersModal, setShowAddMembersModal] = useState(false);
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [isUploadingVoice, setIsUploadingVoice] = useState(false);
+
+  const queryClient = useQueryClient();
+  const addMessageToCache = useAddMessageToCache();
 
   // Check if user is teacher (can send vocabulary)
   const isTeacher = user?.role === 'TEACHER';
@@ -159,16 +168,75 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   }, [chat.id, isLoading]);
 
   // Reset input value when chat changes - only load user's own draft, never from messages
-  // This is critical: input must NEVER be populated from incoming messages or lastMessage
   useEffect(() => {
-    // Always reset input when switching chats
-    // Only load draft if user has previously typed something (user's own draft)
-    // NEVER use chat.lastMessage or any message content
     const draft = getDraft(chat.id);
-    // Only set draft if it exists and is not empty (user's own typed content)
-    // This ensures incoming messages never appear in the input
     setInputValue(draft || '');
   }, [chat.id, getDraft]);
+
+  // Handle delete message
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingMessageId(messageId);
+    try {
+      const result = await deleteMessage(messageId);
+      if (!result.success) {
+        console.error('Failed to delete message:', result.error);
+        alert('Failed to delete message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to delete message:', error);
+      alert('Failed to delete message. Please try again.');
+    } finally {
+      setDeletingMessageId(null);
+    }
+  };
+
+  // Voice message: upload file then send message via HTTP; update cache and close recorder
+  const handleVoiceRecorded = useCallback(
+    async (file: File, durationSec: number, _mimeType: string) => {
+      setIsUploadingVoice(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const uploadResponse = await api.post<{
+          success: boolean;
+          data: { url: string; fileName: string; fileSize: number };
+        }>('/storage/chat', formData);
+
+        if (!uploadResponse.success || !uploadResponse.data) {
+          throw new Error('Failed to upload voice message');
+        }
+
+        const { url: fileUrl, fileName, fileSize } = uploadResponse.data;
+
+        const message = await sendMessageHttp(chat.id, '', 'VOICE', {
+          fileUrl,
+          fileName,
+          fileSize,
+          duration: durationSec,
+        });
+
+        addMessageToCache(chat.id, message);
+        setShowVoiceRecorder(false);
+      } catch (error) {
+        console.error('Failed to send voice message:', error);
+        const msg = error instanceof Error ? error.message : 'Failed to send voice message. Please try again.';
+        alert(msg);
+      } finally {
+        setIsUploadingVoice(false);
+      }
+    },
+    [chat.id, addMessageToCache]
+  );
+
+  // When switching chats, exit voice recorder and discard any recording
+  useEffect(() => {
+    setShowVoiceRecorder(false);
+  }, [chat.id]);
 
   // Save draft on unmount - only save if user has typed something
   // This ensures we never accidentally save incoming messages as drafts
@@ -290,27 +358,6 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       console.error('Failed to send vocabulary:', error);
     } finally {
       setIsSendingVocabulary(false);
-    }
-  };
-
-  // Handle delete message
-  const handleDeleteMessage = async (messageId: string) => {
-    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
-      return;
-    }
-
-    setDeletingMessageId(messageId);
-    try {
-      const result = await deleteMessage(messageId);
-      if (!result.success) {
-        console.error('Failed to delete message:', result.error);
-        alert('Failed to delete message. Please try again.');
-      }
-    } catch (error) {
-      console.error('Failed to delete message:', error);
-      alert('Failed to delete message. Please try again.');
-    } finally {
-      setDeletingMessageId(null);
     }
   };
 
@@ -575,35 +622,62 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
 
       {/* Input */}
       <div className="p-4 border-t border-slate-200 bg-white">
-        <div className="flex items-end gap-2">
-          {/* Text input */}
-          <textarea
-            ref={inputRef}
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            rows={1}
-            className="flex-1 px-4 py-2 bg-slate-100 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 max-h-32"
-            style={{ minHeight: '40px' }}
-          />
-
-          {/* Send button */}
-          <button
-            onClick={handleSend}
-            disabled={!inputValue.trim()}
-            className={cn(
-              'p-2 rounded-lg flex-shrink-0 transition-colors',
-              inputValue.trim()
-                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                : 'bg-slate-100 text-slate-400'
+        {showVoiceRecorder ? (
+          <div className="space-y-2">
+            <VoiceRecorder
+              onRecorded={handleVoiceRecorded}
+              onCancel={() => setShowVoiceRecorder(false)}
+              conversationId={chat.id}
+            />
+            {isUploadingVoice && (
+              <p className="text-sm text-slate-500 text-center">Uploading voice message...</p>
             )}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-          </button>
-        </div>
+          </div>
+        ) : (
+          <div className="flex items-end gap-2">
+            {/* Text input */}
+            <textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message..."
+              rows={1}
+              className="flex-1 px-4 py-2 bg-slate-100 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 max-h-32"
+              style={{ minHeight: '40px' }}
+            />
+
+            {/* Microphone: start voice recording */}
+            <button
+              type="button"
+              onClick={() => setShowVoiceRecorder(true)}
+              className="p-2 rounded-lg flex-shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+              title="Record voice message"
+              aria-label="Record voice message"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+              </svg>
+            </button>
+
+            {/* Send button */}
+            <button
+              onClick={handleSend}
+              disabled={!inputValue.trim()}
+              className={cn(
+                'p-2 rounded-lg flex-shrink-0 transition-colors',
+                inputValue.trim()
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-slate-100 text-slate-400'
+              )}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Vocabulary Modal */}

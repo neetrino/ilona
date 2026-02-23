@@ -154,6 +154,22 @@ export class MessageService {
     // Verify user is participant (or admin for group chats)
     const chat = await this.chatManagementService.getChatById(dto.chatId, senderId, senderUser.role);
 
+    // Validate VOICE message: require fileUrl and enforce duration/size limits
+    const messageType = dto.type || MessageType.TEXT;
+    if (messageType === MessageType.VOICE) {
+      if (!dto.fileUrl || typeof dto.fileUrl !== 'string' || !dto.fileUrl.trim()) {
+        throw new BadRequestException('Voice messages require an audio file URL');
+      }
+      const duration = dto.duration ?? 0;
+      if (duration < 1 || duration > 600) {
+        throw new BadRequestException('Voice message duration must be between 1 and 600 seconds');
+      }
+      const maxVoiceSizeBytes = 10 * 1024 * 1024; // 10MB
+      if (dto.fileSize != null && dto.fileSize > maxVoiceSizeBytes) {
+        throw new BadRequestException('Voice message file size exceeds the maximum allowed (10MB)');
+      }
+    }
+
     // Additional permission check for direct chats: validate student-teacher relationship
     // Admin ↔ Teacher and Admin ↔ Student messaging is always allowed
     if (chat.type === ChatType.DIRECT) {
@@ -195,7 +211,7 @@ export class MessageService {
       data: {
         chatId: dto.chatId,
         senderId,
-        type: dto.type || MessageType.TEXT,
+        type: messageType,
         content: dto.content,
         fileUrl: dto.fileUrl,
         fileName: dto.fileName,

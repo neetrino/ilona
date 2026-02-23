@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
+import { ChatGateway } from './chat.gateway';
 import { CurrentUser, Roles } from '../../common/decorators';
 import { UserRole } from '@prisma/client';
 import { JwtPayload } from '../../common/types/auth.types';
@@ -17,7 +18,10 @@ import { CreateChatDto, SendMessageDto, UpdateMessageDto, AddGroupMemberDto, Cre
 
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   /**
    * Get all chats for current user
@@ -121,7 +125,12 @@ export class ChatController {
       });
     }
 
-    return this.chatService.sendMessage(dto, user.sub, user.role);
+    const message = await this.chatService.sendMessage(dto, user.sub, user.role);
+
+    // Broadcast to all chat participants (including sender's other devices) so voice messages appear in real time
+    this.chatGateway.broadcastNewMessage(dto.chatId, message);
+
+    return message;
   }
 
   /**
