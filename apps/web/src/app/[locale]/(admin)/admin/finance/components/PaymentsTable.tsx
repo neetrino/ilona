@@ -12,15 +12,21 @@ interface PaymentsTableProps {
     mutateAsync: (params: { id: string; status: PaymentStatus }) => Promise<void>;
     isPending: boolean;
   };
+  searchTerm?: string;
+  noResultsKey?: string;
 }
 
 export function PaymentsTable({
   payments,
   isLoading,
   updatePaymentStatus,
+  searchTerm,
+  noResultsKey,
 }: PaymentsTableProps) {
   const t = useTranslations('finance');
   const columns = getPaymentColumns({ t, updatePaymentStatus });
+  const emptyMessage =
+    searchTerm && noResultsKey ? t(noResultsKey) : t('noPaymentsFound');
 
   return (
     <DataTable
@@ -28,7 +34,7 @@ export function PaymentsTable({
       data={payments}
       keyExtractor={(payment) => payment.id}
       isLoading={isLoading}
-      emptyMessage="No payments found"
+      emptyMessage={emptyMessage}
     />
   );
 }

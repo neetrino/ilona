@@ -40,6 +40,7 @@ export interface PaymentFilters {
   status?: PaymentStatus;
   dateFrom?: string;
   dateTo?: string;
+  q?: string;
 }
 
 export interface SalaryRecord {
@@ -94,6 +95,7 @@ export interface SalaryFilters {
   status?: SalaryStatus;
   month?: number;
   year?: number;
+  q?: string;
 }
 
 export interface Deduction {

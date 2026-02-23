@@ -22,7 +22,7 @@ export class SalaryBreakdownService {
    * Get teacher salary summary
    */
   async getTeacherSalarySummary(teacherId: string) {
-    const [total, paid, pending] = await Promise.all([
+    const [total, paid, pending, recordsForLessons] = await Promise.all([
       this.prisma.salaryRecord.aggregate({
         where: { teacherId },
         _sum: { netAmount: true },
@@ -38,6 +38,10 @@ export class SalaryBreakdownService {
         _sum: { netAmount: true },
         _count: true,
       }),
+      this.prisma.salaryRecord.findMany({
+        where: { teacherId },
+        select: { lessonsCount: true },
+      }),
     ]);
 
     // Get total deductions
@@ -47,10 +51,14 @@ export class SalaryBreakdownService {
       _count: true,
     });
 
+    const totalAmount = Number(total._sum.netAmount) || 0;
+    const lessonsCount = recordsForLessons.reduce((sum, r) => sum + (r.lessonsCount || 0), 0);
+    const averagePerLesson = lessonsCount > 0 ? totalAmount / lessonsCount : 0;
+
     return {
       total: {
         count: total._count,
-        amount: Number(total._sum.netAmount) || 0,
+        amount: totalAmount,
       },
       paid: {
         count: paid._count,
@@ -64,6 +72,8 @@ export class SalaryBreakdownService {
         count: deductions._count,
         amount: Number(deductions._sum.amount) || 0,
       },
+      lessonsCount,
+      averagePerLesson,
     };
   }
 

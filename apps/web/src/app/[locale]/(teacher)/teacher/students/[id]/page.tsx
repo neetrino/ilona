@@ -4,8 +4,7 @@ import { useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Badge, Button } from '@/shared/components/ui';
-import { useStudent, useStudentStatistics } from '@/features/students';
-import { formatCurrency } from '@/shared/lib/utils';
+import { useStudent } from '@/features/students';
 import { ApiError } from '@/shared/lib/api';
 
 export default function TeacherStudentProfilePage() {
@@ -16,7 +15,6 @@ export default function TeacherStudentProfilePage() {
   const locale = params.locale as string;
 
   const { data: student, isLoading, error, refetch } = useStudent(studentId);
-  const { data: statistics, isLoading: isLoadingStats } = useStudentStatistics(studentId, !!student);
 
   // Check if error is 403 (Forbidden)
   const isForbidden = error instanceof ApiError && error.statusCode === 403;
@@ -116,9 +114,6 @@ export default function TeacherStudentProfilePage() {
   const lastName = student.user?.lastName || '';
   const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
   const avatarUrl = student.user?.avatarUrl;
-  const monthlyFee = typeof student.monthlyFee === 'string' 
-    ? parseFloat(student.monthlyFee) 
-    : Number(student.monthlyFee || 0);
 
   return (
     <DashboardLayout 
@@ -184,58 +179,6 @@ export default function TeacherStudentProfilePage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-slate-500">Monthly Fee</span>
-              <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-3xl font-bold text-slate-800">{formatCurrency(monthlyFee)}</p>
-          </div>
-          {isLoadingStats ? (
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <div className="animate-pulse">
-                <div className="h-4 bg-slate-200 rounded w-1/2 mb-2"></div>
-                <div className="h-8 bg-slate-200 rounded w-1/3"></div>
-              </div>
-            </div>
-          ) : statistics ? (
-            <>
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-slate-500">Attendance Rate</span>
-                  <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-3xl font-bold text-slate-800">
-                  {statistics.attendance.rate.toFixed(1)}%
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {statistics.attendance.present} / {statistics.attendance.total} lessons
-                </p>
-              </div>
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-slate-500">Pending Payments</span>
-                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-3xl font-bold text-slate-800">{statistics.payments.pending}</p>
-                {statistics.payments.overdue > 0 && (
-                  <p className="text-xs text-red-600 mt-1">
-                    {statistics.payments.overdue} overdue
-                  </p>
-                )}
-              </div>
-            </>
-          ) : null}
         </div>
 
         {/* Details Grid */}

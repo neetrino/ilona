@@ -30,6 +30,10 @@ export class QueryPaymentDto {
   @IsDateString()
   @IsOptional()
   dateTo?: string;
+
+  @IsString()
+  @IsOptional()
+  q?: string;
 }
 
 

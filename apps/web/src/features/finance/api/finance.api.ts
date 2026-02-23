@@ -46,6 +46,7 @@ export async function fetchPayments(filters?: PaymentFilters): Promise<PaymentsR
   if (filters?.status) params.append('status', filters.status);
   if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
   if (filters?.dateTo) params.append('dateTo', filters.dateTo);
+  if (filters?.q?.trim()) params.append('q', filters.q.trim());
 
   const query = params.toString();
   const url = query ? `/finance/payments?${query}` : '/finance/payments';
@@ -102,6 +103,7 @@ export async function fetchSalaries(filters?: SalaryFilters): Promise<SalariesRe
   if (filters?.status) params.append('status', filters.status);
   if (filters?.month !== undefined) params.append('month', String(filters.month));
   if (filters?.year !== undefined) params.append('year', String(filters.year));
+  if (filters?.q?.trim()) params.append('q', filters.q.trim());
 
   const query = params.toString();
   const url = query ? `/finance/salaries?${query}` : '/finance/salaries';

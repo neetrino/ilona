@@ -3,8 +3,15 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { useMySalaries, useMySalarySummary, useMyDeductions } from '@/features/finance';
+import { useMySalaries, useMySalarySummary, useMyDeductions, useMySalaryBreakdown } from '@/features/finance';
 import { cn } from '@/shared/lib/utils';
+import { Eye, X } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/ui';
 
 type TabType = 'salaries' | 'deductions';
 
@@ -15,6 +22,21 @@ function formatCurrency(amount: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function getMonthString(salary: { month: number; year: number }): string {
+  if (salary.year != null && salary.month != null) {
+    return `${salary.year}-${String(salary.month).padStart(2, '0')}`;
+  }
+  return '';
+}
+
+function formatMonthFromSalary(salary: { month: number; year: number }): string {
+  if (salary.month != null && salary.year != null) {
+    const date = new Date(salary.year, salary.month - 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+  return 'Unknown';
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -54,11 +76,16 @@ function DeductionReasonBadge({ reason }: { reason: string }) {
 export default function TeacherSalaryPage() {
   const t = useTranslations('finance');
   const [activeTab, setActiveTab] = useState<TabType>('salaries');
+  const [breakdownMonth, setBreakdownMonth] = useState<string | null>(null);
 
   // Fetch data
   const { data: salariesData, isLoading: isLoadingSalaries } = useMySalaries(0, 20);
   const { data: summary, isLoading: isLoadingSummary } = useMySalarySummary();
   const { data: deductionsData, isLoading: isLoadingDeductions } = useMyDeductions(0, 50);
+  const { data: breakdown, isLoading: isLoadingBreakdown } = useMySalaryBreakdown(
+    breakdownMonth,
+    !!breakdownMonth
+  );
 
   const salaries = salariesData?.items || [];
   const deductions = deductionsData?.items || [];
@@ -132,11 +159,11 @@ export default function TeacherSalaryPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Lessons This Period</p>
+              <p className="text-sm text-slate-500">Lessons (all periods)</p>
               {isLoadingSummary ? (
                 <div className="h-6 w-16 bg-slate-200 rounded animate-pulse" />
               ) : (
-                <p className="text-lg font-bold text-slate-800">{summary?.lessonsCount || 0}</p>
+                <p className="text-lg font-bold text-slate-800">{summary?.lessonsCount ?? 0}</p>
               )}
             </div>
           </div>
@@ -204,28 +231,40 @@ export default function TeacherSalaryPage() {
               </div>
             ) : (
               salaries.map((salary) => {
-                const monthDate = new Date(salary.month);
-                const monthName = monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                const monthName = formatMonthFromSalary(salary);
+                const monthStr = getMonthString(salary);
+                const netAmount = typeof salary.netAmount === 'number' ? salary.netAmount : Number(salary.netAmount) || 0;
+                const grossAmount = typeof salary.grossAmount === 'number' ? salary.grossAmount : Number(salary.grossAmount) || 0;
+                const totalDeductions = typeof salary.totalDeductions === 'number' ? salary.totalDeductions : Number(salary.totalDeductions) || 0;
 
                 return (
-                  <div key={salary.id} className="p-4 hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-slate-800">{monthName}</p>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
-                          <span>{salary.lessonsCount} lessons</span>
-                          {salary.bonuses > 0 && (
-                            <span className="text-green-600">+{formatCurrency(salary.bonuses)} bonus</span>
-                          )}
-                          {salary.deductions > 0 && (
-                            <span className="text-red-600">-{formatCurrency(salary.deductions)} deductions</span>
-                          )}
-                        </div>
+                  <div
+                    key={salary.id}
+                    className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between gap-4 flex-wrap"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-800">{monthName}</p>
+                      <div className="flex items-center gap-4 mt-1 text-sm text-slate-500 flex-wrap">
+                        <span>{salary.lessonsCount ?? 0} lessons</span>
+                        {grossAmount > 0 && (
+                          <span className="text-slate-600">Gross: {formatCurrency(grossAmount)}</span>
+                        )}
+                        {totalDeductions > 0 && (
+                          <span className="text-red-600">−{formatCurrency(totalDeductions)} deductions</span>
+                        )}
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-slate-800">{formatCurrency(salary.totalAmount)}</p>
-                        <StatusBadge status={salary.status} />
-                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <p className="text-lg font-bold text-slate-800">{formatCurrency(netAmount)}</p>
+                      <StatusBadge status={salary.status} />
+                      <button
+                        type="button"
+                        onClick={() => setBreakdownMonth(monthStr)}
+                        className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
+                        aria-label={`View breakdown for ${monthName}`}
+                      >
+                        <Eye className="w-5 h-5 text-slate-700" />
+                      </button>
                     </div>
                   </div>
                 );
@@ -285,6 +324,99 @@ export default function TeacherSalaryPage() {
           </div>
         )}
       </div>
+
+      {/* Salary breakdown modal (per-lesson details, same as Admin view for this teacher) */}
+      <Dialog open={!!breakdownMonth} onOpenChange={(open) => !open && setBreakdownMonth(null)}>
+        <DialogContent
+          className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+          aria-describedby={undefined}
+        >
+          <DialogHeader>
+            <DialogTitle>
+              Salary breakdown
+              {breakdownMonth
+                ? ` – ${formatMonthFromSalary({
+                    year: parseInt(breakdownMonth.slice(0, 4), 10),
+                    month: parseInt(breakdownMonth.slice(5, 7), 10),
+                  })}`
+                : ''}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-auto flex-1 min-h-0">
+            {isLoadingBreakdown ? (
+              <div className="py-8 flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : breakdown?.lessons && breakdown.lessons.length > 0 ? (
+              <>
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 border-b border-slate-200">
+                      <tr>
+                        <th className="text-left py-2 px-3 font-medium text-slate-700">Lesson</th>
+                        <th className="text-left py-2 px-3 font-medium text-slate-700">Date</th>
+                        <th className="text-center py-2 px-3 font-medium text-slate-700">Obligation</th>
+                        <th className="text-right py-2 px-3 font-medium text-slate-700">Salary</th>
+                        <th className="text-right py-2 px-3 font-medium text-slate-700">Deduction</th>
+                        <th className="text-right py-2 px-3 font-medium text-slate-700">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {breakdown.lessons.map((lesson) => (
+                        <tr key={lesson.lessonId} className="hover:bg-slate-50">
+                          <td className="py-2 px-3 text-slate-800">{lesson.lessonName}</td>
+                          <td className="py-2 px-3 text-slate-600">
+                            {lesson.lessonDate
+                              ? new Date(lesson.lessonDate).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })
+                              : '—'}
+                          </td>
+                          <td className="py-2 px-3 text-center text-slate-700">
+                            {lesson.obligationCompleted}/{lesson.obligationTotal}
+                          </td>
+                          <td className="py-2 px-3 text-right text-slate-700">{formatCurrency(lesson.salary)}</td>
+                          <td className="py-2 px-3 text-right text-red-600">
+                            −{formatCurrency(lesson.deduction)}
+                          </td>
+                          <td className="py-2 px-3 text-right font-medium text-slate-800">
+                            {formatCurrency(lesson.total)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-200 flex justify-end gap-6 text-sm font-semibold">
+                  <span className="text-slate-600">
+                    Gross: {formatCurrency(breakdown.lessons.reduce((s, l) => s + l.salary, 0))}
+                  </span>
+                  <span className="text-red-600">
+                    Deductions: −{formatCurrency(breakdown.lessons.reduce((s, l) => s + l.deduction, 0))}
+                  </span>
+                  <span className="text-slate-800">
+                    Net: {formatCurrency(breakdown.lessons.reduce((s, l) => s + l.total, 0))}
+                  </span>
+                </div>
+              </>
+            ) : breakdownMonth && !isLoadingBreakdown ? (
+              <p className="py-8 text-center text-slate-500">No lessons for this period.</p>
+            ) : null}
+          </div>
+          <div className="flex justify-end pt-4 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={() => setBreakdownMonth(null)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
+            >
+              <X className="w-4 h-4" />
+              Close
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

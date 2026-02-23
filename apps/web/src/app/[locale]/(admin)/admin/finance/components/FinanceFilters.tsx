@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Loader2 } from 'lucide-react';
 import type { PaymentStatus, SalaryStatus } from '@/features/finance';
 
 interface FinanceFiltersProps {
@@ -16,6 +16,7 @@ interface FinanceFiltersProps {
   onSalaryStatusChange: (status: SalaryStatus | '') => void;
   onDeleteClick: () => void;
   isDeleting: boolean;
+  isSearching?: boolean;
   // Pagination props
   page?: number;
   pageSize?: number;
@@ -35,6 +36,7 @@ export function FinanceFilters({
   onSalaryStatusChange,
   onDeleteClick,
   isDeleting,
+  isSearching,
   page,
   pageSize,
   totalPages,
@@ -47,7 +49,7 @@ export function FinanceFilters({
     <div className="space-y-2">
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -55,8 +57,13 @@ export function FinanceFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={`Search ${activeTab === 'payments' ? 'payments' : 'salaries'}...`}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-10 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
+          {isSearching && (
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>
+              <Loader2 className="w-5 h-5 animate-spin" />
+            </span>
+          )}
         </div>
         {/* Status Filter */}
         <div className="relative">
