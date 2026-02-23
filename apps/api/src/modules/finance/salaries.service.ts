@@ -33,6 +33,17 @@ export class SalariesService {
     return this.recordService.findAll(params);
   }
 
+  /**
+   * Get all salary records for a single teacher (one per month).
+   * Used by Teacher "my salaries" - same data shape as Admin but scoped to one teacher.
+   */
+  async findAllRecordsByTeacher(
+    teacherId: string,
+    params?: { skip?: number; take?: number; status?: any },
+  ) {
+    return this.recordService.findAllRecordsByTeacher(teacherId, params);
+  }
+
   async findById(id: string) {
     return this.recordService.findById(id);
   }

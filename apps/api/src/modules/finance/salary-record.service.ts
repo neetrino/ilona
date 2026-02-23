@@ -225,6 +225,81 @@ export class SalaryRecordService {
   }
 
   /**
+   * Get all salary records for a single teacher (one per month).
+   * Used by Teacher "my salaries" so they see every month, not just the most recent.
+   * Uses the same computed netAmount as Admin (single source of truth).
+   */
+  async findAllRecordsByTeacher(
+    teacherId: string,
+    params?: { skip?: number; take?: number; status?: SalaryStatus },
+  ) {
+    const { skip = 0, take = 50, status } = params || {};
+
+    const where: Prisma.SalaryRecordWhereInput = { teacherId };
+    if (status) {
+      where.status = status;
+    }
+
+    const [salaryRecords, total] = await Promise.all([
+      this.prisma.salaryRecord.findMany({
+        where,
+        include: {
+          teacher: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { month: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.salaryRecord.count({ where }),
+    ]);
+
+    const itemsWithComputedSalary = await Promise.all(
+      salaryRecords.map(async (salaryRecord) => {
+        let obligationsInfo = null;
+        if (salaryRecord.notes) {
+          try {
+            obligationsInfo = JSON.parse(salaryRecord.notes);
+          } catch {
+            // ignore
+          }
+        }
+
+        const computedSalary = await this.calculationService.calculateMonthlySalaryFromLessons(
+          salaryRecord.teacherId,
+          salaryRecord.month,
+        );
+
+        return {
+          ...salaryRecord,
+          netAmount: computedSalary,
+          obligationsInfo,
+          month: salaryRecord.month.getMonth() + 1,
+          year: salaryRecord.month.getFullYear(),
+        };
+      }),
+    );
+
+    return {
+      items: itemsWithComputedSalary,
+      total,
+      page: Math.floor(skip / take) + 1,
+      pageSize: take,
+      totalPages: Math.ceil(total / take),
+    };
+  }
+
+  /**
    * Get salary record by ID with action breakdown
    */
   async findById(id: string) {

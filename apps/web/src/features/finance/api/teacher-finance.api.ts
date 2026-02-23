@@ -1,24 +1,7 @@
 import { api } from '@/shared/lib/api';
+import type { SalaryRecord, SalariesResponse, SalaryBreakdown } from '@/features/finance/types';
 
-export interface SalaryRecord {
-  id: string;
-  teacherId: string;
-  month: string;
-  baseSalary: number;
-  lessonsCount: number;
-  bonuses: number;
-  deductions: number;
-  totalAmount: number;
-  status: 'PENDING' | 'PROCESSING' | 'PAID' | 'CANCELLED';
-  paidAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface SalariesResponse {
-  items: SalaryRecord[];
-  total: number;
-}
+export type { SalaryRecord, SalariesResponse };
 
 export interface TeacherSalarySummary {
   totalEarned: number;
@@ -46,15 +29,17 @@ export interface DeductionsResponse {
 const FINANCE_ENDPOINT = '/finance';
 
 /**
- * Fetch teacher's salary records
+ * Fetch teacher's salary records (all months, same data shape as Admin for this teacher).
  */
 export async function fetchMySalaries(
   skip?: number,
-  take?: number
+  take?: number,
+  status?: string
 ): Promise<SalariesResponse> {
   const params = new URLSearchParams();
   if (skip !== undefined) params.append('skip', String(skip));
   if (take !== undefined) params.append('take', String(take));
+  if (status) params.append('status', status);
 
   const query = params.toString();
   const url = query ? `${FINANCE_ENDPOINT}/my-salary?${query}` : `${FINANCE_ENDPOINT}/my-salary`;
@@ -63,10 +48,24 @@ export async function fetchMySalaries(
 }
 
 /**
- * Fetch teacher's salary summary
+ * Fetch teacher's salary summary (totals, pending, deductions, lessons count).
  */
 export async function fetchMySalarySummary(): Promise<TeacherSalarySummary> {
   return api.get<TeacherSalarySummary>(`${FINANCE_ENDPOINT}/my-salary/summary`);
+}
+
+/**
+ * Fetch salary breakdown for a month (lesson-level details, same as Admin view for this teacher).
+ */
+export async function fetchMySalaryBreakdown(month: string): Promise<SalaryBreakdown> {
+  return api.get<SalaryBreakdown>(`${FINANCE_ENDPOINT}/my-salary/breakdown?month=${encodeURIComponent(month)}`);
+}
+
+/**
+ * Fetch a single salary record by ID (only own records).
+ */
+export async function fetchMySalaryById(id: string): Promise<SalaryRecord> {
+  return api.get<SalaryRecord>(`${FINANCE_ENDPOINT}/my-salary/${id}`);
 }
 
 /**

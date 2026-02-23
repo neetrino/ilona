@@ -29,6 +29,7 @@ export {
 export {
   useMySalaries,
   useMySalarySummary,
+  useMySalaryBreakdown,
   useMyDeductions,
   teacherFinanceKeys,
 } from './hooks/useTeacherFinance';

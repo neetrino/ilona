@@ -9,6 +9,7 @@ import {
   Param,
   Query,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { FinanceService } from './finance.service';
 import { PaymentsService } from './payments.service';
@@ -45,19 +46,20 @@ export class FinanceController {
     @CurrentUser() user: JwtPayload,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
+    @Query('status') status?: string,
   ) {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
     });
 
     if (!teacher) {
-      return { items: [], total: 0 };
+      return { items: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
     }
 
-    return this.salariesService.findAll({
+    return this.salariesService.findAllRecordsByTeacher(teacher.id, {
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
-      teacherId: teacher.id,
+      status: status as SalaryStatus | undefined,
     });
   }
 
@@ -78,7 +80,63 @@ export class FinanceController {
       };
     }
 
-    return this.salariesService.getTeacherSalarySummary(teacher.id);
+    const [list, summary] = await Promise.all([
+      this.salariesService.findAllRecordsByTeacher(teacher.id, { take: 500 }),
+      this.salariesService.getTeacherSalarySummary(teacher.id),
+    ]);
+
+    const totalEarned = list.items.reduce((s, i) => s + Number(i.netAmount), 0);
+    const totalPending = list.items
+      .filter((i) => i.status === SalaryStatus.PENDING)
+      .reduce((s, i) => s + Number(i.netAmount), 0);
+
+    return {
+      totalEarned,
+      totalPending,
+      totalDeductions: summary.deductions.amount,
+      lessonsCount: summary.lessonsCount ?? 0,
+      averagePerLesson: summary.averagePerLesson ?? 0,
+    };
+  }
+
+  @Get('my-salary/breakdown')
+  @Roles(UserRole.TEACHER)
+  async getMySalaryBreakdown(
+    @CurrentUser() user: JwtPayload,
+    @Query('month') month?: string,
+  ) {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { userId: user.sub },
+    });
+
+    if (!teacher) {
+      throw new BadRequestException('Teacher profile not found');
+    }
+
+    if (!month) {
+      throw new BadRequestException('Month parameter is required (format: YYYY-MM)');
+    }
+
+    return this.salariesService.getSalaryBreakdown(teacher.id, month);
+  }
+
+  @Get('my-salary/:id')
+  @Roles(UserRole.TEACHER)
+  async getMySalaryById(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { userId: user.sub },
+    });
+
+    if (!teacher) {
+      throw new BadRequestException('Teacher profile not found');
+    }
+
+    const record = await this.salariesService.findById(id);
+    if (record.teacherId !== teacher.id) {
+      throw new ForbiddenException('You can only view your own salary records');
+    }
+
+    return record;
   }
 
   @Get('my-deductions')
