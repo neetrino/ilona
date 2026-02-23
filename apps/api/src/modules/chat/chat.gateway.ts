@@ -98,7 +98,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         })),
       });
     } catch (error) {
-      console.error('[ChatGateway] Connection error:', error);
+      const isTokenExpired = error && typeof error === 'object' && 'name' in error && (error as Error).name === 'TokenExpiredError';
+      if (isTokenExpired) {
+        console.warn('[ChatGateway] Connection rejected: token expired');
+        client.emit('connection:error', { code: 'TOKEN_EXPIRED', message: 'Token expired' });
+      } else {
+        console.error('[ChatGateway] Connection error:', error);
+      }
       client.disconnect();
     }
   }

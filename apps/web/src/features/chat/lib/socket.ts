@@ -107,6 +107,23 @@ export function initSocket(options: SocketOptions): Socket {
     options.onError?.(error);
   });
 
+  // Server may reject connection with TOKEN_EXPIRED before disconnect
+  socket.on('connection:error', async (data: { code?: string; message?: string }) => {
+    if (data?.code === 'TOKEN_EXPIRED' && options.onTokenExpired) {
+      try {
+        const newToken = await options.onTokenExpired();
+        if (newToken && socket) {
+          socket.auth = { token: newToken };
+          socket.connect();
+          return;
+        }
+      } catch (e) {
+        console.error('[Socket] Failed to refresh token after TOKEN_EXPIRED:', e);
+      }
+    }
+    options.onError?.(new Error(data?.message ?? 'Connection error'));
+  });
+
   return socket;
 }
 

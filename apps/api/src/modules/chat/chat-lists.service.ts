@@ -400,11 +400,13 @@ export class ChatListsService {
             content: lastMsg.content,
             fileName: lastMsg.fileName ?? null,
             createdAt: lastMsg.createdAt instanceof Date ? lastMsg.createdAt.toISOString() : lastMsg.createdAt,
-            sender: {
-              id: lastMsg.sender.id,
-              firstName: lastMsg.sender.firstName,
-              lastName: lastMsg.sender.lastName,
-            },
+            sender: lastMsg.sender
+              ? {
+                  id: lastMsg.sender.id,
+                  firstName: lastMsg.sender.firstName,
+                  lastName: lastMsg.sender.lastName,
+                }
+              : null,
           }
         : null;
 
