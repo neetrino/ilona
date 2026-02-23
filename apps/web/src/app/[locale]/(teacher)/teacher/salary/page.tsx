@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMySalaries, useMySalarySummary, useMyDeductions, useMySalaryBreakdown } from '@/features/finance';
-import type { SalaryBreakdownLesson } from '@/features/finance/types';
 import { cn } from '@/shared/lib/utils';
 import { Eye, X } from 'lucide-react';
 import {
@@ -363,7 +362,7 @@ export default function TeacherSalaryPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {(breakdown.lessons as SalaryBreakdownLesson[]).map((lesson) => (
+                      {breakdown.lessons.map((lesson) => (
                         <tr key={lesson.lessonId} className="hover:bg-slate-50">
                           <td className="py-2 px-3 text-slate-800">{lesson.lessonName}</td>
                           <td className="py-2 px-3 text-slate-600">
