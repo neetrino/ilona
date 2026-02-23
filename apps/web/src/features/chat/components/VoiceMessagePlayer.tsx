@@ -2,19 +2,39 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { getProxiedFileUrl } from '@/shared/lib/api';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 const PLAYBACK_SPEED_OPTIONS = [1, 1.25, 1.5, 2] as const;
 type PlaybackSpeed = (typeof PLAYBACK_SPEED_OPTIONS)[number];
 
-const VOICE_PLAYBACK_SPEED_KEY = 'ilona-voice-playback-speed';
+/** Per-user localStorage key to avoid speed preference leaking across accounts. */
+const VOICE_PLAYBACK_SPEED_KEY_PREFIX = 'ilona-voice-playback-speed';
+/** Legacy global key – only used for one-time migration into user-scoped key. */
+const VOICE_PLAYBACK_SPEED_KEY_LEGACY = 'ilona-voice-playback-speed';
 
-function getStoredPlaybackSpeed(): PlaybackSpeed {
+function getStorageKey(userId: string | null): string | null {
+  if (!userId) return null;
+  return `${VOICE_PLAYBACK_SPEED_KEY_PREFIX}:${userId}`;
+}
+
+function getStoredPlaybackSpeed(userId: string | null): PlaybackSpeed {
   if (typeof window === 'undefined') return 1;
+  const key = getStorageKey(userId);
+  if (!key) return 1; // Not logged in: always default
   try {
-    const stored = localStorage.getItem(VOICE_PLAYBACK_SPEED_KEY);
+    const stored = localStorage.getItem(key);
     if (stored != null) {
       const value = Number(stored);
       if (PLAYBACK_SPEED_OPTIONS.includes(value as PlaybackSpeed)) {
+        return value as PlaybackSpeed;
+      }
+    }
+    // One-time migration: if user has no saved speed, copy from legacy global key then stop using it
+    const legacy = localStorage.getItem(VOICE_PLAYBACK_SPEED_KEY_LEGACY);
+    if (legacy != null) {
+      const value = Number(legacy);
+      if (PLAYBACK_SPEED_OPTIONS.includes(value as PlaybackSpeed)) {
+        localStorage.setItem(key, legacy);
         return value as PlaybackSpeed;
       }
     }
@@ -39,15 +59,17 @@ export function VoiceMessagePlayer({
   duration,
   fileName: _fileName,
 }: VoiceMessagePlayerProps) {
+  const { user } = useAuthStore();
+  const userId = user?.id ?? null;
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [playbackSpeed, setPlaybackSpeed] = useState<PlaybackSpeed>(1);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Hydrate speed from localStorage on mount (SSR-safe)
+  // Hydrate speed from user-scoped localStorage on mount and when user changes (login/logout)
   useEffect(() => {
-    setPlaybackSpeed(getStoredPlaybackSpeed());
-  }, []);
+    setPlaybackSpeed(getStoredPlaybackSpeed(userId));
+  }, [userId]);
 
   // Apply playbackRate to audio element whenever speed or element changes; does not reset position
   useEffect(() => {
@@ -125,10 +147,13 @@ export function VoiceMessagePlayer({
     const idx = PLAYBACK_SPEED_OPTIONS.indexOf(playbackSpeed);
     const next = PLAYBACK_SPEED_OPTIONS[(idx + 1) % PLAYBACK_SPEED_OPTIONS.length];
     setPlaybackSpeed(next);
-    try {
-      localStorage.setItem(VOICE_PLAYBACK_SPEED_KEY, String(next));
-    } catch {
-      // ignore
+    const key = getStorageKey(userId);
+    if (key) {
+      try {
+        localStorage.setItem(key, String(next));
+      } catch {
+        // ignore
+      }
     }
   };
 
