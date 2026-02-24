@@ -59,8 +59,10 @@ export function TeachersFilters({
   return (
     <div className="space-y-4">
       <div className="flex items-end gap-4">
+      {/* Search, Status, Center - equal width in one row */}
+      <div className="grid grid-cols-3 gap-4 flex-1 min-w-0">
       {/* Search by Keywords */}
-      <div className="flex-1">
+      <div className="min-w-0">
         <label className="block text-sm font-medium text-slate-500 mb-1.5">
           Search by Keywords
         </label>
@@ -83,13 +85,13 @@ export function TeachersFilters({
             placeholder="Search teachers by name, email or group..."
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-12 pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
       </div>
 
       {/* Status Filter */}
-      <div className="flex-shrink-0">
+      <div className="min-w-0">
         <label className="block text-sm font-medium text-slate-500 mb-1.5">
           Status
         </label>
@@ -97,7 +99,7 @@ export function TeachersFilters({
           <select
             value={selectedStatus}
             onChange={(e) => onStatusChange(e.target.value as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '')}
-            className="pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer min-w-[160px]"
+            className="w-full h-12 pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer"
           >
             <option value="">All statuses</option>
             <option value="ACTIVE">{tStatus('active')}</option>
@@ -116,7 +118,7 @@ export function TeachersFilters({
       </div>
 
       {/* Center Filter */}
-      <div className="flex-shrink-0">
+      <div className="min-w-0">
         <FilterDropdown
           label={t('center')}
           options={(centersData || []).map(center => ({
@@ -128,12 +130,13 @@ export function TeachersFilters({
           placeholder={tCommon('all')}
           isLoading={isLoadingCenters}
           error={centersError ? 'Failed to load centers' : null}
-          className="w-[200px]"
+          className="w-full"
         />
+      </div>
       </div>
 
       {/* View Mode Toggle */}
-      <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
+      <div className="flex-shrink-0 inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
         <button
           onClick={() => onViewModeChange('list')}
           className={cn(
