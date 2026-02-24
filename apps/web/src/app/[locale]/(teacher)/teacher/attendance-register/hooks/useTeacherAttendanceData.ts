@@ -1,10 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useQueries } from '@tanstack/react-query';
 import { useMyGroups } from '@/features/groups';
 import { useLessons, useTodayLessons } from '@/features/lessons';
 import { useStudents } from '@/features/students';
-import { useMarkBulkAttendance, attendanceKeys, type AbsenceType } from '@/features/attendance';
-import { fetchLessonAttendance } from '@/features/attendance/api/attendance.api';
+import { useMarkBulkAttendance, useBatchLessonAttendance, type AbsenceType } from '@/features/attendance';
 import {
   getWeekStart,
   getWeekEnd,
@@ -140,26 +138,30 @@ export function useTeacherAttendanceData({
   });
   const students = studentsData?.items ?? [];
 
-  // Fetch attendance for filtered lessons
-  const attendanceQueries = useQueries({
-    queries: filteredLessons.map((lesson) => ({
-      queryKey: attendanceKeys.lesson(lesson.id),
-      queryFn: () => fetchLessonAttendance(lesson.id),
-      enabled: effectiveGroupIds.length > 0 && filteredLessons.length > 0,
-    })),
-  });
+  // Fetch attendance for all filtered lessons in one batch request
+  const lessonIds = useMemo(() => filteredLessons.map((l) => l.id), [filteredLessons]);
+  const batchAttendanceQuery = useBatchLessonAttendance(
+    lessonIds,
+    effectiveGroupIds.length > 0 && filteredLessons.length > 0,
+  );
+  const batchAttendanceMap = batchAttendanceQuery.data ?? {};
+  const isLoadingAttendance = batchAttendanceQuery.isLoading;
 
-  const isLoadingAttendance = attendanceQueries.some((q) => q.isLoading);
+  // Compatibility: single-item array so existing UI (attendanceQueries.some(q => q.isError)) still works
+  const attendanceQueries = useMemo(
+    () => [{ isError: batchAttendanceQuery.isError, isLoading: batchAttendanceQuery.isLoading }],
+    [batchAttendanceQuery.isError, batchAttendanceQuery.isLoading],
+  );
 
-  // Transform attendance data for grid
+  // Transform batch attendance data for grid
   const attendanceData = useMemo(() => {
     const data: Record<string, Record<string, AttendanceCell>> = {};
 
-    filteredLessons.forEach((lesson, index) => {
-      const query = attendanceQueries[index];
-      if (query?.data?.studentsWithAttendance) {
+    filteredLessons.forEach((lesson) => {
+      const lessonAttendance = batchAttendanceMap[lesson.id];
+      if (lessonAttendance?.studentsWithAttendance) {
         const lessonData: Record<string, AttendanceCell> = {};
-        query.data.studentsWithAttendance.forEach((s) => {
+        lessonAttendance.studentsWithAttendance.forEach((s) => {
           if (s.attendance) {
             let status: AttendanceStatus = 'not_marked';
             if (s.attendance.isPresent) {
@@ -184,7 +186,7 @@ export function useTeacherAttendanceData({
     });
 
     return data;
-  }, [filteredLessons, attendanceQueries]);
+  }, [filteredLessons, batchAttendanceMap]);
 
   // Filter students by selected absence type (client-side)
   const filteredStudents = useMemo(() => {

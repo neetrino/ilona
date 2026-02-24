@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   fetchLessonAttendance,
+  fetchAttendanceByLessons,
   fetchStudentAttendance,
   markAttendance,
   markBulkAttendance,
@@ -17,12 +18,25 @@ import { financeKeys } from '@/features/finance/hooks';
 export const attendanceKeys = {
   all: ['attendance'] as const,
   lesson: (lessonId: string) => [...attendanceKeys.all, 'lesson', lessonId] as const,
+  lessons: (lessonIds: string[]) => [...attendanceKeys.all, 'lessons', [...lessonIds].sort()] as const,
   student: (studentId: string, dateFrom?: string, dateTo?: string) =>
     [...attendanceKeys.all, 'student', studentId, { dateFrom, dateTo }] as const,
   atRisk: () => [...attendanceKeys.all, 'at-risk'] as const,
   groupReport: (groupId: string, dateFrom: string, dateTo: string) =>
     [...attendanceKeys.all, 'report', groupId, { dateFrom, dateTo }] as const,
 };
+
+/**
+ * Hook to fetch attendance for multiple lessons in one request (batch)
+ */
+export function useBatchLessonAttendance(lessonIds: string[], enabled: boolean) {
+  return useQuery({
+    queryKey: attendanceKeys.lessons(lessonIds),
+    queryFn: () => fetchAttendanceByLessons(lessonIds),
+    enabled: enabled && lessonIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 /**
  * Hook to fetch lesson attendance
@@ -82,6 +96,7 @@ export function useMarkBulkAttendance() {
     mutationFn: (data: BulkAttendanceDto) => markBulkAttendance(data),
     onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: attendanceKeys.lesson(data.lessonId) });
+      queryClient.invalidateQueries({ queryKey: attendanceKeys.all });
       queryClient.invalidateQueries({ queryKey: attendanceKeys.atRisk() });
       // Invalidate salary queries to reflect immediate salary updates
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });

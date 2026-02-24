@@ -34,7 +34,7 @@ if (envPath) {
 }
 
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, RequestMethod } from '@nestjs/common';
+import { ValidationPipe, RequestMethod, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { json, urlencoded } from 'express';
@@ -129,9 +129,10 @@ async function bootstrap() {
   
   await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 Application is running on: http://localhost:${port}/${apiPrefix}`);
-  console.log(`📚 Swagger docs: http://localhost:${port}/${apiPrefix}/docs`);
-  console.log(`🌐 Network access: http://<your-ip>:${port}/${apiPrefix}`);
+  const logger = new Logger('Bootstrap');
+  logger.log(`Application is running on: http://localhost:${port}/${apiPrefix}`);
+  logger.log(`Swagger docs: http://localhost:${port}/${apiPrefix}/docs`);
+  logger.log(`Network access: http://<your-ip>:${port}/${apiPrefix}`);
 }
 
 bootstrap();

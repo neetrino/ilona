@@ -46,6 +46,15 @@ export class AttendanceController {
     return this.attendanceService.getByStudent(student.id, {});
   }
 
+  @Get('lessons')
+  async getByLessons(
+    @Query('lessonIds') lessonIdsParam: string,
+    @CurrentUser() user?: JwtPayload,
+  ) {
+    const lessonIds = lessonIdsParam ? lessonIdsParam.split(',').map((id) => id.trim()).filter(Boolean) : [];
+    return this.attendanceService.getByLessons(lessonIds, user?.sub, user?.role);
+  }
+
   @Get('lesson/:lessonId')
   async getByLesson(
     @Param('lessonId') lessonId: string,

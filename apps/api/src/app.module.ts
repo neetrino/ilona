@@ -1,10 +1,15 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { CacheModule } from '@nestjs/cache-manager';
 
 // Config
 import { appConfig } from './config/app.config';
 import { jwtConfig } from './config/jwt.config';
+
+// Common
+import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 // Global Modules
 import { PrismaModule } from './modules/prisma/prisma.module';
@@ -41,6 +46,12 @@ import { AppController } from './app.controller';
       envFilePath: ['.env.local', '.env'],
     }),
 
+    // In-memory cache for hot reads (e.g. settings). TTL 2 minutes. isGlobal: true so SettingsModule and others can inject CACHE_MANAGER.
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 2 * 60 * 1000, // 2 minutes in ms
+    }),
+
     // Global modules
     PrismaModule,
 
@@ -62,6 +73,12 @@ import { AppController } from './app.controller';
     SettingsModule,
   ],
   providers: [
+    // Correlation ID and request logging
+    CorrelationIdMiddleware,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
     // Global JWT guard (can be overridden with @Public())
     {
       provide: APP_GUARD,
@@ -74,4 +91,8 @@ import { AppController } from './app.controller';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+  }
+}

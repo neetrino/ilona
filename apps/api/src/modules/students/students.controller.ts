@@ -116,6 +116,12 @@ export class StudentsController {
     return this.studentsService.changeGroup(id, groupId);
   }
 
+  @Delete('bulk')
+  @Roles(UserRole.ADMIN)
+  async deleteBulk(@Body() body: { ids: string[] }) {
+    return this.studentsService.deleteMany(body.ids ?? []);
+  }
+
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   async delete(@Param('id') id: string) {

@@ -679,6 +679,29 @@ export class StudentCrudService {
 
     return { success: true };
   }
+
+  /**
+   * Delete multiple students by id in a single transaction. Only ADMIN can call this.
+   */
+  async deleteMany(ids: string[]) {
+    if (!ids || ids.length === 0) {
+      return { success: true, deleted: 0 };
+    }
+    const uniqueIds = [...new Set(ids)];
+    const students = await this.prisma.student.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true, userId: true },
+    });
+    const userIds = students.map((s) => s.userId);
+    if (userIds.length === 0) {
+      return { success: true, deleted: 0 };
+    }
+    await this.prisma.$transaction([
+      this.prisma.student.deleteMany({ where: { id: { in: students.map((s) => s.id) } } }),
+      this.prisma.user.deleteMany({ where: { id: { in: userIds } } }),
+    ]);
+    return { success: true, deleted: students.length };
+  }
 }
 
 

@@ -13,6 +13,16 @@ import type {
 const ATTENDANCE_ENDPOINT = '/attendance';
 
 /**
+ * Get attendance for multiple lessons in one request (batch)
+ */
+export async function fetchAttendanceByLessons(lessonIds: string[]): Promise<Record<string, LessonAttendance>> {
+  if (lessonIds.length === 0) return {};
+  const params = new URLSearchParams();
+  params.set('lessonIds', lessonIds.join(','));
+  return api.get<Record<string, LessonAttendance>>(`${ATTENDANCE_ENDPOINT}/lessons?${params.toString()}`);
+}
+
+/**
  * Get attendance for a lesson
  */
 export async function fetchLessonAttendance(lessonId: string): Promise<LessonAttendance> {

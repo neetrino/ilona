@@ -62,6 +62,10 @@ export class StudentsService {
     return this.crudService.delete(id);
   }
 
+  async deleteMany(ids: string[]) {
+    return this.crudService.deleteMany(ids);
+  }
+
   // Query Methods
   async findAssignedToTeacher(teacherId: string, params?: {
     skip?: number;

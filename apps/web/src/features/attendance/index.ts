@@ -1,6 +1,7 @@
 // Hooks
 export {
   useLessonAttendance,
+  useBatchLessonAttendance,
   useStudentAttendance,
   useMarkAttendance,
   useMarkBulkAttendance,
