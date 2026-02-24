@@ -1,5 +1,6 @@
 'use client';
 
+import { MessageCircle } from 'lucide-react';
 import { ActionButtons } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
@@ -201,12 +202,29 @@ export function createStudentsTableColumns({
     {
       key: 'actions',
       header: 'ACTIONS',
-      className: '!w-[160px] !min-w-[160px] !max-w-[160px] !px-3 !py-4 text-left',
+      className: '!w-[180px] !min-w-[180px] !max-w-[180px] !px-3 !py-4 text-left',
       render: (student: Student) => {
         const isActive = student.user?.status === 'ACTIVE';
-        
+        const btnClass =
+          'p-1.5 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
+
         return (
-          <div onClick={(e) => e.stopPropagation()}>
+          <div
+            className="flex items-center justify-start gap-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              aria-label="Message"
+              title="Message"
+              className={btnClass}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+            >
+              <MessageCircle className="w-4 h-4" aria-hidden="true" />
+            </button>
             <ActionButtons
               onEdit={() => onEdit(student)}
               onDisable={() => onDeactivate(student)}
