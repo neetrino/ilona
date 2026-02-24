@@ -49,6 +49,7 @@ export default function StudentsPage() {
     isBulkDeleteDialogOpen,
     isFeedbackModalOpen,
     selectedStudentForFeedback,
+    feedbackStudentIdFromUrl,
     deleteError,
     deleteSuccess,
     bulkDeleteError,
@@ -368,9 +369,10 @@ export default function StudentsPage() {
 
       {/* Student feedback modal (message icon) */}
       <StudentFeedbackModal
-        open={isFeedbackModalOpen}
+        open={isFeedbackModalOpen || !!feedbackStudentIdFromUrl}
         onOpenChange={handleFeedbackModalOpenChange}
         student={selectedStudentForFeedback}
+        studentId={feedbackStudentIdFromUrl}
       />
     </DashboardLayout>
   );

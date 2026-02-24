@@ -104,6 +104,14 @@ export function useStudentsPage() {
     }
   }, [searchParams]);
 
+  // Feedback modal: read student id from URL so refresh keeps modal open
+  const feedbackStudentIdFromUrl = searchParams.get('feedback') || null;
+  useEffect(() => {
+    if (feedbackStudentIdFromUrl) {
+      setIsFeedbackModalOpen(true);
+    }
+  }, [feedbackStudentIdFromUrl]);
+
   // Debounce search query (300ms). Use debounced value for API to avoid request on every keystroke.
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -322,15 +330,27 @@ export function useStudentsPage() {
     setIsEditStudentOpen(true);
   };
 
-  // Handle message/feedback icon click
+  // Handle message/feedback icon click — update URL so refresh keeps modal open
   const handleShowFeedback = (student: Student) => {
     setSelectedStudentForFeedback(student);
     setIsFeedbackModalOpen(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('feedback', student.id);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleFeedbackModalOpenChange = (open: boolean) => {
     setIsFeedbackModalOpen(open);
-    if (!open) setSelectedStudentForFeedback(null);
+    if (!open) {
+      setSelectedStudentForFeedback(null);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('feedback');
+      if (params.toString()) {
+        router.push(`${pathname}?${params.toString()}`);
+      } else {
+        router.push(pathname);
+      }
+    }
   };
 
   // Handle deactivate button click
@@ -485,6 +505,7 @@ export function useStudentsPage() {
     isBulkDeleteDialogOpen,
     isFeedbackModalOpen,
     selectedStudentForFeedback,
+    feedbackStudentIdFromUrl,
     deleteError,
     deleteSuccess,
     bulkDeleteError,

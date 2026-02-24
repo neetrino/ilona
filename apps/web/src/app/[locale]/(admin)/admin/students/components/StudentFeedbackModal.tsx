@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 import { useStudentFeedback } from '@/features/feedback';
-import type { Student } from '@/features/students';
+import { useStudent, type Student } from '@/features/students';
 import type { Feedback } from '@/features/feedback';
 
 function formatDateTime(iso: string) {
@@ -34,15 +34,22 @@ function formatDate(iso: string) {
 interface StudentFeedbackModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Student when opened by click (in memory) */
   student: Student | null;
+  /** Student id from URL (e.g. after refresh) when student object is not in memory */
+  studentId?: string | null;
 }
 
 export function StudentFeedbackModal({
   open,
   onOpenChange,
-  student,
+  student: studentProp,
+  studentId: studentIdFromUrl,
 }: StudentFeedbackModalProps) {
-  const studentId = student?.id ?? '';
+  const shouldFetchStudent = open && !!studentIdFromUrl && !studentProp;
+  const { data: studentFromApi } = useStudent(studentIdFromUrl ?? '', shouldFetchStudent);
+  const student = studentProp ?? studentFromApi ?? null;
+  const studentId = student?.id ?? studentIdFromUrl ?? '';
   const teacherId = student?.teacherId ?? undefined;
   const { data: feedbacks, isLoading, error } = useStudentFeedback(
     studentId,
@@ -73,7 +80,14 @@ export function StudentFeedbackModal({
         </DialogHeader>
 
         {!student ? (
-          <p className="text-slate-500 text-sm py-4">No student selected.</p>
+          open && studentIdFromUrl ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-600" />
+              <span className="sr-only">Loading student…</span>
+            </div>
+          ) : (
+            <p className="text-slate-500 text-sm py-4">No student selected.</p>
+          )
         ) : (
           <div className="flex flex-col gap-4 overflow-y-auto pr-1 -mr-1">
             <div className="grid grid-cols-2 gap-2 text-sm">
