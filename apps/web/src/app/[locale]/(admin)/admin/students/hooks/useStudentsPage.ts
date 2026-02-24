@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, startTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
@@ -31,6 +31,7 @@ export function useStudentsPage() {
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   
   // Pagination state
   const [page, setPage] = useState(0);
@@ -44,7 +45,9 @@ export function useStudentsPage() {
   const [isEditStudentOpen, setIsEditStudentOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedStudentForFeedback, setSelectedStudentForFeedback] = useState<Student | null>(null);
   
   // Selection state
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
@@ -101,6 +104,25 @@ export function useStudentsPage() {
     }
   }, [searchParams]);
 
+  // Feedback modal: read student id from URL so refresh keeps modal open
+  const feedbackStudentIdFromUrl = searchParams.get('feedback') || null;
+  useEffect(() => {
+    if (feedbackStudentIdFromUrl) {
+      setIsFeedbackModalOpen(true);
+    }
+  }, [feedbackStudentIdFromUrl]);
+
+  // Debounce search query (300ms). Use debounced value for API to avoid request on every keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startTransition(() => {
+        setDebouncedSearchQuery(searchQuery);
+        setPage(0);
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // Fetch teachers, groups, and centers for filters and dropdowns
   const { data: teachersData } = useTeachers({ take: 50, status: 'ACTIVE' });
   const { data: groupsData } = useGroups({ take: 50, isActive: true });
@@ -129,7 +151,7 @@ export function useStudentsPage() {
   } = useStudents({ 
     skip: shouldFetchAll ? 0 : page * PAGE_SIZE,
     take: shouldFetchAll ? 100 : PAGE_SIZE, // API max is 100
-    search: searchQuery || undefined,
+    search: debouncedSearchQuery.trim() || undefined,
     teacherIds: teacherIdsArray,
     centerIds: centerIdsArray,
     statusIds: statusIdsArray,
@@ -246,8 +268,10 @@ export function useStudentsPage() {
         setSelectedStudentIds(new Set());
 
         setTimeout(() => {
-          setBulkDeleteSuccess(false);
-          setDeletedCount(0);
+          startTransition(() => {
+            setBulkDeleteSuccess(false);
+            setDeletedCount(0);
+          });
         }, 3000);
       }
 
@@ -265,8 +289,7 @@ export function useStudentsPage() {
   // Handle search
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setPage(0);
-    // Clear selection on search change
+    // Clear selection when user types (page reset happens in debounce effect)
     setSelectedStudentIds(new Set());
   };
 
@@ -293,7 +316,7 @@ export function useStudentsPage() {
       
       // Clear success message after a delay
       setTimeout(() => {
-        setDeleteSuccess(false);
+        startTransition(() => setDeleteSuccess(false));
       }, 3000);
     } catch (err: unknown) {
       const message = getErrorMessage(err, 'Failed to delete student. Please try again.');
@@ -305,6 +328,29 @@ export function useStudentsPage() {
   const handleEditClick = (student: Student) => {
     setSelectedStudent(student);
     setIsEditStudentOpen(true);
+  };
+
+  // Handle message/feedback icon click — update URL so refresh keeps modal open
+  const handleShowFeedback = (student: Student) => {
+    setSelectedStudentForFeedback(student);
+    setIsFeedbackModalOpen(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('feedback', student.id);
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleFeedbackModalOpenChange = (open: boolean) => {
+    setIsFeedbackModalOpen(open);
+    if (!open) {
+      setSelectedStudentForFeedback(null);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('feedback');
+      if (params.toString()) {
+        router.push(`${pathname}?${params.toString()}`);
+      } else {
+        router.push(pathname);
+      }
+    }
   };
 
   // Handle deactivate button click
@@ -324,7 +370,7 @@ export function useStudentsPage() {
       
       // Clear success message after a delay
       setTimeout(() => {
-        setDeactivateSuccess(false);
+        startTransition(() => setDeactivateSuccess(false));
       }, 3000);
     } catch (err: unknown) {
       const message = getErrorMessage(err, `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} student. Please try again.`);
@@ -457,6 +503,9 @@ export function useStudentsPage() {
     isEditStudentOpen,
     isDeleteDialogOpen,
     isBulkDeleteDialogOpen,
+    isFeedbackModalOpen,
+    selectedStudentForFeedback,
+    feedbackStudentIdFromUrl,
     deleteError,
     deleteSuccess,
     bulkDeleteError,
@@ -497,6 +546,8 @@ export function useStudentsPage() {
     handleDeleteConfirm,
     handleEditClick,
     handleDeactivateClick,
+    handleShowFeedback,
+    handleFeedbackModalOpenChange,
     handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
@@ -510,6 +561,8 @@ export function useStudentsPage() {
     setIsEditStudentOpen,
     setIsDeleteDialogOpen,
     setIsBulkDeleteDialogOpen,
+    setIsFeedbackModalOpen,
+    setSelectedStudentForFeedback,
     setSelectedStudent,
     setDeleteError,
     setBulkDeleteError,

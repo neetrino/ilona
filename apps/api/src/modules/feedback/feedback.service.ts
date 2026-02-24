@@ -92,20 +92,48 @@ export class FeedbackService {
   /**
    * Get feedback by student ID
    */
-  async getByStudent(studentId: string, params?: { dateFrom?: Date; dateTo?: Date }) {
+  async getByStudent(
+    studentId: string,
+    params?: {
+      dateFrom?: Date;
+      dateTo?: Date;
+      teacherId?: string;
+    },
+  ) {
     const where: any = { studentId };
-    
+
+    if (params?.teacherId) {
+      where.teacherId = params.teacherId;
+    }
+
     if (params?.dateFrom || params?.dateTo) {
-      where.lesson = {};
-      if (params.dateFrom) where.lesson.scheduledAt = { ...where.lesson.scheduledAt, gte: params.dateFrom };
-      if (params.dateTo) where.lesson.scheduledAt = { ...where.lesson.scheduledAt, lte: params.dateTo };
+      where.lesson = where.lesson || {};
+      if (params.dateFrom)
+        where.lesson.scheduledAt = {
+          ...where.lesson.scheduledAt,
+          gte: params.dateFrom,
+        };
+      if (params.dateTo)
+        where.lesson.scheduledAt = {
+          ...where.lesson.scheduledAt,
+          lte: params.dateTo,
+        };
     }
 
     const feedbacks = await this.prisma.feedback.findMany({
       where,
       include: {
         lesson: {
-          include: {
+          select: {
+            id: true,
+            scheduledAt: true,
+            absenceMarked: true,
+            absenceMarkedAt: true,
+            feedbacksCompleted: true,
+            voiceSent: true,
+            voiceSentAt: true,
+            textSent: true,
+            textSentAt: true,
             group: {
               select: {
                 id: true,

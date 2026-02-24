@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, startTransition } from 'react';
 import { useGroups, useDeleteGroup, useToggleGroupActive, type Group } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -162,8 +162,10 @@ export function useGroupsManagement(viewMode: 'list' | 'board', searchQuery: str
         setSelectedGroupIds(new Set());
         
         setTimeout(() => {
-          setBulkDeleteSuccess(false);
-          setDeletedCount(0);
+          startTransition(() => {
+            setBulkDeleteSuccess(false);
+            setDeletedCount(0);
+          });
         }, 3000);
       }
 

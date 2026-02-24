@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, startTransition } from 'react';
 import { useDeleteLessonsBulk, useCompleteLesson } from '@/features/lessons';
 import { getErrorMessage } from '@/shared/lib/api';
 
@@ -41,8 +41,10 @@ export function useLessonActions(refetch: () => void) {
       
       // Clear success message after a delay
       setTimeout(() => {
-        setBulkDeleteSuccess(false);
-        setDeletedCount(0);
+        startTransition(() => {
+          setBulkDeleteSuccess(false);
+          setDeletedCount(0);
+        });
       }, 3000);
     } catch (err: unknown) {
       const message = getErrorMessage(err, 'Failed to delete lessons. Please try again.');
@@ -75,7 +77,7 @@ export function useLessonActions(refetch: () => void) {
       
       // Clear success message after a delay
       setTimeout(() => {
-        setCompleteSuccess(false);
+        startTransition(() => setCompleteSuccess(false));
       }, 3000);
     } catch (err: unknown) {
       const message = getErrorMessage(err, 'Failed to complete lesson. Please try again.');

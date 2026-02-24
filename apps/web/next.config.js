@@ -4,6 +4,8 @@ const withNextIntl = createNextIntlPlugin('./src/config/i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Turbopack (replaces deprecated experimental.turbo)
+  turbopack: {},
   images: {
     remotePatterns: [
       {
@@ -16,7 +18,7 @@ const nextConfig = {
   ...(process.env.NODE_ENV === 'development' && {
     // Faster refresh in development
     reactStrictMode: true,
-    
+
     // Optimize webpack for development (only if not using Turbopack)
     // Note: With --turbo flag, webpack config is ignored
     webpack: (config, { dev, isServer }) => {
@@ -28,7 +30,7 @@ const nextConfig = {
           removeEmptyChunks: false,
           splitChunks: false,
         };
-        
+
         // Faster source maps in development
         if (config.devtool) {
           config.devtool = 'eval-cheap-module-source-map';
@@ -39,5 +41,24 @@ const nextConfig = {
   }),
 };
 
-module.exports = withNextIntl(nextConfig);
+// Apply next-intl, then migrate experimental.turbo -> turbopack (next-intl injects it)
+const configWithIntl = withNextIntl(nextConfig);
+const { experimental, ...rest } = configWithIntl;
+const turboFromExperimental = experimental?.turbo;
+const experimentalRest = experimental ? { ...experimental } : {};
+delete experimentalRest.turbo;
+
+/** @type {import('next').NextConfig} */
+const finalConfig = {
+  ...rest,
+  turbopack: {
+    ...(rest.turbopack || {}),
+    ...(turboFromExperimental || {}),
+  },
+};
+if (Object.keys(experimentalRest).length > 0) {
+  finalConfig.experimental = experimentalRest;
+}
+
+module.exports = finalConfig;
 

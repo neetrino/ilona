@@ -13,6 +13,7 @@ import { StudentsFilters } from './components/StudentsFilters';
 import { StudentsList } from './components/StudentsList';
 import { StudentsBoard } from './components/StudentsBoard';
 import { StudentsMessages } from './components/StudentsMessages';
+import { StudentFeedbackModal } from './components/StudentFeedbackModal';
 import { useStudentsPage } from './hooks/useStudentsPage';
 
 export default function StudentsPage() {
@@ -46,6 +47,9 @@ export default function StudentsPage() {
     isEditStudentOpen,
     isDeleteDialogOpen,
     isBulkDeleteDialogOpen,
+    isFeedbackModalOpen,
+    selectedStudentForFeedback,
+    feedbackStudentIdFromUrl,
     deleteError,
     deleteSuccess,
     bulkDeleteError,
@@ -85,6 +89,8 @@ export default function StudentsPage() {
     handleDeleteConfirm,
     handleEditClick,
     handleDeactivateClick,
+    handleShowFeedback,
+    handleFeedbackModalOpenChange,
     handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
@@ -213,6 +219,7 @@ export default function StudentsPage() {
             onEdit={handleEditClick}
             onDelete={handleDeleteClick}
             onDeactivate={handleDeactivateClick}
+            onShowFeedback={handleShowFeedback}
             onTeacherChange={handleTeacherChange}
             onGroupChange={handleGroupChange}
             onCenterChange={handleCenterChange}
@@ -358,6 +365,14 @@ export default function StudentsPage() {
         isLoading={deleteStudent.isPending}
         error={bulkDeleteError || undefined}
         title="Delete Students"
+      />
+
+      {/* Student feedback modal (message icon) */}
+      <StudentFeedbackModal
+        open={isFeedbackModalOpen || !!feedbackStudentIdFromUrl}
+        onOpenChange={handleFeedbackModalOpenChange}
+        student={selectedStudentForFeedback}
+        studentId={feedbackStudentIdFromUrl}
       />
     </DashboardLayout>
   );

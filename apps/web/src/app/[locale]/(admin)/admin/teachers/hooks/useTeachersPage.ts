@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, startTransition } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
@@ -78,11 +78,13 @@ export function useTeachersPage() {
   const [selectedTeacherIdForDetails, setSelectedTeacherIdForDetails] = useState<string | null>(teacherIdFromUrl);
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(!!teacherIdFromUrl);
 
-  // Debounce search query (300ms delay)
+  // Debounce search query (300ms delay). Use startTransition to avoid "setTimeout handler took Xms" violations.
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-      setPage(0); // Reset to first page on search
+      startTransition(() => {
+        setDebouncedSearchQuery(searchQuery);
+        setPage(0); // Reset to first page on search
+      });
     }, 300);
 
     return () => clearTimeout(timer);
@@ -283,7 +285,7 @@ export function useTeachersPage() {
       setSelectedTeacher(null);
       
       setTimeout(() => {
-        setDeleteSuccess(false);
+        startTransition(() => setDeleteSuccess(false));
       }, 3000);
     } catch (err: unknown) {
       const message = getErrorMessage(err, 'Failed to delete teacher. Please try again.');
@@ -314,8 +316,10 @@ export function useTeachersPage() {
       setSelectedTeacherIds(new Set());
       
       setTimeout(() => {
-        setBulkDeleteSuccess(false);
-        setDeletedCount(0);
+        startTransition(() => {
+          setBulkDeleteSuccess(false);
+          setDeletedCount(0);
+        });
       }, 3000);
     } catch (err: unknown) {
       const message = getErrorMessage(err, 'Failed to delete teachers. Please try again.');
@@ -338,7 +342,7 @@ export function useTeachersPage() {
       setDeactivateSuccess(true);
       
       setTimeout(() => {
-        setDeactivateSuccess(false);
+        startTransition(() => setDeactivateSuccess(false));
       }, 3000);
     } catch (err: unknown) {
       const message = getErrorMessage(err, `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} teacher. Please try again.`);

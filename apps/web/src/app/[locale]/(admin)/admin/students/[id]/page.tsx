@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, startTransition } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
@@ -164,8 +164,10 @@ export default function StudentProfilePage() {
       
       // Exit edit mode after a brief delay
       setTimeout(() => {
-        setIsEditMode(false);
-        setSuccessMessage(null);
+        startTransition(() => {
+          setIsEditMode(false);
+          setSuccessMessage(null);
+        });
       }, 1500);
     } catch (error: unknown) {
       // Handle error with more specific messages
@@ -191,7 +193,7 @@ export default function StudentProfilePage() {
       if (error && typeof error === 'object' && 'response' in error &&
           (error as { response?: { status?: number } }).response?.status === 409) {
         setTimeout(() => {
-          setIsEditMode(false);
+          startTransition(() => setIsEditMode(false));
         }, 2000);
       }
     }
