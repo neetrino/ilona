@@ -71,11 +71,54 @@ interface PaymentColumnsProps {
     mutateAsync: (params: { id: string; status: PaymentStatus }) => Promise<void>;
     isPending: boolean;
   };
+  allPaymentsSelected?: boolean;
+  somePaymentsSelected?: boolean;
+  selectedPaymentIds?: Set<string>;
+  onSelectAllPayments?: () => void;
+  onToggleSelectPayment?: (paymentId: string) => void;
+  isLoadingPayments?: boolean;
 }
 
-export function getPaymentColumns({ t, updatePaymentStatus }: PaymentColumnsProps) {
+export function getPaymentColumns({
+  t,
+  updatePaymentStatus,
+  allPaymentsSelected = false,
+  somePaymentsSelected = false,
+  selectedPaymentIds = new Set(),
+  onSelectAllPayments,
+  onToggleSelectPayment,
+  isLoadingPayments = false,
+}: PaymentColumnsProps) {
+  const showCheckboxes = onSelectAllPayments != null && onToggleSelectPayment != null;
 
-  return [
+  const baseColumns = [
+    ...(showCheckboxes
+      ? [
+          {
+            key: 'checkbox',
+            header: (
+              <SelectAllCheckbox
+                checked={allPaymentsSelected}
+                indeterminate={somePaymentsSelected}
+                onChange={onSelectAllPayments}
+                disabled={isLoadingPayments}
+              />
+            ),
+            className: '!pl-4 !pr-2 w-12',
+            render: (payment: Payment) => (
+              <input
+                type="checkbox"
+                className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                checked={selectedPaymentIds.has(payment.id)}
+                onChange={() => onToggleSelectPayment(payment.id)}
+                onClick={(e) => e.stopPropagation()}
+                disabled={isLoadingPayments}
+                aria-label={`Select payment for ${payment.student?.user?.firstName} ${payment.student?.user?.lastName}`}
+              />
+            ),
+          },
+        ]
+      : []),
     {
       key: 'student',
       header: t('student'),
@@ -101,6 +144,7 @@ export function getPaymentColumns({ t, updatePaymentStatus }: PaymentColumnsProp
     {
       key: 'amount',
       header: t('amount'),
+      sortable: true,
       render: (payment: Payment) => {
         const amount = typeof payment.amount === 'string' ? parseFloat(payment.amount) : Number(payment.amount);
         return (
@@ -118,6 +162,7 @@ export function getPaymentColumns({ t, updatePaymentStatus }: PaymentColumnsProp
     {
       key: 'dueDate',
       header: t('dueDate'),
+      sortable: true,
       render: (payment: Payment) => {
         const date = new Date(payment.dueDate);
         return (
@@ -161,6 +206,7 @@ export function getPaymentColumns({ t, updatePaymentStatus }: PaymentColumnsProp
       ),
     },
   ];
+  return baseColumns;
 }
 
 interface SalaryColumnsProps {

@@ -11,11 +11,14 @@ interface FinanceFiltersProps {
   paymentStatus: PaymentStatus | '';
   salaryStatus: SalaryStatus | '';
   selectedSalaryIds: Set<string>;
+  selectedPaymentIds?: Set<string>;
   onSearchChange: (value: string) => void;
   onPaymentStatusChange: (status: PaymentStatus | '') => void;
   onSalaryStatusChange: (status: SalaryStatus | '') => void;
   onDeleteClick: () => void;
+  onDeletePaymentsClick?: () => void;
   isDeleting: boolean;
+  isDeletingPayments?: boolean;
   isSearching?: boolean;
   // Pagination props
   page?: number;
@@ -31,11 +34,14 @@ export function FinanceFilters({
   paymentStatus,
   salaryStatus,
   selectedSalaryIds,
+  selectedPaymentIds,
   onSearchChange,
   onPaymentStatusChange,
   onSalaryStatusChange,
   onDeleteClick,
+  onDeletePaymentsClick,
   isDeleting,
+  isDeletingPayments,
   isSearching,
   page,
   pageSize,
@@ -104,9 +110,27 @@ export function FinanceFilters({
           </svg>
         </div>
         {activeTab === 'payments' ? (
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium">
-            + Record Payment
-          </Button>
+          <div className="flex items-center gap-3">
+            {selectedPaymentIds && selectedPaymentIds.size > 0 && onDeletePaymentsClick && (
+              <Button
+                variant="destructive"
+                className="px-6 py-3 rounded-xl font-medium flex items-center gap-2"
+                onClick={onDeletePaymentsClick}
+                disabled={isDeletingPayments}
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete ({selectedPaymentIds.size})
+              </Button>
+            )}
+            {selectedPaymentIds && selectedPaymentIds.size > 0 && !onDeletePaymentsClick && (
+              <span className="text-sm text-slate-600">
+                {selectedPaymentIds.size} selected
+              </span>
+            )}
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium">
+              + Record Payment
+            </Button>
+          </div>
         ) : activeTab === 'salaries' ? (
           <>
             {selectedSalaryIds.size > 0 && (

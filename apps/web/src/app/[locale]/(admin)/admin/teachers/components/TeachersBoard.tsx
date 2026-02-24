@@ -3,6 +3,7 @@
 import { TeacherCard } from './TeacherCard';
 import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
+import { lightenColor, getContrastColor } from '@/shared/lib/utils';
 
 interface TeachersBoardProps {
   teachersByCenter: Record<string, Teacher[]>;
@@ -50,15 +51,33 @@ export function TeachersBoard({
         {/* Center Columns - Show ALL centers, even if they have no teachers */}
         {sortedCenters.map((center) => {
           const centerTeachers = teachersByCenter[center.id] || [];
+          const primaryColor = center.colorHex || '#253046';
+          const lightColor = lightenColor(primaryColor);
+          const textColor = getContrastColor(primaryColor);
           return (
             <div
               key={center.id}
-              className="flex-shrink-0 w-80 bg-slate-50 rounded-xl border border-slate-200 flex flex-col"
+              className="flex-shrink-0 w-80 rounded-xl border border-slate-200 flex flex-col overflow-hidden"
+              style={{ backgroundColor: lightColor }}
             >
               {/* Column Header */}
-              <div className="p-4 border-b border-slate-200 bg-white rounded-t-xl">
-                <h3 className="font-semibold text-slate-800">{center.name}</h3>
-                <p className="text-sm text-slate-500 mt-1">
+              <div
+                className="p-4 border-b border-slate-200 rounded-t-xl"
+                style={{
+                  backgroundColor: primaryColor,
+                  borderColor: primaryColor,
+                }}
+              >
+                <h3
+                  className="font-semibold"
+                  style={{ color: textColor }}
+                >
+                  {center.name}
+                </h3>
+                <p
+                  className="text-sm mt-1"
+                  style={{ color: textColor === 'white' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.7)' }}
+                >
                   {centerTeachers.length} {centerTeachers.length === 1 ? 'teacher' : 'teachers'}
                 </p>
               </div>

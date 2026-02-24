@@ -37,8 +37,11 @@ export function useFinancePage() {
   const [selectedSalaryId, setSelectedSalaryId] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedSalaryIds, setSelectedSalaryIds] = useState<Set<string>>(new Set());
+  const [selectedPaymentIds, setSelectedPaymentIds] = useState<Set<string>>(new Set());
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeletePaymentsDialogOpen, setIsDeletePaymentsDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletePaymentsError, setDeletePaymentsError] = useState<string | null>(null);
   const prevDebouncedQRef = useRef(debouncedSearchQuery);
 
   // Update URL params when filters change
@@ -83,6 +86,8 @@ export function useFinancePage() {
   // Handle tab change
   const handleTabChange = useCallback((tab: 'payments' | 'salaries') => {
     setActiveTab(tab);
+    if (tab === 'salaries') setSelectedPaymentIds(new Set());
+    if (tab === 'payments') setSelectedSalaryIds(new Set());
     updateUrlParams({ tab });
   }, [updateUrlParams]);
 
@@ -108,11 +113,13 @@ export function useFinancePage() {
   // Handle page changes
   const handlePaymentsPageChange = useCallback((page: number) => {
     setPaymentsPage(page);
+    setSelectedPaymentIds(new Set());
     updateUrlParams({ paymentsPage: page || null });
   }, [updateUrlParams]);
 
   const handleSalariesPageChange = useCallback((page: number) => {
     setSalariesPage(page);
+    setSelectedSalaryIds(new Set());
     updateUrlParams({ salariesPage: page || null });
   }, [updateUrlParams]);
 
@@ -128,14 +135,20 @@ export function useFinancePage() {
     selectedSalaryId,
     isDetailModalOpen,
     selectedSalaryIds,
+    selectedPaymentIds,
     isDeleteDialogOpen,
+    isDeletePaymentsDialogOpen,
     deleteError,
+    deletePaymentsError,
     // Setters
     setSelectedSalaryId,
     setIsDetailModalOpen,
     setSelectedSalaryIds,
+    setSelectedPaymentIds,
     setIsDeleteDialogOpen,
+    setIsDeletePaymentsDialogOpen,
     setDeleteError,
+    setDeletePaymentsError,
     // Handlers
     handleTabChange,
     handleSearchChange,

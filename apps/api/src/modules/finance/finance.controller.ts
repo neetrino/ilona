@@ -284,6 +284,21 @@ export class FinanceController {
     return this.paymentsService.cancel(id);
   }
 
+  @Delete('payments')
+  @Roles(UserRole.ADMIN)
+  async deletePayments(@Body('ids') ids: string[]) {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException('ids array is required');
+    }
+    return this.paymentsService.deleteMany(ids);
+  }
+
+  @Delete('payments/:id')
+  @Roles(UserRole.ADMIN)
+  async deletePayment(@Param('id') id: string) {
+    return this.paymentsService.delete(id);
+  }
+
   @Get('payments/student/:studentId/summary')
   @Roles(UserRole.ADMIN)
   async getStudentPaymentSummary(@Param('studentId') studentId: string) {
