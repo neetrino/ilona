@@ -78,7 +78,7 @@ export function FilterDropdown({
           onClick={() => setIsOpen(!isOpen)}
           disabled={isLoading}
           className={cn(
-            'w-full px-4 py-3 text-left bg-white border border-slate-200 rounded-lg',
+            'w-full h-12 px-4 flex items-center justify-between text-left bg-white border border-slate-200 rounded-lg',
             'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             'hover:border-slate-300 transition-colors'

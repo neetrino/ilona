@@ -123,7 +123,7 @@ export function StudentsFilters({
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
         <FilterDropdown
           label="Status"
           options={statusFilterOptions}
@@ -148,12 +148,12 @@ export function StudentsFilters({
           isLoading={isLoadingCenters}
         />
         {/* Month Filter */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700">Month</label>
+        <div className="relative">
+          <label className="block text-sm font-medium text-slate-500 mb-1.5">Month</label>
           <select
             value={selectedMonth}
             onChange={(e) => onMonthChange(Number(e.target.value))}
-            className="w-full px-4 py-3 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors"
+            className="w-full h-12 px-4 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
           >
             <option value={1}>January</option>
             <option value={2}>February</option>
@@ -170,12 +170,12 @@ export function StudentsFilters({
           </select>
         </div>
         {/* Year Filter */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700">Year</label>
+        <div className="relative">
+          <label className="block text-sm font-medium text-slate-500 mb-1.5">Year</label>
           <select
             value={selectedYear}
             onChange={(e) => onYearChange(Number(e.target.value))}
-            className="w-full px-4 py-3 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors"
+            className="w-full h-12 px-4 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
           >
             {Array.from({ length: 5 }, (_, i) => {
               const year = now.getFullYear() - 2 + i;
