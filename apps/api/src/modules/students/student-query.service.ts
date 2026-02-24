@@ -29,11 +29,15 @@ export class StudentQueryService {
     const userWhere: Prisma.UserWhereInput = {};
 
     if (search) {
-      userWhere.OR = [
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-      ];
+      const term = search.trim();
+      if (term) {
+        userWhere.OR = [
+          { firstName: { contains: term, mode: 'insensitive' } },
+          { lastName: { contains: term, mode: 'insensitive' } },
+          { email: { contains: term, mode: 'insensitive' } },
+          { phone: { contains: term, mode: 'insensitive' } },
+        ];
+      }
     }
 
     // Default to ACTIVE status if not specified

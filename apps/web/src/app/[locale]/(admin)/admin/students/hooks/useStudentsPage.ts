@@ -31,6 +31,7 @@ export function useStudentsPage() {
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   
   // Pagination state
   const [page, setPage] = useState(0);
@@ -101,6 +102,17 @@ export function useStudentsPage() {
     }
   }, [searchParams]);
 
+  // Debounce search query (300ms). Use debounced value for API to avoid request on every keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startTransition(() => {
+        setDebouncedSearchQuery(searchQuery);
+        setPage(0);
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // Fetch teachers, groups, and centers for filters and dropdowns
   const { data: teachersData } = useTeachers({ take: 50, status: 'ACTIVE' });
   const { data: groupsData } = useGroups({ take: 50, isActive: true });
@@ -129,7 +141,7 @@ export function useStudentsPage() {
   } = useStudents({ 
     skip: shouldFetchAll ? 0 : page * PAGE_SIZE,
     take: shouldFetchAll ? 100 : PAGE_SIZE, // API max is 100
-    search: searchQuery || undefined,
+    search: debouncedSearchQuery.trim() || undefined,
     teacherIds: teacherIdsArray,
     centerIds: centerIdsArray,
     statusIds: statusIdsArray,
@@ -267,8 +279,7 @@ export function useStudentsPage() {
   // Handle search
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setPage(0);
-    // Clear selection on search change
+    // Clear selection when user types (page reset happens in debounce effect)
     setSelectedStudentIds(new Set());
   };
 
