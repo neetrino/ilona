@@ -10,6 +10,7 @@ export interface TeacherSalarySummary {
   lessonsCount: number;
   averagePerLesson: number;
 }
+console.log("Hello")
 
 export interface Deduction {
   id: string;
