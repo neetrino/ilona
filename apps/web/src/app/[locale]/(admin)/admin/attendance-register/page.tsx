@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { getWeekDates } from '@/features/attendance/utils/dateUtils';
@@ -85,7 +85,7 @@ export default function AdminAttendanceRegisterPage() {
       clearTimeout(messageTimeoutRef.current);
     }
     messageTimeoutRef.current = setTimeout(() => {
-      setSaveMessages(null);
+      startTransition(() => setSaveMessages(null));
     }, 3000);
   };
 
@@ -96,7 +96,7 @@ export default function AdminAttendanceRegisterPage() {
       clearTimeout(messageTimeoutRef.current);
     }
     messageTimeoutRef.current = setTimeout(() => {
-      setSaveMessages(null);
+      startTransition(() => setSaveMessages(null));
     }, 5000);
   };
 

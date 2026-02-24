@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, startTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import type { PaymentStatus, SalaryStatus } from '@/features/finance';
 
@@ -58,21 +58,24 @@ export function useFinancePage() {
 
   // Debounce search: update committed value and URL after delay; reset page only when search actually changed.
   // Do URL/page updates in the timeout callback (not inside setState updater) to avoid updating Router during render.
+  // Use startTransition so React can chunk work and avoid "setTimeout handler took Xms" violations.
   useEffect(() => {
     const timer = setTimeout(() => {
-      const next = searchQuery;
-      const isNewSearch = prevDebouncedQRef.current !== next;
-      prevDebouncedQRef.current = next;
-      setDebouncedSearchQuery(next);
-      if (isNewSearch) {
-        if (activeTab === 'payments') {
-          setPaymentsPage(0);
-          updateUrlParams({ q: next || null, paymentsPage: null });
-        } else {
-          setSalariesPage(0);
-          updateUrlParams({ q: next || null, salariesPage: null });
+      startTransition(() => {
+        const next = searchQuery;
+        const isNewSearch = prevDebouncedQRef.current !== next;
+        prevDebouncedQRef.current = next;
+        setDebouncedSearchQuery(next);
+        if (isNewSearch) {
+          if (activeTab === 'payments') {
+            setPaymentsPage(0);
+            updateUrlParams({ q: next || null, paymentsPage: null });
+          } else {
+            setSalariesPage(0);
+            updateUrlParams({ q: next || null, salariesPage: null });
+          }
         }
-      }
+      });
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [searchQuery, activeTab, updateUrlParams]);

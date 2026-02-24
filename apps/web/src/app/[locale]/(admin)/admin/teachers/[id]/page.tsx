@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, startTransition } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
@@ -164,8 +164,10 @@ export default function TeacherProfilePage() {
       
       // Exit edit mode after a brief delay
       setTimeout(() => {
-        setIsEditMode(false);
-        setSuccessMessage(null);
+        startTransition(() => {
+          setIsEditMode(false);
+          setSuccessMessage(null);
+        });
       }, 1500);
     } catch (error: unknown) {
       // Handle error with more specific messages
@@ -193,7 +195,7 @@ export default function TeacherProfilePage() {
         // Refetch will happen automatically via query invalidation
         // But we can also manually trigger it
         setTimeout(() => {
-          setIsEditMode(false);
+          startTransition(() => setIsEditMode(false));
         }, 2000);
       }
     }

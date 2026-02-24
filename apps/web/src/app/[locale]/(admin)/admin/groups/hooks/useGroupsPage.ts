@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, startTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { 
   useGroups, 
@@ -291,8 +291,10 @@ export function useGroupsPage() {
         setSelectedGroupIds(new Set());
         
         setTimeout(() => {
-          setBulkDeleteSuccess(false);
-          setDeletedCount(0);
+          startTransition(() => {
+            setBulkDeleteSuccess(false);
+            setDeletedCount(0);
+          });
         }, 3000);
       }
 
@@ -367,8 +369,10 @@ export function useGroupsPage() {
         setSelectedCenterIds(new Set());
         
         setTimeout(() => {
-          setBulkDeleteCentersSuccess(false);
-          setDeletedCentersCount(0);
+          startTransition(() => {
+            setBulkDeleteCentersSuccess(false);
+            setDeletedCentersCount(0);
+          });
         }, 3000);
       }
 

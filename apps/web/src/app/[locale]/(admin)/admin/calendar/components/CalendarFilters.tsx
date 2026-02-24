@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, startTransition } from 'react';
 
 interface CalendarFiltersProps {
   searchQuery: string;
@@ -27,10 +27,12 @@ export function CalendarFilters({
     onSearchChangeRef.current = onSearchChange;
   }, [onSearchChange]);
 
-  // Debounce search input
+  // Debounce search input. Use startTransition to avoid "setTimeout handler took Xms" violations.
   useEffect(() => {
     const timer = setTimeout(() => {
-      onSearchChangeRef.current(localSearchQuery);
+      startTransition(() => {
+        onSearchChangeRef.current(localSearchQuery);
+      });
     }, 300);
 
     return () => clearTimeout(timer);

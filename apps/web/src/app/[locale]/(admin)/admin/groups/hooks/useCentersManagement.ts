@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, startTransition } from 'react';
 import { useCenters, useDeleteCenter, useToggleCenterActive } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 
@@ -103,8 +103,10 @@ export function useCentersManagement(centerSearchQuery: string, centerPage: numb
         setSelectedCenterIds(new Set());
         
         setTimeout(() => {
-          setBulkDeleteCentersSuccess(false);
-          setDeletedCentersCount(0);
+          startTransition(() => {
+            setBulkDeleteCentersSuccess(false);
+            setDeletedCentersCount(0);
+          });
         }, 3000);
       }
 

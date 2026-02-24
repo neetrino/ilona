@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, startTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
@@ -246,8 +246,10 @@ export function useStudentsPage() {
         setSelectedStudentIds(new Set());
 
         setTimeout(() => {
-          setBulkDeleteSuccess(false);
-          setDeletedCount(0);
+          startTransition(() => {
+            setBulkDeleteSuccess(false);
+            setDeletedCount(0);
+          });
         }, 3000);
       }
 
@@ -293,7 +295,7 @@ export function useStudentsPage() {
       
       // Clear success message after a delay
       setTimeout(() => {
-        setDeleteSuccess(false);
+        startTransition(() => setDeleteSuccess(false));
       }, 3000);
     } catch (err: unknown) {
       const message = getErrorMessage(err, 'Failed to delete student. Please try again.');
@@ -324,7 +326,7 @@ export function useStudentsPage() {
       
       // Clear success message after a delay
       setTimeout(() => {
-        setDeactivateSuccess(false);
+        startTransition(() => setDeactivateSuccess(false));
       }, 3000);
     } catch (err: unknown) {
       const message = getErrorMessage(err, `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} student. Please try again.`);
