@@ -12,6 +12,8 @@ export default function TeacherLayout({
   const router = useRouter();
   const { isAuthenticated, isHydrated, user } = useAuthStore();
 
+console.log("TeacherLayout");
+
   useEffect(() => {
     // Wait for hydration before making any decisions
     if (!isHydrated) return;
