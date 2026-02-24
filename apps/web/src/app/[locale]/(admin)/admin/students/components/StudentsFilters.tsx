@@ -153,7 +153,7 @@ export function StudentsFilters({
           <select
             value={selectedMonth}
             onChange={(e) => onMonthChange(Number(e.target.value))}
-            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full px-4 py-3 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors"
           >
             <option value={1}>January</option>
             <option value={2}>February</option>
@@ -175,7 +175,7 @@ export function StudentsFilters({
           <select
             value={selectedYear}
             onChange={(e) => onYearChange(Number(e.target.value))}
-            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full px-4 py-3 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors"
           >
             {Array.from({ length: 5 }, (_, i) => {
               const year = now.getFullYear() - 2 + i;
