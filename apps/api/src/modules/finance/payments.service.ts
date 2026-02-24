@@ -223,6 +223,27 @@ export class PaymentsService {
   }
 
   /**
+   * Delete a payment (hard delete)
+   */
+  async delete(id: string) {
+    await this.findById(id);
+    return this.prisma.payment.delete({ where: { id } });
+  }
+
+  /**
+   * Delete multiple payments
+   */
+  async deleteMany(ids: string[]) {
+    if (!ids?.length) {
+      return { deleted: 0 };
+    }
+    const result = await this.prisma.payment.deleteMany({
+      where: { id: { in: ids } },
+    });
+    return { deleted: result.count };
+  }
+
+  /**
    * Get student payment summary
    */
   async getStudentPaymentSummary(studentId: string) {

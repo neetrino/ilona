@@ -89,6 +89,22 @@ export async function cancelPayment(id: string): Promise<Payment> {
   return api.patch<Payment>(`/finance/payments/${id}/cancel`, {});
 }
 
+/**
+ * Delete a payment
+ */
+export async function deletePayment(id: string): Promise<void> {
+  return api.delete<void>(`/finance/payments/${id}`);
+}
+
+/**
+ * Delete multiple payments
+ */
+export async function deletePayments(ids: string[]): Promise<{ deleted: number }> {
+  return api.delete<{ deleted: number }>('/finance/payments', {
+    body: JSON.stringify({ ids }),
+  });
+}
+
 // ============ SALARIES ============
 
 /**

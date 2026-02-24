@@ -8,6 +8,8 @@ export {
   useProcessPayment,
   useUpdatePaymentStatus,
   useCancelPayment,
+  useDeletePayment,
+  useDeletePayments,
   // Salaries
   useSalaries,
   useSalary,

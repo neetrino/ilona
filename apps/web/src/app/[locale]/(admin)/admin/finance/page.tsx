@@ -12,6 +12,7 @@ import {
   useUpdatePaymentStatus,
   useUpdateSalaryStatus,
   useDeleteSalaries,
+  useDeletePayments,
   type PaymentStatus,
   type SalaryStatus,
 } from '@/features/finance';
@@ -41,14 +42,20 @@ export default function FinancePage() {
     selectedSalaryId,
     isDetailModalOpen,
     selectedSalaryIds,
+    selectedPaymentIds,
     isDeleteDialogOpen,
+    isDeletePaymentsDialogOpen,
     deleteError,
+    deletePaymentsError,
     // Setters
     setSelectedSalaryId,
     setIsDetailModalOpen,
     setSelectedSalaryIds,
+    setSelectedPaymentIds,
     setIsDeleteDialogOpen,
+    setIsDeletePaymentsDialogOpen,
     setDeleteError,
+    setDeletePaymentsError,
     // Handlers
     handleTabChange,
     handleSearchChange,
@@ -89,6 +96,7 @@ export default function FinancePage() {
   const updatePaymentStatusMutation = useUpdatePaymentStatus();
   const updateSalaryStatusMutation = useUpdateSalaryStatus();
   const deleteSalaries = useDeleteSalaries();
+  const deletePayments = useDeletePayments();
 
   // Wrap updatePaymentStatus to match expected interface
   const updatePaymentStatus = {
@@ -115,6 +123,27 @@ export default function FinancePage() {
   const salariesTotalPages = salariesData?.totalPages || 1;
 
   const isLoading = activeTab === 'payments' ? isLoadingPayments : activeTab === 'salaries' ? isLoadingSalaries : false;
+
+  // Checkbox state for payments (current page only)
+  const allPaymentsSelected = payments.length > 0 && payments.every((p) => selectedPaymentIds.has(p.id));
+  const somePaymentsSelected = payments.some((p) => selectedPaymentIds.has(p.id)) && !allPaymentsSelected;
+
+  const handleSelectAllPayments = () => {
+    if (allPaymentsSelected) {
+      setSelectedPaymentIds(new Set());
+    } else {
+      setSelectedPaymentIds(new Set(payments.map((p) => p.id)));
+    }
+  };
+
+  const handleToggleSelectPayment = (paymentId: string) => {
+    setSelectedPaymentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(paymentId)) next.delete(paymentId);
+      else next.add(paymentId);
+      return next;
+    });
+  };
 
   // Checkbox handlers for salaries
   const allSalariesSelected = salaries.length > 0 && selectedSalaryIds.size === salaries.length;
@@ -161,6 +190,29 @@ export default function FinancePage() {
     }
   };
 
+  // Handle delete payments button click
+  const handleDeletePaymentsClick = () => {
+    if (selectedPaymentIds.size === 0) return;
+    setDeletePaymentsError(null);
+    setIsDeletePaymentsDialogOpen(true);
+  };
+
+  // Handle delete payments confirmation
+  const handleDeletePaymentsConfirm = async () => {
+    if (selectedPaymentIds.size === 0) return;
+
+    setDeletePaymentsError(null);
+
+    try {
+      await deletePayments.mutateAsync(Array.from(selectedPaymentIds));
+      setSelectedPaymentIds(new Set());
+      setIsDeletePaymentsDialogOpen(false);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete payments. Please try again.';
+      setDeletePaymentsError(errorMessage);
+    }
+  };
+
   return (
     <DashboardLayout 
       title={t('title')} 
@@ -189,8 +241,11 @@ export default function FinancePage() {
           onPaymentStatusChange={handlePaymentStatusChange}
           onSalaryStatusChange={handleSalaryStatusChange}
           onDeleteClick={handleDeleteClick}
+          onDeletePaymentsClick={handleDeletePaymentsClick}
           isDeleting={deleteSalaries.isPending}
+          isDeletingPayments={deletePayments.isPending}
           isSearching={activeTab === 'payments' ? isFetchingPayments : isFetchingSalaries}
+          selectedPaymentIds={selectedPaymentIds}
           page={activeTab === 'payments' ? paymentsPage : salariesPage}
           pageSize={pageSize}
           totalPages={activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages}
@@ -206,6 +261,11 @@ export default function FinancePage() {
             updatePaymentStatus={updatePaymentStatus}
             searchTerm={debouncedSearchQuery.trim()}
             noResultsKey="noPaymentsMatch"
+            allPaymentsSelected={allPaymentsSelected}
+            somePaymentsSelected={somePaymentsSelected}
+            selectedPaymentIds={selectedPaymentIds}
+            onSelectAllPayments={handleSelectAllPayments}
+            onToggleSelectPayment={handleToggleSelectPayment}
           />
         ) : (
           <SalariesTable
@@ -269,6 +329,44 @@ export default function FinancePage() {
                 disabled={deleteSalaries.isPending}
               >
                 {deleteSalaries.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Payments Confirmation Dialog */}
+        <Dialog open={isDeletePaymentsDialogOpen} onOpenChange={setIsDeletePaymentsDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Payments</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete {selectedPaymentIds.size} payment{selectedPaymentIds.size > 1 ? 's' : ''}? This action cannot be undone and will permanently remove the selected record{selectedPaymentIds.size > 1 ? 's' : ''}.
+              </DialogDescription>
+            </DialogHeader>
+            {deletePaymentsError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{deletePaymentsError}</p>
+              </div>
+            )}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsDeletePaymentsDialogOpen(false);
+                  setDeletePaymentsError(null);
+                }}
+                disabled={deletePayments.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDeletePaymentsConfirm}
+                disabled={deletePayments.isPending}
+              >
+                {deletePayments.isPending ? 'Deleting...' : 'Delete'}
               </Button>
             </DialogFooter>
           </DialogContent>

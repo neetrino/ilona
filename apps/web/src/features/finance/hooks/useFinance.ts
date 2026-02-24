@@ -9,6 +9,8 @@ import {
   processPayment,
   updatePayment,
   cancelPayment,
+  deletePayment,
+  deletePayments,
   fetchSalaries,
   fetchSalary,
   processSalary,
@@ -128,6 +130,30 @@ export function useCancelPayment() {
     mutationFn: (id: string) => cancelPayment(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: financeKeys.paymentDetail(id) });
+      queryClient.invalidateQueries({ queryKey: financeKeys.payments() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
+export function useDeletePayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deletePayment(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.payments() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
+export function useDeletePayments() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => deletePayments(ids),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: financeKeys.payments() });
       queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
     },

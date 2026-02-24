@@ -15,6 +15,11 @@ interface PaymentsTableProps {
   };
   searchTerm?: string;
   noResultsKey?: string;
+  allPaymentsSelected?: boolean;
+  somePaymentsSelected?: boolean;
+  selectedPaymentIds?: Set<string>;
+  onSelectAllPayments?: () => void;
+  onToggleSelectPayment?: (paymentId: string) => void;
 }
 
 export function PaymentsTable({
@@ -23,6 +28,11 @@ export function PaymentsTable({
   updatePaymentStatus,
   searchTerm,
   noResultsKey,
+  allPaymentsSelected,
+  somePaymentsSelected,
+  selectedPaymentIds,
+  onSelectAllPayments,
+  onToggleSelectPayment,
 }: PaymentsTableProps) {
   const t = useTranslations('finance');
   const [sortBy, setSortBy] = useState<string>('dueDate');
@@ -67,7 +77,16 @@ export function PaymentsTable({
     return list;
   }, [payments, sortBy, sortOrder]);
 
-  const columns = getPaymentColumns({ t, updatePaymentStatus });
+  const columns = getPaymentColumns({
+    t,
+    updatePaymentStatus,
+    allPaymentsSelected,
+    somePaymentsSelected,
+    selectedPaymentIds,
+    onSelectAllPayments,
+    onToggleSelectPayment,
+    isLoadingPayments: isLoading,
+  });
   const emptyMessage =
     searchTerm && noResultsKey ? t(noResultsKey) : t('noPaymentsFound');
 
