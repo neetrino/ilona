@@ -251,10 +251,7 @@ importers:
         version: 15.5.10(react-dom@19.2.4)(react@19.2.4)
       next-intl:
         specifier: ^3.25.0
-        version: 3.26.5(next@15.1.9)(react@19.2.4)
-      nprogress:
-        specifier: ^0.2.0
-        version: 0.2.0
+        version: 3.26.5(next@15.5.10)(react@19.2.4)
       react:
         specifier: ^19.0.0
         version: 19.2.4
@@ -8759,10 +8756,6 @@ packages:
       console-control-strings: 1.1.0
       gauge: 3.0.2
       set-blocking: 2.0.0
-    dev: false
-
-  /nprogress@0.2.0:
-    resolution: {integrity: sha512-I19aIingLgR1fmhftnbWWO3dXc0hSxqHQHQb3H8m+K3TnEn/iSeTZZOyvKXWqQESMwuUVnatlCnZdLBZZt2VSA==}
     dev: false
 
   /object-assign@4.1.1:
