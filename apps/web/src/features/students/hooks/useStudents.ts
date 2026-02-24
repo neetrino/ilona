@@ -9,6 +9,7 @@ import {
   updateStudent,
   changeStudentGroup,
   deleteStudent,
+  deleteStudentsBulk,
   fetchMyProfile,
   fetchMyDashboard,
   fetchMyAssignedStudents,
@@ -224,6 +225,21 @@ export function useDeleteStudent() {
     mutationFn: (id: string) => deleteStudent(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
+    },
+  });
+}
+
+/**
+ * Hook to delete multiple students in one request
+ */
+export function useDeleteStudentsBulk() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) => deleteStudentsBulk(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
     },
   });
 }

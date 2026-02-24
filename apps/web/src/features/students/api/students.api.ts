@@ -90,6 +90,15 @@ export async function deleteStudent(id: string): Promise<{ success: boolean }> {
 }
 
 /**
+ * Delete multiple students in one request
+ */
+export async function deleteStudentsBulk(ids: string[]): Promise<{ success: boolean; deleted: number }> {
+  return api.delete<{ success: boolean; deleted: number }>(`${STUDENTS_ENDPOINT}/bulk`, {
+    body: JSON.stringify({ ids }),
+  });
+}
+
+/**
  * Fetch current student's profile (for logged-in student)
  */
 export async function fetchMyProfile(): Promise<Student> {

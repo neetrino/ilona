@@ -7,6 +7,7 @@ export {
   useUpdateStudent,
   useChangeStudentGroup,
   useDeleteStudent,
+  useDeleteStudentsBulk,
   useMyProfile,
   useMyDashboard,
   useMyAssignedStudents,

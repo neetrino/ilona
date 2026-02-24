@@ -7,6 +7,7 @@ import {
   ConnectedSocket,
   MessageBody,
 } from '@nestjs/websockets';
+import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -31,6 +32,8 @@ interface AuthenticatedSocket extends Socket {
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
+
+  private readonly logger = new Logger(ChatGateway.name);
 
   // Track online users per chat
   private onlineUsers: Map<string, Set<string>> = new Map();
@@ -57,7 +60,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       // Optional debug logging (safe: only prefix)
-      // console.log('[ChatGateway] Incoming token:', token.slice(0, 30));
+      // this.logger.debug('Incoming token: ' + token.slice(0, 30));
 
       // Verify token explicitly with the same secret used in HTTP auth
       const payload = this.jwtService.verify<JwtPayload>(token, {
@@ -69,7 +72,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const existingSockets = this.userSockets.get(payload.sub) || [];
       this.userSockets.set(payload.sub, [...existingSockets, client.id]);
 
-      console.log(`[ChatGateway] User ${payload.email} connected`);
+      this.logger.log(`User ${payload.email} connected`);
 
       // Get user's chats and join rooms
       const chats = await this.chatService.getUserChats(payload.sub);
@@ -100,10 +103,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (error) {
       const isTokenExpired = error && typeof error === 'object' && 'name' in error && (error as Error).name === 'TokenExpiredError';
       if (isTokenExpired) {
-        console.warn('[ChatGateway] Connection rejected: token expired');
+        this.logger.warn('Connection rejected: token expired');
         client.emit('connection:error', { code: 'TOKEN_EXPIRED', message: 'Token expired' });
       } else {
-        console.error('[ChatGateway] Connection error:', error);
+        this.logger.error('Connection error', (error as Error)?.stack ?? (error as Error)?.message);
       }
       client.disconnect();
     }
@@ -135,7 +138,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.userSockets.set(userId, remainingSockets);
     }
 
-    console.log(`[ChatGateway] User ${client.user.email} disconnected`);
+    this.logger.log(`User ${client.user.email} disconnected`);
   }
 
   @SubscribeMessage('message:send')
@@ -146,10 +149,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       // CRITICAL: Validate client.user is set and has required fields
       if (!client.user || !client.user.sub) {
-        console.error('[ChatGateway] handleSendMessage: client.user is missing or invalid', {
-          hasUser: !!client.user,
-          userId: client.user?.sub,
-        });
+        this.logger.error('handleSendMessage: client.user is missing or invalid', { hasUser: !!client.user, userId: client.user?.sub });
         return { success: false, error: 'Authentication required' };
       }
 
@@ -160,12 +160,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // CRITICAL: Log sender identity for debugging (dev only)
       if (process.env.NODE_ENV !== 'production') {
-        console.log('[ChatGateway] handleSendMessage: Sending message', {
-          senderId: client.user.sub,
-          senderRole: client.user.role,
-          senderEmail: client.user.email,
-          chatId: data.chatId,
-        });
+        this.logger.log(
+          JSON.stringify({ message: 'handleSendMessage', senderId: client.user.sub, senderRole: client.user.role, chatId: data.chatId }),
+        );
       }
 
       const message = await this.chatService.sendMessage(
@@ -184,7 +181,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       return { success: true, message };
     } catch (error) {
-      console.error('[ChatGateway] Send message error:', error);
+      this.logger.error('Send message error', (error as Error)?.stack ?? (error as Error)?.message);
       return { success: false, error: (error as Error).message };
     }
   }
@@ -333,10 +330,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       // CRITICAL: Validate client.user is set and has required fields
       if (!client.user || !client.user.sub) {
-        console.error('[ChatGateway] handleSendVocabulary: client.user is missing or invalid', {
-          hasUser: !!client.user,
-          userId: client.user?.sub,
-        });
+        this.logger.error('handleSendVocabulary: client.user is missing or invalid', { hasUser: !!client.user, userId: client.user?.sub });
         return { success: false, error: 'Authentication required' };
       }
 

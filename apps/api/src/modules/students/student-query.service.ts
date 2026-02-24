@@ -1,12 +1,15 @@
 import {
   Injectable,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, UserStatus } from '@prisma/client';
 
 @Injectable()
 export class StudentQueryService {
+  private readonly logger = new Logger(StudentQueryService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async findAssignedToTeacher(teacherId: string, params?: {
@@ -126,17 +129,26 @@ export class StudentQueryService {
     status?: UserStatus;
     groupId?: string;
   }) {
-    // Get teacher by userId
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { userId },
-      select: { id: true },
-    });
+    try {
+      // Get teacher by userId
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
 
-    if (!teacher) {
-      throw new NotFoundException('Teacher profile not found');
+      if (!teacher) {
+        throw new NotFoundException('Teacher profile not found');
+      }
+
+      return this.findAssignedToTeacher(teacher.id, params);
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error(
+        `findAssignedToTeacherByUserId failed: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
     }
-
-    return this.findAssignedToTeacher(teacher.id, params);
   }
 
   /**

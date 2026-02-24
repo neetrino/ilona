@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
@@ -18,6 +19,8 @@ import { CreateChatDto, SendMessageDto, UpdateMessageDto, AddGroupMemberDto, Cre
 
 @Controller('chat')
 export class ChatController {
+  private readonly logger = new Logger(ChatController.name);
+
   constructor(
     private readonly chatService: ChatService,
     private readonly chatGateway: ChatGateway,
@@ -117,12 +120,9 @@ export class ChatController {
 
     // CRITICAL: Log sender identity for debugging (dev only)
     if (process.env.NODE_ENV !== 'production') {
-      console.log('[ChatController] sendMessage: Sending message via HTTP', {
-        senderId: user.sub,
-        senderRole: user.role,
-        senderEmail: user.email,
-        chatId: dto.chatId,
-      });
+      this.logger.log(
+        JSON.stringify({ message: 'sendMessage', senderId: user.sub, senderRole: user.role, chatId: dto.chatId }),
+      );
     }
 
     const message = await this.chatService.sendMessage(dto, user.sub, user.role);

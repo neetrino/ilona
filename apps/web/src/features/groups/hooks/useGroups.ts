@@ -35,6 +35,7 @@ export function useGroups(filters?: GroupFilters) {
   return useQuery({
     queryKey: groupKeys.list(filters),
     queryFn: () => fetchGroups(filters),
+    staleTime: 60 * 1000, // 1 minute - invalidate on mutation
     // Don't retry on 503 (Service Unavailable) errors
     retry: (failureCount, error) => {
       // Don't retry if it's a 503 error (service unavailable)
@@ -96,9 +97,7 @@ export function useMyGroups() {
     queryKey: groupKeys.myGroups(),
     queryFn: () => fetchMyGroups(),
     enabled: isAuthReady,
-    // Set staleTime to 0 to ensure fresh data after mutations
-    // This prevents stale cache from hiding newly assigned groups
-    staleTime: 0,
+    staleTime: 60 * 1000, // 1 minute - invalidate on mutation
     // Only refetch on window focus if auth is ready
     // This prevents 401 errors when token is expired/invalid
     refetchOnWindowFocus: isAuthReady,

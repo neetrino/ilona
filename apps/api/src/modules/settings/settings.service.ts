@@ -1,4 +1,6 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ActionPercents, SystemSettingsWithPercents, PenaltyAmounts } from '@ilona/types';
 import type { SystemSettings } from '@prisma/client';
@@ -33,8 +35,12 @@ export class SettingsService {
   private readonly logger = new Logger(SettingsService.name);
   private logoUrlColumnChecked = false;
   private penaltyColumnsChecked = false;
+  private static readonly CACHE_KEY_SYSTEM = 'settings:system';
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   /**
    * Ensure logoUrl column exists in system_settings table
@@ -153,10 +159,15 @@ export class SettingsService {
   }
 
   /**
-   * Get system settings (singleton - there should only be one record)
+   * Get system settings (singleton - there should only be one record). Cached for 2 minutes.
    */
   async getSystemSettings() {
     try {
+      const cached = await this.cache.get<Awaited<ReturnType<PrismaService['systemSettings']['findFirst']>>>(SettingsService.CACHE_KEY_SYSTEM);
+      if (cached) {
+        return cached;
+      }
+
       // Ensure logoUrl column exists before querying
       await this.ensureLogoUrlColumn();
       // Ensure penalty columns exist before querying
@@ -222,6 +233,7 @@ export class SettingsService {
         }
       }
 
+      await this.cache.set(SettingsService.CACHE_KEY_SYSTEM, settings);
       return settings;
     } catch (error) {
       this.logger.error(
@@ -253,6 +265,7 @@ export class SettingsService {
         });
       }
 
+      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
       return { logoUrl: settings.logoUrl };
     } catch (error) {
       this.logger.error(
@@ -361,6 +374,8 @@ export class SettingsService {
           data: { logoUrl: logoKey },
         });
       }
+
+      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
     } catch (error) {
       this.logger.error(
         `Failed to update logo key: ${error instanceof Error ? error.message : String(error)}`,
@@ -491,6 +506,7 @@ export class SettingsService {
         });
       }
 
+      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
       const settingsWithPercents = settings as unknown as SystemSettingsWithPercents;
       return {
         absencePercent: settingsWithPercents.absencePercent,
@@ -622,7 +638,8 @@ export class SettingsService {
         });
       }
 
-      // Convert Decimal to number (Prisma Decimal has toNumber() method)
+      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
+      // Convert Decimal to number
       const convertToNumber = (value: ConvertibleToNumber): number => {
         if (value == null) return 0;
         if (typeof value === 'number') return value;

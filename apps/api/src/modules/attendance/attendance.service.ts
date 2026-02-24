@@ -100,6 +100,94 @@ export class AttendanceService {
     };
   }
 
+  /**
+   * Get attendance for multiple lessons in one request (batch). Returns a map of lessonId -> lesson attendance.
+   * Lessons not found or not authorized are omitted from the result.
+   */
+  async getByLessons(lessonIds: string[], userId?: string, userRole?: UserRole) {
+    if (!lessonIds || lessonIds.length === 0) {
+      return {};
+    }
+    const uniqueIds = [...new Set(lessonIds)];
+    const lessons = await this.prisma.lesson.findMany({
+      where: { id: { in: uniqueIds } },
+      include: {
+        group: {
+          include: {
+            students: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    avatarUrl: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        attendances: {
+          include: {
+            student: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    let teacherId: string | null = null;
+    if (userRole === UserRole.TEACHER && userId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      teacherId = teacher?.id ?? null;
+    }
+
+    const result: Record<string, Awaited<ReturnType<AttendanceService['getByLesson']>>> = {};
+    for (const lesson of lessons) {
+      if (teacherId !== null && lesson.group.teacherId !== teacherId) {
+        continue;
+      }
+      const studentsWithAttendance = lesson.group.students.map((student) => {
+        const attendance = lesson.attendances.find((a) => a.studentId === student.id);
+        return {
+          student,
+          attendance: attendance || null,
+        };
+      });
+      result[lesson.id] = {
+        lesson: {
+          id: lesson.id,
+          scheduledAt: lesson.scheduledAt,
+          topic: lesson.topic,
+          status: lesson.status,
+        },
+        studentsWithAttendance,
+        summary: {
+          total: studentsWithAttendance.length,
+          present: lesson.attendances.filter((a) => a.isPresent).length,
+          absent: lesson.attendances.filter((a) => !a.isPresent).length,
+          notMarked: studentsWithAttendance.length - lesson.attendances.length,
+        },
+      };
+    }
+    return result;
+  }
+
   async getByStudent(studentId: string, params?: { dateFrom?: Date; dateTo?: Date }) {
     const { dateFrom, dateTo } = params || {};
 

@@ -252,6 +252,7 @@ model Lesson {
   @@index([teacherId])
   @@index([scheduledAt])
   @@index([status])
+  @@index([groupId, scheduledAt])
   @@map("lessons")
 }
 
@@ -275,6 +276,7 @@ model Attendance {
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([lessonId, studentId])
+  @@index([lessonId])
   @@index([studentId])
   @@index([isPresent])
   @@map("attendances")

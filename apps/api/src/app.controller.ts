@@ -29,6 +29,18 @@ export class AppController {
       timestamp: new Date().toISOString(),
     };
   }
+
+  /**
+   * Warmup endpoint: lightweight request to preload server (DB connection, middleware).
+   * Called by the frontend as early as possible on first page load. No auth required.
+   * Does not affect business logic; used only to reduce first-real-request latency.
+   */
+  @Get('warmup')
+  @Public()
+  async warmup() {
+    await this.prisma.$queryRaw`SELECT 1`;
+    return { ok: true };
+  }
 }
 
 

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { 
   useStudents, 
   useDeleteStudent, 
+  useDeleteStudentsBulk,
   useUpdateStudent,
   type Student 
 } from '@/features/students';
@@ -140,6 +141,7 @@ export function useStudentsPage() {
 
   // Mutations
   const deleteStudent = useDeleteStudent();
+  const deleteStudentsBulk = useDeleteStudentsBulk();
   const updateStudent = useUpdateStudent();
 
   const students = studentsData?.items || [];
@@ -232,36 +234,27 @@ export function useStudentsPage() {
 
     const idsArray = Array.from(selectedStudentIds);
     const count = idsArray.length;
-    let successCount = 0;
-    let lastError: string | null = null;
 
     try {
-      // Delete students one by one
-      for (const id of idsArray) {
-        try {
-          await deleteStudent.mutateAsync(id);
-          successCount++;
-        } catch (err: unknown) {
-          const message = getErrorMessage(err, 'Failed to delete student.');
-          lastError = message;
-        }
-      }
+      const result = await deleteStudentsBulk.mutateAsync(idsArray);
+      const successCount = result?.deleted ?? 0;
 
       if (successCount > 0) {
         setDeletedCount(successCount);
         setBulkDeleteSuccess(true);
         setIsBulkDeleteDialogOpen(false);
         setSelectedStudentIds(new Set());
-        
-        // Clear success message after a delay
+
         setTimeout(() => {
           setBulkDeleteSuccess(false);
           setDeletedCount(0);
         }, 3000);
       }
 
-      if (lastError && successCount < count) {
-        setBulkDeleteError(`Deleted ${successCount} of ${count} students. ${lastError}`);
+      if (successCount < count && successCount > 0) {
+        setBulkDeleteError(`Deleted ${successCount} of ${count} students. Some could not be deleted.`);
+      } else if (successCount === 0 && count > 0) {
+        setBulkDeleteError('No students were deleted. They may have been removed already.');
       }
     } catch (err: unknown) {
       const message = getErrorMessage(err, 'Failed to delete students. Please try again.');
