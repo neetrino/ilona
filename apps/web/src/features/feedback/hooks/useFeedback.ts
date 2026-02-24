@@ -18,8 +18,13 @@ import { financeKeys } from '@/features/finance/hooks';
 export const feedbackKeys = {
   all: ['feedback'] as const,
   lesson: (lessonId: string) => [...feedbackKeys.all, 'lesson', lessonId] as const,
-  student: (studentId: string, dateFrom?: string, dateTo?: string) =>
-    [...feedbackKeys.all, 'student', studentId, { dateFrom, dateTo }] as const,
+  student: (
+    studentId: string,
+    dateFrom?: string,
+    dateTo?: string,
+    teacherId?: string | null
+  ) =>
+    [...feedbackKeys.all, 'student', studentId, { dateFrom, dateTo, teacherId }] as const,
 };
 
 /**
@@ -40,11 +45,12 @@ export function useStudentFeedback(
   studentId: string,
   dateFrom?: string,
   dateTo?: string,
+  teacherId?: string | null,
   enabled = true
 ) {
   return useQuery({
-    queryKey: feedbackKeys.student(studentId, dateFrom, dateTo),
-    queryFn: () => fetchStudentFeedback(studentId, dateFrom, dateTo),
+    queryKey: feedbackKeys.student(studentId, dateFrom, dateTo, teacherId),
+    queryFn: () => fetchStudentFeedback(studentId, dateFrom, dateTo, teacherId),
     enabled: enabled && !!studentId,
   });
 }

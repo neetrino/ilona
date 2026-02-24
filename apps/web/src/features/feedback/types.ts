@@ -27,6 +27,13 @@ export interface Feedback {
       name: string;
       level?: string;
     };
+    absenceMarked?: boolean | null;
+    absenceMarkedAt?: string | null;
+    feedbacksCompleted?: boolean | null;
+    voiceSent?: boolean | null;
+    voiceSentAt?: string | null;
+    textSent?: boolean | null;
+    textSentAt?: string | null;
   };
   teacher?: {
     id: string;

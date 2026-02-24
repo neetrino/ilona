@@ -29,10 +29,12 @@ export class FeedbackController {
     @Param('studentId') studentId: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
+    @Query('teacherId') teacherId?: string,
   ) {
     return this.feedbackService.getByStudent(studentId, {
       dateFrom: dateFrom ? new Date(dateFrom) : undefined,
       dateTo: dateTo ? new Date(dateTo) : undefined,
+      teacherId: teacherId || undefined,
     });
   }
 

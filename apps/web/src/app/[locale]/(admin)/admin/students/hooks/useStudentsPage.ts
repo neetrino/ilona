@@ -45,7 +45,9 @@ export function useStudentsPage() {
   const [isEditStudentOpen, setIsEditStudentOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedStudentForFeedback, setSelectedStudentForFeedback] = useState<Student | null>(null);
   
   // Selection state
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
@@ -320,6 +322,17 @@ export function useStudentsPage() {
     setIsEditStudentOpen(true);
   };
 
+  // Handle message/feedback icon click
+  const handleShowFeedback = (student: Student) => {
+    setSelectedStudentForFeedback(student);
+    setIsFeedbackModalOpen(true);
+  };
+
+  const handleFeedbackModalOpenChange = (open: boolean) => {
+    setIsFeedbackModalOpen(open);
+    if (!open) setSelectedStudentForFeedback(null);
+  };
+
   // Handle deactivate button click
   const handleDeactivateClick = async (student: Student) => {
     const isCurrentlyActive = student.user?.status === 'ACTIVE';
@@ -470,6 +483,8 @@ export function useStudentsPage() {
     isEditStudentOpen,
     isDeleteDialogOpen,
     isBulkDeleteDialogOpen,
+    isFeedbackModalOpen,
+    selectedStudentForFeedback,
     deleteError,
     deleteSuccess,
     bulkDeleteError,
@@ -510,6 +525,8 @@ export function useStudentsPage() {
     handleDeleteConfirm,
     handleEditClick,
     handleDeactivateClick,
+    handleShowFeedback,
+    handleFeedbackModalOpenChange,
     handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
@@ -523,6 +540,8 @@ export function useStudentsPage() {
     setIsEditStudentOpen,
     setIsDeleteDialogOpen,
     setIsBulkDeleteDialogOpen,
+    setIsFeedbackModalOpen,
+    setSelectedStudentForFeedback,
     setSelectedStudent,
     setDeleteError,
     setBulkDeleteError,

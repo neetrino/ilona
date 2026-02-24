@@ -21,11 +21,13 @@ export async function fetchLessonFeedback(lessonId: string): Promise<LessonFeedb
 export async function fetchStudentFeedback(
   studentId: string,
   dateFrom?: string,
-  dateTo?: string
+  dateTo?: string,
+  teacherId?: string | null
 ): Promise<Feedback[]> {
   const params = new URLSearchParams();
   if (dateFrom) params.append('dateFrom', dateFrom);
   if (dateTo) params.append('dateTo', dateTo);
+  if (teacherId) params.append('teacherId', teacherId);
 
   const query = params.toString();
   const url = query
