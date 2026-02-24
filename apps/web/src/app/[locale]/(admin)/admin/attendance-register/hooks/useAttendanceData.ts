@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from 'react';
 import { useGroups } from '@/features/groups';
 import { useLessons } from '@/features/lessons';
 import { useStudents } from '@/features/students';
-import { useMarkBulkAttendance, useBatchLessonAttendance, attendanceKeys, type AbsenceType } from '@/features/attendance';
+import { useMarkBulkAttendance, useBatchLessonAttendance, type AbsenceType } from '@/features/attendance';
 import {
   getTodayDate,
   getWeekStart,
