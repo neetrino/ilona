@@ -101,6 +101,7 @@ export function getPaymentColumns({ t, updatePaymentStatus }: PaymentColumnsProp
     {
       key: 'amount',
       header: t('amount'),
+      sortable: true,
       render: (payment: Payment) => {
         const amount = typeof payment.amount === 'string' ? parseFloat(payment.amount) : Number(payment.amount);
         return (
@@ -118,6 +119,7 @@ export function getPaymentColumns({ t, updatePaymentStatus }: PaymentColumnsProp
     {
       key: 'dueDate',
       header: t('dueDate'),
+      sortable: true,
       render: (payment: Payment) => {
         const date = new Date(payment.dueDate);
         return (
