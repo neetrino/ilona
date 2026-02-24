@@ -6,6 +6,24 @@
 
 ## 1. API – Batch request-ներ և արագացում
 
+### 1.0 Fake request (warmup) – առաջին բեռնման արագացում
+
+**Խնդիր:** Առաջին օգտվողի request-ը server-ը «սառը» վիճակում էր ընդունում (DB connection, middleware) — առաջին էջի բեռնումը կարող էր դանդաղ լինել:
+
+**Լուծում:**
+
+- **Backend:** Ավելացվել է lightweight endpoint `GET /api/warmup` (`@Public()`). Կատարում է `SELECT 1` (DB connection warm-up) և վերադարձնում `{ ok: true }`. Ոչ մի business logic, side effect-ներ չկան.
+- **Frontend:** Root layout-ում ավելացվել է `<WarmupRequest />` client component. Էջի առաջին paint-ի ժամանակ այն մեկ GET request է ուղարկում `/api/warmup` (fire-and-forget). Բիզնես-լոգիկան չի ազդում.
+- **Սերվերի log-եր:** Նույն LoggingInterceptor-ի միջոցով warmup request-ը log է արվում (`path`, `durationMs`, `correlationId`), այն կարող եք տեսնել որպես առաջին request.
+
+**Ստուգում:**
+
+- DevTools → Network: էջ բեռնելիս պետք է տեսնեք `GET .../api/warmup` (200).
+- Server log: `request_completed` with `path: "/warmup"` (կամ `/api/warmup` ըստ prefix-ի).
+- Առաջին «իրական» request-ը (օր. attendance, settings) արդեն դիմում է warmed-up server-ին, ուստի response time-ը ավելի ցածր է.
+
+---
+
 ### 1.1 Attendance-ի N+1-ի վերացում
 
 **Խնդիր:** Attendance register էջում յուրաքանչյուր lesson-ի համար առանձին request էր գնում (`GET /attendance/lesson/:id`) — 20 lesson = 20 request:
@@ -96,6 +114,7 @@
 
 | Ոլորտ | Ֆայլեր |
 |--------|--------|
+| Warmup (fake request) | `apps/api/src/app.controller.ts` (GET warmup), `apps/web/src/shared/components/WarmupRequest.tsx`, `apps/web/src/app/layout.tsx` |
 | API batch attendance | `apps/api/.../attendance.controller.ts`, `attendance.service.ts`; `apps/web/.../attendance.api.ts`, `useAttendance.ts`, `useAttendanceData.ts`, `useTeacherAttendanceData.ts` |
 | Correlation ID + Logging | `apps/api/src/common/middleware/correlation-id.middleware.ts`, `common/interceptors/logging.interceptor.ts`, `app.module.ts` |
 | Students bulk delete | `apps/api/.../students.controller.ts`, `student-crud.service.ts`, `students.service.ts`; `apps/web/.../students.api.ts`, `useStudents.ts`, `useStudentsPage.ts` |
