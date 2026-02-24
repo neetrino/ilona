@@ -10,13 +10,6 @@ import { useStudentFeedback } from '@/features/feedback';
 import type { Student } from '@/features/students';
 import type { Feedback } from '@/features/feedback';
 
-const ACTION_LABELS = {
-  Absence: 'Absence',
-  Feedbacks: 'Feedbacks',
-  Voice: 'Voice',
-  Text: 'Text',
-} as const;
-
 function formatDateTime(iso: string) {
   try {
     const d = new Date(iso);
@@ -71,7 +64,10 @@ export function StudentFeedbackModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-hidden flex flex-col">
+      <DialogContent
+        className="max-h-[85vh] max-w-2xl overflow-hidden flex flex-col"
+        aria-describedby={undefined}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl">Teacher feedback</DialogTitle>
         </DialogHeader>
@@ -145,30 +141,7 @@ function FeedbackCard({ feedback }: { feedback: Feedback }) {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <ActionBadge
-          label={ACTION_LABELS.Absence}
-          completed={!!lesson?.absenceMarked}
-          completedAt={lesson?.absenceMarkedAt ?? undefined}
-        />
-        <ActionBadge
-          label={ACTION_LABELS.Feedbacks}
-          completed={!!feedback.content}
-          completedAt={feedback.createdAt}
-        />
-        <ActionBadge
-          label={ACTION_LABELS.Voice}
-          completed={!!lesson?.voiceSent}
-          completedAt={lesson?.voiceSentAt ?? undefined}
-        />
-        <ActionBadge
-          label={ACTION_LABELS.Text}
-          completed={!!lesson?.textSent}
-          completedAt={lesson?.textSentAt ?? undefined}
-        />
-      </div>
-
-      {feedback.content && (
+      {feedback.content ? (
         <div className="pt-2 border-t border-slate-200">
           <p className="text-xs font-medium text-slate-500 mb-1">Feedback content</p>
           <p className="text-sm text-slate-800 whitespace-pre-wrap">{feedback.content}</p>
@@ -176,37 +149,14 @@ function FeedbackCard({ feedback }: { feedback: Feedback }) {
             Given {formatDateTime(feedback.createdAt)}
           </p>
         </div>
+      ) : (
+        <div className="pt-2 border-t border-slate-200">
+          <p className="text-sm text-slate-500 italic">No feedback text for this lesson.</p>
+          <p className="text-xs text-slate-400 mt-2">
+            {formatDateTime(feedback.createdAt)}
+          </p>
+        </div>
       )}
     </div>
-  );
-}
-
-function ActionBadge({
-  label,
-  completed,
-  completedAt,
-}: {
-  label: string;
-  completed: boolean;
-  completedAt?: string | null;
-}) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ${
-        completed
-          ? 'bg-green-100 text-green-800'
-          : 'bg-slate-100 text-slate-500'
-      }`}
-      title={completed && completedAt ? formatDateTime(completedAt) : undefined}
-    >
-      {completed ? (
-        <>
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-current" />
-          {label}: {completedAt ? formatDate(completedAt) : 'Done'}
-        </>
-      ) : (
-        `${label}: Incomplete`
-      )}
-    </span>
   );
 }
