@@ -100,7 +100,7 @@ export function getPaymentColumns({
               <SelectAllCheckbox
                 checked={allPaymentsSelected}
                 indeterminate={somePaymentsSelected}
-                onChange={onSelectAllPayments!}
+                onChange={onSelectAllPayments}
                 disabled={isLoadingPayments}
               />
             ),
@@ -110,7 +110,7 @@ export function getPaymentColumns({
                 type="checkbox"
                 className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 checked={selectedPaymentIds.has(payment.id)}
-                onChange={() => onToggleSelectPayment!(payment.id)}
+                onChange={() => onToggleSelectPayment(payment.id)}
                 onClick={(e) => e.stopPropagation()}
                 disabled={isLoadingPayments}
                 aria-label={`Select payment for ${payment.student?.user?.firstName} ${payment.student?.user?.lastName}`}
