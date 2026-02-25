@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/shared/components/ui/input';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useLogout } from '@/features/auth/hooks/useLogout';
 
 interface HeaderProps {
   title: string;
@@ -18,7 +19,8 @@ export function Header({ title, subtitle }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const t = useTranslations('common');
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+  const logout = useLogout();
   const tAuth = useTranslations('auth');
   const tNav = useTranslations('nav');
 
