@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { getProxiedFileUrl } from '@/shared/lib/api';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
-const PLAYBACK_SPEED_OPTIONS = [1, 1.25, 1.5, 2] as const;
+const PLAYBACK_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 type PlaybackSpeed = (typeof PLAYBACK_SPEED_OPTIONS)[number];
 
 /** Per-user localStorage key to avoid speed preference leaking across accounts. */
@@ -71,6 +71,9 @@ export function VoiceMessagePlayer({
     setPlaybackSpeed(getStoredPlaybackSpeed(userId));
   }, [userId]);
 
+  // Convert R2 URLs to API proxy URLs to avoid CORS issues (must be before effects that use it)
+  const proxiedUrl = getProxiedFileUrl(fileUrl) || fileUrl;
+
   // Apply playbackRate to audio element whenever speed or element changes; does not reset position
   useEffect(() => {
     const el = audioRef.current;
@@ -79,8 +82,13 @@ export function VoiceMessagePlayer({
     }
   }, [playbackSpeed]);
 
-  // Convert R2 URLs to API proxy URLs to avoid CORS issues
-  const proxiedUrl = getProxiedFileUrl(fileUrl) || fileUrl;
+  // When the audio source changes, ensure playback starts from the beginning
+  useEffect(() => {
+    const el = audioRef.current;
+    if (el && proxiedUrl) {
+      el.currentTime = 0;
+    }
+  }, [proxiedUrl]);
 
   // Format duration for voice messages (seconds to MM:SS)
   const formatDuration = (seconds: number) => {
@@ -126,6 +134,13 @@ export function VoiceMessagePlayer({
     setHasError(false);
     if (audioRef.current) {
       audioRef.current.playbackRate = playbackSpeed;
+    }
+  };
+
+  const handlePlay = () => {
+    const el = audioRef.current;
+    if (el && el.ended) {
+      el.currentTime = 0;
     }
   };
 
@@ -186,24 +201,25 @@ export function VoiceMessagePlayer({
   }
 
   return (
-    <div className="flex items-center gap-2 min-w-[200px] flex-wrap">
+    <div className="flex items-center gap-2 min-w-0 w-full flex-wrap">
       <div className="flex-shrink-0">
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
           <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
         </svg>
       </div>
-      <div className="flex-1 relative min-w-0">
+      <div className="flex-1 relative min-w-[200px] max-w-[280px]">
         <audio
           ref={audioRef}
           src={proxiedUrl}
           controls
           preload="metadata"
           className="flex-1 h-10 w-full"
-          style={{ minWidth: '160px' }}
+          style={{ minWidth: '120px' }}
           onError={handleError}
           onCanPlay={handleCanPlay}
           onLoadStart={handleLoadStart}
+          onPlay={handlePlay}
           crossOrigin="anonymous"
         />
         {isLoading && (
@@ -215,14 +231,14 @@ export function VoiceMessagePlayer({
       <button
         type="button"
         onClick={cyclePlaybackSpeed}
-        className="flex-shrink-0 min-w-[2.5rem] py-1.5 px-2 text-sm font-semibold rounded-md bg-white/25 hover:bg-white/35 text-inherit transition-colors touch-manipulation"
+        className="flex-shrink-0 min-w-[2.75rem] py-1.5 px-2.5 text-sm font-semibold rounded-lg bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200 transition-colors touch-manipulation"
         title={`Playback speed: ${formatSpeedLabel(playbackSpeed)}. Click to change.`}
         aria-label={`Playback speed ${formatSpeedLabel(playbackSpeed)}`}
       >
         {formatSpeedLabel(playbackSpeed)}
       </button>
       {duration && (
-        <span className="text-sm font-semibold flex-shrink-0 text-inherit tabular-nums">
+        <span className="text-sm font-semibold flex-shrink-0 text-slate-500 tabular-nums">
           {formatDuration(duration)}
         </span>
       )}

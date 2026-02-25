@@ -58,7 +58,7 @@ function VoiceToTeacherCard({ recording }: { recording: VoiceToTeacherRecording 
     : 'Teacher';
 
   return (
-    <div className="bg-white rounded-xl border border-amber-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl border border-amber-200 overflow-hidden hover:shadow-md transition-shadow min-w-[320px]">
       <div className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-amber-600 font-medium">Voice to teacher</span>
@@ -178,7 +178,7 @@ export default function StudentRecordingsPage() {
           Voice messages you sent to your teacher appear here with the date and time they were sent.
         </p>
         {isLoadingVoiceToTeacher ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[1, 2].map((i) => (
               <div key={i} className="bg-white rounded-xl border border-slate-200 animate-pulse p-4 h-28" />
             ))}
@@ -191,30 +191,13 @@ export default function StudentRecordingsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {voiceToTeacherRecordings.map((rec) => (
               <VoiceToTeacherCard key={rec.id} recording={rec} />
             ))}
           </div>
         )}
       </section>
-
-      {/* Info Banner */}
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <p className="font-medium text-blue-800">Recordings are available for 30 days</p>
-            <p className="text-sm text-blue-600">
-              Download recordings you want to keep permanently before they expire.
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Recordings Grid */}
       {isLoading ? (
@@ -229,23 +212,7 @@ export default function StudentRecordingsPage() {
             </div>
           ))}
         </div>
-      ) : filteredRecordings.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
-          <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-slate-800 mb-1">
-            {searchQuery ? 'No recordings found' : 'No recordings yet'}
-          </h3>
-          <p className="text-sm text-slate-500">
-            {searchQuery
-              ? 'Try a different search term'
-              : 'Recordings of your lessons will appear here after they are completed.'}
-          </p>
-        </div>
-      ) : (
+      ) : filteredRecordings.length === 0 ? null : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRecordings.map((recording) => (
             <RecordingCard key={recording.id} recording={recording} />
