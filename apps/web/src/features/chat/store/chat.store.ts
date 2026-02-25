@@ -84,7 +84,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set({ accountKey: null, activeChat: null });
       return;
     }
-    let byAccount = { ...state.activeChatByAccount };
+    const byAccount = { ...state.activeChatByAccount };
     if (byAccount[key] === undefined) {
       const stored = getStoredChatForAccount(key);
       if (stored) byAccount[key] = stored;
