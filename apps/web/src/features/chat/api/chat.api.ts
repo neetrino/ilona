@@ -341,6 +341,22 @@ export interface VoiceToTeacherRecording {
   } | null;
 }
 
-export async function fetchStudentVoiceToTeacherRecordings(): Promise<VoiceToTeacherRecording[]> {
-  return api.get<VoiceToTeacherRecording[]>(`${CHAT_ENDPOINT}/student/voice-to-teacher-recordings`);
+export interface RecordingsDateFilters {
+  year?: number;
+  month?: number;
+  day?: number;
+}
+
+export async function fetchStudentVoiceToTeacherRecordings(
+  filters?: RecordingsDateFilters,
+): Promise<VoiceToTeacherRecording[]> {
+  const params = new URLSearchParams();
+  if (filters?.year != null) params.append('year', String(filters.year));
+  if (filters?.month != null) params.append('month', String(filters.month));
+  if (filters?.day != null) params.append('day', String(filters.day));
+  const query = params.toString();
+  const url = query
+    ? `${CHAT_ENDPOINT}/student/voice-to-teacher-recordings?${query}`
+    : `${CHAT_ENDPOINT}/student/voice-to-teacher-recordings`;
+  return api.get<VoiceToTeacherRecording[]>(url);
 }

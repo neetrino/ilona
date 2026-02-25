@@ -574,18 +574,41 @@ export class MessageService {
   /**
    * Get voice messages sent by a student to their teacher (for Recordings section).
    * Student-only; returns messages with metadata.voiceToTeacher === true.
+   * Optional filters: year, month, day (UTC) filter by createdAt.
    *
    * RETENTION: Student Recordings have no expiration. They are retained indefinitely
    * until manually deleted by the student or admin. Do not add TTL, expiresAt, or
    * date-based filters here; do not add cron/cleanup jobs that delete these recordings.
    */
-  async getStudentVoiceToTeacherRecordings(studentUserId: string) {
+  async getStudentVoiceToTeacherRecordings(
+    studentUserId: string,
+    filters?: { year?: number; month?: number; day?: number },
+  ) {
+    const baseWhere: Prisma.MessageWhereInput = {
+      senderId: studentUserId,
+      type: MessageType.VOICE,
+      fileUrl: { not: null },
+    };
+
+    if (filters?.year != null && !Number.isNaN(filters.year)) {
+      const y = filters.year;
+      if (filters.month != null && !Number.isNaN(filters.month) && filters.day != null && !Number.isNaN(filters.day)) {
+        const start = new Date(Date.UTC(y, filters.month - 1, filters.day, 0, 0, 0, 0));
+        const end = new Date(Date.UTC(y, filters.month - 1, filters.day + 1, 0, 0, 0, 0));
+        baseWhere.createdAt = { gte: start, lt: end };
+      } else if (filters.month != null && !Number.isNaN(filters.month)) {
+        const start = new Date(Date.UTC(y, filters.month - 1, 1, 0, 0, 0, 0));
+        const end = new Date(Date.UTC(y, filters.month, 1, 0, 0, 0, 0));
+        baseWhere.createdAt = { gte: start, lt: end };
+      } else {
+        const start = new Date(Date.UTC(y, 0, 1, 0, 0, 0, 0));
+        const end = new Date(Date.UTC(y + 1, 0, 1, 0, 0, 0, 0));
+        baseWhere.createdAt = { gte: start, lt: end };
+      }
+    }
+
     const messages = await this.prisma.message.findMany({
-      where: {
-        senderId: studentUserId,
-        type: MessageType.VOICE,
-        fileUrl: { not: null },
-      },
+      where: baseWhere,
       orderBy: { createdAt: 'desc' },
       include: {
         chat: {
