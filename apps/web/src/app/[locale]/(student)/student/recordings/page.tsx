@@ -25,49 +25,6 @@ interface Recording {
   };
 }
 
-// Mock data for recordings - in real app, would come from API
-const mockRecordings: Recording[] = [
-  {
-    id: '1',
-    lessonId: 'l1',
-    url: '/recordings/lesson1.mp4',
-    duration: 2700, // 45 min
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    lesson: {
-      topic: 'Present Perfect Tense',
-      scheduledAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      group: { name: 'Advanced English B2' },
-      teacher: { user: { firstName: 'Olena', lastName: 'Kovalenko' } },
-    },
-  },
-  {
-    id: '2',
-    lessonId: 'l2',
-    url: '/recordings/lesson2.mp4',
-    duration: 3600, // 60 min
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    lesson: {
-      topic: 'Business Vocabulary',
-      scheduledAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      group: { name: 'Advanced English B2' },
-      teacher: { user: { firstName: 'Olena', lastName: 'Kovalenko' } },
-    },
-  },
-  {
-    id: '3',
-    lessonId: 'l3',
-    url: '/recordings/lesson3.mp4',
-    duration: 2400, // 40 min
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    lesson: {
-      topic: 'Conditional Sentences',
-      scheduledAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      group: { name: 'Advanced English B2' },
-      teacher: { user: { firstName: 'Olena', lastName: 'Kovalenko' } },
-    },
-  },
-];
-
 function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -124,7 +81,7 @@ export default function StudentRecordingsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // In real app, would fetch from API
-  const recordings = mockRecordings;
+  const recordings: Recording[] = [];
   const isLoading = false;
 
   // Filter recordings by search
