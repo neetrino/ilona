@@ -2,7 +2,14 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
+import {
+  fetchStudentVoiceToTeacherRecordings,
+  type VoiceToTeacherRecording,
+} from '@/features/chat/api/chat.api';
+import { chatKeys } from '@/features/chat/hooks/useChat';
 
 interface Recording {
   id: string;
@@ -25,49 +32,6 @@ interface Recording {
   };
 }
 
-// Mock data for recordings - in real app, would come from API
-const mockRecordings: Recording[] = [
-  {
-    id: '1',
-    lessonId: 'l1',
-    url: '/recordings/lesson1.mp4',
-    duration: 2700, // 45 min
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    lesson: {
-      topic: 'Present Perfect Tense',
-      scheduledAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      group: { name: 'Advanced English B2' },
-      teacher: { user: { firstName: 'Olena', lastName: 'Kovalenko' } },
-    },
-  },
-  {
-    id: '2',
-    lessonId: 'l2',
-    url: '/recordings/lesson2.mp4',
-    duration: 3600, // 60 min
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    lesson: {
-      topic: 'Business Vocabulary',
-      scheduledAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      group: { name: 'Advanced English B2' },
-      teacher: { user: { firstName: 'Olena', lastName: 'Kovalenko' } },
-    },
-  },
-  {
-    id: '3',
-    lessonId: 'l3',
-    url: '/recordings/lesson3.mp4',
-    duration: 2400, // 40 min
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    lesson: {
-      topic: 'Conditional Sentences',
-      scheduledAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      group: { name: 'Advanced English B2' },
-      teacher: { user: { firstName: 'Olena', lastName: 'Kovalenko' } },
-    },
-  },
-];
-
 function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -75,6 +39,47 @@ function formatDuration(seconds: number): string {
     return `${hours}h ${minutes}m`;
   }
   return `${minutes} min`;
+}
+
+function formatVoiceTimestamp(createdAt: string): string {
+  const date = new Date(createdAt);
+  return date.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function VoiceToTeacherCard({ recording }: { recording: VoiceToTeacherRecording }) {
+  const teacherName = recording.teacher
+    ? `${recording.teacher.firstName} ${recording.teacher.lastName}`
+    : 'Teacher';
+
+  return (
+    <div className="bg-white rounded-xl border border-amber-200 overflow-hidden hover:shadow-md transition-shadow min-w-[320px]">
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-amber-600 font-medium">Voice to teacher</span>
+          <span className="text-xs text-slate-400" title={recording.createdAt}>
+            {formatVoiceTimestamp(recording.createdAt)}
+          </span>
+        </div>
+        <p className="text-sm text-slate-600 mb-3">{teacherName}</p>
+        <div className="flex items-center gap-2">
+          <VoiceMessagePlayer
+            fileUrl={recording.fileUrl}
+            duration={recording.duration}
+            fileName={recording.fileName}
+          />
+          <span className="text-xs text-slate-400">
+            {formatDuration(recording.duration)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function RecordingCard({ recording }: { recording: Recording }) {
@@ -122,9 +127,14 @@ function RecordingCard({ recording }: { recording: Recording }) {
 export default function StudentRecordingsPage() {
   const t = useTranslations('nav');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
+  const { data: voiceToTeacherRecordings = [], isLoading: isLoadingVoiceToTeacher } = useQuery({
+    queryKey: [...chatKeys.all, 'student', 'voice-to-teacher-recordings'],
+    queryFn: () => fetchStudentVoiceToTeacherRecordings(),
+  });
+
   // In real app, would fetch from API
-  const recordings = mockRecordings;
+  const recordings: Recording[] = [];
   const isLoading = false;
 
   // Filter recordings by search
@@ -161,22 +171,33 @@ export default function StudentRecordingsPage() {
         </p>
       </div>
 
-      {/* Info Banner */}
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      {/* Voice messages to teacher (Student Recordings section) */}
+      <section className="mb-8">
+        <h3 className="text-lg font-semibold text-slate-800 mb-3">Voice messages to teacher</h3>
+        <p className="text-sm text-slate-500 mb-4">
+          Voice messages you sent to your teacher appear here with the date and time they were sent.
+        </p>
+        {isLoadingVoiceToTeacher ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-xl border border-slate-200 animate-pulse p-4 h-28" />
+            ))}
           </div>
-          <div>
-            <p className="font-medium text-blue-800">Recordings are available for 30 days</p>
-            <p className="text-sm text-blue-600">
-              Download recordings you want to keep permanently before they expire.
+        ) : voiceToTeacherRecordings.length === 0 ? (
+          <div className="py-8 bg-amber-50/50 border border-amber-200 rounded-xl text-center">
+            <p className="text-sm text-slate-600">No voice messages to teacher yet.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Use &quot;Send Voice to Teacher&quot; in Chat to record and send a voice message to your teacher.
             </p>
           </div>
-        </div>
-      </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {voiceToTeacherRecordings.map((rec) => (
+              <VoiceToTeacherCard key={rec.id} recording={rec} />
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Recordings Grid */}
       {isLoading ? (
@@ -191,23 +212,7 @@ export default function StudentRecordingsPage() {
             </div>
           ))}
         </div>
-      ) : filteredRecordings.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
-          <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-slate-800 mb-1">
-            {searchQuery ? 'No recordings found' : 'No recordings yet'}
-          </h3>
-          <p className="text-sm text-slate-500">
-            {searchQuery
-              ? 'Try a different search term'
-              : 'Recordings of your lessons will appear here after they are completed.'}
-          </p>
-        </div>
-      ) : (
+      ) : filteredRecordings.length === 0 ? null : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRecordings.map((recording) => (
             <RecordingCard key={recording.id} recording={recording} />

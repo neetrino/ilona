@@ -46,6 +46,9 @@ export class ChatManagementService {
               id: true,
               name: true,
               level: true,
+              center: { select: { id: true, name: true } },
+              teacherId: true,
+              teacher: { select: { userId: true } },
             },
           },
           participants: {
@@ -201,6 +204,8 @@ export class ChatManagementService {
         id: string;
         name: string;
       } | null;
+      teacherId: string | null;
+      teacher: { userId: string } | null;
     } | null;
     participants: Array<{
       id: string;
@@ -229,6 +234,8 @@ export class ChatManagementService {
             name: true,
             level: true,
             center: { select: { id: true, name: true } },
+            teacherId: true,
+            teacher: { select: { userId: true } },
           },
         },
         participants: {
@@ -557,6 +564,8 @@ export class ChatManagementService {
         id: string;
         name: string;
       } | null;
+      teacherId: string | null;
+      teacher: { userId: string } | null;
     } | null;
     participants: Array<{
       id: string;
@@ -584,6 +593,8 @@ export class ChatManagementService {
             name: true,
             level: true,
             center: { select: { id: true, name: true } },
+            teacherId: true,
+            teacher: { select: { userId: true } },
           },
         },
         participants: {

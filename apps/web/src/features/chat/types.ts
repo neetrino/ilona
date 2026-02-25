@@ -57,6 +57,8 @@ export interface Chat {
       id: string;
       name: string;
     };
+    teacherId?: string | null;
+    teacher?: { userId: string } | null;
   };
   participants: ChatParticipant[];
   lastMessage?: Message | null;

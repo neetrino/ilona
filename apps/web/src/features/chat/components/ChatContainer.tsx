@@ -25,8 +25,16 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user } = useAuthStore();
-  const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible } = useChatStore();
+  const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible, setAccountKey } =
+    useChatStore();
   const { data: chats = [], isLoading: isLoadingChats } = useChats();
+
+  // Isolate chat state per account so one role/account does not affect another (e.g. Admin vs Student)
+  useEffect(() => {
+    const key =
+      user?.id && user?.role ? `${user.id}-${user.role.toLowerCase()}` : null;
+    setAccountKey(key);
+  }, [user?.id, user?.role, setAccountKey]);
   const createDirectChat = useCreateDirectChat();
   const { data: teachers = [], isLoading: isLoadingTeachers } = useMyTeachers(user?.role === 'STUDENT');
   const isInitialMount = useRef(true);

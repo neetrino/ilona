@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useSettingsPage } from './hooks/useSettingsPage';
 import { SettingsSidebar } from './components/SettingsSidebar';
 import { SecurityTab } from './components/SecurityTab';
@@ -12,7 +12,7 @@ import { SystemTab } from './components/SystemTab';
 import { PenaltyTab } from './components/PenaltyTab';
 
 export default function SettingsPage() {
-  const { logout } = useAuthStore();
+  const logout = useLogout();
   const router = useRouter();
   const t = useTranslations('settings');
   
@@ -20,7 +20,6 @@ export default function SettingsPage() {
 
   const handleLogout = () => {
     logout();
-    // Redirect to root page after logout
     router.replace('/');
   };
 

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { getProxiedFileUrl } from '@/shared/lib/api';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
-const PLAYBACK_SPEED_OPTIONS = [1, 1.25, 1.5, 2] as const;
+const PLAYBACK_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 type PlaybackSpeed = (typeof PLAYBACK_SPEED_OPTIONS)[number];
 
 /** Per-user localStorage key to avoid speed preference leaking across accounts. */
@@ -56,7 +56,7 @@ interface VoiceMessagePlayerProps {
 
 export function VoiceMessagePlayer({
   fileUrl,
-  duration,
+  duration: durationProp,
   fileName: _fileName,
 }: VoiceMessagePlayerProps) {
   const { user } = useAuthStore();
@@ -64,12 +64,18 @@ export function VoiceMessagePlayer({
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [playbackSpeed, setPlaybackSpeed] = useState<PlaybackSpeed>(1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  /** Progress 0–100 for the progress bar; reset to 0 when starting playback. */
+  const [progress, setProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Hydrate speed from user-scoped localStorage on mount and when user changes (login/logout)
   useEffect(() => {
     setPlaybackSpeed(getStoredPlaybackSpeed(userId));
   }, [userId]);
+
+  // Convert R2 URLs to API proxy URLs to avoid CORS issues (must be before effects that use it)
+  const proxiedUrl = getProxiedFileUrl(fileUrl) || fileUrl;
 
   // Apply playbackRate to audio element whenever speed or element changes; does not reset position
   useEffect(() => {
@@ -79,8 +85,14 @@ export function VoiceMessagePlayer({
     }
   }, [playbackSpeed]);
 
-  // Convert R2 URLs to API proxy URLs to avoid CORS issues
-  const proxiedUrl = getProxiedFileUrl(fileUrl) || fileUrl;
+  // When the audio source changes, reset position and progress bar to beginning
+  useEffect(() => {
+    const el = audioRef.current;
+    if (el && proxiedUrl) {
+      el.currentTime = 0;
+      setProgress(0);
+    }
+  }, [proxiedUrl]);
 
   // Format duration for voice messages (seconds to MM:SS)
   const formatDuration = (seconds: number) => {
@@ -129,6 +141,47 @@ export function VoiceMessagePlayer({
     }
   };
 
+  const handlePlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    const el = audioRef.current;
+    if (el?.duration && isFinite(el.duration)) {
+      setProgress(100);
+    }
+  };
+
+  /** Update progress bar from current playback position (smooth, real-time). */
+  const handleTimeUpdate = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    const duration = el.duration;
+    if (duration && isFinite(duration) && duration > 0) {
+      setProgress((el.currentTime / duration) * 100);
+    } else if (durationProp != null && durationProp > 0) {
+      setProgress((el.currentTime / durationProp) * 100);
+    }
+  };
+
+  /** Start from beginning and play; used by custom play button so progress bar starts at 0. */
+  const handlePlayClick = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    el.currentTime = 0;
+    setProgress(0);
+    el.play().catch(() => {});
+  };
+
+  const handlePauseClick = () => {
+    audioRef.current?.pause();
+  };
+
   const handleLoadStart = () => {
     setIsLoading(true);
     setHasError(false);
@@ -139,6 +192,7 @@ export function VoiceMessagePlayer({
     if (audioRef.current) {
       setHasError(false);
       setIsLoading(true);
+      setProgress(0);
       audioRef.current.load();
     }
   };
@@ -176,9 +230,9 @@ export function VoiceMessagePlayer({
         >
           Retry
         </button>
-        {duration && (
+        {durationProp != null && (
           <span className="text-xs text-red-600 flex-shrink-0">
-            {formatDuration(duration)}
+            {formatDuration(durationProp)}
           </span>
         )}
       </div>
@@ -186,28 +240,65 @@ export function VoiceMessagePlayer({
   }
 
   return (
-    <div className="flex items-center gap-2 min-w-[200px] flex-wrap">
+    <div className="flex items-center gap-2 min-w-0 w-full flex-wrap">
       <div className="flex-shrink-0">
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
           <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
         </svg>
       </div>
-      <div className="flex-1 relative min-w-0">
+      <div className="flex-1 relative min-w-[200px] max-w-[280px]">
         <audio
           ref={audioRef}
           src={proxiedUrl}
-          controls
           preload="metadata"
-          className="flex-1 h-10 w-full"
-          style={{ minWidth: '160px' }}
+          className="sr-only"
           onError={handleError}
           onCanPlay={handleCanPlay}
           onLoadStart={handleLoadStart}
+          onPlay={handlePlay}
+          onPause={handlePause}
+          onEnded={handleEnded}
+          onTimeUpdate={handleTimeUpdate}
           crossOrigin="anonymous"
         />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={isPlaying ? handlePauseClick : handlePlayClick}
+            disabled={isLoading}
+            className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 touch-manipulation"
+            title={isPlaying ? 'Pause' : 'Play'}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? (
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+          <div className="flex-1 min-w-0">
+            <div
+              className="h-2 bg-slate-200 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuenow={Math.round(progress)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Playback progress"
+            >
+              <div
+                className="h-full bg-primary transition-[width] duration-75 ease-linear"
+                style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+              />
+            </div>
+          </div>
+        </div>
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded pointer-events-none">
             <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         )}
@@ -215,15 +306,15 @@ export function VoiceMessagePlayer({
       <button
         type="button"
         onClick={cyclePlaybackSpeed}
-        className="flex-shrink-0 min-w-[2.5rem] py-1.5 px-2 text-sm font-semibold rounded-md bg-white/25 hover:bg-white/35 text-inherit transition-colors touch-manipulation"
+        className="flex-shrink-0 min-w-[2.75rem] py-1.5 px-2.5 text-sm font-semibold rounded-lg bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200 transition-colors touch-manipulation"
         title={`Playback speed: ${formatSpeedLabel(playbackSpeed)}. Click to change.`}
         aria-label={`Playback speed ${formatSpeedLabel(playbackSpeed)}`}
       >
         {formatSpeedLabel(playbackSpeed)}
       </button>
-      {duration && (
-        <span className="text-sm font-semibold flex-shrink-0 text-inherit tabular-nums">
-          {formatDuration(duration)}
+      {durationProp != null && (
+        <span className="text-sm font-semibold flex-shrink-0 text-slate-500 tabular-nums">
+          {formatDuration(durationProp)}
         </span>
       )}
     </div>

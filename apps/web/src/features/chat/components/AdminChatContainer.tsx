@@ -25,8 +25,15 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user } = useAuthStore();
-  const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible } = useChatStore();
+  const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible, setAccountKey } =
+    useChatStore();
   const isInitialMount = useRef(true);
+
+  // Isolate chat state per account so Admin selection does not affect Student (and vice versa)
+  useEffect(() => {
+    const key = user?.id ? `${user.id}-admin` : null;
+    setAccountKey(key);
+  }, [user?.id, setAccountKey]);
 
   // Get tab from URL, no default - user must select a tab
   const tabFromUrl = searchParams.get('tab') as AdminChatTab | null;

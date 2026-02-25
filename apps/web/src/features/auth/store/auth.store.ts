@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { api } from '@/shared/lib/api';
+import { clearChatStateOnLogout } from '@/features/chat/store/chat.store';
 import type { User, AuthTokens, UserRole } from '@/types';
 
 interface AuthState {
@@ -74,7 +75,7 @@ export const useAuthStore = create<AuthStore>()(
 
       logout: () => {
         set({ ...initialState, isHydrated: true });
-        // Reset refresh failed state in API client
+        clearChatStateOnLogout();
         api.resetRefreshFailed();
       },
 

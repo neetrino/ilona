@@ -324,3 +324,23 @@ export async function fetchStudentAdmin(): Promise<StudentAdmin | null> {
 export async function markChatAsRead(chatId: string): Promise<{ success: boolean }> {
   return api.post<{ success: boolean }>(`${CHAT_ENDPOINT}/${chatId}/read`);
 }
+
+/**
+ * Student-only: Get voice messages sent to teacher (for Recordings section)
+ */
+export interface VoiceToTeacherRecording {
+  id: string;
+  fileUrl: string;
+  fileName?: string;
+  duration: number;
+  createdAt: string;
+  teacher: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+}
+
+export async function fetchStudentVoiceToTeacherRecordings(): Promise<VoiceToTeacherRecording[]> {
+  return api.get<VoiceToTeacherRecording[]>(`${CHAT_ENDPOINT}/student/voice-to-teacher-recordings`);
+}

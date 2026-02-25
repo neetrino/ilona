@@ -6,12 +6,14 @@ import { useRouter, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useLogout } from '@/features/auth/hooks/useLogout';
 import { cn } from '@/shared/lib/utils';
 
 type SettingsTab = 'security' | 'notifications' | 'teaching';
 
 export default function TeacherSettingsPage() {
-  const { user: _user, logout } = useAuthStore();
+  const { user: _user } = useAuthStore();
+  const logout = useLogout();
   const router = useRouter();
   const _pathname = usePathname();
   const _locale = useLocale();
@@ -22,7 +24,6 @@ export default function TeacherSettingsPage() {
 
   const handleLogout = () => {
     logout();
-    // Redirect to root page after logout
     router.replace('/');
   };
 
