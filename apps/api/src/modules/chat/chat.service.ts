@@ -119,7 +119,10 @@ export class ChatService {
     return this.chatListsService.getAdminForStudent(studentUserId);
   }
 
-  async getStudentVoiceToTeacherRecordings(studentUserId: string) {
-    return this.messageService.getStudentVoiceToTeacherRecordings(studentUserId);
+  async getStudentVoiceToTeacherRecordings(
+    studentUserId: string,
+    filters?: { year?: number; month?: number; day?: number },
+  ) {
+    return this.messageService.getStudentVoiceToTeacherRecordings(studentUserId, filters);
   }
 }

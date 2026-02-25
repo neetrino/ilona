@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -10,6 +10,17 @@ import {
   type VoiceToTeacherRecording,
 } from '@/features/chat/api/chat.api';
 import { chatKeys } from '@/features/chat/hooks/useChat';
+
+const MONTH_OPTIONS = [
+  { value: 1, label: 'January' }, { value: 2, label: 'February' }, { value: 3, label: 'March' },
+  { value: 4, label: 'April' }, { value: 5, label: 'May' }, { value: 6, label: 'June' },
+  { value: 7, label: 'July' }, { value: 8, label: 'August' }, { value: 9, label: 'September' },
+  { value: 10, label: 'October' }, { value: 11, label: 'November' }, { value: 12, label: 'December' },
+];
+
+function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
 
 interface Recording {
   id: string;
@@ -127,11 +138,43 @@ function RecordingCard({ recording }: { recording: Recording }) {
 export default function StudentRecordingsPage() {
   const t = useTranslations('nav');
   const [searchQuery, setSearchQuery] = useState('');
+  const now = useMemo(() => new Date(), []);
+  const currentYear = now.getFullYear();
+
+  const [filterYear, setFilterYear] = useState<number | ''>('');
+  const [filterMonth, setFilterMonth] = useState<number | ''>('');
+  const [filterDay, setFilterDay] = useState<number | ''>('');
+
+  const apiFilters = useMemo(() => {
+    const f: { year?: number; month?: number; day?: number } = {};
+    if (filterYear !== '') f.year = filterYear;
+    if (filterMonth !== '' && filterYear !== '') f.month = filterMonth;
+    if (filterDay !== '' && filterMonth !== '' && filterYear !== '') f.day = filterDay;
+    return Object.keys(f).length ? f : undefined;
+  }, [filterYear, filterMonth, filterDay]);
 
   const { data: voiceToTeacherRecordings = [], isLoading: isLoadingVoiceToTeacher } = useQuery({
-    queryKey: [...chatKeys.all, 'student', 'voice-to-teacher-recordings'],
-    queryFn: () => fetchStudentVoiceToTeacherRecordings(),
+    queryKey: [...chatKeys.all, 'student', 'voice-to-teacher-recordings', apiFilters ?? 'all'],
+    queryFn: () => fetchStudentVoiceToTeacherRecordings(apiFilters),
   });
+
+  const yearOptions = useMemo(() => {
+    return Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+  }, [currentYear]);
+
+  const dayOptions = useMemo(() => {
+    if (filterYear === '' || filterMonth === '') return [];
+    const days = getDaysInMonth(filterYear, filterMonth);
+    return Array.from({ length: days }, (_, i) => i + 1);
+  }, [filterYear, filterMonth]);
+
+  const hasDateFilter = filterYear !== '' || filterMonth !== '' || filterDay !== '';
+
+  const handleResetFilters = () => {
+    setFilterYear('');
+    setFilterMonth('');
+    setFilterDay('');
+  };
 
   // In real app, would fetch from API
   const recordings: Recording[] = [];
@@ -147,11 +190,83 @@ export default function StudentRecordingsPage() {
     );
   });
 
+  const selectClass =
+    'w-full h-12 px-4 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none text-slate-700';
+
   return (
     <DashboardLayout
       title={t('recordings')}
       subtitle={t('recordingsSubtitle')}
     >
+      {/* Date filters – match reference: Year, Month, Day in a row with labels above */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-6">
+        <div>
+          <label className="block text-sm font-medium text-slate-600 mb-1.5">Year</label>
+          <select
+            value={filterYear === '' ? 'all' : filterYear}
+            onChange={(e) => {
+              const v = e.target.value;
+              setFilterYear(v === 'all' ? '' : Number(v));
+              setFilterMonth('');
+              setFilterDay('');
+            }}
+            className={selectClass}
+          >
+            <option value="all">All years</option>
+            {yearOptions.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-600 mb-1.5">Month</label>
+          <select
+            value={filterMonth === '' ? 'all' : filterMonth}
+            onChange={(e) => {
+              const v = e.target.value;
+              setFilterMonth(v === 'all' ? '' : Number(v));
+              setFilterDay('');
+            }}
+            className={selectClass}
+            disabled={filterYear === ''}
+          >
+            <option value="all">All months</option>
+            {MONTH_OPTIONS.map((m) => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-600 mb-1.5">Day</label>
+          <select
+            value={filterDay === '' ? 'all' : filterDay}
+            onChange={(e) => {
+              const v = e.target.value;
+              setFilterDay(v === 'all' ? '' : Number(v));
+            }}
+            className={selectClass}
+            disabled={filterYear === '' || filterMonth === ''}
+          >
+            <option value="all">All days</option>
+            {dayOptions.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+        </div>
+        {hasDateFilter && (
+          <div>
+            <label className="block text-sm font-medium text-slate-600 mb-1.5">&nbsp;</label>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="h-12 px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 transition-colors"
+            >
+              Reset / All
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Search & Info */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div className="relative flex-1 max-w-md">
@@ -167,7 +282,7 @@ export default function StudentRecordingsPage() {
           />
         </div>
         <p className="text-sm text-slate-500">
-          {filteredRecordings.length} recording{filteredRecordings.length !== 1 ? 's' : ''} available
+          {voiceToTeacherRecordings.length} recording{voiceToTeacherRecordings.length !== 1 ? 's' : ''} available
         </p>
       </div>
 
@@ -185,10 +300,25 @@ export default function StudentRecordingsPage() {
           </div>
         ) : voiceToTeacherRecordings.length === 0 ? (
           <div className="py-8 bg-amber-50/50 border border-amber-200 rounded-xl text-center">
-            <p className="text-sm text-slate-600">No voice messages to teacher yet.</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Use &quot;Send Voice to Teacher&quot; in Chat to record and send a voice message to your teacher.
-            </p>
+            {hasDateFilter ? (
+              <>
+                <p className="text-sm text-slate-600">No recordings found for selected date.</p>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="mt-3 text-sm font-medium text-amber-700 hover:text-amber-800 underline"
+                >
+                  Clear filters and show all
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-slate-600">No voice messages to teacher yet.</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Use &quot;Send Voice to Teacher&quot; in Chat to record and send a voice message to your teacher.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

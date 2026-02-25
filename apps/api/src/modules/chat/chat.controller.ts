@@ -296,11 +296,22 @@ export class ChatController {
 
   /**
    * Get student's voice messages sent to teacher (for Recordings section). Student only.
+   * Optional query: year, month, day (UTC) to filter by createdAt.
    */
   @Get('student/voice-to-teacher-recordings')
   @Roles(UserRole.STUDENT)
-  async getStudentVoiceToTeacherRecordings(@CurrentUser() user: JwtPayload) {
-    return this.chatService.getStudentVoiceToTeacherRecordings(user.sub);
+  async getStudentVoiceToTeacherRecordings(
+    @CurrentUser() user: JwtPayload,
+    @Query('year') year?: string,
+    @Query('month') month?: string,
+    @Query('day') day?: string,
+  ) {
+    const filters = {
+      year: year ? parseInt(year, 10) : undefined,
+      month: month ? parseInt(month, 10) : undefined,
+      day: day ? parseInt(day, 10) : undefined,
+    };
+    return this.chatService.getStudentVoiceToTeacherRecordings(user.sub, filters);
   }
 }
 
