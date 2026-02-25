@@ -56,7 +56,7 @@ interface VoiceMessagePlayerProps {
 
 export function VoiceMessagePlayer({
   fileUrl,
-  duration,
+  duration: durationProp,
   fileName: _fileName,
 }: VoiceMessagePlayerProps) {
   const { user } = useAuthStore();
@@ -64,6 +64,9 @@ export function VoiceMessagePlayer({
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [playbackSpeed, setPlaybackSpeed] = useState<PlaybackSpeed>(1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  /** Progress 0–100 for the progress bar; reset to 0 when starting playback. */
+  const [progress, setProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Hydrate speed from user-scoped localStorage on mount and when user changes (login/logout)
@@ -82,11 +85,12 @@ export function VoiceMessagePlayer({
     }
   }, [playbackSpeed]);
 
-  // When the audio source changes, ensure playback starts from the beginning
+  // When the audio source changes, reset position and progress bar to beginning
   useEffect(() => {
     const el = audioRef.current;
     if (el && proxiedUrl) {
       el.currentTime = 0;
+      setProgress(0);
     }
   }, [proxiedUrl]);
 
@@ -138,10 +142,44 @@ export function VoiceMessagePlayer({
   };
 
   const handlePlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
     const el = audioRef.current;
-    if (el && el.ended) {
-      el.currentTime = 0;
+    if (el?.duration && isFinite(el.duration)) {
+      setProgress(100);
     }
+  };
+
+  /** Update progress bar from current playback position (smooth, real-time). */
+  const handleTimeUpdate = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    const duration = el.duration;
+    if (duration && isFinite(duration) && duration > 0) {
+      setProgress((el.currentTime / duration) * 100);
+    } else if (durationProp != null && durationProp > 0) {
+      setProgress((el.currentTime / durationProp) * 100);
+    }
+  };
+
+  /** Start from beginning and play; used by custom play button so progress bar starts at 0. */
+  const handlePlayClick = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    el.currentTime = 0;
+    setProgress(0);
+    el.play().catch(() => {});
+  };
+
+  const handlePauseClick = () => {
+    audioRef.current?.pause();
   };
 
   const handleLoadStart = () => {
@@ -154,6 +192,7 @@ export function VoiceMessagePlayer({
     if (audioRef.current) {
       setHasError(false);
       setIsLoading(true);
+      setProgress(0);
       audioRef.current.load();
     }
   };
@@ -191,9 +230,9 @@ export function VoiceMessagePlayer({
         >
           Retry
         </button>
-        {duration && (
+        {durationProp != null && (
           <span className="text-xs text-red-600 flex-shrink-0">
-            {formatDuration(duration)}
+            {formatDuration(durationProp)}
           </span>
         )}
       </div>
@@ -212,18 +251,54 @@ export function VoiceMessagePlayer({
         <audio
           ref={audioRef}
           src={proxiedUrl}
-          controls
           preload="metadata"
-          className="flex-1 h-10 w-full"
-          style={{ minWidth: '120px' }}
+          className="sr-only"
           onError={handleError}
           onCanPlay={handleCanPlay}
           onLoadStart={handleLoadStart}
           onPlay={handlePlay}
+          onPause={handlePause}
+          onEnded={handleEnded}
+          onTimeUpdate={handleTimeUpdate}
           crossOrigin="anonymous"
         />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={isPlaying ? handlePauseClick : handlePlayClick}
+            disabled={isLoading}
+            className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 touch-manipulation"
+            title={isPlaying ? 'Pause' : 'Play'}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? (
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+          <div className="flex-1 min-w-0">
+            <div
+              className="h-2 bg-slate-200 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuenow={Math.round(progress)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Playback progress"
+            >
+              <div
+                className="h-full bg-primary transition-[width] duration-75 ease-linear"
+                style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+              />
+            </div>
+          </div>
+        </div>
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded pointer-events-none">
             <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         )}
@@ -237,9 +312,9 @@ export function VoiceMessagePlayer({
       >
         {formatSpeedLabel(playbackSpeed)}
       </button>
-      {duration && (
+      {durationProp != null && (
         <span className="text-sm font-semibold flex-shrink-0 text-slate-500 tabular-nums">
-          {formatDuration(duration)}
+          {formatDuration(durationProp)}
         </span>
       )}
     </div>
