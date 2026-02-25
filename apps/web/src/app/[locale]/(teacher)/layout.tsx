@@ -13,7 +13,6 @@ export default function TeacherLayout({
   const { isAuthenticated, isHydrated, user } = useAuthStore();
 
 
-  console.log("Hello");
   useEffect(() => {
     // Wait for hydration before making any decisions
     if (!isHydrated) return;
