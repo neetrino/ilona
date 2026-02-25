@@ -293,6 +293,15 @@ export class ChatController {
   async getAdminForStudent(@CurrentUser() user: JwtPayload) {
     return this.chatService.getAdminForStudent(user.sub);
   }
+
+  /**
+   * Get student's voice messages sent to teacher (for Recordings section). Student only.
+   */
+  @Get('student/voice-to-teacher-recordings')
+  @Roles(UserRole.STUDENT)
+  async getStudentVoiceToTeacherRecordings(@CurrentUser() user: JwtPayload) {
+    return this.chatService.getStudentVoiceToTeacherRecordings(user.sub);
+  }
 }
 
 

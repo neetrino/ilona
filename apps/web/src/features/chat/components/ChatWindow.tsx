@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useMessages, useSocket, useAddMessageToCache } from '../hooks';
+import { useMessages, useSocket, useAddMessageToCache, useCreateDirectChat } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
@@ -42,14 +42,33 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [showVoiceToTeacherRecorder, setShowVoiceToTeacherRecorder] = useState(false);
   const [isUploadingVoice, setIsUploadingVoice] = useState(false);
+  const [isUploadingVoiceToTeacher, setIsUploadingVoiceToTeacher] = useState(false);
 
   const addMessageToCache = useAddMessageToCache();
+  const createDirectChat = useCreateDirectChat();
 
   // Check if user is teacher (can send vocabulary)
   const isTeacher = user?.role === 'TEACHER';
   const isGroupChat = chat.type === 'GROUP';
   const isAdmin = user?.role === 'ADMIN';
+  const isStudent = user?.role === 'STUDENT';
+
+  // Resolve teacher user id for "Send Voice to Teacher" (Student only): direct chat with teacher, or group's assigned teacher
+  const getOtherParticipantForVoice = () => {
+    if (chat.type !== 'DIRECT') return null;
+    return chat.participants.find((p) => p.userId !== user?.id);
+  };
+  const otherParticipant = getOtherParticipantForVoice();
+  const teacherUserIdForVoice: string | null = isStudent
+    ? chat.type === 'DIRECT' && otherParticipant?.user.role === 'TEACHER'
+      ? otherParticipant.userId
+      : chat.type === 'GROUP' && chat.group?.teacher?.userId
+        ? chat.group.teacher.userId
+        : null
+    : null;
+  const canSendVoiceToTeacher = Boolean(teacherUserIdForVoice);
 
   // Fetch messages
   const {
@@ -233,7 +252,58 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   // When switching chats, exit voice recorder and discard any recording
   useEffect(() => {
     setShowVoiceRecorder(false);
+    setShowVoiceToTeacherRecorder(false);
   }, [chat.id]);
+
+  // Voice-to-teacher: upload, ensure DM with teacher exists, send with metadata, add to cache
+  const handleVoiceToTeacherRecorded = useCallback(
+    async (file: File, durationSec: number, _mimeType: string) => {
+      if (!teacherUserIdForVoice) return;
+      setIsUploadingVoiceToTeacher(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const uploadResponse = await api.post<{
+          success: boolean;
+          data: { url: string; fileName: string; fileSize: number };
+        }>('/storage/chat', formData);
+
+        if (!uploadResponse.success || !uploadResponse.data) {
+          throw new Error('Failed to upload voice message');
+        }
+
+        const { url: fileUrl, fileName, fileSize } = uploadResponse.data;
+
+        let targetChatId: string;
+        if (chat.type === 'DIRECT' && otherParticipant?.userId === teacherUserIdForVoice) {
+          targetChatId = chat.id;
+        } else {
+          const dmChat = await createDirectChat.mutateAsync(teacherUserIdForVoice);
+          targetChatId = dmChat.id;
+        }
+
+        const message = await sendMessageHttp(targetChatId, '', 'VOICE', {
+          fileUrl,
+          fileName,
+          fileSize,
+          duration: durationSec,
+          metadata: { voiceToTeacher: true, teacherId: teacherUserIdForVoice },
+        });
+
+        addMessageToCache(targetChatId, message);
+        setShowVoiceToTeacherRecorder(false);
+      } catch (error) {
+        console.error('Failed to send voice to teacher:', error);
+        const msg =
+          error instanceof Error ? error.message : 'Failed to send voice to teacher. Please try again.';
+        alert(msg);
+      } finally {
+        setIsUploadingVoiceToTeacher(false);
+      }
+    },
+    [teacherUserIdForVoice, chat.type, chat.id, otherParticipant?.userId, createDirectChat, addMessageToCache]
+  );
 
   // Save draft on unmount - only save if user has typed something
   // This ensures we never accidentally save incoming messages as drafts
@@ -630,6 +700,18 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               <p className="text-sm text-slate-500 text-center">Uploading voice message...</p>
             )}
           </div>
+        ) : showVoiceToTeacherRecorder ? (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-slate-700">Recording for your teacher</p>
+            <VoiceRecorder
+              onRecorded={handleVoiceToTeacherRecorded}
+              onCancel={() => setShowVoiceToTeacherRecorder(false)}
+              conversationId={chat.id}
+            />
+            {isUploadingVoiceToTeacher && (
+              <p className="text-sm text-slate-500 text-center">Sending voice to teacher...</p>
+            )}
+          </div>
         ) : (
           <div className="flex items-end gap-2">
             {/* Text input */}
@@ -644,7 +726,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               style={{ minHeight: '40px' }}
             />
 
-            {/* Microphone: start voice recording */}
+            {/* Microphone: start voice recording (all roles) */}
             <button
               type="button"
               onClick={() => setShowVoiceRecorder(true)}
@@ -657,6 +739,23 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                 <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
               </svg>
             </button>
+
+            {/* Send Voice to Teacher (Student only, when teacher is in context) */}
+            {isStudent && canSendVoiceToTeacher && (
+              <button
+                type="button"
+                onClick={() => setShowVoiceToTeacherRecorder(true)}
+                className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg flex-shrink-0 bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors border border-amber-200"
+                title="Send voice message to your teacher (saved in Recordings)"
+                aria-label="Send voice to teacher"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                </svg>
+                <span className="text-xs font-medium hidden sm:inline">To teacher</span>
+              </button>
+            )}
 
             {/* Send button */}
             <button

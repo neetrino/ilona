@@ -170,6 +170,24 @@ export class MessageService {
       }
     }
 
+    // voiceToTeacher: only students can set this, and only in direct chat with their teacher
+    const metadataObj = dto.metadata && typeof dto.metadata === 'object' ? (dto.metadata as Record<string, unknown>) : null;
+    if (metadataObj?.voiceToTeacher === true) {
+      if (senderUser.role !== UserRole.STUDENT) {
+        throw new ForbiddenException('Only students can send voice messages to teacher');
+      }
+      if (chat.type !== ChatType.DIRECT) {
+        throw new BadRequestException('Voice to teacher can only be sent in a direct chat with your teacher');
+      }
+      const otherParticipantForVoice = chat.participants.find((p) => p.userId !== senderId);
+      const otherUserForVoice = otherParticipantForVoice
+        ? await this.prisma.user.findUnique({ where: { id: otherParticipantForVoice.userId }, select: { role: true } })
+        : null;
+      if (otherUserForVoice?.role !== UserRole.TEACHER) {
+        throw new BadRequestException('Voice to teacher must be sent to your assigned teacher');
+      }
+    }
+
     // Additional permission check for direct chats: validate student-teacher relationship
     // Admin ↔ Teacher and Admin ↔ Student messaging is always allowed
     if (chat.type === ChatType.DIRECT) {
@@ -551,6 +569,62 @@ export class MessageService {
     });
 
     return message;
+  }
+
+  /**
+   * Get voice messages sent by a student to their teacher (for Recordings section).
+   * Student-only; returns messages with metadata.voiceToTeacher === true.
+   */
+  async getStudentVoiceToTeacherRecordings(studentUserId: string) {
+    const messages = await this.prisma.message.findMany({
+      where: {
+        senderId: studentUserId,
+        type: MessageType.VOICE,
+        fileUrl: { not: null },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        chat: {
+          include: {
+            participants: {
+              where: { userId: { not: studentUserId } },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const voiceToTeacherOnly = messages.filter((m) => {
+      const meta = m.metadata as Record<string, unknown> | null;
+      return meta && meta.voiceToTeacher === true;
+    });
+
+    return voiceToTeacherOnly.map((m) => {
+      const teacherParticipant = m.chat.participants[0];
+      return {
+        id: m.id,
+        fileUrl: m.fileUrl,
+        fileName: m.fileName ?? undefined,
+        duration: m.duration ?? 0,
+        createdAt: m.createdAt,
+        teacher: teacherParticipant?.user
+          ? {
+              id: teacherParticipant.user.id,
+              firstName: teacherParticipant.user.firstName,
+              lastName: teacherParticipant.user.lastName,
+            }
+          : null,
+      };
+    });
   }
 }
 

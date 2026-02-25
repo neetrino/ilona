@@ -118,4 +118,8 @@ export class ChatService {
   async getAdminForStudent(studentUserId: string) {
     return this.chatListsService.getAdminForStudent(studentUserId);
   }
+
+  async getStudentVoiceToTeacherRecordings(studentUserId: string) {
+    return this.messageService.getStudentVoiceToTeacherRecordings(studentUserId);
+  }
 }

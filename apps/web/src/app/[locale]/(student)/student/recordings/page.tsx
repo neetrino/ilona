@@ -2,7 +2,14 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
+import {
+  fetchStudentVoiceToTeacherRecordings,
+  type VoiceToTeacherRecording,
+} from '@/features/chat/api/chat.api';
+import { chatKeys } from '@/features/chat/hooks/useChat';
 
 interface Recording {
   id: string;
@@ -32,6 +39,47 @@ function formatDuration(seconds: number): string {
     return `${hours}h ${minutes}m`;
   }
   return `${minutes} min`;
+}
+
+function formatVoiceTimestamp(createdAt: string): string {
+  const date = new Date(createdAt);
+  return date.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function VoiceToTeacherCard({ recording }: { recording: VoiceToTeacherRecording }) {
+  const teacherName = recording.teacher
+    ? `${recording.teacher.firstName} ${recording.teacher.lastName}`
+    : 'Teacher';
+
+  return (
+    <div className="bg-white rounded-xl border border-amber-200 overflow-hidden hover:shadow-md transition-shadow">
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-amber-600 font-medium">Voice to teacher</span>
+          <span className="text-xs text-slate-400" title={recording.createdAt}>
+            {formatVoiceTimestamp(recording.createdAt)}
+          </span>
+        </div>
+        <p className="text-sm text-slate-600 mb-3">{teacherName}</p>
+        <div className="flex items-center gap-2">
+          <VoiceMessagePlayer
+            fileUrl={recording.fileUrl}
+            duration={recording.duration}
+            fileName={recording.fileName}
+          />
+          <span className="text-xs text-slate-400">
+            {formatDuration(recording.duration)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function RecordingCard({ recording }: { recording: Recording }) {
@@ -79,7 +127,12 @@ function RecordingCard({ recording }: { recording: Recording }) {
 export default function StudentRecordingsPage() {
   const t = useTranslations('nav');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
+  const { data: voiceToTeacherRecordings = [], isLoading: isLoadingVoiceToTeacher } = useQuery({
+    queryKey: [...chatKeys.all, 'student', 'voice-to-teacher-recordings'],
+    queryFn: () => fetchStudentVoiceToTeacherRecordings(),
+  });
+
   // In real app, would fetch from API
   const recordings: Recording[] = [];
   const isLoading = false;
@@ -117,6 +170,34 @@ export default function StudentRecordingsPage() {
           {filteredRecordings.length} recording{filteredRecordings.length !== 1 ? 's' : ''} available
         </p>
       </div>
+
+      {/* Voice messages to teacher (Student Recordings section) */}
+      <section className="mb-8">
+        <h3 className="text-lg font-semibold text-slate-800 mb-3">Voice messages to teacher</h3>
+        <p className="text-sm text-slate-500 mb-4">
+          Voice messages you sent to your teacher appear here with the date and time they were sent.
+        </p>
+        {isLoadingVoiceToTeacher ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-xl border border-slate-200 animate-pulse p-4 h-28" />
+            ))}
+          </div>
+        ) : voiceToTeacherRecordings.length === 0 ? (
+          <div className="py-8 bg-amber-50/50 border border-amber-200 rounded-xl text-center">
+            <p className="text-sm text-slate-600">No voice messages to teacher yet.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Use &quot;Send Voice to Teacher&quot; in Chat to record and send a voice message to your teacher.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {voiceToTeacherRecordings.map((rec) => (
+              <VoiceToTeacherCard key={rec.id} recording={rec} />
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Info Banner */}
       <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
