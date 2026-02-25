@@ -574,6 +574,10 @@ export class MessageService {
   /**
    * Get voice messages sent by a student to their teacher (for Recordings section).
    * Student-only; returns messages with metadata.voiceToTeacher === true.
+   *
+   * RETENTION: Student Recordings have no expiration. They are retained indefinitely
+   * until manually deleted by the student or admin. Do not add TTL, expiresAt, or
+   * date-based filters here; do not add cron/cleanup jobs that delete these recordings.
    */
   async getStudentVoiceToTeacherRecordings(studentUserId: string) {
     const messages = await this.prisma.message.findMany({

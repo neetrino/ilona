@@ -448,7 +448,12 @@ export class StorageService {
   }
 
   /**
-   * Upload chat attachment
+   * Upload chat attachment (images, documents, voice recordings, etc.).
+   * Used for chat messages including Student → Recordings voice files.
+   *
+   * RETENTION: Chat files are stored permanently. Do not add object lifecycle rules,
+   * expiration metadata, or TTL for the chat/ folder. Student Recordings must persist
+   * until manually deleted; R2/bucket lifecycle must not auto-delete these objects.
    */
   async uploadChatFile(buffer: Buffer, fileName: string, mimeType: string): Promise<UploadResult> {
     return this.upload(buffer, fileName, mimeType, 'chat');
