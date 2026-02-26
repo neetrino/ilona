@@ -62,12 +62,14 @@ export default function StudentPaymentsPage() {
   const [paymentMethod, setPaymentMethod] = useState('transfer');
   const [transactionId, setTransactionId] = useState('');
 
-  const { data: summary, isLoading: isLoadingSummary } = useMyPaymentsSummary();
-  const { data: paymentsData, isLoading: isLoadingPayments } = useMyPayments(
+  const { data: summary, isLoading: isLoadingSummary, isFetching: isFetchingSummary } = useMyPaymentsSummary();
+  const { data: paymentsData, isLoading: isLoadingPayments, isFetching: isFetchingPayments } = useMyPayments(
     0,
     50,
     filter === 'all' ? undefined : filter
   );
+  const showSummaryReady = !isLoadingSummary && !isFetchingSummary;
+  const showPaymentsReady = !isLoadingPayments && !isFetchingPayments;
   const processPaymentMutation = useProcessMyPayment();
 
   const payments = useMemo(
@@ -110,7 +112,7 @@ export default function StudentPaymentsPage() {
             </div>
             <div>
               <p className="text-sm text-slate-500">{t('totalPaid')}</p>
-              {isLoadingSummary ? (
+              {!showSummaryReady ? (
                 <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
               ) : (
                 <p className="text-lg font-bold text-slate-800">{formatCurrency(summary?.totalPaid || 0)}</p>
@@ -128,7 +130,7 @@ export default function StudentPaymentsPage() {
             </div>
             <div>
               <p className="text-sm text-slate-500">{t('pending')}</p>
-              {isLoadingSummary ? (
+              {!showSummaryReady ? (
                 <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
               ) : (
                 <p className="text-lg font-bold text-slate-800">{formatCurrency(summary?.totalPending || 0)}</p>
@@ -146,7 +148,7 @@ export default function StudentPaymentsPage() {
             </div>
             <div>
               <p className="text-sm text-slate-500">{t('overdue')}</p>
-              {isLoadingSummary ? (
+              {!showSummaryReady ? (
                 <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
               ) : (
                 <p className="text-lg font-bold text-red-600">{formatCurrency(summary?.totalOverdue || 0)}</p>
@@ -156,8 +158,8 @@ export default function StudentPaymentsPage() {
         </div>
       </div>
 
-      {/* Next Payment Alert */}
-      {summary?.nextPayment && (
+      {/* Next Payment Alert - only show when summary is fresh to avoid wrong amount */}
+      {showSummaryReady && summary?.nextPayment && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -210,7 +212,7 @@ export default function StudentPaymentsPage() {
 
         {/* List */}
         <div className="divide-y divide-slate-100">
-          {isLoadingPayments ? (
+          {!showPaymentsReady ? (
             <div className="p-4 space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="animate-pulse flex items-center justify-between">

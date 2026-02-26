@@ -17,25 +17,27 @@ export const studentFinanceKeys = {
 
 /**
  * Hook to fetch student's payment records.
- * Backend is idempotent (one payment per student per month); staleTime reduces duplicate requests.
+ * refetchOnMount: 'always' ensures correct amount is shown when opening the Payments page (no stale cache).
  */
 export function useMyPayments(skip?: number, take?: number, status?: string) {
   return useQuery({
     queryKey: studentFinanceKeys.paymentList(skip, take, status),
     queryFn: () => fetchMyPayments(skip, take, status),
-    staleTime: 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 
 /**
  * Hook to fetch student's payment summary.
- * Backend is idempotent; staleTime reduces duplicate requests.
+ * refetchOnMount: 'always' ensures correct amount is shown when opening the Payments page (no stale cache).
  */
 export function useMyPaymentsSummary() {
   return useQuery({
     queryKey: studentFinanceKeys.paymentSummary(),
     queryFn: () => fetchMyPaymentsSummary(),
-    staleTime: 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 
