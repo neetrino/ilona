@@ -399,7 +399,9 @@
     "netSalary": "Net Salary",
     "noPaymentsMatch": "No payments match your search.",
     "noSalariesMatch": "No salary records match your search.",
-    "noSalariesFound": "No salary records found"
+    "noSalariesFound": "No salary records found",
+    "paymentMethod": "Payment method",
+    "transactionId": "Transaction ID (optional)"
   },
   "analytics": {
     "title": "Analytics",

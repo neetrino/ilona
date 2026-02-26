@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { useMyPayments, useMyPaymentsSummary } from '@/features/finance';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog';
+import { Button, Input, Label } from '@/shared/components/ui';
+import { useMyPayments, useMyPaymentsSummary, useProcessMyPayment } from '@/features/finance';
 import { cn } from '@/shared/lib/utils';
+import type { Payment } from '@/features/finance/api/student-finance.api';
 
 type FilterStatus = 'all' | 'PENDING' | 'PAID' | 'OVERDUE';
 
@@ -40,17 +43,40 @@ function StatusBadge({ status, t }: { status: string; t: (key: string) => string
 
 export default function StudentPaymentsPage() {
   const t = useTranslations('finance');
+  const tCommon = useTranslations('common');
   const [filter, setFilter] = useState<FilterStatus>('all');
+  const [processModal, setProcessModal] = useState<Payment | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState('transfer');
+  const [transactionId, setTransactionId] = useState('');
 
-  // Fetch data
   const { data: summary, isLoading: isLoadingSummary } = useMyPaymentsSummary();
   const { data: paymentsData, isLoading: isLoadingPayments } = useMyPayments(
     0,
     50,
     filter === 'all' ? undefined : filter
   );
+  const processPaymentMutation = useProcessMyPayment();
 
   const payments = paymentsData?.items || [];
+
+  const handleMarkAsPaid = () => {
+    if (!processModal) return;
+    processPaymentMutation.mutate(
+      {
+        paymentId: processModal.id,
+        data: {
+          paymentMethod,
+          transactionId: transactionId.trim() || undefined,
+        },
+      },
+      {
+        onSuccess: () => {
+          setProcessModal(null);
+          setTransactionId('');
+        },
+      }
+    );
+  };
 
   // Calculate days until next payment
   const getDaysUntilDue = (dueDate: string) => {
@@ -209,18 +235,27 @@ export default function StudentPaymentsPage() {
           ) : (
             payments.map((payment) => {
               const dueDate = new Date(payment.dueDate);
+              const monthDate = payment.month ? new Date(payment.month) : dueDate;
               const daysUntil = getDaysUntilDue(payment.dueDate);
               const isOverdue = payment.status === 'OVERDUE' || (payment.status === 'PENDING' && daysUntil < 0);
+              const canPay = payment.status === 'PENDING' || payment.status === 'OVERDUE';
+              const groupName = payment.student?.group?.name;
+              const description = payment.notes || payment.description;
 
               return (
                 <div key={payment.id} className="p-4 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
                         <p className="font-semibold text-slate-800">
-                          {dueDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          {monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                         </p>
                         <StatusBadge status={payment.status} t={t} />
+                        {groupName && (
+                          <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                            {groupName}
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-slate-500">
                         {payment.status === 'PAID' && payment.paidAt
@@ -233,17 +268,29 @@ export default function StudentPaymentsPage() {
                           <span className="ml-2 text-red-600 font-medium">({t('daysOverdue', { count: Math.abs(daysUntil) })})</span>
                         )}
                       </p>
-                      {payment.description && (
-                        <p className="text-xs text-slate-400 mt-1">{payment.description}</p>
+                      {description && (
+                        <p className="text-xs text-slate-400 mt-1">{description}</p>
                       )}
                     </div>
-                    <p className={cn(
-                      'text-lg font-bold',
-                      payment.status === 'PAID' ? 'text-green-600' : 
-                      payment.status === 'OVERDUE' ? 'text-red-600' : 'text-slate-800'
-                    )}>
-                      {formatCurrency(payment.amount)}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <p className={cn(
+                        'text-lg font-bold',
+                        payment.status === 'PAID' ? 'text-green-600' :
+                        payment.status === 'OVERDUE' ? 'text-red-600' : 'text-slate-800'
+                      )}>
+                        {formatCurrency(Number(payment.amount))}
+                      </p>
+                      {canPay && (
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => setProcessModal(payment)}
+                          disabled={processPaymentMutation.isPending}
+                        >
+                          {t('markPaid')}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -251,6 +298,61 @@ export default function StudentPaymentsPage() {
           )}
         </div>
       </div>
+
+      {/* Mark as paid dialog */}
+      <Dialog open={!!processModal} onOpenChange={(open) => !open && setProcessModal(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('markPaid')}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {t('markPaid')}
+            </DialogDescription>
+          </DialogHeader>
+          {processModal && (
+            <>
+              <p className="text-sm text-slate-600">
+                {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} — {formatCurrency(Number(processModal.amount))}
+              </p>
+              <div className="grid gap-3 py-2">
+                <div>
+                  <Label htmlFor="payment-method">{t('paymentMethod')}</Label>
+                  <select
+                    id="payment-method"
+                    className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  >
+                    <option value="transfer">Transfer</option>
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="transaction-id">{t('transactionId')}</Label>
+                  <Input
+                    id="transaction-id"
+                    className="mt-1"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    placeholder="Optional"
+                  />
+                </div>
+              </div>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" onClick={() => setProcessModal(null)}>
+                  {tCommon('cancel')}
+                </Button>
+                <Button
+                  onClick={handleMarkAsPaid}
+                  disabled={processPaymentMutation.isPending}
+                >
+                  {processPaymentMutation.isPending ? tCommon('loading') : t('markPaid')}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

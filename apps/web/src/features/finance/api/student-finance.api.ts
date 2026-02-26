@@ -6,15 +6,29 @@ export interface Payment {
   amount: number;
   status: 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
   dueDate: string;
+  month?: string;
   paidAt?: string;
+  notes?: string;
   description?: string;
   createdAt: string;
   updatedAt: string;
+  student?: {
+    group?: { id: string; name: string } | null;
+  };
 }
 
 export interface PaymentsResponse {
   items: Payment[];
   total: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
+}
+
+export interface ProcessMyPaymentDto {
+  paymentMethod: string;
+  transactionId?: string;
+  notes?: string;
 }
 
 export interface StudentPaymentSummary {
@@ -54,4 +68,14 @@ export async function fetchMyPayments(
  */
 export async function fetchMyPaymentsSummary(): Promise<StudentPaymentSummary> {
   return api.get<StudentPaymentSummary>(`${FINANCE_ENDPOINT}/my-payments/summary`);
+}
+
+/**
+ * Mark one of the student's payments as paid (student self-service).
+ */
+export async function processMyPayment(
+  paymentId: string,
+  data: ProcessMyPaymentDto
+): Promise<Payment> {
+  return api.patch<Payment>(`${FINANCE_ENDPOINT}/my-payments/${paymentId}/process`, data);
 }

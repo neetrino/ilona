@@ -121,8 +121,9 @@ describe('PaymentsService', () => {
   });
 
   describe('create', () => {
-    it('should create a new payment', async () => {
+    it('should create a new payment when none exists for that month', async () => {
       mockPrismaService.student.findUnique.mockResolvedValue({ id: 'student-1' });
+      mockPrismaService.payment.findFirst.mockResolvedValue(null);
       mockPrismaService.payment.create.mockResolvedValue(mockPayment);
 
       const result = await paymentsService.create({
@@ -133,6 +134,20 @@ describe('PaymentsService', () => {
 
       expect(result.studentId).toBe('student-1');
       expect(result.amount).toBe(100);
+    });
+
+    it('should return existing payment when one exists for that student and month', async () => {
+      mockPrismaService.student.findUnique.mockResolvedValue({ id: 'student-1' });
+      mockPrismaService.payment.findFirst.mockResolvedValue(mockPayment);
+
+      const result = await paymentsService.create({
+        studentId: 'student-1',
+        amount: 100,
+        month: '2026-01-01',
+      });
+
+      expect(result).toBe(mockPayment);
+      expect(mockPrismaService.payment.create).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException if student not found', async () => {
@@ -203,19 +218,27 @@ describe('PaymentsService', () => {
   });
 
   describe('getStudentPaymentSummary', () => {
-    it('should return payment summary', async () => {
+    it('should return payment summary with totalPaid, totalPending, totalOverdue, nextPayment', async () => {
       mockPrismaService.payment.aggregate
-        .mockResolvedValueOnce({ _sum: { amount: 500 }, _count: 5 }) // total
-        .mockResolvedValueOnce({ _sum: { amount: 300 }, _count: 3 }) // paid
-        .mockResolvedValueOnce({ _sum: { amount: 100 }, _count: 1 }) // pending
-        .mockResolvedValueOnce({ _sum: { amount: 100 }, _count: 1 }); // overdue
+        .mockResolvedValueOnce({ _sum: { amount: 300 } }) // paid
+        .mockResolvedValueOnce({ _sum: { amount: 100 } }) // pending
+        .mockResolvedValueOnce({ _sum: { amount: 100 } }); // overdue
+      mockPrismaService.payment.findFirst.mockResolvedValueOnce({
+        id: 'pay-1',
+        amount: 100,
+        dueDate: new Date('2024-03-05'),
+      });
 
       const result = await paymentsService.getStudentPaymentSummary('student-1');
 
-      expect(result.total.amount).toBe(500);
-      expect(result.paid.amount).toBe(300);
-      expect(result.pending.amount).toBe(100);
-      expect(result.overdue.amount).toBe(100);
+      expect(result.totalPaid).toBe(300);
+      expect(result.totalPending).toBe(100);
+      expect(result.totalOverdue).toBe(100);
+      expect(result.nextPayment).toEqual({
+        id: 'pay-1',
+        amount: 100,
+        dueDate: new Date('2024-03-05').toISOString(),
+      });
     });
   });
 
