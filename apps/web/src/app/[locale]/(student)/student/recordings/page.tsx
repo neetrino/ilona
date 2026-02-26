@@ -137,7 +137,6 @@ function RecordingCard({ recording }: { recording: Recording }) {
 
 export default function StudentRecordingsPage() {
   const t = useTranslations('nav');
-  const [searchQuery, setSearchQuery] = useState('');
   const now = useMemo(() => new Date(), []);
   const currentYear = now.getFullYear();
 
@@ -179,16 +178,6 @@ export default function StudentRecordingsPage() {
   // In real app, would fetch from API
   const recordings: Recording[] = [];
   const isLoading = false;
-
-  // Filter recordings by search
-  const filteredRecordings = recordings.filter((r) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      r.lesson.topic?.toLowerCase().includes(query) ||
-      r.lesson.group.name.toLowerCase().includes(query)
-    );
-  });
 
   const selectClass =
     'w-full h-12 px-4 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none text-slate-700';
@@ -267,20 +256,7 @@ export default function StudentRecordingsPage() {
         )}
       </div>
 
-      {/* Search & Info */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="search"
-            placeholder={t('searchRecordings')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
-        </div>
+      <div className="mb-6">
         <p className="text-sm text-slate-500">
           {voiceToTeacherRecordings.length} recording{voiceToTeacherRecordings.length !== 1 ? 's' : ''} available
         </p>
@@ -342,9 +318,9 @@ export default function StudentRecordingsPage() {
             </div>
           ))}
         </div>
-      ) : filteredRecordings.length === 0 ? null : (
+      ) : recordings.length === 0 ? null : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRecordings.map((recording) => (
+          {recordings.map((recording) => (
             <RecordingCard key={recording.id} recording={recording} />
           ))}
         </div>
