@@ -5,6 +5,7 @@ import type {
   GroupFilters,
   CreateGroupDto,
   UpdateGroupDto,
+  GroupStudentsResponse,
 } from '../types';
 
 const GROUPS_ENDPOINT = '/groups';
@@ -34,6 +35,23 @@ export async function fetchGroups(filters?: GroupFilters): Promise<GroupsRespons
  */
 export async function fetchGroup(id: string): Promise<Group> {
   return api.get<Group>(`${GROUPS_ENDPOINT}/${id}`);
+}
+
+/**
+ * Fetch paginated students in a group (Admin only)
+ */
+export async function fetchGroupStudents(
+  groupId: string,
+  params?: { skip?: number; take?: number }
+): Promise<GroupStudentsResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.skip !== undefined) searchParams.set('skip', String(params.skip));
+  if (params?.take !== undefined) searchParams.set('take', String(params.take));
+  const query = searchParams.toString();
+  const url = query
+    ? `${GROUPS_ENDPOINT}/${groupId}/students?${query}`
+    : `${GROUPS_ENDPOINT}/${groupId}/students`;
+  return api.get<GroupStudentsResponse>(url);
 }
 
 /**

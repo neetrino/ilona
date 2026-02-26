@@ -4,8 +4,9 @@ import React, { useEffect, useRef } from 'react';
 import { List, LayoutGrid } from 'lucide-react';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn, lightenColor, getContrastColor } from '@/shared/lib/utils';
-import { GroupCard, CreateGroupForm, EditGroupForm, DeleteConfirmationDialog, type Group } from '@/features/groups';
+import { GroupCard, CreateGroupForm, EditGroupForm, DeleteConfirmationDialog, useGroup, type Group } from '@/features/groups';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
+import { GroupStudentsModal } from './GroupStudentsModal';
 
 interface SelectAllCheckboxProps {
   checked: boolean;
@@ -140,6 +141,19 @@ export function GroupsTab({
 
   const pageSize = 10;
 
+  // Students modal state from URL so it survives refresh
+  const studentsGroupId = searchParams.get('studentsGroup');
+  const { data: studentsGroupData } = useGroup(studentsGroupId ?? '', !!studentsGroupId);
+  const studentsModalGroupName =
+    groups.find((g) => g.id === studentsGroupId)?.name ?? studentsGroupData?.name ?? 'Group';
+
+  const openStudentsModal = (groupId: string) => {
+    updateUrl({ studentsGroup: groupId });
+  };
+  const closeStudentsModal = () => {
+    updateUrl({ studentsGroup: null });
+  };
+
   const groupColumns = [
     {
       key: 'checkbox',
@@ -216,12 +230,21 @@ export function GroupsTab({
       key: 'students',
       header: 'Students',
       className: 'text-center',
-      render: (group: Group) => (
-        <div className="text-center">
-          <span className="font-medium text-slate-800">{group._count?.students || 0}</span>
-          <span className="text-slate-400">/{group.maxStudents}</span>
-        </div>
-      ),
+      render: (group: Group) => {
+        const count = group._count?.students || 0;
+        return (
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => openStudentsModal(group.id)}
+              className="underline decoration-slate-400 underline-offset-2 hover:decoration-primary hover:text-primary font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 rounded inline"
+              title="View students in this group"
+            >
+              {count}/{group.maxStudents}
+            </button>
+          </div>
+        );
+      },
     },
     {
       key: 'actions',
@@ -459,6 +482,7 @@ export function GroupsTab({
                               onEdit={() => handleEditGroupIdChange(group.id)}
                               onDelete={() => handleDeleteClick(group.id)}
                               onToggleActive={() => handleToggleActive(group.id)}
+                              onStudentsClick={(id) => openStudentsModal(id)}
                             />
                           ))
                         )}
@@ -566,6 +590,13 @@ export function GroupsTab({
         error={bulkDeleteError || undefined}
         itemType="group"
         title="Delete Groups"
+      />
+
+      <GroupStudentsModal
+        open={!!studentsGroupId}
+        onOpenChange={(open) => !open && closeStudentsModal()}
+        groupId={studentsGroupId ?? null}
+        groupName={studentsModalGroupName}
       />
 
       {/* Success Messages */}

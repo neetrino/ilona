@@ -6,9 +6,11 @@ interface GroupCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onToggleActive: () => void;
+  /** When provided, the student count becomes clickable (e.g. Admin Groups section) */
+  onStudentsClick?: (groupId: string, groupName: string) => void;
 }
 
-export function GroupCard({ group, onEdit, onDelete, onToggleActive }: GroupCardProps) {
+export function GroupCard({ group, onEdit, onDelete, onToggleActive, onStudentsClick }: GroupCardProps) {
   const teacherName = group.teacher
     ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`
     : null;
@@ -67,12 +69,26 @@ export function GroupCard({ group, onEdit, onDelete, onToggleActive }: GroupCard
         )}
 
         <div className="flex items-center gap-2 text-slate-600">
-          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
-          <span>
-            {studentCount}/{group.maxStudents} students
-          </span>
+          {onStudentsClick ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStudentsClick(group.id, group.name);
+              }}
+              className="text-left underline decoration-slate-400 underline-offset-2 hover:decoration-primary hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 rounded [text-decoration-skip-ink:none]"
+              title="View students in this group"
+            >
+              <span className="inline-block">{studentCount}/{group.maxStudents} students</span>
+            </button>
+          ) : (
+            <span>
+              {studentCount}/{group.maxStudents} students
+            </span>
+          )}
         </div>
 
         {!group.isActive && (

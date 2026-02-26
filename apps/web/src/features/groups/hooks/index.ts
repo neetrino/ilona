@@ -1,6 +1,7 @@
 export {
   useGroups,
   useGroup,
+  useGroupStudents,
   useMyGroups,
   useCreateGroup,
   useUpdateGroup,

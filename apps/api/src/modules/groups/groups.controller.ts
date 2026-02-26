@@ -45,6 +45,21 @@ export class GroupsController {
     return this.groupsService.findById(id);
   }
 
+  @Get(':id/students')
+  @Roles(UserRole.ADMIN)
+  async getGroupStudents(
+    @Param('id') groupId: string,
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
+  ) {
+    const skipNum = skip !== undefined ? parseInt(skip, 10) : 0;
+    const takeNum = take !== undefined ? Math.min(parseInt(take, 10), 100) : 20;
+    return this.groupsService.findStudentsByGroupId(groupId, {
+      skip: Number.isNaN(skipNum) ? 0 : skipNum,
+      take: Number.isNaN(takeNum) ? 20 : takeNum,
+    });
+  }
+
   @Post()
   @Roles(UserRole.ADMIN)
   async create(@Body() dto: CreateGroupDto) {

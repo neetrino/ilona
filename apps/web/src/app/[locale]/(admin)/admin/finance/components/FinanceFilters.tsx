@@ -127,9 +127,6 @@ export function FinanceFilters({
                 {selectedPaymentIds.size} selected
               </span>
             )}
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium">
-              + Record Payment
-            </Button>
           </div>
         ) : activeTab === 'salaries' ? (
           <>
