@@ -29,7 +29,8 @@
     "phone": "Հեռախոս",
     "description": "Նկարագրություն",
     "notes": "Նշումներ",
-    "minutes": "րոպե"
+    "minutes": "րոպե",
+    "noLessons": "Դասեր չկան"
   },
   "home": {
     "title": "Ilona English Center",

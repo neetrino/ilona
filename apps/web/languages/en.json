@@ -30,7 +30,8 @@
     "phone": "Phone",
     "description": "Description",
     "notes": "Notes",
-    "minutes": "minutes"
+    "minutes": "minutes",
+    "noLessons": "No lessons"
   },
   "home": {
     "title": "Ilona English Center",

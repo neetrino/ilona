@@ -91,15 +91,15 @@ export class TeachersController {
     return this.teachersService.update(id, dto);
   }
 
-  @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  async delete(@Param('id') id: string) {
-    return this.teachersService.delete(id);
-  }
-
   @Delete('bulk')
   @Roles(UserRole.ADMIN)
   async deleteMany(@Body() body: { ids: string[] }) {
     return this.teachersService.deleteMany(body.ids);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  async delete(@Param('id') id: string) {
+    return this.teachersService.delete(id);
   }
 }
