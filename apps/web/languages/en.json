@@ -30,7 +30,8 @@
     "phone": "Phone",
     "description": "Description",
     "notes": "Notes",
-    "minutes": "minutes"
+    "minutes": "minutes",
+    "noLessons": "No lessons"
   },
   "home": {
     "title": "Ilona English Center",
@@ -399,7 +400,14 @@
     "netSalary": "Net Salary",
     "noPaymentsMatch": "No payments match your search.",
     "noSalariesMatch": "No salary records match your search.",
-    "noSalariesFound": "No salary records found"
+    "noSalariesFound": "No salary records found",
+    "paymentMethod": "Payment method",
+    "transactionId": "Transaction ID (optional)",
+    "paymentOnlyInMonth": "Payments can only be made during the corresponding month.",
+    "paymentPeriodEnded": "Payment period ended. This month could only be paid in that month.",
+    "paymentNotYetAvailable": "Available from {month}.",
+    "payableOnlyInMonth": "Payable only in {month}.",
+    "nextPaymentMonth": "Next payment: {month}"
   },
   "analytics": {
     "title": "Analytics",

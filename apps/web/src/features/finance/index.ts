@@ -40,6 +40,7 @@ export {
 export {
   useMyPayments,
   useMyPaymentsSummary,
+  useProcessMyPayment,
   studentFinanceKeys,
 } from './hooks/useStudentFinance';
 

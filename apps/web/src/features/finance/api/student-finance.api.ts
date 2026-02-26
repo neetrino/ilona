@@ -1,20 +1,41 @@
 import { api } from '@/shared/lib/api';
 
+/** Reason from backend: payment can be made only in the corresponding month. */
+export type PaymentWindowReason = 'current_month' | 'past' | 'future';
+
 export interface Payment {
   id: string;
   studentId: string;
   amount: number;
   status: 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
   dueDate: string;
+  month?: string;
   paidAt?: string;
+  notes?: string;
   description?: string;
   createdAt: string;
   updatedAt: string;
+  student?: {
+    group?: { id: string; name: string } | null;
+  };
+  /** True only when unpaid and current month matches payment month (backend-enforced). */
+  canPay?: boolean;
+  /** Set when unpaid; explains why Pay is disabled (past = period ended, future = not yet). */
+  paymentWindowReason?: PaymentWindowReason;
 }
 
 export interface PaymentsResponse {
   items: Payment[];
   total: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
+}
+
+export interface ProcessMyPaymentDto {
+  paymentMethod: string;
+  transactionId?: string;
+  notes?: string;
 }
 
 export interface StudentPaymentSummary {
@@ -54,4 +75,14 @@ export async function fetchMyPayments(
  */
 export async function fetchMyPaymentsSummary(): Promise<StudentPaymentSummary> {
   return api.get<StudentPaymentSummary>(`${FINANCE_ENDPOINT}/my-payments/summary`);
+}
+
+/**
+ * Mark one of the student's payments as paid (student self-service).
+ */
+export async function processMyPayment(
+  paymentId: string,
+  data: ProcessMyPaymentDto
+): Promise<Payment> {
+  return api.patch<Payment>(`${FINANCE_ENDPOINT}/my-payments/${paymentId}/process`, data);
 }

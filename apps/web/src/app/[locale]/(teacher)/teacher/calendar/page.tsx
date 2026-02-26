@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { AddCourseForm } from '@/features/lessons/components/AddCourseForm';
@@ -21,10 +21,26 @@ import { CalendarMessages } from './components/CalendarMessages';
 
 export default function TeacherCalendarPage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const t = useTranslations('calendar');
   const tCommon = useTranslations('common');
-  
-  const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
+
+  // Add course dialog: persist in URL so it survives refresh
+  const isAddCourseOpen = searchParams.get('addCourse') === '1';
+  const setAddCourseOpen = useCallback(
+    (open: boolean) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (open) {
+        params.set('addCourse', '1');
+      } else {
+        params.delete('addCourse');
+      }
+      const q = params.toString();
+      router.push(q ? `${pathname}?${q}` : pathname);
+    },
+    [pathname, searchParams, router]
+  );
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('scheduledAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -104,7 +120,7 @@ export default function TeacherCalendarPage() {
         <CalendarControls
           viewMode={viewMode}
           onViewModeChange={updateViewModeInUrl}
-          onAddCourse={viewMode === 'list' ? () => setIsAddCourseOpen(true) : undefined}
+          onAddCourse={viewMode === 'list' ? () => setAddCourseOpen(true) : undefined}
           t={t}
         />
       </div>
@@ -128,10 +144,6 @@ export default function TeacherCalendarPage() {
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
-          />
-          <AddCourseForm
-            open={isAddCourseOpen}
-            onOpenChange={setIsAddCourseOpen}
           />
           {editingLessonId && (
             <EditLessonForm
@@ -174,6 +186,12 @@ export default function TeacherCalendarPage() {
           )}
         </div>
       )}
+
+      {/* Add Course: always mounted so URL addCourse=1 works after refresh */}
+      <AddCourseForm
+        open={isAddCourseOpen}
+        onOpenChange={setAddCourseOpen}
+      />
 
       {/* Complete Lesson Dialog */}
       <CompleteLessonDialog

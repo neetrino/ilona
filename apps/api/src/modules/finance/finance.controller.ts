@@ -10,6 +10,7 @@ import {
   Query,
   BadRequestException,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { FinanceService } from './finance.service';
 import { PaymentsService } from './payments.service';
@@ -37,6 +38,21 @@ export class FinanceController {
     private readonly deductionsService: DeductionsService,
     private readonly prisma: PrismaService,
   ) {}
+
+  /**
+   * Resolve current student from JWT. Student identity is NEVER taken from client (query/body/params).
+   * Used by all student-facing payment endpoints to enforce data isolation.
+   */
+  private async getCurrentStudentOrThrow(user: JwtPayload): Promise<{ id: string }> {
+    const student = await this.prisma.student.findUnique({
+      where: { userId: user.sub },
+      select: { id: true },
+    });
+    if (!student) {
+      throw new NotFoundException('Student profile not found');
+    }
+    return student;
+  }
 
   // ============ TEACHER-SPECIFIC ENDPOINTS ============
 
@@ -162,6 +178,7 @@ export class FinanceController {
   }
 
   // ============ STUDENT-SPECIFIC ENDPOINTS ============
+  // Student identity is derived ONLY from JWT (user.sub → student). No studentId from client.
 
   @Get('my-payments')
   @Roles(UserRole.STUDENT)
@@ -171,18 +188,14 @@ export class FinanceController {
     @Query('take') take?: string,
     @Query('status') status?: string,
   ) {
-    const student = await this.prisma.student.findUnique({
-      where: { userId: user.sub },
-    });
+    const student = await this.getCurrentStudentOrThrow(user);
 
-    if (!student) {
-      return { items: [], total: 0 };
-    }
+    await this.paymentsService.ensureMonthlyPayments(student.id);
 
-    return this.paymentsService.findAll({
+    return this.paymentsService.findMonthlyGroupedForStudent({
+      studentId: student.id,
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
-      studentId: student.id,
       status: status as PaymentStatus | undefined,
     });
   }
@@ -190,20 +203,21 @@ export class FinanceController {
   @Get('my-payments/summary')
   @Roles(UserRole.STUDENT)
   async getMyPaymentsSummary(@CurrentUser() user: JwtPayload) {
-    const student = await this.prisma.student.findUnique({
-      where: { userId: user.sub },
-    });
+    const student = await this.getCurrentStudentOrThrow(user);
 
-    if (!student) {
-      return {
-        totalPaid: 0,
-        totalPending: 0,
-        totalOverdue: 0,
-        nextPayment: null,
-      };
-    }
-
+    await this.paymentsService.ensureMonthlyPayments(student.id);
     return this.paymentsService.getStudentPaymentSummary(student.id);
+  }
+
+  @Patch('my-payments/:id/process')
+  @Roles(UserRole.STUDENT)
+  async processMyPayment(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Body() dto: ProcessPaymentDto,
+  ) {
+    const student = await this.getCurrentStudentOrThrow(user);
+    return this.paymentsService.processPaymentForStudent(id, student.id, dto);
   }
 
   // ============ DASHBOARD ============
