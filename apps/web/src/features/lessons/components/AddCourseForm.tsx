@@ -13,14 +13,15 @@ import { api, getErrorMessage } from '@/shared/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/shared/lib/utils';
 
+// Display order: Mon–Sun (values 0–6 stay as JS Date.getDay())
 const WEEKDAYS = [
-  { value: 0, label: 'Sun', fullLabel: 'Sunday' },
   { value: 1, label: 'Mon', fullLabel: 'Monday' },
   { value: 2, label: 'Tue', fullLabel: 'Tuesday' },
   { value: 3, label: 'Wed', fullLabel: 'Wednesday' },
   { value: 4, label: 'Thu', fullLabel: 'Thursday' },
   { value: 5, label: 'Fri', fullLabel: 'Friday' },
   { value: 6, label: 'Sat', fullLabel: 'Saturday' },
+  { value: 0, label: 'Sun', fullLabel: 'Sunday' },
 ];
 
 const createCourseSchema = z.object({
