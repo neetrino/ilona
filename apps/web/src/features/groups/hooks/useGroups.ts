@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   fetchGroups,
   fetchGroup,
+  fetchGroupStudents,
   createGroup,
   updateGroup,
   deleteGroup,
@@ -25,6 +26,8 @@ export const groupKeys = {
   list: (filters?: GroupFilters) => [...groupKeys.lists(), filters] as const,
   details: () => [...groupKeys.all, 'detail'] as const,
   detail: (id: string) => [...groupKeys.details(), id] as const,
+  students: (groupId: string, filters?: { skip?: number; take?: number }) =>
+    [...groupKeys.all, 'students', groupId, filters] as const,
   myGroups: () => [...groupKeys.all, 'my-groups'] as const,
 };
 
@@ -49,6 +52,22 @@ export function useGroups(filters?: GroupFilters) {
       // Retry up to 2 times for other errors
       return failureCount < 2;
     },
+  });
+}
+
+/**
+ * Hook to fetch paginated students in a group (Admin only). Use when modal is open.
+ */
+export function useGroupStudents(
+  groupId: string | null,
+  params?: { skip?: number; take?: number },
+  enabled = true
+) {
+  return useQuery({
+    queryKey: groupKeys.students(groupId ?? '', params),
+    queryFn: () => fetchGroupStudents(groupId!, params),
+    enabled: enabled && !!groupId,
+    staleTime: 30 * 1000,
   });
 }
 

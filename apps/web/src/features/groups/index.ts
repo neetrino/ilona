@@ -2,6 +2,7 @@
 export {
   useGroups,
   useGroup,
+  useGroupStudents,
   useMyGroups,
   useCreateGroup,
   useUpdateGroup,
@@ -20,6 +21,8 @@ export type {
   GroupFilters,
   CreateGroupDto,
   UpdateGroupDto,
+  GroupStudentItem,
+  GroupStudentsResponse,
 } from './types';
 
 // Components

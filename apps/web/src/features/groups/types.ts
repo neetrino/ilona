@@ -66,3 +66,24 @@ export interface UpdateGroupDto {
   teacherId?: string;
   isActive?: boolean;
 }
+
+/** Student item returned by GET /groups/:groupId/students */
+export interface GroupStudentItem {
+  id: string;
+  enrolledAt: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    status: string;
+  };
+}
+
+export interface GroupStudentsResponse {
+  items: GroupStudentItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}

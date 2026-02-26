@@ -80,6 +80,46 @@ export class GroupsService {
     };
   }
 
+  /**
+   * Get paginated list of students in a group. Admin-only.
+   */
+  async findStudentsByGroupId(
+    groupId: string,
+    params?: { skip?: number; take?: number },
+  ) {
+    const { skip = 0, take = 20 } = params || {};
+    await this.findById(groupId);
+
+    const [items, total] = await Promise.all([
+      this.prisma.student.findMany({
+        where: { groupId },
+        skip,
+        take,
+        orderBy: { enrolledAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              status: true,
+            },
+          },
+        },
+      }),
+      this.prisma.student.count({ where: { groupId } }),
+    ]);
+
+    return {
+      items,
+      total,
+      page: Math.floor(skip / take) + 1,
+      pageSize: take,
+      totalPages: Math.ceil(total / take),
+    };
+  }
+
   async findById(id: string) {
     const group = await this.prisma.group.findUnique({
       where: { id },
