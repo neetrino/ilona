@@ -68,6 +68,9 @@
   },
   "auth": {
     "login": "Log In",
+    "registerTitle": "Sign Up",
+    "registerDescription": "Account creation is managed by your center. Please contact your administrator or use the link below to sign in if you already have an account.",
+    "registerBackHome": "Back to Home",
     "logout": "Log Out",
     "forgotPassword": "Forgot Password?",
     "resetPassword": "Reset Password",
