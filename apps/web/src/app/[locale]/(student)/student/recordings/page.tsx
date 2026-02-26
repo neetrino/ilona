@@ -140,7 +140,7 @@ export default function StudentRecordingsPage() {
   const now = useMemo(() => new Date(), []);
   const currentYear = now.getFullYear();
 
-  const [filterYear, setFilterYear] = useState<number | ''>('');
+  const [filterYear, setFilterYear] = useState<number | ''>(() => new Date().getFullYear());
   const [filterMonth, setFilterMonth] = useState<number | ''>('');
   const [filterDay, setFilterDay] = useState<number | ''>('');
 
