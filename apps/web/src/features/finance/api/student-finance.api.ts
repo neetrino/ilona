@@ -1,5 +1,8 @@
 import { api } from '@/shared/lib/api';
 
+/** Reason from backend: payment can be made only in the corresponding month. */
+export type PaymentWindowReason = 'current_month' | 'past' | 'future';
+
 export interface Payment {
   id: string;
   studentId: string;
@@ -15,6 +18,10 @@ export interface Payment {
   student?: {
     group?: { id: string; name: string } | null;
   };
+  /** True only when unpaid and current month matches payment month (backend-enforced). */
+  canPay?: boolean;
+  /** Set when unpaid; explains why Pay is disabled (past = period ended, future = not yet). */
+  paymentWindowReason?: PaymentWindowReason;
 }
 
 export interface PaymentsResponse {

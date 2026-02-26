@@ -192,10 +192,10 @@ export class FinanceController {
 
     await this.paymentsService.ensureMonthlyPayments(student.id);
 
-    return this.paymentsService.findAll({
+    return this.paymentsService.findMonthlyGroupedForStudent({
+      studentId: student.id,
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
-      studentId: student.id,
       status: status as PaymentStatus | undefined,
     });
   }

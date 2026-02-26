@@ -12,6 +12,42 @@ function startOfMonth(d: Date): Date {
   return new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0));
 }
 
+/** End of month (exclusive): first day of next month in UTC. Used for calendar-month range queries. */
+function startOfNextMonth(d: Date): Date {
+  return new Date(Date.UTC(d.getFullYear(), d.getMonth() + 1, 1, 0, 0, 0, 0));
+}
+
+/** Reason why a payment is or isn't in the allowed payment window (for UI and API errors). */
+export type PaymentWindowReason = 'current_month' | 'past' | 'future';
+
+/**
+ * Check if a payment can be made for the given payment month at the given date.
+ * Business rule: payment is allowed only within the corresponding calendar month.
+ * Uses UTC for consistency (avoids timezone drift at month boundaries).
+ *
+ * Future extension (payment window from day X to day Y): add optional params or
+ * read from SystemSettings (e.g. paymentWindowFromDay, paymentWindowToDay); then
+ * allow only when asOf's day is in [fromDay, toDay] for that month. Keep the same
+ * return shape (allowed, reason) so API and frontend stay unchanged.
+ */
+export function isPaymentAllowedInWindow(
+  paymentMonth: Date,
+  asOf: Date,
+): { allowed: boolean; reason: PaymentWindowReason } {
+  const payY = paymentMonth.getUTCFullYear();
+  const payM = paymentMonth.getUTCMonth();
+  const nowY = asOf.getUTCFullYear();
+  const nowM = asOf.getUTCMonth();
+
+  if (nowY === payY && nowM === payM) {
+    return { allowed: true, reason: 'current_month' };
+  }
+  if (nowY < payY || (nowY === payY && nowM < payM)) {
+    return { allowed: false, reason: 'future' };
+  }
+  return { allowed: false, reason: 'past' };
+}
+
 @Injectable()
 export class PaymentsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -94,6 +130,96 @@ export class PaymentsService {
   }
 
   /**
+   * Get payments for a student grouped by calendar month (year + month).
+   * Returns exactly one row per month. Amount is the single monthly fee for that month
+   * (from the representative payment). We do NOT sum amounts: monthly fee is per-student,
+   * not per-class; summing would double-count if duplicate Payment rows exist for the same month.
+   */
+  async findMonthlyGroupedForStudent(params: {
+    studentId: string;
+    skip?: number;
+    take?: number;
+    status?: PaymentStatus;
+  }) {
+    const { studentId, skip = 0, take = 50, status } = params;
+
+    const where: Prisma.PaymentWhereInput = { studentId };
+    if (status) where.status = status;
+
+    const payments = await this.prisma.payment.findMany({
+      where,
+      orderBy: { month: 'desc' },
+      include: {
+        student: {
+          include: {
+            user: { select: { firstName: true, lastName: true, email: true } },
+            group: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+
+    // Group by calendar month (UTC) so one entry per (year, month)
+    const byMonth = new Map<string, typeof payments>();
+    for (const p of payments) {
+      const m = p.month;
+      const key = `${m.getUTCFullYear()}-${m.getUTCMonth()}`;
+      if (!byMonth.has(key)) byMonth.set(key, []);
+      byMonth.get(key)!.push(p);
+    }
+
+    const now = new Date();
+    const grouped = Array.from(byMonth.entries())
+      .map(([, list]) => {
+        // Use representative payment's amount only (one monthly fee per month). Do not sum.
+        const pendingOrOverdue = list.find(
+          (p) => p.status === PaymentStatus.PENDING || p.status === PaymentStatus.OVERDUE,
+        );
+        const representative = pendingOrOverdue ?? list[0];
+        const monthNorm = startOfMonth(representative.month);
+        const amount = Number(representative.amount) || 0;
+        const status = list.some((p) => p.status === PaymentStatus.PAID)
+          ? PaymentStatus.PAID
+          : list.some((p) => p.status === PaymentStatus.OVERDUE)
+            ? PaymentStatus.OVERDUE
+            : PaymentStatus.PENDING;
+        const window = isPaymentAllowedInWindow(monthNorm, now);
+        const unpaid = status === PaymentStatus.PENDING || status === PaymentStatus.OVERDUE;
+        const canPay = unpaid && window.allowed;
+        return {
+          id: representative.id,
+          studentId: representative.studentId,
+          amount,
+          status,
+          dueDate: representative.dueDate,
+          month: monthNorm,
+          paidAt: list.some((p) => p.paidAt) ? (list.find((p) => p.paidAt)!.paidAt ?? null) : null,
+          paymentMethod: representative.paymentMethod,
+          transactionId: representative.transactionId,
+          receiptUrl: representative.receiptUrl,
+          notes: representative.notes,
+          createdAt: representative.createdAt,
+          updatedAt: representative.updatedAt,
+          student: representative.student,
+          canPay,
+          paymentWindowReason: unpaid ? window.reason : undefined,
+        };
+      })
+      .sort((a, b) => b.month.getTime() - a.month.getTime());
+
+    const total = grouped.length;
+    const items = grouped.slice(skip, skip + take);
+
+    return {
+      items,
+      total,
+      page: Math.floor(skip / take) + 1,
+      pageSize: take,
+      totalPages: Math.ceil(total / take),
+    };
+  }
+
+  /**
    * Get payment by ID
    */
   async findById(id: string) {
@@ -149,6 +275,7 @@ export class PaymentsService {
   /**
    * Create a new payment record. Enforces one payment per student per month:
    * if one already exists for that (studentId, month), returns it (idempotent).
+   * For consistency with student view, amount should match the student's monthlyFee (Admin-defined).
    */
   async create(dto: CreatePaymentDto) {
     const student = await this.prisma.student.findUnique({
@@ -276,6 +403,7 @@ export class PaymentsService {
   /**
    * Process a payment (mark as paid) only if it belongs to the given student.
    * Returns 404 when payment does not exist or belongs to another student (no information leak).
+   * Enforces payment window: student can pay only during the corresponding calendar month.
    */
   async processPaymentForStudent(
     paymentId: string,
@@ -290,6 +418,29 @@ export class PaymentsService {
 
     if (payment.status === PaymentStatus.PAID) {
       throw new BadRequestException('Payment is already marked as paid');
+    }
+
+    const now = new Date();
+    const window = isPaymentAllowedInWindow(payment.month, now);
+    if (!window.allowed) {
+      const paymentMonthLabel = payment.month.toLocaleString('en-US', {
+        timeZone: 'UTC',
+        month: 'long',
+        year: 'numeric',
+      });
+      const currentMonthLabel = now.toLocaleString('en-US', {
+        timeZone: 'UTC',
+        month: 'long',
+        year: 'numeric',
+      });
+      if (window.reason === 'past') {
+        throw new BadRequestException(
+          `Payment can only be made during the corresponding month. This payment is for ${paymentMonthLabel}; current month is ${currentMonthLabel}.`,
+        );
+      }
+      throw new BadRequestException(
+        `Payment is not yet available. This payment is for ${paymentMonthLabel}; current month is ${currentMonthLabel}.`,
+      );
     }
 
     return this.prisma.payment.update({
@@ -352,20 +503,13 @@ export class PaymentsService {
   /**
    * Get student payment summary for dashboard and student payments page.
    * Returns totalPaid, totalPending, totalOverdue and nextPayment (first PENDING/OVERDUE by dueDate).
+   * Totals are computed with one amount per calendar month to avoid double-counting duplicate Payment rows.
    */
   async getStudentPaymentSummary(studentId: string) {
-    const [paidAgg, pendingAgg, overdueAgg, nextPayment] = await Promise.all([
-      this.prisma.payment.aggregate({
-        where: { studentId, status: PaymentStatus.PAID },
-        _sum: { amount: true },
-      }),
-      this.prisma.payment.aggregate({
-        where: { studentId, status: PaymentStatus.PENDING },
-        _sum: { amount: true },
-      }),
-      this.prisma.payment.aggregate({
-        where: { studentId, status: PaymentStatus.OVERDUE },
-        _sum: { amount: true },
+    const [allPayments, nextPayment] = await Promise.all([
+      this.prisma.payment.findMany({
+        where: { studentId },
+        select: { month: true, amount: true, status: true },
       }),
       this.prisma.payment.findFirst({
         where: {
@@ -377,9 +521,24 @@ export class PaymentsService {
       }),
     ]);
 
-    const totalPaid = Number(paidAgg._sum.amount) || 0;
-    const totalPending = Number(pendingAgg._sum.amount) || 0;
-    const totalOverdue = Number(overdueAgg._sum.amount) || 0;
+    // One amount per calendar month (year-month key); prevents double-counting
+    const byMonth = new Map<string, { amount: number; status: PaymentStatus }>();
+    for (const p of allPayments) {
+      const m = p.month;
+      const key = `${m.getUTCFullYear()}-${m.getUTCMonth()}`;
+      if (!byMonth.has(key)) {
+        byMonth.set(key, { amount: Number(p.amount) || 0, status: p.status });
+      }
+    }
+
+    let totalPaid = 0;
+    let totalPending = 0;
+    let totalOverdue = 0;
+    for (const { amount, status } of byMonth.values()) {
+      if (status === PaymentStatus.PAID) totalPaid += amount;
+      else if (status === PaymentStatus.PENDING) totalPending += amount;
+      else if (status === PaymentStatus.OVERDUE) totalOverdue += amount;
+    }
 
     return {
       totalPaid,
@@ -388,7 +547,7 @@ export class PaymentsService {
       nextPayment: nextPayment
         ? {
             id: nextPayment.id,
-            amount: Number(nextPayment.amount),
+            amount: Number(nextPayment.amount) || 0,
             dueDate: nextPayment.dueDate.toISOString(),
           }
         : null,
@@ -398,6 +557,7 @@ export class PaymentsService {
   /**
    * Ensure a payment record exists for each month from student enrollment to current month.
    * Uses (studentId, month) with startOfMonth for idempotency. One payment per student per month.
+   * Amount is always the student's monthlyFee (Admin-defined); never multiplied by classes or recalculated.
    */
   async ensureMonthlyPayments(studentId: string): Promise<void> {
     const student = await this.prisma.student.findUnique({
@@ -406,6 +566,8 @@ export class PaymentsService {
     });
 
     if (!student) return;
+
+    const monthlyFee = student.monthlyFee != null ? Number(student.monthlyFee) : 0;
 
     const settings = await this.prisma.systemSettings.findFirst({
       orderBy: { id: 'desc' },
@@ -426,9 +588,15 @@ export class PaymentsService {
       periodStarts.push(new Date(Date.UTC(y, m, 1, 0, 0, 0, 0)));
     }
 
+    const periodEndExclusive = (p: Date) => startOfNextMonth(p);
+
     for (const periodStart of periodStarts) {
+      // Use calendar-month range so we match any existing payment for this month regardless of timezone
       const existing = await this.prisma.payment.findFirst({
-        where: { studentId, month: periodStart },
+        where: {
+          studentId,
+          month: { gte: periodStart, lt: periodEndExclusive(periodStart) },
+        },
       });
       if (existing) continue;
 
@@ -438,7 +606,7 @@ export class PaymentsService {
         await this.prisma.payment.create({
           data: {
             studentId,
-            amount: student.monthlyFee,
+            amount: monthlyFee,
             month: periodStart,
             dueDate,
             status: dueDate < now ? PaymentStatus.OVERDUE : PaymentStatus.PENDING,

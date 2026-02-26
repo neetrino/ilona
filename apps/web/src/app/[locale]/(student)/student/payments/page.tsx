@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog';
@@ -10,6 +10,19 @@ import { cn } from '@/shared/lib/utils';
 import type { Payment } from '@/features/finance/api/student-finance.api';
 
 type FilterStatus = 'all' | 'PENDING' | 'PAID' | 'OVERDUE';
+
+/** Ensure exactly one payment per calendar month for deterministic display (backend already groups; this is a safeguard). */
+function onePaymentPerMonth(items: Payment[]): Payment[] {
+  const byMonth = new Map<string, Payment>();
+  for (const p of items) {
+    const d = p.month ? new Date(p.month) : new Date(p.dueDate);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    if (!byMonth.has(key)) byMonth.set(key, p);
+  }
+  return Array.from(byMonth.values()).sort(
+    (a, b) => (b.month ? new Date(b.month).getTime() : new Date(b.dueDate).getTime()) - (a.month ? new Date(a.month).getTime() : new Date(a.dueDate).getTime())
+  );
+}
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('hy-AM', {
@@ -57,7 +70,10 @@ export default function StudentPaymentsPage() {
   );
   const processPaymentMutation = useProcessMyPayment();
 
-  const payments = paymentsData?.items || [];
+  const payments = useMemo(
+    () => onePaymentPerMonth(paymentsData?.items ?? []),
+    [paymentsData?.items]
+  );
 
   const handleMarkAsPaid = () => {
     if (!processModal) return;
@@ -76,15 +92,6 @@ export default function StudentPaymentsPage() {
         },
       }
     );
-  };
-
-  // Calculate days until next payment
-  const getDaysUntilDue = (dueDate: string) => {
-    const today = new Date();
-    const due = new Date(dueDate);
-    const diffTime = due.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
   };
 
   return (
@@ -162,14 +169,9 @@ export default function StudentPaymentsPage() {
               <div>
                 <p className="font-semibold text-blue-800">{t('nextPaymentDue')}</p>
                 <p className="text-sm text-blue-600">
-                  {new Date(summary.nextPayment.dueDate).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                  {' '}
-                  ({t('daysLeft', { count: getDaysUntilDue(summary.nextPayment.dueDate) })})
+                  {new Date(summary.nextPayment.dueDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  {' — '}
+                  {t('paymentOnlyInMonth')}
                 </p>
               </div>
             </div>
@@ -234,13 +236,13 @@ export default function StudentPaymentsPage() {
             </div>
           ) : (
             payments.map((payment) => {
-              const dueDate = new Date(payment.dueDate);
-              const monthDate = payment.month ? new Date(payment.month) : dueDate;
-              const daysUntil = getDaysUntilDue(payment.dueDate);
-              const isOverdue = payment.status === 'OVERDUE' || (payment.status === 'PENDING' && daysUntil < 0);
-              const canPay = payment.status === 'PENDING' || payment.status === 'OVERDUE';
+              const monthDate = payment.month ? new Date(payment.month) : new Date(payment.dueDate);
+              const unpaid = payment.status === 'PENDING' || payment.status === 'OVERDUE';
+              const canPay = payment.canPay === true;
               const groupName = payment.student?.group?.name;
               const description = payment.notes || payment.description;
+              const windowReason = payment.paymentWindowReason;
+              const monthLabel = monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
               return (
                 <div key={payment.id} className="p-4 hover:bg-slate-50 transition-colors">
@@ -248,7 +250,7 @@ export default function StudentPaymentsPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <p className="font-semibold text-slate-800">
-                          {monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          {monthLabel}
                         </p>
                         <StatusBadge status={payment.status} t={t} />
                         {groupName && (
@@ -260,14 +262,20 @@ export default function StudentPaymentsPage() {
                       <p className="text-sm text-slate-500">
                         {payment.status === 'PAID' && payment.paidAt
                           ? `${t('paidOn')} ${new Date(payment.paidAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                          : `${t('due')}: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
-                        {payment.status === 'PENDING' && !isOverdue && daysUntil > 0 && (
-                          <span className="ml-2 text-blue-600">({t('daysLeft', { count: daysUntil })})</span>
-                        )}
-                        {isOverdue && payment.status !== 'PAID' && (
-                          <span className="ml-2 text-red-600 font-medium">({t('daysOverdue', { count: Math.abs(daysUntil) })})</span>
-                        )}
+                          : unpaid
+                            ? `${monthLabel} — ${t('paymentOnlyInMonth')}`
+                            : null}
                       </p>
+                      {unpaid && !canPay && windowReason === 'past' && (
+                        <p className="text-xs text-amber-700 mt-1" role="status">
+                          {t('paymentPeriodEnded')}
+                        </p>
+                      )}
+                      {unpaid && !canPay && windowReason === 'future' && (
+                        <p className="text-xs text-slate-500 mt-1" role="status">
+                          {t('paymentNotYetAvailable', { month: monthLabel })}
+                        </p>
+                      )}
                       {description && (
                         <p className="text-xs text-slate-400 mt-1">{description}</p>
                       )}
@@ -280,12 +288,13 @@ export default function StudentPaymentsPage() {
                       )}>
                         {formatCurrency(Number(payment.amount))}
                       </p>
-                      {canPay && (
+                      {unpaid && (
                         <Button
                           size="sm"
                           variant="default"
-                          onClick={() => setProcessModal(payment)}
-                          disabled={processPaymentMutation.isPending}
+                          onClick={() => canPay && setProcessModal(payment)}
+                          disabled={!canPay || processPaymentMutation.isPending}
+                          title={!canPay && windowReason === 'past' ? t('paymentPeriodEnded') : !canPay && windowReason === 'future' ? t('paymentNotYetAvailable', { month: monthLabel }) : undefined}
                         >
                           {t('markPaid')}
                         </Button>

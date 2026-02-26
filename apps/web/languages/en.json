@@ -402,7 +402,12 @@
     "noSalariesMatch": "No salary records match your search.",
     "noSalariesFound": "No salary records found",
     "paymentMethod": "Payment method",
-    "transactionId": "Transaction ID (optional)"
+    "transactionId": "Transaction ID (optional)",
+    "paymentOnlyInMonth": "Payments can only be made during the corresponding month.",
+    "paymentPeriodEnded": "Payment period ended. This month could only be paid in that month.",
+    "paymentNotYetAvailable": "Available from {month}.",
+    "payableOnlyInMonth": "Payable only in {month}.",
+    "nextPaymentMonth": "Next payment: {month}"
   },
   "analytics": {
     "title": "Analytics",

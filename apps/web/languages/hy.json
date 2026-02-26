@@ -401,7 +401,12 @@
     "noSalariesMatch": "Ոչ մի աշխատավարձի գրառում չի համապատասխանում ձեր որոնմանը:",
     "noSalariesFound": "Աշխատավարձի գրառումներ չեն գտնվել",
     "paymentMethod": "Վճարման եղանակ",
-    "transactionId": "Գործարքի ID (ընտրովի)"
+    "transactionId": "Գործարքի ID (ընտրովի)",
+    "paymentOnlyInMonth": "Վճարումը կարող է կատարվել միայն համապատասխան ամսում:",
+    "paymentPeriodEnded": "Վճարման ժամկետն ավարտվել է: Այդ ամսվա վճարումը հնարավոր էր միայն այդ ամսում:",
+    "paymentNotYetAvailable": "Հասանելի է {month}-ից:",
+    "payableOnlyInMonth": "Վճարման ժամկետը միայն {month}:",
+    "nextPaymentMonth": "Հաջորդ վճարումը՝ {month}"
   },
   "analytics": {
     "title": "Վերլուծություն",

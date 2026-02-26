@@ -9,6 +9,7 @@ describe('PaymentsService', () => {
   let mockPrismaService: {
     payment: {
       findMany: Mock;
+      findFirst: Mock;
       findUnique: Mock;
       create: Mock;
       update: Mock;
@@ -50,6 +51,7 @@ describe('PaymentsService', () => {
     mockPrismaService = {
       payment: {
         findMany: vi.fn(),
+        findFirst: vi.fn(),
         findUnique: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
@@ -193,6 +195,62 @@ describe('PaymentsService', () => {
     });
   });
 
+  describe('processPaymentForStudent', () => {
+    it('should reject when payment month is in the past (payment window)', async () => {
+      const feb2025 = new Date(Date.UTC(2025, 1, 1, 0, 0, 0, 0));
+      mockPrismaService.payment.findFirst.mockResolvedValue({
+        ...mockPayment,
+        id: 'pay-feb',
+        studentId: 'student-1',
+        status: PaymentStatus.PENDING,
+        month: feb2025,
+        dueDate: new Date(2025, 2, 5),
+        amount: 30000,
+        student: { id: 'student-1', user: { firstName: 'A', lastName: 'B', email: 'a@b.com' } },
+      });
+
+      await expect(
+        paymentsService.processPaymentForStudent('pay-feb', 'student-1', {
+          paymentMethod: 'transfer',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        paymentsService.processPaymentForStudent('pay-feb', 'student-1', {
+          paymentMethod: 'transfer',
+        }),
+      ).rejects.toThrow(/Payment can only be made during the corresponding month/);
+      expect(mockPrismaService.payment.update).not.toHaveBeenCalled();
+    });
+
+    it('should allow and process when payment month is current month', async () => {
+      const now = new Date();
+      const currentMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0));
+      mockPrismaService.payment.findFirst.mockResolvedValue({
+        ...mockPayment,
+        id: 'pay-current',
+        studentId: 'student-1',
+        status: PaymentStatus.PENDING,
+        month: currentMonthStart,
+        dueDate: new Date(now.getFullYear(), now.getMonth() + 1, 5),
+        amount: 30000,
+        student: { id: 'student-1', user: { firstName: 'A', lastName: 'B', email: 'a@b.com' } },
+      });
+      mockPrismaService.payment.update.mockResolvedValue({
+        ...mockPayment,
+        status: PaymentStatus.PAID,
+        paymentMethod: 'transfer',
+        paidAt: new Date(),
+      });
+
+      const result = await paymentsService.processPaymentForStudent('pay-current', 'student-1', {
+        paymentMethod: 'transfer',
+      });
+
+      expect(result.status).toBe(PaymentStatus.PAID);
+      expect(mockPrismaService.payment.update).toHaveBeenCalled();
+    });
+  });
+
   describe('cancel', () => {
     it('should cancel a pending payment', async () => {
       mockPrismaService.payment.findUnique.mockResolvedValue(mockPayment);
@@ -218,11 +276,13 @@ describe('PaymentsService', () => {
   });
 
   describe('getStudentPaymentSummary', () => {
-    it('should return payment summary with totalPaid, totalPending, totalOverdue, nextPayment', async () => {
-      mockPrismaService.payment.aggregate
-        .mockResolvedValueOnce({ _sum: { amount: 300 } }) // paid
-        .mockResolvedValueOnce({ _sum: { amount: 100 } }) // pending
-        .mockResolvedValueOnce({ _sum: { amount: 100 } }); // overdue
+    it('should return payment summary with totalPaid, totalPending, totalOverdue, nextPayment (one amount per month)', async () => {
+      mockPrismaService.payment.findMany.mockResolvedValueOnce([
+        { month: new Date('2024-01-01'), amount: 100, status: PaymentStatus.PAID },
+        { month: new Date('2024-02-01'), amount: 100, status: PaymentStatus.PAID },
+        { month: new Date('2024-03-01'), amount: 100, status: PaymentStatus.PENDING },
+        { month: new Date('2024-04-01'), amount: 100, status: PaymentStatus.OVERDUE },
+      ]);
       mockPrismaService.payment.findFirst.mockResolvedValueOnce({
         id: 'pay-1',
         amount: 100,
@@ -231,7 +291,7 @@ describe('PaymentsService', () => {
 
       const result = await paymentsService.getStudentPaymentSummary('student-1');
 
-      expect(result.totalPaid).toBe(300);
+      expect(result.totalPaid).toBe(200);
       expect(result.totalPending).toBe(100);
       expect(result.totalOverdue).toBe(100);
       expect(result.nextPayment).toEqual({

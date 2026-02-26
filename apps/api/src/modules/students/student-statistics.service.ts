@@ -121,10 +121,28 @@ export class StudentStatisticsService {
       },
     });
 
-    // Get payment status
-    const pendingPayments = await this.prisma.payment.findMany({
+    // Get payment status: one entry per calendar month (avoid duplicate months)
+    const pendingRows = await this.prisma.payment.findMany({
       where: { studentId: student.id, status: { in: ['PENDING', 'OVERDUE'] } },
       orderBy: { dueDate: 'asc' },
+    });
+    const byMonth = new Map<string, { id: string; amount: number; dueDate: Date; status: string }[]>();
+    for (const p of pendingRows) {
+      const m = p.month;
+      const key = `${m.getUTCFullYear()}-${m.getUTCMonth()}`;
+      if (!byMonth.has(key)) byMonth.set(key, []);
+      byMonth.get(key)!.push({
+        id: p.id,
+        amount: Number(p.amount),
+        dueDate: p.dueDate,
+        status: p.status,
+      });
+    }
+    const pendingPayments = Array.from(byMonth.values()).map((list) => {
+      const amount = list.reduce((s, x) => s + x.amount, 0);
+      const first = list[0];
+      const status = list.some((x) => x.status === 'OVERDUE') ? 'OVERDUE' : 'PENDING';
+      return { id: first.id, amount, dueDate: first.dueDate, status };
     });
 
     // Get attendance statistics
