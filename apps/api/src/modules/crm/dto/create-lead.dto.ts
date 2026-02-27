@@ -2,7 +2,6 @@ import {
   IsString,
   IsOptional,
   IsNumber,
-  IsUUID,
   Min,
   MaxLength,
 } from 'class-validator';
@@ -33,15 +32,18 @@ export class CreateLeadDto {
   @MaxLength(50)
   levelId?: string;
 
-  @IsUUID()
+  /** Teacher id (CUID). */
+  @IsString()
   @IsOptional()
   teacherId?: string;
 
-  @IsUUID()
+  /** Group id (CUID). */
+  @IsString()
   @IsOptional()
   groupId?: string;
 
-  @IsUUID()
+  /** Center id (CUID). */
+  @IsString()
   @IsOptional()
   centerId?: string;
 

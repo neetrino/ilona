@@ -1,10 +1,11 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateLeadDto } from './create-lead.dto';
-import { IsOptional, IsBoolean, IsString, MaxLength, IsUUID } from 'class-validator';
+import { IsOptional, IsBoolean, IsString, MaxLength } from 'class-validator';
 
 export class UpdateLeadDto extends PartialType(CreateLeadDto) {
+  /** Assigned manager user id (CUID). */
   @IsOptional()
-  @IsUUID()
+  @IsString()
   assignedManagerId?: string;
 
   @IsOptional()
