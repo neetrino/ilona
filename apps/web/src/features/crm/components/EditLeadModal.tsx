@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchLead, updateLead } from '@/features/crm/api/crm.api';
-import type { UpdateLeadDto } from '@/features/crm/types';
+import { fetchLead, updateLead, changeLeadStatus, getAllowedTransitions } from '@/features/crm/api/crm.api';
+import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
+import { STATUS_LABELS } from './LeadCard';
 import { cn } from '@/shared/lib/utils';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -40,7 +41,7 @@ export function EditLeadModal({
   teachers,
   groups,
 }: EditLeadModalProps) {
-  const [form, setForm] = useState<UpdateLeadDto>({});
+  const [form, setForm] = useState<UpdateLeadDto & { status?: CrmLeadStatus; archivedReason?: string }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +49,12 @@ export function EditLeadModal({
     queryKey: ['crm-lead', leadId],
     queryFn: () => fetchLead(leadId!),
     enabled: !!leadId && open,
+  });
+
+  const { data: allowedStatuses = [] } = useQuery({
+    queryKey: ['crm-allowed-transitions', lead?.status],
+    queryFn: () => getAllowedTransitions(lead!.status),
+    enabled: !!lead?.status && open,
   });
 
   useEffect(() => {
@@ -61,18 +68,36 @@ export function EditLeadModal({
         teacherId: lead.teacherId ?? undefined,
         groupId: lead.groupId ?? undefined,
         centerId: lead.centerId ?? undefined,
+        status: lead.status,
+        archivedReason: lead.archivedReason ?? undefined,
       });
       setError(null);
     }
   }, [lead]);
 
+  const statusOptions = lead
+    ? [
+        lead.status,
+        ...allowedStatuses.filter((s) => s !== lead.status),
+      ]
+    : [];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!leadId) return;
+    if (!leadId || !lead) return;
     setError(null);
     setSaving(true);
     try {
-      await updateLead(leadId, form);
+      const { status: formStatus, archivedReason: formArchivedReason, ...updatePayload } = form;
+      await updateLead(leadId, updatePayload);
+      if (formStatus && formStatus !== lead.status) {
+        await changeLeadStatus(leadId, {
+          status: formStatus,
+          ...(formStatus === 'ARCHIVE' && formArchivedReason
+            ? { archivedReason: formArchivedReason }
+            : {}),
+        });
+      }
       onSaved();
       onClose();
     } catch (err: unknown) {
@@ -211,6 +236,41 @@ export function EditLeadModal({
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+              <select
+                value={form.status ?? ''}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    status: (e.target.value || undefined) as CrmLeadStatus | undefined,
+                  }))
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                {statusOptions.map((s) => (
+                  <option key={s} value={s}>
+                    {STATUS_LABELS[s]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {form.status === 'ARCHIVE' && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Archive reason (optional)
+                </label>
+                <input
+                  type="text"
+                  value={form.archivedReason ?? ''}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, archivedReason: e.target.value || undefined }))
+                  }
+                  placeholder="Reason for archiving"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+            )}
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
