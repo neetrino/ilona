@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { Pencil, ChevronDown } from 'lucide-react';
@@ -34,19 +35,56 @@ function formatRecordingTime(isoDate: string): string {
   });
 }
 
+type DropdownPosition = { top: number; left: number; width: number };
+
 export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangingStatus, className }: LeadCardProps) {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
+  const statusButtonRef = useRef<HTMLButtonElement>(null);
+  const statusMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!statusDropdownOpen) return;
-    function handleClickOutside(event: MouseEvent) {
-      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
-        setStatusDropdownOpen(false);
-      }
+    if (!statusDropdownOpen || !statusButtonRef.current) {
+      setDropdownPosition(null);
+      return;
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    function updatePosition() {
+      if (!statusButtonRef.current) return;
+      const rect = statusButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: Math.max(rect.width, 140),
+      });
+    }
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        statusDropdownRef.current?.contains(target) ||
+        statusMenuRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setStatusDropdownOpen(false);
+    }
+
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [statusDropdownOpen]);
 
   const voiceAttachment = lead.attachments?.find((a) => a.type === 'VOICE_RECORDING');
@@ -136,6 +174,7 @@ export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangin
           onClick={(e) => e.stopPropagation()}
         >
           <button
+            ref={statusButtonRef}
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -153,23 +192,35 @@ export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangin
             <span>{STATUS_LABELS[lead.status]}</span>
             <ChevronDown className={cn('h-3 w-3 transition-transform', statusDropdownOpen && 'rotate-180')} />
           </button>
-          {statusDropdownOpen && (
-            <div className="absolute bottom-full left-0 right-0 z-50 mb-1 min-w-[140px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-              {CRM_COLUMN_ORDER.map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  onClick={(e) => handleStatusSelect(e, status)}
-                  className={cn(
-                    'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
-                    lead.status === status && 'bg-primary/10 font-medium text-primary'
-                  )}
-                >
-                  {STATUS_LABELS[status]}
-                </button>
-              ))}
-            </div>
-          )}
+          {statusDropdownOpen &&
+            dropdownPosition &&
+            typeof document !== 'undefined' &&
+            createPortal(
+              <div
+                ref={statusMenuRef}
+                className="fixed z-[9999] min-w-[140px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+                style={{
+                  top: `${dropdownPosition.top}px`,
+                  left: `${dropdownPosition.left}px`,
+                  width: `${dropdownPosition.width}px`,
+                }}
+              >
+                {CRM_COLUMN_ORDER.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={(e) => handleStatusSelect(e, status)}
+                    className={cn(
+                      'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
+                      lead.status === status && 'bg-primary/10 font-medium text-primary'
+                    )}
+                  >
+                    {STATUS_LABELS[status]}
+                  </button>
+                ))}
+              </div>,
+              document.body
+            )}
         </div>
       )}
     </div>
