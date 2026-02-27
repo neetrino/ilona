@@ -15,7 +15,6 @@ import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import { useQuery } from '@tanstack/react-query';
-import { cn } from '@/shared/lib/utils';
 
 interface LeadDrawerProps {
   leadId: string | null;

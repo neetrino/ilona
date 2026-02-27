@@ -44,7 +44,7 @@ export function VoiceRecorder({
           const blob = new Blob(chunksRef.current, { type: mimeType });
           const ext = mimeType === 'audio/webm' ? 'webm' : 'm4a';
           const fileName = `recording-${Date.now()}.${ext}`;
-          const { key, uploadUrl, publicUrl } = await getPresignedRecordingUrl(
+          const { key, uploadUrl } = await getPresignedRecordingUrl(
             leadId,
             fileName,
             mimeType
@@ -116,7 +116,7 @@ export function VoiceRecorder({
 
 export function RecordingPlayback({
   r2Key: key,
-  mimeType,
+  mimeType: _mimeType,
   className,
 }: {
   r2Key: string;

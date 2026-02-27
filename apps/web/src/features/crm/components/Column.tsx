@@ -3,7 +3,6 @@
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { LeadCard } from './LeadCard';
 import { STATUS_LABELS } from './LeadCard';
-import { cn } from '@/shared/lib/utils';
 
 interface ColumnProps {
   status: CrmLeadStatus;

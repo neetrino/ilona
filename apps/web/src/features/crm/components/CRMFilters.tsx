@@ -3,7 +3,6 @@
 import type { CrmLeadFilters, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { STATUS_LABELS } from './LeadCard';
-import { cn } from '@/shared/lib/utils';
 
 interface CRMFiltersProps {
   filters: CrmLeadFilters;

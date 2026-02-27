@@ -248,7 +248,7 @@ export class LeadsService {
   ) {
     const lead = await this.findById(id);
     const from = lead.status;
-    const to = dto.status as CrmLeadStatus;
+    const to = dto.status;
 
     if (!canTransition(from, to, { isTeacherApprove: options?.isTeacherApprove })) {
       throw new BadRequestException(

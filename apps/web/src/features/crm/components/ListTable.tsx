@@ -2,7 +2,6 @@
 
 import type { CrmLead } from '@/features/crm/types';
 import { STATUS_LABELS } from './LeadCard';
-import { cn } from '@/shared/lib/utils';
 
 interface ListTableProps {
   leads: CrmLead[];

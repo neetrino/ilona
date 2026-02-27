@@ -6,7 +6,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { fetchTeacherLeads, teacherApproveLead, teacherTransferLead } from '@/features/crm/api/crm.api';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
-import type { CrmLead } from '@/features/crm/types';
 import { STATUS_LABELS } from '@/features/crm/components/LeadCard';
 import { cn } from '@/shared/lib/utils';
 
@@ -39,8 +38,6 @@ export default function TeacherLeadsPage() {
   });
 
   const leads = leadsData?.items ?? [];
-  const firstLessonLeads = leads.filter((l) => l.status === 'FIRST_LESSON');
-  const agreedLeads = leads.filter((l) => l.status === 'AGREED');
 
   return (
     <DashboardLayout title={t('leads')} subtitle="Leads assigned to you for first lesson">
