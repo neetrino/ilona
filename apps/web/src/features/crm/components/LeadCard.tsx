@@ -91,46 +91,10 @@ export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangin
           <Pencil className="h-3.5 w-3.5" />
         </button>
       )}
+      {/* Top section: name + edit */}
       <p className="font-medium text-slate-900 truncate pr-8">{name}</p>
-      {onStatusChange && (
-        <div ref={statusDropdownRef} className="relative mt-2" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setStatusDropdownOpen((open) => !open);
-            }}
-            disabled={isChangingStatus}
-            className={cn(
-              'inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20',
-              isChangingStatus && 'opacity-60 pointer-events-none'
-            )}
-            title="Change status"
-            aria-label="Change status"
-            aria-expanded={statusDropdownOpen}
-          >
-            <span>{STATUS_LABELS[lead.status]}</span>
-            <ChevronDown className={cn('h-3 w-3 transition-transform', statusDropdownOpen && 'rotate-180')} />
-          </button>
-          {statusDropdownOpen && (
-            <div className="absolute z-50 mt-1 min-w-[140px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-              {CRM_COLUMN_ORDER.map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  onClick={(e) => handleStatusSelect(e, status)}
-                  className={cn(
-                    'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
-                    lead.status === status && 'bg-primary/10 font-medium text-primary'
-                  )}
-                >
-                  {STATUS_LABELS[status]}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+
+      {/* Middle section: lead info */}
       <p className="text-xs text-slate-400 mt-1">{createdAt}</p>
       {recordingTime && <p className="text-xs text-slate-500">{recordingTime}</p>}
       {lead.phone && (
@@ -163,6 +127,51 @@ export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangin
           </span>
         )}
       </div>
+
+      {/* Bottom section: status change control */}
+      {onStatusChange && (
+        <div
+          ref={statusDropdownRef}
+          className="relative mt-3 pt-3 border-t border-slate-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setStatusDropdownOpen((open) => !open);
+            }}
+            disabled={isChangingStatus}
+            className={cn(
+              'w-full inline-flex items-center justify-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20',
+              isChangingStatus && 'opacity-60 pointer-events-none'
+            )}
+            title="Change status"
+            aria-label="Change status"
+            aria-expanded={statusDropdownOpen}
+          >
+            <span>{STATUS_LABELS[lead.status]}</span>
+            <ChevronDown className={cn('h-3 w-3 transition-transform', statusDropdownOpen && 'rotate-180')} />
+          </button>
+          {statusDropdownOpen && (
+            <div className="absolute bottom-full left-0 right-0 z-50 mb-1 min-w-[140px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+              {CRM_COLUMN_ORDER.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={(e) => handleStatusSelect(e, status)}
+                  className={cn(
+                    'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
+                    lead.status === status && 'bg-primary/10 font-medium text-primary'
+                  )}
+                >
+                  {STATUS_LABELS[status]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
