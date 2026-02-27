@@ -40,6 +40,7 @@ export function VoiceLeadDetailModal({
       await changeLeadStatus(leadId, { status: newStatus });
       await refetch();
       onUpdated();
+      onClose();
     } finally {
       setChangingStatus(false);
     }

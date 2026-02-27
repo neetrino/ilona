@@ -241,7 +241,10 @@ export class LeadsService {
     }
 
     const requiredFields = requireFieldsForTransition(from, to);
-    if (requiredFields.length > 0) {
+    const isVoiceLead = (lead as { attachments?: { type: string }[] }).attachments?.some(
+      (a) => a.type === 'VOICE_RECORDING',
+    );
+    if (requiredFields.length > 0 && !isVoiceLead) {
       const missing: string[] = [];
       for (const key of requiredFields) {
         const v = lead[key as keyof typeof lead];
