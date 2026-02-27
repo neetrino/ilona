@@ -59,8 +59,8 @@ function sanitizeUpdateLeadPayload(data: UpdateLeadDto): Record<string, unknown>
   for (const key of strFields) {
     if (data[key] !== undefined) out[key] = data[key];
   }
-  if (data.age !== undefined && data.age !== null && data.age !== '') {
-    const n = Number(data.age);
+  if (data.age !== undefined && data.age !== null) {
+    const n = typeof data.age === 'number' ? data.age : Number(data.age);
     if (!Number.isNaN(n) && n >= 0) out.age = n;
   }
   if (data.transferFlag !== undefined) out.transferFlag = data.transferFlag;
