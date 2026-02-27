@@ -7,8 +7,14 @@ import {
   Param,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators';
 import { CurrentUser } from '../../common/decorators';
@@ -24,6 +30,8 @@ import {
   ConfirmRecordingDto,
 } from './dto';
 
+const MAX_VOICE_SIZE = 25 * 1024 * 1024; // 25MB
+
 @ApiTags('crm')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -36,6 +44,41 @@ export class LeadsController {
   @ApiOperation({ summary: 'Create a new lead' })
   create(@Body() dto: CreateLeadDto, @CurrentUser() user: JwtPayload) {
     return this.leadsService.create(dto, user.sub);
+  }
+
+  @Post('voice')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({ summary: 'Create a new lead from voice recording' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  createFromVoice(
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [new MaxFileSizeValidator({ maxSize: MAX_VOICE_SIZE })],
+        exceptionFactory: (error) =>
+          new BadRequestException(
+            error.includes('File is too large')
+              ? `Audio file must be under ${MAX_VOICE_SIZE / 1024 / 1024}MB`
+              : `File validation failed: ${error}`,
+          ),
+      }),
+    )
+    file: Express.Multer.File | undefined,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('No audio file provided. Please record and send a voice message.');
+    }
+    return this.leadsService.createLeadFromVoice(file, user.sub);
   }
 
   @Get()

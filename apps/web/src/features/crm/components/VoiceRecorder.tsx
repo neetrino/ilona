@@ -9,6 +9,8 @@ interface VoiceRecorderProps {
   onRecordingSaved?: () => void;
   disabled?: boolean;
   className?: string;
+  /** Hide error message on the card (e.g. in board view) */
+  hideError?: boolean;
 }
 
 export function VoiceRecorder({
@@ -16,6 +18,7 @@ export function VoiceRecorder({
   onRecordingSaved,
   disabled,
   className,
+  hideError,
 }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -104,7 +107,7 @@ export function VoiceRecorder({
           Stop
         </button>
       )}
-      {error && (
+      {error && !hideError && (
         <p className="text-sm text-red-600">{error}</p>
       )}
     </div>

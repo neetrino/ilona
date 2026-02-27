@@ -40,6 +40,13 @@ export async function createLead(data: CreateLeadDto): Promise<CrmLead> {
   return api.post<CrmLead>(CRM_LEADS_ENDPOINT, data);
 }
 
+/** Create a new lead from a voice recording (audio file). Lead appears in NEW column. */
+export async function createLeadFromVoice(file: File | Blob, fileName: string): Promise<CrmLead> {
+  const form = new FormData();
+  form.append('file', file, fileName);
+  return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/voice`, form);
+}
+
 export async function updateLead(id: string, data: UpdateLeadDto): Promise<CrmLead> {
   return api.patch<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}`, data);
 }

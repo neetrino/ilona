@@ -13,7 +13,7 @@ import {
   BoardView,
   ListTable,
   LeadDrawer,
-  CreateLeadModal,
+  VoiceLeadModal,
   CRMFilters,
 } from '@/features/crm/components';
 import { cn } from '@/shared/lib/utils';
@@ -30,7 +30,7 @@ export default function AdminCrmPage() {
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
 
   const { data: leadsData, isLoading, refetch } = useQuery({
     queryKey: ['crm-leads', filters],
@@ -57,7 +57,7 @@ export default function AdminCrmPage() {
   const groups = groupsData?.items ?? [];
 
   const handleCardClick = (lead: CrmLead) => setSelectedLeadId(lead.id);
-  const handleAddLead = () => setCreateModalOpen(true);
+  const handleAddLead = () => setVoiceModalOpen(true);
 
   return (
     <DashboardLayout title={t('crm')} subtitle="Lead management">
@@ -140,10 +140,13 @@ export default function AdminCrmPage() {
         onClose={() => setSelectedLeadId(null)}
         onUpdated={() => refetch()}
       />
-      <CreateLeadModal
-        open={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        onCreated={() => refetch()}
+      <VoiceLeadModal
+        open={voiceModalOpen}
+        onClose={() => setVoiceModalOpen(false)}
+        onCreated={() => {
+          refetch();
+          setVoiceModalOpen(false);
+        }}
       />
     </DashboardLayout>
   );

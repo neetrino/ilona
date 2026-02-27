@@ -3,8 +3,6 @@
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { Column } from './Column';
-import { VoiceRecorder } from './VoiceRecorder';
-import { cn } from '@/shared/lib/utils';
 
 interface BoardViewProps {
   leads: CrmLead[];
@@ -19,7 +17,6 @@ export function BoardView({
   countsByStatus,
   onCardClick,
   onAddLead,
-  onRecordingSaved,
 }: BoardViewProps) {
   const leadsByStatus = CRM_COLUMN_ORDER.reduce(
     (acc, status) => {
@@ -39,11 +36,6 @@ export function BoardView({
           count={countsByStatus[status] ?? 0}
           onCardClick={onCardClick}
           onAddClick={onAddLead}
-          showVoiceRecorder={(lead) => (
-            <div className="pl-1">
-              <VoiceRecorder leadId={lead.id} onRecordingSaved={onRecordingSaved} />
-            </div>
-          )}
         />
       ))}
     </div>

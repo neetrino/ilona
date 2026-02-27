@@ -65,6 +65,42 @@ export class LeadsService {
     return lead;
   }
 
+  /** Create a NEW lead from a voice recording (uploaded file). Stores audio in crm/recordings. */
+  async createLeadFromVoice(
+    file: Express.Multer.File,
+    createdByUserId: string,
+  ) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('No audio file provided');
+    }
+    const lead = await this.prisma.crmLead.create({
+      data: {
+        status: 'NEW',
+        createdByUserId,
+      },
+    });
+    const uploadResult = await this.storage.upload(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+      'crm/recordings',
+    );
+    await this.prisma.crmLeadAttachment.create({
+      data: {
+        leadId: lead.id,
+        type: 'VOICE_RECORDING',
+        r2Key: uploadResult.key,
+        mimeType: uploadResult.mimeType,
+        size: uploadResult.fileSize,
+      },
+    });
+    await this.logActivity(lead.id, createdByUserId, 'RECORDING_UPLOADED', {
+      source: 'voice_lead',
+      key: uploadResult.key,
+    });
+    return this.findById(lead.id);
+  }
+
   async findAll(
     query: {
       skip?: number;
