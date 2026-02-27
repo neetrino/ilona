@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFeedbackDto, UpdateFeedbackDto } from './dto';
-import { UserRole } from '@prisma/client';
+import { UserRole, Prisma } from '@prisma/client';
 import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()
@@ -100,24 +100,17 @@ export class FeedbackService {
       teacherId?: string;
     },
   ) {
-    const where: any = { studentId };
+    const where: Prisma.FeedbackWhereInput = { studentId };
 
     if (params?.teacherId) {
       where.teacherId = params.teacherId;
     }
 
     if (params?.dateFrom || params?.dateTo) {
-      where.lesson = where.lesson || {};
-      if (params.dateFrom)
-        where.lesson.scheduledAt = {
-          ...where.lesson.scheduledAt,
-          gte: params.dateFrom,
-        };
-      if (params.dateTo)
-        where.lesson.scheduledAt = {
-          ...where.lesson.scheduledAt,
-          lte: params.dateTo,
-        };
+      const scheduledAt: Prisma.DateTimeFilter = {};
+      if (params.dateFrom) scheduledAt.gte = params.dateFrom;
+      if (params.dateTo) scheduledAt.lte = params.dateTo;
+      where.lesson = { is: { scheduledAt } };
     }
 
     const feedbacks = await this.prisma.feedback.findMany({

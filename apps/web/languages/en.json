@@ -91,6 +91,7 @@
     "students": "Students",
     "crm": "CRM",
     "myStudents": "My Students",
+    "leads": "Leads",
     "groups": "Groups/Center",
     "centers": "Centers",
     "lessons": "Lessons",
@@ -552,6 +553,22 @@
     "newStudentAlertsDesc": "Notifications when new students join your groups",
     "salaryNotifications": "Salary Notifications",
     "salaryNotificationsDesc": "Alerts about salary payments and deductions"
+  },
+  "crm": {
+    "voiceLead": "Voice lead",
+    "leadInformation": "Lead information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phoneNumber": "Phone Number",
+    "age": "Age",
+    "level": "Level",
+    "teacher": "Teacher",
+    "group": "Group",
+    "center": "Center",
+    "recordings": "Recordings",
+    "voiceRecording": "Voice recording",
+    "invalidPhone": "Enter a valid phone number (at least 4 digits)",
+    "saving": "Saving…"
   },
   "language": {
     "english": "English",

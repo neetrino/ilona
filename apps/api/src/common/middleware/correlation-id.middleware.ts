@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const CORRELATION_ID_HEADER = 'x-request-id';
 
+/* Express Request augmentation - namespace required by @types/express */
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
     interface Request {
@@ -11,6 +13,7 @@ declare global {
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 @Injectable()
 export class CorrelationIdMiddleware implements NestMiddleware {

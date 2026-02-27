@@ -15,6 +15,21 @@ import { SalariesService } from '../finance/salaries.service';
 import { ChatManagementService } from './chat-management.service';
 import { ChatAuthorizationService } from './chat-authorization.service';
 
+/** Message response with optional navigation (e.g. for voice from calendar) */
+export interface SendMessageResponse {
+  id: string;
+  chatId: string;
+  senderId: string | null;
+  content: string | null;
+  type: MessageType;
+  metadata?: Prisma.JsonValue;
+  fileUrl?: string | null;
+  isEdited?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  navigation?: { conversationId: string; groupId: string; messageId: string };
+}
+
 /**
  * Service responsible for message operations
  */
@@ -109,7 +124,7 @@ export class MessageService {
   /**
    * Send a message
    */
-  async sendMessage(dto: SendMessageDto, senderId: string, senderRole?: string) {
+  async sendMessage(dto: SendMessageDto, senderId: string, senderRole?: string): Promise<SendMessageResponse> {
     // CRITICAL: Validate senderId is provided and not empty
     if (!senderId || senderId.trim() === '') {
       this.logger.error('[sendMessage] senderId is missing or empty', { dto });
@@ -171,7 +186,7 @@ export class MessageService {
     }
 
     // voiceToTeacher: only students can set this, and only in direct chat with their teacher
-    const metadataObj = dto.metadata && typeof dto.metadata === 'object' ? (dto.metadata as Record<string, unknown>) : null;
+    const metadataObj = dto.metadata && typeof dto.metadata === 'object' ? (dto.metadata) : null;
     if (metadataObj?.voiceToTeacher === true) {
       if (senderUser.role !== UserRole.STUDENT) {
         throw new ForbiddenException('Only students can send voice messages to teacher');
@@ -323,16 +338,16 @@ export class MessageService {
     }
 
     // Return message with navigation metadata for voice messages from calendar
-    // Include conversationId (chatId) and groupId for navigation
-    const response: any = message;
-    if (chat.groupId) {
-      response.navigation = {
-        conversationId: chat.id,
-        groupId: chat.groupId,
-        messageId: message.id,
-      };
-    }
-
+    const response: SendMessageResponse = {
+      ...message,
+      ...(chat.groupId && {
+        navigation: {
+          conversationId: chat.id,
+          groupId: chat.groupId,
+          messageId: message.id,
+        },
+      }),
+    };
     return response;
   }
 
@@ -472,9 +487,10 @@ export class MessageService {
           
           await this.storageService.delete(key).then(() => {
             this.logger.log(`Successfully deleted file from storage: ${key}`);
-          }).catch((error) => {
+          }).catch((err: unknown) => {
             // Log error but don't fail the message deletion
-            this.logger.error(`Failed to delete file from storage. Key: ${key}, Error: ${error.message}`);
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.error(`Failed to delete file from storage. Key: ${key}, Error: ${msg}`);
           });
         } else {
           this.logger.warn(`Could not extract key from fileUrl: ${fileUrl}`);

@@ -135,6 +135,6 @@ async function bootstrap() {
   logger.log(`Network access: http://<your-ip>:${port}/${apiPrefix}`);
 }
 
-bootstrap();
+void bootstrap();
 
 

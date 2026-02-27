@@ -180,9 +180,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(`chat:${data.chatId}`).emit('message:new', message);
 
       return { success: true, message };
-    } catch (error) {
-      this.logger.error('Send message error', (error as Error)?.stack ?? (error as Error)?.message);
-      return { success: false, error: (error as Error).message };
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.logger.error('Send message error', error.stack ?? error.message);
+      return { success: false, error: error.message };
     }
   }
 

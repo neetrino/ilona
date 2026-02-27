@@ -42,7 +42,7 @@ export class SalaryGenerationService {
     } catch (error) {
       // Silently fail to avoid breaking action updates
       // Log error in production
-      this.logger.error(`Failed to recalculate salary for teacher ${teacherId}, month ${month}:`, error);
+      this.logger.error(`Failed to recalculate salary for teacher ${teacherId}, month ${month.toISOString()}:`, error);
     }
   }
 

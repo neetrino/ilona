@@ -30,6 +30,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { StorageModule } from './modules/storage/storage.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { CrmModule } from './modules/crm/crm.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -71,6 +72,7 @@ import { AppController } from './app.controller';
     StorageModule,
     FeedbackModule,
     SettingsModule,
+    CrmModule,
   ],
   providers: [
     // Correlation ID and request logging

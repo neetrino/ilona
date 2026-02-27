@@ -90,6 +90,7 @@
     "students": "Աշակերտներ",
     "crm": "CRM",
     "myStudents": "Իմ աշակերտներ",
+    "leads": "Լիդեր",
     "groups": "Խմբեր/Կենտրոն",
     "centers": "Կենտրոններ",
     "lessons": "Դասեր",
@@ -573,6 +574,22 @@
     "notFound": "Չի գտնվել",
     "unauthorized": "Չի թույլատրվում",
     "forbidden": "Մուտքը արգելված է"
+  },
+  "crm": {
+    "voiceLead": "Ձայնային լիդ",
+    "leadInformation": "Լիդի տեղեկություններ",
+    "firstName": "Անուն",
+    "lastName": "Ազգանուն",
+    "phoneNumber": "Հեռախոսահամար",
+    "age": "Տարիք",
+    "level": "Մակարդակ",
+    "teacher": "Ուսուցիչ",
+    "group": "Խումբ",
+    "center": "Կենտրոն",
+    "recordings": "Ձայնագրություններ",
+    "voiceRecording": "Ձայնագրություն",
+    "invalidPhone": "Մուտքագրեք վավեր հեռախոսահամար (առնվազն 4 նիշ)",
+    "saving": "Պահպանվում է…"
   },
   "language": {
     "english": "Անգլերեն",

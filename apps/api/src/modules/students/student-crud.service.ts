@@ -616,7 +616,16 @@ export class StudentCrudService {
     }
 
     // Update student fields
-    const updateData: any = {
+    const updateData: {
+      parentName?: string;
+      parentPhone?: string;
+      parentEmail?: string;
+      monthlyFee?: number;
+      notes?: string;
+      receiveReports?: boolean;
+      groupId?: string;
+      teacherId?: string;
+    } = {
       parentName: dto.parentName,
       parentPhone: dto.parentPhone,
       parentEmail: dto.parentEmail,
@@ -624,15 +633,14 @@ export class StudentCrudService {
       notes: dto.notes,
       receiveReports: dto.receiveReports,
     };
-    
-    // Only include these fields if provided
+
     if (dto.groupId !== undefined) {
       updateData.groupId = dto.groupId;
     }
     if (dto.teacherId !== undefined) {
       updateData.teacherId = dto.teacherId;
     }
-    
+
     return this.prisma.student.update({
       where: { id },
       data: updateData,

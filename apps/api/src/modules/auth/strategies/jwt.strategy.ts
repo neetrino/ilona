@@ -59,12 +59,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     const message = error.message.toLowerCase();
+    const code = (error as { code?: string | number }).code;
     return (
       message.includes('econnreset') ||
       message.includes('connection reset') ||
       message.includes('server has closed the connection') ||
-      (error as any).code === 'ECONNRESET' ||
-      (error as any).code === 10054
+      code === 'ECONNRESET' ||
+      code === 10054
     );
   }
 
