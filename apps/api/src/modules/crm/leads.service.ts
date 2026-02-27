@@ -18,6 +18,7 @@ import {
   canTransition,
   getAllowedNextStatuses,
   requireFieldsForTransition,
+  CRM_COLUMN_ORDER,
 } from './crm-status.machine';
 import {
   CrmLeadStatus,
@@ -244,19 +245,22 @@ export class LeadsService {
     id: string,
     dto: ChangeStatusDto,
     actorUserId: string,
-    options?: { isTeacherApprove?: boolean },
+    options?: { isTeacherApprove?: boolean; userRole?: UserRole },
   ) {
     const lead = await this.findById(id);
     const from = lead.status;
     const to = dto.status;
 
-    if (!canTransition(from, to, { isTeacherApprove: options?.isTeacherApprove })) {
-      throw new BadRequestException(
-        `Transition from ${from} to ${to} is not allowed`,
-      );
+    const adminCanSetAnyStatus = options?.userRole === UserRole.ADMIN;
+    if (!adminCanSetAnyStatus) {
+      if (!canTransition(from, to, { isTeacherApprove: options?.isTeacherApprove })) {
+        throw new BadRequestException(
+          `Transition from ${from} to ${to} is not allowed`,
+        );
+      }
     }
 
-    const requiredFields = requireFieldsForTransition(from, to);
+    const requiredFields = adminCanSetAnyStatus ? [] : requireFieldsForTransition(from, to);
     const isVoiceLead = (lead as { attachments?: { type: string }[] }).attachments?.some(
       (a) => a.type === 'VOICE_RECORDING',
     );
@@ -427,6 +431,11 @@ export class LeadsService {
 
   getAllowedTransitions(status: CrmLeadStatus): CrmLeadStatus[] {
     return getAllowedNextStatuses(status);
+  }
+
+  /** All CRM statuses in display order (for Admin manual status control). */
+  getStatuses(): CrmLeadStatus[] {
+    return [...CRM_COLUMN_ORDER];
   }
 
   // --- Teacher: leads assigned to me (teacherId + groupId) ---

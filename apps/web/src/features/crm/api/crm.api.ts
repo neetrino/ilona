@@ -128,6 +128,11 @@ export async function getAllowedTransitions(
   );
 }
 
+/** All CRM statuses in display order (for Admin manual status control). */
+export async function fetchCrmStatuses(): Promise<CrmLeadStatus[]> {
+  return api.get<CrmLeadStatus[]>(`${CRM_LEADS_ENDPOINT}/statuses`);
+}
+
 /** Resolve playable URL for an attachment (R2 key). Use API proxy or public URL. */
 export function getRecordingPlayUrl(r2Key: string): string {
   const base = getApiBaseUrl();

@@ -8,6 +8,7 @@ interface ColumnProps {
   status: CrmLeadStatus;
   leads: CrmLead[];
   count: number;
+  availableStatuses?: CrmLeadStatus[];
   onCardClick: (lead: CrmLead) => void;
   onCardEdit?: (lead: CrmLead) => void;
   onCardStatusChange?: (leadId: string, status: CrmLeadStatus) => void;
@@ -20,6 +21,7 @@ export function Column({
   status,
   leads,
   count,
+  availableStatuses,
   onCardClick,
   onCardEdit,
   onCardStatusChange,
@@ -54,6 +56,7 @@ export function Column({
           <div key={lead.id} className="space-y-1">
             <LeadCard
               lead={lead}
+              availableStatuses={availableStatuses}
               onClick={() => onCardClick(lead)}
               onEditClick={onCardEdit ? () => onCardEdit(lead) : undefined}
               onStatusChange={onCardStatusChange}

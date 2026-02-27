@@ -5,11 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { fetchLeads, changeLeadStatus } from '@/features/crm/api/crm.api';
+import { fetchLeads, changeLeadStatus, fetchCrmStatuses } from '@/features/crm/api/crm.api';
 import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
-import type { CrmLead, CrmLeadFilters, CrmLeadStatus } from '@/features/crm/types';
+import type { CrmLead, CrmLeadFilters, CrmLeadStatus, CrmLeadsResponse } from '@/features/crm/types';
+import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import {
   BoardView,
   ListTable,
@@ -39,6 +40,7 @@ export default function AdminCrmPage() {
   const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [editLeadId, setEditLeadId] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   // Restore voice lead popup from URL after refresh
   useEffect(() => {
@@ -55,11 +57,49 @@ export default function AdminCrmPage() {
   const statusMutation = useMutation({
     mutationFn: ({ leadId, status }: { leadId: string; status: CrmLeadStatus }) =>
       changeLeadStatus(leadId, { status }),
-    onSuccess: () => {
+    onMutate: async ({ leadId, status }) => {
+      setStatusError(null);
+      await queryClient.cancelQueries({ queryKey: ['crm-leads', filters] });
+      const previous = queryClient.getQueryData<CrmLeadsResponse>(['crm-leads', filters]);
+      if (previous?.items) {
+        const lead = previous.items.find((l) => l.id === leadId);
+        const fromStatus = lead?.status;
+        const counts = { ...previous.countsByStatus } as Partial<Record<CrmLeadStatus, number>>;
+        if (fromStatus && counts[fromStatus] !== undefined) {
+          counts[fromStatus] = Math.max(0, (counts[fromStatus] ?? 0) - 1);
+        }
+        if (counts[status] !== undefined) {
+          counts[status] = (counts[status] ?? 0) + 1;
+        } else {
+          counts[status] = 1;
+        }
+        queryClient.setQueryData<CrmLeadsResponse>(['crm-leads', filters], {
+          ...previous,
+          items: previous.items.map((l) =>
+            l.id === leadId ? { ...l, status } : l
+          ),
+          countsByStatus: counts,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['crm-leads', filters], context.previous);
+      }
+      setStatusError('Failed to update status. Please try again.');
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
     },
   });
   const changingStatusId = statusMutation.isPending ? statusMutation.variables?.leadId ?? null : null;
+
+  const { data: statuses = CRM_COLUMN_ORDER } = useQuery({
+    queryKey: ['crm-statuses'],
+    queryFn: fetchCrmStatuses,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: centersData } = useQuery({
     queryKey: ['centers'],
@@ -152,11 +192,21 @@ export default function AdminCrmPage() {
           groups={groups}
         />
 
+        {statusError && (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+          >
+            {statusError}
+          </div>
+        )}
+
         {/* Content */}
         {viewMode === 'board' ? (
           <BoardView
             leads={leads}
             countsByStatus={countsByStatus}
+            availableStatuses={statuses}
             onCardClick={handleCardClick}
             onCardEdit={handleCardEdit}
             onCardStatusChange={handleCardStatusChange}

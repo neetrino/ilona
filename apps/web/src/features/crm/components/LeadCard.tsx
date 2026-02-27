@@ -19,6 +19,7 @@ const STATUS_LABELS: Record<CrmLeadStatus, string> = {
 
 interface LeadCardProps {
   lead: CrmLead;
+  availableStatuses?: CrmLeadStatus[];
   onClick: () => void;
   onEditClick?: (e: React.MouseEvent) => void;
   onStatusChange?: (leadId: string, status: CrmLeadStatus) => void;
@@ -37,7 +38,7 @@ function formatRecordingTime(isoDate: string): string {
 
 type DropdownPosition = { top: number; left: number; width: number };
 
-export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangingStatus, className }: LeadCardProps) {
+export function LeadCard({ lead, availableStatuses = CRM_COLUMN_ORDER, onClick, onEditClick, onStatusChange, isChangingStatus, className }: LeadCardProps) {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
@@ -189,7 +190,7 @@ export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangin
             aria-label="Change status"
             aria-expanded={statusDropdownOpen}
           >
-            <span>{STATUS_LABELS[lead.status]}</span>
+            <span>{STATUS_LABELS[lead.status] ?? lead.status}</span>
             <ChevronDown className={cn('h-3 w-3 transition-transform', statusDropdownOpen && 'rotate-180')} />
           </button>
           {statusDropdownOpen &&
@@ -205,7 +206,7 @@ export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangin
                   width: `${dropdownPosition.width}px`,
                 }}
               >
-                {CRM_COLUMN_ORDER.map((status) => (
+                {availableStatuses.map((status) => (
                   <button
                     key={status}
                     type="button"
@@ -215,7 +216,7 @@ export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangin
                       lead.status === status && 'bg-primary/10 font-medium text-primary'
                     )}
                   >
-                    {STATUS_LABELS[status]}
+                    {STATUS_LABELS[status] ?? status}
                   </button>
                 ))}
               </div>,
