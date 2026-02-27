@@ -112,6 +112,13 @@ export class LeadsController {
     return this.leadsService.getAllowedTransitions(status as import('@prisma/client').CrmLeadStatus);
   }
 
+  @Get('statuses')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({ summary: 'Get all CRM statuses (for Admin manual status control)' })
+  getStatuses() {
+    return this.leadsService.getStatuses();
+  }
+
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Get lead by ID' })
@@ -132,13 +139,15 @@ export class LeadsController {
 
   @Post(':id/status')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Change lead status (only allowed transitions)' })
+  @ApiOperation({ summary: 'Change lead status (Admin can set any status)' })
   changeStatus(
     @Param('id') id: string,
     @Body() dto: ChangeStatusDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.leadsService.changeStatus(id, dto, user.sub);
+    return this.leadsService.changeStatus(id, dto, user.sub, {
+      userRole: user.role,
+    });
   }
 
   @Get(':id/activities')
