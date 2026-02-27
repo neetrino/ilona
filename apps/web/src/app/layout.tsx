@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { WarmupRequest } from '@/shared/components/WarmupRequest';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], preload: false });
 
 export const metadata: Metadata = {
   title: 'Ilona English Center',

@@ -9,6 +9,9 @@ interface ColumnProps {
   leads: CrmLead[];
   count: number;
   onCardClick: (lead: CrmLead) => void;
+  onCardEdit?: (lead: CrmLead) => void;
+  onCardStatusChange?: (leadId: string, status: CrmLeadStatus) => void;
+  changingStatusId?: string | null;
   onAddClick: () => void;
   showVoiceRecorder?: (lead: CrmLead) => React.ReactNode;
 }
@@ -18,6 +21,9 @@ export function Column({
   leads,
   count,
   onCardClick,
+  onCardEdit,
+  onCardStatusChange,
+  changingStatusId,
   onAddClick,
   showVoiceRecorder,
 }: ColumnProps) {
@@ -46,7 +52,13 @@ export function Column({
       <div className="flex-1 overflow-y-auto p-2 space-y-2">
         {leads.map((lead) => (
           <div key={lead.id} className="space-y-1">
-            <LeadCard lead={lead} onClick={() => onCardClick(lead)} />
+            <LeadCard
+              lead={lead}
+              onClick={() => onCardClick(lead)}
+              onEditClick={onCardEdit ? () => onCardEdit(lead) : undefined}
+              onStatusChange={onCardStatusChange}
+              isChangingStatus={changingStatusId === lead.id}
+            />
             {showVoiceRecorder && status === 'NEW' && showVoiceRecorder(lead)}
           </div>
         ))}

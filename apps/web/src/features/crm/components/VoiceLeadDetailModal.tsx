@@ -236,6 +236,26 @@ export function VoiceLeadDetailModal({
             <p className="text-slate-500">Lead not found.</p>
           ) : (
             <>
+              {/* Voice player — top section */}
+              {lead.attachments && lead.attachments.some((a) => a.type === 'VOICE_RECORDING') && (
+                <div className="pb-4 border-b border-slate-200">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">{t('voiceRecording')}</label>
+                  <div className="space-y-2">
+                    {lead.attachments
+                      .filter((a) => a.type === 'VOICE_RECORDING')
+                      .map((a) => (
+                        <div key={a.id}>
+                          <RecordingPlayback
+                            r2Key={a.r2Key}
+                            mimeType={a.mimeType ?? 'audio/webm'}
+                            className="w-full max-w-full"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
                 <select
@@ -264,21 +284,6 @@ export function VoiceLeadDetailModal({
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">{t('voiceRecording')}</label>
                   <VoiceRecorder leadId={lead.id} onRecordingSaved={() => { refetch(); onUpdated(); }} />
-                </div>
-              )}
-
-              {lead.attachments && lead.attachments.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">{t('recordings')}</label>
-                  <div className="space-y-2">
-                    {lead.attachments.map((a) => (
-                      <div key={a.id}>
-                        {a.type === 'VOICE_RECORDING' && (
-                          <RecordingPlayback r2Key={a.r2Key} mimeType={a.mimeType} />
-                        )}
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
 
