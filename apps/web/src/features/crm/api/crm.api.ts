@@ -47,8 +47,29 @@ export async function createLeadFromVoice(file: File | Blob, fileName: string): 
   return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/voice`, form);
 }
 
+/** Sanitize payload for PATCH: API expects UUIDs or omit, and age as number. Empty strings fail validation. */
+function sanitizeUpdateLeadPayload(data: UpdateLeadDto): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const uuidFields = ['teacherId', 'groupId', 'centerId', 'assignedManagerId'] as const;
+  for (const key of uuidFields) {
+    const v = data[key];
+    if (v !== undefined && v !== null && v !== '') out[key] = v;
+  }
+  const strFields = ['firstName', 'lastName', 'phone', 'levelId', 'source', 'notes', 'transferComment', 'archivedReason'] as const;
+  for (const key of strFields) {
+    if (data[key] !== undefined) out[key] = data[key];
+  }
+  if (data.age !== undefined && data.age !== null && data.age !== '') {
+    const n = Number(data.age);
+    if (!Number.isNaN(n) && n >= 0) out.age = n;
+  }
+  if (data.transferFlag !== undefined) out.transferFlag = data.transferFlag;
+  return out;
+}
+
 export async function updateLead(id: string, data: UpdateLeadDto): Promise<CrmLead> {
-  return api.patch<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}`, data);
+  const body = sanitizeUpdateLeadPayload(data);
+  return api.patch<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}`, body);
 }
 
 export async function deleteLead(id: string): Promise<void> {
