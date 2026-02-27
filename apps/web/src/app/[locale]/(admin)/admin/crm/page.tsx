@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -14,6 +15,7 @@ import {
   ListTable,
   LeadDrawer,
   VoiceLeadModal,
+  VoiceLeadDetailModal,
   CRMFilters,
 } from '@/features/crm/components';
 import { cn } from '@/shared/lib/utils';
@@ -25,12 +27,22 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
   sortOrder: 'desc',
 };
 
+const VOICE_LEAD_PARAM = 'voiceLead';
+
 export default function AdminCrmPage() {
   const t = useTranslations('nav');
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+
+  // Restore voice lead popup from URL after refresh
+  useEffect(() => {
+    const id = searchParams.get(VOICE_LEAD_PARAM);
+    if (id) setVoiceLeadId(id);
+  }, [searchParams]);
 
   const { data: leadsData, isLoading, refetch } = useQuery({
     queryKey: ['crm-leads', filters],
@@ -56,7 +68,30 @@ export default function AdminCrmPage() {
   const teachers = teachersData?.items ?? [];
   const groups = groupsData?.items ?? [];
 
-  const handleCardClick = (lead: CrmLead) => setSelectedLeadId(lead.id);
+  const openVoiceLead = (id: string) => {
+    setVoiceLeadId(id);
+    setSelectedLeadId(null);
+    const url = new URL(window.location.href);
+    url.searchParams.set(VOICE_LEAD_PARAM, id);
+    window.history.replaceState(null, '', url.pathname + url.search);
+  };
+
+  const closeVoiceLead = () => {
+    setVoiceLeadId(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete(VOICE_LEAD_PARAM);
+    window.history.replaceState(null, '', url.pathname + (url.search || ''));
+  };
+
+  const handleCardClick = (lead: CrmLead) => {
+    const isVoiceLead = lead.attachments?.some((a) => a.type === 'VOICE_RECORDING');
+    if (isVoiceLead) {
+      openVoiceLead(lead.id);
+    } else {
+      setSelectedLeadId(lead.id);
+      setVoiceLeadId(null);
+    }
+  };
   const handleAddLead = () => setVoiceModalOpen(true);
 
   return (
@@ -138,6 +173,12 @@ export default function AdminCrmPage() {
       <LeadDrawer
         leadId={selectedLeadId}
         onClose={() => setSelectedLeadId(null)}
+        onUpdated={() => refetch()}
+      />
+      <VoiceLeadDetailModal
+        leadId={voiceLeadId}
+        open={!!voiceLeadId}
+        onClose={closeVoiceLead}
         onUpdated={() => refetch()}
       />
       <VoiceLeadModal
