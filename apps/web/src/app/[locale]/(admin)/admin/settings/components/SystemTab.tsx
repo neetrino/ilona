@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
-import { LogoUploadSection } from './LogoUploadSection';
 
 export function SystemTab() {
   const t = useTranslations('settings');
@@ -49,9 +48,6 @@ export function SystemTab() {
           </div>
         </div>
       </div>
-
-      {/* Logo Upload Section */}
-      <LogoUploadSection />
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6">
         <h2 className="text-lg font-semibold text-slate-800 mb-4">{t('about')}</h2>

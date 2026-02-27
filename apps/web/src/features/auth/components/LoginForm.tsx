@@ -20,8 +20,8 @@ export function LoginForm() {
   const t = useTranslations('auth');
   const tHome = useTranslations('home');
   const tRoles = useTranslations('roles');
-  const { data: logoData, isLoading: isLoadingLogo } = useLogo();
-  const logoUrl = getFullApiUrl(logoData?.logoUrl);
+  const { data: logoData } = useLogo();
+  const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.png';
   const shouldReduceMotion = useReducedMotion();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +43,7 @@ export function LoginForm() {
     <Card className="w-full shadow-2xl border-border/50 bg-card backdrop-blur-sm">
       <CardHeader className="space-y-3 text-center pb-6 px-6 pt-8 sm:px-8 sm:pt-10">
         <motion.div
-          className="mx-auto w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg overflow-hidden bg-primary"
+          className="mx-auto w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg overflow-hidden bg-white"
           initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
           animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
           transition={
@@ -56,33 +56,16 @@ export function LoginForm() {
           }
           whileHover={shouldReduceMotion ? undefined : { scale: 1.05, y: -2 }}
         >
-          {logoUrl ? (
-            <>
-              <img
-                src={logoUrl}
-                alt="Company Logo"
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  // Fallback to default icon if logo fails to load
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-              <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center hidden">
-                <span className="text-3xl text-primary-foreground font-bold">I</span>
-              </div>
-            </>
-          ) : (
-            <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center">
-              {isLoadingLogo ? (
-                <div className="w-8 h-8 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <span className="text-3xl text-primary-foreground font-bold">I</span>
-              )}
-            </div>
-          )}
+          <img
+            src={logoUrl}
+            alt="ILONA English Center"
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/logo.png';
+              target.onerror = null;
+            }}
+          />
         </motion.div>
         <CardTitle className="text-3xl font-semibold text-foreground tracking-tight">
           {tHome('title')}
