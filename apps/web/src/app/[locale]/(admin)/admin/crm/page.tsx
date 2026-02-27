@@ -180,6 +180,9 @@ export default function AdminCrmPage() {
         open={!!voiceLeadId}
         onClose={closeVoiceLead}
         onUpdated={() => refetch()}
+        centers={centers}
+        teachers={teachers}
+        groups={groups}
       />
       <VoiceLeadModal
         open={voiceModalOpen}

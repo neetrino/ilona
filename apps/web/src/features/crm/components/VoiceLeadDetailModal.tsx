@@ -1,17 +1,47 @@
 'use client';
 
-import { useState } from 'react';
-import type { CrmLeadStatus } from '@/features/crm/types';
-import { fetchLead, changeLeadStatus, getAllowedTransitions, deleteLead } from '@/features/crm/api/crm.api';
+import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
+import { fetchLead, changeLeadStatus, getAllowedTransitions, deleteLead, updateLead } from '@/features/crm/api/crm.api';
+import { fetchCenters } from '@/features/centers/api/centers.api';
+import { fetchTeachers } from '@/features/teachers/api/teachers.api';
+import { fetchGroups } from '@/features/groups/api/groups.api';
 import { STATUS_LABELS } from './LeadCard';
 import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
 import { useQuery } from '@tanstack/react-query';
+
+const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
+/** Simple phone validation: at least 4 digits, allows +, spaces, digits, parentheses, hyphens */
+function isValidPhone(value: string): boolean {
+  if (!value.trim()) return true;
+  const digits = value.replace(/\D/g, '');
+  return digits.length >= 4 && digits.length <= 20;
+}
+
+interface CenterOption {
+  id: string;
+  name: string;
+}
+interface TeacherOption {
+  id: string;
+  user?: { firstName?: string; lastName?: string };
+}
+interface GroupOption {
+  id: string;
+  name: string;
+}
 
 interface VoiceLeadDetailModalProps {
   leadId: string | null;
   open: boolean;
   onClose: () => void;
   onUpdated: () => void;
+  /** Optional: pass from parent to avoid duplicate requests */
+  centers?: CenterOption[];
+  teachers?: TeacherOption[];
+  groups?: GroupOption[];
 }
 
 export function VoiceLeadDetailModal({
@@ -19,11 +49,21 @@ export function VoiceLeadDetailModal({
   open,
   onClose,
   onUpdated,
+  centers: centersProp,
+  teachers: teachersProp,
+  groups: groupsProp,
 }: VoiceLeadDetailModalProps) {
   const [changingStatus, setChangingStatus] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [form, setForm] = useState<Partial<CrmLead>>({});
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const t = useTranslations('crm');
+  const tCommon = useTranslations('common');
+
   const { data: lead, isLoading, refetch } = useQuery({
     queryKey: ['crm-lead', leadId],
     queryFn: () => fetchLead(leadId!),
@@ -35,6 +75,43 @@ export function VoiceLeadDetailModal({
     queryFn: () => getAllowedTransitions(lead!.status),
     enabled: !!lead?.status && open,
   });
+
+  const { data: centersData } = useQuery({
+    queryKey: ['centers'],
+    queryFn: () => fetchCenters({ take: 100 }),
+    enabled: open && centersProp === undefined,
+  });
+  const { data: teachersData } = useQuery({
+    queryKey: ['teachers'],
+    queryFn: () => fetchTeachers({ take: 200 }),
+    enabled: open && teachersProp === undefined,
+  });
+  const { data: groupsData } = useQuery({
+    queryKey: ['groups'],
+    queryFn: () => fetchGroups({ take: 200 }),
+    enabled: open && groupsProp === undefined,
+  });
+
+  const centers = centersProp ?? centersData?.items ?? [];
+  const teachers = teachersProp ?? teachersData?.items ?? [];
+  const groups = groupsProp ?? groupsData?.items ?? [];
+
+  useEffect(() => {
+    if (lead) {
+      setForm({
+        firstName: lead.firstName ?? '',
+        lastName: lead.lastName ?? '',
+        phone: lead.phone ?? '',
+        age: lead.age ?? undefined,
+        levelId: lead.levelId ?? '',
+        teacherId: lead.teacherId ?? '',
+        groupId: lead.groupId ?? '',
+        centerId: lead.centerId ?? '',
+      });
+      setPhoneError(null);
+      setSaveError(null);
+    }
+  }, [lead]);
 
   const handleStatusChange = async (newStatus: CrmLeadStatus) => {
     if (!leadId || !lead) return;
@@ -66,6 +143,53 @@ export function VoiceLeadDetailModal({
     }
   };
 
+  const handleSaveLead = async () => {
+    if (!leadId) return;
+    setPhoneError(null);
+    setSaveError(null);
+    const phone = (form.phone ?? '').trim();
+    if (phone && !isValidPhone(phone)) {
+      setPhoneError(t('invalidPhone'));
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateLead(leadId, {
+        firstName: form.firstName ?? undefined,
+        lastName: form.lastName ?? undefined,
+        phone: form.phone ?? undefined,
+        age: form.age ?? undefined,
+        levelId: form.levelId ?? undefined,
+        teacherId: form.teacherId ?? undefined,
+        groupId: form.groupId ?? undefined,
+        centerId: form.centerId ?? undefined,
+      });
+      await refetch();
+      onUpdated();
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelLead = () => {
+    if (lead) {
+      setForm({
+        firstName: lead.firstName ?? '',
+        lastName: lead.lastName ?? '',
+        phone: lead.phone ?? '',
+        age: lead.age ?? undefined,
+        levelId: lead.levelId ?? '',
+        teacherId: lead.teacherId ?? '',
+        groupId: lead.groupId ?? '',
+        centerId: lead.centerId ?? '',
+      });
+    }
+    setPhoneError(null);
+    setSaveError(null);
+  };
+
   if (!open) return null;
 
   return (
@@ -74,11 +198,11 @@ export function VoiceLeadDetailModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-md max-h-[90vh] flex flex-col rounded-xl bg-white shadow-xl"
+        className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-slate-900">Voice lead</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{t('voiceLead')}</h2>
           <div className="flex items-center gap-2">
             {lead && (
               <button
@@ -138,14 +262,14 @@ export function VoiceLeadDetailModal({
 
               {lead.status === 'NEW' && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Voice recording</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('voiceRecording')}</label>
                   <VoiceRecorder leadId={lead.id} onRecordingSaved={() => { refetch(); onUpdated(); }} />
                 </div>
               )}
 
               {lead.attachments && lead.attachments.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Recordings</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">{t('recordings')}</label>
                   <div className="space-y-2">
                     {lead.attachments.map((a) => (
                       <div key={a.id}>
@@ -154,6 +278,129 @@ export function VoiceLeadDetailModal({
                         )}
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* CRM lead information form — for NEW column voice cards */}
+              {lead.status === 'NEW' && (
+                <div className="border-t border-slate-200 pt-4 space-y-4">
+                  <h3 className="text-sm font-semibold text-slate-800">{t('leadInformation')}</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">{t('firstName')}</label>
+                      <input
+                        type="text"
+                        value={form.firstName ?? ''}
+                        onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">{t('lastName')}</label>
+                      <input
+                        type="text"
+                        value={form.lastName ?? ''}
+                        onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('phoneNumber')}</label>
+                    <input
+                      type="tel"
+                      value={form.phone ?? ''}
+                      onChange={(e) => {
+                        setForm((f) => ({ ...f, phone: e.target.value }));
+                        setPhoneError(null);
+                      }}
+                      className={`w-full rounded-lg border px-3 py-2 text-sm ${phoneError ? 'border-red-500' : 'border-slate-300'}`}
+                    />
+                    {phoneError && <p className="mt-1 text-xs text-red-600">{phoneError}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('age')}</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.age ?? ''}
+                      onChange={(e) => setForm((f) => ({ ...f, age: e.target.value ? Number(e.target.value) : undefined }))}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('level')}</label>
+                    <select
+                      value={form.levelId ?? ''}
+                      onChange={(e) => setForm((f) => ({ ...f, levelId: e.target.value }))}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">—</option>
+                      {LEVEL_OPTIONS.map((l) => (
+                        <option key={l} value={l}>{l}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('teacher')}</label>
+                    <select
+                      value={form.teacherId ?? ''}
+                      onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value }))}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">—</option>
+                      {teachers.map((teacher) => (
+                        <option key={teacher.id} value={teacher.id}>
+                          {teacher.user?.firstName} {teacher.user?.lastName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('group')}</label>
+                    <select
+                      value={form.groupId ?? ''}
+                      onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value }))}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">—</option>
+                      {groups.map((g) => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('center')}</label>
+                    <select
+                      value={form.centerId ?? ''}
+                      onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value }))}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">—</option>
+                      {centers.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {saveError && <p className="text-sm text-red-600">{saveError}</p>}
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={handleSaveLead}
+                      disabled={saving}
+                      className="rounded-lg px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {saving ? t('saving') : tCommon('save')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelLead}
+                      disabled={saving}
+                      className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-50"
+                    >
+                      {tCommon('cancel')}
+                    </button>
                   </div>
                 </div>
               )}
