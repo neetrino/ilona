@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { CrmLeadStatus } from '@/features/crm/types';
-import { fetchLead, changeLeadStatus, getAllowedTransitions } from '@/features/crm/api/crm.api';
+import { fetchLead, changeLeadStatus, getAllowedTransitions, deleteLead } from '@/features/crm/api/crm.api';
 import { STATUS_LABELS } from './LeadCard';
 import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
 import { useQuery } from '@tanstack/react-query';
@@ -21,6 +21,9 @@ export function VoiceLeadDetailModal({
   onUpdated,
 }: VoiceLeadDetailModalProps) {
   const [changingStatus, setChangingStatus] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const { data: lead, isLoading, refetch } = useQuery({
     queryKey: ['crm-lead', leadId],
     queryFn: () => fetchLead(leadId!),
@@ -46,6 +49,23 @@ export function VoiceLeadDetailModal({
     }
   };
 
+  const handleDeleteClick = () => setShowDeleteConfirm(true);
+  const handleDeleteConfirm = async () => {
+    if (!leadId) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteLead(leadId);
+      onUpdated();
+      onClose();
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : 'Failed to delete');
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   if (!open) return null;
 
   return (
@@ -59,13 +79,25 @@ export function VoiceLeadDetailModal({
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 flex-shrink-0">
           <h2 className="text-lg font-semibold text-slate-900">Voice lead</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            {lead && (
+              <button
+                type="button"
+                onClick={handleDeleteClick}
+                disabled={deleting}
+                className="rounded-lg px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+              >
+                Delete
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
+            >
+              ✕
+            </button>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {!leadId ? (
@@ -122,6 +154,36 @@ export function VoiceLeadDetailModal({
                         )}
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {deleteError && (
+                <p className="text-sm text-red-600">{deleteError}</p>
+              )}
+
+              {showDeleteConfirm && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+                  <p className="text-sm text-amber-800">
+                    Delete this voice lead? This cannot be undone.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleDeleteConfirm}
+                      disabled={deleting}
+                      className="rounded-lg px-3 py-1.5 text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {deleting ? 'Deleting…' : 'Delete'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
+                      disabled={deleting}
+                      className="rounded-lg px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-200"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </div>
               )}

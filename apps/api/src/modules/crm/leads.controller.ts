@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -182,5 +183,12 @@ export class LeadsController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.leadsService.confirmRecording(id, dto, user.sub);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({ summary: 'Delete a lead (and its voice recordings)' })
+  delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.leadsService.delete(id, user.sub, user.role);
   }
 }

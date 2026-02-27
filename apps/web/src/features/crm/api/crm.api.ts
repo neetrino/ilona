@@ -51,6 +51,10 @@ export async function updateLead(id: string, data: UpdateLeadDto): Promise<CrmLe
   return api.patch<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}`, data);
 }
 
+export async function deleteLead(id: string): Promise<void> {
+  return api.delete<void>(`${CRM_LEADS_ENDPOINT}/${id}`);
+}
+
 export async function changeLeadStatus(
   id: string,
   data: ChangeStatusDto

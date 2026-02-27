@@ -224,6 +224,22 @@ export class LeadsService {
     return updated;
   }
 
+  /** Delete a lead and its attachments. Removes R2 files for voice recordings. */
+  async delete(id: string, _userId?: string, _userRole?: UserRole) {
+    const lead = await this.findById(id);
+    const attachments = (lead as { attachments?: { r2Key: string }[] }).attachments ?? [];
+    for (const a of attachments) {
+      if (a.r2Key) {
+        try {
+          await this.storage.delete(a.r2Key);
+        } catch {
+          // Best effort: continue even if R2 delete fails
+        }
+      }
+    }
+    await this.prisma.crmLead.delete({ where: { id } });
+  }
+
   async changeStatus(
     id: string,
     dto: ChangeStatusDto,
