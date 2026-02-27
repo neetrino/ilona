@@ -18,6 +18,7 @@ datasource db {
 
 enum UserRole {
   ADMIN
+  MANAGER
   TEACHER
   STUDENT
 }
@@ -63,6 +64,31 @@ enum DeductionReason {
   OTHER
 }
 
+// CRM Lead status (fixed order: NEW → AGREED → FIRST_LESSON → PROCESSING → PAID → WAITLIST → ARCHIVE)
+enum CrmLeadStatus {
+  NEW
+  AGREED
+  FIRST_LESSON
+  PROCESSING
+  PAID
+  WAITLIST
+  ARCHIVE
+}
+
+enum CrmLeadActivityType {
+  STATUS_CHANGE
+  COMMENT
+  RECORDING_UPLOADED
+  TEACHER_APPROVED
+  TEACHER_TRANSFER
+  FIELD_UPDATE
+}
+
+enum CrmLeadAttachmentType {
+  VOICE_RECORDING
+  FILE
+}
+
 enum ChatType {
   GROUP
   DIRECT
@@ -97,11 +123,13 @@ model User {
   updatedAt     DateTime   @updatedAt
 
   // Relations
-  teacher           Teacher?
-  student           Student?
-  sentMessages      Message[]         @relation("SentMessages")
-  chatParticipants  ChatParticipant[]
-  notifications     Notification[]
+  teacher                  Teacher?
+  student                  Student?
+  sentMessages             Message[]         @relation("SentMessages")
+  chatParticipants         ChatParticipant[]
+  notifications            Notification[]
+  crmLeadsCreated          CrmLead[]         @relation("LeadCreatedBy")
+  crmLeadsAssignedManager  CrmLead[]         @relation("LeadAssignedManager")
 
   @@index([email])
   @@index([role])
@@ -125,7 +153,8 @@ model Center {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  groups Group[]
+  groups   Group[]
+  crmLeads CrmLead[]
 
   @@map("centers")
 }
@@ -148,6 +177,7 @@ model Group {
   students Student[]
   lessons  Lesson[]
   chat     Chat?
+  crmLeads CrmLead[]
 
   @@index([centerId])
   @@index([teacherId])
@@ -179,6 +209,7 @@ model Teacher {
   feedbacks     Feedback[]
   salaryRecords SalaryRecord[]
   deductions    Deduction[]
+  crmLeads      CrmLead[]
 
   @@map("teachers")
 }
@@ -190,6 +221,7 @@ model Teacher {
 model Student {
   id             String    @id @default(cuid())
   userId         String    @unique
+  leadId         String?   @unique // Set when lead becomes PAID (idempotent student creation)
   groupId        String?
   teacherId      String?
   parentName     String?
@@ -204,6 +236,7 @@ model Student {
 
   // Relations
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lead        CrmLead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
   group       Group?       @relation(fields: [groupId], references: [id], onDelete: SetNull)
   teacher     Teacher?     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
   attendances Attendance[]
@@ -212,6 +245,7 @@ model Student {
 
   @@index([groupId])
   @@index([teacherId])
+  @@index([leadId])
   @@map("students")
 }
 
@@ -499,6 +533,85 @@ model SystemSettings {
   updatedAt                DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+// ============================================
+// CRM - LEAD MANAGEMENT
+// ============================================
+
+model CrmLead {
+  id                 String        @id @default(cuid())
+  status             CrmLeadStatus @default(NEW)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  createdByUserId    String
+  assignedManagerId  String?
+  firstName          String?
+  lastName           String?
+  phone              String?
+  age                Int?
+  levelId            String?       // Level name/code (e.g. A1, B2) - maps to Group.level
+  teacherId          String?
+  groupId            String?
+  centerId           String?
+  transferFlag       Boolean       @default(false)
+  transferComment    String?
+  archivedReason    String?
+  source             String?       // call, form, etc.
+  notes              String?
+
+  // Relations
+  createdByUser    User              @relation("LeadCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  assignedManager  User?              @relation("LeadAssignedManager", fields: [assignedManagerId], references: [id], onDelete: SetNull)
+  teacher          Teacher?           @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  group            Group?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  center           Center?            @relation(fields: [centerId], references: [id], onDelete: SetNull)
+  activities       CrmLeadActivity[]
+  attachments      CrmLeadAttachment[]
+  student          Student?
+
+  @@index([status])
+  @@index([phone])
+  @@index([teacherId])
+  @@index([groupId])
+  @@index([centerId])
+  @@index([createdAt])
+  @@index([assignedManagerId])
+  @@map("crm_leads")
+}
+
+model CrmLeadActivity {
+  id          String             @id @default(cuid())
+  leadId      String
+  actorUserId String?
+  type        CrmLeadActivityType
+  payload     Json?               // { fromStatus?, toStatus?, comment?, etc. }
+  createdAt   DateTime           @default(now())
+
+  // Relations
+  lead CrmLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("crm_lead_activities")
+}
+
+model CrmLeadAttachment {
+  id        String               @id @default(cuid())
+  leadId    String
+  type      CrmLeadAttachmentType
+  r2Key     String
+  mimeType  String?
+  size      Int?                  // bytes
+  createdAt DateTime             @default(now())
+
+  // Relations
+  lead CrmLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([type])
+  @@map("crm_lead_attachments")
 }
 
 // ============================================

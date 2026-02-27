@@ -12,7 +12,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  roles?: ('ADMIN' | 'TEACHER' | 'STUDENT')[];
+  roles?: ('ADMIN' | 'MANAGER' | 'TEACHER' | 'STUDENT')[];
 }
 
 // Icons
@@ -108,6 +108,7 @@ const icons = {
 function getNavItems(role: string, t: (key: string) => string): NavItem[] {
   switch (role) {
     case 'ADMIN':
+    case 'MANAGER':
       return [
         { label: t('dashboard'), href: '/admin/dashboard', icon: icons.dashboard },
         { label: t('groups'), href: '/admin/groups', icon: icons.groups },
@@ -124,6 +125,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
       return [
         { label: t('dashboard'), href: '/teacher/dashboard', icon: icons.dashboard },
         { label: t('myStudents'), href: '/teacher/students', icon: icons.students },
+        { label: t('leads'), href: '/teacher/leads', icon: icons.crm },
         { label: t('calendar'), href: '/teacher/calendar', icon: icons.calendar },
         { label: t('dailyPlan'), href: '/teacher/daily-plan', icon: icons.dailyPlan },
         { label: t('attendanceRegister'), href: '/teacher/attendance-register', icon: icons.attendanceRegister },
