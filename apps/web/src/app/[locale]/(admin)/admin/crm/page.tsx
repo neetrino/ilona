@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { fetchLeads } from '@/features/crm/api/crm.api';
+import { fetchLeads, changeLeadStatus } from '@/features/crm/api/crm.api';
 import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
-import type { CrmLead, CrmLeadFilters } from '@/features/crm/types';
+import type { CrmLead, CrmLeadFilters, CrmLeadStatus } from '@/features/crm/types';
 import {
   BoardView,
   ListTable,
@@ -46,10 +46,20 @@ export default function AdminCrmPage() {
     if (id) setVoiceLeadId(id);
   }, [searchParams]);
 
+  const queryClient = useQueryClient();
   const { data: leadsData, isLoading, refetch } = useQuery({
     queryKey: ['crm-leads', filters],
     queryFn: () => fetchLeads(filters),
   });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ leadId, status }: { leadId: string; status: CrmLeadStatus }) =>
+      changeLeadStatus(leadId, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+    },
+  });
+  const changingStatusId = statusMutation.isPending ? statusMutation.variables?.leadId ?? null : null;
 
   const { data: centersData } = useQuery({
     queryKey: ['centers'],
@@ -96,6 +106,9 @@ export default function AdminCrmPage() {
   };
   const handleCardEdit = (lead: CrmLead) => {
     setEditLeadId(lead.id);
+  };
+  const handleCardStatusChange = (leadId: string, status: CrmLeadStatus) => {
+    statusMutation.mutate({ leadId, status });
   };
   const handleAddLead = () => setVoiceModalOpen(true);
 
@@ -146,6 +159,8 @@ export default function AdminCrmPage() {
             countsByStatus={countsByStatus}
             onCardClick={handleCardClick}
             onCardEdit={handleCardEdit}
+            onCardStatusChange={handleCardStatusChange}
+            changingStatusId={changingStatusId}
             onAddLead={handleAddLead}
             onRecordingSaved={() => refetch()}
           />

@@ -10,6 +10,8 @@ interface ColumnProps {
   count: number;
   onCardClick: (lead: CrmLead) => void;
   onCardEdit?: (lead: CrmLead) => void;
+  onCardStatusChange?: (leadId: string, status: CrmLeadStatus) => void;
+  changingStatusId?: string | null;
   onAddClick: () => void;
   showVoiceRecorder?: (lead: CrmLead) => React.ReactNode;
 }
@@ -20,6 +22,8 @@ export function Column({
   count,
   onCardClick,
   onCardEdit,
+  onCardStatusChange,
+  changingStatusId,
   onAddClick,
   showVoiceRecorder,
 }: ColumnProps) {
@@ -52,6 +56,8 @@ export function Column({
               lead={lead}
               onClick={() => onCardClick(lead)}
               onEditClick={onCardEdit ? () => onCardEdit(lead) : undefined}
+              onStatusChange={onCardStatusChange}
+              isChangingStatus={changingStatusId === lead.id}
             />
             {showVoiceRecorder && status === 'NEW' && showVoiceRecorder(lead)}
           </div>
