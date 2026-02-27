@@ -7,7 +7,13 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+
+interface HttpLikeError {
+  status?: number;
+  statusCode?: number;
+  message?: string;
+}
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -18,12 +24,13 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, url, path } = request;
     const correlationId = request.correlationId;
     const startTime = Date.now();
+    const res = context.switchToHttp().getResponse<Response>();
 
     return next.handle().pipe(
       tap({
         next: () => {
           const durationMs = Date.now() - startTime;
-          const statusCode = context.switchToHttp().getResponse().statusCode;
+          const statusCode = res.statusCode;
           this.logger.log(
             JSON.stringify({
               message: 'request_completed',
@@ -35,9 +42,9 @@ export class LoggingInterceptor implements NestInterceptor {
             }),
           );
         },
-        error: (err) => {
+        error: (err: HttpLikeError) => {
           const durationMs = Date.now() - startTime;
-          const statusCode = err.status || err.statusCode || 500;
+          const statusCode = err.status ?? err.statusCode ?? 500;
           this.logger.warn(
             JSON.stringify({
               message: 'request_failed',

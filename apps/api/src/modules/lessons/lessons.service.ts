@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { UserRole, LessonStatus } from '@prisma/client';
 import { CreateLessonDto, UpdateLessonDto, CompleteLessonDto } from './dto';
 import { LessonCrudService } from './lesson-crud.service';
 import { LessonStatusService } from './lesson-status.service';
@@ -27,19 +28,19 @@ export class LessonsService {
     groupId?: string;
     groupIds?: string[];
     teacherId?: string;
-    status?: any;
+    status?: LessonStatus;
     dateFrom?: Date;
     dateTo?: Date;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     search?: string;
     currentUserId?: string;
-    userRole?: any;
+    userRole?: UserRole;
   }) {
     return this.crudService.findAll(params);
   }
 
-  async findById(id: string, currentUserId?: string, userRole?: any) {
+  async findById(id: string, currentUserId?: string, userRole?: UserRole) {
     return this.crudService.findById(id, currentUserId, userRole);
   }
 
@@ -63,7 +64,7 @@ export class LessonsService {
     return this.crudService.createBulk(lessons);
   }
 
-  async update(id: string, dto: UpdateLessonDto, userId?: string, userRole?: any) {
+  async update(id: string, dto: UpdateLessonDto, userId?: string, userRole?: UserRole) {
     return this.crudService.update(id, dto, userId, userRole);
   }
 
@@ -71,16 +72,16 @@ export class LessonsService {
     return this.crudService.delete(id);
   }
 
-  async deleteBulk(lessonIds: string[], currentUserId?: string, userRole?: any) {
+  async deleteBulk(lessonIds: string[], currentUserId?: string, userRole?: UserRole) {
     return this.crudService.deleteBulk(lessonIds, currentUserId, userRole);
   }
 
   // Status Methods
-  async startLesson(id: string, userId: string, userRole: any) {
+  async startLesson(id: string, userId: string, userRole: UserRole) {
     return this.statusService.startLesson(id, userId, userRole);
   }
 
-  async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: any) {
+  async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: UserRole) {
     return this.statusService.completeLesson(id, dto, userId, userRole);
   }
 

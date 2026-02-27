@@ -131,10 +131,10 @@ export class SalaryRecordService {
         if (salaryRecord) {
           // Teacher has salary record(s) matching the filters
           // Parse obligations info from notes
-          let obligationsInfo = null;
+          let obligationsInfo: unknown = null;
           if (salaryRecord.notes) {
             try {
-              obligationsInfo = JSON.parse(salaryRecord.notes);
+              obligationsInfo = JSON.parse(salaryRecord.notes) as unknown;
             } catch {
               // If parsing fails, ignore
             }
@@ -280,10 +280,10 @@ export class SalaryRecordService {
 
     const itemsWithComputedSalary = await Promise.all(
       salaryRecords.map(async (salaryRecord) => {
-        let obligationsInfo = null;
+        let obligationsInfo: unknown = null;
         if (salaryRecord.notes) {
           try {
-            obligationsInfo = JSON.parse(salaryRecord.notes);
+            obligationsInfo = JSON.parse(salaryRecord.notes) as unknown;
           } catch {
             // ignore
           }
@@ -393,10 +393,10 @@ export class SalaryRecordService {
     };
 
     // Parse obligations info from notes
-    let obligationsInfo = null;
+    let obligationsInfo: unknown = null;
     if (record.notes) {
       try {
-        obligationsInfo = JSON.parse(record.notes);
+        obligationsInfo = JSON.parse(record.notes) as unknown;
       } catch {
         // If parsing fails, ignore
       }

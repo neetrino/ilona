@@ -362,7 +362,7 @@ export class SettingsService {
     try {
       await this.ensureLogoUrlColumn();
 
-      let settings = await this.prisma.systemSettings.findFirst();
+      const settings = await this.prisma.systemSettings.findFirst();
 
       if (!settings) {
         await this.prisma.systemSettings.create({

@@ -1,6 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { LessonStatus } from '@prisma/client';
 
+/** Minimal lesson shape needed for enrichment */
+export interface LessonForEnrichment {
+  scheduledAt: Date;
+  duration: number;
+  absenceMarked: boolean;
+  feedbacksCompleted: boolean;
+  voiceSent: boolean;
+  textSent: boolean;
+  status: LessonStatus;
+  completedAt?: Date | null;
+}
+
 /**
  * Service responsible for enriching lessons with computed fields
  */
@@ -99,7 +111,7 @@ export class LessonEnrichmentService {
   /**
    * Enriches lesson with computed fields
    */
-  enrichLesson(lesson: any) {
+  enrichLesson<T extends LessonForEnrichment>(lesson: T) {
     const completionStatus = this.getCompletionStatus({
       scheduledAt: lesson.scheduledAt,
       duration: lesson.duration,
@@ -113,29 +125,28 @@ export class LessonEnrichmentService {
       ...lesson,
       isLockedForTeacher: this.isLockedForTeacher(lesson.scheduledAt),
       completionStatus,
-      // Action lock states (for red X indicators)
       isAbsenceLocked: this.isActionLocked(
-        lesson.absenceMarked || false,
+        lesson.absenceMarked,
         lesson.status,
-        lesson.completedAt,
+        lesson.completedAt ?? null,
         lesson.scheduledAt,
       ),
       isFeedbackLocked: this.isActionLocked(
-        lesson.feedbacksCompleted || false,
+        lesson.feedbacksCompleted,
         lesson.status,
-        lesson.completedAt,
+        lesson.completedAt ?? null,
         lesson.scheduledAt,
       ),
       isVoiceLocked: this.isActionLocked(
-        lesson.voiceSent || false,
+        lesson.voiceSent,
         lesson.status,
-        lesson.completedAt,
+        lesson.completedAt ?? null,
         lesson.scheduledAt,
       ),
       isTextLocked: this.isActionLocked(
-        lesson.textSent || false,
+        lesson.textSent,
         lesson.status,
-        lesson.completedAt,
+        lesson.completedAt ?? null,
         lesson.scheduledAt,
       ),
     };

@@ -39,47 +39,43 @@ export class CentersService {
     search?: string;
     isActive?: boolean;
   }) {
-    try {
-      const { skip = 0, take = 50, search, isActive } = params || {};
+    const { skip = 0, take = 50, search, isActive } = params || {};
 
-      const where: Prisma.CenterWhereInput = {};
+    const where: Prisma.CenterWhereInput = {};
 
-      if (search) {
-        where.OR = [
-          { name: { contains: search, mode: 'insensitive' } },
-          { address: { contains: search, mode: 'insensitive' } },
-        ];
-      }
-
-      if (isActive !== undefined) {
-        where.isActive = isActive;
-      }
-
-      const [items, total] = await Promise.all([
-        this.prisma.center.findMany({
-          where,
-          skip,
-          take,
-          orderBy: { name: 'asc' },
-          include: {
-            _count: {
-              select: { groups: true },
-            },
-          },
-        }),
-        this.prisma.center.count({ where }),
-      ]);
-
-      return {
-        items,
-        total,
-        page: Math.floor(skip / take) + 1,
-        pageSize: take,
-        totalPages: Math.ceil(total / take),
-      };
-    } catch (error) {
-      throw error;
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { address: { contains: search, mode: 'insensitive' } },
+      ];
     }
+
+    if (isActive !== undefined) {
+      where.isActive = isActive;
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.center.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { name: 'asc' },
+        include: {
+          _count: {
+            select: { groups: true },
+          },
+        },
+      }),
+      this.prisma.center.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page: Math.floor(skip / take) + 1,
+      pageSize: take,
+      totalPages: Math.ceil(total / take),
+    };
   }
 
   async findById(id: string) {

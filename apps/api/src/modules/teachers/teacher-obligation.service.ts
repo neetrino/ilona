@@ -43,7 +43,6 @@ export class TeacherObligationService {
 
     // Calculate overall statistics
     let totalCompleted = 0;
-    let totalRequired = 0;
     const actionCounts = {
       absenceMarked: 0,
       feedbacksCompleted: 0,
@@ -52,7 +51,6 @@ export class TeacherObligationService {
     };
 
     completedLessons.forEach(lesson => {
-      totalRequired += 4;
       if (lesson.absenceMarked) {
         totalCompleted++;
         actionCounts.absenceMarked++;

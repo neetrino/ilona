@@ -135,8 +135,8 @@ export class TeacherCrudService {
     let sortedTeachers = teachersWithStudentCount;
     if (sortBy) {
       sortedTeachers = [...teachersWithStudentCount].sort((a, b) => {
-        let aValue: any;
-        let bValue: any;
+        let aValue: string | number;
+        let bValue: string | number;
 
         switch (sortBy) {
           case 'students':
@@ -197,7 +197,7 @@ export class TeacherCrudService {
       if (group.teacherId && group.center) {
         const existing = teacherCentersMap.get(group.teacherId) || [];
         // Check if center already exists for this teacher
-        if (!existing.find((c) => c.id === group.center!.id)) {
+        if (!existing.find((c) => c.id === group.center.id)) {
           existing.push({
             id: group.center.id,
             name: group.center.name,
@@ -318,8 +318,8 @@ export class TeacherCrudService {
     let finalSortedTeachers = teachersWithObligations;
     if (sortBy && ['obligation', 'deduction', 'cost'].includes(sortBy)) {
       finalSortedTeachers = [...teachersWithObligations].sort((a, b) => {
-        let aValue: any;
-        let bValue: any;
+        let aValue: string | number;
+        let bValue: string | number;
 
         switch (sortBy) {
           case 'obligation':

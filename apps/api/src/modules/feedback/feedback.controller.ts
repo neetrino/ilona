@@ -47,7 +47,7 @@ export class FeedbackController {
     return this.feedbackService.createOrUpdate(
       dto,
       user.sub,
-      user.role as UserRole,
+      user.role,
     );
   }
 
@@ -58,7 +58,7 @@ export class FeedbackController {
     @Body() dto: UpdateFeedbackDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.feedbackService.update(id, dto, user.sub, user.role as UserRole);
+    return this.feedbackService.update(id, dto, user.sub, user.role);
   }
 
   @Delete(':id')
@@ -67,7 +67,7 @@ export class FeedbackController {
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.feedbackService.delete(id, user.sub, user.role as UserRole);
+    return this.feedbackService.delete(id, user.sub, user.role);
   }
 }
 

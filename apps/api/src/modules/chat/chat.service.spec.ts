@@ -2,6 +2,7 @@
 import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { ChatService } from './chat.service';
+import type { SendMessageResponse } from './message.service';
 import { ChatType, MessageType } from '@prisma/client';
 
 describe('ChatService', () => {
@@ -245,7 +246,7 @@ describe('ChatService', () => {
       mockPrismaService.message.create.mockResolvedValue(mockMessage);
       mockPrismaService.chat.update.mockResolvedValue(mockChat);
 
-      const result = await chatService.sendMessage(
+      const result: SendMessageResponse = await chatService.sendMessage(
         { chatId: 'chat-1', content: 'Hello world', type: MessageType.TEXT },
         'user-1',
       );

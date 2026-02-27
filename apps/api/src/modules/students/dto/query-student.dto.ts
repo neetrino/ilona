@@ -24,10 +24,10 @@ export class QueryStudentDto {
   groupId?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (!value) return undefined;
-    if (Array.isArray(value)) return value;
-    return [value];
+    if (Array.isArray(value)) return value as string[];
+    return [value] as string[];
   })
   @IsArray()
   @IsString({ each: true })
@@ -38,10 +38,10 @@ export class QueryStudentDto {
   status?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (!value) return undefined;
-    if (Array.isArray(value)) return value;
-    return [value];
+    if (Array.isArray(value)) return value as string[];
+    return [value] as string[];
   })
   @IsArray()
   @IsString({ each: true })
@@ -52,10 +52,10 @@ export class QueryStudentDto {
   teacherId?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (!value) return undefined;
-    if (Array.isArray(value)) return value;
-    return [value];
+    if (Array.isArray(value)) return value as string[];
+    return [value] as string[];
   })
   @IsArray()
   @IsString({ each: true })
@@ -66,10 +66,10 @@ export class QueryStudentDto {
   centerId?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (!value) return undefined;
-    if (Array.isArray(value)) return value;
-    return [value];
+    if (Array.isArray(value)) return value as string[];
+    return [value] as string[];
   })
   @IsArray()
   @IsString({ each: true })

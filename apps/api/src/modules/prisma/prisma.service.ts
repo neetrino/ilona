@@ -12,6 +12,13 @@ interface ConnectionError extends Error {
   };
 }
 
+/** Error-like object for parsing codes from unknown errors */
+interface ErrLike {
+  code?: string | number;
+  message?: string;
+  cause?: ErrLike;
+}
+
 /**
  * Type guard to check if error has connection error properties
  */
@@ -31,37 +38,35 @@ function isConnectionError(error: unknown): error is ConnectionError {
  */
 function hasConnectionErrorCode(error: unknown, targetCode: string | number): boolean {
   if (!error || typeof error !== 'object') return false;
-  
-  const err = error as any;
-  
+
+  const err = error as ErrLike;
+
   // Check direct code
   if (err.code === targetCode || err.code === String(targetCode)) {
     return true;
   }
-  
+
   // Check cause.code
   if (err.cause?.code === targetCode || err.cause?.code === String(targetCode)) {
     return true;
   }
-  
+
   // Check nested cause structures (Rust-style: cause: Some(Os { code: 10054 }))
   if (err.cause && typeof err.cause === 'object') {
     const cause = err.cause;
     if (cause.code === targetCode || cause.code === String(targetCode)) {
       return true;
     }
-    // Handle nested structures
     if (cause.cause?.code === targetCode || cause.cause?.code === String(targetCode)) {
       return true;
     }
   }
-  
-  // Check error message for code references
-  const message = String(err.message || '').toLowerCase();
+
+  const message = String(err.message ?? '').toLowerCase();
   if (message.includes(`code ${targetCode}`) || message.includes(`code: ${targetCode}`)) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -118,8 +123,8 @@ function isTransientConnectionError(error: unknown): boolean {
 
   // Check for generic connection errors
   const message = error.message.toLowerCase();
-  const err = error as any;
-  
+  const err = error as ErrLike;
+
   return (
     message.includes('econnreset') ||
     message.includes('connection reset') ||
@@ -190,7 +195,7 @@ async function withRetry<T>(
  */
 export interface RetryContext {
   op: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -220,11 +225,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     // Set up middleware to retry transient connection errors with reconnection
     this.$use(async (params, next) => {
       try {
-        return await withRetry(
-          async () => {
-            // Let Prisma handle connection pooling automatically
-            // Don't check isConnected flag - Prisma manages connections internally
-            return await next(params);
+        const result: unknown = await withRetry(
+          async (): Promise<unknown> => {
+            const nextResult: unknown = await next(params);
+            return nextResult;
           },
           async (_error, attempt) => {
             // On connection errors, force disconnect before retrying
@@ -243,6 +247,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           3, // max 3 retries
           150, // base delay 150ms
         );
+        return result;
       } catch (error) {
         // If connection error, mark as disconnected and try to reconnect
         if (isTransientConnectionError(error)) {
@@ -302,30 +307,28 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       return;
     }
 
-    this.healthCheckInterval = setInterval(async () => {
-      try {
-        await this.$queryRaw`SELECT 1`;
-        // Connection is healthy, update flag silently
-        // Don't log "reconnected" if we were already connected
-        if (!this.isConnected) {
-          this.isConnected = true;
-          // Only log if we actually recovered from a disconnected state
-          this.logger.debug('Connection verified via health check');
-        }
-      } catch (error) {
-        if (isTransientConnectionError(error)) {
-          this.isConnected = false;
-          this.logger.warn('Health check detected connection issue, attempting reconnect');
-          try {
-            await this.safeReconnect();
-          } catch (reconnectError) {
-            this.logger.warn('Failed to reconnect via health check');
+    this.healthCheckInterval = setInterval(() => {
+      void (async () => {
+        try {
+          await this.$queryRaw`SELECT 1`;
+          if (!this.isConnected) {
+            this.isConnected = true;
+            this.logger.debug('Connection verified via health check');
           }
-        } else {
-          // Non-transient error, just log it
-          this.logger.warn(`Health check failed with non-transient error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } catch (error) {
+          if (isTransientConnectionError(error)) {
+            this.isConnected = false;
+            this.logger.warn('Health check detected connection issue, attempting reconnect');
+            try {
+              await this.safeReconnect();
+            } catch {
+              this.logger.warn('Failed to reconnect via health check');
+            }
+          } else {
+            this.logger.warn(`Health check failed with non-transient error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
         }
-      }
+      })();
     }, this.healthCheckIntervalMs);
   }
 
@@ -512,7 +515,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private extractErrorCode(error: unknown): string {
     if (!error || typeof error !== 'object') return 'UNKNOWN';
 
-    const err = error as any;
+    const err = error as ErrLike;
 
     // Prisma error codes
     if (err.code && typeof err.code === 'string') {
@@ -520,17 +523,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     }
 
     // Node/OS error codes
-    if (err.code) {
+    if (err.code !== undefined) {
       return String(err.code);
     }
 
     // Check cause
-    if (err.cause?.code) {
+    if (err.cause?.code !== undefined) {
       return String(err.cause.code);
     }
 
     // Check message for common patterns
-    const message = String(err.message || '').toLowerCase();
+    const message = String(err.message ?? '').toLowerCase();
     if (message.includes('10054')) return '10054';
     if (message.includes('econnreset')) return 'ECONNRESET';
     if (message.includes('etimedout')) return 'ETIMEDOUT';

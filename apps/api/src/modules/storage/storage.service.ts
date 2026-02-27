@@ -55,8 +55,8 @@ export class StorageService {
       this.logger.warn('R2 credentials not configured - using local file storage');
       this.logger.log(`Local storage path: ${this.localStoragePath}`);
       
-      // Ensure uploads directory exists
-      this.ensureLocalStorageDirectory();
+      // Ensure uploads directory exists (fire-and-forget in constructor)
+      void this.ensureLocalStorageDirectory();
     } else {
       this.useLocalStorage = false;
       this.localStoragePath = '';
@@ -64,8 +64,8 @@ export class StorageService {
         region: 'auto',
         endpoint: endpoint || `https://${accountId}.r2.cloudflarestorage.com`,
         credentials: {
-          accessKeyId: accessKeyId!,
-          secretAccessKey: secretAccessKey!,
+          accessKeyId: accessKeyId,
+          secretAccessKey: secretAccessKey,
         },
       });
       this.logger.log('R2 storage configured');
@@ -276,8 +276,8 @@ export class StorageService {
         await fs.unlink(filePath);
         this.logger.log(`File deleted from local storage: ${String(key)}`);
       } catch (error) {
-        // Ignore if file doesn't exist
-        if ((error as any)?.code !== 'ENOENT') {
+        const err = error as { code?: string };
+        if (err.code !== 'ENOENT') {
           this.logger.error(
             `Failed to delete file from local storage: ${error instanceof Error ? error.message : String(error)}`,
           );
@@ -343,20 +343,21 @@ export class StorageService {
 
       // Convert stream to buffer
       const chunks: Uint8Array[] = [];
-      for await (const chunk of response.Body as any) {
+      const body = response.Body as AsyncIterable<Uint8Array>;
+      for await (const chunk of body) {
         chunks.push(chunk);
       }
-      
+
       return Buffer.concat(chunks);
-    } catch (error: any) {
-      // Check if it's a "not found" error
-      if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404 || 
-          error.message?.includes('does not exist') || error.message?.includes('NoSuchKey')) {
+    } catch (err: unknown) {
+      const error = err as { name?: string; message?: string; $metadata?: { httpStatusCode?: number } };
+      if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404 ||
+          (error.message && (error.message.includes('does not exist') || error.message.includes('NoSuchKey')))) {
         this.logger.warn(`File not found in R2: ${key}`);
       } else {
         this.logger.error(
-          `Failed to get file from R2: ${error instanceof Error ? error.message : String(error)}`,
-          error instanceof Error ? error.stack : undefined,
+          `Failed to get file from R2: ${err instanceof Error ? err.message : String(err)}`,
+          err instanceof Error ? err.stack : undefined,
         );
       }
       return null;
@@ -398,23 +399,12 @@ export class StorageService {
    * Resize and compress image buffer (placeholder for future implementation)
    * TODO: Install sharp for proper image resizing: npm install sharp
    */
-  private async resizeImage(buffer: Buffer): Promise<Buffer> {
-    // For now, we'll use a simple approach - if image is too large, we'll need to resize
-    // Since we don't have sharp installed, we'll limit the size by reducing quality
-    // In production, consider installing sharp for proper image processing
-    
-    // If buffer is already small enough (< 500KB), return as is
+  private resizeImage(buffer: Buffer): Promise<Buffer> {
     if (buffer.length < 500 * 1024) {
-      return buffer;
+      return Promise.resolve(buffer);
     }
-    
-    // For larger images, we need to resize
-    // Since we don't have image processing library, we'll just return the buffer
-    // and let the client handle compression
-    // TODO: Install sharp for proper image resizing: npm install sharp
     this.logger.warn(`Large image detected (${buffer.length} bytes). Consider installing sharp for automatic resizing.`);
-    
-    return buffer;
+    return Promise.resolve(buffer);
   }
 
   /**
