@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { Pencil, ChevronDown } from 'lucide-react';
-import { RecordingPlayback } from './VoiceRecorder';
 import { cn } from '@/shared/lib/utils';
 
 const STATUS_LABELS: Record<CrmLeadStatus, string> = {
@@ -130,15 +129,6 @@ export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangin
               ))}
             </div>
           )}
-        </div>
-      )}
-      {voiceAttachment && (
-        <div className="mt-2" onClick={(e) => e.stopPropagation()}>
-          <RecordingPlayback
-            r2Key={voiceAttachment.r2Key}
-            mimeType={voiceAttachment.mimeType ?? 'audio/webm'}
-            className="w-full max-w-full h-8"
-          />
         </div>
       )}
       <p className="text-xs text-slate-400 mt-1">{createdAt}</p>
