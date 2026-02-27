@@ -8,6 +8,7 @@ interface BoardViewProps {
   leads: CrmLead[];
   countsByStatus: Partial<Record<CrmLeadStatus, number>>;
   onCardClick: (lead: CrmLead) => void;
+  onCardEdit?: (lead: CrmLead) => void;
   onAddLead: () => void;
   onRecordingSaved?: () => void;
 }
@@ -16,6 +17,7 @@ export function BoardView({
   leads,
   countsByStatus,
   onCardClick,
+  onCardEdit,
   onAddLead,
 }: BoardViewProps) {
   const leadsByStatus = CRM_COLUMN_ORDER.reduce(
@@ -35,6 +37,7 @@ export function BoardView({
           leads={leadsByStatus[status] ?? []}
           count={countsByStatus[status] ?? 0}
           onCardClick={onCardClick}
+          onCardEdit={onCardEdit}
           onAddClick={onAddLead}
         />
       ))}

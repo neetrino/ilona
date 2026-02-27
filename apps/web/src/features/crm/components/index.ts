@@ -4,6 +4,7 @@ export { LeadCard, STATUS_LABELS } from './LeadCard';
 export { LeadDrawer } from './LeadDrawer';
 export { VoiceLeadModal } from './VoiceLeadModal';
 export { VoiceLeadDetailModal } from './VoiceLeadDetailModal';
+export { EditLeadModal } from './EditLeadModal';
 export { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
 export { ListTable } from './ListTable';
 export { CRMFilters } from './CRMFilters';

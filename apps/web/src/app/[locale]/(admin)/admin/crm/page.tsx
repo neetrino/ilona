@@ -16,6 +16,7 @@ import {
   LeadDrawer,
   VoiceLeadModal,
   VoiceLeadDetailModal,
+  EditLeadModal,
   CRMFilters,
 } from '@/features/crm/components';
 import { cn } from '@/shared/lib/utils';
@@ -37,6 +38,7 @@ export default function AdminCrmPage() {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const [editLeadId, setEditLeadId] = useState<string | null>(null);
 
   // Restore voice lead popup from URL after refresh
   useEffect(() => {
@@ -92,6 +94,9 @@ export default function AdminCrmPage() {
       setVoiceLeadId(null);
     }
   };
+  const handleCardEdit = (lead: CrmLead) => {
+    setEditLeadId(lead.id);
+  };
   const handleAddLead = () => setVoiceModalOpen(true);
 
   return (
@@ -140,6 +145,7 @@ export default function AdminCrmPage() {
             leads={leads}
             countsByStatus={countsByStatus}
             onCardClick={handleCardClick}
+            onCardEdit={handleCardEdit}
             onAddLead={handleAddLead}
             onRecordingSaved={() => refetch()}
           />
@@ -180,6 +186,18 @@ export default function AdminCrmPage() {
         open={!!voiceLeadId}
         onClose={closeVoiceLead}
         onUpdated={() => refetch()}
+        centers={centers}
+        teachers={teachers}
+        groups={groups}
+      />
+      <EditLeadModal
+        open={!!editLeadId}
+        leadId={editLeadId}
+        onClose={() => setEditLeadId(null)}
+        onSaved={() => {
+          refetch();
+          setEditLeadId(null);
+        }}
         centers={centers}
         teachers={teachers}
         groups={groups}
