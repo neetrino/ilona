@@ -143,11 +143,6 @@ export function LeadCard({ lead, onClick, onEditClick, onStatusChange, isChangin
       )}
       <p className="text-xs text-slate-400 mt-1">{createdAt}</p>
       {recordingTime && <p className="text-xs text-slate-500">{recordingTime}</p>}
-      {lead.createdByUser && (
-        <p className="text-xs text-slate-500 mt-0.5">
-          by {lead.createdByUser.firstName} {lead.createdByUser.lastName}
-        </p>
-      )}
       {lead.phone && (
         <p className="text-sm text-slate-500 truncate mt-0.5">{lead.phone}</p>
       )}
