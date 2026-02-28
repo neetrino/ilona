@@ -104,11 +104,16 @@ export function useAddMessageToCache() {
   const queryClient = useQueryClient();
 
   return (chatId: string, message: unknown) => {
-    // Update messages cache
+    const msg = message as { id?: string };
+    // Update messages cache (idempotent: skip if already present, e.g. already added via socket)
     queryClient.setQueryData(
       chatKeys.messages(chatId),
       (oldData: { pages: { items: unknown[] }[] } | undefined) => {
         if (!oldData) return oldData;
+        const exists = msg.id && oldData.pages.some((page) =>
+          page.items.some((m) => (m as { id?: string }).id === msg.id)
+        );
+        if (exists) return oldData;
 
         return {
           ...oldData,
