@@ -130,10 +130,11 @@ export function useSocket(options: UseSocketOptions = {}) {
             );
             if (exists) return oldData;
 
+            // Add to first page (newest messages) to match addMessageToCache and API order (createdAt desc)
             return {
               ...oldData,
               pages: oldData.pages.map((page, index) => {
-                if (index === oldData.pages.length - 1) {
+                if (index === 0) {
                   return {
                     ...page,
                     items: [...page.items, message],
