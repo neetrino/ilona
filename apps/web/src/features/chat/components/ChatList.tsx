@@ -7,6 +7,7 @@ import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { formatMessagePreview } from '../utils';
+import Image from 'next/image';
 
 interface ChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -201,10 +202,13 @@ export function ChatList({ onSelectChat }: ChatListProps) {
                 {/* Avatar */}
                 <div className="relative">
                   {info.avatarUrl ? (
-                    <img
+                    <Image
                       src={info.avatarUrl}
                       alt={info.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-full object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div

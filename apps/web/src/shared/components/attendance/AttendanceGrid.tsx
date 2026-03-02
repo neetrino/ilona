@@ -78,7 +78,7 @@ export function AttendanceGrid({
       prevInitialAttendanceRef.current = initialAttendance;
       isInitialMountRef.current = false;
     }
-  }, []);
+  }, [initialAttendance]);
 
   // Sync from initialAttendance only when there are no pending changes
   // This prevents overwriting local unsaved changes when queries refetch

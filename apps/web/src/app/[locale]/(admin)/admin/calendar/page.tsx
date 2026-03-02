@@ -192,7 +192,7 @@ export default function CalendarPage() {
   // Cancel mutation
   const cancelLesson = useCancelLesson();
 
-  const lessons = lessonsData?.items || [];
+  const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
 
   // Group lessons by date
   const lessonsByDate = useMemo(() => {

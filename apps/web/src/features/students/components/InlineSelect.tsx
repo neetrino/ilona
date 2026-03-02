@@ -124,7 +124,7 @@ export function InlineSelect({
       clearTimeout(timeoutId);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, options.length]);
 
   const handleSelect = async (newValue: string | null) => {
     if (newValue === localValue) {

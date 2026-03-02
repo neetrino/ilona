@@ -13,6 +13,7 @@ import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
 import { sendMessageHttp } from '../api/chat.api';
 import { formatTime, formatDateSeparator, shouldShowDateSeparator } from '../utils/chat-utils';
+import Image from 'next/image';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -449,10 +450,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         {/* Avatar */}
         <div className="relative">
           {getChatAvatarUrl() ? (
-            <img
+            <Image
               src={getChatAvatarUrl() ?? ''}
               alt={getChatTitle()}
+              width={40}
+              height={40}
               className="w-10 h-10 rounded-full object-cover"
+              unoptimized
             />
           ) : (
             <div
@@ -587,10 +591,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                   {!isOwn && (
                     <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {message.sender?.avatarUrl ? (
-                        <img
+                        <Image
                           src={message.sender.avatarUrl}
                           alt={`${message.sender.firstName} ${message.sender.lastName}`}
+                          width={32}
+                          height={32}
                           className="w-full h-full object-cover"
+                          unoptimized
                         />
                       ) : (
                         <div className="w-full h-full bg-slate-300 flex items-center justify-center text-slate-600 text-sm font-medium">

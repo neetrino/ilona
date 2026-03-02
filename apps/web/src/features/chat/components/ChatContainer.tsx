@@ -181,7 +181,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
       isInitialMount.current = false;
     }
     // Note: If no chatIdFromUrl and no teacherIdFromUrl, we already handled it above
-  }, [chats, isLoadingChats, isLoadingTeachers, teachers, searchParams, setActiveChat, setMobileListVisible, router, pathname, isStudent, createDirectChat, conversationIdFromUrl, activeChat]);
+  }, [chats, isLoadingChats, isLoadingTeachers, teachers, searchParams, setActiveChat, setMobileListVisible, router, pathname, isTeacher, isStudent, createDirectChat, conversationIdFromUrl, activeChat]);
 
   // Sync URL when activeChat changes (but skip on initial mount)
   useEffect(() => {

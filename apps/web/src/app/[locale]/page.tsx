@@ -9,6 +9,7 @@ import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
+import Image from 'next/image';
 
 export default function HomePage() {
   const t = useTranslations('home');
@@ -43,11 +44,14 @@ export default function HomePage() {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href={`/${locale}`} className="flex items-center gap-3 transition-opacity hover:opacity-80">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform hover:scale-105 overflow-hidden bg-white">
-                <img
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform hover:scale-105 overflow-hidden bg-white relative">
+                <Image
                   src={logoUrl}
                   alt="ILONA English Center"
+                  width={40}
+                  height={40}
                   className="w-full h-full object-contain"
+                  unoptimized
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/logo.png';

@@ -7,7 +7,7 @@ import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle,
 import { useCreateLesson, type CreateLessonDto } from '@/features/lessons';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 
 const createLessonSchema = z.object({
@@ -41,7 +41,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
   const teachers = teachersData?.items || [];
 
   // Combine date and time for scheduledAt
-  const getDefaultScheduledAt = () => {
+  const getDefaultScheduledAt = useCallback(() => {
     if (defaultDate && defaultTime) {
       return `${defaultDate}T${defaultTime}`;
     }
@@ -53,7 +53,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateStr = tomorrow.toISOString().split('T')[0];
     return `${dateStr}T10:00`;
-  };
+  }, [defaultDate, defaultTime]);
 
   const {
     register,
@@ -88,7 +88,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
       setErrorMessage(null);
       setSuccessMessage(null);
     }
-  }, [open, reset, defaultDate, defaultTime]);
+  }, [open, reset, defaultDate, defaultTime, getDefaultScheduledAt]);
 
   const onSubmit = async (data: CreateLessonFormData) => {
     try {

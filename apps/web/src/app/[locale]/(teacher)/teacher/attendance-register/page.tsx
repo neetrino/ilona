@@ -72,7 +72,7 @@ export default function TeacherAttendanceRegisterPage() {
         data.hasAutoSelectedGroup.current = true;
       }
     }
-  }, [data.todayLessons, data.groups, nav.selectedGroupIds, data.hasAutoSelectedGroup]);
+  }, [data.todayLessons, data.groups, nav.selectedGroupIds, data.hasAutoSelectedGroup, nav]);
 
   // Get week dates for week view
   const weekDates = useMemo(() => {

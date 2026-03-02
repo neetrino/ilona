@@ -309,7 +309,7 @@ export function useSocket(options: UseSocketOptions = {}) {
       // Don't disconnect socket here - it's managed by the initialization effect
       // Only unsubscribe from events
     };
-  }, [queryClient]);
+  }, [queryClient, token]);
 
   // Send message
   const sendMessage = useCallback(

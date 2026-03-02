@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/shared/components/ui/input';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import Image from 'next/image';
 import { useLogout } from '@/features/auth/hooks/useLogout';
 
 interface HeaderProps {
@@ -93,12 +94,14 @@ export function Header({ title, subtitle }: HeaderProps) {
           >
             <div className="relative w-10 h-10">
               {user?.avatarUrl ? (
-                <img
+                <Image
                   src={user.avatarUrl}
                   alt={`${user?.firstName} ${user?.lastName}`}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                  unoptimized
                   onError={(e) => {
-                    // Fallback to initials if image fails to load
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
                     const fallback = target.nextElementSibling as HTMLElement;

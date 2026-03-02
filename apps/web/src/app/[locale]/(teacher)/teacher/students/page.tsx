@@ -7,6 +7,7 @@ import { useMyAssignedStudents } from '@/features/students/hooks/useStudents';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import { cn } from '@/shared/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function TeacherStudentsPage() {
   const params = useParams();
@@ -18,7 +19,7 @@ export default function TeacherStudentsPage() {
 
   // Fetch teacher's groups
   const { data: groups, isLoading: isLoadingGroups } = useMyGroups();
-  const groupsList = groups || [];
+  const groupsList = useMemo(() => groups || [], [groups]);
 
   // Get selected group from URL query params
   const urlGroupId = searchParams.get('groupId');
@@ -300,10 +301,13 @@ export default function TeacherStudentsPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           {avatarUrl ? (
-                            <img
+                            <Image
                               src={avatarUrl}
                               alt={`${student.user.firstName} ${student.user.lastName}`}
+                              width={40}
+                              height={40}
                               className="w-10 h-10 rounded-full object-cover"
+                              unoptimized
                             />
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">

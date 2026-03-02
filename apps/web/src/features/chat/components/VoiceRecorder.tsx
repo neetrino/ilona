@@ -106,6 +106,27 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
     return cleanup;
   }, [cleanup]);
 
+  // Stop recording (defined before startRecording so it can be used in startRecording's deps)
+  const stopRecording = useCallback(() => {
+    if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+      recorderRef.current.stop();
+    }
+    setIsRecording(false);
+
+    if (durationIntervalRef.current) {
+      clearInterval(durationIntervalRef.current);
+      durationIntervalRef.current = null;
+    }
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    // Stop tracks (but keep stream for preview)
+    // We'll stop tracks in cleanup when component unmounts or new recording starts
+  }, []);
+
   // Start recording
   const startRecording = useCallback(async () => {
     try {
@@ -146,7 +167,7 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
 
       // Setup Web Audio API for microphone level monitoring
       try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioContext = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
         audioContextRef.current = audioContext;
 
         const source = audioContext.createMediaStreamSource(stream);
@@ -260,7 +281,7 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
         let isSilent = false;
         try {
           const arrayBuffer = await blob.arrayBuffer();
-          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const audioContext = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
           const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
           // Compute RMS for first 1-2 seconds
@@ -343,28 +364,7 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
       }
       cleanup();
     }
-  }, [getSupportedMimeType, cleanup]);
-
-  // Stop recording
-  const stopRecording = useCallback(() => {
-    if (recorderRef.current && recorderRef.current.state !== 'inactive') {
-      recorderRef.current.stop();
-    }
-    setIsRecording(false);
-
-    if (durationIntervalRef.current) {
-      clearInterval(durationIntervalRef.current);
-      durationIntervalRef.current = null;
-    }
-
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-
-    // Stop tracks (but keep stream for preview)
-    // We'll stop tracks in cleanup when component unmounts or new recording starts
-  }, []);
+  }, [getSupportedMimeType, cleanup, isRecording, stopRecording]);
 
   // Handle send
   const handleSend = useCallback(() => {

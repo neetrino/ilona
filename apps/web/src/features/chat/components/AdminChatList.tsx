@@ -8,6 +8,7 @@ import { fetchGroupChat, createDirectChat } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { Badge } from '@/shared/components/ui/badge';
+import Image from 'next/image';
 
 type AdminChatTab = 'students' | 'teachers' | 'groups';
 
@@ -151,7 +152,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
           >
             <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-semibold flex-shrink-0">
               {student.avatarUrl ? (
-                <img src={student.avatarUrl} alt={student.name} className="w-full h-full rounded-full object-cover" />
+                <Image src={student.avatarUrl} alt={student.name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
               ) : (
                 getAvatar(student.name)
               )}
@@ -223,7 +224,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
           >
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
               {teacher.avatarUrl ? (
-                <img src={teacher.avatarUrl} alt={teacher.name} className="w-full h-full rounded-full object-cover" />
+                <Image src={teacher.avatarUrl} alt={teacher.name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
               ) : (
                 getAvatar(teacher.name)
               )}

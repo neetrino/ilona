@@ -138,8 +138,8 @@ export function useTeachersPage() {
   const updateTeacher = useUpdateTeacher();
 
   // Get all teachers from API
-  const allTeachers = teachersData?.items || [];
-  
+  const allTeachers = useMemo(() => teachersData?.items || [], [teachersData?.items]);
+
   // Apply filters client-side with memoization for performance
   const filteredTeachers = useMemo(() => {
     return filterTeachersByBranches(allTeachers, selectedBranchIds);
