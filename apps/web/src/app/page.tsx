@@ -5,3 +5,5 @@ export default function Home() {
   // Redirect to default locale
   redirect(`/${defaultLocale}`);
 }
+
+console.log('Home');
