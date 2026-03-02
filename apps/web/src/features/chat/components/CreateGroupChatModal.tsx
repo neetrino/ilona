@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAdminAllUsers, useAdminTeachers, useCreateCustomGroupChat } from '../hooks';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import type { AdminChatAllUser } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
@@ -44,11 +45,18 @@ export function CreateGroupChatModal({
     }
   }, [isOpen]);
 
+  const currentUserId = useAuthStore((s) => s.user?.id ?? null);
   const { data: users = [], isLoading } = useAdminAllUsers(
     isOpen ? debouncedSearch || undefined : undefined
   );
   const { data: teachers = [] } = useAdminTeachers(isOpen ? undefined : undefined);
   const createChat = useCreateCustomGroupChat();
+
+  // Exclude current Admin from selection (creator is added automatically by backend)
+  const selectableUsers = useMemo(
+    () => (currentUserId ? users.filter((u) => u.id !== currentUserId) : users),
+    [users, currentUserId]
+  );
 
   const toggleUser = (userId: string) => {
     setSelectedIds((prev) => {
@@ -60,7 +68,9 @@ export function CreateGroupChatModal({
   };
 
   const addAllTeachers = () => {
-    const teacherIds = teachers.map((t) => t.id);
+    const teacherIds = teachers
+      .filter((t) => t.id !== currentUserId)
+      .map((t) => t.id);
     setSelectedIds((prev) => new Set([...prev, ...teacherIds]));
   };
 
@@ -99,7 +109,7 @@ export function CreateGroupChatModal({
           />
           <div className="mt-3 flex items-center justify-between">
             <label className="text-sm font-medium text-slate-700">Members</label>
-            {teachers.length > 0 && (
+            {teachers.filter((t) => t.id !== currentUserId).length > 0 && (
               <button
                 type="button"
                 onClick={addAllTeachers}
@@ -146,15 +156,17 @@ export function CreateGroupChatModal({
                 </div>
               ))}
             </div>
-          ) : users.length === 0 ? (
+          ) : selectableUsers.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-sm text-slate-600">
-                {debouncedSearch ? 'No users found. Try a different search.' : 'Search to add members.'}
+                {debouncedSearch
+                  ? 'No users found. Try a different search.'
+                  : 'No other users to add. You are automatically added as the group creator.'}
               </p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
-              {users.map((user: AdminChatAllUser) => {
+              {selectableUsers.map((user: AdminChatAllUser) => {
                 const checked = selectedIds.has(user.id);
                 return (
                   <button
