@@ -17,6 +17,7 @@ import {
   CreateLessonDto,
   UpdateLessonDto,
   QueryLessonDto,
+  GetUpcomingLessonsQueryDto,
   CompleteLessonDto,
   CreateRecurringLessonDto,
 } from './dto';
@@ -86,7 +87,10 @@ export class LessonsController {
 
   @Get('upcoming')
   @Roles(UserRole.TEACHER)
-  async getUpcomingLessons(@CurrentUser() user: JwtPayload, @Query('limit') limit?: number) {
+  async getUpcomingLessons(
+    @CurrentUser() user: JwtPayload,
+    @Query() query: GetUpcomingLessonsQueryDto,
+  ) {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
     });
@@ -95,7 +99,7 @@ export class LessonsController {
       return [];
     }
 
-    return this.lessonsService.getUpcoming(teacher.id, limit || 10);
+    return this.lessonsService.getUpcoming(teacher.id, query.limit ?? 10);
   }
 
   @Get('statistics')

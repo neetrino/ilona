@@ -31,22 +31,20 @@ async function applyMigration() {
   console.log('🚀 Starting migration application...\n');
 
   try {
-    // Check if columns already exist
-    const checkQuery = `
+    // Check if columns already exist (tagged template — no user input, safe)
+    const existingColumns = await prisma.$queryRaw`
       SELECT column_name 
       FROM information_schema.columns 
       WHERE table_schema = 'public' 
       AND table_name = 'lessons' 
       AND column_name IN ('absenceMarked', 'voiceSent', 'textSent')
     `;
-    
-    const existingColumns = await prisma.$queryRawUnsafe(checkQuery);
     const existingColumnNames = existingColumns.map((col) => col.column_name);
-    
+
     console.log('Existing columns:', existingColumnNames);
 
-    // Apply migration SQL
-    const migrationSQL = `
+    // Apply migration SQL (tagged template — static, safe)
+    await prisma.$executeRaw`
       DO $$
       BEGIN
           IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'lessons' AND column_name = 'absenceMarked') THEN
@@ -78,10 +76,8 @@ async function applyMigration() {
               ALTER TABLE "lessons" ADD COLUMN "textSentAt" TIMESTAMP(3);
               RAISE NOTICE 'Column textSentAt added successfully';
           END IF;
-      END $$;
+      END $$
     `;
-
-    await prisma.$executeRawUnsafe(migrationSQL);
     
     console.log('✅ Migration applied successfully!\n');
     console.log('📝 Next steps:');

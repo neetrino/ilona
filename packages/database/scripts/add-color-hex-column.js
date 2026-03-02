@@ -55,28 +55,24 @@ async function applyMigration() {
   console.log('🚀 Adding colorHex column to centers table...\n');
 
   try {
-    // Check if column already exists
-    const checkQuery = `
+    // Check if column already exists (tagged template — no user input, safe)
+    const existingColumns = await prisma.$queryRaw`
       SELECT column_name 
       FROM information_schema.columns 
       WHERE table_schema = 'public' 
       AND table_name = 'centers' 
       AND column_name = 'colorHex'
     `;
-    
-    const existingColumns = await prisma.$queryRawUnsafe(checkQuery);
-    
+
     if (existingColumns.length > 0) {
       console.log('✅ Column colorHex already exists in centers table.\n');
       return;
     }
 
-    // Apply migration SQL
-    const migrationSQL = `
-      ALTER TABLE "centers" ADD COLUMN IF NOT EXISTS "colorHex" TEXT;
+    // Apply migration SQL (tagged template — static, safe)
+    await prisma.$executeRaw`
+      ALTER TABLE "centers" ADD COLUMN IF NOT EXISTS "colorHex" TEXT
     `;
-
-    await prisma.$executeRawUnsafe(migrationSQL);
     
     console.log('✅ Column colorHex added successfully to centers table!\n');
     console.log('📝 Next steps:');
