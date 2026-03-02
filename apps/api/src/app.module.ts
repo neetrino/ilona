@@ -1,6 +1,6 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CacheModule } from '@nestjs/cache-manager';
 
 // Config
@@ -10,6 +10,7 @@ import { jwtConfig } from './config/jwt.config';
 // Common
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 // Global Modules
 import { PrismaModule } from './modules/prisma/prisma.module';
@@ -77,6 +78,11 @@ import { AppController } from './app.controller';
   providers: [
     // Correlation ID and request logging
     CorrelationIdMiddleware,
+    // Production: no stack/sensitive data in error responses; uses ConfigService (.env.local)
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
