@@ -35,8 +35,16 @@ export function BoardView({
     {} as Record<CrmLeadStatus, CrmLead[]>
   );
 
+  const columnCount = columnOrder.length;
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 min-h-[400px]">
+    <div
+      className="grid gap-4 pb-4 min-h-[400px] w-full min-w-0"
+      style={{
+        gridTemplateColumns: columnCount
+          ? `repeat(${columnCount}, minmax(160px, 1fr))`
+          : undefined,
+      }}
+    >
       {columnOrder.map((status) => (
         <Column
           key={status}

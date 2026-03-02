@@ -112,7 +112,7 @@ export function LeadCard({ lead, availableStatuses = CRM_COLUMN_ORDER, onClick, 
       onClick={onClick}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
       className={cn(
-        'relative w-full rounded-lg border border-slate-200 bg-white p-3 text-left shadow-sm transition-shadow hover:shadow-md cursor-pointer',
+        'relative w-full min-w-0 rounded-lg border border-slate-200 bg-white p-2 sm:p-3 text-left shadow-sm transition-shadow hover:shadow-md cursor-pointer',
         className
       )}
     >
