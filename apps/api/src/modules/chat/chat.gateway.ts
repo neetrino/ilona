@@ -141,13 +141,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`User ${client.user.email} disconnected`);
   }
 
+  /**
+   * Handle send message. SECURITY: Sender identity is taken ONLY from the socket's
+   * authenticated user (client.user, set at connection from JWT). Never use any
+   * senderId from the message payload. Client must reconnect when user changes (e.g.
+   * after logout/login as different user) so the socket identity is correct.
+   */
   @SubscribeMessage('message:send')
   async handleSendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { chatId: string; content: string; type?: string; metadata?: Record<string, unknown>; fileUrl?: string; fileName?: string; fileSize?: number; duration?: number },
   ) {
     try {
-      // CRITICAL: Validate client.user is set and has required fields
+      // CRITICAL: Validate client.user is set (per-connection identity from JWT at handshake)
       if (!client.user || !client.user.sub) {
         this.logger.error('handleSendMessage: client.user is missing or invalid', { hasUser: !!client.user, userId: client.user?.sub });
         return { success: false, error: 'Authentication required' };
@@ -158,10 +164,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return { success: false, error: 'Voice messages must be sent via the REST API after uploading the file' };
       }
 
+      // Sender is ALWAYS the socket's authenticated user - never from payload
+      const senderIdFromAuth = client.user.sub;
+      const senderRoleFromAuth = client.user.role;
+
       // CRITICAL: Log sender identity for debugging (dev only)
       if (process.env.NODE_ENV !== 'production') {
         this.logger.log(
-          JSON.stringify({ message: 'handleSendMessage', senderId: client.user.sub, senderRole: client.user.role, chatId: data.chatId }),
+          JSON.stringify({ message: 'handleSendMessage', senderId: senderIdFromAuth, senderRole: senderRoleFromAuth, chatId: data.chatId }),
         );
       }
 
@@ -172,8 +182,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           type: data.type as never,
           metadata: data.metadata,
         },
-        client.user.sub,
-        client.user.role,
+        senderIdFromAuth,
+        senderRoleFromAuth,
       );
 
       // Broadcast to all participants in the chat
