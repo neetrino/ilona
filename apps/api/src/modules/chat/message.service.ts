@@ -122,16 +122,18 @@ export class MessageService {
   }
 
   /**
-   * Send a message
+   * Send a message.
+   * SECURITY: senderId must ONLY be passed from the controller/gateway (from authenticated
+   * user). Never use or trust any senderId from dto - the DTO does not include it by design.
    */
   async sendMessage(dto: SendMessageDto, senderId: string, senderRole?: string): Promise<SendMessageResponse> {
-    // CRITICAL: Validate senderId is provided and not empty
+    // CRITICAL: senderId must come from auth layer only (never from request body)
     if (!senderId || senderId.trim() === '') {
       this.logger.error('[sendMessage] senderId is missing or empty', { dto });
       throw new BadRequestException('Sender ID is required');
     }
 
-    // CRITICAL: Verify senderId matches a valid user in the database
+    // CRITICAL: Verify senderId matches a valid user in the database (re-validate per request)
     const senderUser = await this.prisma.user.findUnique({
       where: { id: senderId },
       select: { id: true, role: true, status: true, email: true },

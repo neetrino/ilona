@@ -1,6 +1,11 @@
 import { IsString, IsOptional, IsEnum, IsInt, IsObject, MaxLength } from 'class-validator';
 import { MessageType } from '@prisma/client';
 
+/**
+ * DTO for creating a chat message.
+ * SECURITY: senderId must NEVER be accepted from the client. The server always derives
+ * the sender from the authenticated user (JWT/session) in the controller/gateway.
+ */
 export class SendMessageDto {
   @IsString()
   chatId!: string;

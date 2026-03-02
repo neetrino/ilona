@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsInt, Min, Max, IsArray, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, Max, IsArray, IsEnum, IsIn } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class QueryStudentDto {
@@ -76,8 +76,8 @@ export class QueryStudentDto {
   centerIds?: string[];
 
   @IsOptional()
-  @IsString()
-  sortBy?: string;
+  @IsIn(['student', 'monthlyFee', 'absence'])
+  sortBy?: 'student' | 'monthlyFee' | 'absence';
 
   @IsOptional()
   @IsEnum(['asc', 'desc'])

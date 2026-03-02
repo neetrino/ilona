@@ -106,26 +106,32 @@ export class ChatController {
   }
 
   /**
-   * Send a message
+   * Send a message.
+   * SECURITY: Sender identity is derived ONLY from the authenticated user (JWT).
+   * Never use senderId from request body - it is ignored if present.
    */
   @Post('messages')
   async sendMessage(
     @Body() dto: SendMessageDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    // CRITICAL: Validate user context is present
+    // CRITICAL: Validate user context is present (per-request auth, no cached/global user)
     if (!user || !user.sub) {
       throw new UnauthorizedException('Authentication required');
     }
 
+    // Sender is ALWAYS the authenticated user - never from dto
+    const senderIdFromAuth = user.sub;
+    const senderRoleFromAuth = user.role;
+
     // CRITICAL: Log sender identity for debugging (dev only)
     if (process.env.NODE_ENV !== 'production') {
       this.logger.log(
-        JSON.stringify({ message: 'sendMessage', senderId: user.sub, senderRole: user.role, chatId: dto.chatId }),
+        JSON.stringify({ message: 'sendMessage', senderId: senderIdFromAuth, senderRole: senderRoleFromAuth, chatId: dto.chatId }),
       );
     }
 
-    const message = await this.chatService.sendMessage(dto, user.sub, user.role);
+    const message = await this.chatService.sendMessage(dto, senderIdFromAuth, senderRoleFromAuth);
 
     // Broadcast to all chat participants (including sender's other devices) so voice messages appear in real time
     this.chatGateway.broadcastNewMessage(dto.chatId, message);

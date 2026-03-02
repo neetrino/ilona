@@ -2,6 +2,7 @@ import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 // Config
 import { appConfig } from './config/app.config';
@@ -54,6 +55,15 @@ import { AppController } from './app.controller';
       ttl: 2 * 60 * 1000, // 2 minutes in ms
     }),
 
+    // Rate limiting (SQL Injection checklist §8): 100 requests per minute per IP by default
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60 * 1000, // 1 minute
+        limit: 100,
+      },
+    ]),
+
     // Global modules
     PrismaModule,
 
@@ -96,6 +106,11 @@ import { AppController } from './app.controller';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    // Rate limiting guard (applies after auth so limits are per-IP)
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

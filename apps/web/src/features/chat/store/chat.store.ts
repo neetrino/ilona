@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { disconnectSocket } from '../lib/socket';
 import type { Chat, Message } from '../types';
 
 const CHAT_STATE_STORAGE_KEY_PREFIX = 'chat-state-';
@@ -204,8 +205,11 @@ export const selectTypingUsers = (chatId: string) => (state: ChatState) =>
 /**
  * Call from auth logout so the previous user's chat state and sessionStorage
  * do not leak to the next user (e.g. Admin's chats showing for Student after logout).
+ * Also disconnects the chat socket so the next login gets a fresh connection with
+ * correct identity (prevents messages being sent as the previous user).
  */
 export function clearChatStateOnLogout(): void {
+  disconnectSocket();
   useChatStore.getState().reset();
   if (typeof window === 'undefined') return;
   try {

@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsDateString, IsInt, Min, Max, IsEnum, IsArray } from 'class-validator';
+import { IsOptional, IsString, IsDateString, IsInt, Min, Max, IsEnum, IsArray, IsIn } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class QueryLessonDto {
@@ -46,8 +46,8 @@ export class QueryLessonDto {
   dateTo?: string;
 
   @IsOptional()
-  @IsString()
-  sortBy?: string;
+  @IsIn(['scheduledAt', 'dateTime'])
+  sortBy?: 'scheduledAt' | 'dateTime';
 
   @IsOptional()
   @IsEnum(['asc', 'desc'])

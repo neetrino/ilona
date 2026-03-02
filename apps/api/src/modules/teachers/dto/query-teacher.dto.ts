@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsInt, Min, Max, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, Max, IsEnum, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class QueryTeacherDto {
@@ -24,8 +24,8 @@ export class QueryTeacherDto {
   status?: string;
 
   @IsOptional()
-  @IsString()
-  sortBy?: string;
+  @IsIn(['students', 'teacher', 'groups', 'lessons', 'obligation', 'deduction', 'cost'])
+  sortBy?: 'students' | 'teacher' | 'groups' | 'lessons' | 'obligation' | 'deduction' | 'cost';
 
   @IsOptional()
   @IsEnum(['asc', 'desc'])

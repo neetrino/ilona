@@ -41,28 +41,24 @@ export interface SocketOptions {
 }
 
 /**
- * Initialize and get socket connection
+ * Initialize and get socket connection.
+ * SECURITY: When the user switches accounts (logout + login as another user), the client
+ * must get a new connection authenticated as the new user. We always disconnect any
+ * existing socket before creating a new one with the provided token, so that token
+ * changes (e.g. after re-login) result in a fresh connection with correct identity.
  */
 export function initSocket(options: SocketOptions): Socket {
-  if (socket?.connected) {
-    // Socket already connected, call onConnect callback to sync state
-    options.onConnect?.();
-    return socket;
-  }
-
-  // Disconnect existing socket if any (only if it exists and is not already disconnected)
+  // Always tear down existing connection so that a new token = new identity on server.
+  // Reusing a connected socket when token changed would send messages as the previous user.
   if (socket) {
-    // Remove all listeners to prevent memory leaks
     socket.removeAllListeners();
-    // Only disconnect if already connected to avoid closing during connection attempt
     if (socket.connected) {
       socket.disconnect();
     }
-    // Clear the socket reference
     socket = null;
   }
 
-  // Create new socket connection
+  // Create new socket connection with the current token
   socket = io(`${WS_URL}/chat`, {
     auth: { token: options.token },
     transports: ['websocket', 'polling'],

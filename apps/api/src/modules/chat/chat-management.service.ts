@@ -964,7 +964,8 @@ export class ChatManagementService {
     adminId: string,
     dto: CreateCustomGroupChatDto,
   ) {
-    const participantIds = dto.participantIds ?? [];
+    // Creator is always added as member; ignore if client sent creator in participantIds
+    const participantIds = (dto.participantIds ?? []).filter((id) => id !== adminId);
     const allUserIds = [adminId, ...participantIds];
     const uniqueIds = [...new Set(allUserIds)];
 
