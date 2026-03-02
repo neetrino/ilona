@@ -166,10 +166,10 @@ export function useStudentsPage() {
   const deleteStudentsBulk = useDeleteStudentsBulk();
   const updateStudent = useUpdateStudent();
 
-  const students = studentsData?.items || [];
+  const students = useMemo(() => studentsData?.items || [], [studentsData?.items]);
   const totalStudents = studentsData?.total || 0;
   const totalPages = studentsData?.totalPages || 1;
-  const allCenters = centersData?.items || [];
+  const allCenters = useMemo(() => centersData?.items || [], [centersData?.items]);
 
   // Group students by center for board view
   const studentsByCenter = useMemo(() => 

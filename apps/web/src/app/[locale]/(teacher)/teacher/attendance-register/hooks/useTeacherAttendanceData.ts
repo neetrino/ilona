@@ -41,20 +41,21 @@ export function useTeacherAttendanceData({
   selectedDayForMonthView,
   absenceFilter = 'all',
 }: UseTeacherAttendanceDataProps) {
-  const effectiveGroupIds = selectedGroupIds.length > 0
-    ? selectedGroupIds
-    : (selectedGroupId ? [selectedGroupId] : []);
+  const effectiveGroupIds = useMemo(
+    () => (selectedGroupIds.length > 0 ? selectedGroupIds : selectedGroupId ? [selectedGroupId] : []),
+    [selectedGroupIds, selectedGroupId]
+  );
   const [savingLessons, setSavingLessons] = useState<Record<string, boolean>>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const hasAutoSelectedGroup = useRef(false);
 
   // Fetch teacher's groups (only groups assigned to this teacher)
   const { data: groupsData, isLoading: isLoadingGroups } = useMyGroups();
-  const groups = groupsData || [];
+  const groups = useMemo(() => groupsData || [], [groupsData]);
 
   // Fetch today's lessons to auto-select group
   const { data: todayLessonsData } = useTodayLessons();
-  const todayLessons = todayLessonsData || [];
+  const todayLessons = useMemo(() => todayLessonsData || [], [todayLessonsData]);
 
   // Auto-select first group with a lesson today on initial load
   useEffect(() => {
@@ -99,7 +100,7 @@ export function useTeacherAttendanceData({
     dateTo: effectiveDateRange.to ? new Date(effectiveDateRange.to + 'T23:59:59Z').toISOString() : undefined,
     take: 1000,
   });
-  const lessons = lessonsData?.items || [];
+  const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
 
   // Filter lessons based on view mode
   const filteredLessons = useMemo(() => {
@@ -136,7 +137,7 @@ export function useTeacherAttendanceData({
     groupIds: effectiveGroupIds.length > 0 ? effectiveGroupIds : undefined,
     take: 100,
   });
-  const students = studentsData?.items ?? [];
+  const students = useMemo(() => studentsData?.items ?? [], [studentsData?.items]);
 
   // Fetch attendance for all filtered lessons in one batch request
   const lessonIds = useMemo(() => filteredLessons.map((l) => l.id), [filteredLessons]);
@@ -144,7 +145,10 @@ export function useTeacherAttendanceData({
     lessonIds,
     effectiveGroupIds.length > 0 && filteredLessons.length > 0,
   );
-  const batchAttendanceMap = batchAttendanceQuery.data ?? {};
+  const batchAttendanceMap = useMemo(
+    () => batchAttendanceQuery.data ?? {},
+    [batchAttendanceQuery.data]
+  );
   const isLoadingAttendance = batchAttendanceQuery.isLoading;
 
   // Compatibility: single-item array so existing UI (attendanceQueries.some(q => q.isError)) still works

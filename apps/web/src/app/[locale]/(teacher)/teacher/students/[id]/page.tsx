@@ -6,6 +6,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Badge, Button } from '@/shared/components/ui';
 import { useStudent } from '@/features/students';
 import { ApiError } from '@/shared/lib/api';
+import Image from 'next/image';
 
 export default function TeacherStudentProfilePage() {
   const params = useParams();
@@ -139,10 +140,13 @@ export default function TeacherStudentProfilePage() {
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <div className="flex items-start gap-6">
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt={`${firstName} ${lastName}`}
+                width={80}
+                height={80}
                 className="w-20 h-20 rounded-full object-cover"
+                unoptimized
               />
             ) : (
               <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">

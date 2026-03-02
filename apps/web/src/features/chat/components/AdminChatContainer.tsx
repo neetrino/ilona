@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
@@ -37,7 +37,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
 
   // Get tab from URL, no default - user must select a tab
   const tabFromUrl = searchParams.get('tab') as AdminChatTab | null;
-  const validTabs: AdminChatTab[] = ['students', 'teachers', 'groups'];
+  const validTabs = useMemo<AdminChatTab[]>(() => ['students', 'teachers', 'groups'], []);
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : null;
   const [activeTab, setActiveTab] = useState<AdminChatTab | null>(initialTab);
   const [showCreateGroupChatModal, setShowCreateGroupChatModal] = useState(false);

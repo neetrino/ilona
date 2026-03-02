@@ -75,7 +75,7 @@ export function WeekAttendanceGrid({
       prevInitialAttendanceRef.current = initialAttendance;
       isInitialMountRef.current = false;
     }
-  }, []);
+  }, [initialAttendance]);
 
   // Sync from initialAttendance only when there are no pending changes
   useEffect(() => {

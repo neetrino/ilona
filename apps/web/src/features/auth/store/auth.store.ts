@@ -108,10 +108,10 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error) {
           // If refresh failed with 401/403, the refresh token is invalid/expired
           // Set session expired state but DON'T auto-logout (user can still interact)
-          if (error instanceof Error && 'statusCode' in error && (error as any).statusCode === 401) {
+          if (error instanceof Error && 'statusCode' in error && (error as Error & { statusCode?: number }).statusCode === 401) {
             console.warn('Refresh token is invalid, session expired');
             set({ sessionExpired: true });
-          } else if (error instanceof Error && 'statusCode' in error && (error as any).statusCode === 403) {
+          } else if (error instanceof Error && 'statusCode' in error && (error as Error & { statusCode?: number }).statusCode === 403) {
             console.warn('Refresh token is forbidden, session expired');
             set({ sessionExpired: true });
           } else {
