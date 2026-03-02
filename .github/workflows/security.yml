@@ -1,0 +1,52 @@
+# Security checks: dependency audit + ensure no secrets committed
+# Required: 8.1 Dependency scanning; 5.x secrets not in repo
+#
+# Also enable in GitHub: Repo → Settings → Code security and analysis:
+# - Dependabot alerts (ON)
+# - Dependabot security updates (ON, optional)
+name: Security
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Fail on high or critical vulnerabilities (security 8.1)
+      - name: Audit dependencies (fail on high/critical)
+        run: pnpm audit --audit-level=high
+
+  no-secrets-committed:
+    name: No .env committed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fail if any .env or .env.* file is tracked (secrets must stay in env only)
+      - name: Ensure no .env files in repo
+        run: |
+          TRACKED=$(git ls-files '*.env' '.env' '.env.*' '.env.local' '.env.*.local' 2>/dev/null || true)
+          if [ -n "$TRACKED" ]; then
+            echo "::error::Secret files must not be committed: $TRACKED"
+            exit 1
+          fi
+          echo "No .env files tracked - OK"

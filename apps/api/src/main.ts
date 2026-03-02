@@ -43,7 +43,17 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  
+  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+
+  // Production: require DB TLS (security 4.1) — warn if sslmode missing
+  if (nodeEnv === 'production') {
+    const dbUrl = configService.get<string>('DATABASE_URL') || process.env.DATABASE_URL || '';
+    if (dbUrl && !dbUrl.includes('sslmode=')) {
+      const logger = new Logger('Bootstrap');
+      logger.warn('DATABASE_URL should include sslmode=require in production (TLS). Check Neon/Vercel env.');
+    }
+  }
+
   // Increase body size limit to handle base64 images (up to 15MB for JSON)
   // This is needed because base64-encoded images are ~33% larger than original
   app.use(json({ limit: '15mb' }));
@@ -57,7 +67,6 @@ async function bootstrap() {
 
   // CORS
   const corsOrigin = configService.get<string>('CORS_ORIGIN', 'http://localhost:3000');
-  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
   
   // In development, allow all origins for easier local network access
   // In production, use strict CORS configuration
@@ -72,6 +81,9 @@ async function bootstrap() {
       };
   
   app.enableCors(corsOptions);
+
+  // Production: do not expose stack traces or sensitive data in error responses (security 3.2, 3.2a)
+  // Registered in AppModule via APP_FILTER; uses ConfigService (same env as .env.local)
 
   // Enable shutdown hooks to ensure Prisma disconnects properly
   app.enableShutdownHooks();
