@@ -25,5 +25,3 @@ export class CorrelationIdMiddleware implements NestMiddleware {
   }
 }
 
-
-console.log('CorrelationIdMiddleware');
