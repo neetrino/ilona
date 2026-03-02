@@ -10,6 +10,8 @@ interface CRMFiltersProps {
   centers: { id: string; name: string }[];
   teachers: { id: string; user?: { firstName?: string; lastName?: string } }[];
   groups: { id: string; name: string }[];
+  /** When provided (e.g. Admin CRM), only these statuses appear in the Status filter dropdown. */
+  statusOptions?: CrmLeadStatus[];
 }
 
 export function CRMFilters({
@@ -18,6 +20,7 @@ export function CRMFilters({
   centers,
   teachers,
   groups,
+  statusOptions = CRM_COLUMN_ORDER,
 }: CRMFiltersProps) {
   return (
     <div className="flex flex-wrap items-end gap-4">
@@ -44,7 +47,7 @@ export function CRMFilters({
           className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
         >
           <option value="">All</option>
-          {CRM_COLUMN_ORDER.map((s) => (
+          {statusOptions.map((s) => (
             <option key={s} value={s}>{STATUS_LABELS[s]}</option>
           ))}
         </select>

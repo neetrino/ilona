@@ -70,7 +70,7 @@ export function useCalendarData({
     return () => clearInterval(interval);
   }, [refetch]);
 
-  const lessons = lessonsData?.items || [];
+  const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
 
   // Group lessons by date
   const lessonsByDate = useMemo(() => {

@@ -10,6 +10,7 @@ import { cn } from '@/shared/lib/utils';
 import { ApiError } from '@/shared/lib/api';
 import { formatMessagePreview } from '../utils';
 import { Badge } from '@/shared/components/ui/badge';
+import Image from 'next/image';
 
 interface TeacherChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -308,10 +309,13 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 {/* Avatar */}
                 <div className="relative">
                   {admin.avatarUrl ? (
-                    <img
+                    <Image
                       src={admin.avatarUrl}
                       alt={admin.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-full object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
@@ -510,10 +514,13 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 {/* Avatar */}
                 <div className="relative">
                   {student.avatarUrl ? (
-                    <img
+                    <Image
                       src={student.avatarUrl}
                       alt={studentName}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-full object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-primary">

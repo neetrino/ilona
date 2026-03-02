@@ -73,7 +73,7 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
   })() : null);
 
   // Get action breakdown from salary details
-  const actionBreakdown = (salary as any)?.actionBreakdown || null;
+  const actionBreakdown = (salary as { actionBreakdown?: Record<string, { required?: number; completed?: number }> })?.actionBreakdown || null;
 
   // Define the 4 required actions
   const requiredActions = [

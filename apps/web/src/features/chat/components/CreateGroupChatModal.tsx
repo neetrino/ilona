@@ -5,6 +5,7 @@ import { useAdminAllUsers, useAdminTeachers, useCreateCustomGroupChat } from '..
 import type { AdminChatAllUser } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import Image from 'next/image';
 
 interface CreateGroupChatModalProps {
   isOpen: boolean;
@@ -179,10 +180,13 @@ export function CreateGroupChatModal({
                     </div>
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium flex-shrink-0">
                       {user.avatarUrl ? (
-                        <img
+                        <Image
                           src={user.avatarUrl}
                           alt={user.name}
+                          width={40}
+                          height={40}
                           className="w-full h-full rounded-full object-cover"
+                          unoptimized
                         />
                       ) : (
                         getAvatar(user.name)

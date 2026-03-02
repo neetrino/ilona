@@ -8,7 +8,7 @@ interface StudentsStatsProps {
   activeStudents: number;
   studentsWithGroup: number;
   totalFees: number;
-  t: (key: string, params?: Record<string, any>) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 export function StudentsStats({ 

@@ -32,10 +32,10 @@ export function Column({
   const label = STATUS_LABELS[status];
 
   return (
-    <div className="flex-shrink-0 w-72 rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden flex flex-col max-h-[calc(100vh-220px)]">
-      <div className="p-3 border-b border-slate-200 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-slate-800">{label}</h3>
+    <div className="min-w-0 w-full rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden flex flex-col max-h-[calc(100vh-220px)]">
+      <div className="p-2 sm:p-3 border-b border-slate-200 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <h3 className="font-semibold text-slate-800 text-sm truncate">{label}</h3>
           <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">
             {count}
           </span>
@@ -51,7 +51,7 @@ export function Column({
           </button>
         )}
       </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+      <div className="flex-1 min-h-0 overflow-y-auto p-1.5 sm:p-2 space-y-2">
         {leads.map((lead) => (
           <div key={lead.id} className="space-y-1">
             <LeadCard

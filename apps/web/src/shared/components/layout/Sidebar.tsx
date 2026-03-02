@@ -7,6 +7,7 @@ import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
+import Image from 'next/image';
 
 interface NavItem {
   label: string;
@@ -28,9 +29,13 @@ const icons = {
     </svg>
   ),
   students: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-    </svg>
+    <Image
+      src="/students-logo.png"
+      alt=""
+      className="w-5 h-5 object-contain flex-shrink-0"
+      width={20}
+      height={20}
+    />
   ),
   crm: (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,11 +182,14 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-100">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden bg-white flex-shrink-0">
-          <img
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden bg-white flex-shrink-0 relative">
+          <Image
             src={logoUrl}
             alt="ILONA English Center"
+            width={40}
+            height={40}
             className="w-full h-full object-contain"
+            unoptimized
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/logo.png';

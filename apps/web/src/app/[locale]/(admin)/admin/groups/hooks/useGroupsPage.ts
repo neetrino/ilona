@@ -108,10 +108,10 @@ export function useGroupsPage() {
   const deleteCenter = useDeleteCenter();
   const toggleCenterActive = useToggleCenterActive();
 
-  const groups = groupsData?.items || [];
+  const groups = useMemo(() => groupsData?.items || [], [groupsData?.items]);
   const totalGroups = groupsData?.total || 0;
   const totalPages = groupsData?.totalPages || 1;
-  const allCenters = allCentersData?.items || [];
+  const allCenters = useMemo(() => allCentersData?.items || [], [allCentersData?.items]);
   const centers = centersData?.items || [];
   const totalCenters = centersData?.total || 0;
   const totalCenterPages = centersData?.totalPages || 1;

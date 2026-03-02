@@ -101,6 +101,11 @@ export default function AdminCrmPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Admin CRM: hide Agreed and Processing sections (columns, filters, status dropdown on cards)
+  const adminVisibleStatuses = (statuses ?? CRM_COLUMN_ORDER).filter(
+    (s) => s !== 'AGREED' && s !== 'PROCESSING'
+  );
+
   const { data: centersData } = useQuery({
     queryKey: ['centers'],
     queryFn: () => fetchCenters({ take: 100 }),
@@ -190,6 +195,7 @@ export default function AdminCrmPage() {
           centers={centers}
           teachers={teachers}
           groups={groups}
+          statusOptions={adminVisibleStatuses}
         />
 
         {statusError && (
@@ -206,7 +212,7 @@ export default function AdminCrmPage() {
           <BoardView
             leads={leads}
             countsByStatus={countsByStatus}
-            availableStatuses={statuses}
+            availableStatuses={adminVisibleStatuses}
             onCardClick={handleCardClick}
             onCardEdit={handleCardEdit}
             onCardStatusChange={handleCardStatusChange}
@@ -223,11 +229,14 @@ export default function AdminCrmPage() {
         )}
 
         {isLoading && viewMode === 'board' && (
-          <div className="flex gap-4 overflow-x-auto pb-4">
+          <div
+            className="grid gap-4 pb-4 w-full min-w-0"
+            style={{ gridTemplateColumns: 'repeat(5, minmax(160px, 1fr))' }}
+          >
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-72 rounded-xl border border-slate-200 bg-slate-50/50 p-3 animate-pulse"
+                className="min-w-0 w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 animate-pulse"
               >
                 <div className="h-6 bg-slate-200 rounded w-24 mb-4" />
                 <div className="space-y-2">

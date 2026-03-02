@@ -126,8 +126,8 @@ export default function SalaryBreakdownPage() {
 
   // Sort lessons
   const sortedLessons = breakdown?.lessons ? [...breakdown.lessons].sort((a, b) => {
-    let aVal: any;
-    let bVal: any;
+    let aVal: string | number;
+    let bVal: string | number;
 
     if (sortBy === 'lessonDate') {
       const aDate = a.lessonDate ? new Date(a.lessonDate) : new Date(0);

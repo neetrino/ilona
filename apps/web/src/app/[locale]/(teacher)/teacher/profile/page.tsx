@@ -6,6 +6,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button, Badge } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useUploadAvatar, useDeleteAvatar, useUpdateProfile } from '@/features/settings/hooks/useSettings';
+import Image from 'next/image';
 
 export default function TeacherProfilePage() {
   const { user, setUser } = useAuthStore();
@@ -140,12 +141,14 @@ export default function TeacherProfilePage() {
         <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-200">
           <div className="relative">
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt={`${user?.firstName} ${user?.lastName}`}
+                width={80}
+                height={80}
                 className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
+                unoptimized
                 onError={(e) => {
-                  // Fallback to initials if image fails to load
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                   const fallback = target.nextElementSibling as HTMLElement;

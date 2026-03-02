@@ -19,7 +19,7 @@ export function formatMessagePreview(message: Message | PartialMessage): string 
     return 'No messages yet';
   }
 
-  const messageType = (message as Message).type || (message as any).type;
+  const messageType = (message as Message).type || (message as PartialMessage)?.type;
 
   // Text messages
   if (messageType === 'TEXT' && message.content) {
@@ -47,12 +47,12 @@ export function formatMessagePreview(message: Message | PartialMessage): string 
 
   // File messages
   if (messageType === 'FILE') {
-    const fileName = (message as Message).fileName || (message as any).fileName;
+    const fileName = (message as Message).fileName || (message as PartialMessage)?.fileName;
     return fileName ? `📎 ${fileName}` : 'Attachment';
   }
 
   // System messages (should be filtered out, but handle gracefully)
-  if ((message as Message).isSystem || (message as any).isSystem) {
+  if ((message as Message).isSystem || (message as PartialMessage)?.isSystem) {
     return message.content || 'System message';
   }
 

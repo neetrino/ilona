@@ -11,6 +11,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import Image from 'next/image';
 
 export function LoginForm() {
   const router = useRouter();
@@ -56,10 +57,13 @@ export function LoginForm() {
           }
           whileHover={shouldReduceMotion ? undefined : { scale: 1.05, y: -2 }}
         >
-          <img
+          <Image
             src={logoUrl}
             alt="ILONA English Center"
+            width={80}
+            height={80}
             className="w-full h-full object-contain"
+            unoptimized
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/logo.png';
