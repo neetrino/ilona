@@ -59,6 +59,20 @@ async function bootstrap() {
     if (!dbUrl.includes('sslmode=')) {
       logger.warn('DATABASE_URL should include sslmode=require in production (TLS). Check Neon/Vercel env.');
     }
+    // Neon cold start: recommend longer connect_timeout so first connection can succeed
+    if (dbUrl.includes('neon.tech') && !dbUrl.includes('connect_timeout=')) {
+      logger.warn(
+        'DATABASE_URL (Neon) has no connect_timeout. Add connect_timeout=30 or 60 to the query string to avoid P1001 on cold start.',
+      );
+    } else if (dbUrl.includes('neon.tech') && dbUrl.includes('connect_timeout=')) {
+      const match = dbUrl.match(/connect_timeout=(\d+)/);
+      const timeout = match ? parseInt(match[1], 10) : 0;
+      if (timeout > 0 && timeout < 30) {
+        logger.warn(
+          `DATABASE_URL (Neon) connect_timeout=${timeout} may be too low for cold start. Consider connect_timeout=30 or 60.`,
+        );
+      }
+    }
   }
 
   // Increase body size limit to handle base64 images (up to 15MB for JSON)
