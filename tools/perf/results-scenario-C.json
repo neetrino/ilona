@@ -1,0 +1,22 @@
+{
+  "scenario": "scenario-C",
+  "logFile": "scenario-C.log",
+  "firstTs": "2026-03-03T11:00:00.000Z",
+  "lastTs": "2026-03-03T11:02:00.050Z",
+  "timeSpanMin": 2,
+  "totalRequests": 3,
+  "byRoute": [
+    {
+      "route": "/api/lessons",
+      "requestCount": 3,
+      "timeSpanMin": 2,
+      "requestsPerMin": 1.5,
+      "avgDbQueryCount": 3,
+      "p95DbQueryCount": 3,
+      "avgDbTimeMs": 40,
+      "p95DbTimeMs": 41,
+      "avgDurationMs": 50.33,
+      "p95DurationMs": 52
+    }
+  ]
+}

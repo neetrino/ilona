@@ -38,8 +38,6 @@ export function useTeachers(filters?: TeacherFilters) {
   return useQuery({
     queryKey: teacherKeys.list(filters),
     queryFn: () => fetchTeachers(filters),
-    // Refetch on window focus to ensure data consistency
-    refetchOnWindowFocus: true,
     // Data is considered stale after 30 seconds
     staleTime: 30 * 1000,
   });
@@ -53,8 +51,6 @@ export function useTeacher(id: string, enabled = true) {
     queryKey: teacherKeys.detail(id),
     queryFn: () => fetchTeacher(id),
     enabled: enabled && !!id,
-    // Refetch on window focus to ensure data consistency
-    refetchOnWindowFocus: true,
     // Data is considered stale after 30 seconds
     staleTime: 30 * 1000,
   });

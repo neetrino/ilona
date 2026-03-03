@@ -27,7 +27,6 @@ export function useCenters(filters?: CenterFilters) {
   return useQuery({
     queryKey: centerKeys.list(filters),
     queryFn: () => fetchCenters(filters),
-    refetchOnWindowFocus: true,
     staleTime: 30 * 1000,
   });
 }

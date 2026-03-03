@@ -9,6 +9,7 @@ import { appConfig } from './config/app.config';
 import { jwtConfig } from './config/jwt.config';
 
 // Common
+import { RequestContextModule } from './common/request-context/request-context.module';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -64,7 +65,8 @@ import { AppController } from './app.controller';
       },
     ]),
 
-    // Global modules
+    // Global modules (RequestContext must be before Prisma so middleware can use it)
+    RequestContextModule,
     PrismaModule,
 
     // Feature modules

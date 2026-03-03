@@ -1,12 +1,29 @@
-import { Injectable, NotFoundException, ServiceUnavailableException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ServiceUnavailableException, Logger, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, UserRole } from '@prisma/client';
+
+const USER_CACHE_KEY_PREFIX = 'user:';
+const USER_CACHE_TTL_MS = 90 * 1000; // 90s – balance freshness vs DB load from auth
+
+/** Result shape of findById (matches select in findUnique). Used for cache cast. */
+type UserByIdResult = NonNullable<
+  Awaited<
+    ReturnType<
+      InstanceType<typeof PrismaService>['user']['findUnique']
+    >
+  >
+>;
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   /**
    * Checks if an error is a database connection error.
@@ -61,7 +78,13 @@ export class UsersService {
   }
 
   async findById(id: string) {
+    const cacheKey = USER_CACHE_KEY_PREFIX + id;
     try {
+      const cached = await this.cache.get(cacheKey);
+      if (cached != null) {
+        return cached as UserByIdResult;
+      }
+
       const user = await this.prisma.user.findUnique({
         where: { id },
         select: {
@@ -93,6 +116,7 @@ export class UsersService {
         throw new NotFoundException('User not found');
       }
 
+      await this.cache.set(cacheKey, user, USER_CACHE_TTL_MS);
       return user;
     } catch (error) {
       // Re-throw NotFoundException as-is
@@ -108,6 +132,14 @@ export class UsersService {
 
       // Re-throw other errors
       throw error;
+    }
+  }
+
+  private async invalidateUserCache(userId: string): Promise<void> {
+    try {
+      await this.cache.del(USER_CACHE_KEY_PREFIX + userId);
+    } catch {
+      // ignore cache errors
     }
   }
 
@@ -134,6 +166,11 @@ export class UsersService {
     });
   }
 
+  /**
+   * Updates lastLoginAt for analytics. Does NOT invalidate user cache:
+   * lastLoginAt is not used for authorization; cache TTL (90s) is sufficient for correctness.
+   * Invalidating on every login would force the next request to hit DB; we avoid that.
+   */
   async updateLastLogin(userId: string) {
     await this.prisma.user.update({
       where: { id: userId },
@@ -176,6 +213,7 @@ export class UsersService {
         },
       });
 
+      await this.invalidateUserCache(userId);
       return user;
     } catch (error) {
       if (this.isDatabaseConnectionError(error)) {
