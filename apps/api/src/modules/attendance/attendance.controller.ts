@@ -14,6 +14,7 @@ import { UserRole, AbsenceType } from '@prisma/client';
 import { JwtPayload } from '../../common/types/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 
+console.log('AttendanceController');
 @Controller('attendance')
 export class AttendanceController {
   constructor(
