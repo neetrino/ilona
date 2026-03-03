@@ -45,11 +45,18 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
 
-  // Production: require DB TLS (security 4.1) — warn if sslmode missing
+  // Production: require DB URL and TLS
   if (nodeEnv === 'production') {
+    const logger = new Logger('Bootstrap');
     const dbUrl = configService.get<string>('DATABASE_URL') || process.env.DATABASE_URL || '';
-    if (dbUrl && !dbUrl.includes('sslmode=')) {
-      const logger = new Logger('Bootstrap');
+    if (!dbUrl) {
+      logger.error(
+        'DATABASE_URL is not set. Set it in Render (Environment) or in your deployment env. .env files are not used in production.',
+      );
+      process.exitCode = 1;
+      throw new Error('DATABASE_URL is required in production');
+    }
+    if (!dbUrl.includes('sslmode=')) {
       logger.warn('DATABASE_URL should include sslmode=require in production (TLS). Check Neon/Vercel env.');
     }
   }

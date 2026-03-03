@@ -291,6 +291,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     });
   }
 
+  /** Max retries for initial connection (e.g. Neon cold start / suspend) */
+  private readonly startupRetries = 5;
+  /** Delays (ms) between startup connection retries */
+  private readonly startupRetryDelays = [0, 3000, 6000, 10000, 15000];
+
   async onModuleInit() {
     // Per-request DB metrics (must run in onModuleInit so RequestContextService is injected)
     this.$use(async (params, next) => {
@@ -304,18 +309,40 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       return result;
     });
 
-    try {
-      await this.$connect();
-      this.isConnected = true;
-      this.logger.log('Database connected successfully');
+    const isStartupConnectionError = (e: unknown) => {
+      if (!(e && typeof e === 'object')) return false;
+      const code = (e as { code?: string }).code;
+      return code === 'P1001' || code === 'P1002' || code === 'P1008'; // unreachable, closed, timeout
+    };
 
-      // Start periodic health check to keep connection alive
-      this.startHealthCheck();
-    } catch (error) {
-      this.isConnected = false;
-      this.logger.error('Failed to connect to database on startup', error);
-      throw error;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < this.startupRetries; attempt++) {
+      const delay = this.startupRetryDelays[attempt] ?? 0;
+      if (delay > 0) {
+        this.logger.warn(
+          `Database unreachable (attempt ${attempt}/${this.startupRetries}), retrying in ${delay / 1000}s...`,
+        );
+        await new Promise((r) => setTimeout(r, delay));
+      }
+      try {
+        await this.$connect();
+        this.isConnected = true;
+        this.logger.log('Database connected successfully');
+        this.startHealthCheck();
+        return;
+      } catch (error) {
+        lastError = error;
+        if (attempt < this.startupRetries - 1 && isStartupConnectionError(error)) {
+          continue;
+        }
+        this.isConnected = false;
+        this.logger.error('Failed to connect to database on startup', error);
+        throw error;
+      }
     }
+    this.isConnected = false;
+    this.logger.error('Failed to connect to database on startup', lastError);
+    throw lastError;
   }
 
   /**
