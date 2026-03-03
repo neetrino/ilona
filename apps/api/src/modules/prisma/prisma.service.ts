@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { RequestContextService } from '../../common/request-context/request-context.service';
+import { ServerActivityService } from '../../common/server-activity/server-activity.service';
 
 /**
  * Type for connection error with code and cause information
@@ -205,12 +206,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private isConnected = false;
   private healthCheckInterval?: NodeJS.Timeout;
   private readonly healthCheckIntervalMs = 30000; // 30 seconds
+  /** Skip DB ping when no HTTP request for this long (lets Neon etc. suspend). */
+  private readonly healthCheckIdleThresholdMs = 2 * 60 * 1000; // 2 minutes
   private isReconnecting = false;
   private reconnectPromise: Promise<void> | null = null;
   private lastReconnectAt: number = 0;
   private readonly reconnectCooldownMs = 2000; // 2 seconds cooldown between reconnects
 
-  constructor(private readonly requestContext: RequestContextService) {
+  constructor(
+    private readonly requestContext: RequestContextService,
+    private readonly serverActivity: ServerActivityService,
+  ) {
     super({
       log: process.env.NODE_ENV === 'development'
         ? ['warn', 'error']
@@ -323,6 +329,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     this.healthCheckInterval = setInterval(() => {
       void (async () => {
+        const lastAt = this.serverActivity.getLastActivityAt();
+        if (lastAt === 0) return;
+        if (Date.now() - lastAt > this.healthCheckIdleThresholdMs) return;
         try {
           await this.$queryRaw`SELECT 1`;
           if (!this.isConnected) {
