@@ -36,6 +36,7 @@ export default function AdminCrmPage() {
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
+  const [showArchiveColumn, setShowArchiveColumn] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
@@ -105,6 +106,10 @@ export default function AdminCrmPage() {
   const adminVisibleStatuses = (statuses ?? CRM_COLUMN_ORDER).filter(
     (s) => s !== 'AGREED' && s !== 'PROCESSING'
   );
+  // Board columns: Archive hidden by default; toggle shows it as 5th column
+  const boardColumnStatuses = showArchiveColumn
+    ? adminVisibleStatuses
+    : adminVisibleStatuses.filter((s) => s !== 'ARCHIVE');
 
   const { data: centersData } = useQuery({
     queryKey: ['centers'],
@@ -187,6 +192,21 @@ export default function AdminCrmPage() {
             >
               List
             </button>
+            {viewMode === 'board' && (
+              <button
+                type="button"
+                onClick={() => setShowArchiveColumn((v) => !v)}
+                className={cn(
+                  'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
+                  showArchiveColumn
+                    ? 'bg-slate-700 text-white'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                )}
+                title={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
+              >
+                Archive
+              </button>
+            )}
           </div>
         </div>
         <CRMFilters
@@ -212,6 +232,7 @@ export default function AdminCrmPage() {
           <BoardView
             leads={leads}
             countsByStatus={countsByStatus}
+            columnStatuses={boardColumnStatuses}
             availableStatuses={adminVisibleStatuses}
             onCardClick={handleCardClick}
             onCardEdit={handleCardEdit}
@@ -231,11 +252,11 @@ export default function AdminCrmPage() {
         {isLoading && viewMode === 'board' && (
           <div
             className="grid gap-4 pb-4 w-full min-w-0"
-            style={{ gridTemplateColumns: 'repeat(5, minmax(160px, 1fr))' }}
+            style={{ gridTemplateColumns: `repeat(${boardColumnStatuses.length}, minmax(160px, 1fr))` }}
           >
-            {[1, 2, 3, 4, 5].map((i) => (
+            {boardColumnStatuses.map((s, i) => (
               <div
-                key={i}
+                key={s}
                 className="min-w-0 w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 animate-pulse"
               >
                 <div className="h-6 bg-slate-200 rounded w-24 mb-4" />

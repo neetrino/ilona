@@ -7,6 +7,9 @@ import { Column } from './Column';
 export interface BoardViewProps {
   leads: CrmLead[];
   countsByStatus: Partial<Record<CrmLeadStatus, number>>;
+  /** Statuses that get a column on the board. If omitted, uses availableStatuses. */
+  columnStatuses?: CrmLeadStatus[];
+  /** All statuses available for card dropdown (e.g. move to Archive). Defaults to CRM_COLUMN_ORDER. */
   availableStatuses?: CrmLeadStatus[];
   onCardClick: (lead: CrmLead) => void;
   onCardEdit?: (lead: CrmLead) => void;
@@ -19,6 +22,7 @@ export interface BoardViewProps {
 export function BoardView({
   leads,
   countsByStatus,
+  columnStatuses,
   availableStatuses = CRM_COLUMN_ORDER,
   onCardClick,
   onCardEdit,
@@ -26,7 +30,8 @@ export function BoardView({
   changingStatusId,
   onAddLead,
 }: BoardViewProps) {
-  const columnOrder = availableStatuses.length > 0 ? availableStatuses : CRM_COLUMN_ORDER;
+  const statusList = availableStatuses.length > 0 ? availableStatuses : CRM_COLUMN_ORDER;
+  const columnOrder = (columnStatuses && columnStatuses.length > 0 ? columnStatuses : statusList) as CrmLeadStatus[];
   const leadsByStatus = columnOrder.reduce(
     (acc, status) => {
       acc[status] = leads.filter((l) => l.status === status);
@@ -51,7 +56,7 @@ export function BoardView({
           status={status}
           leads={leadsByStatus[status] ?? []}
           count={countsByStatus[status] ?? 0}
-          availableStatuses={availableStatuses}
+          availableStatuses={statusList}
           onCardClick={onCardClick}
           onCardEdit={onCardEdit}
           onCardStatusChange={onCardStatusChange}
