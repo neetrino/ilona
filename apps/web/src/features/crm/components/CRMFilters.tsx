@@ -1,8 +1,6 @@
 'use client';
 
-import type { CrmLeadFilters, CrmLeadStatus } from '@/features/crm/types';
-import { CRM_COLUMN_ORDER } from '@/features/crm/types';
-import { STATUS_LABELS } from './LeadCard';
+import type { CrmLeadFilters } from '@/features/crm/types';
 
 interface CRMFiltersProps {
   filters: CrmLeadFilters;
@@ -10,8 +8,6 @@ interface CRMFiltersProps {
   centers: { id: string; name: string }[];
   teachers: { id: string; user?: { firstName?: string; lastName?: string } }[];
   groups: { id: string; name: string }[];
-  /** When provided (e.g. Admin CRM), only these statuses appear in the Status filter dropdown. */
-  statusOptions?: CrmLeadStatus[];
 }
 
 export function CRMFilters({
@@ -20,7 +16,6 @@ export function CRMFilters({
   centers,
   teachers,
   groups,
-  statusOptions = CRM_COLUMN_ORDER,
 }: CRMFiltersProps) {
   return (
     <div className="flex flex-wrap items-end gap-4">
@@ -33,24 +28,6 @@ export function CRMFilters({
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value || undefined })}
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1">Status</label>
-        <select
-          value={filters.status ?? ''}
-          onChange={(e) =>
-            onFiltersChange({
-              ...filters,
-              status: (e.target.value || undefined) as CrmLeadStatus | undefined,
-            })
-          }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">All</option>
-          {statusOptions.map((s) => (
-            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-          ))}
-        </select>
       </div>
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1">Center</label>

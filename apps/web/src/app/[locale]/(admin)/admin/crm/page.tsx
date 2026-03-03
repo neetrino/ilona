@@ -215,7 +215,6 @@ export default function AdminCrmPage() {
           centers={centers}
           teachers={teachers}
           groups={groups}
-          statusOptions={adminVisibleStatuses}
         />
 
         {statusError && (
