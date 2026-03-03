@@ -30,13 +30,16 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
 };
 
 const VOICE_LEAD_PARAM = 'voiceLead';
+const ARCHIVE_PARAM = 'archive';
 
 export default function AdminCrmPage() {
   const t = useTranslations('nav');
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
-  const [showArchiveColumn, setShowArchiveColumn] = useState(false);
+  const [showArchiveColumn, setShowArchiveColumn] = useState(
+    () => searchParams.get(ARCHIVE_PARAM) === '1'
+  );
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
@@ -47,6 +50,11 @@ export default function AdminCrmPage() {
   useEffect(() => {
     const id = searchParams.get(VOICE_LEAD_PARAM);
     if (id) setVoiceLeadId(id);
+  }, [searchParams]);
+
+  // Restore Archive column visibility from URL after refresh
+  useEffect(() => {
+    setShowArchiveColumn(searchParams.get(ARCHIVE_PARAM) === '1');
   }, [searchParams]);
 
   const queryClient = useQueryClient();
@@ -195,7 +203,14 @@ export default function AdminCrmPage() {
             {viewMode === 'board' && (
               <button
                 type="button"
-                onClick={() => setShowArchiveColumn((v) => !v)}
+                onClick={() => {
+                  const next = !showArchiveColumn;
+                  setShowArchiveColumn(next);
+                  const url = new URL(window.location.href);
+                  if (next) url.searchParams.set(ARCHIVE_PARAM, '1');
+                  else url.searchParams.delete(ARCHIVE_PARAM);
+                  window.history.replaceState(null, '', url.pathname + url.search || '');
+                }}
                 className={cn(
                   'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
                   showArchiveColumn
