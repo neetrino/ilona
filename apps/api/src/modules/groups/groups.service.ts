@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
 import { Prisma } from '@prisma/client';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable()
 export class GroupsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly chatService: ChatService,
+  ) {}
 
   async findAll(params?: {
     skip?: number;
@@ -547,6 +551,27 @@ export class GroupsService {
           isAdmin: false,
         },
       });
+    }
+
+    // Automatically create 1:1 direct chat between Student and assigned Teacher (if group has teacher)
+    const groupWithTeacher = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      include: {
+        teacher: {
+          include: { user: { select: { id: true } } },
+        },
+      },
+    });
+    if (groupWithTeacher?.teacherId && groupWithTeacher.teacher?.user?.id) {
+      const teacherUserId = groupWithTeacher.teacher.user.id;
+      try {
+        await this.chatService.createDirectChat(
+          { participantIds: [teacherUserId] },
+          student.userId,
+        );
+      } catch {
+        // Ignore errors (e.g. duplicate or validation); chat may already exist
+      }
     }
 
     return { success: true };

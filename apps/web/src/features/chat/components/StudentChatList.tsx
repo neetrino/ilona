@@ -2,12 +2,24 @@
 
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useChats, useSocket } from '../hooks';
+import { useChats, useSocket, useCreateDirectChat } from '../hooks';
 import { useChatStore } from '../store/chat.store';
+import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import type { Chat } from '../types';
+import type { AssignedTeacher } from '@/features/students/api/students.api';
 import { cn } from '@/shared/lib/utils';
 import { formatMessagePreview } from '../utils';
 import Image from 'next/image';
+
+function getAvatarFromName(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.charAt(0).toUpperCase() || '?';
+}
+
+type ListItem =
+  | { type: 'chat'; chat: Chat }
+  | { type: 'teacher_placeholder'; teacher: AssignedTeacher };
 
 interface StudentChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -20,11 +32,14 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
 
   // Fetch chats from API (all chats - 1:1 and group, including with admin)
   const { data: chats = [], isLoading: isLoadingChats } = useChats();
+  // Assigned teacher(s) so they always appear in the list (with or without existing chat)
+  const { data: teachers = [], isLoading: isLoadingTeachers } = useMyTeachers(true);
+  const createDirectChat = useCreateDirectChat();
 
   // Socket for online status
   const { isConnected, isUserOnline } = useSocket();
 
-  // Single unified list: filter by search only (do not exclude admin)
+  // Chats filtered and sorted by recency
   const filteredChats = useMemo(() => {
     let list = chats.filter((chat) => {
       if (!searchQuery) return true;
@@ -36,7 +51,6 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
         return fullName.includes(query);
       });
     });
-    // Sort by recency (latest activity first)
     list = [...list].sort((a, b) => {
       const aTime = new Date(a.lastMessage?.createdAt || a.updatedAt || 0).getTime();
       const bTime = new Date(b.lastMessage?.createdAt || b.updatedAt || 0).getTime();
@@ -44,6 +58,34 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
     });
     return list;
   }, [chats, searchQuery]);
+
+  // Unified list: assigned teachers (show as chat or placeholder) + all other chats
+  const listItems = useMemo((): ListItem[] => {
+    const items: ListItem[] = [];
+    const teacherIdsWithChat = new Set<string>();
+    const q = searchQuery?.toLowerCase() ?? '';
+
+    for (const chat of filteredChats) {
+      if (chat.type === 'DIRECT') {
+        const other = chat.participants.find((p) => p.userId !== user?.id);
+        if (other?.userId) teacherIdsWithChat.add(other.userId);
+      }
+    }
+
+    // Add teacher placeholders for assigned teachers who don't have a chat in the list yet
+    for (const teacher of teachers) {
+      if (teacherIdsWithChat.has(teacher.userId)) continue;
+      if (q && !teacher.name.toLowerCase().includes(q)) continue;
+      items.push({ type: 'teacher_placeholder', teacher });
+    }
+
+    // Add all chats (group + direct, including with teacher)
+    for (const chat of filteredChats) {
+      items.push({ type: 'chat', chat });
+    }
+
+    return items;
+  }, [filteredChats, teachers, user?.id, searchQuery]);
 
   // Get chat display info
   const getChatInfo = (chat: Chat) => {
@@ -142,9 +184,9 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
         </div>
       </div>
 
-      {/* Unified chat list */}
+      {/* Unified chat list: teachers (or placeholder) + all chats */}
       <div className="flex-1 overflow-y-auto">
-        {isLoadingChats ? (
+        {isLoadingChats || isLoadingTeachers ? (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center gap-3 animate-pulse">
@@ -156,7 +198,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
               </div>
             ))}
           </div>
-          ) : filteredChats.length === 0 ? (
+          ) : listItems.length === 0 ? (
             <div className="p-8 text-center">
               <div className="w-12 h-12 mx-auto mb-3 bg-slate-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,7 +215,53 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
               </p>
             </div>
           ) : (
-            filteredChats.map((chat) => {
+            listItems.map((item) => {
+              if (item.type === 'teacher_placeholder') {
+                const { teacher } = item;
+                const isCreating = createDirectChat.isPending;
+                return (
+                  <button
+                    key={`teacher-${teacher.userId}`}
+                    onClick={() => {
+                      createDirectChat.mutate(teacher.userId, {
+                        onSuccess: (newChat) => onSelectChat(newChat),
+                      });
+                    }}
+                    disabled={isCreating}
+                    className={cn(
+                      'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
+                      isCreating && 'opacity-60 cursor-wait'
+                    )}
+                  >
+                    <div className="relative">
+                      {teacher.avatarUrl ? (
+                        <Image
+                          src={teacher.avatarUrl}
+                          alt={teacher.name}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-primary">
+                          {getAvatarFromName(teacher.name)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-medium truncate text-slate-700">{teacher.name}</h3>
+                      </div>
+                      <p className="text-sm text-slate-500 truncate">
+                        {isCreating ? 'Opening chat...' : 'My Teacher — tap to message'}
+                      </p>
+                    </div>
+                  </button>
+                );
+              }
+
+              const chat = item.chat;
               const info = getChatInfo(chat);
               const isActive = activeChat?.id === chat.id;
               const hasUnread = (chat.unreadCount || 0) > 0;
@@ -190,7 +278,6 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                     isActive && 'bg-primary/10 hover:bg-primary/10'
                   )}
                 >
-                  {/* Avatar */}
                   <div className="relative">
                     {info.avatarUrl ? (
                       <Image
@@ -218,7 +305,6 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                     )}
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3
