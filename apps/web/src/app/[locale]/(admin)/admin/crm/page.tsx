@@ -253,7 +253,7 @@ export default function AdminCrmPage() {
             className="grid gap-4 pb-4 w-full min-w-0"
             style={{ gridTemplateColumns: `repeat(${boardColumnStatuses.length}, minmax(160px, 1fr))` }}
           >
-            {boardColumnStatuses.map((s, i) => (
+            {boardColumnStatuses.map((s) => (
               <div
                 key={s}
                 className="min-w-0 w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 animate-pulse"

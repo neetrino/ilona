@@ -31,7 +31,7 @@ export function BoardView({
   onAddLead,
 }: BoardViewProps) {
   const statusList = availableStatuses.length > 0 ? availableStatuses : CRM_COLUMN_ORDER;
-  const columnOrder = (columnStatuses && columnStatuses.length > 0 ? columnStatuses : statusList) as CrmLeadStatus[];
+  const columnOrder = columnStatuses && columnStatuses.length > 0 ? columnStatuses : statusList;
   const leadsByStatus = columnOrder.reduce(
     (acc, status) => {
       acc[status] = leads.filter((l) => l.status === status);
