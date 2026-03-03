@@ -25,7 +25,7 @@ import { cn } from '@/shared/lib/utils';
 const DEFAULT_FILTERS: CrmLeadFilters = {
   skip: 0,
   take: 100,
-  sortBy: 'createdAt',
+  sortBy: 'updatedAt',
   sortOrder: 'desc',
 };
 
@@ -73,11 +73,11 @@ export default function AdminCrmPage() {
         } else {
           counts[status] = 1;
         }
+        const updatedLead = lead ? { ...lead, status } : null;
+        const restItems = previous.items.filter((l) => l.id !== leadId);
         queryClient.setQueryData<CrmLeadsResponse>(['crm-leads', filters], {
           ...previous,
-          items: previous.items.map((l) =>
-            l.id === leadId ? { ...l, status } : l
-          ),
+          items: updatedLead ? [updatedLead, ...restItems] : previous.items,
           countsByStatus: counts,
         });
       }
