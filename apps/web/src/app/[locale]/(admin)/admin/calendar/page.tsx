@@ -165,7 +165,7 @@ export default function CalendarPage() {
   const {
     data: lessonsData,
     isLoading,
-    refetch,
+    refetch: _refetch,
   } = useLessons(
     {
       dateFrom,
