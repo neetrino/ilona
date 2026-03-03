@@ -292,9 +292,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   /** Max retries for initial connection (e.g. Neon cold start / suspend) */
-  private readonly startupRetries = 5;
-  /** Delays (ms) between startup connection retries */
-  private readonly startupRetryDelays = [0, 3000, 6000, 10000, 15000];
+  private readonly startupRetries = 6;
+  /** Delays (ms) before each attempt: initial wait for Neon wake, then backoff between retries */
+  private readonly startupRetryDelays = [5000, 5000, 10000, 15000, 20000, 25000];
 
   async onModuleInit() {
     // Per-request DB metrics (must run in onModuleInit so RequestContextService is injected)
@@ -320,7 +320,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       const delay = this.startupRetryDelays[attempt] ?? 0;
       if (delay > 0) {
         this.logger.warn(
-          `Database unreachable (attempt ${attempt}/${this.startupRetries}), retrying in ${delay / 1000}s...`,
+          `Database unreachable (attempt ${attempt + 1}/${this.startupRetries}), retrying in ${delay / 1000}s...`,
         );
         await new Promise((r) => setTimeout(r, delay));
       }
