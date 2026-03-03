@@ -20,6 +20,7 @@ import {
   EditLeadModal,
   CRMFilters,
 } from '@/features/crm/components';
+import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 const DEFAULT_FILTERS: CrmLeadFilters = {
@@ -212,14 +213,17 @@ export default function AdminCrmPage() {
                   window.history.replaceState(null, '', url.pathname + url.search || '');
                 }}
                 className={cn(
-                  'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-                  showArchiveColumn
-                    ? 'bg-slate-700 text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  'rounded-lg p-1.5 text-slate-700 transition-colors hover:bg-slate-200 hover:text-slate-900',
+                  showArchiveColumn && 'bg-slate-700 text-white hover:bg-slate-600 hover:text-white'
                 )}
                 title={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
+                aria-label={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
               >
-                Archive
+                {showArchiveColumn ? (
+                  <Eye className="size-5" strokeWidth={2} aria-hidden />
+                ) : (
+                  <EyeOff className="size-5" strokeWidth={2} aria-hidden />
+                )}
               </button>
             )}
           </div>
