@@ -6,6 +6,42 @@
 import { expiresWithin } from './jwt-utils';
 import { ApiError, type ApiErrorResponse } from './api-errors';
 
+/** Generate UUID v4 for x-request-id (correlation with backend logs). */
+function generateRequestId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+/** Best-effort callsite hint from stack (dev tracer). Skips api-client and node_modules. */
+function getCallsiteHint(): string | undefined {
+  try {
+    const stack = new Error().stack;
+    if (!stack) return undefined;
+    const lines = stack.split('\n').slice(1);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (
+        trimmed.includes('api-client') ||
+        trimmed.includes('node_modules') ||
+        trimmed.includes('at Object.')
+      ) {
+        continue;
+      }
+      const match = trimmed.match(/at\s+(.+?)\s+\((.+?)\)/) || trimmed.match(/at\s+(.+)/);
+      if (match) return match[1]?.trim().slice(0, 120);
+    }
+  } catch {
+    // ignore
+  }
+  return undefined;
+}
+
 interface FetchOptions extends RequestInit {
   token?: string;
   skipAuthRefresh?: boolean; // Flag to skip auto-refresh for auth endpoints
@@ -183,7 +219,9 @@ export class ApiClient {
 
     // Don't set Content-Type for FormData - browser will set it with boundary
     const isFormData = fetchOptions.body instanceof FormData;
+    const requestId = generateRequestId();
     const headers: HeadersInit = {
+      'x-request-id': requestId,
       ...(!isFormData && { 'Content-Type': 'application/json' }),
       ...(options.headers || {}),
     };
@@ -193,12 +231,17 @@ export class ApiClient {
       (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
-    // Diagnostics logging (dev only)
     const isDev = process.env.NODE_ENV === 'development';
     if (isDev) {
-      console.log(`[ApiClient] ${fetchOptions.method || 'GET'} ${endpoint}`, {
-        hasAuthHeader,
-        authHeaderLength: token ? token.length : 0,
+      const route = (fetchOptions.method || 'GET') + ' ' + endpoint;
+      const hint = getCallsiteHint();
+      console.log('[ApiClient]', {
+        key: route,
+        url: endpoint,
+        route,
+        timestamp: new Date().toISOString(),
+        requestId,
+        ...(hint && { callsite: hint }),
       });
     }
 

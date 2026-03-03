@@ -117,9 +117,6 @@ export function useMyGroups() {
     queryFn: () => fetchMyGroups(),
     enabled: isAuthReady,
     staleTime: 60 * 1000, // 1 minute - invalidate on mutation
-    // Only refetch on window focus if auth is ready
-    // This prevents 401 errors when token is expired/invalid
-    refetchOnWindowFocus: isAuthReady,
     // Don't retry on 401 errors - token refresh is handled by API client
     retry: (failureCount, error) => {
       // Don't retry if it's a 401 error (authentication issue)

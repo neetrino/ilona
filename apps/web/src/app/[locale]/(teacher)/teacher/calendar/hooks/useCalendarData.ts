@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useLessons, type Lesson } from '@/features/lessons';
 import { formatDate, getWeekDates, getMonthDates } from '../utils/calendar-utils';
 
@@ -51,24 +51,17 @@ export function useCalendarData({
     }
   }, [viewMode, weekDates, currentDate]);
 
-  // Fetch lessons using main endpoint (automatically scoped by backend for teachers)
-  // Refetch every minute to update lock status and completion status
-  const { data: lessonsData, isLoading, refetch } = useLessons({
-    dateFrom: formatDate(dateFrom),
-    dateTo: formatDate(dateTo),
-    take: 100,
-    sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
-    sortOrder: sortBy === 'scheduledAt' ? sortOrder : undefined,
-  });
-
-  // Set up automatic refetch every minute for time-based updates (midnight lock, status changes)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 60000); // 1 minute
-
-    return () => clearInterval(interval);
-  }, [refetch]);
+  // Fetch lessons. Poll every 60s only when tab is visible (no background spam).
+  const { data: lessonsData, isLoading, refetch } = useLessons(
+    {
+      dateFrom: formatDate(dateFrom),
+      dateTo: formatDate(dateTo),
+      take: 100,
+      sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
+      sortOrder: sortBy === 'scheduledAt' ? sortOrder : undefined,
+    },
+    { refetchInterval: 60000, refetchIntervalInBackground: false }
+  );
 
   const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
 

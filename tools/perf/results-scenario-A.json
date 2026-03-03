@@ -1,0 +1,58 @@
+{
+  "scenario": "scenario-A",
+  "logFile": "scenario-A.log",
+  "firstTs": "2026-03-03T10:00:00.100Z",
+  "lastTs": "2026-03-03T10:03:00.000Z",
+  "timeSpanMin": 3,
+  "totalRequests": 4,
+  "byRoute": [
+    {
+      "route": "/api/auth/login",
+      "requestCount": 1,
+      "timeSpanMin": 3,
+      "requestsPerMin": 0.33,
+      "avgDbQueryCount": 2,
+      "p95DbQueryCount": 2,
+      "avgDbTimeMs": 38,
+      "p95DbTimeMs": 38,
+      "avgDurationMs": 245,
+      "p95DurationMs": 245
+    },
+    {
+      "route": "/api/users/me",
+      "requestCount": 1,
+      "timeSpanMin": 3,
+      "requestsPerMin": 0.33,
+      "avgDbQueryCount": 0,
+      "p95DbQueryCount": 0,
+      "avgDbTimeMs": 0,
+      "p95DbTimeMs": 0,
+      "avgDurationMs": 12,
+      "p95DurationMs": 12
+    },
+    {
+      "route": "/api/analytics/dashboard",
+      "requestCount": 1,
+      "timeSpanMin": 3,
+      "requestsPerMin": 0.33,
+      "avgDbQueryCount": 4,
+      "p95DbQueryCount": 4,
+      "avgDbTimeMs": 72,
+      "p95DbTimeMs": 72,
+      "avgDurationMs": 89,
+      "p95DurationMs": 89
+    },
+    {
+      "route": "/api/warmup",
+      "requestCount": 1,
+      "timeSpanMin": 3,
+      "requestsPerMin": 0.33,
+      "avgDbQueryCount": 0,
+      "p95DbQueryCount": 0,
+      "avgDbTimeMs": 0,
+      "p95DbTimeMs": 0,
+      "avgDurationMs": 8,
+      "p95DurationMs": 8
+    }
+  ]
+}

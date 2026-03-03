@@ -1,0 +1,7 @@
+{
+  "scenario": "scenario-D",
+  "logFile": "scenario-D.log",
+  "totalRequests": 0,
+  "byRoute": [],
+  "note": "No request_summary entries in window (e.g. background tab = 0 req/min)."
+}

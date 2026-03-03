@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
+import { RequestContextService } from '../../common/request-context/request-context.service';
 
 /**
  * Type for connection error with code and cause information
@@ -209,20 +210,21 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private lastReconnectAt: number = 0;
   private readonly reconnectCooldownMs = 2000; // 2 seconds cooldown between reconnects
 
-  constructor() {
-    // Configure PrismaClient - connection pool settings come from DATABASE_URL parameters
-    // Recommended DATABASE_URL format:
-    // postgresql://user:pass@host/db?sslmode=require&connection_limit=10&pool_timeout=20&connect_timeout=10
-    // For Neon PostgreSQL, use pooled connection string with pgbouncer=true
+  constructor(private readonly requestContext: RequestContextService) {
     super({
-      log: process.env.NODE_ENV === 'development' 
-        ? ['warn', 'error'] 
+      log: process.env.NODE_ENV === 'development'
+        ? ['warn', 'error']
         : ['error'],
-      // Add error formatting for better debugging
       errorFormat: 'pretty',
     });
+    this.registerRetryMiddleware();
+  }
 
-    // Set up middleware to retry transient connection errors with reconnection
+  /**
+   * Registers Prisma middleware for retry on connection errors.
+   * Metrics middleware is registered in onModuleInit so RequestContext is available.
+   */
+  private registerRetryMiddleware() {
     this.$use(async (params, next) => {
       try {
         const result: unknown = await withRetry(
@@ -284,11 +286,23 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   async onModuleInit() {
+    // Per-request DB metrics (must run in onModuleInit so RequestContextService is injected)
+    this.$use(async (params, next) => {
+      const store = this.requestContext.getStore();
+      const start = Date.now();
+      const result = await next(params);
+      if (store) {
+        store.dbQueryCount += 1;
+        store.dbTimeMs += Date.now() - start;
+      }
+      return result;
+    });
+
     try {
       await this.$connect();
       this.isConnected = true;
       this.logger.log('Database connected successfully');
-      
+
       // Start periodic health check to keep connection alive
       this.startHealthCheck();
     } catch (error) {

@@ -42,13 +42,21 @@ export const lessonKeys = {
     [...lessonKeys.all, 'statistics', { teacherId, dateFrom, dateTo }] as const,
 };
 
+export interface UseLessonsOptions {
+  /** Polling interval in ms (e.g. 60000 for calendar). Only when tab visible if refetchIntervalInBackground is false. */
+  refetchInterval?: number | false;
+  refetchIntervalInBackground?: boolean;
+}
+
 /**
  * Hook to fetch lessons list
  */
-export function useLessons(filters?: LessonFilters) {
+export function useLessons(filters?: LessonFilters, options?: UseLessonsOptions) {
   return useQuery({
     queryKey: lessonKeys.list(filters),
     queryFn: () => fetchLessons(filters),
+    refetchInterval: options?.refetchInterval,
+    refetchIntervalInBackground: options?.refetchIntervalInBackground ?? false,
   });
 }
 

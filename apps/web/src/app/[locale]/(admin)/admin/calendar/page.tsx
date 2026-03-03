@@ -161,30 +161,23 @@ export default function CalendarPage() {
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
   const dateFrom = formatDate(weekDates[0]);
 
-  // Fetch lessons for the week
-  // Refetch every minute to update lock status and completion status
-  const { 
-    data: lessonsData, 
+  // Fetch lessons for the week. Poll every 60s only when tab is visible (no background spam).
+  const {
+    data: lessonsData,
     isLoading,
-    refetch
-  } = useLessons({ 
-    dateFrom,
-    dateTo: formatDate(new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000)),
-    take: 100,
-    sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
-    sortOrder: sortOrder,
-    search: searchQuery || undefined,
-    teacherId: selectedTeacherId || undefined,
-  });
-
-  // Set up automatic refetch every minute for time-based updates (midnight lock, status changes)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 60000); // 1 minute
-
-    return () => clearInterval(interval);
-  }, [refetch]);
+    refetch,
+  } = useLessons(
+    {
+      dateFrom,
+      dateTo: formatDate(new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000)),
+      take: 100,
+      sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
+      sortOrder: sortOrder,
+      search: searchQuery || undefined,
+      teacherId: selectedTeacherId || undefined,
+    },
+    { refetchInterval: 60000, refetchIntervalInBackground: false }
+  );
 
   // Fetch statistics
   const { data: stats } = useLessonStatistics();
