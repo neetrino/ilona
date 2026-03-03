@@ -189,7 +189,21 @@ export class LeadsService {
       include: this.leadInclude(),
     });
     if (!lead) throw new NotFoundException(`Lead ${id} not found`);
-    return lead;
+    const activities = lead.activities as Array<{ id: string; actorUserId: string | null; type: string; payload: unknown; createdAt: Date }>;
+    const actorUserIds = [...new Set(activities.map((a) => a.actorUserId).filter(Boolean))] as string[];
+    const actorUsers =
+      actorUserIds.length > 0
+        ? await this.prisma.user.findMany({
+            where: { id: { in: actorUserIds } },
+            select: { id: true, firstName: true, lastName: true },
+          })
+        : [];
+    const actorUserMap = Object.fromEntries(actorUsers.map((u) => [u.id, u]));
+    const activitiesWithActor = activities.map((a) => ({
+      ...a,
+      actorUser: a.actorUserId ? actorUserMap[a.actorUserId] ?? null : null,
+    }));
+    return { ...lead, activities: activitiesWithActor };
   }
 
   async update(

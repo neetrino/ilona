@@ -342,6 +342,48 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
               </>
             )}
 
+            {/* Transfer Info — show when Teacher has requested transfer */}
+            {(lead.transferFlag || lead.activities?.some((a) => a.type === 'TEACHER_TRANSFER')) && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-4">
+                <h3 className="text-sm font-semibold text-amber-900 mb-3">Transfer info</h3>
+                <ul className="space-y-3">
+                  {lead.activities
+                    ?.filter((a) => a.type === 'TEACHER_TRANSFER')
+                    .map((a) => {
+                      const comment = (a.payload as { comment?: string } | null)?.comment ?? lead.transferComment ?? '—';
+                      const teacherName = a.actorUser
+                        ? `${a.actorUser.firstName} ${a.actorUser.lastName}`.trim()
+                        : lead.teacher?.user
+                          ? `${lead.teacher.user.firstName} ${lead.teacher.user.lastName}`.trim()
+                          : 'Teacher';
+                      return (
+                        <li key={a.id} className="text-sm text-slate-700 border-l-2 border-amber-300 pl-3 py-1.5">
+                          <span className="font-medium text-slate-800">{teacherName}</span>
+                          <span className="text-slate-500 ml-1">
+                            {new Date(a.createdAt).toLocaleString()}
+                          </span>
+                          {comment && comment !== '—' && (
+                            <p className="mt-1 text-slate-600">{comment}</p>
+                          )}
+                        </li>
+                      );
+                    })}
+                  {(!lead.activities?.some((a) => a.type === 'TEACHER_TRANSFER') && lead.transferFlag && lead.transferComment) && (
+                    <li className="text-sm text-slate-700 border-l-2 border-amber-300 pl-3 py-1.5">
+                      {lead.teacher?.user ? (
+                        <span className="font-medium text-slate-800">
+                          {lead.teacher.user.firstName} {lead.teacher.user.lastName}
+                        </span>
+                      ) : (
+                        <span className="font-medium text-slate-800">Teacher</span>
+                      )}
+                      <p className="mt-1 text-slate-600">{lead.transferComment}</p>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+
             {/* Activity timeline */}
             {lead.activities && lead.activities.length > 0 && (
               <div>

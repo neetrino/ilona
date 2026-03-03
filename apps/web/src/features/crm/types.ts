@@ -34,6 +34,12 @@ export interface CrmLeadActivity {
   type: string;
   payload: Record<string, unknown> | null;
   createdAt: string;
+  /** Present when lead is loaded by detail endpoint (Admin) for display. */
+  actorUser?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
 }
 
 export interface CrmLead {
