@@ -290,7 +290,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     this.$use(async (params, next) => {
       const store = this.requestContext.getStore();
       const start = Date.now();
-      const result = await next(params);
+      const result = (await next(params)) as unknown;
       if (store) {
         store.dbQueryCount += 1;
         store.dbTimeMs += Date.now() - start;

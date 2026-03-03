@@ -19,6 +19,7 @@ module.exports = {
     '**/*.tsbuildinfo',
     '*.config.js',
     '*.config.ts',
+    '**/vitest.config.*.ts',
   ],
   parserOptions: {
     ecmaVersion: 'latest',
