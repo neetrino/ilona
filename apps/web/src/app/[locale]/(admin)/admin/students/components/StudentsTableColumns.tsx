@@ -9,22 +9,39 @@ import { formatCurrency } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student } from '@/features/students';
 
-/** Format ISO or date string to YYYY-MM-DD for input[type="date"] */
-function toDateInputValue(value: string | null | undefined): string {
+/** Format for display (DD/MM/YYYY) */
+function formatRegisterDate(value: string | null | undefined): string {
   if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '';
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
-/** Format for display (YYYY-MM-DD) */
-function formatRegisterDate(value: string | null | undefined): string {
-  if (!value) return '';
-  const v = toDateInputValue(value);
-  return v || '';
+/** Format raw input to DD/MM/YYYY: only digits allowed, slashes auto-inserted and never removed */
+function formatDateInput(nextInput: string): string {
+  const digits = nextInput.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+/** Parse DD/MM/YYYY to YYYY-MM-DD for API, or null if invalid/empty */
+function parseDDMMYYYYToISO(str: string): string | null {
+  const trimmed = str.trim();
+  if (!trimmed) return null;
+  const parts = trimmed.split('/');
+  if (parts.length !== 3) return null;
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const year = parseInt(parts[2], 10);
+  if (Number.isNaN(day) || Number.isNaN(year)) return null;
+  if (month < 0 || month > 11) return null;
+  const d = new Date(year, month, day);
+  if (d.getFullYear() !== year || d.getMonth() !== month || d.getDate() !== day) return null;
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 function RegisterDateCell({
@@ -41,11 +58,11 @@ function RegisterDateCell({
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [localValue, setLocalValue] = useState(toDateInputValue(value));
+  const [localValue, setLocalValue] = useState(formatRegisterDate(value));
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setLocalValue(toDateInputValue(value));
+    setLocalValue(formatRegisterDate(value));
   }, [value]);
 
   useEffect(() => {
@@ -70,21 +87,33 @@ function RegisterDateCell({
 
   const handleBlur = () => {
     const v = localValue.trim();
-    const prev = toDateInputValue(value);
-    if (v !== prev) {
-      handleSave(v ? v : null);
-    } else {
+    const prevDisplay = formatRegisterDate(value);
+    if (v === prevDisplay) {
       setEditing(false);
+      return;
+    }
+    const iso = parseDDMMYYYYToISO(v);
+    if (v === '' || iso !== null) {
+      handleSave(v === '' ? null : iso);
+    } else {
+      setError('Use DD/MM/YYYY');
+      setTimeout(() => setError(null), 3000);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       const v = localValue.trim();
-      handleSave(v ? v : null);
+      const iso = parseDDMMYYYYToISO(v);
+      if (v === '' || iso !== null) {
+        handleSave(v === '' ? null : iso);
+      } else {
+        setError('Use DD/MM/YYYY');
+        setTimeout(() => setError(null), 3000);
+      }
     }
     if (e.key === 'Escape') {
-      setLocalValue(toDateInputValue(value));
+      setLocalValue(formatRegisterDate(value));
       setEditing(false);
     }
   };
@@ -94,9 +123,10 @@ function RegisterDateCell({
       <div className="min-w-[120px]" onClick={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
-          type="date"
+          type="text"
           value={localValue}
-          onChange={(e) => setLocalValue(e.target.value)}
+          placeholder="DD/MM/YYYY"
+          onChange={(e) => setLocalValue(formatDateInput(e.target.value))}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           disabled={saving}
