@@ -7,7 +7,7 @@ import {
   Min,
   MaxLength,
 } from 'class-validator';
-import { PaymentStatus } from '@prisma/client';
+import { PaymentStatus } from '@ilona/database';
 
 export class UpdatePaymentDto {
   @IsNumber()

@@ -24,7 +24,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nes
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards';
 import { Roles, Public } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { SettingsService } from './settings.service';
 import { StorageService } from '../storage/storage.service';
 import * as path from 'path';

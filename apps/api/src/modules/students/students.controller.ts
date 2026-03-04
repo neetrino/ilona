@@ -12,7 +12,7 @@ import {
 import { StudentsService } from './students.service';
 import { CreateStudentDto, UpdateStudentDto, QueryStudentDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 
 @Controller('students')

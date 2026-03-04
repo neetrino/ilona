@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTeacherDto, UpdateTeacherDto } from './dto';
-import { UserStatus } from '@prisma/client';
+import { UserStatus } from '@ilona/database';
 import { TeacherCrudService } from './teacher-crud.service';
 import { TeacherObligationService } from './teacher-obligation.service';
 import { TeacherStatisticsService } from './teacher-statistics.service';

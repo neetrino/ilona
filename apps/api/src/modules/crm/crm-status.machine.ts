@@ -1,4 +1,4 @@
-import { CrmLeadStatus } from '@prisma/client';
+import { CrmLeadStatus } from '@ilona/database';
 
 /**
  * Allowed status transitions (state machine).

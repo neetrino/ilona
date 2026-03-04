@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CurrentUser, Roles } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { UpdateUserDto } from './dto/update-user.dto';
 

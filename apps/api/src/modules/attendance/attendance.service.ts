@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MarkAttendanceDto, BulkAttendanceDto } from './dto';
-import { Prisma, AbsenceType, UserRole } from '@prisma/client';
+import { Prisma, AbsenceType, UserRole } from '@ilona/database';
 import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()

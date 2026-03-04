@@ -3,7 +3,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { PaymentsService } from './payments.service';
 import type { ProcessPaymentDto } from './dto/create-payment.dto';
-import { PaymentStatus } from '@prisma/client';
+import { PaymentStatus } from '@ilona/database';
 
 describe('PaymentsService', () => {
   let paymentsService: PaymentsService;

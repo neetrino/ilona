@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CompleteLessonDto } from './dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { LessonCrudService } from './lesson-crud.service';
 

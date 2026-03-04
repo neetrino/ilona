@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { LessonStatus } from '@prisma/client';
+import { LessonStatus } from '@ilona/database';
 
 /** Minimal lesson shape needed for enrichment */
 export interface LessonForEnrichment {

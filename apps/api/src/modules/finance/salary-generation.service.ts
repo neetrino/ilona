@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SalaryStatus, LessonStatus } from '@prisma/client';
+import { SalaryStatus, LessonStatus } from '@ilona/database';
 import { SalaryCalculationService } from './salary-calculation.service';
 import type { CompletedActions } from '@ilona/types';
 

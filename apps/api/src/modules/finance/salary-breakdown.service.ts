@@ -4,8 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
-import { SalaryStatus, LessonStatus } from '@prisma/client';
+import { Prisma, SalaryStatus, LessonStatus } from '@ilona/database';
 import { SalaryCalculationService } from './salary-calculation.service';
 import type { CompletedActions, LessonActionData } from '@ilona/types';
 

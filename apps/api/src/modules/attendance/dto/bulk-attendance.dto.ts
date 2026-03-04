@@ -1,6 +1,6 @@
 import { IsString, IsArray, ValidateNested, IsBoolean, IsOptional, IsEnum, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AbsenceType } from '@prisma/client';
+import { AbsenceType } from '@ilona/database';
 
 class AttendanceItemDto {
   @IsString()

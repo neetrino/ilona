@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTeacherDto, UpdateTeacherDto } from './dto';
-import { Prisma, UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserRole, UserStatus } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
 
 // Constant for deduction amount per missing action (in AMD)

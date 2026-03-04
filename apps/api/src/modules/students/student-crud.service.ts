@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
-import { Prisma, UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserRole, UserStatus } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -221,7 +221,7 @@ export class StudentCrudService {
     }
 
     // Extract total monthly fees from aggregate result
-    const totalMonthlyFees = totalMonthlyFeesResult._sum.monthlyFee 
+    const totalMonthlyFees = totalMonthlyFeesResult._sum?.monthlyFee 
       ? Number(totalMonthlyFeesResult._sum.monthlyFee) 
       : 0;
 

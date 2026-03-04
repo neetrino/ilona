@@ -1,5 +1,5 @@
 import { IsIn } from 'class-validator';
-import { CrmLeadStatus } from '@prisma/client';
+import { CrmLeadStatus } from '@ilona/database';
 
 const VALID_STATUSES: CrmLeadStatus[] = [
   'NEW',

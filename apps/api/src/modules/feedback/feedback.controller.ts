@@ -11,7 +11,7 @@ import {
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto, UpdateFeedbackDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 
 @Controller('feedback')

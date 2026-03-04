@@ -10,7 +10,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { UserStatus } from '@prisma/client';
+import { UserStatus } from '@ilona/database';
 
 export class UpdateStudentDto {
   // User fields

@@ -3,7 +3,7 @@ import { NotFoundException, ForbiddenException, BadRequestException } from '@nes
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { ChatService } from './chat.service';
 import type { SendMessageResponse } from './message.service';
-import { ChatType, MessageType } from '@prisma/client';
+import { ChatType, MessageType } from '@ilona/database';
 
 describe('ChatService', () => {
   let chatService: ChatService;

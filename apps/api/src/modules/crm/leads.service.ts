@@ -25,8 +25,8 @@ import {
   CrmLeadActivityType,
   UserRole,
   UserStatus,
-} from '@prisma/client';
-import type { Prisma } from '@prisma/client';
+} from '@ilona/database';
+import type { Prisma } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
 
 type CrmLeadWhereInput = Prisma.CrmLeadWhereInput;

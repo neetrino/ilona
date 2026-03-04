@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, DeductionReason } from '@prisma/client';
+import { Prisma, DeductionReason } from '@ilona/database';
 import { CreateDeductionDto } from './dto/create-deduction.dto';
 
 /** Prisma delegate access for this service. */

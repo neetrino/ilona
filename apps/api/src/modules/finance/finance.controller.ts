@@ -17,7 +17,7 @@ import { PaymentsService } from './payments.service';
 import { SalariesService } from './salaries.service';
 import { DeductionsService } from './deductions.service';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole, PaymentStatus, SalaryStatus, DeductionReason } from '@prisma/client';
+import { UserRole, PaymentStatus, SalaryStatus, DeductionReason } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import {
   CreatePaymentDto,

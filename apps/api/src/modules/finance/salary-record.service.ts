@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, SalaryStatus, LessonStatus } from '@prisma/client';
+import { Prisma, SalaryStatus, LessonStatus } from '@ilona/database';
 import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
 import { SalaryCalculationService } from './salary-calculation.service';
 

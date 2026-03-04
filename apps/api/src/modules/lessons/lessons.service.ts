@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserRole, LessonStatus } from '@prisma/client';
+import { UserRole, LessonStatus } from '@ilona/database';
 import { CreateLessonDto, UpdateLessonDto, CompleteLessonDto } from './dto';
 import { LessonCrudService } from './lesson-crud.service';
 import { LessonStatusService } from './lesson-status.service';

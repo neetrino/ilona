@@ -3,9 +3,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ActionPercents, SystemSettingsWithPercents, PenaltyAmounts } from '@ilona/types';
-import type { SystemSettings } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import type { SystemSettings } from '@ilona/database';
+import { Prisma } from '@ilona/database';
 
 /**
  * Type for Prisma error with code and message
@@ -18,16 +17,16 @@ interface PrismaError extends Error {
 /**
  * Type for values that can be converted to numbers (Decimal, number, null, undefined)
  */
-type ConvertibleToNumber = Decimal | number | null | undefined;
+type ConvertibleToNumber = Prisma.Decimal | number | null | undefined;
 
 /**
  * Type for SystemSettings with optional penalty fields (for backward compatibility)
  */
 type SystemSettingsWithOptionalPenalties = SystemSettings & {
-  penaltyAbsenceAmd?: Decimal | number;
-  penaltyFeedbackAmd?: Decimal | number;
-  penaltyVoiceAmd?: Decimal | number;
-  penaltyTextAmd?: Decimal | number;
+  penaltyAbsenceAmd?: Prisma.Decimal | number;
+  penaltyFeedbackAmd?: Prisma.Decimal | number;
+  penaltyVoiceAmd?: Prisma.Decimal | number;
+  penaltyTextAmd?: Prisma.Decimal | number;
 };
 
 @Injectable()
@@ -110,7 +109,9 @@ export class SettingsService {
         : '';
       
       // Check for PrismaClientKnownRequestError with code P2021 (column not found)
-      const isPrismaColumnError = error instanceof PrismaClientKnownRequestError && error.code === 'P2021';
+      const isPrismaColumnError =
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        (error as Prisma.PrismaClientKnownRequestError).code === 'P2021';
       
       if (
         isPrismaColumnError ||
@@ -538,7 +539,7 @@ export class SettingsService {
       const convertToNumber = (value: ConvertibleToNumber): number => {
         if (value == null) return 1000;
         if (typeof value === 'number') return value;
-        if (value instanceof Decimal) {
+        if (value instanceof Prisma.Decimal) {
           return value.toNumber();
         }
         // Fallback for other types
@@ -643,7 +644,7 @@ export class SettingsService {
       const convertToNumber = (value: ConvertibleToNumber): number => {
         if (value == null) return 0;
         if (typeof value === 'number') return value;
-        if (value instanceof Decimal) {
+        if (value instanceof Prisma.Decimal) {
           return value.toNumber();
         }
         // Fallback for other types

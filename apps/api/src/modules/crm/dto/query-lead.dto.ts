@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsUUID, IsIn, IsInt, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CrmLeadStatus } from '@prisma/client';
+import { CrmLeadStatus } from '@ilona/database';
 
 const VALID_STATUSES: CrmLeadStatus[] = [
   'NEW',

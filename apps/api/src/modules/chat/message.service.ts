@@ -8,7 +8,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, MessageType, ChatType, UserRole } from '@prisma/client';
+import { Prisma, MessageType, ChatType, UserRole } from '@ilona/database';
 import { SendMessageDto, UpdateMessageDto } from './dto';
 import { StorageService } from '../storage/storage.service';
 import { SalariesService } from '../finance/salaries.service';

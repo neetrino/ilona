@@ -13,7 +13,7 @@ import {
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { CurrentUser, Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { CreateChatDto, SendMessageDto, UpdateMessageDto, AddGroupMemberDto, CreateCustomGroupChatDto } from './dto';
 

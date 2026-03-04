@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsDateString, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PaymentStatus } from '@prisma/client';
+import { PaymentStatus } from '@ilona/database';
 
 export class QueryPaymentDto {
   @IsNumber()

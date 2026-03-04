@@ -3,7 +3,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators';
 import { CurrentUser } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { LeadsService } from './leads.service';
 import { TeacherTransferDto } from './dto';

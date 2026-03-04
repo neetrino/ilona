@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, PaymentStatus } from '@prisma/client';
+import { Prisma, PaymentStatus } from '@ilona/database';
 import { CreatePaymentDto, UpdatePaymentDto, ProcessPaymentDto } from './dto/create-payment.dto';
 
 /** Payment row with student (and user/group) for monthly grouped list. */

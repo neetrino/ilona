@@ -4,7 +4,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, UserStatus } from '@prisma/client';
+import { Prisma, UserStatus } from '@ilona/database';
 
 @Injectable()
 export class StudentQueryService {

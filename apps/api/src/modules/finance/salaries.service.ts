@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SalaryStatus } from '@prisma/client';
+import { SalaryStatus } from '@ilona/database';
 import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
 import { SalaryGenerationService } from './salary-generation.service';
 import { SalaryRecordService } from './salary-record.service';

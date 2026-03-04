@@ -7,7 +7,7 @@ import {
   MaxLength,
   IsEnum,
 } from 'class-validator';
-import { SalaryStatus } from '@prisma/client';
+import { SalaryStatus } from '@ilona/database';
 
 export class CreateSalaryRecordDto {
   @IsString()

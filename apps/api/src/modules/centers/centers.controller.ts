@@ -12,7 +12,7 @@ import {
 import { CentersService } from './centers.service';
 import { CreateCenterDto, UpdateCenterDto, QueryCenterDto } from './dto';
 import { Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 
 @Controller('centers')
 export class CentersController {

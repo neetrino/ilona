@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ChatType, UserRole } from '@prisma/client';
+import { ChatType, UserRole } from '@ilona/database';
 import { CreateChatDto, CreateCustomGroupChatDto } from './dto';
 import { ChatAuthorizationService } from './chat-authorization.service';
 

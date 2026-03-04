@@ -10,7 +10,7 @@ import {
 import { AttendanceService } from './attendance.service';
 import { MarkAttendanceDto, BulkAttendanceDto, QueryAttendanceDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole, AbsenceType } from '@prisma/client';
+import { UserRole, AbsenceType } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 
