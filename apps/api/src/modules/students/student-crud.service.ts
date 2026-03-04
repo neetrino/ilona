@@ -128,6 +128,8 @@ export class StudentCrudService {
     } else if (sortBy === 'monthlyFee') {
       // Sort by monthly fee
       orderBy = { monthlyFee: sortOrder };
+    } else if (sortBy === 'register') {
+      orderBy = { registerDate: sortOrder };
     } else if (sortBy === 'absence') {
       // For absence sorting, we'll sort by absences count in JavaScript after calculating attendance
       // So we fetch with default order first

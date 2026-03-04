@@ -76,8 +76,8 @@ export class QueryStudentDto {
   centerIds?: string[];
 
   @IsOptional()
-  @IsIn(['student', 'monthlyFee', 'absence'])
-  sortBy?: 'student' | 'monthlyFee' | 'absence';
+  @IsIn(['student', 'monthlyFee', 'absence', 'register'])
+  sortBy?: 'student' | 'monthlyFee' | 'absence' | 'register';
 
   @IsOptional()
   @IsEnum(['asc', 'desc'])

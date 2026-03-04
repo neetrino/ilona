@@ -313,6 +313,7 @@ export function createStudentsTableColumns({
     {
       key: 'register',
       header: 'REGISTER',
+      sortable: true,
       className: 'text-left',
       render: (student: Student) => (
         <RegisterDateCell
