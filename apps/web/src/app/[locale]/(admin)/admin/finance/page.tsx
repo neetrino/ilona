@@ -10,6 +10,7 @@ import {
   usePayments,
   useSalaries,
   useUpdatePaymentStatus,
+  useUpdatePaymentMethod,
   useUpdateSalaryStatus,
   useDeleteSalaries,
   useDeletePayments,
@@ -94,6 +95,7 @@ export default function FinancePage() {
 
   // Mutations
   const updatePaymentStatusMutation = useUpdatePaymentStatus();
+  const updatePaymentMethodMutation = useUpdatePaymentMethod();
   const updateSalaryStatusMutation = useUpdateSalaryStatus();
   const deleteSalaries = useDeleteSalaries();
   const deletePayments = useDeletePayments();
@@ -259,6 +261,7 @@ export default function FinancePage() {
             payments={payments}
             isLoading={isLoading || isLoadingDashboard}
             updatePaymentStatus={updatePaymentStatus}
+            updatePaymentMethod={updatePaymentMethodMutation}
             searchTerm={debouncedSearchQuery.trim()}
             noResultsKey="noPaymentsMatch"
             allPaymentsSelected={allPaymentsSelected}

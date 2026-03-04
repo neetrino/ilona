@@ -345,19 +345,28 @@ export class PaymentsService {
   }
 
   /**
-   * Update payment details
+   * Update payment details. paymentMethod can be set only when status is PENDING (admin sets method for pending/cash payments).
    */
   async update(id: string, dto: UpdatePaymentDto) {
-    await this.findById(id);
+    const payment = await this.findById(id);
+
+    const data: Prisma.PaymentUncheckedUpdateInput = {
+      amount: dto.amount,
+      dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+      status: dto.status,
+      notes: dto.notes,
+    };
+
+    if (dto.paymentMethod !== undefined) {
+      if (payment.status !== PaymentStatus.PAID) {
+        data.paymentMethod = dto.paymentMethod;
+      }
+      // If already PAID, do not allow changing method (CARD/IDRAM are locked)
+    }
 
     return this.prisma.payment.update({
       where: { id },
-      data: {
-        amount: dto.amount,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-        status: dto.status,
-        notes: dto.notes,
-      },
+      data,
       include: {
         student: {
           include: {
@@ -380,14 +389,18 @@ export class PaymentsService {
       throw new BadRequestException('Payment is already marked as paid');
     }
 
+    const data: Prisma.PaymentUncheckedUpdateInput = {
+      status: PaymentStatus.PAID,
+      paidAt: new Date(),
+      transactionId: dto.transactionId ?? undefined,
+    };
+    if (dto.paymentMethod !== undefined && dto.paymentMethod !== '') {
+      data.paymentMethod = (dto.paymentMethod as string).toUpperCase();
+    }
+
     return this.prisma.payment.update({
       where: { id },
-      data: {
-        status: PaymentStatus.PAID,
-        paymentMethod: dto.paymentMethod,
-        transactionId: dto.transactionId,
-        paidAt: new Date(),
-      },
+      data,
       include: {
         student: {
           include: {
@@ -401,8 +414,11 @@ export class PaymentsService {
   }
 
   /**
-   * Process a payment (mark as paid) only if it belongs to the given student.
-   * Returns 404 when payment does not exist or belongs to another student (no information leak).
+   * Process a payment (fake) only if it belongs to the given student.
+   * - Card / Idram: set status PAID, method CARD/IDRAM, paidAt now.
+   * - Cash: set status PENDING, method CASH (admin confirms later).
+   * paymentMethod is required for student flow (cash | card | idram).
+   * Returns 404 when payment does not exist or belongs to another student.
    * Enforces payment window: student can pay only during the corresponding calendar month.
    */
   async processPaymentForStudent(
@@ -410,6 +426,10 @@ export class PaymentsService {
     studentId: string,
     dto: ProcessPaymentDto,
   ) {
+    const method = (dto.paymentMethod ?? '').toLowerCase();
+    if (!['cash', 'card', 'idram'].includes(method)) {
+      throw new BadRequestException('paymentMethod must be one of: cash, card, idram');
+    }
     const payment = await this.findByIdAndStudentId(paymentId, studentId);
 
     if (!payment) {
@@ -443,14 +463,21 @@ export class PaymentsService {
       );
     }
 
+    const methodUpper = method.toUpperCase();
+    const isOnline = methodUpper === 'CARD' || methodUpper === 'IDRAM';
+    const updateData: Prisma.PaymentUncheckedUpdateInput = {
+      paymentMethod: methodUpper,
+      transactionId: dto.transactionId ?? undefined,
+    };
+    if (isOnline) {
+      updateData.status = PaymentStatus.PAID;
+      updateData.paidAt = now;
+    }
+    // Cash: keep status PENDING, only set method
+
     return this.prisma.payment.update({
       where: { id: paymentId },
-      data: {
-        status: PaymentStatus.PAID,
-        paymentMethod: dto.paymentMethod,
-        transactionId: dto.transactionId,
-        paidAt: new Date(),
-      },
+      data: updateData,
       include: {
         student: {
           include: {

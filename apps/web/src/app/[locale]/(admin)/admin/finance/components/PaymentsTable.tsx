@@ -13,6 +13,10 @@ interface PaymentsTableProps {
     mutateAsync: (params: { id: string; status: PaymentStatus }) => Promise<void>;
     isPending: boolean;
   };
+  updatePaymentMethod?: {
+    mutateAsync: (params: { id: string; paymentMethod: string }) => Promise<void>;
+    isPending: boolean;
+  };
   searchTerm?: string;
   noResultsKey?: string;
   allPaymentsSelected?: boolean;
@@ -26,6 +30,7 @@ export function PaymentsTable({
   payments,
   isLoading,
   updatePaymentStatus,
+  updatePaymentMethod,
   searchTerm,
   noResultsKey,
   allPaymentsSelected,
@@ -80,6 +85,7 @@ export function PaymentsTable({
   const columns = getPaymentColumns({
     t,
     updatePaymentStatus,
+    updatePaymentMethod,
     allPaymentsSelected,
     somePaymentsSelected,
     selectedPaymentIds,

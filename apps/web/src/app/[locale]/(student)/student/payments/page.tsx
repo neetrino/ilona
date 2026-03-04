@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog';
-import { Button, Input, Label } from '@/shared/components/ui';
+import { Button, Label } from '@/shared/components/ui';
 import { useMyPayments, useMyPaymentsSummary, useProcessMyPayment } from '@/features/finance';
 import { cn } from '@/shared/lib/utils';
 import type { Payment } from '@/features/finance/api/student-finance.api';
@@ -59,8 +59,9 @@ export default function StudentPaymentsPage() {
   const tCommon = useTranslations('common');
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [processModal, setProcessModal] = useState<Payment | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState('transfer');
-  const [transactionId, setTransactionId] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'idram'>('card');
+  const [confirmStep, setConfirmStep] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { data: summary, isLoading: isLoadingSummary, isFetching: isFetchingSummary } = useMyPaymentsSummary();
   const { data: paymentsData, isLoading: isLoadingPayments, isFetching: isFetchingPayments } = useMyPayments(
@@ -77,20 +78,28 @@ export default function StudentPaymentsPage() {
     [paymentsData?.items]
   );
 
-  const handleMarkAsPaid = () => {
+  const openPayModal = (payment: Payment) => {
+    setProcessModal(payment);
+    setConfirmStep(false);
+    setSuccessMessage(null);
+    setPaymentMethod('card');
+  };
+
+  const handleConfirmPayment = () => {
     if (!processModal) return;
     processPaymentMutation.mutate(
       {
         paymentId: processModal.id,
-        data: {
-          paymentMethod,
-          transactionId: transactionId.trim() || undefined,
-        },
+        data: { paymentMethod },
       },
       {
         onSuccess: () => {
-          setProcessModal(null);
-          setTransactionId('');
+          setSuccessMessage(t('paymentSuccess'));
+          setTimeout(() => {
+            setProcessModal(null);
+            setSuccessMessage(null);
+            setConfirmStep(false);
+          }, 1500);
         },
       }
     );
@@ -290,16 +299,18 @@ export default function StudentPaymentsPage() {
                       )}>
                         {formatCurrency(Number(payment.amount))}
                       </p>
-                      {unpaid && (
+                      {unpaid ? (
                         <Button
                           size="sm"
                           variant="default"
-                          onClick={() => canPay && setProcessModal(payment)}
+                          onClick={() => canPay && openPayModal(payment)}
                           disabled={!canPay || processPaymentMutation.isPending}
                           title={!canPay && windowReason === 'past' ? t('paymentPeriodEnded') : !canPay && windowReason === 'future' ? t('paymentNotYetAvailable', { month: monthLabel }) : undefined}
                         >
-                          {t('markPaid')}
+                          {t('pay')}
                         </Button>
+                      ) : (
+                        <span className="text-sm text-green-600 font-medium">{t('paid')}</span>
                       )}
                     </div>
                   </div>
@@ -310,56 +321,78 @@ export default function StudentPaymentsPage() {
         </div>
       </div>
 
-      {/* Mark as paid dialog */}
+      {/* Pay – method picker + confirm dialog */}
       <Dialog open={!!processModal} onOpenChange={(open) => !open && setProcessModal(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t('markPaid')}</DialogTitle>
+            <DialogTitle>{t('pay')}</DialogTitle>
             <DialogDescription className="sr-only">
-              {t('markPaid')}
+              {t('paymentMethod')}
             </DialogDescription>
           </DialogHeader>
           {processModal && (
             <>
-              <p className="text-sm text-slate-600">
-                {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} — {formatCurrency(Number(processModal.amount))}
-              </p>
-              <div className="grid gap-3 py-2">
-                <div>
-                  <Label htmlFor="payment-method">{t('paymentMethod')}</Label>
-                  <select
-                    id="payment-method"
-                    className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  >
-                    <option value="transfer">Transfer</option>
-                    <option value="cash">Cash</option>
-                    <option value="card">Card</option>
-                  </select>
+              {successMessage ? (
+                <div className="py-4 text-center">
+                  <p className="text-green-600 font-medium">{successMessage}</p>
                 </div>
-                <div>
-                  <Label htmlFor="transaction-id">{t('transactionId')}</Label>
-                  <Input
-                    id="transaction-id"
-                    className="mt-1"
-                    value={transactionId}
-                    onChange={(e) => setTransactionId(e.target.value)}
-                    placeholder="Optional"
-                  />
-                </div>
-              </div>
-              <DialogFooter className="gap-2 sm:gap-0">
-                <Button variant="outline" onClick={() => setProcessModal(null)}>
-                  {tCommon('cancel')}
-                </Button>
-                <Button
-                  onClick={handleMarkAsPaid}
-                  disabled={processPaymentMutation.isPending}
-                >
-                  {processPaymentMutation.isPending ? tCommon('loading') : t('markPaid')}
-                </Button>
-              </DialogFooter>
+              ) : (
+                <>
+                  <p className="text-sm text-slate-600 mb-4">
+                    {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} — {formatCurrency(Number(processModal.amount))}
+                  </p>
+                  {!confirmStep ? (
+                    <>
+                      <Label className="mb-2 block">{t('paymentMethod')}</Label>
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        {(['cash', 'card', 'idram'] as const).map((method) => (
+                          <button
+                            key={method}
+                            type="button"
+                            onClick={() => setPaymentMethod(method)}
+                            className={cn(
+                              'py-3 px-3 rounded-lg border-2 text-sm font-medium transition-colors',
+                              paymentMethod === method
+                                ? 'border-blue-600 bg-blue-50 text-blue-700'
+                                : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                            )}
+                          >
+                            {method === 'cash' ? t('methodCash') : method === 'card' ? t('methodCard') : t('methodIdram')}
+                          </button>
+                        ))}
+                      </div>
+                      <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setProcessModal(null)}>
+                          {tCommon('cancel')}
+                        </Button>
+                        <Button onClick={() => setConfirmStep(true)}>
+                          {tCommon('next')}
+                        </Button>
+                      </DialogFooter>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-slate-600 mb-4">
+                        {t('payConfirm', {
+                          amount: formatCurrency(Number(processModal.amount)),
+                          method: paymentMethod === 'cash' ? t('methodCash') : paymentMethod === 'card' ? t('methodCard') : t('methodIdram'),
+                        })}
+                      </p>
+                      <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setConfirmStep(false)}>
+                          {tCommon('back')}
+                        </Button>
+                        <Button
+                          onClick={handleConfirmPayment}
+                          disabled={processPaymentMutation.isPending}
+                        >
+                          {processPaymentMutation.isPending ? tCommon('loading') : tCommon('confirm')}
+                        </Button>
+                      </DialogFooter>
+                    </>
+                  )}
+                </>
+              )}
             </>
           )}
         </DialogContent>

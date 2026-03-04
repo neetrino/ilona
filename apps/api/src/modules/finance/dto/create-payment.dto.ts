@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsDateString,
   IsEnum,
+  IsIn,
   Min,
   MaxLength,
 } from 'class-validator';
@@ -30,9 +31,15 @@ export class CreatePaymentDto {
   notes?: string;
 }
 
+/** Allowed fake payment methods for student self-service. */
+export const STUDENT_PAYMENT_METHODS = ['cash', 'card', 'idram'] as const;
+export type StudentPaymentMethod = (typeof STUDENT_PAYMENT_METHODS)[number];
+
 export class ProcessPaymentDto {
   @IsString()
-  paymentMethod!: string; // 'card', 'cash', 'transfer'
+  @IsOptional()
+  @IsIn(STUDENT_PAYMENT_METHODS)
+  paymentMethod?: StudentPaymentMethod;
 
   @IsString()
   @IsOptional()
@@ -43,6 +50,9 @@ export class ProcessPaymentDto {
   @MaxLength(500)
   notes?: string;
 }
+
+/** Admin can set method for PENDING payments only (Cash, Card, Terminal). */
+export const ADMIN_PAYMENT_METHOD_OPTIONS = ['CASH', 'CARD', 'IDRAM', 'TERMINAL'] as const;
 
 export class UpdatePaymentDto {
   @IsNumber()
@@ -57,6 +67,11 @@ export class UpdatePaymentDto {
   @IsEnum(PaymentStatus)
   @IsOptional()
   status?: PaymentStatus;
+
+  @IsString()
+  @IsOptional()
+  @IsIn(ADMIN_PAYMENT_METHOD_OPTIONS)
+  paymentMethod?: string;
 
   @IsString()
   @IsOptional()
