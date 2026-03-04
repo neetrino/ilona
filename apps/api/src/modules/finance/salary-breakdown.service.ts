@@ -4,9 +4,18 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { SalaryStatus, LessonStatus } from '@prisma/client';
 import { SalaryCalculationService } from './salary-calculation.service';
 import type { CompletedActions, LessonActionData } from '@ilona/types';
+
+/** Prisma delegate access for this service. */
+type PrismaDelegates = {
+  salaryRecord: Prisma.SalaryRecordDelegate;
+  deduction: Prisma.DeductionDelegate;
+  teacher: Prisma.TeacherDelegate;
+  lesson: Prisma.LessonDelegate;
+};
 
 /**
  * Service responsible for salary breakdown and detail operations
@@ -18,41 +27,48 @@ export class SalaryBreakdownService {
     private readonly calculationService: SalaryCalculationService,
   ) {}
 
+  private get db(): PrismaDelegates {
+    return this.prisma as unknown as PrismaDelegates;
+  }
+
   /**
    * Get teacher salary summary
    */
   async getTeacherSalarySummary(teacherId: string) {
     const [total, paid, pending, recordsForLessons] = await Promise.all([
-      this.prisma.salaryRecord.aggregate({
+      this.db.salaryRecord.aggregate({
         where: { teacherId },
         _sum: { netAmount: true },
         _count: true,
       }),
-      this.prisma.salaryRecord.aggregate({
+      this.db.salaryRecord.aggregate({
         where: { teacherId, status: SalaryStatus.PAID },
         _sum: { netAmount: true },
         _count: true,
       }),
-      this.prisma.salaryRecord.aggregate({
+      this.db.salaryRecord.aggregate({
         where: { teacherId, status: SalaryStatus.PENDING },
         _sum: { netAmount: true },
         _count: true,
       }),
-      this.prisma.salaryRecord.findMany({
+      this.db.salaryRecord.findMany({
         where: { teacherId },
         select: { lessonsCount: true },
       }),
     ]);
 
     // Get total deductions
-    const deductions = await this.prisma.deduction.aggregate({
+    const deductions = await this.db.deduction.aggregate({
       where: { teacherId },
       _sum: { amount: true },
       _count: true,
     });
 
     const totalAmount = Number(total._sum.netAmount) || 0;
-    const lessonsCount = recordsForLessons.reduce((sum, r) => sum + (r.lessonsCount || 0), 0);
+    const lessonsCount = recordsForLessons.reduce(
+      (sum: number, r: { lessonsCount: number | null }) => sum + (r.lessonsCount || 0),
+      0,
+    );
     const averagePerLesson = lessonsCount > 0 ? totalAmount / lessonsCount : 0;
 
     return {
@@ -88,7 +104,7 @@ export class SalaryBreakdownService {
     }
 
     // Get teacher
-    const teacher = await this.prisma.teacher.findUnique({
+    const teacher = await this.db.teacher.findUnique({
       where: { id: teacherId },
       include: {
         user: {
@@ -109,7 +125,7 @@ export class SalaryBreakdownService {
     const endOfMonth = new Date(year, monthNum, 0, 23, 59, 59);
 
     // Get ALL lessons for this month (not just completed ones)
-    const lessons = await this.prisma.lesson.findMany({
+    const lessons = await this.db.lesson.findMany({
       where: {
         teacherId,
         scheduledAt: {
@@ -143,7 +159,7 @@ export class SalaryBreakdownService {
     });
 
     // Get other deductions for this period (from Deduction table)
-    const otherDeductions = await this.prisma.deduction.findMany({
+    const otherDeductions = await this.db.deduction.findMany({
       where: {
         teacherId,
         appliedAt: {
@@ -160,7 +176,7 @@ export class SalaryBreakdownService {
 
     // Create a map of lessonId -> deductions
     const deductionsByLessonId = new Map<string, number>();
-    otherDeductions.forEach((deduction) => {
+    otherDeductions.forEach((deduction: { lessonId: string | null; amount: unknown }) => {
       if (deduction.lessonId) {
         const current = deductionsByLessonId.get(deduction.lessonId) || 0;
         deductionsByLessonId.set(deduction.lessonId, current + Number(deduction.amount));
@@ -177,7 +193,8 @@ export class SalaryBreakdownService {
 
     // Calculate per-lesson breakdown using fixed penalty system
     // Base salary is per lesson (fixed price), NOT per hour
-    const lessonBreakdown = lessons.map((lesson) => {
+    type LessonRow = (typeof lessons)[number];
+    const lessonBreakdown = lessons.map((lesson: LessonRow) => {
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
@@ -252,7 +269,7 @@ export class SalaryBreakdownService {
     }
 
     // Verify all lessons exist and are COMPLETED
-    const lessons = await this.prisma.lesson.findMany({
+    const lessons = await this.db.lesson.findMany({
       where: {
         id: { in: lessonIds },
         status: LessonStatus.COMPLETED,
@@ -261,7 +278,7 @@ export class SalaryBreakdownService {
     });
 
     if (lessons.length !== lessonIds.length) {
-      const foundIds = new Set(lessons.map((l) => l.id));
+      const foundIds = new Set(lessons.map((l: { id: string }) => l.id));
       const missingIds = lessonIds.filter((id) => !foundIds.has(id));
       throw new NotFoundException(
         `Some lessons not found or not completed: ${missingIds.join(', ')}`
@@ -269,7 +286,7 @@ export class SalaryBreakdownService {
     }
 
     // Change status to CANCELLED to exclude from salary calculation
-    const result = await this.prisma.lesson.updateMany({
+    const result = await this.db.lesson.updateMany({
       where: {
         id: { in: lessonIds },
         status: LessonStatus.COMPLETED,
@@ -290,7 +307,7 @@ export class SalaryBreakdownService {
    * Returns which of the 4 actions (Absence, Feedbacks, Voice, Text) are completed
    */
   async getLessonObligation(lessonId: string) {
-    const lesson = await this.prisma.lesson.findUnique({
+    const lesson = await this.db.lesson.findUnique({
       where: { id: lessonId },
       select: {
         id: true,

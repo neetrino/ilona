@@ -2,6 +2,7 @@
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { PaymentsService } from './payments.service';
+import type { ProcessPaymentDto } from './dto/create-payment.dto';
 import { PaymentStatus } from '@prisma/client';
 
 describe('PaymentsService', () => {
@@ -212,11 +213,11 @@ describe('PaymentsService', () => {
       await expect(
         paymentsService.processPaymentForStudent('pay-feb', 'student-1', {
           paymentMethod: 'transfer',
-        }),
+        } as unknown as ProcessPaymentDto),
       ).rejects.toThrow(BadRequestException);
       await expect(
         paymentsService.processPaymentForStudent('pay-feb', 'student-1', {
-          paymentMethod: 'transfer',
+          paymentMethod: 'card',
         }),
       ).rejects.toThrow(/Payment can only be made during the corresponding month/);
       expect(mockPrismaService.payment.update).not.toHaveBeenCalled();
@@ -238,12 +239,12 @@ describe('PaymentsService', () => {
       mockPrismaService.payment.update.mockResolvedValue({
         ...mockPayment,
         status: PaymentStatus.PAID,
-        paymentMethod: 'transfer',
+        paymentMethod: 'CARD',
         paidAt: new Date(),
       });
 
       const result = await paymentsService.processPaymentForStudent('pay-current', 'student-1', {
-        paymentMethod: 'transfer',
+        paymentMethod: 'card',
       });
 
       expect(result.status).toBe(PaymentStatus.PAID);

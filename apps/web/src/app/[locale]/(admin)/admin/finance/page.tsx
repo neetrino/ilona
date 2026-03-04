@@ -108,6 +108,14 @@ export default function FinancePage() {
     isPending: updatePaymentStatusMutation.isPending,
   };
 
+  // Wrap updatePaymentMethod to match expected interface (mutateAsync returns void)
+  const updatePaymentMethod = {
+    mutateAsync: async (params: { id: string; paymentMethod: string }) => {
+      await updatePaymentMethodMutation.mutateAsync({ id: params.id, paymentMethod: params.paymentMethod });
+    },
+    isPending: updatePaymentMethodMutation.isPending,
+  };
+
   // Wrap updateSalaryStatus to match expected interface
   const updateSalaryStatus = {
     mutateAsync: async (params: { id: string; status: SalaryStatus }) => {
@@ -261,7 +269,7 @@ export default function FinancePage() {
             payments={payments}
             isLoading={isLoading || isLoadingDashboard}
             updatePaymentStatus={updatePaymentStatus}
-            updatePaymentMethod={updatePaymentMethodMutation}
+            updatePaymentMethod={updatePaymentMethod}
             searchTerm={debouncedSearchQuery.trim()}
             noResultsKey="noPaymentsMatch"
             allPaymentsSelected={allPaymentsSelected}

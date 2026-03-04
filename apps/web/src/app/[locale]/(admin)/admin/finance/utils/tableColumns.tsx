@@ -206,7 +206,7 @@ export function getPaymentColumns({
           return (
             <div className="w-32">
               <InlineSelect
-                value={currentMethod || undefined}
+                value={currentMethod || null}
                 options={ADMIN_METHOD_OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
                 onChange={async (newMethod) => {
                   if (newMethod && newMethod !== currentMethod) {

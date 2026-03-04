@@ -1,0 +1,639 @@
+// ============================================
+// Ilona English Center - Database Schema
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // Pooled connection for application (with pgbouncer)
+  directUrl = env("DIRECT_URL") // Direct connection for migrations only
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  TEACHER
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum LessonStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  MISSED
+  REPLACED
+}
+
+enum AbsenceType {
+  JUSTIFIED
+  UNJUSTIFIED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum SalaryStatus {
+  PENDING
+  PROCESSING
+  PAID
+}
+
+enum DeductionReason {
+  MISSING_FEEDBACK
+  MISSING_VOCABULARY
+  LATE_SUBMISSION
+  OTHER
+}
+
+// CRM Lead status (fixed order: NEW → AGREED → FIRST_LESSON → PROCESSING → PAID → WAITLIST → ARCHIVE)
+enum CrmLeadStatus {
+  NEW
+  AGREED
+  FIRST_LESSON
+  PROCESSING
+  PAID
+  WAITLIST
+  ARCHIVE
+}
+
+enum CrmLeadActivityType {
+  STATUS_CHANGE
+  COMMENT
+  RECORDING_UPLOADED
+  TEACHER_APPROVED
+  TEACHER_TRANSFER
+  FIELD_UPDATE
+}
+
+enum CrmLeadAttachmentType {
+  VOICE_RECORDING
+  FILE
+}
+
+enum ChatType {
+  GROUP
+  DIRECT
+}
+
+enum MessageType {
+  TEXT
+  VOICE
+  IMAGE
+  VIDEO
+  FILE
+  SYSTEM
+  VOCABULARY
+}
+
+// ============================================
+// USERS
+// ============================================
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  avatarUrl    String?
+  role         UserRole
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  teacher                 Teacher?
+  student                 Student?
+  sentMessages            Message[]         @relation("SentMessages")
+  chatParticipants        ChatParticipant[]
+  notifications           Notification[]
+  crmLeadsCreated         CrmLead[]         @relation("LeadCreatedBy")
+  crmLeadsAssignedManager CrmLead[]         @relation("LeadAssignedManager")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+// ============================================
+// ORGANIZATION
+// ============================================
+
+model Center {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  phone       String?
+  email       String?
+  description String?
+  colorHex    String? // Hex color for center card styling (e.g., #253046)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  groups   Group[]
+  crmLeads CrmLead[]
+
+  @@map("centers")
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  level       String? // Beginner, Elementary, Intermediate, etc.
+  description String?
+  maxStudents Int      @default(15)
+  centerId    String
+  teacherId   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  center   Center    @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  teacher  Teacher?  @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  students Student[]
+  lessons  Lesson[]
+  chat     Chat?
+  crmLeads CrmLead[]
+
+  @@index([centerId])
+  @@index([teacherId])
+  @@map("groups")
+}
+
+// ============================================
+// TEACHERS
+// ============================================
+
+model Teacher {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  bio            String?
+  specialization String?
+  hourlyRate     Decimal  @db.Decimal(10, 2) // Legacy field, kept for backward compatibility
+  lessonRateAMD  Decimal? @db.Decimal(10, 2) // Fixed price per lesson (primary field for salary calculation)
+  workingDays    String[] // ["MON", "TUE", "WED", "THU", "FRI"]
+  workingHours   Json? // { MON: [{ start: "09:00", end: "13:00" }, { start: "14:00", end: "18:00" }], TUE: [...], ... }
+  hireDate       DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groups        Group[]
+  students      Student[]
+  lessons       Lesson[]
+  feedbacks     Feedback[]
+  salaryRecords SalaryRecord[]
+  deductions    Deduction[]
+  crmLeads      CrmLead[]
+
+  @@map("teachers")
+}
+
+// ============================================
+// STUDENTS
+// ============================================
+
+model Student {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  leadId         String?   @unique // Set when lead becomes PAID (idempotent student creation)
+  groupId        String?
+  teacherId      String?
+  parentName     String?
+  parentPhone    String?
+  parentEmail    String?
+  monthlyFee     Decimal   @db.Decimal(10, 2)
+  enrolledAt     DateTime  @default(now())
+  registerDate   DateTime? // Date when student joined a group (manual, Admin-only)
+  notes          String?
+  receiveReports Boolean   @default(true) // Monthly reports opt-in
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lead        CrmLead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  group       Group?       @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  teacher     Teacher?     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  attendances Attendance[]
+  feedbacks   Feedback[]
+  payments    Payment[]
+
+  @@index([groupId])
+  @@index([teacherId])
+  @@index([leadId])
+  @@map("students")
+}
+
+// ============================================
+// LESSONS
+// ============================================
+
+model Lesson {
+  id                 String       @id @default(cuid())
+  groupId            String
+  teacherId          String
+  scheduledAt        DateTime
+  duration           Int          @default(60) // minutes
+  topic              String?
+  description        String?
+  status             LessonStatus @default(SCHEDULED)
+  vocabularySent     Boolean      @default(false)
+  vocabularySentAt   DateTime?
+  feedbacksCompleted Boolean      @default(false)
+  absenceMarked      Boolean      @default(false)
+  absenceMarkedAt    DateTime?
+  voiceSent          Boolean      @default(false)
+  voiceSentAt        DateTime?
+  textSent           Boolean      @default(false)
+  textSentAt         DateTime?
+  completedAt        DateTime?
+  notes              String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  // Relations
+  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
+  attendances Attendance[]
+  feedbacks   Feedback[]
+
+  @@index([groupId])
+  @@index([teacherId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@index([groupId, scheduledAt])
+  @@map("lessons")
+}
+
+// ============================================
+// ATTENDANCE
+// ============================================
+
+model Attendance {
+  id          String       @id @default(cuid())
+  lessonId    String
+  studentId   String
+  isPresent   Boolean
+  absenceType AbsenceType?
+  note        String?
+  markedAt    DateTime     @default(now())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  lesson  Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, studentId])
+  @@index([lessonId])
+  @@index([studentId])
+  @@index([isPresent])
+  @@map("attendances")
+}
+
+// ============================================
+// FEEDBACK
+// ============================================
+
+model Feedback {
+  id           String   @id @default(cuid())
+  lessonId     String
+  studentId    String
+  teacherId    String
+  content      String
+  rating       Int? // 1-5
+  strengths    String?
+  improvements String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  lesson  Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  @@unique([lessonId, studentId])
+  @@index([teacherId])
+  @@map("feedbacks")
+}
+
+// ============================================
+// FINANCE - PAYMENTS
+// ============================================
+
+model Payment {
+  id            String        @id @default(cuid())
+  studentId     String
+  amount        Decimal       @db.Decimal(10, 2)
+  month         DateTime // First day of month (uniqueness: one per student per month)
+  dueDate       DateTime
+  status        PaymentStatus @default(PENDING)
+  paidAt        DateTime?
+  paymentMethod String? // card, cash, transfer
+  transactionId String? // External payment system ID
+  receiptUrl    String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, month])
+  @@index([studentId])
+  @@index([status])
+  @@index([month])
+  @@map("payments")
+}
+
+// ============================================
+// FINANCE - SALARY
+// ============================================
+
+model SalaryRecord {
+  id              String       @id @default(cuid())
+  teacherId       String
+  month           DateTime // Which month this salary is for
+  lessonsCount    Int          @default(0)
+  grossAmount     Decimal      @db.Decimal(10, 2)
+  totalDeductions Decimal      @default(0) @db.Decimal(10, 2)
+  netAmount       Decimal      @db.Decimal(10, 2)
+  status          SalaryStatus @default(PENDING)
+  paidAt          DateTime?
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, month])
+  @@index([status])
+  @@map("salary_records")
+}
+
+model Deduction {
+  id         String          @id @default(cuid())
+  teacherId  String
+  lessonId   String?
+  reason     DeductionReason
+  amount     Decimal         @db.Decimal(10, 2)
+  percentage Decimal?        @db.Decimal(5, 2)
+  note       String?
+  appliedAt  DateTime        @default(now())
+  createdAt  DateTime        @default(now())
+
+  // Relations
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId])
+  @@index([reason])
+  @@map("deductions")
+}
+
+// ============================================
+// CHAT
+// ============================================
+
+model Chat {
+  id        String   @id @default(cuid())
+  type      ChatType
+  name      String? // For direct chats, can be null
+  groupId   String?  @unique // For group chats
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  group        Group?            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  participants ChatParticipant[]
+  messages     Message[]
+
+  @@index([type])
+  @@map("chats")
+}
+
+model ChatParticipant {
+  id         String    @id @default(cuid())
+  chatId     String
+  userId     String
+  isAdmin    Boolean   @default(false) // Chat admin (teacher for group chats)
+  joinedAt   DateTime  @default(now())
+  leftAt     DateTime?
+  lastReadAt DateTime?
+
+  // Relations
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
+  @@index([userId])
+  @@map("chat_participants")
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  chatId    String
+  senderId  String? // null for system messages
+  type      MessageType @default(TEXT)
+  content   String? // Text content
+  fileUrl   String? // For voice/image/video/file
+  fileName  String?
+  fileSize  Int?
+  duration  Int? // For voice messages (seconds)
+  metadata  Json? // Additional data
+  isSystem  Boolean     @default(false)
+  isEdited  Boolean     @default(false)
+  editedAt  DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Relations
+  chat   Chat  @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender User? @relation("SentMessages", fields: [senderId], references: [id], onDelete: SetNull)
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // absence_warning, payment_reminder, feedback_reminder, etc.
+  title     String
+  content   String
+  data      Json? // Additional data (lessonId, studentId, etc.)
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+  @@map("notifications")
+}
+
+// ============================================
+// SYSTEM SETTINGS
+// ============================================
+
+model SystemSettings {
+  id                       String   @id @default(cuid())
+  vocabDeductionPercent    Decimal  @default(10) @db.Decimal(5, 2)
+  feedbackDeductionPercent Decimal  @default(5) @db.Decimal(5, 2)
+  maxUnjustifiedAbsences   Int      @default(3)
+  paymentDueDays           Int      @default(5) // Days after month start
+  lessonReminderHours      Int      @default(24) // Hours before lesson
+  logoUrl                  String? // URL to the company logo stored in R2
+  // Action percent weights (deprecated - kept for backward compatibility)
+  absencePercent           Int      @default(25) // Weight for absence action (0-100) - DEPRECATED
+  feedbacksPercent         Int      @default(25) // Weight for feedbacks action (0-100) - DEPRECATED
+  voicePercent             Int      @default(25) // Weight for voice action (0-100) - DEPRECATED
+  textPercent              Int      @default(25) // Weight for text action (0-100) - DEPRECATED
+  // Fixed penalty amounts in AMD (replaces percent-based system)
+  penaltyAbsenceAmd        Decimal  @default(1000) @db.Decimal(10, 2) // Fixed penalty for missing absence action
+  penaltyFeedbackAmd       Decimal  @default(1000) @db.Decimal(10, 2) // Fixed penalty for missing feedback action
+  penaltyVoiceAmd          Decimal  @default(1000) @db.Decimal(10, 2) // Fixed penalty for missing voice action
+  penaltyTextAmd           Decimal  @default(1000) @db.Decimal(10, 2) // Fixed penalty for missing text action
+  updatedAt                DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+// ============================================
+// CRM - LEAD MANAGEMENT
+// ============================================
+
+model CrmLead {
+  id                String        @id @default(cuid())
+  status            CrmLeadStatus @default(NEW)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  createdByUserId   String
+  assignedManagerId String?
+  firstName         String?
+  lastName          String?
+  phone             String?
+  age               Int?
+  levelId           String? // Level name/code (e.g. A1, B2) - maps to Group.level
+  teacherId         String?
+  groupId           String?
+  centerId          String?
+  transferFlag      Boolean       @default(false)
+  transferComment   String?
+  archivedReason    String?
+  source            String? // call, form, etc.
+  notes             String?
+
+  // Relations
+  createdByUser   User                @relation("LeadCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  assignedManager User?               @relation("LeadAssignedManager", fields: [assignedManagerId], references: [id], onDelete: SetNull)
+  teacher         Teacher?            @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  group           Group?              @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  center          Center?             @relation(fields: [centerId], references: [id], onDelete: SetNull)
+  activities      CrmLeadActivity[]
+  attachments     CrmLeadAttachment[]
+  student         Student?
+
+  @@index([status])
+  @@index([phone])
+  @@index([teacherId])
+  @@index([groupId])
+  @@index([centerId])
+  @@index([createdAt])
+  @@index([assignedManagerId])
+  @@map("crm_leads")
+}
+
+model CrmLeadActivity {
+  id          String              @id @default(cuid())
+  leadId      String
+  actorUserId String?
+  type        CrmLeadActivityType
+  payload     Json? // { fromStatus?, toStatus?, comment?, etc. }
+  createdAt   DateTime            @default(now())
+
+  // Relations
+  lead CrmLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("crm_lead_activities")
+}
+
+model CrmLeadAttachment {
+  id        String                @id @default(cuid())
+  leadId    String
+  type      CrmLeadAttachmentType
+  r2Key     String
+  mimeType  String?
+  size      Int? // bytes
+  createdAt DateTime              @default(now())
+
+  // Relations
+  lead CrmLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([type])
+  @@map("crm_lead_attachments")
+}
+
+// ============================================
+// AUDIT LOG (Optional - for tracking changes)
+// ============================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String // CREATE, UPDATE, DELETE
+  entity    String // User, Lesson, Payment, etc.
+  entityId  String
+  oldData   Json?
+  newData   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
