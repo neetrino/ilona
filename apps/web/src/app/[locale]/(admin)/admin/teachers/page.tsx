@@ -6,7 +6,7 @@ import {
   AddTeacherForm, 
   EditTeacherForm,
   DeleteConfirmationDialog,
-  TeacherDetailsDrawer,
+  TeacherDetailsModal,
 } from '@/features/teachers';
 import { TeachersFilters } from './components/TeachersFilters';
 import { TeachersList } from './components/TeachersList';
@@ -181,6 +181,7 @@ export default function TeachersPage() {
             onEdit={handleEditClick}
             onDelete={handleDeleteClick}
             onDeactivate={handleDeactivateClick}
+            onCardClick={handleRowClick}
           />
         )}
 
@@ -258,8 +259,8 @@ export default function TeachersPage() {
         title="Delete Teachers"
       />
 
-      {/* Teacher Details Drawer */}
-      <TeacherDetailsDrawer
+      {/* Teacher Details Modal (CRM-style) */}
+      <TeacherDetailsModal
         teacherId={selectedTeacherIdForDetails}
         open={isDetailsDrawerOpen}
         onClose={handleDetailsDrawerClose}
