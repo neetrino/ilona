@@ -111,10 +111,7 @@ export default function AdminCrmPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Admin CRM: hide Agreed and Processing sections (columns, filters, status dropdown on cards)
-  const adminVisibleStatuses = (statuses ?? CRM_COLUMN_ORDER).filter(
-    (s) => s !== 'AGREED' && s !== 'PROCESSING'
-  );
+  const adminVisibleStatuses = statuses ?? CRM_COLUMN_ORDER;
   // Board columns: Archive hidden by default; toggle shows it as 5th column
   const boardColumnStatuses = showArchiveColumn
     ? adminVisibleStatuses

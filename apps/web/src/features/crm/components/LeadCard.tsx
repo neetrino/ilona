@@ -9,9 +9,7 @@ import { cn } from '@/shared/lib/utils';
 
 const STATUS_LABELS: Record<CrmLeadStatus, string> = {
   NEW: 'New',
-  AGREED: 'Agreed',
   FIRST_LESSON: 'First Lesson',
-  PROCESSING: 'Processing',
   PAID: 'Paid',
   WAITLIST: 'Waitlist',
   ARCHIVE: 'Archive',

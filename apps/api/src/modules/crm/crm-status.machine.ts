@@ -1,37 +1,24 @@
 import { CrmLeadStatus } from '@ilona/database';
 
-/**
- * Allowed status transitions (state machine).
- * - NEW -> AGREED | ARCHIVE
- * - AGREED -> FIRST_LESSON | PAID | WAITLIST | ARCHIVE
- * - FIRST_LESSON -> (only via Teacher Approved) PROCESSING | ARCHIVE
- * - PROCESSING -> PAID | ARCHIVE
- * - WAITLIST -> AGREED | ARCHIVE
- * - PAID -> no backward transitions
- * - ARCHIVE -> no restore
- */
-const ALLOWED_TRANSITIONS: Record<CrmLeadStatus, CrmLeadStatus[]> = {
-  NEW: ['AGREED', 'ARCHIVE'],
-  AGREED: ['FIRST_LESSON', 'PAID', 'WAITLIST', 'ARCHIVE'],
-  FIRST_LESSON: ['PROCESSING', 'ARCHIVE'], // PROCESSING only via teacher approve
-  PROCESSING: ['PAID', 'ARCHIVE'],
-  WAITLIST: ['AGREED', 'ARCHIVE'],
+/** Supported statuses (AGREED, PROCESSING removed) */
+const TRANSITIONS: Partial<Record<CrmLeadStatus, CrmLeadStatus[]>> = {
+  NEW: ['FIRST_LESSON', 'ARCHIVE'],
+  FIRST_LESSON: ['PAID', 'ARCHIVE'], // PAID only via teacher approve
+  WAITLIST: ['FIRST_LESSON', 'ARCHIVE'],
   PAID: [],
   ARCHIVE: [],
 };
 
 export const CRM_COLUMN_ORDER: CrmLeadStatus[] = [
   'NEW',
-  'AGREED',
   'FIRST_LESSON',
-  'PROCESSING',
   'PAID',
   'WAITLIST',
   'ARCHIVE',
 ];
 
 export function getAllowedNextStatuses(from: CrmLeadStatus): CrmLeadStatus[] {
-  return [...ALLOWED_TRANSITIONS[from]];
+  return [...(TRANSITIONS[from] ?? [])];
 }
 
 export function canTransition(
@@ -40,10 +27,10 @@ export function canTransition(
   options?: { isTeacherApprove?: boolean }
 ): boolean {
   if (from === to) return false;
-  const allowed = ALLOWED_TRANSITIONS[from];
-  if (!allowed.includes(to)) return false;
-  // FIRST_LESSON -> PROCESSING is only allowed via teacher approve
-  if (from === 'FIRST_LESSON' && to === 'PROCESSING') {
+  const allowed = TRANSITIONS[from];
+  if (!allowed?.includes(to)) return false;
+  // FIRST_LESSON -> PAID is only allowed via teacher approve
+  if (from === 'FIRST_LESSON' && to === 'PAID') {
     return options?.isTeacherApprove === true;
   }
   return true;
@@ -62,8 +49,8 @@ export function requireFieldsForTransition(
   groupId: string;
   centerId: string;
 })[] {
-  // NEW -> AGREED: require firstName, lastName, phone, age, level, teacher, group, center
-  if (from === 'NEW' && to === 'AGREED') {
+  // NEW -> FIRST_LESSON: require firstName, lastName, phone, age, level, teacher, group, center
+  if (from === 'NEW' && to === 'FIRST_LESSON') {
     return ['firstName', 'lastName', 'phone', 'age', 'levelId', 'teacherId', 'groupId', 'centerId'];
   }
   return [];

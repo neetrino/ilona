@@ -166,7 +166,7 @@ export class LeadsService {
 
     const countsByStatus = await this.prisma.crmLead.groupBy({
       by: ['status'],
-      where: { status: { in: ['NEW', 'AGREED', 'FIRST_LESSON', 'PROCESSING', 'PAID', 'WAITLIST', 'ARCHIVE'] } },
+      where: { status: { in: ['NEW', 'FIRST_LESSON', 'PAID', 'WAITLIST', 'ARCHIVE'] } },
       _count: true,
     });
     const countMap = Object.fromEntries(
@@ -462,7 +462,7 @@ export class LeadsService {
 
     const where: CrmLeadWhereInput = {
       teacherId: teacher.id,
-      status: { in: ['FIRST_LESSON', 'AGREED'] },
+      status: { in: ['FIRST_LESSON'] },
     };
     if (query.groupId) where.groupId = query.groupId;
 
@@ -487,7 +487,7 @@ export class LeadsService {
     if (lead.status !== 'FIRST_LESSON') {
       throw new BadRequestException('Lead must be in FIRST_LESSON to approve');
     }
-    return this.changeStatus(leadId, { status: 'PROCESSING' }, teacherUserId, {
+    return this.changeStatus(leadId, { status: 'PAID' }, teacherUserId, {
       isTeacherApprove: true,
     });
   }

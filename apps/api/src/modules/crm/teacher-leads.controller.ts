@@ -26,7 +26,7 @@ export class TeacherLeadsController {
   }
 
   @Post(':id/approve')
-  @ApiOperation({ summary: 'Approve first lesson – move lead to PROCESSING' })
+  @ApiOperation({ summary: 'Approve first lesson – move lead to PAID' })
   approve(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.leadsService.teacherApprove(id, user.sub);
   }

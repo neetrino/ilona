@@ -1,17 +1,13 @@
 export type CrmLeadStatus =
   | 'NEW'
-  | 'AGREED'
   | 'FIRST_LESSON'
-  | 'PROCESSING'
   | 'PAID'
   | 'WAITLIST'
   | 'ARCHIVE';
 
 export const CRM_COLUMN_ORDER: CrmLeadStatus[] = [
   'NEW',
-  'AGREED',
   'FIRST_LESSON',
-  'PROCESSING',
   'PAID',
   'WAITLIST',
   'ARCHIVE',
