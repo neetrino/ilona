@@ -47,6 +47,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.980.0
         version: 3.980.0
+      '@ilona/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@ilona/types':
         specifier: workspace:^
         version: link:../../packages/types

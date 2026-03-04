@@ -4,6 +4,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -229,6 +230,7 @@ model Student {
   parentEmail    String?
   monthlyFee     Decimal   @db.Decimal(10, 2)
   enrolledAt     DateTime  @default(now())
+  registerDate   DateTime? // Date when student joined a group (manual, Admin-only)
   notes          String?
   receiveReports Boolean   @default(true) // Monthly reports opt-in
   createdAt      DateTime  @default(now())

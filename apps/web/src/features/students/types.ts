@@ -27,6 +27,8 @@ export interface Student {
     totalClasses: number;
     absences: number;
   };
+  /** Date when student joined a group (manual, Admin-only). ISO date string. */
+  registerDate?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -97,6 +99,8 @@ export interface UpdateStudentDto {
   monthlyFee?: number;
   notes?: string;
   receiveReports?: boolean;
+  /** Date when student joined a group (manual). ISO date string (YYYY-MM-DD) or null to clear. */
+  registerDate?: string | null;
 }
 
 export interface StudentStatistics {

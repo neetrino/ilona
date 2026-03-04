@@ -1,11 +1,132 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { ActionButtons } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
 import { formatCurrency } from '@/shared/lib/utils';
+import { getErrorMessage } from '@/shared/lib/api';
 import type { Student } from '@/features/students';
+
+/** Format ISO or date string to YYYY-MM-DD for input[type="date"] */
+function toDateInputValue(value: string | null | undefined): string {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Format for display (YYYY-MM-DD) */
+function formatRegisterDate(value: string | null | undefined): string {
+  if (!value) return '';
+  const v = toDateInputValue(value);
+  return v || '';
+}
+
+function RegisterDateCell({
+  studentId,
+  value,
+  onSave,
+  disabled,
+}: {
+  studentId: string;
+  value: string | null | undefined;
+  onSave: (studentId: string, date: string | null) => Promise<void>;
+  disabled: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [localValue, setLocalValue] = useState(toDateInputValue(value));
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setLocalValue(toDateInputValue(value));
+  }, [value]);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editing]);
+
+  const handleSave = async (dateStr: string | null) => {
+    setError(null);
+    setSaving(true);
+    try {
+      await onSave(studentId, dateStr);
+      setEditing(false);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Failed to update date'));
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleBlur = () => {
+    const v = localValue.trim();
+    const prev = toDateInputValue(value);
+    if (v !== prev) {
+      handleSave(v ? v : null);
+    } else {
+      setEditing(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      const v = localValue.trim();
+      handleSave(v ? v : null);
+    }
+    if (e.key === 'Escape') {
+      setLocalValue(toDateInputValue(value));
+      setEditing(false);
+    }
+  };
+
+  if (editing && !disabled) {
+    return (
+      <div className="min-w-[120px]" onClick={(e) => e.stopPropagation()}>
+        <input
+          ref={inputRef}
+          type="date"
+          value={localValue}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          disabled={saving}
+          className="w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+        />
+        {error && (
+          <p className="absolute mt-0.5 text-xs text-red-600">{error}</p>
+        )}
+      </div>
+    );
+  }
+
+  const displayText = formatRegisterDate(value) || '—';
+  return (
+    <div
+      className="min-w-[100px] pl-4"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={() => !disabled && setEditing(true)}
+        disabled={disabled || saving}
+        className={displayText === '—' ? 'text-slate-400 hover:text-slate-600' : 'text-slate-700 hover:text-slate-900'}
+        title={displayText === '—' ? 'Set register date' : 'Edit register date'}
+      >
+        {displayText}
+      </button>
+    </div>
+  );
+}
 
 interface StudentsTableColumnsProps {
   t: (key: string) => string;
@@ -23,6 +144,7 @@ interface StudentsTableColumnsProps {
   onTeacherChange: (studentId: string, teacherId: string | null) => Promise<void>;
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
+  onRegisterDateChange: (studentId: string, date: string | null) => Promise<void>;
   teacherOptions: Array<{ id: string; label: string }>;
   groupOptions: Array<{ id: string; label: string }>;
   centerOptions: Array<{ id: string; label: string }>;
@@ -46,6 +168,7 @@ export function createStudentsTableColumns({
   onTeacherChange,
   onGroupChange,
   onCenterChange,
+  onRegisterDateChange,
   teacherOptions,
   groupOptions,
   centerOptions,
@@ -156,6 +279,19 @@ export function createStudentsTableColumns({
           </div>
         );
       },
+    },
+    {
+      key: 'register',
+      header: 'REGISTER',
+      className: 'text-left',
+      render: (student: Student) => (
+        <RegisterDateCell
+          studentId={student.id}
+          value={student.registerDate}
+          onSave={onRegisterDateChange}
+          disabled={isUpdating}
+        />
+      ),
     },
     {
       key: 'monthlyFee',

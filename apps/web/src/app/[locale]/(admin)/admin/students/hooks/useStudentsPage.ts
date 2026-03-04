@@ -411,6 +411,13 @@ export function useStudentsPage() {
     }
   };
 
+  const handleRegisterDateChange = async (studentId: string, date: string | null) => {
+    await updateStudent.mutateAsync({
+      id: studentId,
+      data: { registerDate: date },
+    });
+  };
+
   // Prepare options for dropdowns
   const teacherOptions = useMemo(() => 
     (teachersData?.items || []).map(teacher => ({
@@ -551,6 +558,7 @@ export function useStudentsPage() {
     handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
+    handleRegisterDateChange,
     setSelectedTeacherIds,
     setSelectedCenterIds,
     setSelectedStatusIds,

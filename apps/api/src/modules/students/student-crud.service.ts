@@ -625,6 +625,7 @@ export class StudentCrudService {
       receiveReports?: boolean;
       groupId?: string;
       teacherId?: string;
+      registerDate?: Date | null;
     } = {
       parentName: dto.parentName,
       parentPhone: dto.parentPhone,
@@ -639,6 +640,11 @@ export class StudentCrudService {
     }
     if (dto.teacherId !== undefined) {
       updateData.teacherId = dto.teacherId;
+    }
+    if (dto.registerDate !== undefined) {
+      updateData.registerDate = dto.registerDate
+        ? new Date(dto.registerDate)
+        : null;
     }
 
     return this.prisma.student.update({

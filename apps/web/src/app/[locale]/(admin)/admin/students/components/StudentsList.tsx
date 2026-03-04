@@ -26,6 +26,7 @@ interface StudentsListProps {
   onTeacherChange: (studentId: string, teacherId: string | null) => Promise<void>;
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
+  onRegisterDateChange: (studentId: string, date: string | null) => Promise<void>;
   teacherOptions: Array<{ id: string; label: string }>;
   groupOptions: Array<{ id: string; label: string }>;
   centerOptions: Array<{ id: string; label: string }>;
@@ -60,6 +61,7 @@ export function StudentsList({
   onTeacherChange,
   onGroupChange,
   onCenterChange,
+  onRegisterDateChange,
   teacherOptions,
   groupOptions,
   centerOptions,
@@ -87,6 +89,7 @@ export function StudentsList({
     onTeacherChange,
     onGroupChange,
     onCenterChange,
+    onRegisterDateChange,
     teacherOptions,
     groupOptions,
     centerOptions,

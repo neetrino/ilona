@@ -94,6 +94,7 @@ export default function StudentsPage() {
     handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
+    handleRegisterDateChange,
     setSelectedTeacherIds,
     setSelectedCenterIds,
     setSelectedStatusIds,
@@ -223,6 +224,7 @@ export default function StudentsPage() {
             onTeacherChange={handleTeacherChange}
             onGroupChange={handleGroupChange}
             onCenterChange={handleCenterChange}
+            onRegisterDateChange={handleRegisterDateChange}
             teacherOptions={teacherOptions}
             groupOptions={groupOptions}
             centerOptions={centerOptions}
