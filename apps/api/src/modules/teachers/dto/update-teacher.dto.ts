@@ -9,7 +9,7 @@ import {
   MinLength,
   IsObject,
 } from 'class-validator';
-import { UserStatus } from '@prisma/client';
+import { UserStatus } from '@ilona/database';
 
 export class UpdateTeacherDto {
   // User fields

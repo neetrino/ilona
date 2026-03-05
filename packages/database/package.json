@@ -12,11 +12,13 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate && tsc && node scripts/copy-generated-to-dist.js",
     "dev": "tsc --watch",
+    "prepare": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "node scripts/migrate-deploy-with-resolve.js",
+    "db:apply-teacher-approved": "node scripts/apply-teacher-approved-at.js",
     "db:migrate:dev": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",

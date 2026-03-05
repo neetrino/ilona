@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@ilona/database';
 import { StudentCrudService } from './student-crud.service';
 import { StudentQueryService } from './student-query.service';
 import { StudentStatisticsService } from './student-statistics.service';
@@ -38,23 +38,23 @@ export class StudentsService {
     year?: number;
     currentUserId?: string;
     userRole?: UserRole;
-  }) {
+  }): Promise<unknown> {
     return this.crudService.findAll(params);
   }
 
-  async findById(id: string, currentUserId?: string, userRole?: UserRole) {
+  async findById(id: string, currentUserId?: string, userRole?: UserRole): Promise<unknown> {
     return this.crudService.findById(id, currentUserId, userRole);
   }
 
-  async findByUserId(userId: string) {
+  async findByUserId(userId: string): Promise<unknown> {
     return this.crudService.findByUserId(userId);
   }
 
-  async create(dto: CreateStudentDto) {
+  async create(dto: CreateStudentDto): Promise<unknown> {
     return this.crudService.create(dto);
   }
 
-  async update(id: string, dto: UpdateStudentDto) {
+  async update(id: string, dto: UpdateStudentDto): Promise<unknown> {
     return this.crudService.update(id, dto);
   }
 
@@ -73,7 +73,7 @@ export class StudentsService {
     search?: string;
     status?: UserStatus;
     groupId?: string;
-  }) {
+  }): Promise<unknown> {
     return this.queryService.findAssignedToTeacher(teacherId, params);
   }
 
@@ -83,7 +83,7 @@ export class StudentsService {
     search?: string;
     status?: UserStatus;
     groupId?: string;
-  }) {
+  }): Promise<unknown> {
     return this.queryService.findAssignedToTeacherByUserId(userId, params);
   }
 
@@ -96,12 +96,12 @@ export class StudentsService {
     return this.statisticsService.getStatistics(id, currentUserId, userRole);
   }
 
-  async getMyDashboard(userId: string) {
+  async getMyDashboard(userId: string): Promise<unknown> {
     return this.statisticsService.getMyDashboard(userId);
   }
 
   // Group Methods
-  async changeGroup(id: string, newGroupId: string | null) {
+  async changeGroup(id: string, newGroupId: string | null): Promise<unknown> {
     return this.groupService.changeGroup(id, newGroupId);
   }
 }

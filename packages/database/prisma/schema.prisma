@@ -4,6 +4,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/client"
 }
 
 datasource db {
@@ -64,12 +65,10 @@ enum DeductionReason {
   OTHER
 }
 
-// CRM Lead status (fixed order: NEW → AGREED → FIRST_LESSON → PROCESSING → PAID → WAITLIST → ARCHIVE)
+// CRM Lead status (fixed order: NEW → FIRST_LESSON → PAID → WAITLIST → ARCHIVE)
 enum CrmLeadStatus {
   NEW
-  AGREED
   FIRST_LESSON
-  PROCESSING
   PAID
   WAITLIST
   ARCHIVE
@@ -229,6 +228,7 @@ model Student {
   parentEmail    String?
   monthlyFee     Decimal   @db.Decimal(10, 2)
   enrolledAt     DateTime  @default(now())
+  registerDate   DateTime? // Date when student joined a group (manual, Admin-only)
   notes          String?
   receiveReports Boolean   @default(true) // Monthly reports opt-in
   createdAt      DateTime  @default(now())
@@ -556,6 +556,7 @@ model CrmLead {
   centerId           String?
   transferFlag       Boolean       @default(false)
   transferComment    String?
+  teacherApprovedAt  DateTime?     // Set when teacher approves first lesson (visible on CRM card)
   archivedReason    String?
   source             String?       // call, form, etc.
   notes              String?

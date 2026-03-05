@@ -78,11 +78,15 @@ export function ListTable({ leads, onRowClick, isLoading }: ListTableProps) {
                 <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
                   {STATUS_LABELS[lead.status]}
                 </span>
-                {lead.transferFlag && (
+                {lead.teacherApprovedAt ? (
+                  <span className="ml-1 inline-flex rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
+                    Approved
+                  </span>
+                ) : lead.transferFlag ? (
                   <span className="ml-1 inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
                     TRANSFER
                   </span>
-                )}
+                ) : null}
               </td>
               <td className="px-4 py-3 text-sm text-slate-600">{lead.center?.name ?? '—'}</td>
               <td className="px-4 py-3 text-sm text-slate-600">

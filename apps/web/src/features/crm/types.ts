@@ -1,17 +1,21 @@
 export type CrmLeadStatus =
   | 'NEW'
-  | 'AGREED'
   | 'FIRST_LESSON'
-  | 'PROCESSING'
   | 'PAID'
   | 'WAITLIST'
   | 'ARCHIVE';
 
+export const STATUS_LABELS: Record<CrmLeadStatus, string> = {
+  NEW: 'New',
+  FIRST_LESSON: 'First Lesson',
+  PAID: 'Paid',
+  WAITLIST: 'Waitlist',
+  ARCHIVE: 'Archive',
+};
+
 export const CRM_COLUMN_ORDER: CrmLeadStatus[] = [
   'NEW',
-  'AGREED',
   'FIRST_LESSON',
-  'PROCESSING',
   'PAID',
   'WAITLIST',
   'ARCHIVE',
@@ -59,6 +63,7 @@ export interface CrmLead {
   centerId: string | null;
   transferFlag: boolean;
   transferComment: string | null;
+  teacherApprovedAt: string | null;
   archivedReason: string | null;
   source: string | null;
   notes: string | null;

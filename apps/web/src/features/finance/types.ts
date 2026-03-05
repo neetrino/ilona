@@ -2,6 +2,8 @@ export type PaymentStatus = 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED' | 'REFU
 export type SalaryStatus = 'PENDING' | 'PAID';
 export type DeductionReason = 'MISSED_VOCABULARY' | 'MISSED_FEEDBACK' | 'LATE_ATTENDANCE' | 'OTHER';
 
+export type PaymentMethod = 'CASH' | 'CARD' | 'IDRAM' | 'TERMINAL';
+
 export interface Payment {
   id: string;
   studentId: string;
@@ -12,6 +14,7 @@ export interface Payment {
   status: PaymentStatus;
   dueDate: string;
   paidAt?: string;
+  paymentMethod?: string | null;
   student: {
     id: string;
     user: {

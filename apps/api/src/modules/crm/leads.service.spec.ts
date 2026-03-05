@@ -50,7 +50,7 @@ describe('LeadsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('throws BadRequestException when NEW -> AGREED and required fields missing', async () => {
+    it('throws BadRequestException when NEW -> FIRST_LESSON and required fields missing', async () => {
       prisma.crmLead.findUnique.mockResolvedValue({
         id: 'lead-1',
         status: 'NEW',
@@ -73,14 +73,14 @@ describe('LeadsService', () => {
       });
 
       await expect(
-        service.changeStatus('lead-1', { status: 'AGREED' }, 'user-1')
+        service.changeStatus('lead-1', { status: 'FIRST_LESSON' }, 'user-1')
       ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('getAllowedTransitions', () => {
     it('returns allowed next statuses for NEW', () => {
-      expect(service.getAllowedTransitions('NEW')).toEqual(['AGREED', 'ARCHIVE']);
+      expect(service.getAllowedTransitions('NEW')).toEqual(['FIRST_LESSON', 'ARCHIVE']);
     });
     it('returns empty for PAID', () => {
       expect(service.getAllowedTransitions('PAID')).toEqual([]);

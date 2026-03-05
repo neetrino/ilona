@@ -2,7 +2,7 @@
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { DeductionsService } from './deductions.service';
-import { DeductionReason } from '@prisma/client';
+import { DeductionReason } from '@ilona/database';
 
 describe('DeductionsService', () => {
   let deductionsService: DeductionsService;

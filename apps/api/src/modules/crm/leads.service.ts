@@ -25,8 +25,8 @@ import {
   CrmLeadActivityType,
   UserRole,
   UserStatus,
-} from '@prisma/client';
-import type { Prisma } from '@prisma/client';
+} from '@ilona/database';
+import type { Prisma } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
 
 type CrmLeadWhereInput = Prisma.CrmLeadWhereInput;
@@ -166,7 +166,7 @@ export class LeadsService {
 
     const countsByStatus = await this.prisma.crmLead.groupBy({
       by: ['status'],
-      where: { status: { in: ['NEW', 'AGREED', 'FIRST_LESSON', 'PROCESSING', 'PAID', 'WAITLIST', 'ARCHIVE'] } },
+      where: { status: { in: ['NEW', 'FIRST_LESSON', 'PAID', 'WAITLIST', 'ARCHIVE'] } },
       _count: true,
     });
     const countMap = Object.fromEntries(
@@ -462,7 +462,7 @@ export class LeadsService {
 
     const where: CrmLeadWhereInput = {
       teacherId: teacher.id,
-      status: { in: ['FIRST_LESSON', 'AGREED'] },
+      status: { in: ['FIRST_LESSON'] },
     };
     if (query.groupId) where.groupId = query.groupId;
 
@@ -487,9 +487,19 @@ export class LeadsService {
     if (lead.status !== 'FIRST_LESSON') {
       throw new BadRequestException('Lead must be in FIRST_LESSON to approve');
     }
-    return this.changeStatus(leadId, { status: 'PROCESSING' }, teacherUserId, {
-      isTeacherApprove: true,
+    if (lead.transferFlag) {
+      throw new BadRequestException('Lead has been marked for transfer; Approve and Transfer are mutually exclusive.');
+    }
+    const alreadyApproved = (lead as { teacherApprovedAt?: Date | null }).teacherApprovedAt != null;
+    if (alreadyApproved) {
+      return this.findById(leadId);
+    }
+    await this.prisma.crmLead.update({
+      where: { id: leadId },
+      data: { teacherApprovedAt: new Date() },
     });
+    await this.logActivity(leadId, teacherUserId, 'TEACHER_APPROVED', {});
+    return this.findById(leadId);
   }
 
   async teacherTransfer(
@@ -507,6 +517,9 @@ export class LeadsService {
     }
     if (lead.status !== 'FIRST_LESSON') {
       throw new BadRequestException('Only FIRST_LESSON leads can be marked for transfer');
+    }
+    if (lead.teacherApprovedAt != null) {
+      throw new BadRequestException('Lead has already been approved; Approve and Transfer are mutually exclusive.');
     }
 
     await this.prisma.crmLead.update({

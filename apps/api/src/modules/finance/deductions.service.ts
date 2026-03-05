@@ -4,12 +4,33 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, DeductionReason } from '@prisma/client';
+import { Prisma, DeductionReason } from '@ilona/database';
 import { CreateDeductionDto } from './dto/create-deduction.dto';
+
+/** Prisma delegate access for this service. */
+type PrismaDelegates = {
+  deduction: Prisma.DeductionDelegate;
+  teacher: Prisma.TeacherDelegate;
+  lesson: Prisma.LessonDelegate;
+};
+
+/** Where arg type for delegate (avoids crossing Prisma type sources). */
+type WhereFor<T> = T extends (args?: infer A) => unknown
+  ? A extends { where?: infer W } ? W : never
+  : never;
+
+type DeductionWhereFindMany = WhereFor<PrismaDelegates['deduction']['findMany']>;
+type DeductionWhereCount = WhereFor<PrismaDelegates['deduction']['count']>;
+type DeductionWhereAggregate = WhereFor<PrismaDelegates['deduction']['aggregate']>;
+type DeductionWhereGroupBy = WhereFor<PrismaDelegates['deduction']['groupBy']>;
 
 @Injectable()
 export class DeductionsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private get db(): PrismaDelegates {
+    return this.prisma as unknown as PrismaDelegates;
+  }
 
   /**
    * Get all deductions
@@ -36,8 +57,8 @@ export class DeductionsService {
     }
 
     const [items, total] = await Promise.all([
-      this.prisma.deduction.findMany({
-        where,
+      this.db.deduction.findMany({
+        where: where as unknown as DeductionWhereFindMany,
         skip,
         take,
         orderBy: { appliedAt: 'desc' },
@@ -56,7 +77,7 @@ export class DeductionsService {
           },
         },
       }),
-      this.prisma.deduction.count({ where }),
+      this.db.deduction.count({ where: where as unknown as DeductionWhereCount }),
     ]);
 
     return {
@@ -72,7 +93,7 @@ export class DeductionsService {
    * Get deduction by ID
    */
   async findById(id: string) {
-    const deduction = await this.prisma.deduction.findUnique({
+    const deduction = await this.db.deduction.findUnique({
       where: { id },
       include: {
         teacher: {
@@ -102,7 +123,7 @@ export class DeductionsService {
    */
   async create(dto: CreateDeductionDto) {
     // Validate teacher
-    const teacher = await this.prisma.teacher.findUnique({
+    const teacher = await this.db.teacher.findUnique({
       where: { id: dto.teacherId },
     });
 
@@ -112,7 +133,7 @@ export class DeductionsService {
 
     // Validate lesson if provided
     if (dto.lessonId) {
-      const lesson = await this.prisma.lesson.findUnique({
+      const lesson = await this.db.lesson.findUnique({
         where: { id: dto.lessonId },
       });
       if (!lesson) {
@@ -120,7 +141,7 @@ export class DeductionsService {
       }
     }
 
-    return this.prisma.deduction.create({
+    return this.db.deduction.create({
       data: {
         teacherId: dto.teacherId,
         reason: dto.reason,
@@ -145,7 +166,7 @@ export class DeductionsService {
    * Create deduction for missing vocabulary
    */
   async createVocabularyDeduction(lessonId: string, amount: number) {
-    const lesson = await this.prisma.lesson.findUnique({
+    const lesson = await this.db.lesson.findUnique({
       where: { id: lessonId },
       include: { teacher: true },
     });
@@ -167,7 +188,7 @@ export class DeductionsService {
    * Create deduction for missing feedback
    */
   async createFeedbackDeduction(lessonId: string, amount: number) {
-    const lesson = await this.prisma.lesson.findUnique({
+    const lesson = await this.db.lesson.findUnique({
       where: { id: lessonId },
       include: { teacher: true },
     });
@@ -191,7 +212,7 @@ export class DeductionsService {
   async delete(id: string) {
     await this.findById(id);
 
-    return this.prisma.deduction.delete({
+    return this.db.deduction.delete({
       where: { id },
     });
   }
@@ -213,14 +234,14 @@ export class DeductionsService {
     };
 
     const [total, byReason] = await Promise.all([
-      this.prisma.deduction.aggregate({
-        where,
+      this.db.deduction.aggregate({
+        where: where as unknown as DeductionWhereAggregate,
         _sum: { amount: true },
         _count: true,
       }),
-      this.prisma.deduction.groupBy({
+      this.db.deduction.groupBy({
         by: ['reason'],
-        where,
+        where: where as unknown as DeductionWhereGroupBy,
         _sum: { amount: true },
         _count: true,
       }),
@@ -229,7 +250,7 @@ export class DeductionsService {
     return {
       total: {
         count: total._count,
-        amount: Number(total._sum.amount) || 0,
+        amount: Number(total._sum?.amount) ?? 0,
       },
       byReason: byReason.map((t) => ({
         reason: t.reason,
@@ -246,7 +267,7 @@ export class DeductionsService {
     const cutoffTime = new Date(Date.now() - hoursAfterLesson * 60 * 60 * 1000);
 
     // Find completed lessons without vocabulary sent
-    const lessons = await this.prisma.lesson.findMany({
+    const lessons = await this.db.lesson.findMany({
       where: {
         status: 'COMPLETED',
         completedAt: { lt: cutoffTime },
@@ -260,7 +281,7 @@ export class DeductionsService {
     const deductions = [];
     for (const lesson of lessons) {
       // Check if deduction already exists
-      const existing = await this.prisma.deduction.findFirst({
+      const existing = await this.db.deduction.findFirst({
         where: {
           lessonId: lesson.id,
           reason: DeductionReason.MISSING_VOCABULARY,
@@ -287,7 +308,7 @@ export class DeductionsService {
     const cutoffTime = new Date(Date.now() - hoursAfterLesson * 60 * 60 * 1000);
 
     // Find completed lessons without feedback
-    const lessons = await this.prisma.lesson.findMany({
+    const lessons = await this.db.lesson.findMany({
       where: {
         status: 'COMPLETED',
         completedAt: { lt: cutoffTime },
@@ -301,7 +322,7 @@ export class DeductionsService {
     const deductions = [];
     for (const lesson of lessons) {
       // Check if deduction already exists
-      const existing = await this.prisma.deduction.findFirst({
+      const existing = await this.db.deduction.findFirst({
         where: {
           lessonId: lesson.id,
           reason: DeductionReason.MISSING_FEEDBACK,

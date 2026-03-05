@@ -56,19 +56,16 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const isAdmin = user?.role === 'ADMIN';
   const isStudent = user?.role === 'STUDENT';
 
-  // Resolve teacher user id for "Send Voice to Teacher" (Student only): direct chat with teacher, or group's assigned teacher
+  // Resolve teacher user id for "Send Voice to Teacher" (Student only): ONLY in direct 1:1 chat with assigned teacher
   const getOtherParticipantForVoice = () => {
     if (chat.type !== 'DIRECT') return null;
     return chat.participants.find((p) => p.userId !== user?.id);
   };
   const otherParticipant = getOtherParticipantForVoice();
-  const teacherUserIdForVoice: string | null = isStudent
-    ? chat.type === 'DIRECT' && otherParticipant?.user.role === 'TEACHER'
+  const teacherUserIdForVoice: string | null =
+    isStudent && chat.type === 'DIRECT' && otherParticipant?.user.role === 'TEACHER'
       ? otherParticipant.userId
-      : chat.type === 'GROUP' && chat.group?.teacher?.userId
-        ? chat.group.teacher.userId
-        : null
-    : null;
+      : null;
   const canSendVoiceToTeacher = Boolean(teacherUserIdForVoice);
 
   // Fetch messages
@@ -747,7 +744,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               </svg>
             </button>
 
-            {/* Send Voice to Teacher (Student only, when teacher is in context) */}
+            {/* Send Voice to Teacher (Student only, in direct 1:1 chat with assigned teacher) */}
             {isStudent && canSendVoiceToTeacher && (
               <button
                 type="button"

@@ -11,7 +11,7 @@ import {
 import { TeachersService } from './teachers.service';
 import { CreateTeacherDto, UpdateTeacherDto, QueryTeacherDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 
 @Controller('teachers')
@@ -20,7 +20,7 @@ export class TeachersController {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  async findAll(@Query() query: QueryTeacherDto) {
+  async findAll(@Query() query: QueryTeacherDto): Promise<unknown> {
     return this.teachersService.findAll({
       skip: query.skip,
       take: query.take,
@@ -33,13 +33,13 @@ export class TeachersController {
 
   @Get('me')
   @Roles(UserRole.TEACHER)
-  async getMyProfile(@CurrentUser() user: JwtPayload) {
+  async getMyProfile(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.teachersService.findByUserId(user.sub);
   }
 
   @Get('me/dashboard')
   @Roles(UserRole.TEACHER)
-  async getMyDashboard(@CurrentUser() user: JwtPayload) {
+  async getMyDashboard(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.teachersService.getMyDashboard(user.sub);
   }
 
@@ -48,14 +48,14 @@ export class TeachersController {
   async getDailyPlan(
     @CurrentUser() user: JwtPayload,
     @Query('date') date?: string,
-  ) {
+  ): Promise<unknown> {
     const targetDate = date ? new Date(date) : new Date();
     return this.teachersService.getDailyPlan(user.sub, targetDate);
   }
 
   @Get(':id')
   @Roles(UserRole.ADMIN)
-  async findById(@Param('id') id: string) {
+  async findById(@Param('id') id: string): Promise<unknown> {
     return this.teachersService.findById(id);
   }
 
@@ -65,7 +65,7 @@ export class TeachersController {
     @Param('id') id: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
-  ) {
+  ): Promise<unknown> {
     return this.teachersService.getStatistics(
       id,
       dateFrom ? new Date(dateFrom) : undefined,
@@ -81,13 +81,13 @@ export class TeachersController {
 
   @Post()
   @Roles(UserRole.ADMIN)
-  async create(@Body() dto: CreateTeacherDto) {
+  async create(@Body() dto: CreateTeacherDto): Promise<unknown> {
     return this.teachersService.create(dto);
   }
 
   @Put(':id')
   @Roles(UserRole.ADMIN)
-  async update(@Param('id') id: string, @Body() dto: UpdateTeacherDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateTeacherDto): Promise<unknown> {
     return this.teachersService.update(id, dto);
   }
 

@@ -1,11 +1,11 @@
 'use client';
 
 import { StudentCard } from './StudentCard';
-import type { Student } from '@/features/students';
+import { getItemId, isOnboardingItem, type TeacherAssignedItem, type Student } from '@/features/students';
 import type { Center } from '@ilona/types';
 
 interface StudentsBoardProps {
-  studentsByCenter: Record<string, Student[]>;
+  studentsByCenter: Record<string, TeacherAssignedItem[]>;
   centersData?: Array<Center>;
   isLoading: boolean;
   searchQuery: string;
@@ -73,15 +73,31 @@ export function StudentsBoard({
                       No students
                     </div>
                   ) : (
-                    centerStudents.map((student) => (
-                      <StudentCard
-                        key={student.id}
-                        student={student}
-                        onEdit={() => onEdit(student)}
-                        onDelete={() => onDelete(student)}
-                        onDeactivate={() => onDeactivate(student)}
-                      />
-                    ))
+                    centerStudents.map((item) => {
+                      if (isOnboardingItem(item)) {
+                        return (
+                          <div
+                            key={getItemId(item)}
+                            className="bg-white rounded-lg border border-slate-200 border-dashed p-4 opacity-90"
+                          >
+                            <p className="font-medium text-slate-700">
+                              {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1">{item.phone ?? 'No phone'}</p>
+                            <span className="inline-block mt-2 text-xs text-amber-600 font-medium">Onboarding</span>
+                          </div>
+                        );
+                      }
+                      return (
+                        <StudentCard
+                          key={getItemId(item)}
+                          student={item}
+                          onEdit={() => onEdit(item)}
+                          onDelete={() => onDelete(item)}
+                          onDeactivate={() => onDeactivate(item)}
+                        />
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -101,15 +117,31 @@ export function StudentsBoard({
 
             {/* Column Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
-              {studentsByCenter['unassigned'].map((student) => (
-                <StudentCard
-                  key={student.id}
-                  student={student}
-                  onEdit={() => onEdit(student)}
-                  onDelete={() => onDelete(student)}
-                  onDeactivate={() => onDeactivate(student)}
-                />
-              ))}
+              {studentsByCenter['unassigned'].map((item) => {
+                if (isOnboardingItem(item)) {
+                  return (
+                    <div
+                      key={getItemId(item)}
+                      className="bg-white rounded-lg border border-slate-200 border-dashed p-4 opacity-90"
+                    >
+                      <p className="font-medium text-slate-700">
+                        {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">{item.phone ?? 'No phone'}</p>
+                      <span className="inline-block mt-2 text-xs text-amber-600 font-medium">Onboarding</span>
+                    </div>
+                  );
+                }
+                return (
+                  <StudentCard
+                    key={getItemId(item)}
+                    student={item}
+                    onEdit={() => onEdit(item)}
+                    onDelete={() => onDelete(item)}
+                    onDeactivate={() => onDeactivate(item)}
+                  />
+                );
+              })}
             </div>
           </div>
         )}

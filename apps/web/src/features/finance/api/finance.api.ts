@@ -76,9 +76,12 @@ export async function processPayment(id: string, data?: ProcessPaymentDto): Prom
 }
 
 /**
- * Update a payment
+ * Update a payment (admin). paymentMethod can be set only when status is PENDING.
  */
-export async function updatePayment(id: string, data: { status?: string; amount?: number; dueDate?: string; notes?: string }): Promise<Payment> {
+export async function updatePayment(
+  id: string,
+  data: { status?: string; amount?: number; dueDate?: string; notes?: string; paymentMethod?: string }
+): Promise<Payment> {
   return api.put<Payment>(`/finance/payments/${id}`, data);
 }
 

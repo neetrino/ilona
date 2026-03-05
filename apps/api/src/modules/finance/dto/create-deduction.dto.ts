@@ -6,7 +6,7 @@ import {
   Min,
   MaxLength,
 } from 'class-validator';
-import { DeductionReason } from '@prisma/client';
+import { DeductionReason } from '@ilona/database';
 
 export class CreateDeductionDto {
   @IsString()

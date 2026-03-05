@@ -10,9 +10,11 @@ interface TeacherCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onDeactivate: () => void;
+  /** Opens teacher details in CRM-style modal when card is clicked (not on action buttons) */
+  onCardClick?: (teacher: Teacher) => void;
 }
 
-export function TeacherCard({ teacher, onEdit, onDelete, onDeactivate }: TeacherCardProps) {
+export function TeacherCard({ teacher, onEdit, onDelete, onDeactivate, onCardClick }: TeacherCardProps) {
   const firstName = teacher.user?.firstName || '';
   const lastName = teacher.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim();
@@ -33,7 +35,16 @@ export function TeacherCard({ teacher, onEdit, onDelete, onDeactivate }: Teacher
     );
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div
+      className={cn(
+        'bg-white rounded-lg border border-slate-200 p-4 shadow-sm transition-shadow',
+        onCardClick && 'hover:shadow-md cursor-pointer'
+      )}
+      onClick={() => onCardClick?.(teacher)}
+      role={onCardClick ? 'button' : undefined}
+      tabIndex={onCardClick ? 0 : undefined}
+      onKeyDown={onCardClick ? (e) => e.key === 'Enter' && onCardClick(teacher) : undefined}
+    >
       {/* Teacher Header */}
       <div className="mb-3">
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -45,7 +56,8 @@ export function TeacherCard({ teacher, onEdit, onDelete, onDeactivate }: Teacher
               {fullName}
             </h4>
           </div>
-          <ActionButtons
+          <div onClick={(e) => e.stopPropagation()}>
+            <ActionButtons
             onEdit={onEdit}
             onDisable={onDeactivate}
             onDelete={onDelete}
@@ -62,6 +74,7 @@ export function TeacherCard({ teacher, onEdit, onDelete, onDeactivate }: Teacher
               delete: 'Delete teacher',
             }}
           />
+          </div>
         </div>
       </div>
 

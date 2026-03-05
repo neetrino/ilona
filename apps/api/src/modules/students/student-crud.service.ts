@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
-import { Prisma, UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserRole, UserStatus } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -128,6 +128,8 @@ export class StudentCrudService {
     } else if (sortBy === 'monthlyFee') {
       // Sort by monthly fee
       orderBy = { monthlyFee: sortOrder };
+    } else if (sortBy === 'register') {
+      orderBy = { registerDate: sortOrder };
     } else if (sortBy === 'absence') {
       // For absence sorting, we'll sort by absences count in JavaScript after calculating attendance
       // So we fetch with default order first
@@ -219,7 +221,7 @@ export class StudentCrudService {
     }
 
     // Extract total monthly fees from aggregate result
-    const totalMonthlyFees = totalMonthlyFeesResult._sum.monthlyFee 
+    const totalMonthlyFees = totalMonthlyFeesResult._sum?.monthlyFee 
       ? Number(totalMonthlyFeesResult._sum.monthlyFee) 
       : 0;
 
@@ -625,6 +627,7 @@ export class StudentCrudService {
       receiveReports?: boolean;
       groupId?: string;
       teacherId?: string;
+      registerDate?: Date | null;
     } = {
       parentName: dto.parentName,
       parentPhone: dto.parentPhone,
@@ -639,6 +642,11 @@ export class StudentCrudService {
     }
     if (dto.teacherId !== undefined) {
       updateData.teacherId = dto.teacherId;
+    }
+    if (dto.registerDate !== undefined) {
+      updateData.registerDate = dto.registerDate
+        ? new Date(dto.registerDate)
+        : null;
     }
 
     return this.prisma.student.update({

@@ -8,6 +8,7 @@ import {
   useDeleteStudent, 
   useDeleteStudentsBulk,
   useUpdateStudent,
+  getItemId,
   type Student 
 } from '@/features/students';
 import { useTeachers } from '@/features/teachers';
@@ -214,8 +215,8 @@ export function useStudentsPage() {
 
   // Handle select all toggle
   const handleSelectAll = () => {
-    const currentPageIds = new Set(students.map((s) => s.id));
-    const allCurrentSelected = students.length > 0 && students.every((s) => selectedStudentIds.has(s.id));
+    const currentPageIds = new Set(students.map(getItemId));
+    const allCurrentSelected = students.length > 0 && students.every((s) => selectedStudentIds.has(getItemId(s)));
     
     if (allCurrentSelected) {
       // Deselect all current visible students (but keep selections from other pages)
@@ -235,9 +236,9 @@ export function useStudentsPage() {
   };
 
   // Check if all visible students are selected
-  const allSelected = students.length > 0 && students.every((s) => selectedStudentIds.has(s.id));
+  const allSelected = students.length > 0 && students.every((s) => selectedStudentIds.has(getItemId(s)));
   // Check if some (but not all) are selected (indeterminate state)
-  const someSelected = students.some((s) => selectedStudentIds.has(s.id)) && !allSelected;
+  const someSelected = students.some((s) => selectedStudentIds.has(getItemId(s))) && !allSelected;
 
   // Handle bulk delete click
   const handleBulkDeleteClick = () => {
@@ -411,6 +412,13 @@ export function useStudentsPage() {
     }
   };
 
+  const handleRegisterDateChange = async (studentId: string, date: string | null) => {
+    await updateStudent.mutateAsync({
+      id: studentId,
+      data: { registerDate: date },
+    });
+  };
+
   // Prepare options for dropdowns
   const teacherOptions = useMemo(() => 
     (teachersData?.items || []).map(teacher => ({
@@ -465,8 +473,8 @@ export function useStudentsPage() {
     setSelectedStudentIds(new Set());
   };
 
-  // Stats calculation
-  const activeStudents = students.filter(s => s.user?.status === 'ACTIVE').length;
+  // Stats calculation (only full students have user.status; onboarding items are not counted as active)
+  const activeStudents = students.filter((s): s is Student => 'user' in s && s.user?.status === 'ACTIVE').length;
   const studentsWithGroup = students.filter(s => s.group).length;
   // Use backend-provided totalMonthlyFees (calculated from all matching students, respecting filters, independent of pagination)
   const totalFees = studentsData?.totalMonthlyFees || 0;
@@ -551,6 +559,7 @@ export function useStudentsPage() {
     handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
+    handleRegisterDateChange,
     setSelectedTeacherIds,
     setSelectedCenterIds,
     setSelectedStatusIds,

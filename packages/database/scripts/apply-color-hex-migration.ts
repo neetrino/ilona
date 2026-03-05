@@ -6,7 +6,7 @@
 import { config } from 'dotenv';
 import { resolve } from 'path';
 import { existsSync } from 'fs';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../src/generated/client';
 
 // Load .env.local from project root (same as main.ts)
 const possibleRootPaths = [

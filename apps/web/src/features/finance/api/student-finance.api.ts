@@ -22,6 +22,7 @@ export interface Payment {
   canPay?: boolean;
   /** Set when unpaid; explains why Pay is disabled (past = period ended, future = not yet). */
   paymentWindowReason?: PaymentWindowReason;
+  paymentMethod?: string | null;
 }
 
 export interface PaymentsResponse {
@@ -32,8 +33,10 @@ export interface PaymentsResponse {
   totalPages?: number;
 }
 
+export type StudentPaymentMethodChoice = 'cash' | 'card' | 'idram';
+
 export interface ProcessMyPaymentDto {
-  paymentMethod: string;
+  paymentMethod: StudentPaymentMethodChoice;
   transactionId?: string;
   notes?: string;
 }

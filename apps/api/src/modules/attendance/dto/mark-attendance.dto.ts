@@ -1,5 +1,5 @@
 import { IsString, IsBoolean, IsOptional, IsEnum, MaxLength } from 'class-validator';
-import { AbsenceType } from '@prisma/client';
+import { AbsenceType } from '@ilona/database';
 
 export class MarkAttendanceDto {
   @IsString()

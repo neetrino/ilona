@@ -5,11 +5,12 @@ import {
   IsBoolean,
   IsNumber,
   IsEnum,
+  IsDateString,
   Min,
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { UserStatus } from '@prisma/client';
+import { UserStatus } from '@ilona/database';
 
 export class UpdateStudentDto {
   // User fields
@@ -70,5 +71,10 @@ export class UpdateStudentDto {
   @IsBoolean()
   @IsOptional()
   receiveReports?: boolean;
+
+  /** Date when student joined a group (manual, Admin-only). ISO date string (YYYY-MM-DD). */
+  @IsOptional()
+  @IsDateString()
+  registerDate?: string | null;
 }
 

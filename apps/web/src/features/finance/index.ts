@@ -8,6 +8,7 @@ export {
   useCreatePayment,
   useProcessPayment,
   useUpdatePaymentStatus,
+  useUpdatePaymentMethod,
   useCancelPayment,
   useDeletePayment,
   useDeletePayments,

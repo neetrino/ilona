@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, ChatType, UserRole } from '@prisma/client';
+import { Prisma, ChatType, UserRole } from '@ilona/database';
 
 /**
  * Service responsible for chat-related list operations

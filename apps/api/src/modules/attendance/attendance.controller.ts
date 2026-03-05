@@ -10,7 +10,7 @@ import {
 import { AttendanceService } from './attendance.service';
 import { MarkAttendanceDto, BulkAttendanceDto, QueryAttendanceDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole, AbsenceType } from '@prisma/client';
+import { UserRole, AbsenceType } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -50,7 +50,7 @@ export class AttendanceController {
   async getByLessons(
     @Query('lessonIds') lessonIdsParam: string,
     @CurrentUser() user?: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     const lessonIds = lessonIdsParam ? lessonIdsParam.split(',').map((id) => id.trim()).filter(Boolean) : [];
     return this.attendanceService.getByLessons(lessonIds, user?.sub, user?.role);
   }
@@ -59,7 +59,7 @@ export class AttendanceController {
   async getByLesson(
     @Param('lessonId') lessonId: string,
     @CurrentUser() user?: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.attendanceService.getByLesson(lessonId, user?.sub, user?.role);
   }
 
@@ -98,7 +98,7 @@ export class AttendanceController {
   async markAttendance(
     @Body() dto: MarkAttendanceDto,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.attendanceService.markAttendance(dto, user.sub, user.role);
   }
 
@@ -107,7 +107,7 @@ export class AttendanceController {
   async markBulkAttendance(
     @Body() dto: BulkAttendanceDto,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.attendanceService.markBulkAttendance(dto, user.sub, user.role);
   }
 

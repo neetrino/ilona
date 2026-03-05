@@ -13,8 +13,44 @@ import {
   type ViewMode,
 } from '@/features/attendance/utils/dateUtils';
 import type { Lesson } from '@/features/lessons';
+import type { TeacherAssignedItem } from '@/features/students';
+import { isOnboardingItem } from '@/features/students';
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
+
+/** Key used in attendance grid: Student.id or OnboardingStudentItem.leadId (onboarding has no attendance cells). */
+export function getItemKey(item: TeacherAssignedItem): string {
+  return 'id' in item ? item.id : item.leadId;
+}
+
+/** Shape expected by AttendanceGrid / WeekAttendanceGrid (id + user for display). */
+export type AttendanceRowStudent = {
+  id: string;
+  user: { id: string; firstName: string; lastName: string; avatarUrl?: string };
+};
+
+/** Normalize TeacherAssignedItem to grid row so both students and onboarding items can be rendered. */
+export function toAttendanceRow(item: TeacherAssignedItem): AttendanceRowStudent {
+  if (isOnboardingItem(item)) {
+    return {
+      id: item.leadId,
+      user: {
+        id: item.leadId,
+        firstName: item.firstName ?? '',
+        lastName: item.lastName ?? '',
+      },
+    };
+  }
+  return {
+    id: item.id,
+    user: {
+      id: item.user.id,
+      firstName: item.user.firstName,
+      lastName: item.user.lastName,
+      avatarUrl: item.user.avatarUrl,
+    },
+  };
+}
 
 export interface AttendanceCell {
   studentId: string;
@@ -200,7 +236,7 @@ export function useAttendanceData({
     }
     return students.filter((student) =>
       filteredLessons.some((lesson) => {
-        const cell = attendanceData[lesson.id]?.[student.id];
+        const cell = attendanceData[lesson.id]?.[getItemKey(student)];
         const status: AttendanceStatus = cell?.status ?? 'not_marked';
         return status === absenceFilter;
       })
@@ -231,7 +267,7 @@ export function useAttendanceData({
     students.forEach((student) => {
       filteredLessons.forEach((lesson) => {
         total++;
-        const cell = attendanceData[lesson.id]?.[student.id];
+        const cell = attendanceData[lesson.id]?.[getItemKey(student)];
         if (!cell) {
           notMarked++;
         } else if (cell.isPresent) {

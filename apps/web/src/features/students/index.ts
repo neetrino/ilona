@@ -24,6 +24,8 @@ export { InlineSelect } from './components/InlineSelect';
 export type {
   Student,
   StudentGroup,
+  OnboardingStudentItem,
+  TeacherAssignedItem,
   StudentsResponse,
   StudentFilters,
   CreateStudentDto,
@@ -34,3 +36,4 @@ export type {
   StudentFeedback,
   StudentPayment,
 } from './types';
+export { isOnboardingItem, getItemId } from './types';

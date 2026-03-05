@@ -3,7 +3,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 
 @Injectable()
 export class StudentStatisticsService {
@@ -64,7 +64,7 @@ export class StudentStatisticsService {
     };
   }
 
-  async getMyDashboard(userId: string) {
+  async getMyDashboard(userId: string): Promise<unknown> {
     const student = await this.prisma.student.findUnique({
       where: { userId },
       include: {

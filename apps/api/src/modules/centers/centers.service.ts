@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCenterDto, UpdateCenterDto } from './dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@ilona/database';
 
 @Injectable()
 export class CentersService {

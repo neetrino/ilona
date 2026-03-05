@@ -123,6 +123,21 @@ export function useUpdatePaymentStatus() {
   });
 }
 
+/** Update payment method (admin). Allowed only when payment status is PENDING. */
+export function useUpdatePaymentMethod() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, paymentMethod }: { id: string; paymentMethod: string }) =>
+      updatePayment(id, { paymentMethod }),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.paymentDetail(id) });
+      queryClient.invalidateQueries({ queryKey: financeKeys.payments() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+    },
+  });
+}
+
 export function useCancelPayment() {
   const queryClient = useQueryClient();
 

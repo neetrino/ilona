@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
-import { LessonStatus } from '@prisma/client';
+import { LessonStatus } from '@ilona/database';
 import type { ActionWeights, CompletedActions, PenaltyAmounts } from '@ilona/types';
 
 /**

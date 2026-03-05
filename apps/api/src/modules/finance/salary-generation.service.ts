@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SalaryStatus, LessonStatus } from '@prisma/client';
+import { SalaryStatus, LessonStatus } from '@ilona/database';
 import { SalaryCalculationService } from './salary-calculation.service';
 import type { CompletedActions } from '@ilona/types';
 
@@ -51,7 +51,7 @@ export class SalaryGenerationService {
    * Uses the same per-lesson calculation as calculateMonthlySalaryFromLessons for consistency
    * Salary is calculated per lesson (fixed price per class), NOT per hour
    */
-  async generateSalaryRecord(teacherId: string, month: Date) {
+  async generateSalaryRecord(teacherId: string, month: Date): Promise<unknown> {
     // Get teacher with lesson rate (per lesson, not per hour)
     const teacher = await this.prisma.teacher.findUnique({
       where: { id: teacherId },
@@ -261,7 +261,7 @@ export class SalaryGenerationService {
   /**
    * Generate monthly salary records for all teachers
    */
-  async generateMonthlySalaries(year: number, month: number) {
+  async generateMonthlySalaries(year: number, month: number): Promise<unknown> {
     const targetMonth = new Date(year, month - 1, 1);
 
     // Get all active teachers

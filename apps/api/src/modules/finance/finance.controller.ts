@@ -17,7 +17,7 @@ import { PaymentsService } from './payments.service';
 import { SalariesService } from './salaries.service';
 import { DeductionsService } from './deductions.service';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole, PaymentStatus, SalaryStatus, DeductionReason } from '@prisma/client';
+import { UserRole, PaymentStatus, SalaryStatus, DeductionReason } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import {
   CreatePaymentDto,
@@ -101,17 +101,19 @@ export class FinanceController {
       this.salariesService.getTeacherSalarySummary(teacher.id),
     ]);
 
-    const totalEarned = list.items.reduce((s, i) => s + Number(i.netAmount), 0);
-    const totalPending = list.items
+    const listData = list as { items: Array<{ netAmount: unknown; status: string }> };
+    const summaryData = summary as { deductions: { amount: number }; lessonsCount?: number; averagePerLesson?: number };
+    const totalEarned = listData.items.reduce((s: number, i) => s + Number(i.netAmount), 0);
+    const totalPending = listData.items
       .filter((i) => i.status === SalaryStatus.PENDING)
-      .reduce((s, i) => s + Number(i.netAmount), 0);
+      .reduce((s: number, i) => s + Number(i.netAmount), 0);
 
     return {
       totalEarned,
       totalPending,
-      totalDeductions: summary.deductions.amount,
-      lessonsCount: summary.lessonsCount ?? 0,
-      averagePerLesson: summary.averagePerLesson ?? 0,
+      totalDeductions: summaryData.deductions.amount,
+      lessonsCount: summaryData.lessonsCount ?? 0,
+      averagePerLesson: summaryData.averagePerLesson ?? 0,
     };
   }
 
@@ -148,7 +150,7 @@ export class FinanceController {
     }
 
     const record = await this.salariesService.findById(id);
-    if (record.teacherId !== teacher.id) {
+    if ((record as { teacherId: string }).teacherId !== teacher.id) {
       throw new ForbiddenException('You can only view your own salary records');
     }
 
@@ -161,7 +163,7 @@ export class FinanceController {
     @CurrentUser() user: JwtPayload,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
-  ) {
+  ): Promise<unknown> {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
     });
@@ -187,7 +189,7 @@ export class FinanceController {
     @Query('skip') skip?: string,
     @Query('take') take?: string,
     @Query('status') status?: string,
-  ) {
+  ): Promise<unknown> {
     const student = await this.getCurrentStudentOrThrow(user);
 
     await this.paymentsService.ensureMonthlyPayments(student.id);
@@ -215,7 +217,7 @@ export class FinanceController {
     @CurrentUser() user: JwtPayload,
     @Param('id') id: string,
     @Body() dto: ProcessPaymentDto,
-  ) {
+  ): Promise<unknown> {
     const student = await this.getCurrentStudentOrThrow(user);
     return this.paymentsService.processPaymentForStudent(id, student.id, dto);
   }
@@ -239,7 +241,7 @@ export class FinanceController {
   async getMonthlyReport(
     @Query('year') year: string,
     @Query('month') month: string,
-  ) {
+  ): Promise<unknown> {
     return this.financeService.getMonthlyReport(
       parseInt(year, 10),
       parseInt(month, 10),
@@ -256,7 +258,7 @@ export class FinanceController {
 
   @Get('payments')
   @Roles(UserRole.ADMIN)
-  async getPayments(@Query() query: QueryPaymentDto) {
+  async getPayments(@Query() query: QueryPaymentDto): Promise<unknown> {
     return this.paymentsService.findAll({
       skip: query.skip,
       take: query.take,
@@ -270,31 +272,31 @@ export class FinanceController {
 
   @Get('payments/:id')
   @Roles(UserRole.ADMIN)
-  async getPayment(@Param('id') id: string) {
+  async getPayment(@Param('id') id: string): Promise<unknown> {
     return this.paymentsService.findById(id);
   }
 
   @Post('payments')
   @Roles(UserRole.ADMIN)
-  async createPayment(@Body() dto: CreatePaymentDto) {
+  async createPayment(@Body() dto: CreatePaymentDto): Promise<unknown> {
     return this.paymentsService.create(dto);
   }
 
   @Put('payments/:id')
   @Roles(UserRole.ADMIN)
-  async updatePayment(@Param('id') id: string, @Body() dto: UpdatePaymentDto) {
+  async updatePayment(@Param('id') id: string, @Body() dto: UpdatePaymentDto): Promise<unknown> {
     return this.paymentsService.update(id, dto);
   }
 
   @Patch('payments/:id/process')
   @Roles(UserRole.ADMIN)
-  async processPayment(@Param('id') id: string, @Body() dto: ProcessPaymentDto) {
+  async processPayment(@Param('id') id: string, @Body() dto: ProcessPaymentDto): Promise<unknown> {
     return this.paymentsService.processPayment(id, dto);
   }
 
   @Patch('payments/:id/cancel')
   @Roles(UserRole.ADMIN)
-  async cancelPayment(@Param('id') id: string) {
+  async cancelPayment(@Param('id') id: string): Promise<unknown> {
     return this.paymentsService.cancel(id);
   }
 
@@ -309,7 +311,7 @@ export class FinanceController {
 
   @Delete('payments/:id')
   @Roles(UserRole.ADMIN)
-  async deletePayment(@Param('id') id: string) {
+  async deletePayment(@Param('id') id: string): Promise<unknown> {
     return this.paymentsService.delete(id);
   }
 
@@ -341,7 +343,7 @@ export class FinanceController {
     @Query('teacherId') teacherId?: string,
     @Query('status') status?: string,
     @Query('q') q?: string,
-  ) {
+  ): Promise<unknown> {
     return this.salariesService.findAll({
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
@@ -353,7 +355,7 @@ export class FinanceController {
 
   @Post('salaries')
   @Roles(UserRole.ADMIN)
-  async createSalary(@Body() dto: CreateSalaryRecordDto) {
+  async createSalary(@Body() dto: CreateSalaryRecordDto): Promise<unknown> {
     return this.salariesService.create(dto);
   }
 
@@ -362,7 +364,7 @@ export class FinanceController {
   async generateSalary(
     @Body('teacherId') teacherId: string,
     @Body('month') month: string,
-  ) {
+  ): Promise<unknown> {
     return this.salariesService.generateSalaryRecord(teacherId, new Date(month));
   }
 
@@ -371,7 +373,7 @@ export class FinanceController {
   async generateMonthlySalaries(
     @Body('year') year: number,
     @Body('month') month: number,
-  ) {
+  ): Promise<unknown> {
     return this.salariesService.generateMonthlySalaries(year, month);
   }
 
@@ -404,25 +406,25 @@ export class FinanceController {
   // Generic routes must come after specific routes
   @Get('salaries/:id')
   @Roles(UserRole.ADMIN)
-  async getSalary(@Param('id') id: string) {
+  async getSalary(@Param('id') id: string): Promise<unknown> {
     return this.salariesService.findById(id);
   }
 
   @Patch('salaries/:id')
   @Roles(UserRole.ADMIN)
-  async updateSalary(@Param('id') id: string, @Body() dto: UpdateSalaryDto) {
+  async updateSalary(@Param('id') id: string, @Body() dto: UpdateSalaryDto): Promise<unknown> {
     return this.salariesService.update(id, dto);
   }
 
   @Patch('salaries/:id/process')
   @Roles(UserRole.ADMIN)
-  async processSalary(@Param('id') id: string, @Body() dto: ProcessSalaryDto) {
+  async processSalary(@Param('id') id: string, @Body() dto: ProcessSalaryDto): Promise<unknown> {
     return this.salariesService.processSalary(id, dto);
   }
 
   @Delete('salaries/:id')
   @Roles(UserRole.ADMIN)
-  async deleteSalary(@Param('id') id: string) {
+  async deleteSalary(@Param('id') id: string): Promise<unknown> {
     return this.salariesService.delete(id);
   }
 
@@ -453,7 +455,7 @@ export class FinanceController {
     @Query('take') take?: string,
     @Query('teacherId') teacherId?: string,
     @Query('reason') reason?: string,
-  ) {
+  ): Promise<unknown> {
     return this.deductionsService.findAll({
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
@@ -464,19 +466,19 @@ export class FinanceController {
 
   @Get('deductions/:id')
   @Roles(UserRole.ADMIN)
-  async getDeduction(@Param('id') id: string) {
+  async getDeduction(@Param('id') id: string): Promise<unknown> {
     return this.deductionsService.findById(id);
   }
 
   @Post('deductions')
   @Roles(UserRole.ADMIN)
-  async createDeduction(@Body() dto: CreateDeductionDto) {
+  async createDeduction(@Body() dto: CreateDeductionDto): Promise<unknown> {
     return this.deductionsService.create(dto);
   }
 
   @Delete('deductions/:id')
   @Roles(UserRole.ADMIN)
-  async deleteDeduction(@Param('id') id: string) {
+  async deleteDeduction(@Param('id') id: string): Promise<unknown> {
     return this.deductionsService.delete(id);
   }
 

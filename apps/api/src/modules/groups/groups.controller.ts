@@ -12,7 +12,7 @@ import {
 import { GroupsService } from './groups.service';
 import { CreateGroupDto, UpdateGroupDto, QueryGroupDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 
 @Controller('groups')
@@ -20,7 +20,7 @@ export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
   @Get()
-  async findAll(@Query() query: QueryGroupDto) {
+  async findAll(@Query() query: QueryGroupDto): Promise<unknown> {
     return this.groupsService.findAll({
       skip: query.skip,
       take: query.take,
@@ -41,7 +41,7 @@ export class GroupsController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string) {
+  async findById(@Param('id') id: string): Promise<unknown> {
     return this.groupsService.findById(id);
   }
 
@@ -51,7 +51,7 @@ export class GroupsController {
     @Param('id') groupId: string,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
-  ) {
+  ): Promise<unknown> {
     const skipNum = skip !== undefined ? parseInt(skip, 10) : 0;
     const takeNum = take !== undefined ? Math.min(parseInt(take, 10), 100) : 20;
     return this.groupsService.findStudentsByGroupId(groupId, {
@@ -62,13 +62,13 @@ export class GroupsController {
 
   @Post()
   @Roles(UserRole.ADMIN)
-  async create(@Body() dto: CreateGroupDto) {
+  async create(@Body() dto: CreateGroupDto): Promise<unknown> {
     return this.groupsService.create(dto);
   }
 
   @Put(':id')
   @Roles(UserRole.ADMIN)
-  async update(@Param('id') id: string, @Body() dto: UpdateGroupDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateGroupDto): Promise<unknown> {
     return this.groupsService.update(id, dto);
   }
 
@@ -83,7 +83,7 @@ export class GroupsController {
   async assignTeacher(
     @Param('id') groupId: string,
     @Body('teacherId') teacherId: string,
-  ) {
+  ): Promise<unknown> {
     return this.groupsService.assignTeacher(groupId, teacherId);
   }
 

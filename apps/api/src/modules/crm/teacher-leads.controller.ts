@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators';
 import { CurrentUser } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { LeadsService } from './leads.service';
 import { TeacherTransferDto } from './dto';
@@ -16,18 +16,11 @@ import { TeacherTransferDto } from './dto';
 export class TeacherLeadsController {
   constructor(private readonly leadsService: LeadsService) {}
 
-  @Get()
-  @ApiOperation({ summary: 'List leads assigned to the current teacher' })
-  findMyLeads(
-    @Query('groupId') groupId: string | undefined,
-    @CurrentUser() user: JwtPayload,
-  ) {
-    return this.leadsService.findForTeacher(user.sub, { groupId });
-  }
+  /** List of assigned leads is now returned by GET /students/me/assigned (My Students). */
 
   @Post(':id/approve')
-  @ApiOperation({ summary: 'Approve first lesson – move lead to PROCESSING' })
-  approve(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+  @ApiOperation({ summary: 'Approve first lesson – move lead to PAID' })
+  approve(@Param('id') id: string, @CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.leadsService.teacherApprove(id, user.sub);
   }
 

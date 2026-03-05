@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFeedbackDto, UpdateFeedbackDto } from './dto';
-import { UserRole, Prisma } from '@prisma/client';
+import { UserRole, Prisma } from '@ilona/database';
 import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()

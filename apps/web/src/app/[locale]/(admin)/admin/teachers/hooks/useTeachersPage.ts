@@ -73,10 +73,9 @@ export function useTeachersPage() {
     return 'list'; // Default to list view
   });
   
-  // Details drawer state
-  const teacherIdFromUrl = searchParams.get('teacherId');
-  const [selectedTeacherIdForDetails, setSelectedTeacherIdForDetails] = useState<string | null>(teacherIdFromUrl);
-  const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(!!teacherIdFromUrl);
+  // Details modal state — single source of truth from URL via effect below; init null so we don't double-open on load
+  const [selectedTeacherIdForDetails, setSelectedTeacherIdForDetails] = useState<string | null>(null);
+  const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
 
   // Debounce search query (300ms delay). Use startTransition to avoid "setTimeout handler took Xms" violations.
   useEffect(() => {
@@ -100,14 +99,12 @@ export function useTeachersPage() {
     }
   }, [searchParams]);
 
-  // Sync state with URL params when URL changes
+  // Sync state from URL only when searchParams change (avoids double trigger when we update state on click before URL updates)
   useEffect(() => {
     const teacherIdFromUrl = searchParams.get('teacherId');
-    if (teacherIdFromUrl !== selectedTeacherIdForDetails) {
-      setSelectedTeacherIdForDetails(teacherIdFromUrl);
-      setIsDetailsDrawerOpen(!!teacherIdFromUrl);
-    }
-  }, [searchParams, selectedTeacherIdForDetails]);
+    setSelectedTeacherIdForDetails(teacherIdFromUrl);
+    setIsDetailsDrawerOpen(!!teacherIdFromUrl);
+  }, [searchParams]);
 
   // Fetch teachers
   const { 
@@ -351,20 +348,20 @@ export function useTeachersPage() {
   };
 
   const handleRowClick = (teacher: Teacher) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('teacherId', teacher.id);
-    router.push(`/${locale}/admin/teachers?${params.toString()}`, { scroll: false });
     setSelectedTeacherIdForDetails(teacher.id);
     setIsDetailsDrawerOpen(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('teacherId', teacher.id);
+    router.replace(`/${locale}/admin/teachers?${params.toString()}`, { scroll: false });
   };
 
   const handleDetailsDrawerClose = () => {
+    setIsDetailsDrawerOpen(false);
+    setSelectedTeacherIdForDetails(null);
     const params = new URLSearchParams(searchParams.toString());
     params.delete('teacherId');
     const newUrl = params.toString() ? `/${locale}/admin/teachers?${params.toString()}` : `/${locale}/admin/teachers`;
-    router.push(newUrl, { scroll: false });
-    setIsDetailsDrawerOpen(false);
-    setSelectedTeacherIdForDetails(null);
+    router.replace(newUrl, { scroll: false });
   };
 
   // Stats calculation

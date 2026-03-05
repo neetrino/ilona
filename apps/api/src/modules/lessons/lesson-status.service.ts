@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CompleteLessonDto } from './dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { LessonCrudService } from './lesson-crud.service';
 
@@ -44,7 +44,7 @@ export class LessonStatusService {
     });
   }
 
-  async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: UserRole) {
+  async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: UserRole): Promise<unknown> {
     const lesson = await this.crudService.findById(id);
 
     // Check if teacher owns this lesson

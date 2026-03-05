@@ -4,8 +4,27 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, PaymentStatus } from '@prisma/client';
+import { Prisma, PaymentStatus } from '@ilona/database';
 import { CreatePaymentDto, UpdatePaymentDto, ProcessPaymentDto } from './dto/create-payment.dto';
+
+/** Payment row with student (and user/group) for monthly grouped list. */
+type PaymentWithStudent = Prisma.PaymentGetPayload<{
+  include: {
+    student: {
+      include: {
+        user: { select: { firstName: true; lastName: true; email: true } };
+        group: { select: { id: true; name: true } };
+      };
+    };
+  };
+}>;
+
+/** Result row from payment.groupBy({ by: ['paymentMethod'], ... }). */
+type PaymentGroupByMethod = {
+  paymentMethod: string | null;
+  _sum: { amount: Prisma.Decimal | null };
+  _count: number;
+};
 
 /** Normalize to first day of month in UTC so same calendar month = same value (unique constraint). */
 function startOfMonth(d: Date): Date {
@@ -51,6 +70,19 @@ export function isPaymentAllowedInWindow(
 @Injectable()
 export class PaymentsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /** Prisma delegate access (payment, student, systemSettings). Cast for TS when PrismaClient typings are not resolved. */
+  private get db(): {
+    payment: Prisma.PaymentDelegate;
+    student: Prisma.StudentDelegate;
+    systemSettings: Prisma.SystemSettingsDelegate;
+  } {
+    return this.prisma as unknown as {
+      payment: Prisma.PaymentDelegate;
+      student: Prisma.StudentDelegate;
+      systemSettings: Prisma.SystemSettingsDelegate;
+    };
+  }
 
   /**
    * Get all payments with filters
@@ -106,7 +138,7 @@ export class PaymentsService {
     }
 
     const [items, total] = await Promise.all([
-      this.prisma.payment.findMany({
+      this.db.payment.findMany({
         where,
         skip,
         take,
@@ -117,7 +149,7 @@ export class PaymentsService {
           },
         },
       }),
-      this.prisma.payment.count({ where }),
+      this.db.payment.count({ where }),
     ]);
 
     return {
@@ -146,7 +178,7 @@ export class PaymentsService {
     const where: Prisma.PaymentWhereInput = { studentId };
     if (status) where.status = status;
 
-    const payments = await this.prisma.payment.findMany({
+    const payments = await this.db.payment.findMany({
       where,
       orderBy: { month: 'desc' },
       include: {
@@ -160,10 +192,10 @@ export class PaymentsService {
     });
 
     // Group by calendar month (UTC) so one entry per (year, month)
-    const byMonth = new Map<string, typeof payments>();
+    const byMonth = new Map<string, PaymentWithStudent[]>();
     for (const p of payments) {
-      const m = p.month;
-      const key = `${m.getUTCFullYear()}-${m.getUTCMonth()}`;
+      const month = p.month;
+      const key = `${month.getUTCFullYear()}-${month.getUTCMonth()}`;
       if (!byMonth.has(key)) byMonth.set(key, []);
       byMonth.get(key)!.push(p);
     }
@@ -173,14 +205,14 @@ export class PaymentsService {
       .map(([, list]) => {
         // Use representative payment's amount only (one monthly fee per month). Do not sum.
         const pendingOrOverdue = list.find(
-          (p) => p.status === PaymentStatus.PENDING || p.status === PaymentStatus.OVERDUE,
+          (item: PaymentWithStudent) => item.status === PaymentStatus.PENDING || item.status === PaymentStatus.OVERDUE,
         );
         const representative = pendingOrOverdue ?? list[0];
         const monthNorm = startOfMonth(representative.month);
         const amount = Number(representative.amount) || 0;
-        const status = list.some((p) => p.status === PaymentStatus.PAID)
+        const status = list.some((item: PaymentWithStudent) => item.status === PaymentStatus.PAID)
           ? PaymentStatus.PAID
-          : list.some((p) => p.status === PaymentStatus.OVERDUE)
+          : list.some((item: PaymentWithStudent) => item.status === PaymentStatus.OVERDUE)
             ? PaymentStatus.OVERDUE
             : PaymentStatus.PENDING;
         const window = isPaymentAllowedInWindow(monthNorm, now);
@@ -193,7 +225,7 @@ export class PaymentsService {
           status,
           dueDate: representative.dueDate,
           month: monthNorm,
-          paidAt: list.some((p) => p.paidAt) ? (list.find((p) => p.paidAt)!.paidAt ?? null) : null,
+          paidAt: list.some((item: PaymentWithStudent) => item.paidAt) ? (list.find((item: PaymentWithStudent) => item.paidAt)!.paidAt ?? null) : null,
           paymentMethod: representative.paymentMethod,
           transactionId: representative.transactionId,
           receiptUrl: representative.receiptUrl,
@@ -223,7 +255,7 @@ export class PaymentsService {
    * Get payment by ID
    */
   async findById(id: string) {
-    const payment = await this.prisma.payment.findUnique({
+    const payment = await this.db.payment.findUnique({
       where: { id },
       include: {
         student: {
@@ -258,7 +290,7 @@ export class PaymentsService {
    * Returns null when payment does not exist or belongs to another student (caller should respond with 404).
    */
   async findByIdAndStudentId(paymentId: string, studentId: string) {
-    return this.prisma.payment.findFirst({
+    return this.db.payment.findFirst({
       where: { id: paymentId, studentId },
       include: {
         student: {
@@ -278,7 +310,7 @@ export class PaymentsService {
    * For consistency with student view, amount should match the student's monthlyFee (Admin-defined).
    */
   async create(dto: CreatePaymentDto) {
-    const student = await this.prisma.student.findUnique({
+    const student = await this.db.student.findUnique({
       where: { id: dto.studentId },
     });
 
@@ -289,7 +321,7 @@ export class PaymentsService {
     const periodStart = startOfMonth(new Date(dto.month));
     const dueDate = dto.dueDate ? new Date(dto.dueDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    const existing = await this.prisma.payment.findFirst({
+    const existing = await this.db.payment.findFirst({
       where: { studentId: dto.studentId, month: periodStart },
       include: {
         student: {
@@ -306,7 +338,7 @@ export class PaymentsService {
     }
 
     try {
-      return await this.prisma.payment.create({
+      return await this.db.payment.create({
         data: {
           studentId: dto.studentId,
           amount: dto.amount,
@@ -327,7 +359,7 @@ export class PaymentsService {
       });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-        return this.prisma.payment.findFirstOrThrow({
+        return this.db.payment.findFirstOrThrow({
           where: { studentId: dto.studentId, month: periodStart },
           include: {
             student: {
@@ -345,19 +377,28 @@ export class PaymentsService {
   }
 
   /**
-   * Update payment details
+   * Update payment details. paymentMethod can be set only when status is PENDING (admin sets method for pending/cash payments).
    */
   async update(id: string, dto: UpdatePaymentDto) {
-    await this.findById(id);
+    const payment = await this.findById(id);
 
-    return this.prisma.payment.update({
+    const data: Prisma.PaymentUncheckedUpdateInput = {
+      amount: dto.amount,
+      dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+      status: dto.status,
+      notes: dto.notes,
+    };
+
+    if (dto.paymentMethod !== undefined) {
+      if (payment.status !== PaymentStatus.PAID) {
+        data.paymentMethod = dto.paymentMethod;
+      }
+      // If already PAID, do not allow changing method (CARD/IDRAM are locked)
+    }
+
+    return this.db.payment.update({
       where: { id },
-      data: {
-        amount: dto.amount,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-        status: dto.status,
-        notes: dto.notes,
-      },
+      data,
       include: {
         student: {
           include: {
@@ -380,14 +421,18 @@ export class PaymentsService {
       throw new BadRequestException('Payment is already marked as paid');
     }
 
-    return this.prisma.payment.update({
+    const data: Prisma.PaymentUncheckedUpdateInput = {
+      status: PaymentStatus.PAID,
+      paidAt: new Date(),
+      transactionId: dto.transactionId ?? undefined,
+    };
+    if (dto.paymentMethod !== undefined) {
+      data.paymentMethod = dto.paymentMethod.toUpperCase();
+    }
+
+    return this.db.payment.update({
       where: { id },
-      data: {
-        status: PaymentStatus.PAID,
-        paymentMethod: dto.paymentMethod,
-        transactionId: dto.transactionId,
-        paidAt: new Date(),
-      },
+      data,
       include: {
         student: {
           include: {
@@ -401,8 +446,11 @@ export class PaymentsService {
   }
 
   /**
-   * Process a payment (mark as paid) only if it belongs to the given student.
-   * Returns 404 when payment does not exist or belongs to another student (no information leak).
+   * Process a payment (fake) only if it belongs to the given student.
+   * - Card / Idram: set status PAID, method CARD/IDRAM, paidAt now.
+   * - Cash: set status PENDING, method CASH (admin confirms later).
+   * paymentMethod is required for student flow (cash | card | idram).
+   * Returns 404 when payment does not exist or belongs to another student.
    * Enforces payment window: student can pay only during the corresponding calendar month.
    */
   async processPaymentForStudent(
@@ -410,6 +458,10 @@ export class PaymentsService {
     studentId: string,
     dto: ProcessPaymentDto,
   ) {
+    const method = (dto.paymentMethod ?? '').toLowerCase();
+    if (!['cash', 'card', 'idram'].includes(method)) {
+      throw new BadRequestException('paymentMethod must be one of: cash, card, idram');
+    }
     const payment = await this.findByIdAndStudentId(paymentId, studentId);
 
     if (!payment) {
@@ -443,14 +495,21 @@ export class PaymentsService {
       );
     }
 
-    return this.prisma.payment.update({
+    const methodUpper = method.toUpperCase();
+    const isOnline = methodUpper === 'CARD' || methodUpper === 'IDRAM';
+    const updateData: Prisma.PaymentUncheckedUpdateInput = {
+      paymentMethod: methodUpper,
+      transactionId: dto.transactionId ?? undefined,
+    };
+    if (isOnline) {
+      updateData.status = PaymentStatus.PAID;
+      updateData.paidAt = now;
+    }
+    // Cash: keep status PENDING, only set method
+
+    return this.db.payment.update({
       where: { id: paymentId },
-      data: {
-        status: PaymentStatus.PAID,
-        paymentMethod: dto.paymentMethod,
-        transactionId: dto.transactionId,
-        paidAt: new Date(),
-      },
+      data: updateData,
       include: {
         student: {
           include: {
@@ -473,7 +532,7 @@ export class PaymentsService {
       throw new BadRequestException('Cannot cancel a paid payment');
     }
 
-    return this.prisma.payment.update({
+    return this.db.payment.update({
       where: { id },
       data: { status: PaymentStatus.CANCELLED },
     });
@@ -484,7 +543,7 @@ export class PaymentsService {
    */
   async delete(id: string) {
     await this.findById(id);
-    return this.prisma.payment.delete({ where: { id } });
+    return this.db.payment.delete({ where: { id } });
   }
 
   /**
@@ -494,7 +553,7 @@ export class PaymentsService {
     if (!ids?.length) {
       return { deleted: 0 };
     }
-    const result = await this.prisma.payment.deleteMany({
+    const result = await this.db.payment.deleteMany({
       where: { id: { in: ids } },
     });
     return { deleted: result.count };
@@ -507,11 +566,11 @@ export class PaymentsService {
    */
   async getStudentPaymentSummary(studentId: string) {
     const [allPayments, nextPayment] = await Promise.all([
-      this.prisma.payment.findMany({
+      this.db.payment.findMany({
         where: { studentId },
         select: { month: true, amount: true, status: true },
       }),
-      this.prisma.payment.findFirst({
+      this.db.payment.findFirst({
         where: {
           studentId,
           status: { in: [PaymentStatus.PENDING, PaymentStatus.OVERDUE] },
@@ -523,11 +582,11 @@ export class PaymentsService {
 
     // One amount per calendar month (year-month key); prevents double-counting
     const byMonth = new Map<string, { amount: number; status: PaymentStatus }>();
-    for (const p of allPayments) {
-      const m = p.month;
-      const key = `${m.getUTCFullYear()}-${m.getUTCMonth()}`;
+    for (const row of allPayments) {
+      const month = row.month;
+      const key = `${month.getUTCFullYear()}-${month.getUTCMonth()}`;
       if (!byMonth.has(key)) {
-        byMonth.set(key, { amount: Number(p.amount) || 0, status: p.status });
+        byMonth.set(key, { amount: Number(row.amount) || 0, status: row.status });
       }
     }
 
@@ -560,7 +619,7 @@ export class PaymentsService {
    * Amount is always the student's monthlyFee (Admin-defined); never multiplied by classes or recalculated.
    */
   async ensureMonthlyPayments(studentId: string): Promise<void> {
-    const student = await this.prisma.student.findUnique({
+    const student = await this.db.student.findUnique({
       where: { id: studentId },
       select: { id: true, monthlyFee: true, enrolledAt: true },
     });
@@ -569,7 +628,7 @@ export class PaymentsService {
 
     const monthlyFee = student.monthlyFee != null ? Number(student.monthlyFee) : 0;
 
-    const settings = await this.prisma.systemSettings.findFirst({
+    const settings = await this.db.systemSettings.findFirst({
       orderBy: { id: 'desc' },
       select: { paymentDueDays: true },
     });
@@ -592,7 +651,7 @@ export class PaymentsService {
 
     for (const periodStart of periodStarts) {
       // Use calendar-month range so we match any existing payment for this month regardless of timezone
-      const existing = await this.prisma.payment.findFirst({
+      const existing = await this.db.payment.findFirst({
         where: {
           studentId,
           month: { gte: periodStart, lt: periodEndExclusive(periodStart) },
@@ -603,7 +662,7 @@ export class PaymentsService {
       const dueDate = new Date(periodStart.getFullYear(), periodStart.getMonth() + 1, dueDays);
 
       try {
-        await this.prisma.payment.create({
+        await this.db.payment.create({
           data: {
             studentId,
             amount: monthlyFee,
@@ -627,7 +686,7 @@ export class PaymentsService {
   async checkOverduePayments() {
     const now = new Date();
 
-    const result = await this.prisma.payment.updateMany({
+    const result = await this.db.payment.updateMany({
       where: {
         status: PaymentStatus.PENDING,
         dueDate: { lt: now },
@@ -656,7 +715,7 @@ export class PaymentsService {
         : {}),
     };
 
-    const stats = await this.prisma.payment.aggregate({
+    const stats = await this.db.payment.aggregate({
       where,
       _sum: { amount: true },
       _count: true,
@@ -664,7 +723,7 @@ export class PaymentsService {
     });
 
     // Group by payment method
-    const byMethod = await this.prisma.payment.groupBy({
+    const byMethod = await this.db.payment.groupBy({
       by: ['paymentMethod'],
       where,
       _sum: { amount: true },
@@ -675,7 +734,7 @@ export class PaymentsService {
       totalRevenue: Number(stats._sum.amount) || 0,
       totalPayments: stats._count,
       averagePayment: Number(stats._avg.amount) || 0,
-      byMethod: byMethod.map((m) => ({
+      byMethod: byMethod.map((m: PaymentGroupByMethod) => ({
         method: m.paymentMethod,
         count: m._count,
         amount: Number(m._sum.amount) || 0,

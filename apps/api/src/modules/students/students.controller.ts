@@ -12,7 +12,7 @@ import {
 import { StudentsService } from './students.service';
 import { CreateStudentDto, UpdateStudentDto, QueryStudentDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 
 @Controller('students')
@@ -21,7 +21,7 @@ export class StudentsController {
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async findAll(@Query() query: QueryStudentDto, @CurrentUser() user?: JwtPayload) {
+  async findAll(@Query() query: QueryStudentDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     // Handle array query params (e.g., ?teacherIds=id1&teacherIds=id2)
     const teacherIds = query.teacherIds || (query.teacherId ? [query.teacherId] : undefined);
     const centerIds = query.centerIds || (query.centerId ? [query.centerId] : undefined);
@@ -52,13 +52,13 @@ export class StudentsController {
 
   @Get('me')
   @Roles(UserRole.STUDENT)
-  async getMyProfile(@CurrentUser() user: JwtPayload) {
+  async getMyProfile(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.studentsService.findByUserId(user.sub);
   }
 
   @Get('me/dashboard')
   @Roles(UserRole.STUDENT)
-  async getMyDashboard(@CurrentUser() user: JwtPayload) {
+  async getMyDashboard(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.studentsService.getMyDashboard(user.sub);
   }
 
@@ -67,7 +67,7 @@ export class StudentsController {
   async getMyAssignedStudents(
     @CurrentUser() user: JwtPayload,
     @Query() query: QueryStudentDto,
-  ) {
+  ): Promise<unknown> {
     return this.studentsService.findAssignedToTeacherByUserId(user.sub, {
       skip: query.skip,
       take: query.take,
@@ -85,7 +85,7 @@ export class StudentsController {
 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+  async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     return this.studentsService.findById(id, user?.sub, user?.role);
   }
 
@@ -97,13 +97,13 @@ export class StudentsController {
 
   @Post()
   @Roles(UserRole.ADMIN)
-  async create(@Body() dto: CreateStudentDto) {
+  async create(@Body() dto: CreateStudentDto): Promise<unknown> {
     return this.studentsService.create(dto);
   }
 
   @Put(':id')
   @Roles(UserRole.ADMIN)
-  async update(@Param('id') id: string, @Body() dto: UpdateStudentDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateStudentDto): Promise<unknown> {
     return this.studentsService.update(id, dto);
   }
 
@@ -112,7 +112,7 @@ export class StudentsController {
   async changeGroup(
     @Param('id') id: string,
     @Body('groupId') groupId: string | null,
-  ) {
+  ): Promise<unknown> {
     return this.studentsService.changeGroup(id, groupId);
   }
 

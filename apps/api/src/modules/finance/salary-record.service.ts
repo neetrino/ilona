@@ -4,9 +4,30 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, SalaryStatus, LessonStatus } from '@prisma/client';
+import { Prisma, SalaryStatus, LessonStatus } from '@ilona/database';
 import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
 import { SalaryCalculationService } from './salary-calculation.service';
+
+/** Prisma delegate access for this service. */
+type PrismaDelegates = {
+  teacher: Prisma.TeacherDelegate;
+  salaryRecord: Prisma.SalaryRecordDelegate;
+  lesson: Prisma.LessonDelegate;
+};
+
+/** Where arg type for delegate findMany (avoids `any` when crossing Prisma type sources). */
+type WhereForFindMany<T> = T extends (args?: infer A) => unknown
+  ? A extends { where?: infer W } ? W : never
+  : never;
+/** Where arg type for delegate count. */
+type WhereForCount<T> = T extends (args?: infer A) => unknown
+  ? A extends { where?: infer W } ? W : never
+  : never;
+
+type TeacherWhereArg = WhereForFindMany<PrismaDelegates['teacher']['findMany']>;
+type TeacherCountWhereArg = WhereForCount<PrismaDelegates['teacher']['count']>;
+type SalaryRecordWhereArg = WhereForFindMany<PrismaDelegates['salaryRecord']['findMany']>;
+type SalaryRecordCountWhereArg = WhereForCount<PrismaDelegates['salaryRecord']['count']>;
 
 /**
  * Service responsible for salary record CRUD operations
@@ -17,6 +38,10 @@ export class SalaryRecordService {
     private readonly prisma: PrismaService,
     private readonly calculationService: SalaryCalculationService,
   ) {}
+
+  private get db(): PrismaDelegates {
+    return this.prisma as unknown as PrismaDelegates;
+  }
 
   /**
    * Get all salary records - teacher-based (includes ALL teachers)
@@ -58,8 +83,8 @@ export class SalaryRecordService {
 
     // Get all teachers (with pagination)
     const [teachers, totalTeachers] = await Promise.all([
-      this.prisma.teacher.findMany({
-        where: teacherWhere,
+      this.db.teacher.findMany({
+        where: teacherWhere as unknown as TeacherWhereArg,
         skip,
         take,
         orderBy: { createdAt: 'desc' },
@@ -74,7 +99,7 @@ export class SalaryRecordService {
           },
         },
       }),
-      this.prisma.teacher.count({ where: teacherWhere }),
+      this.db.teacher.count({ where: teacherWhere as unknown as TeacherCountWhereArg }),
     ]);
 
     const teacherIds = teachers.map(t => t.id);
@@ -95,8 +120,8 @@ export class SalaryRecordService {
     }
 
     // Get salary records for these teachers
-    const salaryRecords = await this.prisma.salaryRecord.findMany({
-      where: salaryWhere,
+    const salaryRecords = await this.db.salaryRecord.findMany({
+      where: salaryWhere as unknown as SalaryRecordWhereArg,
       include: {
         teacher: {
           include: {
@@ -177,7 +202,7 @@ export class SalaryRecordService {
           const startOfMonth = new Date(defaultMonth.getFullYear(), defaultMonth.getMonth(), 1);
           const endOfMonth = new Date(defaultMonth.getFullYear(), defaultMonth.getMonth() + 1, 0, 23, 59, 59);
           
-          const lessonsCount = await this.prisma.lesson.count({
+          const lessonsCount = await this.db.lesson.count({
             where: {
               teacherId: teacher.id,
               scheduledAt: {
@@ -191,7 +216,7 @@ export class SalaryRecordService {
           });
 
           // Get teacher's lesson rate for grossAmount calculation
-          const teacherWithRate = await this.prisma.teacher.findUnique({
+          const teacherWithRate = await this.db.teacher.findUnique({
             where: { id: teacher.id },
             select: { lessonRateAMD: true, hourlyRate: true },
           });
@@ -255,8 +280,8 @@ export class SalaryRecordService {
     }
 
     const [salaryRecords, total] = await Promise.all([
-      this.prisma.salaryRecord.findMany({
-        where,
+      this.db.salaryRecord.findMany({
+        where: where as unknown as SalaryRecordWhereArg,
         include: {
           teacher: {
             include: {
@@ -275,7 +300,7 @@ export class SalaryRecordService {
         skip,
         take,
       }),
-      this.prisma.salaryRecord.count({ where }),
+      this.db.salaryRecord.count({ where: where as unknown as SalaryRecordCountWhereArg }),
     ]);
 
     const itemsWithComputedSalary = await Promise.all(
@@ -317,7 +342,7 @@ export class SalaryRecordService {
    * Get salary record by ID with action breakdown
    */
   async findById(id: string) {
-    const record = await this.prisma.salaryRecord.findUnique({
+    const record = await this.db.salaryRecord.findUnique({
       where: { id },
       include: {
         teacher: {
@@ -346,7 +371,7 @@ export class SalaryRecordService {
     const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59);
 
     // Get ALL lessons for this month (not just completed ones) for action breakdown
-    const lessons = await this.prisma.lesson.findMany({
+    const lessons = await this.db.lesson.findMany({
       where: {
         teacherId: record.teacherId,
         scheduledAt: {
@@ -414,7 +439,7 @@ export class SalaryRecordService {
    */
   async create(dto: CreateSalaryRecordDto) {
     // Validate teacher
-    const teacher = await this.prisma.teacher.findUnique({
+    const teacher = await this.db.teacher.findUnique({
       where: { id: dto.teacherId },
     });
 
@@ -425,7 +450,7 @@ export class SalaryRecordService {
     const totalDeductions = dto.totalDeductions || 0;
     const netAmount = dto.grossAmount - totalDeductions;
 
-    return this.prisma.salaryRecord.create({
+    return this.db.salaryRecord.create({
       data: {
         teacherId: dto.teacherId,
         month: new Date(dto.month),
@@ -452,7 +477,7 @@ export class SalaryRecordService {
    * Process salary payment
    */
   async processSalary(id: string, dto: ProcessSalaryDto) {
-    const record = await this.prisma.salaryRecord.findUnique({
+    const record = await this.db.salaryRecord.findUnique({
       where: { id },
     });
 
@@ -464,7 +489,7 @@ export class SalaryRecordService {
       throw new BadRequestException('Salary is already paid');
     }
 
-    return this.prisma.salaryRecord.update({
+    return this.db.salaryRecord.update({
       where: { id },
       data: {
         status: SalaryStatus.PAID,
@@ -487,7 +512,7 @@ export class SalaryRecordService {
    * Update salary record
    */
   async update(id: string, dto: UpdateSalaryDto) {
-    const record = await this.prisma.salaryRecord.findUnique({
+    const record = await this.db.salaryRecord.findUnique({
       where: { id },
     });
 
@@ -523,7 +548,7 @@ export class SalaryRecordService {
       updateData.notes = dto.notes;
     }
 
-    return this.prisma.salaryRecord.update({
+    return this.db.salaryRecord.update({
       where: { id },
       data: updateData,
       include: {
@@ -542,7 +567,7 @@ export class SalaryRecordService {
    * Delete a salary record
    */
   async delete(id: string) {
-    const record = await this.prisma.salaryRecord.findUnique({
+    const record = await this.db.salaryRecord.findUnique({
       where: { id },
     });
 
@@ -550,7 +575,7 @@ export class SalaryRecordService {
       throw new NotFoundException(`Salary record with ID ${id} not found`);
     }
 
-    return this.prisma.salaryRecord.delete({
+    return this.db.salaryRecord.delete({
       where: { id },
     });
   }
@@ -559,7 +584,7 @@ export class SalaryRecordService {
    * Delete multiple salary records
    */
   async deleteMany(ids: string[]) {
-    return this.prisma.salaryRecord.deleteMany({
+    return this.db.salaryRecord.deleteMany({
       where: {
         id: {
           in: ids,

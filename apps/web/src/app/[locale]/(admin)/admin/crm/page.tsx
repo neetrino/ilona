@@ -20,6 +20,7 @@ import {
   EditLeadModal,
   CRMFilters,
 } from '@/features/crm/components';
+import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 const DEFAULT_FILTERS: CrmLeadFilters = {
@@ -30,13 +31,16 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
 };
 
 const VOICE_LEAD_PARAM = 'voiceLead';
+const ARCHIVE_PARAM = 'archive';
 
 export default function AdminCrmPage() {
   const t = useTranslations('nav');
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
-  const [showArchiveColumn, setShowArchiveColumn] = useState(false);
+  const [showArchiveColumn, setShowArchiveColumn] = useState(
+    () => searchParams.get(ARCHIVE_PARAM) === '1'
+  );
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
@@ -47,6 +51,11 @@ export default function AdminCrmPage() {
   useEffect(() => {
     const id = searchParams.get(VOICE_LEAD_PARAM);
     if (id) setVoiceLeadId(id);
+  }, [searchParams]);
+
+  // Restore Archive column visibility from URL after refresh
+  useEffect(() => {
+    setShowArchiveColumn(searchParams.get(ARCHIVE_PARAM) === '1');
   }, [searchParams]);
 
   const queryClient = useQueryClient();
@@ -102,10 +111,7 @@ export default function AdminCrmPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Admin CRM: hide Agreed and Processing sections (columns, filters, status dropdown on cards)
-  const adminVisibleStatuses = (statuses ?? CRM_COLUMN_ORDER).filter(
-    (s) => s !== 'AGREED' && s !== 'PROCESSING'
-  );
+  const adminVisibleStatuses = statuses ?? CRM_COLUMN_ORDER;
   // Board columns: Archive hidden by default; toggle shows it as 5th column
   const boardColumnStatuses = showArchiveColumn
     ? adminVisibleStatuses
@@ -195,16 +201,26 @@ export default function AdminCrmPage() {
             {viewMode === 'board' && (
               <button
                 type="button"
-                onClick={() => setShowArchiveColumn((v) => !v)}
+                onClick={() => {
+                  const next = !showArchiveColumn;
+                  setShowArchiveColumn(next);
+                  const url = new URL(window.location.href);
+                  if (next) url.searchParams.set(ARCHIVE_PARAM, '1');
+                  else url.searchParams.delete(ARCHIVE_PARAM);
+                  window.history.replaceState(null, '', url.pathname + url.search || '');
+                }}
                 className={cn(
-                  'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-                  showArchiveColumn
-                    ? 'bg-slate-700 text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  'rounded-lg p-1.5 text-slate-700 transition-colors hover:bg-slate-200 hover:text-slate-900',
+                  showArchiveColumn && 'bg-slate-700 text-white hover:bg-slate-600 hover:text-white'
                 )}
                 title={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
+                aria-label={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
               >
-                Archive
+                {showArchiveColumn ? (
+                  <Eye className="size-5" strokeWidth={2} aria-hidden />
+                ) : (
+                  <EyeOff className="size-5" strokeWidth={2} aria-hidden />
+                )}
               </button>
             )}
           </div>
@@ -295,6 +311,7 @@ export default function AdminCrmPage() {
         centers={centers}
         teachers={teachers}
         groups={groups}
+        availableStatuses={adminVisibleStatuses}
       />
       <VoiceLeadModal
         open={voiceModalOpen}

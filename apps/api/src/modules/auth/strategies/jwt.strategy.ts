@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException, ServiceUnavailableException, Logger 
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@ilona/database';
 import { UsersService } from '../../users/users.service';
 import { JwtPayload } from '../../../common/types/auth.types';
 

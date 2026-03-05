@@ -77,7 +77,7 @@ export function createTeachersTableColumns({
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         const isActive = teacher.user?.status === 'ACTIVE';
         return (
-          <div className={cn("flex items-center gap-3", !isActive && "opacity-60")} onClick={(e) => e.stopPropagation()}>
+          <div className={cn("flex items-center gap-3", !isActive && "opacity-60")}>
             <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-slate-600 font-semibold flex-shrink-0", isActive ? "bg-slate-200" : "bg-slate-100")}>
               {initials}
             </div>
@@ -104,7 +104,7 @@ export function createTeachersTableColumns({
         const centers = getTeacherCenters(teacher);
         
         return (
-          <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <div className="flex flex-wrap gap-1.5">
             {centers.length > 0 ? (
               <>
                 {centers.slice(0, 2).map((center) => (
@@ -135,7 +135,7 @@ export function createTeachersTableColumns({
       render: (teacher: Teacher) => {
         const studentCount = teacher._count?.students || 0;
         return (
-          <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+          <div className="flex justify-center">
             <span className="text-slate-700 font-medium">
               {studentCount}
             </span>
@@ -150,7 +150,7 @@ export function createTeachersTableColumns({
       render: (teacher: Teacher) => {
         const rate = typeof teacher.hourlyRate === 'string' ? parseFloat(teacher.hourlyRate) : Number(teacher.hourlyRate || 0);
         return (
-          <span className="text-slate-700 font-medium" onClick={(e) => e.stopPropagation()}>
+          <span className="text-slate-700 font-medium">
             {formatHourlyRate(rate)}/hr
           </span>
         );

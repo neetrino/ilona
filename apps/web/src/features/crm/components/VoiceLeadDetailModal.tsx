@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
-import { fetchLead, changeLeadStatus, getAllowedTransitions, deleteLead, updateLead } from '@/features/crm/api/crm.api';
+import type { CrmLead } from '@/features/crm/types';
+import { fetchLead, deleteLead, updateLead } from '@/features/crm/api/crm.api';
 import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
-import { STATUS_LABELS } from './LeadCard';
 import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
 import { useQuery } from '@tanstack/react-query';
 
@@ -53,7 +52,6 @@ export function VoiceLeadDetailModal({
   teachers: teachersProp,
   groups: groupsProp,
 }: VoiceLeadDetailModalProps) {
-  const [changingStatus, setChangingStatus] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -68,12 +66,6 @@ export function VoiceLeadDetailModal({
     queryKey: ['crm-lead', leadId],
     queryFn: () => fetchLead(leadId!),
     enabled: !!leadId && open,
-  });
-
-  const { data: allowedStatuses = [] } = useQuery({
-    queryKey: ['crm-allowed-transitions', lead?.status],
-    queryFn: () => getAllowedTransitions(lead!.status),
-    enabled: !!lead?.status && open,
   });
 
   const { data: centersData } = useQuery({
@@ -112,19 +104,6 @@ export function VoiceLeadDetailModal({
       setSaveError(null);
     }
   }, [lead]);
-
-  const handleStatusChange = async (newStatus: CrmLeadStatus) => {
-    if (!leadId || !lead) return;
-    setChangingStatus(true);
-    try {
-      await changeLeadStatus(leadId, { status: newStatus });
-      await refetch();
-      onUpdated();
-      onClose();
-    } finally {
-      setChangingStatus(false);
-    }
-  };
 
   const handleDeleteClick = () => setShowDeleteConfirm(true);
   const handleDeleteConfirm = async () => {
@@ -255,23 +234,6 @@ export function VoiceLeadDetailModal({
                   </div>
                 </div>
               )}
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-                <select
-                  value={lead.status}
-                  onChange={(e) => handleStatusChange(e.target.value as CrmLeadStatus)}
-                  disabled={changingStatus || allowedStatuses.length === 0}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                >
-                  <option value={lead.status}>{STATUS_LABELS[lead.status]}</option>
-                  {allowedStatuses
-                    .filter((s) => s !== lead.status)
-                    .map((s) => (
-                      <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                    ))}
-                </select>
-              </div>
 
               <div className="text-xs text-slate-500">
                 Created {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : ''}
@@ -440,8 +402,25 @@ export function VoiceLeadDetailModal({
                 </div>
               )}
 
-              {/* Transfer Info — show when Teacher has requested transfer */}
-              {(lead.transferFlag || lead.activities?.some((a) => a.type === 'TEACHER_TRANSFER')) && (
+              {/* Approved / Transfer are mutually exclusive: show only one */}
+              {(lead.teacherApprovedAt || lead.activities?.some((a) => a.type === 'TEACHER_APPROVED')) ? (
+                <div className="rounded-lg border border-green-200 bg-green-50/80 p-4">
+                  <h3 className="text-sm font-semibold text-green-900 mb-3">Approved</h3>
+                  <p className="text-sm text-slate-700">
+                    Teacher approved this lead
+                    {lead.teacherApprovedAt && (
+                      <span className="text-slate-500 ml-1">
+                        {new Date(lead.teacherApprovedAt).toLocaleString()}
+                      </span>
+                    )}
+                    {lead.teacher?.user && (
+                      <span className="block mt-1 font-medium text-slate-800">
+                        {lead.teacher.user.firstName} {lead.teacher.user.lastName}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              ) : (lead.transferFlag || lead.activities?.some((a) => a.type === 'TEACHER_TRANSFER')) ? (
                 <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-4">
                   <h3 className="text-sm font-semibold text-amber-900 mb-3">Transfer info</h3>
                   <ul className="space-y-3">
@@ -480,7 +459,7 @@ export function VoiceLeadDetailModal({
                     )}
                   </ul>
                 </div>
-              )}
+              ) : null}
 
               {lead.activities && lead.activities.length > 0 && (
                 <div>

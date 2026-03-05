@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchLead, updateLead, changeLeadStatus, getAllowedTransitions } from '@/features/crm/api/crm.api';
+import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
 import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
-import { STATUS_LABELS } from './LeadCard';
+import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { cn } from '@/shared/lib/utils';
+import { CrmStatusSelector } from './CrmStatusSelector';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -30,6 +31,8 @@ interface EditLeadModalProps {
   centers: CenterOption[];
   teachers: TeacherOption[];
   groups: GroupOption[];
+  /** All CRM statuses to show in the status selector (must match board columns). Defaults to CRM_COLUMN_ORDER. */
+  availableStatuses?: CrmLeadStatus[];
 }
 
 export function EditLeadModal({
@@ -40,6 +43,7 @@ export function EditLeadModal({
   centers,
   teachers,
   groups,
+  availableStatuses = CRM_COLUMN_ORDER,
 }: EditLeadModalProps) {
   const [form, setForm] = useState<UpdateLeadDto & { status?: CrmLeadStatus; archivedReason?: string }>({});
   const [saving, setSaving] = useState(false);
@@ -49,12 +53,6 @@ export function EditLeadModal({
     queryKey: ['crm-lead', leadId],
     queryFn: () => fetchLead(leadId!),
     enabled: !!leadId && open,
-  });
-
-  const { data: allowedStatuses = [] } = useQuery({
-    queryKey: ['crm-allowed-transitions', lead?.status],
-    queryFn: () => getAllowedTransitions(lead!.status),
-    enabled: !!lead?.status && open,
   });
 
   useEffect(() => {
@@ -74,13 +72,6 @@ export function EditLeadModal({
       setError(null);
     }
   }, [lead]);
-
-  const statusOptions = lead
-    ? [
-        lead.status,
-        ...allowedStatuses.filter((s) => s !== lead.status),
-      ]
-    : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,22 +229,14 @@ export function EditLeadModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-              <select
-                value={form.status ?? ''}
-                onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    status: (e.target.value || undefined) as CrmLeadStatus | undefined,
-                  }))
+              <CrmStatusSelector
+                id="edit-lead-status"
+                value={form.status}
+                options={availableStatuses}
+                onChange={(status) =>
+                  setForm((f) => ({ ...f, status }))
                 }
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {statusOptions.map((s) => (
-                  <option key={s} value={s}>
-                    {STATUS_LABELS[s]}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
             {form.status === 'ARCHIVE' && (
               <div>

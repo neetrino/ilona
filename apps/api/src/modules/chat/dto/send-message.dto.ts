@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsEnum, IsInt, IsObject, MaxLength } from 'class-validator';
-import { MessageType } from '@prisma/client';
+import { MessageType } from '@ilona/database';
 
 /**
  * DTO for creating a chat message.

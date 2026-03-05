@@ -12,7 +12,7 @@ import {
 import { CentersService } from './centers.service';
 import { CreateCenterDto, UpdateCenterDto, QueryCenterDto } from './dto';
 import { Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 
 @Controller('centers')
 export class CentersController {
@@ -34,7 +34,7 @@ export class CentersController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string) {
+  async findById(@Param('id') id: string): Promise<unknown> {
     return this.centersService.findById(id);
   }
 

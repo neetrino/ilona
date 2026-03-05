@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@ilona/database';
 import { ChatService } from '../chat/chat.service';
 
 @Injectable()

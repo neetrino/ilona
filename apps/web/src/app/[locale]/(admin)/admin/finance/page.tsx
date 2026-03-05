@@ -10,6 +10,7 @@ import {
   usePayments,
   useSalaries,
   useUpdatePaymentStatus,
+  useUpdatePaymentMethod,
   useUpdateSalaryStatus,
   useDeleteSalaries,
   useDeletePayments,
@@ -94,6 +95,7 @@ export default function FinancePage() {
 
   // Mutations
   const updatePaymentStatusMutation = useUpdatePaymentStatus();
+  const updatePaymentMethodMutation = useUpdatePaymentMethod();
   const updateSalaryStatusMutation = useUpdateSalaryStatus();
   const deleteSalaries = useDeleteSalaries();
   const deletePayments = useDeletePayments();
@@ -104,6 +106,14 @@ export default function FinancePage() {
       await updatePaymentStatusMutation.mutateAsync({ id: params.id, status: params.status });
     },
     isPending: updatePaymentStatusMutation.isPending,
+  };
+
+  // Wrap updatePaymentMethod to match expected interface (mutateAsync returns void)
+  const updatePaymentMethod = {
+    mutateAsync: async (params: { id: string; paymentMethod: string }) => {
+      await updatePaymentMethodMutation.mutateAsync({ id: params.id, paymentMethod: params.paymentMethod });
+    },
+    isPending: updatePaymentMethodMutation.isPending,
   };
 
   // Wrap updateSalaryStatus to match expected interface
@@ -259,6 +269,7 @@ export default function FinancePage() {
             payments={payments}
             isLoading={isLoading || isLoadingDashboard}
             updatePaymentStatus={updatePaymentStatus}
+            updatePaymentMethod={updatePaymentMethod}
             searchTerm={debouncedSearchQuery.trim()}
             noResultsKey="noPaymentsMatch"
             allPaymentsSelected={allPaymentsSelected}

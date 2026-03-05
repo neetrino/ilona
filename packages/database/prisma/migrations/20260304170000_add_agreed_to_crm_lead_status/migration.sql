@@ -1,0 +1,2 @@
+-- Migration was recorded but enum value AGREED is being removed; this file kept for migration history only.
+-- No-op: do not add AGREED (removed in next migration 20260304180000_remove_agreed_from_crm_lead_status).

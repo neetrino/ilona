@@ -24,6 +24,7 @@ const updateStudentSchema = z.object({
   monthlyFee: z.number().min(0, 'Monthly fee must be positive'),
   notes: z.string().max(500, 'Notes must be at most 500 characters').optional().or(z.literal('')),
   receiveReports: z.boolean().optional(),
+  registerDate: z.string().optional().or(z.literal('')), // YYYY-MM-DD, manual
 });
 
 type UpdateStudentFormData = z.infer<typeof updateStudentSchema>;
@@ -67,6 +68,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       monthlyFee: 0,
       notes: '',
       receiveReports: false,
+      registerDate: '',
     },
   });
 
@@ -85,6 +87,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       setValue('monthlyFee', typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) || 0 : Number(student.monthlyFee || 0));
       setValue('notes', student.notes || '');
       setValue('receiveReports', student.receiveReports ?? true);
+      setValue('registerDate', student.registerDate ? new Date(student.registerDate).toISOString().split('T')[0] : '');
       setErrorMessage(null);
       setSuccessMessage(null);
     }
@@ -116,6 +119,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
         monthlyFee: data.monthlyFee,
         notes: data.notes || undefined,
         receiveReports: data.receiveReports,
+        registerDate: data.registerDate?.trim() ? data.registerDate.trim() : null,
       };
 
       await updateStudent.mutateAsync({ id: studentId, data: payload });
@@ -276,6 +280,17 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 error={errors.monthlyFee?.message}
                 placeholder="50000"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="registerDate">Register (date joined group)</Label>
+              <Input
+                id="registerDate"
+                type="date"
+                {...register('registerDate')}
+                error={errors.registerDate?.message}
+              />
+              <p className="text-xs text-slate-500">Optional. Date when the student joined the group. Leave empty if not set.</p>
             </div>
 
             <div className="border-t pt-4">

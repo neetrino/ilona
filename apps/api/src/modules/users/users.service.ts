@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ServiceUnavailableException, Logger, Inj
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@ilona/database';
 
 const USER_CACHE_KEY_PREFIX = 'user:';
 const USER_CACHE_TTL_MS = 90 * 1000; // 90s – balance freshness vs DB load from auth

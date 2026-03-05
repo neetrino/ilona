@@ -13,6 +13,8 @@ interface TeachersBoardProps {
   onEdit: (teacher: Teacher) => void;
   onDelete: (teacher: Teacher) => void;
   onDeactivate: (teacher: Teacher) => void;
+  /** Opens teacher details in CRM-style modal */
+  onCardClick?: (teacher: Teacher) => void;
 }
 
 export function TeachersBoard({
@@ -23,6 +25,7 @@ export function TeachersBoard({
   onEdit,
   onDelete,
   onDeactivate,
+  onCardClick,
 }: TeachersBoardProps) {
   if (isLoading) {
     return (
@@ -96,6 +99,7 @@ export function TeachersBoard({
                       onEdit={() => onEdit(teacher)}
                       onDelete={() => onDelete(teacher)}
                       onDeactivate={() => onDeactivate(teacher)}
+                      onCardClick={onCardClick}
                     />
                   ))
                 )}
@@ -124,6 +128,7 @@ export function TeachersBoard({
                   onEdit={() => onEdit(teacher)}
                   onDelete={() => onDelete(teacher)}
                   onDeactivate={() => onDeactivate(teacher)}
+                  onCardClick={onCardClick}
                 />
               ))}
             </div>

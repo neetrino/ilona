@@ -13,7 +13,7 @@ import {
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { CurrentUser, Roles } from '../../common/decorators';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { CreateChatDto, SendMessageDto, UpdateMessageDto, AddGroupMemberDto, CreateCustomGroupChatDto } from './dto';
 
@@ -30,7 +30,7 @@ export class ChatController {
    * Get all chats for current user
    */
   @Get()
-  async getMyChats(@CurrentUser() user: JwtPayload) {
+  async getMyChats(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.chatService.getUserChats(user.sub);
   }
 
@@ -50,7 +50,7 @@ export class ChatController {
    * List custom group chats the current user belongs to.
    */
   @Get('custom-groups')
-  async getCustomGroupChats(@CurrentUser() user: JwtPayload) {
+  async getCustomGroupChats(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.chatService.getCustomGroupChats(user.sub);
   }
 
@@ -87,7 +87,7 @@ export class ChatController {
     @Query('cursor') cursor: string,
     @Query('take') take: string,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.chatService.getMessages(chatId, user.sub, {
       cursor,
       take: take ? parseInt(take, 10) : undefined,
@@ -147,7 +147,7 @@ export class ChatController {
     @Param('messageId') messageId: string,
     @Body() dto: UpdateMessageDto,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.chatService.editMessage(messageId, dto, user.sub);
   }
 
@@ -158,7 +158,7 @@ export class ChatController {
   async deleteMessage(
     @Param('messageId') messageId: string,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.chatService.deleteMessage(messageId, user.sub);
   }
 
@@ -182,7 +182,7 @@ export class ChatController {
     @Param('chatId') chatId: string,
     @Body('words') words: string[],
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.chatService.sendVocabularyMessage(chatId, user.sub, words);
   }
 
@@ -278,7 +278,7 @@ export class ChatController {
   async getTeacherStudents(
     @CurrentUser() user: JwtPayload,
     @Query('search') search?: string,
-  ) {
+  ): Promise<unknown> {
     return this.chatService.getTeacherStudents(user.sub, search);
   }
 
@@ -287,7 +287,7 @@ export class ChatController {
    */
   @Get('teacher/admin')
   @Roles(UserRole.TEACHER)
-  async getAdminForTeacher(@CurrentUser() user: JwtPayload) {
+  async getAdminForTeacher(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.chatService.getAdminForTeacher(user.sub);
   }
 
@@ -296,7 +296,7 @@ export class ChatController {
    */
   @Get('student/admin')
   @Roles(UserRole.STUDENT)
-  async getAdminForStudent(@CurrentUser() user: JwtPayload) {
+  async getAdminForStudent(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.chatService.getAdminForStudent(user.sub);
   }
 

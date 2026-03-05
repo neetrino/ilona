@@ -65,10 +65,30 @@ function SalaryActionCell({ salary, locale }: { salary: SalaryRecord; locale: st
   );
 }
 
+const ADMIN_METHOD_OPTIONS = [
+  { id: 'CASH', labelKey: 'methodCash' },
+  { id: 'CARD', labelKey: 'methodCard' },
+  { id: 'TERMINAL', labelKey: 'methodTerminal' },
+] as const;
+
+function formatMethodLabel(method: string | null | undefined, t: (key: string) => string): string {
+  if (!method) return '—';
+  const upper = method.toUpperCase();
+  if (upper === 'CASH') return t('methodCash');
+  if (upper === 'CARD') return t('methodCard');
+  if (upper === 'IDRAM') return t('methodIdram');
+  if (upper === 'TERMINAL') return t('methodTerminal');
+  return method;
+}
+
 interface PaymentColumnsProps {
   t: (key: string) => string;
   updatePaymentStatus: {
     mutateAsync: (params: { id: string; status: PaymentStatus }) => Promise<void>;
+    isPending: boolean;
+  };
+  updatePaymentMethod?: {
+    mutateAsync: (params: { id: string; paymentMethod: string }) => Promise<void>;
     isPending: boolean;
   };
   allPaymentsSelected?: boolean;
@@ -82,6 +102,7 @@ interface PaymentColumnsProps {
 export function getPaymentColumns({
   t,
   updatePaymentStatus,
+  updatePaymentMethod,
   allPaymentsSelected = false,
   somePaymentsSelected = false,
   selectedPaymentIds = new Set(),
@@ -90,6 +111,8 @@ export function getPaymentColumns({
   isLoadingPayments = false,
 }: PaymentColumnsProps) {
   const showCheckboxes = onSelectAllPayments != null && onToggleSelectPayment != null;
+  const isPending = (p: Payment) => p.status === 'PENDING' || p.status === 'OVERDUE';
+  const canEditMethod = updatePaymentMethod != null;
 
   const baseColumns = [
     ...(showCheckboxes
@@ -169,6 +192,42 @@ export function getPaymentColumns({
           <span className="text-slate-500">
             {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </span>
+        );
+      },
+    },
+    {
+      key: 'method',
+      header: t('method'),
+      className: 'text-left',
+      render: (payment: Payment) => {
+        const pending = isPending(payment);
+        const currentMethod = payment.paymentMethod ?? '';
+        if (pending && canEditMethod) {
+          return (
+            <div className="w-32">
+              <InlineSelect
+                value={currentMethod || null}
+                options={ADMIN_METHOD_OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
+                onChange={async (newMethod) => {
+                  if (newMethod && newMethod !== currentMethod) {
+                    try {
+                      await updatePaymentMethod?.mutateAsync({
+                        id: payment.id,
+                        paymentMethod: newMethod,
+                      });
+                    } catch (error) {
+                      console.error('Failed to update payment method:', error);
+                    }
+                  }
+                }}
+                disabled={updatePaymentMethod?.isPending}
+                className="w-full"
+              />
+            </div>
+          );
+        }
+        return (
+          <span className="text-slate-600">{formatMethodLabel(payment.paymentMethod, t)}</span>
         );
       },
     },

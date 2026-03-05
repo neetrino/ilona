@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger, ServiceUnavailableException } from '@nestjs/common';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma } from '@ilona/database';
 import { RequestContextService } from '../../common/request-context/request-context.service';
 import { ServerActivityService } from '../../common/server-activity/server-activity.service';
 

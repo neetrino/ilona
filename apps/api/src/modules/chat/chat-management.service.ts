@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ChatType, UserRole } from '@prisma/client';
+import { ChatType, UserRole } from '@ilona/database';
 import { CreateChatDto, CreateCustomGroupChatDto } from './dto';
 import { ChatAuthorizationService } from './chat-authorization.service';
 
@@ -25,7 +25,7 @@ export class ChatManagementService {
   /**
    * Get all chats for a user
    */
-  async getUserChats(userId: string) {
+  async getUserChats(userId: string): Promise<unknown> {
     try {
       // Ensure connection is active before query
       await this.prisma.ensureConnected();
@@ -905,7 +905,7 @@ export class ChatManagementService {
   /**
    * List custom group chats (type=GROUP, groupId=null) the user belongs to.
    */
-  async getCustomGroupChats(userId: string) {
+  async getCustomGroupChats(userId: string): Promise<unknown> {
     const chats = await this.prisma.chat.findMany({
       where: {
         type: ChatType.GROUP,
