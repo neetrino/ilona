@@ -43,7 +43,7 @@ yarn-error.log*
 coverage
 .nyc_output
 
-# Prisma
+# Prisma (only SQLite files; migrations in packages/database/prisma/migrations/ are tracked)
 prisma/*.db
 prisma/*.db-journal
 
