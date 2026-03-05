@@ -14,7 +14,7 @@ BEGIN
     JOIN pg_type t ON e.enumtypid = t.oid
     WHERE t.typname = 'CrmLeadStatus' AND e.enumlabel = 'AGREED'
   ) THEN
-    ALTER TYPE "CrmLeadStatus" REMOVE VALUE 'AGREED';
+    ALTER TYPE "CrmLeadStatus" DROP VALUE 'AGREED';
   END IF;
 
   -- Remove PROCESSING from enum if present
@@ -23,7 +23,7 @@ BEGIN
     JOIN pg_type t ON e.enumtypid = t.oid
     WHERE t.typname = 'CrmLeadStatus' AND e.enumlabel = 'PROCESSING'
   ) THEN
-    ALTER TYPE "CrmLeadStatus" REMOVE VALUE 'PROCESSING';
+    ALTER TYPE "CrmLeadStatus" DROP VALUE 'PROCESSING';
   END IF;
 END $$;
 
