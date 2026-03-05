@@ -74,10 +74,42 @@ export default function TeacherLeadsPage() {
   const transferMutation = useMutation({
     mutationFn: ({ leadId, comment }: { leadId: string; comment: string }) =>
       teacherTransferLead(leadId, comment),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-leads'] });
+    onMutate: async ({ leadId, comment }) => {
+      await queryClient.cancelQueries({ queryKey: ['teacher-leads', selectedGroupId] });
+      const previous = queryClient.getQueryData<{ items: CrmLead[]; total: number }>(['teacher-leads', selectedGroupId]);
+      queryClient.setQueryData<{ items: CrmLead[]; total: number }>(['teacher-leads', selectedGroupId], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          items: old.items.map((l) =>
+            l.id === leadId ? { ...l, transferFlag: true, transferComment: comment ?? l.transferComment } : l
+          ),
+        };
+      });
+      return { previous };
+    },
+    onSuccess: (updatedLead) => {
+      queryClient.setQueryData<{ items: CrmLead[]; total: number }>(['teacher-leads', selectedGroupId], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          items: old.items.map((l) =>
+            l.id === updatedLead.id ? { ...l, ...updatedLead } : l
+          ),
+        };
+      });
       setTransferLeadId(null);
       setTransferComment('');
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['teacher-leads', selectedGroupId], context.previous);
+      }
+    },
+    onSettled: (_data, error) => {
+      if (error) {
+        queryClient.invalidateQueries({ queryKey: ['teacher-leads'] });
+      }
     },
   });
 
@@ -155,16 +187,15 @@ export default function TeacherLeadsPage() {
                           {lead.group.name}
                         </span>
                       )}
-                      {lead.teacherApprovedAt && (
+                      {lead.teacherApprovedAt ? (
                         <span className="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
                           Approved
                         </span>
-                      )}
-                      {lead.transferFlag && (
+                      ) : lead.transferFlag ? (
                         <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
                           TRANSFER
                         </span>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -178,24 +209,33 @@ export default function TeacherLeadsPage() {
                           >
                             ✓
                           </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => approveMutation.mutate(lead.id)}
-                            disabled={approveMutation.isPending}
-                            className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                        ) : lead.transferFlag ? (
+                          <span
+                            className="rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800"
+                            title="Transfer requested"
                           >
-                            Approve
-                          </button>
+                            Transfer
+                          </span>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => approveMutation.mutate(lead.id)}
+                              disabled={approveMutation.isPending}
+                              className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setTransferLeadId(lead.id)}
+                              disabled={transferMutation.isPending}
+                              className="rounded-lg border border-amber-500 text-amber-700 px-3 py-1.5 text-sm font-medium hover:bg-amber-50"
+                            >
+                              Transfer
+                            </button>
+                          </>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => setTransferLeadId(lead.id)}
-                          disabled={transferMutation.isPending}
-                          className="rounded-lg border border-amber-500 text-amber-700 px-3 py-1.5 text-sm font-medium hover:bg-amber-50"
-                        >
-                          Transfer
-                        </button>
                       </>
                     )}
                   </div>

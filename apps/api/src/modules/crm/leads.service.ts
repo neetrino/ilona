@@ -487,6 +487,9 @@ export class LeadsService {
     if (lead.status !== 'FIRST_LESSON') {
       throw new BadRequestException('Lead must be in FIRST_LESSON to approve');
     }
+    if (lead.transferFlag) {
+      throw new BadRequestException('Lead has been marked for transfer; Approve and Transfer are mutually exclusive.');
+    }
     const alreadyApproved = (lead as { teacherApprovedAt?: Date | null }).teacherApprovedAt != null;
     if (alreadyApproved) {
       return this.findById(leadId);
@@ -514,6 +517,9 @@ export class LeadsService {
     }
     if (lead.status !== 'FIRST_LESSON') {
       throw new BadRequestException('Only FIRST_LESSON leads can be marked for transfer');
+    }
+    if (lead.teacherApprovedAt != null) {
+      throw new BadRequestException('Lead has already been approved; Approve and Transfer are mutually exclusive.');
     }
 
     await this.prisma.crmLead.update({

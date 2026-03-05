@@ -440,8 +440,8 @@ export function VoiceLeadDetailModal({
                 </div>
               )}
 
-              {/* Approved — show when Teacher has approved the lead */}
-              {(lead.teacherApprovedAt || lead.activities?.some((a) => a.type === 'TEACHER_APPROVED')) && (
+              {/* Approved / Transfer are mutually exclusive: show only one */}
+              {(lead.teacherApprovedAt || lead.activities?.some((a) => a.type === 'TEACHER_APPROVED')) ? (
                 <div className="rounded-lg border border-green-200 bg-green-50/80 p-4">
                   <h3 className="text-sm font-semibold text-green-900 mb-3">Approved</h3>
                   <p className="text-sm text-slate-700">
@@ -458,10 +458,7 @@ export function VoiceLeadDetailModal({
                     )}
                   </p>
                 </div>
-              )}
-
-              {/* Transfer Info — show when Teacher has requested transfer */}
-              {(lead.transferFlag || lead.activities?.some((a) => a.type === 'TEACHER_TRANSFER')) && (
+              ) : (lead.transferFlag || lead.activities?.some((a) => a.type === 'TEACHER_TRANSFER')) ? (
                 <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-4">
                   <h3 className="text-sm font-semibold text-amber-900 mb-3">Transfer info</h3>
                   <ul className="space-y-3">
@@ -500,7 +497,7 @@ export function VoiceLeadDetailModal({
                     )}
                   </ul>
                 </div>
-              )}
+              ) : null}
 
               {lead.activities && lead.activities.length > 0 && (
                 <div>
