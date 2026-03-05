@@ -102,10 +102,12 @@ export class StudentQueryService {
       include: studentInclude,
     });
 
-    // 2) Fetch assigned onboarding leads (NEW or FIRST_LESSON with teacherId + groupId)
+    // 2) Fetch assigned onboarding leads (NEW or FIRST_LESSON with teacherId + groupId).
+    // Exclude transfer-requested leads so they disappear from teacher's list after Transfer.
     const leadWhere: Prisma.CrmLeadWhereInput = {
       teacherId,
       status: { in: ['NEW', 'FIRST_LESSON'] },
+      transferFlag: false,
     };
     if (groupId) {
       leadWhere.groupId = groupId;
@@ -174,7 +176,7 @@ export class StudentQueryService {
         _sortKey: i,
       }));
     const approvedLeads = filteredLeads
-      .filter((l) => l.teacherApprovedAt && !l.transferFlag)
+      .filter((l) => l.teacherApprovedAt)
       .map((l, i) => ({
         type: 'onboarding' as const,
         leadId: l.id,
@@ -189,27 +191,10 @@ export class StudentQueryService {
         group: l.group,
         _sortKey: 1000 + i,
       }));
-    const transferLeads = filteredLeads
-      .filter((l) => l.transferFlag)
-      .map((l, i) => ({
-        type: 'onboarding' as const,
-        leadId: l.id,
-        status: l.status,
-        firstName: l.firstName,
-        lastName: l.lastName,
-        phone: l.phone,
-        teacherApprovedAt: l.teacherApprovedAt,
-        transferFlag: l.transferFlag,
-        transferComment: l.transferComment,
-        groupId: l.groupId,
-        group: l.group,
-        _sortKey: 2000 + i,
-      }));
 
     const onboardingItems: OnboardingItem[] = [
       ...pendingLeads,
       ...approvedLeads,
-      ...transferLeads,
     ];
 
     type StudentItem = (typeof students)[number] & { type: 'student'; _sortKey: number };
