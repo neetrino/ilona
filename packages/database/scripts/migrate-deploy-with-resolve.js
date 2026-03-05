@@ -33,13 +33,23 @@ if (fs.existsSync(envPath)) {
   });
 }
 
+const MAX_DEPLOY_RESOLVE_RETRIES = 5;
+
 function run(cmd, options = {}) {
-  const { ignoreError = false } = options;
+  const { ignoreError = false, captureOutput = false } = options;
   try {
+    if (captureOutput) {
+      return execSync(cmd, { cwd: prismaDir, encoding: 'utf8', stdio: ['inherit', 'pipe', 'pipe'], shell: true });
+    }
     execSync(cmd, { cwd: prismaDir, stdio: 'inherit', shell: true });
   } catch (e) {
+    if (captureOutput) {
+      const out = (e.stdout ?? '') + (e.stderr ?? '') + (e.message ?? '');
+      return { failed: true, output: out, status: e.status };
+    }
     if (!ignoreError) throw e;
   }
+  return null;
 }
 
 async function getFailedMigrationNames() {
@@ -86,6 +96,13 @@ async function getFailedMigrationNames() {
   }
 }
 
+// Extract failed migration name from Prisma P3009 error message.
+// Example: "The `20260304180000_remove_agreed_from_crm_lead_status` migration started at ... failed"
+function parseFailedMigrationName(output) {
+  const match = (output || '').match(/`([^`]+)`\s+migration\s+(?:started|failed)/);
+  return match ? match[1] : null;
+}
+
 async function main() {
   const failed = await getFailedMigrationNames();
   if (failed.length > 0) {
@@ -99,7 +116,25 @@ async function main() {
     }
   }
 
-  run('npx prisma migrate deploy');
+  let lastResult = null;
+  for (let attempt = 0; attempt < MAX_DEPLOY_RESOLVE_RETRIES; attempt++) {
+    lastResult = run('npx prisma migrate deploy', { captureOutput: true });
+    if (!lastResult || !lastResult.failed) break;
+    const output = lastResult.output || '';
+    const isP3009 = output.indexOf('P3009') !== -1;
+    const name = parseFailedMigrationName(output);
+    if (!isP3009 || !name) {
+      console.error(output || 'prisma migrate deploy failed');
+      process.exit(lastResult.status ?? 1);
+    }
+    console.warn(`[db:migrate] P3009: resolving failed migration "${name}" as rolled back and retrying deploy (attempt ${attempt + 1}/${MAX_DEPLOY_RESOLVE_RETRIES})`);
+    run(`npx prisma migrate resolve --rolled-back "${name}"`, { ignoreError: true });
+  }
+
+  if (lastResult && lastResult.failed) {
+    console.error(lastResult.output || 'prisma migrate deploy failed');
+    process.exit(lastResult.status ?? 1);
+  }
 }
 
 main().catch((err) => {
