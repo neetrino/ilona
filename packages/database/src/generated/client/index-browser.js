@@ -373,6 +373,7 @@ exports.Prisma.CrmLeadScalarFieldEnum = {
   centerId: 'centerId',
   transferFlag: 'transferFlag',
   transferComment: 'transferComment',
+  teacherApprovedAt: 'teacherApprovedAt',
   archivedReason: 'archivedReason',
   source: 'source',
   notes: 'notes'
@@ -500,9 +501,7 @@ exports.MessageType = exports.$Enums.MessageType = {
 
 exports.CrmLeadStatus = exports.$Enums.CrmLeadStatus = {
   NEW: 'NEW',
-  AGREED: 'AGREED',
   FIRST_LESSON: 'FIRST_LESSON',
-  PROCESSING: 'PROCESSING',
   PAID: 'PAID',
   WAITLIST: 'WAITLIST',
   ARCHIVE: 'ARCHIVE'

@@ -210,9 +210,7 @@ export type MessageType = (typeof MessageType)[keyof typeof MessageType]
 
 export const CrmLeadStatus: {
   NEW: 'NEW',
-  AGREED: 'AGREED',
   FIRST_LESSON: 'FIRST_LESSON',
-  PROCESSING: 'PROCESSING',
   PAID: 'PAID',
   WAITLIST: 'WAITLIST',
   ARCHIVE: 'ARCHIVE'
@@ -20415,6 +20413,7 @@ export namespace Prisma {
     centerId: string | null
     transferFlag: boolean | null
     transferComment: string | null
+    teacherApprovedAt: Date | null
     archivedReason: string | null
     source: string | null
     notes: string | null
@@ -20437,6 +20436,7 @@ export namespace Prisma {
     centerId: string | null
     transferFlag: boolean | null
     transferComment: string | null
+    teacherApprovedAt: Date | null
     archivedReason: string | null
     source: string | null
     notes: string | null
@@ -20459,6 +20459,7 @@ export namespace Prisma {
     centerId: number
     transferFlag: number
     transferComment: number
+    teacherApprovedAt: number
     archivedReason: number
     source: number
     notes: number
@@ -20491,6 +20492,7 @@ export namespace Prisma {
     centerId?: true
     transferFlag?: true
     transferComment?: true
+    teacherApprovedAt?: true
     archivedReason?: true
     source?: true
     notes?: true
@@ -20513,6 +20515,7 @@ export namespace Prisma {
     centerId?: true
     transferFlag?: true
     transferComment?: true
+    teacherApprovedAt?: true
     archivedReason?: true
     source?: true
     notes?: true
@@ -20535,6 +20538,7 @@ export namespace Prisma {
     centerId?: true
     transferFlag?: true
     transferComment?: true
+    teacherApprovedAt?: true
     archivedReason?: true
     source?: true
     notes?: true
@@ -20644,6 +20648,7 @@ export namespace Prisma {
     centerId: string | null
     transferFlag: boolean
     transferComment: string | null
+    teacherApprovedAt: Date | null
     archivedReason: string | null
     source: string | null
     notes: string | null
@@ -20685,6 +20690,7 @@ export namespace Prisma {
     centerId?: boolean
     transferFlag?: boolean
     transferComment?: boolean
+    teacherApprovedAt?: boolean
     archivedReason?: boolean
     source?: boolean
     notes?: boolean
@@ -20716,6 +20722,7 @@ export namespace Prisma {
     centerId?: boolean
     transferFlag?: boolean
     transferComment?: boolean
+    teacherApprovedAt?: boolean
     archivedReason?: boolean
     source?: boolean
     notes?: boolean
@@ -20743,6 +20750,7 @@ export namespace Prisma {
     centerId?: boolean
     transferFlag?: boolean
     transferComment?: boolean
+    teacherApprovedAt?: boolean
     archivedReason?: boolean
     source?: boolean
     notes?: boolean
@@ -20796,6 +20804,7 @@ export namespace Prisma {
       centerId: string | null
       transferFlag: boolean
       transferComment: string | null
+      teacherApprovedAt: Date | null
       archivedReason: string | null
       source: string | null
       notes: string | null
@@ -21216,6 +21225,7 @@ export namespace Prisma {
     readonly centerId: FieldRef<"CrmLead", 'String'>
     readonly transferFlag: FieldRef<"CrmLead", 'Boolean'>
     readonly transferComment: FieldRef<"CrmLead", 'String'>
+    readonly teacherApprovedAt: FieldRef<"CrmLead", 'DateTime'>
     readonly archivedReason: FieldRef<"CrmLead", 'String'>
     readonly source: FieldRef<"CrmLead", 'String'>
     readonly notes: FieldRef<"CrmLead", 'String'>
@@ -24841,6 +24851,7 @@ export namespace Prisma {
     centerId: 'centerId',
     transferFlag: 'transferFlag',
     transferComment: 'transferComment',
+    teacherApprovedAt: 'teacherApprovedAt',
     archivedReason: 'archivedReason',
     source: 'source',
     notes: 'notes'
@@ -26748,6 +26759,7 @@ export namespace Prisma {
     centerId?: StringNullableFilter<"CrmLead"> | string | null
     transferFlag?: BoolFilter<"CrmLead"> | boolean
     transferComment?: StringNullableFilter<"CrmLead"> | string | null
+    teacherApprovedAt?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     archivedReason?: StringNullableFilter<"CrmLead"> | string | null
     source?: StringNullableFilter<"CrmLead"> | string | null
     notes?: StringNullableFilter<"CrmLead"> | string | null
@@ -26778,6 +26790,7 @@ export namespace Prisma {
     centerId?: SortOrderInput | SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrderInput | SortOrder
+    teacherApprovedAt?: SortOrderInput | SortOrder
     archivedReason?: SortOrderInput | SortOrder
     source?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
@@ -26811,6 +26824,7 @@ export namespace Prisma {
     centerId?: StringNullableFilter<"CrmLead"> | string | null
     transferFlag?: BoolFilter<"CrmLead"> | boolean
     transferComment?: StringNullableFilter<"CrmLead"> | string | null
+    teacherApprovedAt?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     archivedReason?: StringNullableFilter<"CrmLead"> | string | null
     source?: StringNullableFilter<"CrmLead"> | string | null
     notes?: StringNullableFilter<"CrmLead"> | string | null
@@ -26841,6 +26855,7 @@ export namespace Prisma {
     centerId?: SortOrderInput | SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrderInput | SortOrder
+    teacherApprovedAt?: SortOrderInput | SortOrder
     archivedReason?: SortOrderInput | SortOrder
     source?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
@@ -26871,6 +26886,7 @@ export namespace Prisma {
     centerId?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
     transferFlag?: BoolWithAggregatesFilter<"CrmLead"> | boolean
     transferComment?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
+    teacherApprovedAt?: DateTimeNullableWithAggregatesFilter<"CrmLead"> | Date | string | null
     archivedReason?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
     source?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
     notes?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
@@ -28815,6 +28831,7 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -28845,6 +28862,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -28865,6 +28883,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28895,6 +28914,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28920,6 +28940,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -28937,6 +28958,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28959,6 +28981,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30705,6 +30728,7 @@ export namespace Prisma {
     centerId?: SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrder
+    teacherApprovedAt?: SortOrder
     archivedReason?: SortOrder
     source?: SortOrder
     notes?: SortOrder
@@ -30731,6 +30755,7 @@ export namespace Prisma {
     centerId?: SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrder
+    teacherApprovedAt?: SortOrder
     archivedReason?: SortOrder
     source?: SortOrder
     notes?: SortOrder
@@ -30753,6 +30778,7 @@ export namespace Prisma {
     centerId?: SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrder
+    teacherApprovedAt?: SortOrder
     archivedReason?: SortOrder
     source?: SortOrder
     notes?: SortOrder
@@ -33365,6 +33391,7 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -33393,6 +33420,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -33423,6 +33451,7 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -33451,6 +33480,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -33704,6 +33734,7 @@ export namespace Prisma {
     centerId?: StringNullableFilter<"CrmLead"> | string | null
     transferFlag?: BoolFilter<"CrmLead"> | boolean
     transferComment?: StringNullableFilter<"CrmLead"> | string | null
+    teacherApprovedAt?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     archivedReason?: StringNullableFilter<"CrmLead"> | string | null
     source?: StringNullableFilter<"CrmLead"> | string | null
     notes?: StringNullableFilter<"CrmLead"> | string | null
@@ -33779,6 +33810,7 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -33807,6 +33839,7 @@ export namespace Prisma {
     groupId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -34100,6 +34133,7 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -34128,6 +34162,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -34680,6 +34715,7 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -34708,6 +34744,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -34999,6 +35036,7 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -35028,6 +35066,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -35304,6 +35343,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35333,6 +35373,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37869,6 +37910,7 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -37898,6 +37940,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -37933,6 +37976,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37962,6 +38006,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37981,6 +38026,7 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -38010,6 +38056,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -38045,6 +38092,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38074,6 +38122,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38134,6 +38183,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -38155,6 +38205,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -38283,6 +38334,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38311,6 +38363,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38335,6 +38388,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38352,6 +38406,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38380,6 +38435,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38404,6 +38460,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38437,6 +38494,7 @@ export namespace Prisma {
     groupId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -38498,6 +38556,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38526,6 +38585,7 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38550,6 +38610,7 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38611,6 +38672,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -38758,6 +38820,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38786,6 +38849,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38810,6 +38874,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38920,6 +38985,7 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
+    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
@@ -39222,6 +39288,7 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39250,6 +39317,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39274,6 +39342,7 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null

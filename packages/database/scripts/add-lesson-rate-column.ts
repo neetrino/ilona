@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../src/generated/client';
 import { config } from 'dotenv';
 import { resolve } from 'path';
 

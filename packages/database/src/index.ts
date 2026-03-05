@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './generated/client';
 
 // PrismaClient singleton
 const globalForPrisma = globalThis as unknown as {
@@ -15,8 +15,8 @@ if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
 
-// Re-export Prisma types
-export * from '@prisma/client';
+// Re-export from package-owned generated client (single source of truth for schema types)
+export * from './generated/client';
 
 // Export prisma client as default
 export default prisma;

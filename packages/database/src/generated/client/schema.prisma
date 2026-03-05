@@ -65,12 +65,10 @@ enum DeductionReason {
   OTHER
 }
 
-// CRM Lead status (fixed order: NEW → AGREED → FIRST_LESSON → PROCESSING → PAID → WAITLIST → ARCHIVE)
+// CRM Lead status (fixed order: NEW → FIRST_LESSON → PAID → WAITLIST → ARCHIVE)
 enum CrmLeadStatus {
   NEW
-  AGREED
   FIRST_LESSON
-  PROCESSING
   PAID
   WAITLIST
   ARCHIVE
@@ -558,6 +556,7 @@ model CrmLead {
   centerId          String?
   transferFlag      Boolean       @default(false)
   transferComment   String?
+  teacherApprovedAt DateTime? // Set when teacher approves first lesson (visible on CRM card)
   archivedReason    String?
   source            String? // call, form, etc.
   notes             String?

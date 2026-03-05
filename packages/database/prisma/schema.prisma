@@ -4,7 +4,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  output   = "../src/generated/client"
 }
 
 datasource db {
@@ -556,6 +556,7 @@ model CrmLead {
   centerId           String?
   transferFlag       Boolean       @default(false)
   transferComment    String?
+  teacherApprovedAt  DateTime?     // Set when teacher approves first lesson (visible on CRM card)
   archivedReason    String?
   source             String?       // call, form, etc.
   notes              String?

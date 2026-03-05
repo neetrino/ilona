@@ -158,6 +158,11 @@ export function LeadCard({ lead, availableStatuses = CRM_COLUMN_ORDER, onClick, 
             {lead.levelId}
           </span>
         )}
+        {lead.teacherApprovedAt && (
+          <span className="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
+            Approved
+          </span>
+        )}
         {lead.transferFlag && (
           <span className="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
             TRANSFER

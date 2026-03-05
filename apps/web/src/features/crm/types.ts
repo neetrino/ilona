@@ -55,6 +55,7 @@ export interface CrmLead {
   centerId: string | null;
   transferFlag: boolean;
   transferComment: string | null;
+  teacherApprovedAt: string | null;
   archivedReason: string | null;
   source: string | null;
   notes: string | null;

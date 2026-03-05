@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import type { CrmLead } from '@/features/crm/types';
 import { fetchTeacherLeads, teacherApproveLead, teacherTransferLead } from '@/features/crm/api/crm.api';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import { STATUS_LABELS } from '@/features/crm/components/LeadCard';
@@ -24,7 +25,50 @@ export default function TeacherLeadsPage() {
 
   const approveMutation = useMutation({
     mutationFn: teacherApproveLead,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teacher-leads'] }),
+    onMutate: async (leadId) => {
+      await queryClient.cancelQueries({ queryKey: ['teacher-leads', selectedGroupId] });
+      const previous = queryClient.getQueryData<{ items: CrmLead[]; total: number }>(['teacher-leads', selectedGroupId]);
+      queryClient.setQueryData<{ items: CrmLead[]; total: number }>(['teacher-leads', selectedGroupId], (old) => {
+        if (!old) return old;
+        const approvedAt = new Date().toISOString();
+        return {
+          ...old,
+          items: old.items.map((l) =>
+            l.id === leadId ? { ...l, teacherApprovedAt: approvedAt } : l
+          ),
+        };
+      });
+      return { previous };
+    },
+    onSuccess: (updatedLead) => {
+      // Use backend response as source of truth so approval persists (not overwritten by refetch)
+      const approvedAt =
+        updatedLead.teacherApprovedAt != null
+          ? typeof updatedLead.teacherApprovedAt === 'string'
+            ? updatedLead.teacherApprovedAt
+            : new Date(updatedLead.teacherApprovedAt as Date).toISOString()
+          : null;
+      queryClient.setQueryData<{ items: CrmLead[]; total: number }>(['teacher-leads', selectedGroupId], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          items: old.items.map((l) =>
+            l.id === updatedLead.id ? { ...l, ...updatedLead, teacherApprovedAt: approvedAt ?? l.teacherApprovedAt } : l
+          ),
+        };
+      });
+    },
+    onError: (_err, _leadId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['teacher-leads', selectedGroupId], context.previous);
+      }
+    },
+    onSettled: (_data, _error) => {
+      // Only invalidate on error so cache isn't replaced by a refetch that could miss approval state
+      if (_error) {
+        queryClient.invalidateQueries({ queryKey: ['teacher-leads'] });
+      }
+    },
   });
 
   const transferMutation = useMutation({
@@ -111,6 +155,11 @@ export default function TeacherLeadsPage() {
                           {lead.group.name}
                         </span>
                       )}
+                      {lead.teacherApprovedAt && (
+                        <span className="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
+                          Approved
+                        </span>
+                      )}
                       {lead.transferFlag && (
                         <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
                           TRANSFER
@@ -121,14 +170,24 @@ export default function TeacherLeadsPage() {
                   <div className="flex items-center gap-2">
                     {lead.status === 'FIRST_LESSON' && (
                       <>
-                        <button
-                          type="button"
-                          onClick={() => approveMutation.mutate(lead.id)}
-                          disabled={approveMutation.isPending}
-                          className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-                        >
-                          Approved
-                        </button>
+                        {lead.teacherApprovedAt ? (
+                          <span
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-700"
+                            title="Approved"
+                            aria-label="Approved"
+                          >
+                            ✓
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => approveMutation.mutate(lead.id)}
+                            disabled={approveMutation.isPending}
+                            className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                          >
+                            Approve
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => setTransferLeadId(lead.id)}

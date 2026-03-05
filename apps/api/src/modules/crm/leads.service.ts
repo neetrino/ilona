@@ -487,9 +487,16 @@ export class LeadsService {
     if (lead.status !== 'FIRST_LESSON') {
       throw new BadRequestException('Lead must be in FIRST_LESSON to approve');
     }
-    return this.changeStatus(leadId, { status: 'PAID' }, teacherUserId, {
-      isTeacherApprove: true,
+    const alreadyApproved = (lead as { teacherApprovedAt?: Date | null }).teacherApprovedAt != null;
+    if (alreadyApproved) {
+      return this.findById(leadId);
+    }
+    await this.prisma.crmLead.update({
+      where: { id: leadId },
+      data: { teacherApprovedAt: new Date() },
     });
+    await this.logActivity(leadId, teacherUserId, 'TEACHER_APPROVED', {});
+    return this.findById(leadId);
   }
 
   async teacherTransfer(
