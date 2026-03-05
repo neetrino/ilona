@@ -5,6 +5,14 @@ export type CrmLeadStatus =
   | 'WAITLIST'
   | 'ARCHIVE';
 
+export const STATUS_LABELS: Record<CrmLeadStatus, string> = {
+  NEW: 'New',
+  FIRST_LESSON: 'First Lesson',
+  PAID: 'Paid',
+  WAITLIST: 'Waitlist',
+  ARCHIVE: 'Archive',
+};
+
 export const CRM_COLUMN_ORDER: CrmLeadStatus[] = [
   'NEW',
   'FIRST_LESSON',

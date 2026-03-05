@@ -311,6 +311,7 @@ export default function AdminCrmPage() {
         centers={centers}
         teachers={teachers}
         groups={groups}
+        availableStatuses={adminVisibleStatuses}
       />
       <VoiceLeadModal
         open={voiceModalOpen}

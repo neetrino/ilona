@@ -1,15 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
-import {
-  fetchLead,
-  updateLead,
-  changeLeadStatus,
-  addLeadComment,
-  getAllowedTransitions,
-} from '@/features/crm/api/crm.api';
-import { STATUS_LABELS } from './LeadCard';
+import type { CrmLead } from '@/features/crm/types';
+import { fetchLead, updateLead, addLeadComment } from '@/features/crm/api/crm.api';
 import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
 import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
@@ -27,18 +20,11 @@ const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
   const [comment, setComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
-  const [changingStatus, setChangingStatus] = useState(false);
 
   const { data: lead, isLoading, refetch } = useQuery({
     queryKey: ['crm-lead', leadId],
     queryFn: () => fetchLead(leadId!),
     enabled: !!leadId,
-  });
-
-  const { data: allowedStatuses = [] } = useQuery({
-    queryKey: ['crm-allowed-transitions', lead?.status],
-    queryFn: () => getAllowedTransitions(lead!.status),
-    enabled: !!lead?.status,
   });
 
   const { data: centers = [] } = useQuery({
@@ -78,18 +64,6 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
       });
     }
   }, [lead]);
-
-  const handleStatusChange = async (newStatus: CrmLeadStatus) => {
-    if (!leadId || !lead) return;
-    setChangingStatus(true);
-    try {
-      await changeLeadStatus(leadId, { status: newStatus });
-      await refetch();
-      onUpdated();
-    } finally {
-      setChangingStatus(false);
-    }
-  };
 
   const handleSaveFields = async () => {
     if (!leadId || !form) return;
@@ -170,24 +144,6 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                 </div>
               </div>
             )}
-
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-              <select
-                value={lead.status}
-                onChange={(e) => handleStatusChange(e.target.value as CrmLeadStatus)}
-                disabled={changingStatus || allowedStatuses.length === 0}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                <option value={lead.status}>{STATUS_LABELS[lead.status]}</option>
-                {allowedStatuses
-                  .filter((s) => s !== lead.status)
-                  .map((s) => (
-                    <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                  ))}
-              </select>
-            </div>
 
             <div className="text-xs text-slate-500">
               Created {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : ''}
