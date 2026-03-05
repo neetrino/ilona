@@ -67,6 +67,11 @@ export function isOnboardingItem(
   return 'type' in item && item.type === 'onboarding';
 }
 
+/** Stable id for list/key/selection: Student.id or OnboardingStudentItem.leadId */
+export function getItemId(item: TeacherAssignedItem): string {
+  return isOnboardingItem(item) ? item.leadId : item.id;
+}
+
 export interface StudentsResponse {
   items: TeacherAssignedItem[];
   total: number;

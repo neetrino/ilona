@@ -111,7 +111,7 @@ export class SettingsService {
       // Check for PrismaClientKnownRequestError with code P2021 (column not found)
       const isPrismaColumnError =
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        (error as Prisma.PrismaClientKnownRequestError).code === 'P2021';
+        (error).code === 'P2021';
       
       if (
         isPrismaColumnError ||

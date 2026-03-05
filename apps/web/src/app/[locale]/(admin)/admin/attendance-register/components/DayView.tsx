@@ -7,8 +7,9 @@ import { AttendanceErrorState } from './AttendanceErrorState';
 import { AttendanceEmptyState } from './AttendanceEmptyState';
 import type { Group } from '@/features/groups';
 import type { Lesson } from '@/features/lessons';
-import type { Student } from '@/features/students';
+import type { TeacherAssignedItem } from '@/features/students';
 import type { AttendanceCell } from '../hooks/useAttendanceData';
+import { toAttendanceRow } from '../hooks/useAttendanceData';
 import type { AbsenceType } from '@/features/attendance';
 
 interface DayViewProps {
@@ -16,7 +17,7 @@ interface DayViewProps {
   groups?: Group[]; // All groups for multi-group support (optional for backward compatibility)
   selectedGroupIds?: string[]; // Selected group IDs (optional for backward compatibility)
   currentDate: Date;
-  students: Student[];
+  students: TeacherAssignedItem[];
   filteredLessons: Lesson[];
   attendanceData: Record<string, Record<string, AttendanceCell>>;
   attendanceQueries: Array<{ isLoading: boolean; isError: boolean }>;
@@ -75,7 +76,7 @@ export function DayView({
     }
     acc[groupId].push(student);
     return acc;
-  }, {} as Record<string, Student[]>);
+  }, {} as Record<string, TeacherAssignedItem[]>);
 
   // Get selected groups in order
   // Fallback to single group if selectedGroupIds is not provided (backward compatibility)
@@ -107,15 +108,7 @@ export function DayView({
           <AttendanceEmptyState date={currentDate} />
         ) : (
           <AttendanceGrid
-            students={students.map((s) => ({
-              id: s.id,
-              user: {
-                id: s.user.id,
-                firstName: s.user.firstName,
-                lastName: s.user.lastName,
-                avatarUrl: s.user.avatarUrl,
-              },
-            }))}
+            students={students.map(toAttendanceRow)}
             lessons={filteredLessons}
             initialAttendance={attendanceData}
             onLessonSave={onLessonSave}
@@ -166,15 +159,7 @@ export function DayView({
               <AttendanceEmptyState date={currentDate} />
             ) : (
               <AttendanceGrid
-                students={groupStudents.map((s) => ({
-                  id: s.id,
-                  user: {
-                    id: s.user.id,
-                    firstName: s.user.firstName,
-                    lastName: s.user.lastName,
-                    avatarUrl: s.user.avatarUrl,
-                  },
-                }))}
+                students={groupStudents.map(toAttendanceRow)}
                 lessons={groupLessons}
                 initialAttendance={groupAttendanceData}
                 onLessonSave={onLessonSave}

@@ -2,10 +2,10 @@
 
 import { DataTable } from '@/shared/components/ui';
 import { createStudentsTableColumns } from './StudentsTableColumns';
-import type { Student } from '@/features/students';
+import { getItemId, type TeacherAssignedItem, type Student } from '@/features/students';
 
 interface StudentsListProps {
-  students: Student[];
+  students: TeacherAssignedItem[];
   totalStudents: number;
   totalPages: number;
   page: number;
@@ -104,7 +104,7 @@ export function StudentsList({
       <DataTable
         columns={studentColumns}
         data={students}
-        keyExtractor={(student) => student.id}
+        keyExtractor={(student) => getItemId(student)}
         isLoading={isLoading}
         emptyMessage={searchQuery ? "No students match your search" : "No students found"}
         sortBy={sortBy}

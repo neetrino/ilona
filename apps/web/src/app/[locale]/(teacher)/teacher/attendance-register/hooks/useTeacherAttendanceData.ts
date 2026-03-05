@@ -12,6 +12,7 @@ import {
   type ViewMode,
 } from '@/features/attendance/utils/dateUtils';
 import type { Lesson } from '@/features/lessons';
+import { getItemId } from '@/features/students';
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
@@ -198,7 +199,7 @@ export function useTeacherAttendanceData({
     if (absenceFilter === 'no_session') return [];
     return students.filter((student) =>
       filteredLessons.some((lesson) => {
-        const cell = attendanceData[lesson.id]?.[student.id];
+        const cell = attendanceData[lesson.id]?.[getItemId(student)];
         const status: AttendanceStatus = cell?.status ?? 'not_marked';
         return status === absenceFilter;
       })
@@ -229,7 +230,7 @@ export function useTeacherAttendanceData({
     students.forEach((student) => {
       filteredLessons.forEach((lesson) => {
         total++;
-        const cell = attendanceData[lesson.id]?.[student.id];
+        const cell = attendanceData[lesson.id]?.[getItemId(student)];
         if (!cell) {
           notMarked++;
         } else if (cell.isPresent) {

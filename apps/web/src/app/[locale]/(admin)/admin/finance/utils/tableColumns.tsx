@@ -211,7 +211,7 @@ export function getPaymentColumns({
                 onChange={async (newMethod) => {
                   if (newMethod && newMethod !== currentMethod) {
                     try {
-                      await updatePaymentMethod!.mutateAsync({
+                      await updatePaymentMethod?.mutateAsync({
                         id: payment.id,
                         paymentMethod: newMethod,
                       });
@@ -220,7 +220,7 @@ export function getPaymentColumns({
                     }
                   }
                 }}
-                disabled={updatePaymentMethod!.isPending}
+                disabled={updatePaymentMethod?.isPending}
                 className="w-full"
               />
             </div>

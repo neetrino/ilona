@@ -322,7 +322,7 @@ export class StudentQueryService {
     return teachers.map((teacher) => ({
       id: teacher.id,
       userId: teacher.userId,
-      name: `${teacher.user.firstName} ${teacher.user.lastName}`,
+      name: [teacher.user.firstName, teacher.user.lastName].filter(Boolean).join(' ').trim() || undefined,
       firstName: teacher.user.firstName,
       lastName: teacher.user.lastName,
       phone: teacher.user.phone,

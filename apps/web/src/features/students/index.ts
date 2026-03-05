@@ -36,4 +36,4 @@ export type {
   StudentFeedback,
   StudentPayment,
 } from './types';
-export { isOnboardingItem } from './types';
+export { isOnboardingItem, getItemId } from './types';

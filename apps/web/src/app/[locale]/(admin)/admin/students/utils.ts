@@ -1,17 +1,17 @@
-import type { Student } from '@/features/students';
+import type { Student, TeacherAssignedItem } from '@/features/students';
 import type { Center } from '@ilona/types';
 
 /**
  * Group students by center for board view
  */
 export function groupStudentsByCenter(
-  students: Student[],
+  students: TeacherAssignedItem[],
   centers: Center[],
   viewMode: 'list' | 'board'
-): Record<string, Student[]> {
+): Record<string, TeacherAssignedItem[]> {
   if (viewMode !== 'board') return {};
   
-  const grouped: Record<string, Student[]> = {};
+  const grouped: Record<string, TeacherAssignedItem[]> = {};
   
   // Initialize all centers
   centers.forEach(center => {
@@ -35,10 +35,10 @@ export function groupStudentsByCenter(
 }
 
 /**
- * Calculate student statistics
+ * Calculate student statistics (only full students have user/status)
  */
-export function calculateStudentStats(students: Student[]) {
-  const activeStudents = students.filter(s => s.user?.status === 'ACTIVE').length;
+export function calculateStudentStats(students: TeacherAssignedItem[]) {
+  const activeStudents = students.filter((s): s is Student => 'user' in s && s.user?.status === 'ACTIVE').length;
   const studentsWithGroup = students.filter(s => s.group).length;
   
   return {

@@ -365,7 +365,7 @@ export default function TeacherStudentsPage() {
                     );
                   }
 
-                  const student = item as import('@/features/students/types').Student;
+                  const student = item;
                   const initials = `${student.user.firstName[0]}${student.user.lastName[0]}`;
                   const avatarUrl = student.user.avatarUrl;
                   return (

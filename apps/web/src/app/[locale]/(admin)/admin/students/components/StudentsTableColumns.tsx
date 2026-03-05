@@ -7,7 +7,8 @@ import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
 import { formatCurrency } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
-import type { Student } from '@/features/students';
+import type { Student, TeacherAssignedItem } from '@/features/students';
+import { getItemId, isOnboardingItem } from '@/features/students';
 
 /** Format for display (DD/MM/YYYY) */
 function formatRegisterDate(value: string | null | undefined): string {
@@ -217,17 +218,20 @@ export function createStudentsTableColumns({
           disabled={isDeleting || isLoading}
         />
       ),
-      render: (student: Student) => (
-        <input
-          type="checkbox"
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          checked={selectedStudentIds.has(student.id)}
-          onChange={() => onToggleSelect(student.id)}
-          onClick={(e) => e.stopPropagation()}
-          disabled={isDeleting || isLoading}
-          aria-label={`Select ${student.user?.firstName} ${student.user?.lastName}`}
-        />
-      ),
+      render: (row: TeacherAssignedItem) => {
+        const name = isOnboardingItem(row) ? `${row.firstName ?? ''} ${row.lastName ?? ''}`.trim() : `${row.user?.firstName ?? ''} ${row.user?.lastName ?? ''}`.trim();
+        return (
+          <input
+            type="checkbox"
+            className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            checked={selectedStudentIds.has(getItemId(row))}
+            onChange={() => onToggleSelect(getItemId(row))}
+            onClick={(e) => e.stopPropagation()}
+            disabled={isDeleting || isLoading}
+            aria-label={`Select ${name || 'item'}`}
+          />
+        );
+      },
       className: '!pl-4 !pr-2 w-12',
     },
     {
@@ -235,9 +239,10 @@ export function createStudentsTableColumns({
       header: 'STUDENT',
       sortable: true,
       className: '!pl-0 !pr-4',
-      render: (student: Student) => {
-        const firstName = student.user?.firstName || '';
-        const lastName = student.user?.lastName || '';
+      render: (row: TeacherAssignedItem) => {
+        const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
+        const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
+        const phone = isOnboardingItem(row) ? (row.phone ?? 'No phone') : (row.user?.phone ?? 'No phone');
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
           <div className="flex items-center gap-3">
@@ -248,9 +253,7 @@ export function createStudentsTableColumns({
               <p className="font-semibold text-slate-800">
                 {firstName} {lastName}
               </p>
-              <p className="text-sm text-slate-500">
-                {student.user?.phone || 'No phone'}
-              </p>
+              <p className="text-sm text-slate-500">{phone}</p>
             </div>
           </div>
         );
@@ -259,49 +262,56 @@ export function createStudentsTableColumns({
     {
       key: 'teacher',
       header: 'TEACHER',
-      render: (student: Student) => (
-        <div className="min-w-[150px]" onClick={(e) => e.stopPropagation()}>
-          <InlineSelect
-            value={student.teacherId || null}
-            options={teacherOptions}
-            onChange={async (teacherId) => {
-              await onTeacherChange(student.id, teacherId);
-            }}
-            placeholder="Not assigned"
-            disabled={isUpdating}
-          />
-        </div>
-      ),
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        return (
+          <div className="min-w-[150px]" onClick={(e) => e.stopPropagation()}>
+            <InlineSelect
+              value={row.teacherId || null}
+              options={teacherOptions}
+              onChange={async (teacherId) => {
+                await onTeacherChange(row.id, teacherId);
+              }}
+              placeholder="Not assigned"
+              disabled={isUpdating}
+            />
+          </div>
+        );
+      },
     },
     {
       key: 'group',
       header: 'GROUP',
-      render: (student: Student) => (
-        <div className="min-w-[150px]" onClick={(e) => e.stopPropagation()}>
-          <InlineSelect
-            value={student.groupId || null}
-            options={groupOptions}
-            onChange={async (groupId) => {
-              await onGroupChange(student.id, groupId);
-            }}
-            placeholder="Not assigned"
-            disabled={isUpdating}
-          />
-        </div>
-      ),
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        return (
+          <div className="min-w-[150px]" onClick={(e) => e.stopPropagation()}>
+            <InlineSelect
+              value={row.groupId || null}
+              options={groupOptions}
+              onChange={async (groupId) => {
+                await onGroupChange(row.id, groupId);
+              }}
+              placeholder="Not assigned"
+              disabled={isUpdating}
+            />
+          </div>
+        );
+      },
     },
     {
       key: 'center',
       header: 'CENTER',
-      render: (student: Student) => {
-        const currentCenterId = student.group?.center?.id || null;
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        const currentCenterId = row.group?.center?.id || null;
         return (
           <div className="min-w-[150px]" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
               value={currentCenterId}
               options={centerOptions}
               onChange={async (centerId) => {
-                await onCenterChange(student.id, centerId);
+                await onCenterChange(row.id, centerId);
               }}
               placeholder="Not assigned"
               disabled={isUpdating}
@@ -315,22 +325,26 @@ export function createStudentsTableColumns({
       header: 'REGISTER',
       sortable: true,
       className: 'text-left',
-      render: (student: Student) => (
-        <RegisterDateCell
-          studentId={student.id}
-          value={student.registerDate}
-          onSave={onRegisterDateChange}
-          disabled={isUpdating}
-        />
-      ),
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        return (
+          <RegisterDateCell
+            studentId={row.id}
+            value={row.registerDate}
+            onSave={onRegisterDateChange}
+            disabled={isUpdating}
+          />
+        );
+      },
     },
     {
       key: 'monthlyFee',
       header: 'MONTHLY FEE',
       sortable: true,
       className: 'text-left',
-      render: (student: Student) => {
-        const fee = typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) : Number(student.monthlyFee || 0);
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
         return (
           <span className="text-slate-700 font-medium" onClick={(e) => e.stopPropagation()}>
             {formatCurrency(fee)}
@@ -343,23 +357,19 @@ export function createStudentsTableColumns({
       header: 'ABSENCE',
       sortable: true,
       className: 'text-left',
-      render: (student: Student) => {
-        const attendance = student.attendanceSummary;
-        
-        // If student has no group, show "—"
-        if (!student.groupId) {
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) return <span className="text-slate-400 pl-4" onClick={(e) => e.stopPropagation()}>—</span>;
+        const attendance = row.attendanceSummary;
+        if (!row.groupId) {
           return (
             <span className="text-slate-400 pl-4" onClick={(e) => e.stopPropagation()}>—</span>
           );
         }
-        
-        // If no attendance data, show "0/0"
         if (!attendance) {
           return (
             <span className="text-slate-600 pl-4" onClick={(e) => e.stopPropagation()}>0/0</span>
           );
         }
-        
         const { totalClasses, absences } = attendance;
         return (
           <span className="text-slate-700 font-medium pl-4" onClick={(e) => e.stopPropagation()}>
@@ -372,7 +382,13 @@ export function createStudentsTableColumns({
       key: 'actions',
       header: 'ACTIONS',
       className: '!w-[180px] !min-w-[180px] !max-w-[180px] !px-3 !py-4 text-left',
-      render: (student: Student) => {
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) {
+          return (
+            <span className="text-slate-400 text-xs" onClick={(e) => e.stopPropagation()}>Onboarding</span>
+          );
+        }
+        const student = row;
         const isActive = student.user?.status === 'ACTIVE';
         const btnClass =
           'p-1.5 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';

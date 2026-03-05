@@ -22,6 +22,7 @@ import type {
   Student,
   StudentsResponse,
 } from '../types';
+import { getItemId, isOnboardingItem } from '../types';
 
 // Query keys
 export const studentKeys = {
@@ -124,19 +125,18 @@ export function useUpdateStudent() {
         if (oldData && typeof oldData === 'object' && 'items' in oldData) {
           const response = oldData as StudentsResponse;
           const items = response.items || [];
-          const updatedItems = items.map((item: Student) => {
-            if (item.id === id) {
-              return {
-                ...item,
-                ...(data.status && {
-                  user: {
-                    ...item.user,
-                    status: data.status,
-                  },
-                }),
-              };
-            }
-            return item;
+          const updatedItems = items.map((item) => {
+            if (getItemId(item) !== id || isOnboardingItem(item)) return item;
+            const student = item;
+            return {
+              ...student,
+              ...(data.status && {
+                user: {
+                  ...student.user,
+                  status: data.status,
+                },
+              }),
+            };
           });
           queryClient.setQueryData(queryKey, {
             ...response,
@@ -150,19 +150,18 @@ export function useUpdateStudent() {
         if (oldData && typeof oldData === 'object' && 'items' in oldData) {
           const response = oldData as StudentsResponse;
           const items = response.items || [];
-          const updatedItems = items.map((item: Student) => {
-            if (item.id === id) {
-              return {
-                ...item,
-                ...(data.status && {
-                  user: {
-                    ...item.user,
-                    status: data.status,
-                  },
-                }),
-              };
-            }
-            return item;
+          const updatedItems = items.map((item) => {
+            if (getItemId(item) !== id || isOnboardingItem(item)) return item;
+            const student = item;
+            return {
+              ...student,
+              ...(data.status && {
+                user: {
+                  ...student.user,
+                  status: data.status,
+                },
+              }),
+            };
           });
           queryClient.setQueryData(queryKey, {
             ...response,
