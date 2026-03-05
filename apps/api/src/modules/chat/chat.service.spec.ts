@@ -146,7 +146,10 @@ describe('ChatService', () => {
       mockPrismaService.chat.findMany.mockResolvedValue([mockChat]);
       mockPrismaService.message.count.mockResolvedValue(5);
 
-      const result = await chatService.getUserChats('user-1');
+      const result = (await chatService.getUserChats('user-1')) as Array<{
+        id: string;
+        unreadCount: number;
+      }>;
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('chat-1');
@@ -183,7 +186,9 @@ describe('ChatService', () => {
       mockPrismaService.chat.findUnique.mockResolvedValue(mockChat);
       mockPrismaService.message.findMany.mockResolvedValue([mockMessage]);
 
-      const result = await chatService.getMessages('chat-1', 'user-1', { take: 50 });
+      const result = (await chatService.getMessages('chat-1', 'user-1', {
+        take: 50,
+      })) as { items: unknown[]; hasMore: boolean };
 
       expect(result.items).toHaveLength(1);
       expect(result.hasMore).toBe(false);
@@ -194,7 +199,9 @@ describe('ChatService', () => {
       const manyMessages = Array(51).fill(mockMessage);
       mockPrismaService.message.findMany.mockResolvedValue(manyMessages);
 
-      const result = await chatService.getMessages('chat-1', 'user-1', { take: 50 });
+      const result = (await chatService.getMessages('chat-1', 'user-1', {
+        take: 50,
+      })) as { items: unknown[]; hasMore: boolean };
 
       expect(result.hasMore).toBe(true);
       expect(result.items).toHaveLength(50);
@@ -265,11 +272,11 @@ describe('ChatService', () => {
         isEdited: true,
       });
 
-      const result = await chatService.editMessage(
+      const result = (await chatService.editMessage(
         'msg-1',
         { content: 'Edited content' },
         'user-1',
-      );
+      )) as { content: string; isEdited: boolean };
 
       expect(result.content).toBe('Edited content');
       expect(result.isEdited).toBe(true);
@@ -308,7 +315,7 @@ describe('ChatService', () => {
       mockPrismaService.message.findUnique.mockResolvedValue(mockMessage);
       mockPrismaService.message.delete.mockResolvedValue(mockMessage);
 
-      const result = await chatService.deleteMessage('msg-1', 'user-1');
+      const result = (await chatService.deleteMessage('msg-1', 'user-1')) as typeof mockMessage;
 
       expect(mockPrismaService.message.delete).toHaveBeenCalledWith({
         where: { id: 'msg-1' },
@@ -371,11 +378,11 @@ describe('ChatService', () => {
         metadata: { isVocabulary: true, words: ['Hello', 'World'] },
       });
 
-      const result = await chatService.sendVocabularyMessage(
+      const result = (await chatService.sendVocabularyMessage(
         'chat-1',
         'user-1',
         ['Hello', 'World'],
-      );
+      )) as { metadata: unknown };
 
       expect(result.metadata).toBeDefined();
     });
