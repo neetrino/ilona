@@ -1,3 +1,3 @@
 -- Migrate any leads with status AGREED to FIRST_LESSON.
--- We do not remove the enum value from PostgreSQL (avoids ALTER TYPE issues in all environments).
-UPDATE "crm_leads" SET "status" = 'FIRST_LESSON' WHERE "status" = 'AGREED';
+-- Compare by text so this works even if the enum no longer includes AGREED (e.g. after a prior migration or restore).
+UPDATE "crm_leads" SET "status" = 'FIRST_LESSON'::"CrmLeadStatus" WHERE "status"::text = 'AGREED';

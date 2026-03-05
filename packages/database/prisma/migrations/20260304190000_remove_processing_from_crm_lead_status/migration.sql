@@ -1,3 +1,3 @@
 -- Migrate any leads with status PROCESSING to PAID.
--- We do not remove the enum value from PostgreSQL (avoids ALTER TYPE issues in all environments).
-UPDATE "crm_leads" SET "status" = 'PAID' WHERE "status" = 'PROCESSING';
+-- Compare by text so this works even if the enum no longer includes PROCESSING (e.g. after a prior migration or restore).
+UPDATE "crm_leads" SET "status" = 'PAID'::"CrmLeadStatus" WHERE "status"::text = 'PROCESSING';

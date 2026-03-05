@@ -96,11 +96,15 @@ async function getFailedMigrationNames() {
   }
 }
 
-// Extract failed migration name from Prisma P3009 error message.
-// Example: "The `20260304180000_remove_agreed_from_crm_lead_status` migration started at ... failed"
+// Extract failed migration name from Prisma error (P3009 or P3018).
+// P3009: "The `20260304180000_...` migration started at ... failed"
+// P3018: "Migration name: 20260304180000_..."
 function parseFailedMigrationName(output) {
-  const match = (output || '').match(/`([^`]+)`\s+migration\s+(?:started|failed)/);
-  return match ? match[1] : null;
+  const str = output || '';
+  const fromBackticks = str.match(/`([^`]+)`\s+migration\s+(?:started|failed)/);
+  if (fromBackticks) return fromBackticks[1];
+  const fromMigrationName = str.match(/Migration name:\s*(\S+)/);
+  return fromMigrationName ? fromMigrationName[1].trim() : null;
 }
 
 async function main() {
@@ -127,13 +131,13 @@ async function main() {
     lastResult = run('npx prisma migrate deploy', { captureOutput: true });
     if (!lastResult || !lastResult.failed) break;
     const output = lastResult.output || '';
-    const isP3009 = output.indexOf('P3009') !== -1;
+    const isRecoverable = output.indexOf('P3009') !== -1 || output.indexOf('P3018') !== -1;
     const name = parseFailedMigrationName(output);
-    if (!isP3009 || !name) {
+    if (!isRecoverable || !name) {
       console.error(output || 'prisma migrate deploy failed');
       process.exit(lastResult.status ?? 1);
     }
-    console.warn(`[db:migrate] P3009: resolving failed migration "${name}" as rolled back and retrying deploy (attempt ${attempt + 1}/${MAX_DEPLOY_RESOLVE_RETRIES})`);
+    console.warn(`[db:migrate] Resolving failed migration "${name}" as rolled back and retrying deploy (attempt ${attempt + 1}/${MAX_DEPLOY_RESOLVE_RETRIES})`);
     run(`npx prisma migrate resolve --rolled-back "${name}"`, { ignoreError: true });
   }
 
