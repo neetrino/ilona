@@ -1,6 +1,6 @@
 import { CrmLeadStatus } from '@ilona/database';
 
-/** Supported statuses (AGREED, PROCESSING removed) */
+/** Supported CRM lead statuses */
 const TRANSITIONS: Partial<Record<CrmLeadStatus, CrmLeadStatus[]>> = {
   NEW: ['FIRST_LESSON', 'ARCHIVE'],
   FIRST_LESSON: ['PAID', 'ARCHIVE'], // PAID only via teacher approve
