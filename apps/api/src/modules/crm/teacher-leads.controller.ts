@@ -21,13 +21,13 @@ export class TeacherLeadsController {
   findMyLeads(
     @Query('groupId') groupId: string | undefined,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.leadsService.findForTeacher(user.sub, { groupId });
   }
 
   @Post(':id/approve')
   @ApiOperation({ summary: 'Approve first lesson – move lead to PAID' })
-  approve(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+  approve(@Param('id') id: string, @CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.leadsService.teacherApprove(id, user.sub);
   }
 

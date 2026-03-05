@@ -36,19 +36,19 @@ export class LessonsService {
     search?: string;
     currentUserId?: string;
     userRole?: UserRole;
-  }) {
+  }): Promise<unknown> {
     return this.crudService.findAll(params);
   }
 
-  async findById(id: string, currentUserId?: string, userRole?: UserRole) {
+  async findById(id: string, currentUserId?: string, userRole?: UserRole): Promise<unknown> {
     return this.crudService.findById(id, currentUserId, userRole);
   }
 
-  async findByTeacher(teacherId: string, dateFrom?: Date, dateTo?: Date) {
+  async findByTeacher(teacherId: string, dateFrom?: Date, dateTo?: Date): Promise<unknown> {
     return this.crudService.findByTeacher(teacherId, dateFrom, dateTo);
   }
 
-  async getTodayLessons(teacherId: string) {
+  async getTodayLessons(teacherId: string): Promise<unknown> {
     return this.crudService.getTodayLessons(teacherId);
   }
 
@@ -56,11 +56,11 @@ export class LessonsService {
     return this.crudService.getUpcoming(teacherId, limit);
   }
 
-  async create(dto: CreateLessonDto) {
+  async create(dto: CreateLessonDto): Promise<unknown> {
     return this.crudService.create(dto);
   }
 
-  async createBulk(lessons: CreateLessonDto[]) {
+  async createBulk(lessons: CreateLessonDto[]): Promise<unknown> {
     return this.crudService.createBulk(lessons);
   }
 
@@ -81,7 +81,7 @@ export class LessonsService {
     return this.statusService.startLesson(id, userId, userRole);
   }
 
-  async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: UserRole) {
+  async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: UserRole): Promise<unknown> {
     return this.statusService.completeLesson(id, dto, userId, userRole);
   }
 
@@ -121,7 +121,7 @@ export class LessonsService {
     endDate: Date;
     topic?: string;
     description?: string;
-  }) {
+  }): Promise<unknown> {
     return this.schedulingService.createRecurring(params);
   }
 

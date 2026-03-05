@@ -19,7 +19,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes, ApiBody } from '@nes
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators';
 import { CurrentUser } from '../../common/decorators';
-import { UserRole } from '@ilona/database';
+import { UserRole, CrmLeadStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { LeadsService } from './leads.service';
 import {
@@ -43,7 +43,7 @@ export class LeadsController {
   @Post()
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Create a new lead' })
-  create(@Body() dto: CreateLeadDto, @CurrentUser() user: JwtPayload) {
+  create(@Body() dto: CreateLeadDto, @CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.leadsService.create(dto, user.sub);
   }
 
@@ -85,7 +85,7 @@ export class LeadsController {
   @Get()
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'List leads with filters and pagination' })
-  findAll(@Query() query: QueryLeadDto, @CurrentUser() user: JwtPayload) {
+  findAll(@Query() query: QueryLeadDto, @CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.leadsService.findAll(
       {
         skip: query.skip,
@@ -109,7 +109,7 @@ export class LeadsController {
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Get allowed next statuses for a given status' })
   getAllowedTransitions(@Param('status') status: string) {
-    return this.leadsService.getAllowedTransitions(status as import('@prisma/client').CrmLeadStatus);
+    return this.leadsService.getAllowedTransitions(status as CrmLeadStatus);
   }
 
   @Get('statuses')
@@ -133,7 +133,7 @@ export class LeadsController {
     @Param('id') id: string,
     @Body() dto: UpdateLeadDto,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.leadsService.update(id, dto, user.sub, user.role);
   }
 
@@ -144,7 +144,7 @@ export class LeadsController {
     @Param('id') id: string,
     @Body() dto: ChangeStatusDto,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.leadsService.changeStatus(id, dto, user.sub, {
       userRole: user.role,
     });
@@ -153,7 +153,7 @@ export class LeadsController {
   @Get(':id/activities')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Get lead activity timeline' })
-  getActivities(@Param('id') id: string) {
+  getActivities(@Param('id') id: string): Promise<unknown> {
     return this.leadsService.getActivities(id);
   }
 
@@ -164,7 +164,7 @@ export class LeadsController {
     @Param('id') id: string,
     @Body() dto: AddCommentDto,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.leadsService.addComment(id, dto, user.sub);
   }
 

@@ -25,23 +25,23 @@ export class TeachersService {
     status?: UserStatus;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
-  }) {
+  }): Promise<unknown> {
     return this.crudService.findAll(params);
   }
 
-  async findById(id: string) {
+  async findById(id: string): Promise<unknown> {
     return this.crudService.findById(id);
   }
 
-  async findByUserId(userId: string) {
+  async findByUserId(userId: string): Promise<unknown> {
     return this.crudService.findByUserId(userId);
   }
 
-  async create(dto: CreateTeacherDto) {
+  async create(dto: CreateTeacherDto): Promise<unknown> {
     return this.crudService.create(dto);
   }
 
-  async update(id: string, dto: UpdateTeacherDto) {
+  async update(id: string, dto: UpdateTeacherDto): Promise<unknown> {
     return this.crudService.update(id, dto);
   }
 
@@ -59,15 +59,15 @@ export class TeachersService {
   }
 
   // Statistics Methods
-  async getStatistics(id: string, dateFrom?: Date, dateTo?: Date) {
+  async getStatistics(id: string, dateFrom?: Date, dateTo?: Date): Promise<unknown> {
     return this.statisticsService.getStatistics(id, dateFrom, dateTo);
   }
 
-  async getMyDashboard(userId: string) {
+  async getMyDashboard(userId: string): Promise<unknown> {
     return this.statisticsService.getMyDashboard(userId);
   }
 
-  async getDailyPlan(userId: string, date: Date) {
+  async getDailyPlan(userId: string, date: Date): Promise<unknown> {
     return this.statisticsService.getDailyPlan(userId, date);
   }
 }

@@ -64,7 +64,7 @@ export class StudentStatisticsService {
     };
   }
 
-  async getMyDashboard(userId: string) {
+  async getMyDashboard(userId: string): Promise<unknown> {
     const student = await this.prisma.student.findUnique({
       where: { userId },
       include: {

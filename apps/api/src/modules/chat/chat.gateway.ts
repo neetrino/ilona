@@ -75,8 +75,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.log(`User ${payload.email} connected`);
 
       // Get user's chats and join rooms
-      const chats = await this.chatService.getUserChats(payload.sub);
-      chats.forEach((chat) => {
+      const chats = (await this.chatService.getUserChats(payload.sub)) as Array<{ id: string }>;
+      chats.forEach((chat: { id: string }) => {
         void client.join(`chat:${chat.id}`);
         
         // Track online status
@@ -95,7 +95,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Send online users to connected client
       client.emit('connection:success', {
         userId: payload.sub,
-        chats: chats.map((chat) => ({
+        chats: chats.map((chat: { id: string }) => ({
           id: chat.id,
           onlineUsers: Array.from(this.onlineUsers.get(chat.id) || []),
         })),
@@ -209,13 +209,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleEditMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { messageId: string; content: string },
-  ) {
+  ): Promise<unknown> {
     try {
-      const message = await this.chatService.editMessage(
+      const message = (await this.chatService.editMessage(
         data.messageId,
         { content: data.content },
         client.user.sub,
-      );
+      )) as { chatId: string };
 
       // Broadcast to all participants
       this.server.to(`chat:${message.chatId}`).emit('message:edited', message);
@@ -233,7 +233,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     try {
       // Get message first to get chatId before deletion
-      const message = await this.chatService.getMessage(data.messageId);
+      const message = (await this.chatService.getMessage(data.messageId)) as { chatId: string; id: string } | null;
       
       if (!message) {
         return { success: false, error: 'Message not found' };
@@ -337,7 +337,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleSendVocabulary(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { chatId: string; words: string[] },
-  ) {
+  ): Promise<unknown> {
     try {
       // CRITICAL: Validate client.user is set and has required fields
       if (!client.user || !client.user.sub) {

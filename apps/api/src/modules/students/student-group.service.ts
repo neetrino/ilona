@@ -12,7 +12,7 @@ export class StudentGroupService {
     private readonly chatService: ChatService,
   ) {}
 
-  async changeGroup(id: string, newGroupId: string | null) {
+  async changeGroup(id: string, newGroupId: string | null): Promise<unknown> {
     const student = await this.prisma.student.findUnique({
       where: { id },
       include: {

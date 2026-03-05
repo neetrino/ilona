@@ -33,7 +33,7 @@ export class LessonsController {
   ) {}
 
   @Get()
-  async findAll(@Query() query: QueryLessonDto, @CurrentUser() user?: JwtPayload) {
+  async findAll(@Query() query: QueryLessonDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     // Handle both single groupId (backward compatibility) and groupIds array
     const groupIds = query.groupIds || (query.groupId ? [query.groupId] : undefined);
     return this.lessonsService.findAll({
@@ -55,7 +55,7 @@ export class LessonsController {
 
   @Get('my-lessons')
   @Roles(UserRole.TEACHER)
-  async getMyLessons(@CurrentUser() user: JwtPayload, @Query() query: QueryLessonDto) {
+  async getMyLessons(@CurrentUser() user: JwtPayload, @Query() query: QueryLessonDto): Promise<unknown> {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
     });
@@ -73,7 +73,7 @@ export class LessonsController {
 
   @Get('today')
   @Roles(UserRole.TEACHER)
-  async getTodayLessons(@CurrentUser() user: JwtPayload) {
+  async getTodayLessons(@CurrentUser() user: JwtPayload): Promise<unknown> {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
     });
@@ -124,13 +124,13 @@ export class LessonsController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+  async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     return this.lessonsService.findById(id, user?.sub, user?.role);
   }
 
   @Post()
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async create(@Body() dto: CreateLessonDto, @CurrentUser() user?: JwtPayload) {
+  async create(@Body() dto: CreateLessonDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     // For teachers, validate that they can only create lessons for their own groups
     if (user?.role === UserRole.TEACHER) {
       const teacher = await this.prisma.teacher.findUnique({
@@ -159,7 +159,7 @@ export class LessonsController {
 
   @Post('recurring')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async createRecurring(@Body() dto: CreateRecurringLessonDto, @CurrentUser() user?: JwtPayload) {
+  async createRecurring(@Body() dto: CreateRecurringLessonDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     // Validate date range
     const startDate = new Date(dto.startDate);
     const endDate = new Date(dto.endDate);
@@ -226,7 +226,7 @@ export class LessonsController {
     @Param('id') id: string,
     @Body() dto: CompleteLessonDto,
     @CurrentUser() user: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.lessonsService.completeLesson(id, dto, user.sub, user.role);
   }
 

@@ -17,7 +17,7 @@ export class ChatService {
   ) {}
 
   // Chat Management Methods
-  async getUserChats(userId: string) {
+  async getUserChats(userId: string): Promise<unknown> {
     return this.chatManagementService.getUserChats(userId);
   }
 
@@ -42,11 +42,11 @@ export class ChatService {
   }
 
   // Message Methods
-  async getMessage(messageId: string) {
+  async getMessage(messageId: string): Promise<unknown> {
     return this.messageService.getMessage(messageId);
   }
 
-  async getMessages(chatId: string, userId: string, params?: { cursor?: string; take?: number }, userRole?: string) {
+  async getMessages(chatId: string, userId: string, params?: { cursor?: string; take?: number }, userRole?: string): Promise<unknown> {
     return this.messageService.getMessages(chatId, userId, params, userRole);
   }
 
@@ -54,11 +54,11 @@ export class ChatService {
     return this.messageService.sendMessage(dto, senderId, senderRole);
   }
 
-  async editMessage(messageId: string, dto: UpdateMessageDto, userId: string) {
+  async editMessage(messageId: string, dto: UpdateMessageDto, userId: string): Promise<unknown> {
     return this.messageService.editMessage(messageId, dto, userId);
   }
 
-  async deleteMessage(messageId: string, userId: string) {
+  async deleteMessage(messageId: string, userId: string): Promise<unknown> {
     return this.messageService.deleteMessage(messageId, userId);
   }
 
@@ -66,7 +66,7 @@ export class ChatService {
     return this.messageService.markAsRead(chatId, userId);
   }
 
-  async sendVocabularyMessage(chatId: string, teacherId: string, vocabularyWords: string[]) {
+  async sendVocabularyMessage(chatId: string, teacherId: string, vocabularyWords: string[]): Promise<unknown> {
     return this.messageService.sendVocabularyMessage(chatId, teacherId, vocabularyWords);
   }
 
@@ -95,7 +95,7 @@ export class ChatService {
     return this.chatManagementService.createCustomGroupChat(adminId, dto);
   }
 
-  async getCustomGroupChats(userId: string) {
+  async getCustomGroupChats(userId: string): Promise<unknown> {
     return this.chatManagementService.getCustomGroupChats(userId);
   }
 
@@ -107,15 +107,15 @@ export class ChatService {
     return this.chatListsService.getTeacherGroups(teacherUserId, search);
   }
 
-  async getTeacherStudents(teacherUserId: string, search?: string) {
+  async getTeacherStudents(teacherUserId: string, search?: string): Promise<unknown> {
     return this.chatListsService.getTeacherStudents(teacherUserId, search);
   }
 
-  async getAdminForTeacher(teacherUserId: string) {
+  async getAdminForTeacher(teacherUserId: string): Promise<unknown> {
     return this.chatListsService.getAdminForTeacher(teacherUserId);
   }
 
-  async getAdminForStudent(studentUserId: string) {
+  async getAdminForStudent(studentUserId: string): Promise<unknown> {
     return this.chatListsService.getAdminForStudent(studentUserId);
   }
 

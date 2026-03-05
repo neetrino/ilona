@@ -31,7 +31,7 @@ export class SalariesService {
     dateFrom?: Date;
     dateTo?: Date;
     q?: string;
-  }) {
+  }): Promise<unknown> {
     return this.recordService.findAll(params);
   }
 
@@ -42,23 +42,23 @@ export class SalariesService {
   async findAllRecordsByTeacher(
     teacherId: string,
     params?: { skip?: number; take?: number; status?: SalaryStatus },
-  ) {
+  ): Promise<unknown> {
     return this.recordService.findAllRecordsByTeacher(teacherId, params);
   }
 
-  async findById(id: string) {
+  async findById(id: string): Promise<unknown> {
     return this.recordService.findById(id);
   }
 
-  async create(dto: CreateSalaryRecordDto) {
+  async create(dto: CreateSalaryRecordDto): Promise<unknown> {
     return this.recordService.create(dto);
   }
 
-  async update(id: string, dto: UpdateSalaryDto) {
+  async update(id: string, dto: UpdateSalaryDto): Promise<unknown> {
     return this.recordService.update(id, dto);
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<unknown> {
     return this.recordService.delete(id);
   }
 
@@ -66,16 +66,16 @@ export class SalariesService {
     return this.recordService.deleteMany(ids);
   }
 
-  async processSalary(id: string, dto: ProcessSalaryDto) {
+  async processSalary(id: string, dto: ProcessSalaryDto): Promise<unknown> {
     return this.recordService.processSalary(id, dto);
   }
 
   // Generation Methods
-  async generateSalaryRecord(teacherId: string, month: Date) {
+  async generateSalaryRecord(teacherId: string, month: Date): Promise<unknown> {
     return this.generationService.generateSalaryRecord(teacherId, month);
   }
 
-  async generateMonthlySalaries(year: number, month: number) {
+  async generateMonthlySalaries(year: number, month: number): Promise<unknown> {
     return this.generationService.generateMonthlySalaries(year, month);
   }
 

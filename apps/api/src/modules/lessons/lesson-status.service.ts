@@ -44,7 +44,7 @@ export class LessonStatusService {
     });
   }
 
-  async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: UserRole) {
+  async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: UserRole): Promise<unknown> {
     const lesson = await this.crudService.findById(id);
 
     // Check if teacher owns this lesson

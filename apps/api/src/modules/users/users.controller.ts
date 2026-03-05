@@ -15,13 +15,13 @@ export class UsersController {
 
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })
-  async getMe(@CurrentUser() user: JwtPayload) {
+  async getMe(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.usersService.findById(user.sub);
   }
 
   @Patch('me')
   @ApiOperation({ summary: 'Update current user profile' })
-  async updateMe(@CurrentUser() user: JwtPayload, @Body() dto: UpdateUserDto) {
+  async updateMe(@CurrentUser() user: JwtPayload, @Body() dto: UpdateUserDto): Promise<unknown> {
     return this.usersService.update(user.sub, dto);
   }
 
@@ -29,7 +29,7 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get all users (Admin only)' })
-  async findAll() {
+  async findAll(): Promise<unknown> {
     return this.usersService.findAll();
   }
 
@@ -37,7 +37,7 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get user by ID (Admin only)' })
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<unknown> {
     return this.usersService.findById(id);
   }
 }

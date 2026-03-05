@@ -24,7 +24,7 @@ export class LessonSchedulingService {
     endDate: Date;
     topic?: string;
     description?: string;
-  }) {
+  }): Promise<unknown> {
     const { groupId, teacherId, weekdays, startTime, endTime, startDate, endDate, topic, description } = params;
 
     // Calculate duration from time range

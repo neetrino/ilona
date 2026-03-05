@@ -81,7 +81,7 @@ export class FinanceService {
   /**
    * Get monthly financial report
    */
-  async getMonthlyReport(year: number, month: number) {
+  async getMonthlyReport(year: number, month: number): Promise<unknown> {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
 

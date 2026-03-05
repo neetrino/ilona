@@ -34,7 +34,7 @@ export class CentersController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string) {
+  async findById(@Param('id') id: string): Promise<unknown> {
     return this.centersService.findById(id);
   }
 

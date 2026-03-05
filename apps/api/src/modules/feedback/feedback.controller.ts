@@ -20,7 +20,7 @@ export class FeedbackController {
 
   @Get('lesson/:lessonId')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async getByLesson(@Param('lessonId') lessonId: string) {
+  async getByLesson(@Param('lessonId') lessonId: string): Promise<unknown> {
     return this.feedbackService.getByLesson(lessonId);
   }
 
@@ -30,7 +30,7 @@ export class FeedbackController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('teacherId') teacherId?: string,
-  ) {
+  ): Promise<unknown> {
     return this.feedbackService.getByStudent(studentId, {
       dateFrom: dateFrom ? new Date(dateFrom) : undefined,
       dateTo: dateTo ? new Date(dateTo) : undefined,
