@@ -330,8 +330,3 @@ export class StudentQueryService {
     }));
   }
 }
-
-
-console.log("W")
-
-
