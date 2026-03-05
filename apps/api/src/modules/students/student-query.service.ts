@@ -21,101 +21,225 @@ export class StudentQueryService {
   }) {
     const { skip = 0, take = 50, search, status, groupId } = params || {};
 
-    // Ensure skip and take are valid numbers
     const skipValue = Number(skip) || 0;
     const takeValue = Number(take) || 50;
+    const searchTerm = search?.trim();
 
     const where: Prisma.StudentWhereInput = {};
     const userWhere: Prisma.UserWhereInput = {};
-
-    if (search) {
-      const term = search.trim();
-      if (term) {
-        userWhere.OR = [
-          { firstName: { contains: term, mode: 'insensitive' } },
-          { lastName: { contains: term, mode: 'insensitive' } },
-          { email: { contains: term, mode: 'insensitive' } },
-          { phone: { contains: term, mode: 'insensitive' } },
-        ];
-      }
-    }
-
-    // Default to ACTIVE status if not specified
     userWhere.status = status || 'ACTIVE';
 
-    if (Object.keys(userWhere).length > 0) {
-      where.user = userWhere;
-    }
-
     if (groupId) {
-      // When groupId is provided, verify the group belongs to this teacher
-      // and show ALL students in that group (not just those with matching teacherId)
       const group = await this.prisma.group.findUnique({
         where: { id: groupId },
         select: { teacherId: true },
       });
-
       if (!group) {
         throw new NotFoundException(`Group with ID ${groupId} not found`);
       }
-
       if (group.teacherId !== teacherId) {
         throw new NotFoundException('Group is not assigned to this teacher');
       }
-
-      // Show all students in this group
       where.groupId = groupId;
     } else {
-      // When no groupId is provided, show all students assigned to this teacher
       where.teacherId = teacherId;
     }
 
-    const [items, total] = await Promise.all([
-      this.prisma.student.findMany({
-        where,
-        skip: skipValue,
-        take: takeValue,
-        orderBy: { user: { firstName: 'asc' } },
-        include: {
+    if (searchTerm) {
+      userWhere.OR = [
+        { firstName: { contains: searchTerm, mode: 'insensitive' } },
+        { lastName: { contains: searchTerm, mode: 'insensitive' } },
+        { email: { contains: searchTerm, mode: 'insensitive' } },
+        { phone: { contains: searchTerm, mode: 'insensitive' } },
+      ];
+    }
+    if (Object.keys(userWhere).length > 0) {
+      where.user = userWhere;
+    }
+
+    const studentInclude = {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          avatarUrl: true,
+          status: true,
+          lastLoginAt: true,
+          createdAt: true,
+        },
+      },
+      group: {
+        select: {
+          id: true,
+          name: true,
+          level: true,
+          center: { select: { id: true, name: true } },
+        },
+      },
+      teacher: {
+        select: {
+          id: true,
           user: {
             select: {
               id: true,
-              email: true,
               firstName: true,
               lastName: true,
+              email: true,
               phone: true,
-              avatarUrl: true,
-              status: true,
-              lastLoginAt: true,
-              createdAt: true,
-            },
-          },
-          group: {
-            select: {
-              id: true,
-              name: true,
-              level: true,
-              center: { select: { id: true, name: true } },
-            },
-          },
-          teacher: {
-            select: {
-              id: true,
-              user: {
-                select: {
-                  id: true,
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  phone: true,
-                },
-              },
             },
           },
         },
-      }),
-      this.prisma.student.count({ where }),
-    ]);
+      },
+    };
+
+    // 1) Fetch students (no pagination yet; we merge with leads first)
+    const students = await this.prisma.student.findMany({
+      where,
+      orderBy: { user: { firstName: 'asc' } },
+      include: studentInclude,
+    });
+
+    // 2) Fetch assigned onboarding leads (NEW or FIRST_LESSON with teacherId + groupId)
+    const leadWhere: Prisma.CrmLeadWhereInput = {
+      teacherId,
+      status: { in: ['NEW', 'FIRST_LESSON'] },
+    };
+    if (groupId) {
+      leadWhere.groupId = groupId;
+    }
+    const leads = await this.prisma.crmLead.findMany({
+      where: leadWhere,
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        group: {
+          select: {
+            id: true,
+            name: true,
+            level: true,
+            center: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+
+    // 3) Apply search to leads (students already filtered by where)
+    const filteredLeads = searchTerm
+      ? (() => {
+          const searchLower = searchTerm.trim().toLowerCase();
+          return leads.filter((l) => {
+            const first = (l.firstName ?? '').toLowerCase();
+            const last = (l.lastName ?? '').toLowerCase();
+            const phone = (l.phone ?? '').toLowerCase();
+            return (
+              first.includes(searchLower) ||
+              last.includes(searchLower) ||
+              phone.includes(searchLower)
+            );
+          });
+        })()
+      : leads;
+
+    // 4) Build combined list: pending onboarding first, then approved onboarding, then students
+    type OnboardingItem = {
+      type: 'onboarding';
+      leadId: string;
+      status: string;
+      firstName: string | null;
+      lastName: string | null;
+      phone: string | null;
+      teacherApprovedAt: Date | null;
+      transferFlag: boolean;
+      transferComment: string | null;
+      groupId: string | null;
+      group: { id: string; name: string; level: string | null; center: { id: string; name: string } | null } | null;
+      _sortKey: number;
+    };
+    const pendingLeads = filteredLeads
+      .filter((l) => !l.teacherApprovedAt && !l.transferFlag)
+      .map((l, i) => ({
+        type: 'onboarding' as const,
+        leadId: l.id,
+        status: l.status,
+        firstName: l.firstName,
+        lastName: l.lastName,
+        phone: l.phone,
+        teacherApprovedAt: l.teacherApprovedAt,
+        transferFlag: l.transferFlag,
+        transferComment: l.transferComment,
+        groupId: l.groupId,
+        group: l.group,
+        _sortKey: i,
+      }));
+    const approvedLeads = filteredLeads
+      .filter((l) => l.teacherApprovedAt && !l.transferFlag)
+      .map((l, i) => ({
+        type: 'onboarding' as const,
+        leadId: l.id,
+        status: l.status,
+        firstName: l.firstName,
+        lastName: l.lastName,
+        phone: l.phone,
+        teacherApprovedAt: l.teacherApprovedAt,
+        transferFlag: l.transferFlag,
+        transferComment: l.transferComment,
+        groupId: l.groupId,
+        group: l.group,
+        _sortKey: 1000 + i,
+      }));
+    const transferLeads = filteredLeads
+      .filter((l) => l.transferFlag)
+      .map((l, i) => ({
+        type: 'onboarding' as const,
+        leadId: l.id,
+        status: l.status,
+        firstName: l.firstName,
+        lastName: l.lastName,
+        phone: l.phone,
+        teacherApprovedAt: l.teacherApprovedAt,
+        transferFlag: l.transferFlag,
+        transferComment: l.transferComment,
+        groupId: l.groupId,
+        group: l.group,
+        _sortKey: 2000 + i,
+      }));
+
+    const onboardingItems: OnboardingItem[] = [
+      ...pendingLeads,
+      ...approvedLeads,
+      ...transferLeads,
+    ];
+
+    type StudentItem = (typeof students)[number] & { type: 'student'; _sortKey: number };
+    const studentItems: StudentItem[] = students.map((s, i) => ({
+      ...s,
+      type: 'student' as const,
+      _sortKey: 10000 + i,
+    })) as StudentItem[];
+
+    const combined = [...onboardingItems, ...studentItems].sort(
+      (a, b) => a._sortKey - b._sortKey,
+    );
+
+    const total = combined.length;
+    const paginated = combined.slice(skipValue, skipValue + takeValue);
+
+    // Remove _sortKey from response
+    const items = paginated.map((item) => {
+      if (item.type === 'onboarding') {
+        const { _sortKey: _, ...rest } = item;
+        return rest;
+      }
+      const { _sortKey: __, ...rest } = item;
+      return rest;
+    });
+
+    const totalMonthlyFees = students.reduce(
+      (sum, s) => sum + Number(s.monthlyFee ?? 0),
+      0,
+    );
 
     return {
       items,
@@ -123,6 +247,7 @@ export class StudentQueryService {
       page: takeValue > 0 ? Math.floor(skipValue / takeValue) + 1 : 1,
       pageSize: takeValue,
       totalPages: takeValue > 0 ? Math.ceil(total / takeValue) : 0,
+      totalMonthlyFees,
     };
   }
 

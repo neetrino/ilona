@@ -43,8 +43,32 @@ export interface StudentGroup {
   };
 }
 
+/** Onboarding entry: lead assigned to teacher/group from CRM, not yet a full student */
+export interface OnboardingStudentItem {
+  type: 'onboarding';
+  leadId: string;
+  status?: string; // NEW | FIRST_LESSON – Approve/Transfer only valid for FIRST_LESSON
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+  teacherApprovedAt: string | null;
+  transferFlag: boolean;
+  transferComment: string | null;
+  groupId: string | null;
+  group?: StudentGroup | null;
+}
+
+/** Item in teacher's My Students list: either a full student or an onboarding lead */
+export type TeacherAssignedItem = Student | OnboardingStudentItem;
+
+export function isOnboardingItem(
+  item: TeacherAssignedItem,
+): item is OnboardingStudentItem {
+  return 'type' in item && item.type === 'onboarding';
+}
+
 export interface StudentsResponse {
-  items: Student[];
+  items: TeacherAssignedItem[];
   total: number;
   page: number;
   pageSize: number;

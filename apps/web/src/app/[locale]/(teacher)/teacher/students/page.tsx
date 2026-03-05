@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { useMyAssignedStudents } from '@/features/students/hooks/useStudents';
+import { useMyAssignedStudents, studentKeys } from '@/features/students/hooks/useStudents';
+import { isOnboardingItem } from '@/features/students/types';
+import { teacherApproveLead, teacherTransferLead } from '@/features/crm/api/crm.api';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import { cn } from '@/shared/lib/utils';
 import Link from 'next/link';
@@ -16,6 +19,9 @@ export default function TeacherStudentsPage() {
   const searchParams = useSearchParams();
   const locale = params.locale as string;
   const [searchQuery, setSearchQuery] = useState('');
+  const [transferLeadId, setTransferLeadId] = useState<string | null>(null);
+  const [transferComment, setTransferComment] = useState('');
+  const queryClient = useQueryClient();
 
   // Fetch teacher's groups
   const { data: groups, isLoading: isLoadingGroups } = useMyGroups();
@@ -63,30 +69,36 @@ export default function TeacherStudentsPage() {
     }
   }, [isLoadingGroups, groupsList, urlGroupId, validSelectedGroupId, pathname, router, searchParams]);
 
-  // Fetch students assigned to the teacher, filtered by selected group
-  // Only fetch if we have a valid selected group ID
+  // Fetch students + onboarding leads assigned to the teacher (backend applies search and ordering)
   const { data: studentsData, isLoading: isLoadingStudents } = useMyAssignedStudents({
     take: 100,
     groupId: validSelectedGroupId || undefined,
+    search: searchQuery || undefined,
   });
-  const students = studentsData?.items || [];
+  const items = studentsData?.items || [];
+
+  const approveMutation = useMutation({
+    mutationFn: teacherApproveLead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
+    },
+  });
+
+  const transferMutation = useMutation({
+    mutationFn: ({ leadId, comment }: { leadId: string; comment: string }) =>
+      teacherTransferLead(leadId, comment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
+      setTransferLeadId(null);
+      setTransferComment('');
+    },
+  });
 
   // Get selected group details
   const selectedGroup = useMemo(() => {
     if (!validSelectedGroupId) return null;
     return groupsList.find((g) => g.id === validSelectedGroupId) || null;
   }, [validSelectedGroupId, groupsList]);
-
-  // Filter students by search
-  const filteredStudents = students.filter((student) => {
-    if (!searchQuery) return true;
-    const fullName = `${student.user.firstName} ${student.user.lastName}`.toLowerCase();
-    const phone = student.user.phone?.toLowerCase() || '';
-    return (
-      fullName.includes(searchQuery.toLowerCase()) ||
-      phone.includes(searchQuery.toLowerCase())
-    );
-  });
 
   // Handle group selection
   const handleGroupSelect = (groupId: string) => {
@@ -208,14 +220,14 @@ export default function TeacherStudentsPage() {
                 <h3 className="font-semibold text-slate-800 mb-1">{selectedGroup.name}</h3>
                 <p className="text-sm text-slate-500">
                   {selectedGroup.level ? getLevelDisplay(selectedGroup.level) : 'No level'} •{' '}
-                  {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''}
+                  {items.length} student{items.length !== 1 ? 's' : ''}
                 </p>
               </div>
             ) : groupsList.length > 0 && !isLoadingGroups ? (
               <div className="p-4 border-b border-slate-200 bg-slate-50">
                 <h3 className="font-semibold text-slate-800 mb-1">All Students</h3>
                 <p className="text-sm text-slate-500">
-                  {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} assigned to you
+                  {items.length} student{items.length !== 1 ? 's' : ''} assigned to you
                 </p>
               </div>
             ) : null}
@@ -262,7 +274,7 @@ export default function TeacherStudentsPage() {
                     </div>
                   ))}
                 </div>
-              ) : filteredStudents.length === 0 ? (
+              ) : items.length === 0 ? (
                 <div className="p-12 text-center">
                   <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
                     <svg
@@ -289,10 +301,73 @@ export default function TeacherStudentsPage() {
                   </p>
                 </div>
               ) : (
-                filteredStudents.map((student) => {
+                items.map((item) => {
+                  if (isOnboardingItem(item)) {
+                    const name = [item.firstName, item.lastName].filter(Boolean).join(' ') || 'No name';
+                    const initials = (item.firstName?.[0] ?? '') + (item.lastName?.[0] ?? '') || '?';
+                    const canApproveTransfer = item.status === 'FIRST_LESSON' && !item.teacherApprovedAt && !item.transferFlag;
+                    return (
+                      <div
+                        key={`onboarding-${item.leadId}`}
+                        className="p-4 transition-colors bg-amber-50/80 hover:bg-amber-100/80 border-l-2 border-amber-200"
+                      >
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 font-semibold">
+                              {initials}
+                            </div>
+                            <div>
+                              <p className="font-medium text-slate-800">
+                                {name}
+                                <span className="ml-2 text-xs font-normal text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                                  Onboarding
+                                </span>
+                              </p>
+                              <p className="text-sm text-slate-500">
+                                {item.phone || 'No phone'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {item.teacherApprovedAt ? (
+                              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-700" title="Approved" aria-label="Approved">
+                                ✓
+                              </span>
+                            ) : item.transferFlag ? (
+                              <span className="rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+                                Transfer requested
+                              </span>
+                            ) : canApproveTransfer ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => approveMutation.mutate(item.leadId)}
+                                  disabled={approveMutation.isPending}
+                                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setTransferLeadId(item.leadId)}
+                                  disabled={transferMutation.isPending}
+                                  className="rounded-lg border border-amber-500 text-amber-700 px-3 py-1.5 text-sm font-medium hover:bg-amber-50"
+                                >
+                                  Transfer
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-xs text-slate-500">First lesson pending</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const student = item as import('@/features/students/types').Student;
                   const initials = `${student.user.firstName[0]}${student.user.lastName[0]}`;
                   const avatarUrl = student.user.avatarUrl;
-
                   return (
                     <div
                       key={student.id}
@@ -323,7 +398,6 @@ export default function TeacherStudentsPage() {
                             </p>
                           </div>
                         </div>
-
                         <div className="flex items-center gap-2">
                           <Link
                             href={`/${locale}/teacher/students/${student.id}?${searchParams.toString()}`}
@@ -344,6 +418,47 @@ export default function TeacherStudentsPage() {
           </div>
         </div>
       </div>
+
+      {/* Transfer modal for onboarding leads */}
+      {transferLeadId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Request transfer</h3>
+            <p className="text-sm text-slate-600 mb-4">
+              Include where to transfer the student and why (min 10 characters).
+            </p>
+            <textarea
+              value={transferComment}
+              onChange={(e) => setTransferComment(e.target.value)}
+              placeholder="e.g. Move to Group B2 – level is higher than A2"
+              rows={4}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setTransferLeadId(null);
+                  setTransferComment('');
+                }}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  transferMutation.mutate({ leadId: transferLeadId, comment: transferComment })
+                }
+                disabled={transferComment.trim().length < 10 || transferMutation.isPending}
+                className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

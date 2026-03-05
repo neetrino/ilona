@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators';
@@ -16,14 +16,7 @@ import { TeacherTransferDto } from './dto';
 export class TeacherLeadsController {
   constructor(private readonly leadsService: LeadsService) {}
 
-  @Get()
-  @ApiOperation({ summary: 'List leads assigned to the current teacher' })
-  findMyLeads(
-    @Query('groupId') groupId: string | undefined,
-    @CurrentUser() user: JwtPayload,
-  ): Promise<unknown> {
-    return this.leadsService.findForTeacher(user.sub, { groupId });
-  }
+  /** List of assigned leads is now returned by GET /students/me/assigned (My Students). */
 
   @Post(':id/approve')
   @ApiOperation({ summary: 'Approve first lesson – move lead to PAID' })
