@@ -7,6 +7,6 @@ BEGIN
     JOIN pg_type t ON e.enumtypid = t.oid
     WHERE t.typname = 'CrmLeadStatus' AND e.enumlabel = 'AGREED'
   ) THEN
-    ALTER TYPE "CrmLeadStatus" REMOVE VALUE 'AGREED';
+    EXECUTE 'ALTER TYPE "CrmLeadStatus" REMOVE VALUE ''AGREED''';
   END IF;
 END $$;
