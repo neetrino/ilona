@@ -112,6 +112,12 @@ export default function TeacherStudentsPage() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  // Format phone with + prefix for display
+  const formatPhone = (phone: string | null | undefined) => {
+    if (!phone) return 'No phone';
+    return phone.startsWith('+') ? phone : `+${phone}`;
+  };
+
   // Get level display text
   const getLevelDisplay = (level?: string) => {
     if (!level) return '';
@@ -331,7 +337,7 @@ export default function TeacherStudentsPage() {
                                 </span>
                               </p>
                               <p className="text-sm text-slate-500">
-                                {item.phone || 'No phone'}
+                                {formatPhone(item.phone)}
                               </p>
                             </div>
                           </div>
@@ -401,7 +407,7 @@ export default function TeacherStudentsPage() {
                               {student.user.firstName} {student.user.lastName}
                             </p>
                             <p className="text-sm text-slate-500">
-                              {student.user.phone || 'No phone'}
+                              {formatPhone(student.user.phone)}
                             </p>
                           </div>
                         </div>
