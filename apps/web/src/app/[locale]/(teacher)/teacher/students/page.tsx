@@ -85,7 +85,8 @@ export default function TeacherStudentsPage() {
   const approveMutation = useMutation({
     mutationFn: teacherApproveLead,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
+      // Invalidate all my-assigned queries (any filters); prefix match so current list refetches
+      queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
     },
   });
 
@@ -93,7 +94,7 @@ export default function TeacherStudentsPage() {
     mutationFn: ({ leadId, comment }: { leadId: string; comment: string }) =>
       teacherTransferLead(leadId, comment),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
+      queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
       setTransferLeadId(null);
       setTransferComment('');
     },
