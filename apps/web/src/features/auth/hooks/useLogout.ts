@@ -4,11 +4,13 @@ import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/auth.store';
 import { chatKeys } from '@/features/chat/hooks/useChat';
+import { studentKeys } from '@/features/students/hooks/useStudents';
+import { groupKeys } from '@/features/groups/hooks/useGroups';
 
 /**
- * Returns a logout function that clears chat cache and then logs out.
+ * Returns a logout function that clears chat and teacher-scoped caches, then logs out.
  * Use this instead of useAuthStore().logout so the next user does not see
- * the previous user's cached chat list (e.g. Admin chats showing for Student).
+ * the previous user's cached data (e.g. Teacher Y seeing Teacher X's students).
  */
 export function useLogout() {
   const logout = useAuthStore((s) => s.logout);
@@ -16,6 +18,8 @@ export function useLogout() {
 
   return useCallback(() => {
     queryClient.removeQueries({ queryKey: chatKeys.all });
+    queryClient.removeQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
+    queryClient.removeQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
     logout();
   }, [logout, queryClient]);
 }

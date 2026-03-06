@@ -35,7 +35,9 @@ export const studentKeys = {
   statistics: (id: string) => [...studentKeys.detail(id), 'statistics'] as const,
   myProfile: () => [...studentKeys.all, 'my-profile'] as const,
   myDashboard: () => [...studentKeys.all, 'my-dashboard'] as const,
-  myAssigned: (filters?: StudentFilters) => [...studentKeys.all, 'my-assigned', filters] as const,
+  /** Include userId so cache is isolated per teacher; use [...studentKeys.all, 'my-assigned'] for prefix invalidation */
+  myAssigned: (userId?: string, filters?: StudentFilters) =>
+    [...studentKeys.all, 'my-assigned', userId ?? '', filters] as const,
   myTeachers: () => [...studentKeys.all, 'my-teachers'] as const,
 };
 
@@ -81,7 +83,7 @@ export function useCreateStudent() {
     mutationFn: (data: CreateStudentDto) => createStudent(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
+      queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
     },
   });
 }
@@ -100,12 +102,12 @@ export function useUpdateStudent() {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: studentKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: studentKeys.lists() });
-      await queryClient.cancelQueries({ queryKey: studentKeys.myAssigned() });
+      await queryClient.cancelQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
 
       // Snapshot previous values
       const previousStudent = queryClient.getQueryData(studentKeys.detail(id));
       const previousLists = queryClient.getQueriesData({ queryKey: studentKeys.lists() });
-      const previousMyAssigned = queryClient.getQueriesData({ queryKey: studentKeys.myAssigned() });
+      const previousMyAssigned = queryClient.getQueriesData({ queryKey: [...studentKeys.all, 'my-assigned'] });
 
       // Optimistically update the detail query
       if (previousStudent) {
@@ -193,7 +195,7 @@ export function useUpdateStudent() {
       // Invalidate to refetch and ensure consistency
       queryClient.invalidateQueries({ queryKey: studentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
+      queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
     },
   });
 }
@@ -210,7 +212,7 @@ export function useChangeStudentGroup() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: studentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
+      queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
     },
   });
 }
@@ -239,7 +241,7 @@ export function useDeleteStudentsBulk() {
     mutationFn: (ids: string[]) => deleteStudentsBulk(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: studentKeys.myAssigned() });
+      queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
     },
   });
 }
@@ -268,14 +270,15 @@ export function useMyDashboard(enabled = true) {
 
 /**
  * Hook to fetch students assigned to the currently logged-in teacher
- * Only runs when auth is ready (hydrated + authenticated + token) to avoid 401 and empty first load
+ * Only runs when auth is ready (hydrated + authenticated + token) to avoid 401 and empty first load.
+ * Query key includes user id so cache is isolated per teacher and switching accounts does not show stale data.
  */
 export function useMyAssignedStudents(filters?: StudentFilters) {
-  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
+  const { user, isHydrated, isAuthenticated, tokens } = useAuthStore();
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
 
   return useQuery({
-    queryKey: studentKeys.myAssigned(filters),
+    queryKey: studentKeys.myAssigned(user?.id, filters),
     queryFn: () => fetchMyAssignedStudents(filters),
     enabled: isAuthReady,
     staleTime: 60 * 1000,
