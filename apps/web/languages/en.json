@@ -214,7 +214,8 @@
     "statistics": "Statistics",
     "totalGroups": "Total Groups",
     "totalStudents": "Total Students",
-    "teacherNotFound": "Teacher not found"
+    "teacherNotFound": "Teacher not found",
+    "viewFullPhoto": "View full-size photo"
   },
   "students": {
     "title": "Students",
