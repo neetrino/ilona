@@ -244,7 +244,7 @@ export function createStudentsTableColumns({
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
         const phone = isOnboardingItem(row) ? (row.phone ?? 'No phone') : (row.user?.phone ?? 'No phone');
         const fullName = `${firstName} ${lastName}`.trim() || '?';
-        const avatarUrl = isOnboardingItem(row) ? undefined : (row as Student).user?.avatarUrl;
+        const avatarUrl = isOnboardingItem(row) ? undefined : row.user?.avatarUrl;
         return (
           <div className="flex items-center gap-3">
             <Avatar

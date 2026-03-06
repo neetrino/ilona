@@ -24,7 +24,7 @@ export function StudentProfileHeader({
   isEditMode,
   firstName,
   lastName,
-  initials,
+  initials: _initials,
   errors,
   register,
 }: StudentProfileHeaderProps) {

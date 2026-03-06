@@ -24,7 +24,7 @@ export function TeacherProfileHeader({
   isEditMode,
   firstName,
   lastName,
-  initials,
+  initials: _initials,
   errors,
   register,
 }: TeacherProfileHeaderProps) {

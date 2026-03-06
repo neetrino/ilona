@@ -52,7 +52,7 @@ export function Avatar({ src, name, size = 'md', className, alt = name }: Avatar
     >
       {showImage && src ? (
         <Image
-          src={src as string}
+          src={src}
           alt={alt}
           width={size === 'xs' ? 24 : size === 'sm' ? 32 : size === 'md' ? 40 : size === 'lg' ? 48 : 80}
           height={size === 'xs' ? 24 : size === 'sm' ? 32 : size === 'md' ? 40 : size === 'lg' ? 48 : 80}

@@ -199,7 +199,7 @@ export class StudentCrudService {
       }),
     ]);
 
-    let sortedItems = items;
+    const sortedItems = items;
     // In-memory sort only for absence (already ordered by DB for student/monthlyFee/register)
 
     // Extract total monthly fees from aggregate result
