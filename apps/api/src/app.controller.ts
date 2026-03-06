@@ -33,14 +33,14 @@ export class AppController {
   }
 
   /**
-   * Warmup endpoint: lightweight request to preload server (DB connection, middleware).
-   * Called by the frontend as early as possible on first page load. No auth required.
-   * Does not affect business logic; used only to reduce first-real-request latency.
+   * Warmup endpoint: lightweight request to keep Render instance warm (no DB query).
+   * Called by Vercel cron every 10 min. We intentionally do NOT hit the DB here so that
+   * Neon can suspend when there is no real traffic. First real user request may have
+   * slightly higher latency (Neon cold start) but saves unnecessary DB usage.
    */
   @Get('warmup')
   @Public()
-  async warmup() {
-    await this.prisma.$queryRaw`SELECT 1`;
+  warmup() {
     return { ok: true };
   }
 }
