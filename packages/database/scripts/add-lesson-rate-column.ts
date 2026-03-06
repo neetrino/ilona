@@ -19,9 +19,10 @@ async function addLessonRateColumn() {
       `;
       console.log('✅ Column lessonRateAMD already exists!');
       return;
-    } catch (error: any) {
-      // If column doesn't exist, add it
-      if (error?.message?.includes('does not exist') || error?.code === '42703') {
+    } catch (error: unknown) {
+      // If column doesn't exist, add it (PostgreSQL code 42703 = undefined_column)
+      const err = error as { message?: string; code?: string };
+      if (err?.message?.includes('does not exist') || err?.code === '42703') {
         console.log('Adding lessonRateAMD column to teachers table...');
         await prisma.$executeRaw`
           ALTER TABLE "teachers" ADD COLUMN IF NOT EXISTS "lessonRateAMD" DECIMAL(10,2)

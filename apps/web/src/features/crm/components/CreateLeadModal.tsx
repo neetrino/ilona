@@ -36,7 +36,7 @@ export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalPro
   const teachers = teachersData?.items ?? [];
   const { data: groupsData } = useQuery({
     queryKey: ['groups'],
-    queryFn: () => fetchGroups({ take: 200 }),
+    queryFn: () => fetchGroups({ take: 500 }),
     enabled: open,
   });
   const groups = groupsData?.items ?? [];
@@ -93,8 +93,10 @@ export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalPro
             <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
             <input
               type="tel"
-              value={form.phone ?? ''}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              inputMode="numeric"
+              autoComplete="tel"
+              value={form.phone != null && form.phone !== '' ? `+${form.phone}` : '+'}
+              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
           </div>

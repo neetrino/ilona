@@ -116,41 +116,34 @@ export class StudentCrudService {
     }
 
     // Build orderBy based on sortBy parameter
-    // For 'student' and 'absence' sorting, we'll sort in JavaScript after fetching
+    // Only 'absence' requires in-memory sort (depends on computed attendance). 'student' uses DB orderBy.
     let orderBy: Prisma.StudentOrderByWithRelationInput | Prisma.StudentOrderByWithRelationInput[];
     if (sortBy === 'student') {
-      // For student name sorting, we'll sort by full name in JavaScript
-      // So we fetch with default order first
       orderBy = [
-        { user: { firstName: 'asc' } },
-        { user: { lastName: 'asc' } },
+        { user: { firstName: sortOrder } },
+        { user: { lastName: sortOrder } },
       ];
     } else if (sortBy === 'monthlyFee') {
-      // Sort by monthly fee
       orderBy = { monthlyFee: sortOrder };
     } else if (sortBy === 'register') {
       orderBy = { registerDate: sortOrder };
     } else if (sortBy === 'absence') {
-      // For absence sorting, we'll sort by absences count in JavaScript after calculating attendance
-      // So we fetch with default order first
       orderBy = [
         { user: { firstName: 'asc' } },
         { user: { lastName: 'asc' } },
       ];
     } else {
-      // Default sorting by firstName, then lastName
       orderBy = [
-        { user: { firstName: 'asc' } },
-        { user: { lastName: 'asc' } },
+        { user: { firstName: sortOrder } },
+        { user: { lastName: sortOrder } },
       ];
     }
 
-    // For student name and absence sorting, we need to fetch all matching records, sort them, then paginate
-    // For other sorts, we can use database-level sorting with pagination
-    const shouldSortInMemory = sortBy === 'student' || sortBy === 'absence';
-    
+    // Only absence sort requires in-memory sort (computed from attendance). Cap fetch to limit memory.
+    const shouldSortInMemory = sortBy === 'absence';
+    const ABSENCE_SORT_FETCH_CAP = 1000;
     const fetchSkip = shouldSortInMemory ? 0 : skip;
-    const fetchTake = shouldSortInMemory ? undefined : take;
+    const fetchTake = shouldSortInMemory ? ABSENCE_SORT_FETCH_CAP : take;
 
     const [items, total, totalMonthlyFeesResult] = await Promise.all([
       this.prisma.student.findMany({
@@ -206,19 +199,8 @@ export class StudentCrudService {
       }),
     ]);
 
-    // Apply in-memory sorting for student name if needed
-    let sortedItems = items;
-    if (shouldSortInMemory && sortBy === 'student') {
-      sortedItems = [...items].sort((a, b) => {
-        const aValue = `${a.user.firstName} ${a.user.lastName}`.toLowerCase();
-        const bValue = `${b.user.firstName} ${b.user.lastName}`.toLowerCase();
-        const comparison = aValue.localeCompare(bValue);
-        return sortOrder === 'asc' ? comparison : -comparison;
-      });
-      
-      // Apply pagination after sorting
-      sortedItems = sortedItems.slice(skip, skip + take);
-    }
+    const sortedItems = items;
+    // In-memory sort only for absence (already ordered by DB for student/monthlyFee/register)
 
     // Extract total monthly fees from aggregate result
     const totalMonthlyFees = totalMonthlyFeesResult._sum?.monthlyFee 

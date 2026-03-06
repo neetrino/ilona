@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Input, Label } from '@/shared/components/ui';
+import { Avatar, Badge, Input, Label } from '@/shared/components/ui';
 import type { Teacher } from '@/features/teachers';
 import type { UseFormRegister } from 'react-hook-form';
 import type { UpdateTeacherFormData } from '../schemas';
@@ -24,16 +24,23 @@ export function TeacherProfileHeader({
   isEditMode,
   firstName,
   lastName,
-  initials,
+  initials: _initials,
   errors,
   register,
 }: TeacherProfileHeaderProps) {
+  const fullName = `${firstName} ${lastName}`.trim() || 'Teacher';
+  const avatarUrl = teacher.user?.avatarUrl;
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">
       <div className="flex items-start gap-6">
-        <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
-          {initials}
-        </div>
+        <Avatar
+          src={avatarUrl}
+          name={fullName}
+          size="xl"
+          className="w-20 h-20"
+          alt={fullName}
+        />
         <div className="flex-1">
           {isEditMode ? (
             <div className="space-y-4">

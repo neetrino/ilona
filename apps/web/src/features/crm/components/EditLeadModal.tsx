@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
 import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
@@ -45,6 +45,7 @@ export function EditLeadModal({
   groups,
   availableStatuses = CRM_COLUMN_ORDER,
 }: EditLeadModalProps) {
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<UpdateLeadDto & { status?: CrmLeadStatus; archivedReason?: string }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,23 +56,27 @@ export function EditLeadModal({
     enabled: !!leadId && open,
   });
 
+  // Sync form whenever modal opens or lead data is available (so edit always shows current saved values)
   useEffect(() => {
-    if (lead) {
-      setForm({
-        firstName: lead.firstName ?? '',
-        lastName: lead.lastName ?? '',
-        phone: lead.phone ?? '',
-        age: lead.age ?? undefined,
-        levelId: lead.levelId ?? undefined,
-        teacherId: lead.teacherId ?? undefined,
-        groupId: lead.groupId ?? undefined,
-        centerId: lead.centerId ?? undefined,
-        status: lead.status,
-        archivedReason: lead.archivedReason ?? undefined,
-      });
-      setError(null);
+    if (!open || !leadId) return;
+    if (!lead || lead.id !== leadId) {
+      setForm({});
+      return;
     }
-  }, [lead]);
+    setForm({
+      firstName: lead.firstName ?? '',
+      lastName: lead.lastName ?? '',
+      phone: (lead.phone ?? '').replace(/\D/g, ''),
+      age: lead.age ?? undefined,
+      levelId: lead.levelId ?? undefined,
+      teacherId: lead.teacherId ?? undefined,
+      groupId: lead.groupId ?? undefined,
+      centerId: lead.centerId ?? undefined,
+      status: lead.status,
+      archivedReason: lead.archivedReason ?? undefined,
+    });
+    setError(null);
+  }, [open, leadId, lead]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +94,7 @@ export function EditLeadModal({
             : {}),
         });
       }
+      await queryClient.invalidateQueries({ queryKey: ['crm-lead', leadId] });
       onSaved();
       onClose();
     } catch (err: unknown) {
@@ -137,8 +143,10 @@ export function EditLeadModal({
               <label className="block text-sm font-medium text-slate-700 mb-1">Phone number</label>
               <input
                 type="tel"
-                value={form.phone ?? ''}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                inputMode="numeric"
+                autoComplete="tel"
+                value={form.phone != null && form.phone !== '' ? `+${form.phone}` : '+'}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               />
             </div>

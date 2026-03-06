@@ -23,6 +23,7 @@ import type {
   StudentsResponse,
 } from '../types';
 import { getItemId, isOnboardingItem } from '../types';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 // Query keys
 export const studentKeys = {
@@ -267,11 +268,17 @@ export function useMyDashboard(enabled = true) {
 
 /**
  * Hook to fetch students assigned to the currently logged-in teacher
+ * Only runs when auth is ready (hydrated + authenticated + token) to avoid 401 and empty first load
  */
 export function useMyAssignedStudents(filters?: StudentFilters) {
+  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
+  const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
+
   return useQuery({
     queryKey: studentKeys.myAssigned(filters),
     queryFn: () => fetchMyAssignedStudents(filters),
+    enabled: isAuthReady,
+    staleTime: 60 * 1000,
   });
 }
 

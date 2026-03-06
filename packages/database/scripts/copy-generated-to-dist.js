@@ -15,5 +15,16 @@ if (!fs.existsSync(srcGen)) {
 }
 
 fs.mkdirSync(path.join(prismaDir, 'dist'), { recursive: true });
-fs.cpSync(srcGen, distGen, { recursive: true });
-console.log('packages/database: copied src/generated -> dist/generated');
+
+try {
+  if (fs.existsSync(distGen)) {
+    fs.rmSync(distGen, { recursive: true, force: true });
+  }
+  fs.cpSync(srcGen, distGen, { recursive: true });
+  console.log('packages/database: copied src/generated -> dist/generated');
+} catch (err) {
+  if (err.code === 'EPERM' || err.code === 'EPIPE' || err.code === 'EBUSY') {
+    console.error('packages/database: copy failed (files may be in use). Stop "pnpm run dev" and run build again.');
+  }
+  throw err;
+}

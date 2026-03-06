@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge } from '@/shared/components/ui';
+import { Avatar, Badge } from '@/shared/components/ui';
 import { ActionButtons } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import type { Teacher } from '@/features/teachers';
@@ -19,7 +19,6 @@ export function TeacherCard({ teacher, onEdit, onDelete, onDeactivate, onCardCli
   const lastName = teacher.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim();
   const phone = teacher.user?.phone || 'No phone';
-  const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
   const isActive = teacher.user?.status === 'ACTIVE';
   const hourlyRate = typeof teacher.hourlyRate === 'string' ? parseFloat(teacher.hourlyRate) : Number(teacher.hourlyRate || 0);
   const studentCount = teacher._count?.students || 0;
@@ -49,9 +48,13 @@ export function TeacherCard({ teacher, onEdit, onDelete, onDeactivate, onCardCli
       <div className="mb-3">
         <div className="flex items-start justify-between gap-2 mb-1">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-slate-600 font-semibold flex-shrink-0 text-xs", isActive ? "bg-slate-200" : "bg-slate-100")}>
-              {initials}
-            </div>
+            <Avatar
+              src={teacher.user?.avatarUrl}
+              name={fullName}
+              size="sm"
+              className={cn(!isActive && "opacity-80")}
+              alt={fullName}
+            />
             <h4 className={cn("font-semibold text-slate-800 text-sm leading-tight truncate", !isActive && "text-slate-500")}>
               {fullName}
             </h4>

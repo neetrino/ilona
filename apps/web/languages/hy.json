@@ -213,7 +213,8 @@
     "statistics": "Վիճակագրություն",
     "totalGroups": "Ընդամենը խմբեր",
     "totalStudents": "Ընդամենը աշակերտներ",
-    "teacherNotFound": "Ուսուցիչը չի գտնվել"
+    "teacherNotFound": "Ուսուցիչը չի գտնվել",
+    "viewFullPhoto": "Դիտել լրիվ չափի նկար"
   },
   "students": {
     "title": "Աշակերտներ",

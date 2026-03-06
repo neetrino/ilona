@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge } from '@/shared/components/ui';
+import { Avatar, Badge } from '@/shared/components/ui';
 import { ActionButtons } from '@/shared/components/ui';
 import { SelectAllCheckbox } from './SelectAllCheckbox';
 import { cn } from '@/shared/lib/utils';
@@ -73,14 +73,17 @@ export function createTeachersTableColumns({
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
+        const fullName = `${firstName} ${lastName}`.trim() || '?';
         const phone = teacher.user?.phone || t('noPhoneNumber');
-        const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         const isActive = teacher.user?.status === 'ACTIVE';
         return (
           <div className={cn("flex items-center gap-3", !isActive && "opacity-60")}>
-            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-slate-600 font-semibold flex-shrink-0", isActive ? "bg-slate-200" : "bg-slate-100")}>
-              {initials}
-            </div>
+            <Avatar
+              src={teacher.user?.avatarUrl}
+              name={fullName}
+              size="md"
+              alt={fullName}
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <p className={cn("font-semibold text-slate-800", !isActive && "text-slate-500")}>

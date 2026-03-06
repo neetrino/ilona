@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
-import { Badge } from '@/shared/components/ui';
+import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
 
 interface TeacherDetailsModalProps {
@@ -31,6 +31,8 @@ export function TeacherDetailsModal({
     error,
   } = useTeacher(teacherId || '', !!teacherId && open);
 
+  const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false);
+
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (open) {
@@ -46,20 +48,20 @@ export function TeacherDetailsModal({
   // Close on Escape key (same as CRM modal behavior)
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
-        onClose();
+      if (e.key === 'Escape') {
+        if (photoPreviewOpen) setPhotoPreviewOpen(false);
+        else if (open) onClose();
       }
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [open, onClose]);
+  }, [open, onClose, photoPreviewOpen]);
 
   if (!open) return null;
 
   const firstName = teacher?.user?.firstName || '';
   const lastName = teacher?.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim() || 'Unknown';
-  const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
   const isActive = teacher?.user?.status === 'ACTIVE';
   const phone = teacher?.user?.phone || t('noPhoneNumber');
   const email = teacher?.user?.email || '';
@@ -76,14 +78,44 @@ export function TeacherDetailsModal({
       ).values()
     );
 
+  const avatarUrl = teacher?.user?.avatarUrl;
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Teacher details"
-    >
+    <>
+      {/* Photo preview lightbox — only when details are loaded and avatar exists */}
+      {photoPreviewOpen && avatarUrl && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setPhotoPreviewOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('viewFullPhoto')}
+        >
+          <button
+            type="button"
+            onClick={() => setPhotoPreviewOpen(false)}
+            className="absolute right-4 top-4 rounded-lg p-2 text-white/90 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            aria-label={tCommon('close')}
+          >
+            ✕
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={avatarUrl}
+            alt={fullName}
+            className="max-w-[90vw] max-h-[85vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Teacher details"
+      >
       <div
         className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -130,16 +162,25 @@ export function TeacherDetailsModal({
             <p className="text-slate-500">{t('teacherNotFound')}</p>
           ) : (
             <>
-              {/* Teacher Header */}
-              <div className="flex items-start gap-4 pb-4 border-b border-slate-200">
-                <div
+              {/* Teacher Header — large square profile photo with optional click-to-preview */}
+              <div className="flex items-start gap-5 pb-4 border-b border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => teacher.user?.avatarUrl && setPhotoPreviewOpen(true)}
                   className={cn(
-                    'w-14 h-14 rounded-full flex items-center justify-center text-slate-600 font-semibold text-lg flex-shrink-0',
-                    isActive ? 'bg-slate-200' : 'bg-slate-100'
+                    'rounded-xl flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
+                    !teacher.user?.avatarUrl && 'cursor-default pointer-events-none'
                   )}
+                  aria-label={teacher.user?.avatarUrl ? t('viewFullPhoto') : undefined}
                 >
-                  {initials}
-                </div>
+                  <Avatar
+                    src={teacher.user?.avatarUrl}
+                    name={fullName}
+                    size="xl"
+                    className="w-56 h-56 sm:w-64 sm:h-64 rounded-xl"
+                    alt={fullName}
+                  />
+                </button>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className={cn('text-xl font-bold', isActive ? 'text-slate-800' : 'text-slate-500')}>
@@ -228,6 +269,7 @@ export function TeacherDetailsModal({
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
