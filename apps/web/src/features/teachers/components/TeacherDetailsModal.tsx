@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
-import { Badge } from '@/shared/components/ui';
+import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
 
 interface TeacherDetailsModalProps {
@@ -59,7 +59,6 @@ export function TeacherDetailsModal({
   const firstName = teacher?.user?.firstName || '';
   const lastName = teacher?.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim() || 'Unknown';
-  const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
   const isActive = teacher?.user?.status === 'ACTIVE';
   const phone = teacher?.user?.phone || t('noPhoneNumber');
   const email = teacher?.user?.email || '';
@@ -132,14 +131,13 @@ export function TeacherDetailsModal({
             <>
               {/* Teacher Header */}
               <div className="flex items-start gap-4 pb-4 border-b border-slate-200">
-                <div
-                  className={cn(
-                    'w-14 h-14 rounded-full flex items-center justify-center text-slate-600 font-semibold text-lg flex-shrink-0',
-                    isActive ? 'bg-slate-200' : 'bg-slate-100'
-                  )}
-                >
-                  {initials}
-                </div>
+                <Avatar
+                  src={teacher.user?.avatarUrl}
+                  name={fullName}
+                  size="lg"
+                  className="w-14 h-14"
+                  alt={fullName}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className={cn('text-xl font-bold', isActive ? 'text-slate-800' : 'text-slate-500')}>
