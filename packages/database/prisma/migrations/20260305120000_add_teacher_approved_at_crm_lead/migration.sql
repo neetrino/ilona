@@ -1,2 +1,2 @@
--- AlterTable
-ALTER TABLE "crm_leads" ADD COLUMN "teacherApprovedAt" TIMESTAMP(3);
+ALTER TABLE "crm_leads"
+ADD COLUMN IF NOT EXISTS "teacherApprovedAt" TIMESTAMP(3);
