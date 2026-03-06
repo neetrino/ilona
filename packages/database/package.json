@@ -17,7 +17,7 @@
     "prepare": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate": "node scripts/migrate-deploy-with-resolve.js",
+    "db:migrate": "prisma migrate deploy",
     "db:apply-teacher-approved": "node scripts/apply-teacher-approved-at.js",
     "db:migrate:dev": "prisma migrate dev",
     "db:studio": "prisma studio",
