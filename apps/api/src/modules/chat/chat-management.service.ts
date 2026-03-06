@@ -6,9 +6,20 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ChatType, UserRole } from '@ilona/database';
+import { ChatType, UserRole, type PrismaClient } from '@ilona/database';
 import { CreateChatDto, CreateCustomGroupChatDto } from './dto';
 import { ChatAuthorizationService } from './chat-authorization.service';
+
+/** Participant shape for type-safe callbacks */
+interface ParticipantUserId {
+  userId: string;
+}
+
+/** Chat with participants list (for find callback) */
+interface ChatWithParticipantIds {
+  id: string;
+  participants: ParticipantUserId[];
+}
 
 /**
  * Service responsible for chat/conversation management operations
@@ -16,6 +27,11 @@ import { ChatAuthorizationService } from './chat-authorization.service';
 @Injectable()
 export class ChatManagementService {
   private readonly logger = new Logger(ChatManagementService.name);
+
+  /** Typed Prisma client for delegate access (chat, user, group, etc.) */
+  private get db(): PrismaClient {
+    return this.prisma as unknown as PrismaClient;
+  }
 
   constructor(
     private readonly prisma: PrismaService,
@@ -30,7 +46,7 @@ export class ChatManagementService {
       // Ensure connection is active before query
       await this.prisma.ensureConnected();
       
-      const chats = await this.prisma.chat.findMany({
+      const chats = await this.db.chat.findMany({
         where: {
           participants: {
             some: {
@@ -102,7 +118,7 @@ export class ChatManagementService {
 
       // Batch get unread counts for all chats at once
       const chatIds = chats.map(chat => chat.id);
-      const participants = await this.prisma.chatParticipant.findMany({
+      const participants = await this.db.chatParticipant.findMany({
         where: {
           chatId: { in: chatIds },
           userId,
@@ -225,7 +241,7 @@ export class ChatManagementService {
       };
     }>;
   }> {
-    const chat = await this.prisma.chat.findUnique({
+    const chat = await this.db.chat.findUnique({
       where: { id: chatId },
       include: {
         group: {
@@ -297,7 +313,7 @@ export class ChatManagementService {
       if ((userRole === UserRole.TEACHER || userRole === 'TEACHER') && chat.type === ChatType.DIRECT) {
         const otherParticipant = chat.participants.find(p => p.userId !== userId);
         if (otherParticipant) {
-          const otherUser = await this.prisma.user.findUnique({
+          const otherUser = await this.db.user.findUnique({
             where: { id: otherParticipant.userId },
             select: { role: true },
           });
@@ -307,7 +323,7 @@ export class ChatManagementService {
             if (canAccess) {
               // Teacher is assigned, ensure they're a participant
               if (!isParticipant) {
-                await this.prisma.chatParticipant.upsert({
+                await this.db.chatParticipant.upsert({
                   where: {
                     chatId_userId: {
                       chatId: chat.id,
@@ -340,7 +356,7 @@ export class ChatManagementService {
     // If admin is accessing a group chat and not a participant, add them
     // Only for class/teaching group chats (groupId set). Custom group chats are members-only.
     if (isAdminAccessingGroup && !isParticipant && chat.groupId) {
-      await this.prisma.chatParticipant.upsert({
+      await this.db.chatParticipant.upsert({
         where: {
           chatId_userId: {
             chatId: chat.id,
@@ -378,7 +394,7 @@ export class ChatManagementService {
     }
 
     // Get creator's role
-    const creator = await this.prisma.user.findUnique({
+    const creator = await this.db.user.findUnique({
       where: { id: creatorId },
       select: { role: true },
     });
@@ -390,7 +406,7 @@ export class ChatManagementService {
     // For direct chats with one participant, validate relationships
     if (dto.participantIds.length === 1) {
       const participantId = dto.participantIds[0];
-      const participant = await this.prisma.user.findUnique({
+      const participant = await this.db.user.findUnique({
         where: { id: participantId },
         select: { role: true },
       });
@@ -428,7 +444,7 @@ export class ChatManagementService {
       const userIds = [creatorId, participantId].sort(); // Sort for consistent lookup
       
       // Find all direct chats where creator is a participant
-      const chatsWithCreator = await this.prisma.chat.findMany({
+      const chatsWithCreator = await this.db.chat.findMany({
         where: {
           type: ChatType.DIRECT,
           participants: {
@@ -449,8 +465,8 @@ export class ChatManagementService {
       });
 
       // Check if any of these chats has exactly these two participants
-      const existingChat = chatsWithCreator.find((chat) => {
-        const participantUserIds = chat.participants.map(p => p.userId).sort();
+      const existingChat = chatsWithCreator.find((chat: ChatWithParticipantIds) => {
+        const participantUserIds = chat.participants.map((p: ParticipantUserId) => p.userId).sort();
         return participantUserIds.length === 2 &&
                participantUserIds[0] === userIds[0] &&
                participantUserIds[1] === userIds[1];
@@ -458,7 +474,7 @@ export class ChatManagementService {
 
       if (existingChat) {
         // Return the full chat with all relations
-        const fullChat = await this.prisma.chat.findUnique({
+        const fullChat = await this.db.chat.findUnique({
           where: { id: existingChat.id },
           include: {
             participants: {
@@ -489,7 +505,7 @@ export class ChatManagementService {
     // Create new chat
     const allParticipants = [...new Set([creatorId, ...dto.participantIds])];
 
-    const chat = await this.prisma.chat.create({
+    const chat = await this.db.chat.create({
       data: {
         type: ChatType.DIRECT,
         name: dto.name,
@@ -584,7 +600,7 @@ export class ChatManagementService {
       };
     }>;
   }> {
-    const chat = await this.prisma.chat.findUnique({
+    const chat = await this.db.chat.findUnique({
       where: { groupId },
       include: {
         group: {
@@ -617,7 +633,7 @@ export class ChatManagementService {
     // If chat doesn't exist, create it lazily (Admin only - only Admin can create group chats)
     if (!chat) {
       // First, verify the group exists
-      const group = await this.prisma.group.findUnique({
+      const group = await this.db.group.findUnique({
         where: { id: groupId },
         select: {
           id: true,
@@ -645,7 +661,7 @@ export class ChatManagementService {
       }
 
       // Create the chat
-      const newChat = await this.prisma.chat.create({
+      const newChat = await this.db.chat.create({
         data: {
           type: ChatType.GROUP,
           name: group.name,
@@ -679,7 +695,7 @@ export class ChatManagementService {
 
       // Add admin (requesting user) as participant
       if (userId) {
-        await this.prisma.chatParticipant.create({
+        await this.db.chatParticipant.create({
           data: {
             chatId: newChat.id,
             userId,
@@ -690,12 +706,12 @@ export class ChatManagementService {
 
       // Add group's teacher as participant if exists
       if (group.teacherId) {
-        const teacher = await this.prisma.teacher.findUnique({
+        const teacher = await this.db.teacher.findUnique({
           where: { id: group.teacherId },
           select: { userId: true },
         });
         if (teacher) {
-          await this.prisma.chatParticipant.upsert({
+          await this.db.chatParticipant.upsert({
             where: {
               chatId_userId: {
                 chatId: newChat.id,
@@ -713,13 +729,13 @@ export class ChatManagementService {
       }
 
       // Add all students from the group as participants
-      const students = await this.prisma.student.findMany({
+      const students = await this.db.student.findMany({
         where: { groupId },
         select: { userId: true },
       });
 
       for (const student of students) {
-        await this.prisma.chatParticipant.upsert({
+        await this.db.chatParticipant.upsert({
           where: {
             chatId_userId: {
               chatId: newChat.id,
@@ -744,7 +760,7 @@ export class ChatManagementService {
 
     // Check if user is already a participant - if yes, allow access immediately
     if (userId) {
-      const isParticipant = chat.participants.some(p => p.userId === userId);
+      const isParticipant = chat.participants.some((p: ParticipantUserId) => p.userId === userId);
       if (isParticipant) {
         return chat;
       }
@@ -752,7 +768,7 @@ export class ChatManagementService {
 
     // If admin is accessing and not a participant, add them
     if (userId && userRole === UserRole.ADMIN) {
-      await this.prisma.chatParticipant.upsert({
+      await this.db.chatParticipant.upsert({
         where: {
           chatId_userId: {
             chatId: chat.id,
@@ -802,7 +818,7 @@ export class ChatManagementService {
     // For students, validate membership in the group
     if (userId && userRole === UserRole.STUDENT) {
       // Check if student is a member of this group
-      const student = await this.prisma.student.findFirst({
+      const student = await this.db.student.findFirst({
         where: {
           userId,
           groupId,
@@ -812,7 +828,7 @@ export class ChatManagementService {
       
       if (student) {
         // Student is a member, add them as participant
-        await this.prisma.chatParticipant.upsert({
+        await this.db.chatParticipant.upsert({
           where: {
             chatId_userId: {
               chatId: chat.id,
@@ -854,7 +870,7 @@ export class ChatManagementService {
     userId: string,
     _adminId: string,
   ): Promise<{ chatId: string; participant: { userId: string; joinedAt: Date } }> {
-    const chat = await this.prisma.chat.findUnique({
+    const chat = await this.db.chat.findUnique({
       where: { groupId },
       select: { id: true },
     });
@@ -862,7 +878,7 @@ export class ChatManagementService {
       throw new NotFoundException('Group chat not found. Open the group chat first.');
     }
 
-    const user = await this.prisma.user.findUnique({
+    const user = await this.db.user.findUnique({
       where: { id: userId },
       select: { id: true, status: true },
     });
@@ -873,7 +889,7 @@ export class ChatManagementService {
       throw new BadRequestException('Cannot add inactive or suspended users to the group');
     }
 
-    const existing = await this.prisma.chatParticipant.findUnique({
+    const existing = await this.db.chatParticipant.findUnique({
       where: {
         chatId_userId: { chatId: chat.id, userId },
       },
@@ -883,7 +899,7 @@ export class ChatManagementService {
       throw new BadRequestException('User is already a member of this group');
     }
 
-    const participant = await this.prisma.chatParticipant.upsert({
+    const participant = await this.db.chatParticipant.upsert({
       where: {
         chatId_userId: { chatId: chat.id, userId },
       },
@@ -906,7 +922,7 @@ export class ChatManagementService {
    * List custom group chats (type=GROUP, groupId=null) the user belongs to.
    */
   async getCustomGroupChats(userId: string): Promise<unknown> {
-    const chats = await this.prisma.chat.findMany({
+    const chats = await this.db.chat.findMany({
       where: {
         type: ChatType.GROUP,
         groupId: null,
@@ -971,7 +987,7 @@ export class ChatManagementService {
 
     // Validate all users exist and are active
     for (const uid of uniqueIds) {
-      const u = await this.prisma.user.findUnique({
+      const u = await this.db.user.findUnique({
         where: { id: uid },
         select: { id: true, status: true },
       });
@@ -983,7 +999,7 @@ export class ChatManagementService {
       }
     }
 
-    const chat = await this.prisma.chat.create({
+    const chat = await this.db.chat.create({
       data: {
         type: ChatType.GROUP,
         name: dto.name.trim(),
@@ -1023,7 +1039,7 @@ export class ChatManagementService {
     userId: string,
     _adminId: string,
   ): Promise<{ chatId: string; participant: { userId: string; joinedAt: Date } }> {
-    const chat = await this.prisma.chat.findUnique({
+    const chat = await this.db.chat.findUnique({
       where: { id: chatId },
       select: { id: true, type: true, groupId: true },
     });
@@ -1034,7 +1050,7 @@ export class ChatManagementService {
       throw new BadRequestException('This endpoint is only for custom group chats');
     }
 
-    const user = await this.prisma.user.findUnique({
+    const user = await this.db.user.findUnique({
       where: { id: userId },
       select: { id: true, status: true },
     });
@@ -1045,7 +1061,7 @@ export class ChatManagementService {
       throw new BadRequestException('Cannot add inactive or suspended users to the group');
     }
 
-    const existing = await this.prisma.chatParticipant.findUnique({
+    const existing = await this.db.chatParticipant.findUnique({
       where: {
         chatId_userId: { chatId, userId },
       },
@@ -1055,7 +1071,7 @@ export class ChatManagementService {
       throw new BadRequestException('User is already a member of this group');
     }
 
-    const participant = await this.prisma.chatParticipant.upsert({
+    const participant = await this.db.chatParticipant.upsert({
       where: {
         chatId_userId: { chatId, userId },
       },
