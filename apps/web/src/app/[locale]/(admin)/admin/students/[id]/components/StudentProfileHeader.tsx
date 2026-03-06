@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Input, Label } from '@/shared/components/ui';
+import { Badge, Input, Label, Avatar } from '@/shared/components/ui';
 import type { Student } from '@/features/students';
 import type { UseFormRegister } from 'react-hook-form';
 import type { UpdateStudentFormData } from '../schemas';
@@ -28,12 +28,17 @@ export function StudentProfileHeader({
   errors,
   register,
 }: StudentProfileHeaderProps) {
+  const avatarUrl = student.user?.avatarUrl;
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">
       <div className="flex items-start gap-6">
-        <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
-          {initials}
-        </div>
+        <Avatar
+          src={avatarUrl}
+          name={`${firstName} ${lastName}`.trim() || 'Student'}
+          size="xl"
+          className={avatarUrl ? '' : 'bg-primary text-white'}
+        />
         <div className="flex-1">
           {isEditMode ? (
             <div className="space-y-4">

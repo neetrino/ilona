@@ -1,7 +1,6 @@
 'use client';
 
-import { Badge } from '@/shared/components/ui';
-import { ActionButtons } from '@/shared/components/ui';
+import { Badge, ActionButtons, Avatar } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
 
@@ -29,9 +28,16 @@ export function StudentCard({ student, onEdit, onDelete, onDeactivate }: Student
       {/* Student Header */}
       <div className="mb-3">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h4 className="font-semibold text-slate-800 text-sm leading-tight flex-1">
-            {fullName}
-          </h4>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Avatar
+              src={student.user?.avatarUrl}
+              name={fullName}
+              size="sm"
+            />
+            <h4 className="font-semibold text-slate-800 text-sm leading-tight truncate">
+              {fullName}
+            </h4>
+          </div>
           <ActionButtons
             onEdit={onEdit}
             onDisable={onDeactivate}

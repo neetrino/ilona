@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
-import { ActionButtons } from '@/shared/components/ui';
+import { ActionButtons, Avatar } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
 import { formatCurrency } from '@/shared/lib/utils';
@@ -243,12 +243,15 @@ export function createStudentsTableColumns({
         const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
         const phone = isOnboardingItem(row) ? (row.phone ?? 'No phone') : (row.user?.phone ?? 'No phone');
-        const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
+        const fullName = `${firstName} ${lastName}`.trim() || '?';
+        const avatarUrl = isOnboardingItem(row) ? undefined : (row as Student).user?.avatarUrl;
         return (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold">
-              {initials}
-            </div>
+            <Avatar
+              src={avatarUrl}
+              name={fullName}
+              size="md"
+            />
             <div>
               <p className="font-semibold text-slate-800">
                 {firstName} {lastName}
