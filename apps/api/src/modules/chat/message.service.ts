@@ -9,6 +9,23 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, MessageType, ChatType, UserRole } from '@ilona/database';
+
+/** Message with chat and participants for getStudentVoiceToTeacherRecordings */
+type MessageWithChatForRecordings = Prisma.MessageGetPayload<{
+  include: {
+    chat: {
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: { id: true; firstName: true; lastName: true };
+            };
+          };
+        };
+      };
+    };
+  };
+}>;
 import { SendMessageDto, UpdateMessageDto } from './dto';
 import { StorageService } from '../storage/storage.service';
 import { SalariesService } from '../finance/salaries.service';
@@ -648,12 +665,12 @@ export class MessageService {
       },
     });
 
-    const voiceToTeacherOnly = messages.filter((m) => {
+    const voiceToTeacherOnly = messages.filter((m: MessageWithChatForRecordings) => {
       const meta = m.metadata as Record<string, unknown> | null;
       return meta && meta.voiceToTeacher === true;
     });
 
-    return voiceToTeacherOnly.map((m) => {
+    return voiceToTeacherOnly.map((m: MessageWithChatForRecordings) => {
       const teacherParticipant = m.chat.participants[0];
       return {
         id: m.id,

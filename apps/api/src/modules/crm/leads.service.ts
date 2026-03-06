@@ -30,7 +30,7 @@ import type { Prisma } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
 
 type CrmLeadWhereInput = Prisma.CrmLeadWhereInput;
-type TransactionClient = Parameters<Parameters<PrismaService['$transaction']>[0]>[0];
+type TransactionClient = Prisma.TransactionClient;
 
 const DEFAULT_MONTHLY_FEE = 0; // Can be updated later by admin
 

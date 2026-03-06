@@ -6,6 +6,10 @@ import type { ActionPercents, SystemSettingsWithPercents, PenaltyAmounts } from 
 import type { SystemSettings } from '@ilona/database';
 import { Prisma } from '@ilona/database';
 
+/** Prisma create/update input types (avoids depending on PrismaService delegate at type-check) */
+type SystemSettingsCreateData = Prisma.SystemSettingsCreateInput;
+type SystemSettingsUpdateData = Prisma.SystemSettingsUpdateInput;
+
 /**
  * Type for Prisma error with code and message
  */
@@ -44,7 +48,7 @@ export class SettingsService {
    */
   async getSystemSettings() {
     try {
-      const cached = await this.cache.get<Awaited<ReturnType<PrismaService['systemSettings']['findFirst']>>>(SettingsService.CACHE_KEY_SYSTEM);
+      const cached = await this.cache.get<SystemSettings | null>(SettingsService.CACHE_KEY_SYSTEM);
       if (cached) {
         return cached;
       }
@@ -72,7 +76,7 @@ export class SettingsService {
                 penaltyFeedbackAmd: 1000,
                 penaltyVoiceAmd: 1000,
                 penaltyTextAmd: 1000,
-              } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
+              } as unknown as SystemSettingsCreateData,
             });
           } catch (penaltyError: unknown) {
             // If penalty columns don't exist yet, try creating without them
@@ -90,7 +94,7 @@ export class SettingsService {
                   feedbacksPercent: 25,
                   voicePercent: 25,
                   textPercent: 25,
-                } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
+                } as unknown as SystemSettingsCreateData,
               });
             } else {
               throw penaltyError;
@@ -358,7 +362,7 @@ export class SettingsService {
             feedbacksPercent: data.feedbacksPercent,
             voicePercent: data.voicePercent,
             textPercent: data.textPercent,
-          } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
+          } as unknown as SystemSettingsCreateData,
         });
       } else {
         // Update using transaction for atomicity
@@ -371,7 +375,7 @@ export class SettingsService {
               feedbacksPercent: data.feedbacksPercent,
               voicePercent: data.voicePercent,
               textPercent: data.textPercent,
-            } as unknown as Parameters<typeof tx.systemSettings.update>[0]['data'],
+            } as unknown as SystemSettingsUpdateData,
           });
         });
       }
@@ -490,7 +494,7 @@ export class SettingsService {
             penaltyFeedbackAmd: data.penaltyFeedbackAmd,
             penaltyVoiceAmd: data.penaltyVoiceAmd,
             penaltyTextAmd: data.penaltyTextAmd,
-          } as unknown as Parameters<typeof this.prisma.systemSettings.create>[0]['data'],
+          } as unknown as SystemSettingsCreateData,
         });
       } else {
         // Update using transaction for atomicity
@@ -503,7 +507,7 @@ export class SettingsService {
               penaltyFeedbackAmd: data.penaltyFeedbackAmd,
               penaltyVoiceAmd: data.penaltyVoiceAmd,
               penaltyTextAmd: data.penaltyTextAmd,
-            } as unknown as Parameters<typeof tx.systemSettings.update>[0]['data'],
+            } as unknown as SystemSettingsUpdateData,
           });
         });
       }
