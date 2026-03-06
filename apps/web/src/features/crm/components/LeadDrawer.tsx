@@ -41,7 +41,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
   const teachers = teachersData?.items ?? [];
   const { data: groupsData } = useQuery({
     queryKey: ['groups'],
-    queryFn: () => fetchGroups({ take: 200 }),
+    queryFn: () => fetchGroups({ take: 500 }),
     enabled: !!leadId,
   });
   const groups = groupsData?.items ?? [];

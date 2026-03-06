@@ -8,6 +8,7 @@ import { useMyAssignedStudents, studentKeys } from '@/features/students/hooks/us
 import { isOnboardingItem } from '@/features/students/types';
 import { teacherApproveLead, teacherTransferLead } from '@/features/crm/api/crm.api';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { cn } from '@/shared/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -23,7 +24,11 @@ export default function TeacherStudentsPage() {
   const [transferComment, setTransferComment] = useState('');
   const queryClient = useQueryClient();
 
-  // Fetch teacher's groups
+  // Auth must be ready before groups/students queries run (they use enabled: isAuthReady)
+  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
+  const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
+
+  // Fetch teacher's groups (only runs when isAuthReady)
   const { data: groups, isLoading: isLoadingGroups } = useMyGroups();
   const groupsList = useMemo(() => groups || [], [groups]);
 
@@ -121,7 +126,9 @@ export default function TeacherStudentsPage() {
     return levelMap[level] || level;
   };
 
-  const isLoading = isLoadingGroups || isLoadingStudents;
+  // Show loading until auth is ready and we have attempted to load (avoids showing empty on first paint)
+  const isLoading =
+    !isAuthReady || isLoadingGroups || isLoadingStudents;
 
   return (
     <DashboardLayout
@@ -136,7 +143,7 @@ export default function TeacherStudentsPage() {
               <h3 className="font-semibold text-slate-800">Your Groups</h3>
             </div>
             <div className="divide-y divide-slate-100 max-h-[calc(100vh-300px)] overflow-y-auto">
-              {isLoadingGroups ? (
+              {!isAuthReady || isLoadingGroups ? (
                 <div className="p-4 space-y-3">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="animate-pulse">

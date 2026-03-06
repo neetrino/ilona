@@ -80,7 +80,7 @@ export function VoiceLeadDetailModal({
   });
   const { data: groupsData } = useQuery({
     queryKey: ['groups'],
-    queryFn: () => fetchGroups({ take: 200 }),
+    queryFn: () => fetchGroups({ take: 500 }),
     enabled: open && groupsProp === undefined,
   });
 

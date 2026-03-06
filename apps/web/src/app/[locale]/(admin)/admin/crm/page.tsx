@@ -127,7 +127,7 @@ export default function AdminCrmPage() {
   });
   const { data: groupsData } = useQuery({
     queryKey: ['groups'],
-    queryFn: () => fetchGroups({ take: 200 }),
+    queryFn: () => fetchGroups({ take: 500 }),
   });
 
   const leads = leadsData?.items ?? [];

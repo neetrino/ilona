@@ -36,7 +36,7 @@ export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalPro
   const teachers = teachersData?.items ?? [];
   const { data: groupsData } = useQuery({
     queryKey: ['groups'],
-    queryFn: () => fetchGroups({ take: 200 }),
+    queryFn: () => fetchGroups({ take: 500 }),
     enabled: open,
   });
   const groups = groupsData?.items ?? [];
