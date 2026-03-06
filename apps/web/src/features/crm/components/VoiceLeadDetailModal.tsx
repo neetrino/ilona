@@ -93,7 +93,7 @@ export function VoiceLeadDetailModal({
       setForm({
         firstName: lead.firstName ?? '',
         lastName: lead.lastName ?? '',
-        phone: lead.phone ?? '',
+        phone: (lead.phone ?? '').replace(/\D/g, ''),
         age: lead.age ?? undefined,
         levelId: lead.levelId ?? '',
         teacherId: lead.teacherId ?? '',
@@ -157,7 +157,7 @@ export function VoiceLeadDetailModal({
       setForm({
         firstName: lead.firstName ?? '',
         lastName: lead.lastName ?? '',
-        phone: lead.phone ?? '',
+        phone: (lead.phone ?? '').replace(/\D/g, ''),
         age: lead.age ?? undefined,
         levelId: lead.levelId ?? '',
         teacherId: lead.teacherId ?? '',
@@ -277,9 +277,11 @@ export function VoiceLeadDetailModal({
                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('phoneNumber')}</label>
                     <input
                       type="tel"
-                      value={form.phone ?? ''}
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      value={form.phone != null && form.phone !== '' ? `+${form.phone}` : '+'}
                       onChange={(e) => {
-                        setForm((f) => ({ ...f, phone: e.target.value }));
+                        setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '') }));
                         setPhoneError(null);
                       }}
                       className={`w-full rounded-lg border px-3 py-2 text-sm ${phoneError ? 'border-red-500' : 'border-slate-300'}`}
