@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsUUID, IsIn, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsIn, IsInt, Min, Max, Matches } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CrmLeadStatus } from '@ilona/database';
 
@@ -9,6 +9,9 @@ const VALID_STATUSES: CrmLeadStatus[] = [
   'WAITLIST',
   'ARCHIVE',
 ];
+
+/** CUID format used by the project (e.g. clxx...). Min length 25. */
+const CUID_REGEX = /^c[a-z0-9]{24,}$/;
 
 export class QueryLeadDto {
   @IsOptional()
@@ -33,15 +36,18 @@ export class QueryLeadDto {
   status?: CrmLeadStatus;
 
   @IsOptional()
-  @IsUUID()
+  @IsString()
+  @Matches(CUID_REGEX, { message: 'centerId must be a valid CUID' })
   centerId?: string;
 
   @IsOptional()
-  @IsUUID()
+  @IsString()
+  @Matches(CUID_REGEX, { message: 'teacherId must be a valid CUID' })
   teacherId?: string;
 
   @IsOptional()
-  @IsUUID()
+  @IsString()
+  @Matches(CUID_REGEX, { message: 'groupId must be a valid CUID' })
   groupId?: string;
 
   @IsOptional()

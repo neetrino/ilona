@@ -44,9 +44,32 @@ export class TeacherCrudService {
       where.user = userWhere;
     }
 
-    // Fetch teachers with groups
+    const total = await this.prisma.teacher.count({ where });
+
+    // Sort options that can be expressed in DB: teacher name, groups count, lessons count
+    const dbSortOptions = ['teacher', 'groups', 'lessons'];
+    const useDbSort = !sortBy || dbSortOptions.includes(sortBy);
+
+    const orderBy: Prisma.TeacherOrderByWithRelationInput | Prisma.TeacherOrderByWithRelationInput[] = useDbSort
+      ? sortBy === 'groups'
+        ? [{ groups: { _count: sortOrder } }]
+        : sortBy === 'lessons'
+          ? [{ lessons: { _count: sortOrder } }]
+          : [
+              { user: { firstName: sortOrder } },
+              { user: { lastName: sortOrder } },
+            ]
+      : [{ user: { firstName: 'asc' } }, { user: { lastName: 'asc' } }];
+
+    const fetchSkip = useDbSort ? skip : 0;
+    const fetchTake = useDbSort ? take : undefined;
+
+    // Fetch teachers with groups (with skip/take when using DB sort)
     const teachers = await this.prisma.teacher.findMany({
       where,
+      skip: fetchSkip,
+      take: fetchTake,
+      orderBy,
       include: {
         user: {
           select: {
@@ -81,7 +104,6 @@ export class TeacherCrudService {
       },
     });
 
-    // Get all teacher IDs
     const teacherIds = teachers.map(t => t.id);
 
     // Fetch student counts for all teachers in a single query using aggregation
@@ -131,9 +153,9 @@ export class TeacherCrudService {
       },
     }));
 
-    // Apply sorting
+    // Apply in-memory sorting only when sort is by students/obligation/deduction/cost (not DB-expressible)
     let sortedTeachers = teachersWithStudentCount;
-    if (sortBy) {
+    if (!useDbSort && sortBy) {
       sortedTeachers = [...teachersWithStudentCount].sort((a, b) => {
         let aValue: string | number;
         let bValue: string | number;
@@ -164,8 +186,7 @@ export class TeacherCrudService {
         if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
         return 0;
       });
-    } else {
-      // Default sorting by first name
+    } else if (!useDbSort) {
       sortedTeachers = [...teachersWithStudentCount].sort((a, b) => {
         const aValue = `${a.user.firstName} ${a.user.lastName}`.toLowerCase();
         const bValue = `${b.user.firstName} ${b.user.lastName}`.toLowerCase();
@@ -316,7 +337,7 @@ export class TeacherCrudService {
 
     // Apply sorting again after adding obligation data (if sortBy is for obligation/deduction/cost)
     let finalSortedTeachers = teachersWithObligations;
-    if (sortBy && ['obligation', 'deduction', 'cost'].includes(sortBy)) {
+    if (!useDbSort && sortBy && ['obligation', 'deduction', 'cost'].includes(sortBy)) {
       finalSortedTeachers = [...teachersWithObligations].sort((a, b) => {
         let aValue: string | number;
         let bValue: string | number;
@@ -344,9 +365,7 @@ export class TeacherCrudService {
       });
     }
 
-    // Apply pagination
-    const total = finalSortedTeachers.length;
-    const paginatedTeachers = finalSortedTeachers.slice(skip, skip + take);
+    const paginatedTeachers = useDbSort ? finalSortedTeachers : finalSortedTeachers.slice(skip, skip + take);
     const items = paginatedTeachers;
 
     return {

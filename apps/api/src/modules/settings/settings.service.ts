@@ -32,132 +32,12 @@ type SystemSettingsWithOptionalPenalties = SystemSettings & {
 @Injectable()
 export class SettingsService {
   private readonly logger = new Logger(SettingsService.name);
-  private logoUrlColumnChecked = false;
-  private penaltyColumnsChecked = false;
   private static readonly CACHE_KEY_SYSTEM = 'settings:system';
 
   constructor(
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
-
-  /**
-   * Ensure logoUrl column exists in system_settings table
-   * This is a migration workaround for when Prisma migrations haven't been run
-   */
-  private async ensureLogoUrlColumn(): Promise<void> {
-    if (this.logoUrlColumnChecked) {
-      return;
-    }
-
-    try {
-      // Check if column exists by trying to query it
-      await this.prisma.$queryRaw`
-        SELECT "logoUrl" FROM "system_settings" LIMIT 1
-      `;
-      this.logoUrlColumnChecked = true;
-    } catch (error: unknown) {
-      // If column doesn't exist, add it
-      if (
-        (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('does not exist')) ||
-        (error && typeof error === 'object' && 'code' in error && error.code === '42703')
-      ) {
-        try {
-          this.logger.log('Adding missing logoUrl column to system_settings table...');
-          await this.prisma.$executeRaw`
-            ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "logoUrl" TEXT
-          `;
-          this.logger.log('Successfully added logoUrl column');
-          this.logoUrlColumnChecked = true;
-        } catch (migrationError) {
-          this.logger.error(
-            `Failed to add logoUrl column: ${migrationError instanceof Error ? migrationError.message : String(migrationError)}`,
-          );
-          // Don't throw - let the actual query fail with a clearer error
-        }
-      } else {
-        // Some other error - might be that table doesn't exist, etc.
-        // Mark as checked to avoid infinite retries
-        this.logoUrlColumnChecked = true;
-      }
-    }
-  }
-
-  /**
-   * Ensure penalty columns exist in system_settings table
-   * This is a migration workaround for when Prisma migrations haven't been run
-   */
-  private async ensurePenaltyColumns(): Promise<void> {
-    if (this.penaltyColumnsChecked) {
-      return;
-    }
-
-    try {
-      // Check if penalty columns exist by trying to query one of them
-      await this.prisma.$queryRaw`
-        SELECT "penaltyAbsenceAmd" FROM "system_settings" LIMIT 1
-      `;
-      this.penaltyColumnsChecked = true;
-    } catch (error: unknown) {
-      // If columns don't exist, add them
-      // Check for PostgreSQL error code 42703 (undefined column) or Prisma error P2021 (column not found)
-      const errorMessage = error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' 
-        ? error.message 
-        : '';
-      const errorCode = error && typeof error === 'object' && 'code' in error 
-        ? String(error.code) 
-        : '';
-      
-      // Check for PrismaClientKnownRequestError with code P2021 (column not found)
-      const isPrismaColumnError =
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        (error).code === 'P2021';
-      
-      if (
-        isPrismaColumnError ||
-        errorMessage.includes('does not exist') ||
-        errorMessage.includes('penaltyAbsenceAmd') ||
-        errorCode === '42703' ||
-        errorCode === 'P2021'
-      ) {
-        try {
-          this.logger.log('Adding missing penalty columns to system_settings table...');
-          await this.prisma.$executeRaw`
-            DO $$ 
-            BEGIN
-              IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'system_settings' AND column_name = 'penaltyAbsenceAmd') THEN
-                ALTER TABLE "system_settings" ADD COLUMN "penaltyAbsenceAmd" DECIMAL(10, 2) NOT NULL DEFAULT 1000;
-              END IF;
-              
-              IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'system_settings' AND column_name = 'penaltyFeedbackAmd') THEN
-                ALTER TABLE "system_settings" ADD COLUMN "penaltyFeedbackAmd" DECIMAL(10, 2) NOT NULL DEFAULT 1000;
-              END IF;
-              
-              IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'system_settings' AND column_name = 'penaltyVoiceAmd') THEN
-                ALTER TABLE "system_settings" ADD COLUMN "penaltyVoiceAmd" DECIMAL(10, 2) NOT NULL DEFAULT 1000;
-              END IF;
-              
-              IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'system_settings' AND column_name = 'penaltyTextAmd') THEN
-                ALTER TABLE "system_settings" ADD COLUMN "penaltyTextAmd" DECIMAL(10, 2) NOT NULL DEFAULT 1000;
-              END IF;
-            END $$;
-          `;
-          this.logger.log('Successfully added penalty columns');
-          this.penaltyColumnsChecked = true;
-        } catch (migrationError) {
-          this.logger.error(
-            `Failed to add penalty columns: ${migrationError instanceof Error ? migrationError.message : String(migrationError)}`,
-          );
-          // Don't throw - mark as checked to avoid infinite retries
-          this.penaltyColumnsChecked = true;
-        }
-      } else {
-        // Some other error - might be that table doesn't exist, etc.
-        // Mark as checked to avoid infinite retries
-        this.penaltyColumnsChecked = true;
-      }
-    }
-  }
 
   /**
    * Get system settings (singleton - there should only be one record). Cached for 2 minutes.
@@ -168,11 +48,6 @@ export class SettingsService {
       if (cached) {
         return cached;
       }
-
-      // Ensure logoUrl column exists before querying
-      await this.ensureLogoUrlColumn();
-      // Ensure penalty columns exist before querying
-      await this.ensurePenaltyColumns();
 
       let settings = await this.prisma.systemSettings.findFirst();
 
@@ -250,9 +125,6 @@ export class SettingsService {
    */
   async updateLogoUrl(logoUrl: string | null): Promise<{ logoUrl: string | null }> {
     try {
-      // Ensure logoUrl column exists before querying
-      await this.ensureLogoUrlColumn();
-
       let settings = await this.prisma.systemSettings.findFirst();
 
       if (!settings) {
@@ -335,7 +207,6 @@ export class SettingsService {
    */
   async getLogoKey(): Promise<{ logoKey: string | null }> {
     try {
-      await this.ensureLogoUrlColumn();
       const settings = await this.getSystemSettings();
       const storedValue = (settings as SystemSettingsWithOptionalPenalties).logoUrl;
       
@@ -361,8 +232,6 @@ export class SettingsService {
    */
   async updateLogoKey(logoKey: string | null): Promise<void> {
     try {
-      await this.ensureLogoUrlColumn();
-
       const settings = await this.prisma.systemSettings.findFirst();
 
       if (!settings) {
