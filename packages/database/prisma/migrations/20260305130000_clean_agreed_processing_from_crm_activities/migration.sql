@@ -1,19 +1,11 @@
--- Migrate CRM AGREED/PROCESSING to FIRST_LESSON/PAID everywhere.
--- (Neon/this PostgreSQL does not support ALTER TYPE ... DROP VALUE, so we only migrate data;
---  the enum values AGREED/PROCESSING may remain in the type but no rows use them.)
--- Only run crm_leads updates when enum values exist (avoids 22P02 when baseline never had them).
+UPDATE "crm_leads"
+SET "status" = 'FIRST_LESSON'::"CrmLeadStatus"
+WHERE "status"::text = 'AGREED';
 
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_enum e JOIN pg_type t ON e.enumtypid = t.oid WHERE t.typname = 'CrmLeadStatus' AND e.enumlabel = 'AGREED') THEN
-    UPDATE "crm_leads" SET "status" = 'FIRST_LESSON' WHERE "status" = 'AGREED'::"CrmLeadStatus";
-  END IF;
-  IF EXISTS (SELECT 1 FROM pg_enum e JOIN pg_type t ON e.enumtypid = t.oid WHERE t.typname = 'CrmLeadStatus' AND e.enumlabel = 'PROCESSING') THEN
-    UPDATE "crm_leads" SET "status" = 'PAID' WHERE "status" = 'PROCESSING'::"CrmLeadStatus";
-  END IF;
-END $$;
+UPDATE "crm_leads"
+SET "status" = 'PAID'::"CrmLeadStatus"
+WHERE "status"::text = 'PROCESSING';
 
--- crm_lead_activities.payload: replace AGREED -> FIRST_LESSON, PROCESSING -> PAID in fromStatus/toStatus
 UPDATE "crm_lead_activities"
 SET "payload" = jsonb_set("payload", '{fromStatus}', '"FIRST_LESSON"')
 WHERE "payload" IS NOT NULL AND "payload"->>'fromStatus' = 'AGREED';
