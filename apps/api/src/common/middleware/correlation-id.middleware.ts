@@ -24,8 +24,17 @@ export class CorrelationIdMiddleware implements NestMiddleware {
     private readonly serverActivity: ServerActivityService,
   ) {}
 
+  /** Paths that should not count as "activity" for DB health checks (allows Neon to suspend when idle). */
+  private static readonly SKIP_ACTIVITY_PATHS = ['/warmup', '/health/db', '/'];
+
   use(req: Request, res: Response, next: NextFunction) {
-    this.serverActivity.touch();
+    const path = (req.path ?? '').replace(/\/$/, '') || '/';
+    const skipActivity =
+      path === '/' ||
+      CorrelationIdMiddleware.SKIP_ACTIVITY_PATHS.some((p) => p !== '/' && (path === p || path.endsWith(p)));
+    if (!skipActivity) {
+      this.serverActivity.touch();
+    }
     const id = (req.headers[CORRELATION_ID_HEADER] as string) || uuidv4();
     req.correlationId = id;
     res.setHeader(CORRELATION_ID_HEADER, id);

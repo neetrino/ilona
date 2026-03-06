@@ -7,7 +7,6 @@ interface BadgeProps {
   className?: string;
 }
 
-console.log('Badge');
 
 const variants = {
   default: 'bg-slate-100 text-slate-700',
