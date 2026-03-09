@@ -28,7 +28,8 @@ export const groupKeys = {
   detail: (id: string) => [...groupKeys.details(), id] as const,
   students: (groupId: string, filters?: { skip?: number; take?: number }) =>
     [...groupKeys.all, 'students', groupId, filters] as const,
-  myGroups: () => [...groupKeys.all, 'my-groups'] as const,
+  /** Include userId so cache is isolated per teacher; use [...groupKeys.all, 'my-groups'] for prefix invalidation */
+  myGroups: (userId?: string) => [...groupKeys.all, 'my-groups', userId ?? ''] as const,
 };
 
 /**
@@ -100,10 +101,11 @@ export function useGroup(id: string, enabled = true) {
 }
 
 /**
- * Hook to fetch groups assigned to the currently logged-in teacher
+ * Hook to fetch groups assigned to the currently logged-in teacher.
+ * Query key includes user id so cache is isolated per teacher and switching accounts does not show stale data.
  */
 export function useMyGroups() {
-  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
+  const { user, isHydrated, isAuthenticated, tokens } = useAuthStore();
   
   // Only enable query when:
   // 1. Auth store is hydrated (token loaded from localStorage)
@@ -113,7 +115,7 @@ export function useMyGroups() {
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
   
   return useQuery({
-    queryKey: groupKeys.myGroups(),
+    queryKey: groupKeys.myGroups(user?.id),
     queryFn: () => fetchMyGroups(),
     enabled: isAuthReady,
     staleTime: 60 * 1000, // 1 minute - invalidate on mutation
@@ -142,7 +144,7 @@ export function useCreateGroup() {
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
       // If a teacher is assigned, invalidate their my-groups cache
       if (group.teacherId) {
-        queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+        queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
       }
     },
   });
@@ -164,14 +166,14 @@ export function useUpdateGroup() {
       // This ensures both the old teacher (if removed) and new teacher (if assigned) see updates
       if (data.teacherId !== undefined) {
         // Invalidate all teacher my-groups queries (affects both old and new teacher)
-        queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+        queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
         queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
         queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
         queryClient.invalidateQueries({ queryKey: chatKeys.details() });
       }
       // If group active status changed, invalidate my-groups (inactive groups shouldn't appear)
       if (data.isActive !== undefined) {
-        queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+        queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
         queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
       }
     },
@@ -258,7 +260,7 @@ export function useToggleGroupActive() {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
       // Invalidate my-groups since active status affects teacher group visibility
-      queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
       queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
     },
   });
@@ -277,7 +279,7 @@ export function useAssignTeacher() {
       // Invalidate group-related queries
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
       
       // Invalidate chat-related queries to ensure teacher sees updated groups
       queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
@@ -300,7 +302,7 @@ export function useAddStudentToGroup() {
     onSuccess: (_, { groupId }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
       // Invalidate student queries to refresh student lists
       queryClient.invalidateQueries({ queryKey: ['students', 'my-assigned'] });
     },
@@ -319,7 +321,7 @@ export function useRemoveStudentFromGroup() {
     onSuccess: (_, { groupId }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: groupKeys.myGroups() });
+      queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
       // Invalidate student queries to refresh student lists
       queryClient.invalidateQueries({ queryKey: ['students', 'my-assigned'] });
     },

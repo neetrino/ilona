@@ -28,7 +28,8 @@ export class StudentGroupService {
 
     const oldGroupId = student.groupId;
 
-    // Validate new group if provided
+    // Validate new group if provided and get teacherId for sync
+    let newGroupTeacherId: string | null = null;
     if (newGroupId) {
       const group = await this.prisma.group.findUnique({
         where: { id: newGroupId },
@@ -42,12 +43,17 @@ export class StudentGroupService {
       if (group._count.students >= group.maxStudents) {
         throw new BadRequestException('Group is full');
       }
+      newGroupTeacherId = group.teacherId;
     }
 
-    // Update student group
+    // Update student group and sync teacherId from the new group so Teacher → My Students shows the student immediately
+    const updatePayload: { groupId: string | null; teacherId?: string | null } = {
+      groupId: newGroupId,
+      teacherId: newGroupId ? newGroupTeacherId : null,
+    };
     await this.prisma.student.update({
       where: { id },
-      data: { groupId: newGroupId },
+      data: updatePayload,
     });
 
     // Update chat memberships
