@@ -44,7 +44,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   // Fetch groups and teachers for dropdowns
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
-  const allGroups = groupsData?.items || [];
   const teachers = teachersData?.items || [];
 
   const {
@@ -74,10 +73,10 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   });
 
   const watchedTeacherId = watch('teacherId') || '';
-  const groupsForTeacher = useMemo(
-    () => (watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : []),
-    [allGroups, watchedTeacherId],
-  );
+  const groupsForTeacher = useMemo(() => {
+    const allGroups = groupsData?.items ?? [];
+    return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
+  }, [groupsData?.items, watchedTeacherId]);
 
   // Pre-fill form when student data is loaded
   useEffect(() => {
