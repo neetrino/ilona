@@ -73,7 +73,6 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   // Fetch groups and teachers for dropdowns
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
-  const allGroups = groupsData?.items || [];
   const teachers = teachersData?.items || [];
 
   const {
@@ -104,10 +103,10 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   });
 
   const watchedTeacherId = watch('teacherId') || '';
-  const groupsForTeacher = useMemo(
-    () => (watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : []),
-    [allGroups, watchedTeacherId],
-  );
+  const groupsForTeacher = useMemo(() => {
+    const allGroups = groupsData?.items ?? [];
+    return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
+  }, [groupsData?.items, watchedTeacherId]);
   useEffect(() => {
     if (!watchedTeacherId) setValue('groupId', '');
   }, [watchedTeacherId, setValue]);

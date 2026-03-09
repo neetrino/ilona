@@ -36,7 +36,6 @@ export default function StudentProfilePage() {
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE', take: 100 });
   const updateStudent = useUpdateStudent();
 
-  const allGroups = groupsData?.items || [];
   const teachers = teachersData?.items || [];
 
   const {
@@ -92,10 +91,10 @@ export default function StudentProfilePage() {
   }, [student, isEditMode, reset]);
 
   const watchedTeacherId = watch('teacherId') || '';
-  const groupsForTeacher = useMemo(
-    () => (watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : []),
-    [allGroups, watchedTeacherId],
-  );
+  const groupsForTeacher = useMemo(() => {
+    const allGroups = groupsData?.items ?? [];
+    return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
+  }, [groupsData?.items, watchedTeacherId]);
 
   // Track unsaved changes
   useEffect(() => {

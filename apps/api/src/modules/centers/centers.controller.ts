@@ -11,13 +11,15 @@ import {
 } from '@nestjs/common';
 import { CentersService } from './centers.service';
 import { CreateCenterDto, UpdateCenterDto, QueryCenterDto } from './dto';
-import { Roles } from '../../common/decorators';
+import { Public, Roles } from '../../common/decorators';
 import { UserRole } from '@ilona/database';
 
 @Controller('centers')
 export class CentersController {
   constructor(private readonly centersService: CentersService) {}
 
+  /** Public: used by Home page "Our Branches" without login */
+  @Public()
   @Get()
   async findAll(@Query() query: QueryCenterDto) {
     return this.centersService.findAll({
