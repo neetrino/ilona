@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, startTransition } from 'react';
+import { useState, useEffect, useCallback, useMemo, startTransition } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
@@ -36,7 +36,7 @@ export default function StudentProfilePage() {
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE', take: 100 });
   const updateStudent = useUpdateStudent();
 
-  const groups = groupsData?.items || [];
+  const allGroups = groupsData?.items || [];
   const teachers = teachersData?.items || [];
 
   const {
@@ -44,6 +44,8 @@ export default function StudentProfilePage() {
     handleSubmit,
     formState: { errors, isDirty },
     reset,
+    watch,
+    setValue,
   } = useForm<UpdateStudentFormData>({
     resolver: zodResolver(updateStudentSchema),
     defaultValues: {
@@ -88,6 +90,12 @@ export default function StudentProfilePage() {
       setSuccessMessage(null);
     }
   }, [student, isEditMode, reset]);
+
+  const watchedTeacherId = watch('teacherId') || '';
+  const groupsForTeacher = useMemo(
+    () => (watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : []),
+    [allGroups, watchedTeacherId],
+  );
 
   // Track unsaved changes
   useEffect(() => {
@@ -333,12 +341,14 @@ export default function StudentProfilePage() {
         <StudentDetails
           student={student}
           isEditMode={isEditMode}
-          groups={groups}
+          groups={groupsForTeacher}
+          groupSelectDisabled={!watchedTeacherId}
           teachers={teachers}
           isLoadingGroups={isLoadingGroups}
           isLoadingTeachers={isLoadingTeachers}
           errors={errors}
           register={register}
+          setValue={setValue}
         />
 
         {/* Notes */}

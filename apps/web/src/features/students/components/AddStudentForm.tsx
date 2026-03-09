@@ -7,7 +7,7 @@ import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle,
 import { useCreateStudent, type CreateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 
 const createStudentSchema = z.object({
@@ -73,7 +73,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   // Fetch groups and teachers for dropdowns
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
-  const groups = groupsData?.items || [];
+  const allGroups = groupsData?.items || [];
   const teachers = teachersData?.items || [];
 
   const {
@@ -85,7 +85,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     setValue,
   } = useForm<CreateStudentFormData>({
     resolver: zodResolver(createStudentSchema),
-      defaultValues: {
+    defaultValues: {
       email: '',
       password: '',
       firstName: '',
@@ -102,6 +102,15 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       receiveReports: true,
     },
   });
+
+  const watchedTeacherId = watch('teacherId') || '';
+  const groupsForTeacher = useMemo(
+    () => (watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : []),
+    [allGroups, watchedTeacherId],
+  );
+  useEffect(() => {
+    if (!watchedTeacherId) setValue('groupId', '');
+  }, [watchedTeacherId, setValue]);
 
   // Watch age value to conditionally show parent section
   const age = watch('age');
@@ -267,30 +276,12 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="groupId">Group</Label>
-              <select
-                id="groupId"
-                {...register('groupId')}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={isLoadingGroups}
-              >
-                <option value="">No group assigned</option>
-                {groups.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name} {group.level ? `(${group.level})` : ''}
-                  </option>
-                ))}
-              </select>
-              {errors.groupId && (
-                <p className="text-sm text-red-600">{errors.groupId.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="teacherId">Teacher</Label>
               <select
                 id="teacherId"
-                {...register('teacherId')}
+                {...register('teacherId', {
+                  onChange: () => setValue('groupId', ''),
+                })}
                 className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isLoadingTeachers || isSubmitting}
               >
@@ -307,6 +298,28 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
               )}
               {isLoadingTeachers && (
                 <p className="text-sm text-slate-500">Loading teachers...</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="groupId">Group</Label>
+              <select
+                id="groupId"
+                {...register('groupId')}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isLoadingGroups || !watchedTeacherId}
+              >
+                <option value="">
+                  {watchedTeacherId ? 'No group assigned' : 'Select Teacher first'}
+                </option>
+                {groupsForTeacher.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name} {group.level ? `(${group.level})` : ''}
+                  </option>
+                ))}
+              </select>
+              {errors.groupId && (
+                <p className="text-sm text-red-600">{errors.groupId.message}</p>
               )}
             </div>
           </div>

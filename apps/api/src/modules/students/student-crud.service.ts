@@ -628,7 +628,18 @@ export class StudentCrudService {
           where: { id: newGroupId },
           select: { teacherId: true },
         });
-        if (group?.teacherId) {
+        if (!group) {
+          throw new BadRequestException(`Group with ID ${newGroupId} not found`);
+        }
+        // If teacherId is also provided, ensure the group belongs to that teacher
+        if (dto.teacherId !== undefined && dto.teacherId !== null && dto.teacherId !== '') {
+          if (group.teacherId !== dto.teacherId) {
+            throw new BadRequestException(
+              'The selected group does not belong to the selected teacher. Please choose a group assigned to this teacher.',
+            );
+          }
+        }
+        if (group.teacherId) {
           updateData.teacherId = group.teacherId;
         }
       } else {

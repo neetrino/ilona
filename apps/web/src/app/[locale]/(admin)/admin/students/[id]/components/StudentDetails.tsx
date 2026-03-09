@@ -4,13 +4,14 @@ import { Badge, Input, Label } from '@/shared/components/ui';
 import type { Student } from '@/features/students';
 import type { Group } from '@/features/groups';
 import type { Teacher } from '@/features/teachers';
-import type { UseFormRegister } from 'react-hook-form';
+import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { UpdateStudentFormData } from '../schemas';
 
 interface StudentDetailsProps {
   student: Student;
   isEditMode: boolean;
   groups: Group[];
+  groupSelectDisabled?: boolean;
   teachers: Teacher[];
   isLoadingGroups: boolean;
   isLoadingTeachers: boolean;
@@ -23,17 +24,20 @@ interface StudentDetailsProps {
     parentEmail?: { message?: string };
   };
   register: UseFormRegister<UpdateStudentFormData>;
+  setValue?: UseFormSetValue<UpdateStudentFormData>;
 }
 
 export function StudentDetails({
   student,
   isEditMode,
   groups,
+  groupSelectDisabled = false,
   teachers,
   isLoadingGroups,
   isLoadingTeachers,
   errors,
   register,
+  setValue,
 }: StudentDetailsProps) {
   const firstName = student.user?.firstName || '';
   const lastName = student.user?.lastName || '';
@@ -98,31 +102,13 @@ export function StudentDetails({
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="groupId">Group</Label>
-                  <select
-                    id="groupId"
-                    {...register('groupId')}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    disabled={isLoadingGroups}
-                  >
-                    <option value="">Not assigned</option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name} {group.level ? `(${group.level})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  {errors?.groupId && (
-                    <p className="text-sm text-red-600">{errors.groupId.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="teacherId">Teacher</Label>
                   <select
                     id="teacherId"
-                    {...register('teacherId')}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    {...register('teacherId', {
+                      onChange: () => setValue?.('groupId', ''),
+                    })}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={isLoadingTeachers}
                   >
                     <option value="">Select a teacher</option>
@@ -138,6 +124,28 @@ export function StudentDetails({
                   )}
                   {isLoadingTeachers && (
                     <p className="text-sm text-slate-500">Loading teachers...</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="groupId">Group</Label>
+                  <select
+                    id="groupId"
+                    {...register('groupId')}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={isLoadingGroups || groupSelectDisabled}
+                  >
+                    <option value="">
+                      {groupSelectDisabled ? 'Select Teacher first' : 'Not assigned'}
+                    </option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name} {group.level ? `(${group.level})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {errors?.groupId && (
+                    <p className="text-sm text-red-600">{errors.groupId.message}</p>
                   )}
                 </div>
               </div>

@@ -64,7 +64,7 @@ export default function StudentsPage() {
     
     // Options
     teacherOptions,
-    groupOptions,
+    groups,
     centerOptions,
     teacherFilterOptions,
     centerFilterOptions,
@@ -226,7 +226,7 @@ export default function StudentsPage() {
             onCenterChange={handleCenterChange}
             onRegisterDateChange={handleRegisterDateChange}
             teacherOptions={teacherOptions}
-            groupOptions={groupOptions}
+            groups={groups}
             centerOptions={centerOptions}
             isLoading={isLoading}
             isDeleting={deleteStudent.isPending}
