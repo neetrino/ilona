@@ -42,7 +42,12 @@ export class StudentQueryService {
       }
       where.groupId = groupId;
     } else {
-      where.teacherId = teacherId;
+      // Include students assigned via direct teacherId OR via group (group.teacherId = teacherId)
+      // so that Admin-assigned students (groupId set, teacherId possibly unset) appear in My Students
+      where.OR = [
+        { teacherId },
+        { group: { teacherId } },
+      ];
     }
 
     if (searchTerm) {

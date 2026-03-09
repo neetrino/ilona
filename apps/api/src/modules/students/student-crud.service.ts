@@ -607,8 +607,8 @@ export class StudentCrudService {
       monthlyFee?: number;
       notes?: string;
       receiveReports?: boolean;
-      groupId?: string;
-      teacherId?: string;
+      groupId?: string | null;
+      teacherId?: string | null;
       registerDate?: Date | null;
     } = {
       parentName: dto.parentName,
@@ -619,8 +619,21 @@ export class StudentCrudService {
       receiveReports: dto.receiveReports,
     };
 
+    // When groupId is set, sync teacherId from the group so Teacher → My Students shows the student immediately
     if (dto.groupId !== undefined) {
-      updateData.groupId = dto.groupId;
+      const newGroupId = dto.groupId?.trim() || null;
+      updateData.groupId = newGroupId;
+      if (newGroupId) {
+        const group = await this.prisma.group.findUnique({
+          where: { id: newGroupId },
+          select: { teacherId: true },
+        });
+        if (group?.teacherId) {
+          updateData.teacherId = group.teacherId;
+        }
+      } else {
+        updateData.teacherId = null;
+      }
     }
     if (dto.teacherId !== undefined) {
       updateData.teacherId = dto.teacherId;

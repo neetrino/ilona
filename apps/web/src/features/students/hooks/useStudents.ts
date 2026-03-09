@@ -281,7 +281,8 @@ export function useMyAssignedStudents(filters?: StudentFilters) {
     queryKey: studentKeys.myAssigned(user?.id, filters),
     queryFn: () => fetchMyAssignedStudents(filters),
     enabled: isAuthReady,
-    staleTime: 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 
