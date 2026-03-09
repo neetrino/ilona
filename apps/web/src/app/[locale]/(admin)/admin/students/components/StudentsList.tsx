@@ -3,6 +3,7 @@
 import { DataTable } from '@/shared/components/ui';
 import { createStudentsTableColumns } from './StudentsTableColumns';
 import { getItemId, type TeacherAssignedItem, type Student } from '@/features/students';
+import type { Group } from '@/features/groups';
 
 interface StudentsListProps {
   students: TeacherAssignedItem[];
@@ -28,7 +29,7 @@ interface StudentsListProps {
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
   onRegisterDateChange: (studentId: string, date: string | null) => Promise<void>;
   teacherOptions: Array<{ id: string; label: string }>;
-  groupOptions: Array<{ id: string; label: string }>;
+  groups: Group[];
   centerOptions: Array<{ id: string; label: string }>;
   isLoading: boolean;
   isDeleting: boolean;
@@ -63,7 +64,7 @@ export function StudentsList({
   onCenterChange,
   onRegisterDateChange,
   teacherOptions,
-  groupOptions,
+  groups,
   centerOptions,
   isLoading,
   isDeleting,
@@ -91,7 +92,7 @@ export function StudentsList({
     onCenterChange,
     onRegisterDateChange,
     teacherOptions,
-    groupOptions,
+    groups,
     centerOptions,
     isDeleting: isDeleting || isUpdating,
     isUpdating,

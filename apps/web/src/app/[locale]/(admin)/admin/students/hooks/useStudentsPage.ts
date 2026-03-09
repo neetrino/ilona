@@ -379,11 +379,11 @@ export function useStudentsPage() {
     }
   };
 
-  // Handle inline updates
+  // Handle inline updates (when teacher changes, clear group so admin must pick a group for the new teacher)
   const handleTeacherChange = async (studentId: string, teacherId: string | null) => {
     await updateStudent.mutateAsync({
       id: studentId,
-      data: { teacherId: teacherId || undefined },
+      data: { teacherId: teacherId || undefined, groupId: '' },
     });
   };
 
@@ -428,13 +428,8 @@ export function useStudentsPage() {
     [teachersData]
   );
 
-  const groupOptions = useMemo(() => 
-    (groupsData?.items || []).map(group => ({
-      id: group.id,
-      label: `${group.name}${group.level ? ` (${group.level})` : ''}`,
-    })),
-    [groupsData]
-  );
+  // Full groups list with teacherId for per-row filtering (group options are filtered by selected teacher in table)
+  const groups = useMemo(() => groupsData?.items ?? [], [groupsData]);
 
   const centerOptions = useMemo(() => 
     (centersData?.items || []).map(center => ({
@@ -528,7 +523,7 @@ export function useStudentsPage() {
     
     // Options
     teacherOptions,
-    groupOptions,
+    groups,
     centerOptions,
     teacherFilterOptions,
     centerFilterOptions,

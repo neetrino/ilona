@@ -9,6 +9,7 @@ import { formatCurrency } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
+import type { Group } from '@/features/groups';
 
 /** Format for display (DD/MM/YYYY) */
 function formatRegisterDate(value: string | null | undefined): string {
@@ -177,7 +178,7 @@ interface StudentsTableColumnsProps {
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
   onRegisterDateChange: (studentId: string, date: string | null) => Promise<void>;
   teacherOptions: Array<{ id: string; label: string }>;
-  groupOptions: Array<{ id: string; label: string }>;
+  groups: Group[];
   centerOptions: Array<{ id: string; label: string }>;
   isDeleting: boolean;
   isUpdating: boolean;
@@ -201,7 +202,7 @@ export function createStudentsTableColumns({
   onCenterChange,
   onRegisterDateChange,
   teacherOptions,
-  groupOptions,
+  groups,
   centerOptions,
   isDeleting,
   isUpdating,
@@ -287,16 +288,22 @@ export function createStudentsTableColumns({
       header: 'GROUP',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        const teacherId = row.teacherId || null;
+        const groupOptionsForTeacher = teacherId
+          ? groups
+              .filter((g) => g.teacherId === teacherId)
+              .map((g) => ({ id: g.id, label: `${g.name}${g.level ? ` (${g.level})` : ''}` }))
+          : [];
         return (
           <div className="min-w-[150px]" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
               value={row.groupId || null}
-              options={groupOptions}
+              options={groupOptionsForTeacher}
               onChange={async (groupId) => {
                 await onGroupChange(row.id, groupId);
               }}
-              placeholder="Not assigned"
-              disabled={isUpdating}
+              placeholder={!teacherId ? 'Select Teacher first' : 'Not assigned'}
+              disabled={isUpdating || !teacherId}
             />
           </div>
         );
