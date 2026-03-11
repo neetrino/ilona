@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useLesson } from '@/features/lessons';
 import { useLessonFeedback, useCreateOrUpdateFeedback } from '@/features/feedback';
 import { Button } from '@/shared/components/ui/button';
+import { StarRating } from '@/shared/components/ui/star-rating';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 
@@ -15,6 +16,7 @@ interface FeedbacksTabProps {
 interface FeedbackItem {
   studentId: string;
   content?: string;
+  rating?: number | null;
 }
 
 interface StudentItem {
@@ -37,6 +39,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     return list.map((item) => ({
       studentId: item.student.id,
       content: item.feedback?.content,
+      rating: item.feedback?.rating ?? undefined,
     }));
   }, [feedbacksData]);
 
@@ -51,7 +54,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     }));
   }, [feedbacksData]);
 
-  const [feedbacks, setFeedbacks] = useState<Record<string, { content: string }>>({});
+  const [feedbacks, setFeedbacks] = useState<Record<string, { content: string; rating?: number }>>({});
   const [saveStatus, setSaveStatus] = useState<Record<string, { success: boolean; error: string | null }>>({});
 
   // Create stable keys for comparison to prevent infinite loops
@@ -61,7 +64,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
   );
   const feedbacksKey = useMemo(() => 
     existingFeedbacks.map(f => 
-      `${f.studentId}-${f.content || ''}`
+      `${f.studentId}-${f.content || ''}-${f.rating ?? ''}`
     ).sort().join('|'), 
     [existingFeedbacks]
   );
@@ -94,20 +97,22 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     const currentFeedbacks = feedbacksRef.current;
 
     if (currentStudents.length > 0) {
-      const initial: Record<string, { content: string }> = {};
+      const initial: Record<string, { content: string; rating?: number }> = {};
       
       // Initialize all students with their saved feedback or empty values
       currentStudents.forEach((student) => {
         const savedFeedback = currentFeedbacks.find((f) => f.studentId === student.id);
         if (savedFeedback) {
-          // Use saved feedback
+          // Use saved feedback (including rating)
           initial[student.id] = {
             content: savedFeedback.content || '',
+            rating: savedFeedback.rating ?? undefined,
           };
         } else {
           // Initialize with empty values for students without feedback
           initial[student.id] = {
             content: '',
+            rating: undefined,
           };
         }
       });
@@ -124,10 +129,26 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     setFeedbacks((prev) => ({
       ...prev,
       [studentId]: {
+        ...prev[studentId],
         content: value,
       },
     }));
     // Clear save status when user types
+    setSaveStatus((prev) => ({
+      ...prev,
+      [studentId]: { success: false, error: null },
+    }));
+  };
+
+  const handleRatingChange = (studentId: string, rating: number) => {
+    setFeedbacks((prev) => ({
+      ...prev,
+      [studentId]: {
+        ...prev[studentId],
+        content: prev[studentId]?.content ?? '',
+        rating,
+      },
+    }));
     setSaveStatus((prev) => ({
       ...prev,
       [studentId]: { success: false, error: null },
@@ -156,7 +177,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
         lessonId: lesson.id,
         studentId,
         content: feedback.content,
-        // Only send content, other fields are optional and not needed
+        ...(feedback.rating != null && feedback.rating >= 1 && feedback.rating <= 5 && { rating: feedback.rating }),
       });
 
       // Invalidate both detail and list queries to ensure consistency
@@ -214,7 +235,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     <div className="p-6 max-w-4xl mx-auto">
       <div className="space-y-8">
         {students.map((student) => {
-          const feedback = feedbacks[student.id] || { content: '' };
+          const feedback = feedbacks[student.id] || { content: '', rating: undefined };
           const existing = existingFeedbacks.find((f) => f.studentId === student.id);
           const isSaving = createOrUpdateFeedback.isPending;
           const status = saveStatus[student.id];
@@ -254,6 +275,18 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Star Rating */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700">
+                  {t('rateClass') ?? 'Rate this class'}
+                </label>
+                <StarRating
+                  value={feedback.rating ?? 0}
+                  onChange={(rating) => handleRatingChange(student.id, rating)}
+                  size="md"
+                />
               </div>
 
               {/* Feedback TextArea */}
