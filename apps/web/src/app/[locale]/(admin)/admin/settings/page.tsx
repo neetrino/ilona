@@ -1,9 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useSettingsPage } from './hooks/useSettingsPage';
 import { SettingsSidebar } from './components/SettingsSidebar';
 import { SecurityTab } from './components/SecurityTab';
@@ -12,16 +10,9 @@ import { SystemTab } from './components/SystemTab';
 import { PenaltyTab } from './components/PenaltyTab';
 
 export default function SettingsPage() {
-  const logout = useLogout();
-  const router = useRouter();
   const t = useTranslations('settings');
   
   const { activeTab, isSaving, setIsSaving, handleTabChange } = useSettingsPage();
-
-  const handleLogout = () => {
-    logout();
-    router.replace('/');
-  };
 
   return (
     <DashboardLayout 
@@ -33,7 +24,6 @@ export default function SettingsPage() {
         <SettingsSidebar
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          onLogout={handleLogout}
         />
 
         {/* Content */}

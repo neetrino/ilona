@@ -44,7 +44,7 @@
     "overrides": {
       "fast-xml-parser": ">=5.3.6",
       "glob": ">=10.5.0",
-      "tar": ">=7.5.10",
+      "tar": ">=7.5.11",
       "minimatch": ">=9.0.7",
       "rollup": ">=4.59.0",
       "multer": ">=2.1.1",

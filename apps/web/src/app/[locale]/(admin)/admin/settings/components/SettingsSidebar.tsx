@@ -1,17 +1,15 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Button } from '@/shared/components/ui';
 
 type SettingsTab = 'security' | 'notifications' | 'system' | 'penalty';
 
 interface SettingsSidebarProps {
   activeTab: SettingsTab;
   onTabChange: (tab: SettingsTab) => void;
-  onLogout: () => void;
 }
 
-export function SettingsSidebar({ activeTab, onTabChange, onLogout }: SettingsSidebarProps) {
+export function SettingsSidebar({ activeTab, onTabChange }: SettingsSidebarProps) {
   const t = useTranslations('settings');
 
   const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
@@ -72,21 +70,6 @@ export function SettingsSidebar({ activeTab, onTabChange, onLogout }: SettingsSi
           </button>
         ))}
       </nav>
-
-      {/* Danger Zone */}
-      <div className="mt-6 bg-white rounded-2xl border border-slate-200 p-4">
-        <h3 className="font-medium text-slate-800 mb-2">Session</h3>
-        <p className="text-sm text-slate-500 mb-4">
-          {t('signOutFromAccount')}
-        </p>
-        <Button 
-          variant="outline" 
-          className="w-full text-red-600 border-red-200 hover:bg-red-50"
-          onClick={onLogout}
-        >
-          {t('signOut')}
-        </Button>
-      </div>
     </div>
   );
 }
