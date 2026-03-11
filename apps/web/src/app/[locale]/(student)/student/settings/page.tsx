@@ -2,29 +2,21 @@
 
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useLogout } from '@/features/auth/hooks/useLogout';
 import { cn } from '@/shared/lib/utils';
 
 type SettingsTab = 'security' | 'notifications';
 
 export default function StudentSettingsPage() {
   const { user: _user } = useAuthStore();
-  const logout = useLogout();
-  const router = useRouter();
   const _pathname = usePathname();
   const _locale = useLocale();
   const [activeTab, setActiveTab] = useState<SettingsTab>('security');
   const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('settings');
-
-  const handleLogout = () => {
-    logout();
-    router.replace('/');
-  };
 
   // Password form state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -98,20 +90,6 @@ export default function StudentSettingsPage() {
               </button>
             ))}
           </nav>
-
-          <div className="mt-6 bg-white rounded-xl border border-slate-200 p-4">
-            <h3 className="font-medium text-slate-800 mb-2">Session</h3>
-            <p className="text-sm text-slate-500 mb-4">
-              Sign out from your account on this device.
-            </p>
-            <Button 
-              variant="outline" 
-              className="w-full text-red-600 border-red-200 hover:bg-red-50"
-              onClick={handleLogout}
-            >
-              Sign Out
-            </Button>
-          </div>
         </div>
 
         {/* Content */}
