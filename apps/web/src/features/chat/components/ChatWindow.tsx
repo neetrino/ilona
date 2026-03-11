@@ -187,6 +187,21 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     setInputValue(draft || '');
   }, [chat.id, getDraft]);
 
+  // Auto-resize textarea by content so typed text stays visible (scrollHeight-based)
+  const MIN_TEXTAREA_HEIGHT = 40;
+  const MAX_TEXTAREA_HEIGHT = 200;
+
+  useLayoutEffect(() => {
+    const ta = inputRef.current;
+    if (!ta) return;
+    ta.style.overflowY = 'hidden';
+    ta.style.height = '0';
+    const contentHeight = ta.scrollHeight;
+    const h = Math.max(MIN_TEXTAREA_HEIGHT, Math.min(contentHeight, MAX_TEXTAREA_HEIGHT));
+    ta.style.height = `${h}px`;
+    ta.style.overflowY = h >= MAX_TEXTAREA_HEIGHT ? 'auto' : 'hidden';
+  }, [inputValue]);
+
   // Handle delete message
   const handleDeleteMessage = async (messageId: string) => {
     if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
@@ -726,7 +741,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               rows={1}
-              className="flex-1 px-4 py-2 bg-slate-100 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 max-h-32"
+              className="flex-1 px-4 py-2 bg-slate-100 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 overflow-x-hidden"
               style={{ minHeight: '40px' }}
             />
 
