@@ -188,7 +188,6 @@ exports.Prisma.TeacherScalarFieldEnum = {
 exports.Prisma.StudentScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  leadId: 'leadId',
   groupId: 'groupId',
   teacherId: 'teacherId',
   parentName: 'parentName',
@@ -200,7 +199,8 @@ exports.Prisma.StudentScalarFieldEnum = {
   notes: 'notes',
   receiveReports: 'receiveReports',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  leadId: 'leadId'
 };
 
 exports.Prisma.LessonScalarFieldEnum = {
@@ -381,10 +381,10 @@ exports.Prisma.CrmLeadScalarFieldEnum = {
   centerId: 'centerId',
   transferFlag: 'transferFlag',
   transferComment: 'transferComment',
-  teacherApprovedAt: 'teacherApprovedAt',
   archivedReason: 'archivedReason',
   source: 'source',
-  notes: 'notes'
+  notes: 'notes',
+  teacherApprovedAt: 'teacherApprovedAt'
 };
 
 exports.Prisma.CrmLeadActivityScalarFieldEnum = {
