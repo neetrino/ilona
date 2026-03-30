@@ -4,7 +4,15 @@ import React, { useEffect, useRef } from 'react';
 import { List, LayoutGrid } from 'lucide-react';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn, lightenColor, getContrastColor } from '@/shared/lib/utils';
-import { GroupCard, CreateGroupForm, EditGroupForm, DeleteConfirmationDialog, useGroup, type Group } from '@/features/groups';
+import {
+  GroupCard,
+  CreateGroupForm,
+  EditGroupForm,
+  DeleteConfirmationDialog,
+  useGroup,
+  getGroupOccupancyMeta,
+  type Group,
+} from '@/features/groups';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
 import { GroupStudentsModal } from './GroupStudentsModal';
 
@@ -272,6 +280,31 @@ export function GroupsTab({
             >
               {count}/{group.maxStudents}
             </button>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      className: 'text-center',
+      render: (group: Group) => {
+        const count = group._count?.students || 0;
+        const occupancy = getGroupOccupancyMeta(count);
+        const dotColorClass =
+          occupancy.status === 'full'
+            ? 'bg-green-500'
+            : occupancy.status === 'filling'
+              ? 'bg-yellow-500'
+              : 'bg-red-500';
+
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <span
+              className={cn('inline-flex h-2.5 w-2.5 rounded-full', dotColorClass)}
+              aria-hidden="true"
+            />
+            <span className="text-sm font-medium text-slate-700">{occupancy.label}</span>
           </div>
         );
       },
