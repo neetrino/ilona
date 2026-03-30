@@ -6,7 +6,7 @@ import { fetchFinanceDashboard, fetchAdminDashboardStats } from '../api/dashboar
 // Query keys
 export const dashboardKeys = {
   all: ['dashboard'] as const,
-  admin: () => [...dashboardKeys.all, 'admin'] as const,
+  admin: (includeFinance = true) => [...dashboardKeys.all, 'admin', { includeFinance }] as const,
   finance: (dateFrom?: string, dateTo?: string) =>
     [...dashboardKeys.all, 'finance', { dateFrom, dateTo }] as const,
 };
@@ -14,10 +14,11 @@ export const dashboardKeys = {
 /**
  * Hook to fetch admin dashboard stats
  */
-export function useAdminDashboardStats() {
+export function useAdminDashboardStats(options?: { includeFinance?: boolean }) {
+  const includeFinance = options?.includeFinance ?? true;
   return useQuery({
-    queryKey: dashboardKeys.admin(),
-    queryFn: fetchAdminDashboardStats,
+    queryKey: dashboardKeys.admin(includeFinance),
+    queryFn: () => fetchAdminDashboardStats(options),
     staleTime: 30 * 1000, // 30 seconds - dashboard data should be relatively fresh
   });
 }
