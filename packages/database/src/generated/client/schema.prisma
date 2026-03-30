@@ -163,7 +163,7 @@ model Center {
 model ManagerProfile {
   id        String   @id @default(cuid())
   userId    String   @unique
-  centerId  String
+  centerId  String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -171,7 +171,6 @@ model ManagerProfile {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   center Center @relation(fields: [centerId], references: [id], onDelete: Restrict)
 
-  @@index([centerId])
   @@map("manager_profiles")
 }
 

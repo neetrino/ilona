@@ -250,8 +250,10 @@ export class UsersService {
     phone?: string;
     centerId: string;
   }) {
+    const email = data.email.trim().toLowerCase();
+
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: data.email },
+      where: { email },
       select: { id: true },
     });
 
@@ -259,55 +261,89 @@ export class UsersService {
       throw new ConflictException('Email already registered');
     }
 
-    const center = await this.prisma.center.findUnique({
-      where: { id: data.centerId },
-      select: { id: true, isActive: true },
-    });
-
-    if (!center) {
-      throw new BadRequestException('Center not found');
-    }
-
-    if (!center.isActive) {
-      throw new BadRequestException('Cannot assign manager to inactive center');
-    }
-
     const passwordHash = await bcrypt.hash(data.password, 10);
+    let manager:
+      | {
+          id: string;
+          email: string;
+          firstName: string;
+          lastName: string;
+          phone: string | null;
+          role: UserRole;
+          status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+          createdAt: Date;
+        }
+      | null = null;
 
-    const manager = await this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          email: data.email,
-          passwordHash,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          phone: data.phone ?? null,
-          role: UserRole.MANAGER,
-          status: 'ACTIVE',
-        },
-      });
+    try {
+      manager = await this.prisma.$transaction(async (tx) => {
+        const centerRows = await tx.$queryRaw<Array<{ id: string; isActive: boolean }>>`
+          SELECT "id", "isActive"
+          FROM "centers"
+          WHERE "id" = ${data.centerId}
+          FOR UPDATE
+        `;
+        const center = centerRows[0];
+        if (!center) {
+          throw new BadRequestException('Center not found');
+        }
+        if (!center.isActive) {
+          throw new BadRequestException('Cannot assign manager to inactive center');
+        }
 
-      await tx.managerProfile.create({
-        data: {
-          userId: user.id,
-          centerId: data.centerId,
-        },
-      });
+        const existingManagerForCenter = await tx.managerProfile.findFirst({
+          where: { centerId: data.centerId },
+          select: { id: true },
+        });
+        if (existingManagerForCenter) {
+          throw new ConflictException('Selected center already has a manager assigned');
+        }
 
-      return tx.user.findUnique({
-        where: { id: user.id },
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          phone: true,
-          role: true,
-          status: true,
-          createdAt: true,
-        },
+        const user = await tx.user.create({
+          data: {
+            email,
+            passwordHash,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            phone: data.phone ?? null,
+            role: UserRole.MANAGER,
+            status: 'ACTIVE',
+          },
+        });
+
+        await tx.managerProfile.create({
+          data: {
+            userId: user.id,
+            centerId: data.centerId,
+          },
+        });
+
+        return tx.user.findUnique({
+          where: { id: user.id },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            role: true,
+            status: true,
+            createdAt: true,
+          },
+        });
       });
-    });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        const target = Array.isArray(error.meta?.target) ? error.meta.target.join(',') : '';
+        if (target.includes('email')) {
+          throw new ConflictException('Email already registered');
+        }
+        if (target.includes('centerId')) {
+          throw new ConflictException('Selected center already has a manager assigned');
+        }
+      }
+      throw error;
+    }
 
     if (!manager) {
       throw new ServiceUnavailableException('Failed to create manager');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCenters } from '@/features/centers';
 import { useCreateManager, useManagers } from '@/features/settings';
@@ -24,13 +24,33 @@ export function ManagerTab() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const centers = useMemo(() => centersData?.items ?? [], [centersData?.items]);
+  const assignedCenterIds = useMemo(
+    () =>
+      new Set(
+        (managers ?? [])
+          .map((manager) => manager.managerProfile?.centerId)
+          .filter((centerId): centerId is string => Boolean(centerId)),
+      ),
+    [managers],
+  );
+  const availableCenters = useMemo(
+    () => centers.filter((center) => !assignedCenterIds.has(center.id)),
+    [centers, assignedCenterIds],
+  );
+
+  useEffect(() => {
+    if (form.centerId && !availableCenters.some((center) => center.id === form.centerId)) {
+      setForm((prev) => ({ ...prev, centerId: '' }));
+    }
+  }, [availableCenters, form.centerId]);
 
   const canSubmit =
     form.firstName.trim().length >= 2 &&
     form.lastName.trim().length >= 2 &&
     form.email.trim().length > 0 &&
     form.password.length >= 8 &&
-    form.centerId.length > 0;
+    form.centerId.length > 0 &&
+    availableCenters.some((center) => center.id === form.centerId);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -105,9 +125,10 @@ export function ManagerTab() {
             className="h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-primary bg-white"
             value={form.centerId}
             onChange={(e) => setForm((prev) => ({ ...prev, centerId: e.target.value }))}
+            disabled={availableCenters.length === 0}
           >
             <option value="">{t('managerSelectCenter')}</option>
-            {centers.map((center) => (
+            {availableCenters.map((center) => (
               <option key={center.id} value={center.id}>
                 {center.name}
               </option>
