@@ -782,5 +782,90 @@ export class MessageService {
 
     return result;
   }
+
+  /**
+   * Get student voice messages sent to teachers for a specific teacher.
+   * Returns only recordings from students assigned to this teacher (by group or direct teacher relation).
+   */
+  async getTeacherStudentRecordings(
+    teacherUserId: string,
+    filters?: AdminStudentRecordingFilters,
+  ) {
+    const messages = await this.prisma.message.findMany({
+      where: {
+        type: MessageType.VOICE,
+        fileUrl: { not: null },
+        ...(filters?.studentUserId ? { senderId: filters.studentUserId } : {}),
+        sender: {
+          role: UserRole.STUDENT,
+          student: {
+            ...(filters?.groupId ? { groupId: filters.groupId } : {}),
+            OR: [
+              { group: { teacher: { userId: teacherUserId } } },
+              { teacher: { userId: teacherUserId } },
+            ],
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            student: {
+              select: {
+                id: true,
+                group: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const normalizedSearch = filters?.search?.trim().toLowerCase();
+
+    return messages
+      .filter((message) => {
+        const meta = message.metadata as Record<string, unknown> | null;
+        if (!meta || meta.voiceToTeacher !== true) {
+          return false;
+        }
+
+        if (normalizedSearch) {
+          const fullName = `${message.sender?.firstName ?? ''} ${message.sender?.lastName ?? ''}`
+            .trim()
+            .toLowerCase();
+          if (!fullName.includes(normalizedSearch)) {
+            return false;
+          }
+        }
+
+        return true;
+      })
+      .map((message) => ({
+        id: message.id,
+        fileUrl: message.fileUrl as string,
+        fileName: message.fileName ?? undefined,
+        duration: message.duration ?? 0,
+        createdAt: message.createdAt,
+        student: {
+          userId: message.sender?.id ?? '',
+          firstName: message.sender?.firstName ?? '',
+          lastName: message.sender?.lastName ?? '',
+        },
+        group: {
+          id: message.sender?.student?.group?.id ?? null,
+          name: message.sender?.student?.group?.name ?? 'Ungrouped',
+        },
+      }));
+  }
 }
 

@@ -94,6 +94,13 @@ export class ChatService {
     return this.messageService.getAdminStudentRecordings(adminId, filters);
   }
 
+  async getTeacherStudentRecordings(
+    teacherUserId: string,
+    filters?: { groupId?: string; studentUserId?: string; search?: string },
+  ) {
+    return this.messageService.getTeacherStudentRecordings(teacherUserId, filters);
+  }
+
   async addGroupChatMember(groupId: string, userId: string, adminId: string) {
     return this.chatManagementService.addGroupChatMember(groupId, userId, adminId);
   }

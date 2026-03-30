@@ -402,3 +402,28 @@ export async function fetchAdminStudentRecordings(
 
   return api.get<AdminStudentRecording[]>(url);
 }
+
+export interface TeacherStudentRecordingsFilters {
+  groupId?: string;
+  studentUserId?: string;
+  search?: string;
+}
+
+/**
+ * Teacher-only: Get student voice recordings only from teacher's own groups/students.
+ */
+export async function fetchTeacherStudentRecordings(
+  filters?: TeacherStudentRecordingsFilters,
+): Promise<AdminStudentRecording[]> {
+  const params = new URLSearchParams();
+  if (filters?.groupId) params.append('groupId', filters.groupId);
+  if (filters?.studentUserId) params.append('studentUserId', filters.studentUserId);
+  if (filters?.search) params.append('search', filters.search);
+
+  const query = params.toString();
+  const url = query
+    ? `${CHAT_ENDPOINT}/teacher/student-recordings?${query}`
+    : `${CHAT_ENDPOINT}/teacher/student-recordings`;
+
+  return api.get<AdminStudentRecording[]>(url);
+}
