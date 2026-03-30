@@ -2,12 +2,13 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { createLeadFromVoice } from '@/features/crm/api/crm.api';
+import type { CrmLead } from '@/features/crm/types';
 import { cn } from '@/shared/lib/utils';
 
 interface VoiceLeadModalProps {
   open: boolean;
   onClose: () => void;
-  onCreated: () => void;
+  onCreated: (lead: CrmLead) => void;
 }
 
 export function VoiceLeadModal({ open, onClose, onCreated }: VoiceLeadModalProps) {
@@ -82,14 +83,14 @@ export function VoiceLeadModal({ open, onClose, onCreated }: VoiceLeadModalProps
       const fileName = `voice-lead-${Date.now()}.${ext}`;
       // Use File so multipart upload sends a proper filename and type (some servers expect it)
       const file = new File([blob], fileName, { type: mimeType });
-      await createLeadFromVoice(file, fileName);
+      const createdLead = await createLeadFromVoice(file, fileName);
       chunksRef.current = [];
       setHasRecording(false);
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
         setPreviewUrl(null);
       }
-      onCreated();
+      onCreated(createdLead);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save recording');
