@@ -14,8 +14,10 @@ import {
   updateActionPercents,
   fetchPenalties,
   updatePenalties,
+  fetchManagers,
+  createManager,
 } from '../api/settings.api';
-import type { UpdateProfileDto, ChangePasswordDto } from '../types';
+import type { UpdateProfileDto, ChangePasswordDto, CreateManagerDto } from '../types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { teacherKeys } from '@/features/teachers';
 import { financeKeys } from '@/features/finance/hooks/useFinance';
@@ -28,6 +30,7 @@ export const settingsKeys = {
   public: () => [...settingsKeys.all, 'public'] as const,
   actionPercents: () => [...settingsKeys.all, 'action-percents'] as const,
   penalties: () => [...settingsKeys.all, 'penalties'] as const,
+  managers: () => [...settingsKeys.all, 'managers'] as const,
 };
 
 /**
@@ -64,6 +67,7 @@ export function useUpdateProfile() {
       if (updatedProfile && user) {
         setUser({
           ...user,
+          email: updatedProfile.email || user.email,
           firstName: updatedProfile.firstName || user.firstName,
           lastName: updatedProfile.lastName || user.lastName,
           phone: updatedProfile.phone || user.phone,
@@ -246,6 +250,24 @@ export function useUpdatePenalties() {
       // Invalidate all salary-related queries so finance recalculates immediately
       queryClient.invalidateQueries({ queryKey: ['finance', 'salaries'] });
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+    },
+  });
+}
+
+export function useManagers() {
+  return useQuery({
+    queryKey: settingsKeys.managers(),
+    queryFn: () => fetchManagers(),
+  });
+}
+
+export function useCreateManager() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateManagerDto) => createManager(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.managers() });
     },
   });
 }

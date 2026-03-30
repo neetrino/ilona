@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { CrmLead } from '@/features/crm/types';
 import { fetchLead, updateLead, addLeadComment } from '@/features/crm/api/crm.api';
 import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
@@ -44,9 +44,13 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
     queryFn: () => fetchGroups({ take: 500 }),
     enabled: !!leadId,
   });
-  const groups = groupsData?.items ?? [];
-
   const [form, setForm] = useState<Partial<CrmLead>>({});
+  const groups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
+  const selectedTeacherId = form.teacherId ?? '';
+  const groupsForSelectedTeacher = useMemo(
+    () => (selectedTeacherId ? groups.filter((group) => group.teacherId === selectedTeacherId) : []),
+    [groups, selectedTeacherId],
+  );
 
   useEffect(() => {
     if (lead) {
@@ -64,6 +68,21 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
       });
     }
   }, [lead]);
+
+  useEffect(() => {
+    const selectedGroupId = form.groupId ?? '';
+
+    if (!selectedTeacherId) {
+      if (selectedGroupId) {
+        setForm((prev) => ({ ...prev, groupId: '' }));
+      }
+      return;
+    }
+
+    if (selectedGroupId && !groupsForSelectedTeacher.some((group) => group.id === selectedGroupId)) {
+      setForm((prev) => ({ ...prev, groupId: '' }));
+    }
+  }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
 
   const handleSaveFields = async () => {
     if (!leadId || !form) return;
@@ -242,7 +261,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                   <label className="block text-sm font-medium text-slate-700 mb-1">Teacher</label>
                   <select
                     value={form.teacherId ?? ''}
-                    onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value }))}
+                    onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value, groupId: '' }))}
                     onBlur={handleSaveFields}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
@@ -259,11 +278,14 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                   <select
                     value={form.groupId ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value }))}
+                    disabled={!selectedTeacherId}
                     onBlur={handleSaveFields}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
-                    <option value="">—</option>
-                    {groups.map((g) => (
+                    <option value="">
+                      {selectedTeacherId ? '—' : 'Select Teacher first'}
+                    </option>
+                    {groupsForSelectedTeacher.map((g) => (
                       <option key={g.id} value={g.id}>{g.name}</option>
                     ))}
                   </select>

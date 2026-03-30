@@ -24,6 +24,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Center = $Result.DefaultSelection<Prisma.$CenterPayload>
 /**
+ * Model ManagerProfile
+ * 
+ */
+export type ManagerProfile = $Result.DefaultSelection<Prisma.$ManagerProfilePayload>
+/**
  * Model Group
  * 
  */
@@ -430,6 +435,16 @@ export class PrismaClient<
     * ```
     */
   get center(): Prisma.CenterDelegate<ExtArgs>;
+
+  /**
+   * `prisma.managerProfile`: Exposes CRUD operations for the **ManagerProfile** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ManagerProfiles
+    * const managerProfiles = await prisma.managerProfile.findMany()
+    * ```
+    */
+  get managerProfile(): Prisma.ManagerProfileDelegate<ExtArgs>;
 
   /**
    * `prisma.group`: Exposes CRUD operations for the **Group** model.
@@ -1053,6 +1068,7 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Center: 'Center',
+    ManagerProfile: 'ManagerProfile',
     Group: 'Group',
     Teacher: 'Teacher',
     Student: 'Student',
@@ -1086,7 +1102,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "center" | "group" | "teacher" | "student" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
+      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "student" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1227,6 +1243,76 @@ export namespace Prisma {
           count: {
             args: Prisma.CenterCountArgs<ExtArgs>
             result: $Utils.Optional<CenterCountAggregateOutputType> | number
+          }
+        }
+      }
+      ManagerProfile: {
+        payload: Prisma.$ManagerProfilePayload<ExtArgs>
+        fields: Prisma.ManagerProfileFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ManagerProfileFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ManagerProfileFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          findFirst: {
+            args: Prisma.ManagerProfileFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ManagerProfileFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          findMany: {
+            args: Prisma.ManagerProfileFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>[]
+          }
+          create: {
+            args: Prisma.ManagerProfileCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          createMany: {
+            args: Prisma.ManagerProfileCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ManagerProfileCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>[]
+          }
+          delete: {
+            args: Prisma.ManagerProfileDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          update: {
+            args: Prisma.ManagerProfileUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          deleteMany: {
+            args: Prisma.ManagerProfileDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ManagerProfileUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ManagerProfileUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          aggregate: {
+            args: Prisma.ManagerProfileAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateManagerProfile>
+          }
+          groupBy: {
+            args: Prisma.ManagerProfileGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ManagerProfileGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ManagerProfileCountArgs<ExtArgs>
+            result: $Utils.Optional<ManagerProfileCountAggregateOutputType> | number
           }
         }
       }
@@ -2651,19 +2737,21 @@ export namespace Prisma {
    */
 
   export type UserCountOutputType = {
-    sentMessages: number
     chatParticipants: number
-    notifications: number
-    crmLeadsCreated: number
     crmLeadsAssignedManager: number
+    crmLeadsCreated: number
+    sentMessages: number
+    notifications: number
+    markedAttendances: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
     chatParticipants?: boolean | UserCountOutputTypeCountChatParticipantsArgs
-    notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
-    crmLeadsCreated?: boolean | UserCountOutputTypeCountCrmLeadsCreatedArgs
     crmLeadsAssignedManager?: boolean | UserCountOutputTypeCountCrmLeadsAssignedManagerArgs
+    crmLeadsCreated?: boolean | UserCountOutputTypeCountCrmLeadsCreatedArgs
+    sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
+    notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+    markedAttendances?: boolean | UserCountOutputTypeCountMarkedAttendancesArgs
   }
 
   // Custom InputTypes
@@ -2680,13 +2768,6 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountSentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
   export type UserCountOutputTypeCountChatParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ChatParticipantWhereInput
   }
@@ -2694,8 +2775,8 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: NotificationWhereInput
+  export type UserCountOutputTypeCountCrmLeadsAssignedManagerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CrmLeadWhereInput
   }
 
   /**
@@ -2708,8 +2789,22 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountCrmLeadsAssignedManagerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CrmLeadWhereInput
+  export type UserCountOutputTypeCountSentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountMarkedAttendancesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AttendanceWhereInput
   }
 
 
@@ -2718,13 +2813,15 @@ export namespace Prisma {
    */
 
   export type CenterCountOutputType = {
-    groups: number
     crmLeads: number
+    groups: number
+    managerProfiles: number
   }
 
   export type CenterCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    groups?: boolean | CenterCountOutputTypeCountGroupsArgs
     crmLeads?: boolean | CenterCountOutputTypeCountCrmLeadsArgs
+    groups?: boolean | CenterCountOutputTypeCountGroupsArgs
+    managerProfiles?: boolean | CenterCountOutputTypeCountManagerProfilesArgs
   }
 
   // Custom InputTypes
@@ -2741,6 +2838,13 @@ export namespace Prisma {
   /**
    * CenterCountOutputType without action
    */
+  export type CenterCountOutputTypeCountCrmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CrmLeadWhereInput
+  }
+
+  /**
+   * CenterCountOutputType without action
+   */
   export type CenterCountOutputTypeCountGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GroupWhereInput
   }
@@ -2748,8 +2852,8 @@ export namespace Prisma {
   /**
    * CenterCountOutputType without action
    */
-  export type CenterCountOutputTypeCountCrmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CrmLeadWhereInput
+  export type CenterCountOutputTypeCountManagerProfilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ManagerProfileWhereInput
   }
 
 
@@ -2758,15 +2862,15 @@ export namespace Prisma {
    */
 
   export type GroupCountOutputType = {
-    students: number
-    lessons: number
     crmLeads: number
+    lessons: number
+    students: number
   }
 
   export type GroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    students?: boolean | GroupCountOutputTypeCountStudentsArgs
-    lessons?: boolean | GroupCountOutputTypeCountLessonsArgs
     crmLeads?: boolean | GroupCountOutputTypeCountCrmLeadsArgs
+    lessons?: boolean | GroupCountOutputTypeCountLessonsArgs
+    students?: boolean | GroupCountOutputTypeCountStudentsArgs
   }
 
   // Custom InputTypes
@@ -2783,8 +2887,8 @@ export namespace Prisma {
   /**
    * GroupCountOutputType without action
    */
-  export type GroupCountOutputTypeCountStudentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: StudentWhereInput
+  export type GroupCountOutputTypeCountCrmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CrmLeadWhereInput
   }
 
   /**
@@ -2797,8 +2901,8 @@ export namespace Prisma {
   /**
    * GroupCountOutputType without action
    */
-  export type GroupCountOutputTypeCountCrmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CrmLeadWhereInput
+  export type GroupCountOutputTypeCountStudentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StudentWhereInput
   }
 
 
@@ -2807,23 +2911,23 @@ export namespace Prisma {
    */
 
   export type TeacherCountOutputType = {
-    groups: number
-    students: number
-    lessons: number
-    feedbacks: number
-    salaryRecords: number
-    deductions: number
     crmLeads: number
+    deductions: number
+    feedbacks: number
+    groups: number
+    lessons: number
+    salaryRecords: number
+    students: number
   }
 
   export type TeacherCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    groups?: boolean | TeacherCountOutputTypeCountGroupsArgs
-    students?: boolean | TeacherCountOutputTypeCountStudentsArgs
-    lessons?: boolean | TeacherCountOutputTypeCountLessonsArgs
-    feedbacks?: boolean | TeacherCountOutputTypeCountFeedbacksArgs
-    salaryRecords?: boolean | TeacherCountOutputTypeCountSalaryRecordsArgs
-    deductions?: boolean | TeacherCountOutputTypeCountDeductionsArgs
     crmLeads?: boolean | TeacherCountOutputTypeCountCrmLeadsArgs
+    deductions?: boolean | TeacherCountOutputTypeCountDeductionsArgs
+    feedbacks?: boolean | TeacherCountOutputTypeCountFeedbacksArgs
+    groups?: boolean | TeacherCountOutputTypeCountGroupsArgs
+    lessons?: boolean | TeacherCountOutputTypeCountLessonsArgs
+    salaryRecords?: boolean | TeacherCountOutputTypeCountSalaryRecordsArgs
+    students?: boolean | TeacherCountOutputTypeCountStudentsArgs
   }
 
   // Custom InputTypes
@@ -2840,36 +2944,8 @@ export namespace Prisma {
   /**
    * TeacherCountOutputType without action
    */
-  export type TeacherCountOutputTypeCountGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: GroupWhereInput
-  }
-
-  /**
-   * TeacherCountOutputType without action
-   */
-  export type TeacherCountOutputTypeCountStudentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: StudentWhereInput
-  }
-
-  /**
-   * TeacherCountOutputType without action
-   */
-  export type TeacherCountOutputTypeCountLessonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: LessonWhereInput
-  }
-
-  /**
-   * TeacherCountOutputType without action
-   */
-  export type TeacherCountOutputTypeCountFeedbacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: FeedbackWhereInput
-  }
-
-  /**
-   * TeacherCountOutputType without action
-   */
-  export type TeacherCountOutputTypeCountSalaryRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SalaryRecordWhereInput
+  export type TeacherCountOutputTypeCountCrmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CrmLeadWhereInput
   }
 
   /**
@@ -2882,8 +2958,36 @@ export namespace Prisma {
   /**
    * TeacherCountOutputType without action
    */
-  export type TeacherCountOutputTypeCountCrmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CrmLeadWhereInput
+  export type TeacherCountOutputTypeCountFeedbacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FeedbackWhereInput
+  }
+
+  /**
+   * TeacherCountOutputType without action
+   */
+  export type TeacherCountOutputTypeCountGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GroupWhereInput
+  }
+
+  /**
+   * TeacherCountOutputType without action
+   */
+  export type TeacherCountOutputTypeCountLessonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LessonWhereInput
+  }
+
+  /**
+   * TeacherCountOutputType without action
+   */
+  export type TeacherCountOutputTypeCountSalaryRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SalaryRecordWhereInput
+  }
+
+  /**
+   * TeacherCountOutputType without action
+   */
+  export type TeacherCountOutputTypeCountStudentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StudentWhereInput
   }
 
 
@@ -3280,13 +3384,15 @@ export namespace Prisma {
     lastLoginAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    teacher?: boolean | User$teacherArgs<ExtArgs>
-    student?: boolean | User$studentArgs<ExtArgs>
-    sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     chatParticipants?: boolean | User$chatParticipantsArgs<ExtArgs>
-    notifications?: boolean | User$notificationsArgs<ExtArgs>
-    crmLeadsCreated?: boolean | User$crmLeadsCreatedArgs<ExtArgs>
     crmLeadsAssignedManager?: boolean | User$crmLeadsAssignedManagerArgs<ExtArgs>
+    crmLeadsCreated?: boolean | User$crmLeadsCreatedArgs<ExtArgs>
+    managerProfile?: boolean | User$managerProfileArgs<ExtArgs>
+    sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
+    markedAttendances?: boolean | User$markedAttendancesArgs<ExtArgs>
+    student?: boolean | User$studentArgs<ExtArgs>
+    teacher?: boolean | User$teacherArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3321,13 +3427,15 @@ export namespace Prisma {
   }
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    teacher?: boolean | User$teacherArgs<ExtArgs>
-    student?: boolean | User$studentArgs<ExtArgs>
-    sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     chatParticipants?: boolean | User$chatParticipantsArgs<ExtArgs>
-    notifications?: boolean | User$notificationsArgs<ExtArgs>
-    crmLeadsCreated?: boolean | User$crmLeadsCreatedArgs<ExtArgs>
     crmLeadsAssignedManager?: boolean | User$crmLeadsAssignedManagerArgs<ExtArgs>
+    crmLeadsCreated?: boolean | User$crmLeadsCreatedArgs<ExtArgs>
+    managerProfile?: boolean | User$managerProfileArgs<ExtArgs>
+    sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
+    markedAttendances?: boolean | User$markedAttendancesArgs<ExtArgs>
+    student?: boolean | User$studentArgs<ExtArgs>
+    teacher?: boolean | User$teacherArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3335,13 +3443,15 @@ export namespace Prisma {
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
-      teacher: Prisma.$TeacherPayload<ExtArgs> | null
-      student: Prisma.$StudentPayload<ExtArgs> | null
-      sentMessages: Prisma.$MessagePayload<ExtArgs>[]
       chatParticipants: Prisma.$ChatParticipantPayload<ExtArgs>[]
-      notifications: Prisma.$NotificationPayload<ExtArgs>[]
-      crmLeadsCreated: Prisma.$CrmLeadPayload<ExtArgs>[]
       crmLeadsAssignedManager: Prisma.$CrmLeadPayload<ExtArgs>[]
+      crmLeadsCreated: Prisma.$CrmLeadPayload<ExtArgs>[]
+      managerProfile: Prisma.$ManagerProfilePayload<ExtArgs> | null
+      sentMessages: Prisma.$MessagePayload<ExtArgs>[]
+      notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      markedAttendances: Prisma.$AttendancePayload<ExtArgs>[]
+      student: Prisma.$StudentPayload<ExtArgs> | null
+      teacher: Prisma.$TeacherPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3720,13 +3830,15 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    teacher<T extends User$teacherArgs<ExtArgs> = {}>(args?: Subset<T, User$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    student<T extends User$studentArgs<ExtArgs> = {}>(args?: Subset<T, User$studentArgs<ExtArgs>>): Prisma__StudentClient<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany"> | Null>
     chatParticipants<T extends User$chatParticipantsArgs<ExtArgs> = {}>(args?: Subset<T, User$chatParticipantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatParticipantPayload<ExtArgs>, T, "findMany"> | Null>
-    notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
-    crmLeadsCreated<T extends User$crmLeadsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$crmLeadsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findMany"> | Null>
     crmLeadsAssignedManager<T extends User$crmLeadsAssignedManagerArgs<ExtArgs> = {}>(args?: Subset<T, User$crmLeadsAssignedManagerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findMany"> | Null>
+    crmLeadsCreated<T extends User$crmLeadsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$crmLeadsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findMany"> | Null>
+    managerProfile<T extends User$managerProfileArgs<ExtArgs> = {}>(args?: Subset<T, User$managerProfileArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany"> | Null>
+    notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
+    markedAttendances<T extends User$markedAttendancesArgs<ExtArgs> = {}>(args?: Subset<T, User$markedAttendancesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttendancePayload<ExtArgs>, T, "findMany"> | Null>
+    student<T extends User$studentArgs<ExtArgs> = {}>(args?: Subset<T, User$studentArgs<ExtArgs>>): Prisma__StudentClient<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    teacher<T extends User$teacherArgs<ExtArgs> = {}>(args?: Subset<T, User$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4082,56 +4194,6 @@ export namespace Prisma {
   }
 
   /**
-   * User.teacher
-   */
-  export type User$teacherArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Teacher
-     */
-    select?: TeacherSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TeacherInclude<ExtArgs> | null
-    where?: TeacherWhereInput
-  }
-
-  /**
-   * User.student
-   */
-  export type User$studentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Student
-     */
-    select?: StudentSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentInclude<ExtArgs> | null
-    where?: StudentWhereInput
-  }
-
-  /**
-   * User.sentMessages
-   */
-  export type User$sentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Message
-     */
-    select?: MessageSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MessageInclude<ExtArgs> | null
-    where?: MessageWhereInput
-    orderBy?: MessageOrderByWithRelationInput | MessageOrderByWithRelationInput[]
-    cursor?: MessageWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: MessageScalarFieldEnum | MessageScalarFieldEnum[]
-  }
-
-  /**
    * User.chatParticipants
    */
   export type User$chatParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4152,23 +4214,23 @@ export namespace Prisma {
   }
 
   /**
-   * User.notifications
+   * User.crmLeadsAssignedManager
    */
-  export type User$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$crmLeadsAssignedManagerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Notification
+     * Select specific fields to fetch from the CrmLead
      */
-    select?: NotificationSelect<ExtArgs> | null
+    select?: CrmLeadSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: NotificationInclude<ExtArgs> | null
-    where?: NotificationWhereInput
-    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
-    cursor?: NotificationWhereUniqueInput
+    include?: CrmLeadInclude<ExtArgs> | null
+    where?: CrmLeadWhereInput
+    orderBy?: CrmLeadOrderByWithRelationInput | CrmLeadOrderByWithRelationInput[]
+    cursor?: CrmLeadWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+    distinct?: CrmLeadScalarFieldEnum | CrmLeadScalarFieldEnum[]
   }
 
   /**
@@ -4192,23 +4254,108 @@ export namespace Prisma {
   }
 
   /**
-   * User.crmLeadsAssignedManager
+   * User.managerProfile
    */
-  export type User$crmLeadsAssignedManagerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$managerProfileArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CrmLead
+     * Select specific fields to fetch from the ManagerProfile
      */
-    select?: CrmLeadSelect<ExtArgs> | null
+    select?: ManagerProfileSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CrmLeadInclude<ExtArgs> | null
-    where?: CrmLeadWhereInput
-    orderBy?: CrmLeadOrderByWithRelationInput | CrmLeadOrderByWithRelationInput[]
-    cursor?: CrmLeadWhereUniqueInput
+    include?: ManagerProfileInclude<ExtArgs> | null
+    where?: ManagerProfileWhereInput
+  }
+
+  /**
+   * User.sentMessages
+   */
+  export type User$sentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Message
+     */
+    select?: MessageSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageInclude<ExtArgs> | null
+    where?: MessageWhereInput
+    orderBy?: MessageOrderByWithRelationInput | MessageOrderByWithRelationInput[]
+    cursor?: MessageWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: CrmLeadScalarFieldEnum | CrmLeadScalarFieldEnum[]
+    distinct?: MessageScalarFieldEnum | MessageScalarFieldEnum[]
+  }
+
+  /**
+   * User.notifications
+   */
+  export type User$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    cursor?: NotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * User.markedAttendances
+   */
+  export type User$markedAttendancesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Attendance
+     */
+    select?: AttendanceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AttendanceInclude<ExtArgs> | null
+    where?: AttendanceWhereInput
+    orderBy?: AttendanceOrderByWithRelationInput | AttendanceOrderByWithRelationInput[]
+    cursor?: AttendanceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AttendanceScalarFieldEnum | AttendanceScalarFieldEnum[]
+  }
+
+  /**
+   * User.student
+   */
+  export type User$studentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Student
+     */
+    select?: StudentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentInclude<ExtArgs> | null
+    where?: StudentWhereInput
+  }
+
+  /**
+   * User.teacher
+   */
+  export type User$teacherArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Teacher
+     */
+    select?: TeacherSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TeacherInclude<ExtArgs> | null
+    where?: TeacherWhereInput
   }
 
   /**
@@ -4430,8 +4577,9 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    groups?: boolean | Center$groupsArgs<ExtArgs>
     crmLeads?: boolean | Center$crmLeadsArgs<ExtArgs>
+    groups?: boolean | Center$groupsArgs<ExtArgs>
+    managerProfiles?: boolean | Center$managerProfilesArgs<ExtArgs>
     _count?: boolean | CenterCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["center"]>
 
@@ -4462,8 +4610,9 @@ export namespace Prisma {
   }
 
   export type CenterInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    groups?: boolean | Center$groupsArgs<ExtArgs>
     crmLeads?: boolean | Center$crmLeadsArgs<ExtArgs>
+    groups?: boolean | Center$groupsArgs<ExtArgs>
+    managerProfiles?: boolean | Center$managerProfilesArgs<ExtArgs>
     _count?: boolean | CenterCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CenterIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -4471,8 +4620,9 @@ export namespace Prisma {
   export type $CenterPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Center"
     objects: {
-      groups: Prisma.$GroupPayload<ExtArgs>[]
       crmLeads: Prisma.$CrmLeadPayload<ExtArgs>[]
+      groups: Prisma.$GroupPayload<ExtArgs>[]
+      managerProfiles: Prisma.$ManagerProfilePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4849,8 +4999,9 @@ export namespace Prisma {
    */
   export interface Prisma__CenterClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    groups<T extends Center$groupsArgs<ExtArgs> = {}>(args?: Subset<T, Center$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany"> | Null>
     crmLeads<T extends Center$crmLeadsArgs<ExtArgs> = {}>(args?: Subset<T, Center$crmLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findMany"> | Null>
+    groups<T extends Center$groupsArgs<ExtArgs> = {}>(args?: Subset<T, Center$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany"> | Null>
+    managerProfiles<T extends Center$managerProfilesArgs<ExtArgs> = {}>(args?: Subset<T, Center$managerProfilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5204,26 +5355,6 @@ export namespace Prisma {
   }
 
   /**
-   * Center.groups
-   */
-  export type Center$groupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Group
-     */
-    select?: GroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: GroupInclude<ExtArgs> | null
-    where?: GroupWhereInput
-    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
-    cursor?: GroupWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
-  }
-
-  /**
    * Center.crmLeads
    */
   export type Center$crmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5244,6 +5375,46 @@ export namespace Prisma {
   }
 
   /**
+   * Center.groups
+   */
+  export type Center$groupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
+    cursor?: GroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
+  }
+
+  /**
+   * Center.managerProfiles
+   */
+  export type Center$managerProfilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    where?: ManagerProfileWhereInput
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    cursor?: ManagerProfileWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ManagerProfileScalarFieldEnum | ManagerProfileScalarFieldEnum[]
+  }
+
+  /**
    * Center without action
    */
   export type CenterDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5255,6 +5426,945 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CenterInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ManagerProfile
+   */
+
+  export type AggregateManagerProfile = {
+    _count: ManagerProfileCountAggregateOutputType | null
+    _min: ManagerProfileMinAggregateOutputType | null
+    _max: ManagerProfileMaxAggregateOutputType | null
+  }
+
+  export type ManagerProfileMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    centerId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ManagerProfileMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    centerId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ManagerProfileCountAggregateOutputType = {
+    id: number
+    userId: number
+    centerId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ManagerProfileMinAggregateInputType = {
+    id?: true
+    userId?: true
+    centerId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ManagerProfileMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    centerId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ManagerProfileCountAggregateInputType = {
+    id?: true
+    userId?: true
+    centerId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ManagerProfileAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ManagerProfile to aggregate.
+     */
+    where?: ManagerProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ManagerProfiles to fetch.
+     */
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ManagerProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ManagerProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ManagerProfiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ManagerProfiles
+    **/
+    _count?: true | ManagerProfileCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ManagerProfileMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ManagerProfileMaxAggregateInputType
+  }
+
+  export type GetManagerProfileAggregateType<T extends ManagerProfileAggregateArgs> = {
+        [P in keyof T & keyof AggregateManagerProfile]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateManagerProfile[P]>
+      : GetScalarType<T[P], AggregateManagerProfile[P]>
+  }
+
+
+
+
+  export type ManagerProfileGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ManagerProfileWhereInput
+    orderBy?: ManagerProfileOrderByWithAggregationInput | ManagerProfileOrderByWithAggregationInput[]
+    by: ManagerProfileScalarFieldEnum[] | ManagerProfileScalarFieldEnum
+    having?: ManagerProfileScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ManagerProfileCountAggregateInputType | true
+    _min?: ManagerProfileMinAggregateInputType
+    _max?: ManagerProfileMaxAggregateInputType
+  }
+
+  export type ManagerProfileGroupByOutputType = {
+    id: string
+    userId: string
+    centerId: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ManagerProfileCountAggregateOutputType | null
+    _min: ManagerProfileMinAggregateOutputType | null
+    _max: ManagerProfileMaxAggregateOutputType | null
+  }
+
+  type GetManagerProfileGroupByPayload<T extends ManagerProfileGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ManagerProfileGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ManagerProfileGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ManagerProfileGroupByOutputType[P]>
+            : GetScalarType<T[P], ManagerProfileGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ManagerProfileSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    centerId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["managerProfile"]>
+
+  export type ManagerProfileSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    centerId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["managerProfile"]>
+
+  export type ManagerProfileSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    centerId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ManagerProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ManagerProfileIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $ManagerProfilePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ManagerProfile"
+    objects: {
+      center: Prisma.$CenterPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      centerId: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["managerProfile"]>
+    composites: {}
+  }
+
+  type ManagerProfileGetPayload<S extends boolean | null | undefined | ManagerProfileDefaultArgs> = $Result.GetResult<Prisma.$ManagerProfilePayload, S>
+
+  type ManagerProfileCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ManagerProfileFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ManagerProfileCountAggregateInputType | true
+    }
+
+  export interface ManagerProfileDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ManagerProfile'], meta: { name: 'ManagerProfile' } }
+    /**
+     * Find zero or one ManagerProfile that matches the filter.
+     * @param {ManagerProfileFindUniqueArgs} args - Arguments to find a ManagerProfile
+     * @example
+     * // Get one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ManagerProfileFindUniqueArgs>(args: SelectSubset<T, ManagerProfileFindUniqueArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ManagerProfile that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ManagerProfileFindUniqueOrThrowArgs} args - Arguments to find a ManagerProfile
+     * @example
+     * // Get one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ManagerProfileFindUniqueOrThrowArgs>(args: SelectSubset<T, ManagerProfileFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ManagerProfile that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileFindFirstArgs} args - Arguments to find a ManagerProfile
+     * @example
+     * // Get one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ManagerProfileFindFirstArgs>(args?: SelectSubset<T, ManagerProfileFindFirstArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ManagerProfile that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileFindFirstOrThrowArgs} args - Arguments to find a ManagerProfile
+     * @example
+     * // Get one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ManagerProfileFindFirstOrThrowArgs>(args?: SelectSubset<T, ManagerProfileFindFirstOrThrowArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ManagerProfiles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ManagerProfiles
+     * const managerProfiles = await prisma.managerProfile.findMany()
+     * 
+     * // Get first 10 ManagerProfiles
+     * const managerProfiles = await prisma.managerProfile.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const managerProfileWithIdOnly = await prisma.managerProfile.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ManagerProfileFindManyArgs>(args?: SelectSubset<T, ManagerProfileFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ManagerProfile.
+     * @param {ManagerProfileCreateArgs} args - Arguments to create a ManagerProfile.
+     * @example
+     * // Create one ManagerProfile
+     * const ManagerProfile = await prisma.managerProfile.create({
+     *   data: {
+     *     // ... data to create a ManagerProfile
+     *   }
+     * })
+     * 
+     */
+    create<T extends ManagerProfileCreateArgs>(args: SelectSubset<T, ManagerProfileCreateArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ManagerProfiles.
+     * @param {ManagerProfileCreateManyArgs} args - Arguments to create many ManagerProfiles.
+     * @example
+     * // Create many ManagerProfiles
+     * const managerProfile = await prisma.managerProfile.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ManagerProfileCreateManyArgs>(args?: SelectSubset<T, ManagerProfileCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ManagerProfiles and returns the data saved in the database.
+     * @param {ManagerProfileCreateManyAndReturnArgs} args - Arguments to create many ManagerProfiles.
+     * @example
+     * // Create many ManagerProfiles
+     * const managerProfile = await prisma.managerProfile.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ManagerProfiles and only return the `id`
+     * const managerProfileWithIdOnly = await prisma.managerProfile.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ManagerProfileCreateManyAndReturnArgs>(args?: SelectSubset<T, ManagerProfileCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a ManagerProfile.
+     * @param {ManagerProfileDeleteArgs} args - Arguments to delete one ManagerProfile.
+     * @example
+     * // Delete one ManagerProfile
+     * const ManagerProfile = await prisma.managerProfile.delete({
+     *   where: {
+     *     // ... filter to delete one ManagerProfile
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ManagerProfileDeleteArgs>(args: SelectSubset<T, ManagerProfileDeleteArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ManagerProfile.
+     * @param {ManagerProfileUpdateArgs} args - Arguments to update one ManagerProfile.
+     * @example
+     * // Update one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ManagerProfileUpdateArgs>(args: SelectSubset<T, ManagerProfileUpdateArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ManagerProfiles.
+     * @param {ManagerProfileDeleteManyArgs} args - Arguments to filter ManagerProfiles to delete.
+     * @example
+     * // Delete a few ManagerProfiles
+     * const { count } = await prisma.managerProfile.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ManagerProfileDeleteManyArgs>(args?: SelectSubset<T, ManagerProfileDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ManagerProfiles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ManagerProfiles
+     * const managerProfile = await prisma.managerProfile.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ManagerProfileUpdateManyArgs>(args: SelectSubset<T, ManagerProfileUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ManagerProfile.
+     * @param {ManagerProfileUpsertArgs} args - Arguments to update or create a ManagerProfile.
+     * @example
+     * // Update or create a ManagerProfile
+     * const managerProfile = await prisma.managerProfile.upsert({
+     *   create: {
+     *     // ... data to create a ManagerProfile
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ManagerProfile we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ManagerProfileUpsertArgs>(args: SelectSubset<T, ManagerProfileUpsertArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ManagerProfiles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileCountArgs} args - Arguments to filter ManagerProfiles to count.
+     * @example
+     * // Count the number of ManagerProfiles
+     * const count = await prisma.managerProfile.count({
+     *   where: {
+     *     // ... the filter for the ManagerProfiles we want to count
+     *   }
+     * })
+    **/
+    count<T extends ManagerProfileCountArgs>(
+      args?: Subset<T, ManagerProfileCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ManagerProfileCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ManagerProfile.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ManagerProfileAggregateArgs>(args: Subset<T, ManagerProfileAggregateArgs>): Prisma.PrismaPromise<GetManagerProfileAggregateType<T>>
+
+    /**
+     * Group by ManagerProfile.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ManagerProfileGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ManagerProfileGroupByArgs['orderBy'] }
+        : { orderBy?: ManagerProfileGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ManagerProfileGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetManagerProfileGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ManagerProfile model
+   */
+  readonly fields: ManagerProfileFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ManagerProfile.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ManagerProfileClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    center<T extends CenterDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CenterDefaultArgs<ExtArgs>>): Prisma__CenterClient<$Result.GetResult<Prisma.$CenterPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ManagerProfile model
+   */ 
+  interface ManagerProfileFieldRefs {
+    readonly id: FieldRef<"ManagerProfile", 'String'>
+    readonly userId: FieldRef<"ManagerProfile", 'String'>
+    readonly centerId: FieldRef<"ManagerProfile", 'String'>
+    readonly createdAt: FieldRef<"ManagerProfile", 'DateTime'>
+    readonly updatedAt: FieldRef<"ManagerProfile", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ManagerProfile findUnique
+   */
+  export type ManagerProfileFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfile to fetch.
+     */
+    where: ManagerProfileWhereUniqueInput
+  }
+
+  /**
+   * ManagerProfile findUniqueOrThrow
+   */
+  export type ManagerProfileFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfile to fetch.
+     */
+    where: ManagerProfileWhereUniqueInput
+  }
+
+  /**
+   * ManagerProfile findFirst
+   */
+  export type ManagerProfileFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfile to fetch.
+     */
+    where?: ManagerProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ManagerProfiles to fetch.
+     */
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ManagerProfiles.
+     */
+    cursor?: ManagerProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ManagerProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ManagerProfiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ManagerProfiles.
+     */
+    distinct?: ManagerProfileScalarFieldEnum | ManagerProfileScalarFieldEnum[]
+  }
+
+  /**
+   * ManagerProfile findFirstOrThrow
+   */
+  export type ManagerProfileFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfile to fetch.
+     */
+    where?: ManagerProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ManagerProfiles to fetch.
+     */
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ManagerProfiles.
+     */
+    cursor?: ManagerProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ManagerProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ManagerProfiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ManagerProfiles.
+     */
+    distinct?: ManagerProfileScalarFieldEnum | ManagerProfileScalarFieldEnum[]
+  }
+
+  /**
+   * ManagerProfile findMany
+   */
+  export type ManagerProfileFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfiles to fetch.
+     */
+    where?: ManagerProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ManagerProfiles to fetch.
+     */
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ManagerProfiles.
+     */
+    cursor?: ManagerProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ManagerProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ManagerProfiles.
+     */
+    skip?: number
+    distinct?: ManagerProfileScalarFieldEnum | ManagerProfileScalarFieldEnum[]
+  }
+
+  /**
+   * ManagerProfile create
+   */
+  export type ManagerProfileCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ManagerProfile.
+     */
+    data: XOR<ManagerProfileCreateInput, ManagerProfileUncheckedCreateInput>
+  }
+
+  /**
+   * ManagerProfile createMany
+   */
+  export type ManagerProfileCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ManagerProfiles.
+     */
+    data: ManagerProfileCreateManyInput | ManagerProfileCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ManagerProfile createManyAndReturn
+   */
+  export type ManagerProfileCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many ManagerProfiles.
+     */
+    data: ManagerProfileCreateManyInput | ManagerProfileCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ManagerProfile update
+   */
+  export type ManagerProfileUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ManagerProfile.
+     */
+    data: XOR<ManagerProfileUpdateInput, ManagerProfileUncheckedUpdateInput>
+    /**
+     * Choose, which ManagerProfile to update.
+     */
+    where: ManagerProfileWhereUniqueInput
+  }
+
+  /**
+   * ManagerProfile updateMany
+   */
+  export type ManagerProfileUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ManagerProfiles.
+     */
+    data: XOR<ManagerProfileUpdateManyMutationInput, ManagerProfileUncheckedUpdateManyInput>
+    /**
+     * Filter which ManagerProfiles to update
+     */
+    where?: ManagerProfileWhereInput
+  }
+
+  /**
+   * ManagerProfile upsert
+   */
+  export type ManagerProfileUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ManagerProfile to update in case it exists.
+     */
+    where: ManagerProfileWhereUniqueInput
+    /**
+     * In case the ManagerProfile found by the `where` argument doesn't exist, create a new ManagerProfile with this data.
+     */
+    create: XOR<ManagerProfileCreateInput, ManagerProfileUncheckedCreateInput>
+    /**
+     * In case the ManagerProfile was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ManagerProfileUpdateInput, ManagerProfileUncheckedUpdateInput>
+  }
+
+  /**
+   * ManagerProfile delete
+   */
+  export type ManagerProfileDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter which ManagerProfile to delete.
+     */
+    where: ManagerProfileWhereUniqueInput
+  }
+
+  /**
+   * ManagerProfile deleteMany
+   */
+  export type ManagerProfileDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ManagerProfiles to delete
+     */
+    where?: ManagerProfileWhereInput
+  }
+
+  /**
+   * ManagerProfile without action
+   */
+  export type ManagerProfileDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
   }
 
 
@@ -5496,12 +6606,12 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    center?: boolean | CenterDefaultArgs<ExtArgs>
-    teacher?: boolean | Group$teacherArgs<ExtArgs>
-    students?: boolean | Group$studentsArgs<ExtArgs>
-    lessons?: boolean | Group$lessonsArgs<ExtArgs>
     chat?: boolean | Group$chatArgs<ExtArgs>
     crmLeads?: boolean | Group$crmLeadsArgs<ExtArgs>
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+    teacher?: boolean | Group$teacherArgs<ExtArgs>
+    lessons?: boolean | Group$lessonsArgs<ExtArgs>
+    students?: boolean | Group$studentsArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["group"]>
 
@@ -5534,12 +6644,12 @@ export namespace Prisma {
   }
 
   export type GroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    center?: boolean | CenterDefaultArgs<ExtArgs>
-    teacher?: boolean | Group$teacherArgs<ExtArgs>
-    students?: boolean | Group$studentsArgs<ExtArgs>
-    lessons?: boolean | Group$lessonsArgs<ExtArgs>
     chat?: boolean | Group$chatArgs<ExtArgs>
     crmLeads?: boolean | Group$crmLeadsArgs<ExtArgs>
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+    teacher?: boolean | Group$teacherArgs<ExtArgs>
+    lessons?: boolean | Group$lessonsArgs<ExtArgs>
+    students?: boolean | Group$studentsArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5550,12 +6660,12 @@ export namespace Prisma {
   export type $GroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Group"
     objects: {
-      center: Prisma.$CenterPayload<ExtArgs>
-      teacher: Prisma.$TeacherPayload<ExtArgs> | null
-      students: Prisma.$StudentPayload<ExtArgs>[]
-      lessons: Prisma.$LessonPayload<ExtArgs>[]
       chat: Prisma.$ChatPayload<ExtArgs> | null
       crmLeads: Prisma.$CrmLeadPayload<ExtArgs>[]
+      center: Prisma.$CenterPayload<ExtArgs>
+      teacher: Prisma.$TeacherPayload<ExtArgs> | null
+      lessons: Prisma.$LessonPayload<ExtArgs>[]
+      students: Prisma.$StudentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5932,12 +7042,12 @@ export namespace Prisma {
    */
   export interface Prisma__GroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    center<T extends CenterDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CenterDefaultArgs<ExtArgs>>): Prisma__CenterClient<$Result.GetResult<Prisma.$CenterPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    teacher<T extends Group$teacherArgs<ExtArgs> = {}>(args?: Subset<T, Group$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    students<T extends Group$studentsArgs<ExtArgs> = {}>(args?: Subset<T, Group$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findMany"> | Null>
-    lessons<T extends Group$lessonsArgs<ExtArgs> = {}>(args?: Subset<T, Group$lessonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findMany"> | Null>
     chat<T extends Group$chatArgs<ExtArgs> = {}>(args?: Subset<T, Group$chatArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     crmLeads<T extends Group$crmLeadsArgs<ExtArgs> = {}>(args?: Subset<T, Group$crmLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findMany"> | Null>
+    center<T extends CenterDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CenterDefaultArgs<ExtArgs>>): Prisma__CenterClient<$Result.GetResult<Prisma.$CenterPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    teacher<T extends Group$teacherArgs<ExtArgs> = {}>(args?: Subset<T, Group$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    lessons<T extends Group$lessonsArgs<ExtArgs> = {}>(args?: Subset<T, Group$lessonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findMany"> | Null>
+    students<T extends Group$studentsArgs<ExtArgs> = {}>(args?: Subset<T, Group$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6295,61 +7405,6 @@ export namespace Prisma {
   }
 
   /**
-   * Group.teacher
-   */
-  export type Group$teacherArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Teacher
-     */
-    select?: TeacherSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TeacherInclude<ExtArgs> | null
-    where?: TeacherWhereInput
-  }
-
-  /**
-   * Group.students
-   */
-  export type Group$studentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Student
-     */
-    select?: StudentSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentInclude<ExtArgs> | null
-    where?: StudentWhereInput
-    orderBy?: StudentOrderByWithRelationInput | StudentOrderByWithRelationInput[]
-    cursor?: StudentWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: StudentScalarFieldEnum | StudentScalarFieldEnum[]
-  }
-
-  /**
-   * Group.lessons
-   */
-  export type Group$lessonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Lesson
-     */
-    select?: LessonSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LessonInclude<ExtArgs> | null
-    where?: LessonWhereInput
-    orderBy?: LessonOrderByWithRelationInput | LessonOrderByWithRelationInput[]
-    cursor?: LessonWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: LessonScalarFieldEnum | LessonScalarFieldEnum[]
-  }
-
-  /**
    * Group.chat
    */
   export type Group$chatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6382,6 +7437,61 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CrmLeadScalarFieldEnum | CrmLeadScalarFieldEnum[]
+  }
+
+  /**
+   * Group.teacher
+   */
+  export type Group$teacherArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Teacher
+     */
+    select?: TeacherSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TeacherInclude<ExtArgs> | null
+    where?: TeacherWhereInput
+  }
+
+  /**
+   * Group.lessons
+   */
+  export type Group$lessonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Lesson
+     */
+    select?: LessonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LessonInclude<ExtArgs> | null
+    where?: LessonWhereInput
+    orderBy?: LessonOrderByWithRelationInput | LessonOrderByWithRelationInput[]
+    cursor?: LessonWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LessonScalarFieldEnum | LessonScalarFieldEnum[]
+  }
+
+  /**
+   * Group.students
+   */
+  export type Group$studentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Student
+     */
+    select?: StudentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentInclude<ExtArgs> | null
+    where?: StudentWhereInput
+    orderBy?: StudentOrderByWithRelationInput | StudentOrderByWithRelationInput[]
+    cursor?: StudentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: StudentScalarFieldEnum | StudentScalarFieldEnum[]
   }
 
   /**
@@ -6641,14 +7751,14 @@ export namespace Prisma {
     hireDate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    groups?: boolean | Teacher$groupsArgs<ExtArgs>
-    students?: boolean | Teacher$studentsArgs<ExtArgs>
-    lessons?: boolean | Teacher$lessonsArgs<ExtArgs>
-    feedbacks?: boolean | Teacher$feedbacksArgs<ExtArgs>
-    salaryRecords?: boolean | Teacher$salaryRecordsArgs<ExtArgs>
-    deductions?: boolean | Teacher$deductionsArgs<ExtArgs>
     crmLeads?: boolean | Teacher$crmLeadsArgs<ExtArgs>
+    deductions?: boolean | Teacher$deductionsArgs<ExtArgs>
+    feedbacks?: boolean | Teacher$feedbacksArgs<ExtArgs>
+    groups?: boolean | Teacher$groupsArgs<ExtArgs>
+    lessons?: boolean | Teacher$lessonsArgs<ExtArgs>
+    salaryRecords?: boolean | Teacher$salaryRecordsArgs<ExtArgs>
+    students?: boolean | Teacher$studentsArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | TeacherCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["teacher"]>
 
@@ -6682,14 +7792,14 @@ export namespace Prisma {
   }
 
   export type TeacherInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    groups?: boolean | Teacher$groupsArgs<ExtArgs>
-    students?: boolean | Teacher$studentsArgs<ExtArgs>
-    lessons?: boolean | Teacher$lessonsArgs<ExtArgs>
-    feedbacks?: boolean | Teacher$feedbacksArgs<ExtArgs>
-    salaryRecords?: boolean | Teacher$salaryRecordsArgs<ExtArgs>
-    deductions?: boolean | Teacher$deductionsArgs<ExtArgs>
     crmLeads?: boolean | Teacher$crmLeadsArgs<ExtArgs>
+    deductions?: boolean | Teacher$deductionsArgs<ExtArgs>
+    feedbacks?: boolean | Teacher$feedbacksArgs<ExtArgs>
+    groups?: boolean | Teacher$groupsArgs<ExtArgs>
+    lessons?: boolean | Teacher$lessonsArgs<ExtArgs>
+    salaryRecords?: boolean | Teacher$salaryRecordsArgs<ExtArgs>
+    students?: boolean | Teacher$studentsArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | TeacherCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TeacherIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6699,14 +7809,14 @@ export namespace Prisma {
   export type $TeacherPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Teacher"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-      groups: Prisma.$GroupPayload<ExtArgs>[]
-      students: Prisma.$StudentPayload<ExtArgs>[]
-      lessons: Prisma.$LessonPayload<ExtArgs>[]
-      feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
-      salaryRecords: Prisma.$SalaryRecordPayload<ExtArgs>[]
-      deductions: Prisma.$DeductionPayload<ExtArgs>[]
       crmLeads: Prisma.$CrmLeadPayload<ExtArgs>[]
+      deductions: Prisma.$DeductionPayload<ExtArgs>[]
+      feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
+      groups: Prisma.$GroupPayload<ExtArgs>[]
+      lessons: Prisma.$LessonPayload<ExtArgs>[]
+      salaryRecords: Prisma.$SalaryRecordPayload<ExtArgs>[]
+      students: Prisma.$StudentPayload<ExtArgs>[]
+      user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7084,14 +8194,14 @@ export namespace Prisma {
    */
   export interface Prisma__TeacherClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    groups<T extends Teacher$groupsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany"> | Null>
-    students<T extends Teacher$studentsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findMany"> | Null>
-    lessons<T extends Teacher$lessonsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$lessonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findMany"> | Null>
-    feedbacks<T extends Teacher$feedbacksArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany"> | Null>
-    salaryRecords<T extends Teacher$salaryRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$salaryRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SalaryRecordPayload<ExtArgs>, T, "findMany"> | Null>
-    deductions<T extends Teacher$deductionsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$deductionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeductionPayload<ExtArgs>, T, "findMany"> | Null>
     crmLeads<T extends Teacher$crmLeadsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$crmLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findMany"> | Null>
+    deductions<T extends Teacher$deductionsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$deductionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DeductionPayload<ExtArgs>, T, "findMany"> | Null>
+    feedbacks<T extends Teacher$feedbacksArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany"> | Null>
+    groups<T extends Teacher$groupsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany"> | Null>
+    lessons<T extends Teacher$lessonsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$lessonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findMany"> | Null>
+    salaryRecords<T extends Teacher$salaryRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$salaryRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SalaryRecordPayload<ExtArgs>, T, "findMany"> | Null>
+    students<T extends Teacher$studentsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findMany"> | Null>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7450,103 +8560,23 @@ export namespace Prisma {
   }
 
   /**
-   * Teacher.groups
+   * Teacher.crmLeads
    */
-  export type Teacher$groupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Teacher$crmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Group
+     * Select specific fields to fetch from the CrmLead
      */
-    select?: GroupSelect<ExtArgs> | null
+    select?: CrmLeadSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: GroupInclude<ExtArgs> | null
-    where?: GroupWhereInput
-    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
-    cursor?: GroupWhereUniqueInput
+    include?: CrmLeadInclude<ExtArgs> | null
+    where?: CrmLeadWhereInput
+    orderBy?: CrmLeadOrderByWithRelationInput | CrmLeadOrderByWithRelationInput[]
+    cursor?: CrmLeadWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
-  }
-
-  /**
-   * Teacher.students
-   */
-  export type Teacher$studentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Student
-     */
-    select?: StudentSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentInclude<ExtArgs> | null
-    where?: StudentWhereInput
-    orderBy?: StudentOrderByWithRelationInput | StudentOrderByWithRelationInput[]
-    cursor?: StudentWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: StudentScalarFieldEnum | StudentScalarFieldEnum[]
-  }
-
-  /**
-   * Teacher.lessons
-   */
-  export type Teacher$lessonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Lesson
-     */
-    select?: LessonSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: LessonInclude<ExtArgs> | null
-    where?: LessonWhereInput
-    orderBy?: LessonOrderByWithRelationInput | LessonOrderByWithRelationInput[]
-    cursor?: LessonWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: LessonScalarFieldEnum | LessonScalarFieldEnum[]
-  }
-
-  /**
-   * Teacher.feedbacks
-   */
-  export type Teacher$feedbacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Feedback
-     */
-    select?: FeedbackSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FeedbackInclude<ExtArgs> | null
-    where?: FeedbackWhereInput
-    orderBy?: FeedbackOrderByWithRelationInput | FeedbackOrderByWithRelationInput[]
-    cursor?: FeedbackWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: FeedbackScalarFieldEnum | FeedbackScalarFieldEnum[]
-  }
-
-  /**
-   * Teacher.salaryRecords
-   */
-  export type Teacher$salaryRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SalaryRecord
-     */
-    select?: SalaryRecordSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SalaryRecordInclude<ExtArgs> | null
-    where?: SalaryRecordWhereInput
-    orderBy?: SalaryRecordOrderByWithRelationInput | SalaryRecordOrderByWithRelationInput[]
-    cursor?: SalaryRecordWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SalaryRecordScalarFieldEnum | SalaryRecordScalarFieldEnum[]
+    distinct?: CrmLeadScalarFieldEnum | CrmLeadScalarFieldEnum[]
   }
 
   /**
@@ -7570,23 +8600,103 @@ export namespace Prisma {
   }
 
   /**
-   * Teacher.crmLeads
+   * Teacher.feedbacks
    */
-  export type Teacher$crmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Teacher$feedbacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CrmLead
+     * Select specific fields to fetch from the Feedback
      */
-    select?: CrmLeadSelect<ExtArgs> | null
+    select?: FeedbackSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CrmLeadInclude<ExtArgs> | null
-    where?: CrmLeadWhereInput
-    orderBy?: CrmLeadOrderByWithRelationInput | CrmLeadOrderByWithRelationInput[]
-    cursor?: CrmLeadWhereUniqueInput
+    include?: FeedbackInclude<ExtArgs> | null
+    where?: FeedbackWhereInput
+    orderBy?: FeedbackOrderByWithRelationInput | FeedbackOrderByWithRelationInput[]
+    cursor?: FeedbackWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: CrmLeadScalarFieldEnum | CrmLeadScalarFieldEnum[]
+    distinct?: FeedbackScalarFieldEnum | FeedbackScalarFieldEnum[]
+  }
+
+  /**
+   * Teacher.groups
+   */
+  export type Teacher$groupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
+    cursor?: GroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
+  }
+
+  /**
+   * Teacher.lessons
+   */
+  export type Teacher$lessonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Lesson
+     */
+    select?: LessonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LessonInclude<ExtArgs> | null
+    where?: LessonWhereInput
+    orderBy?: LessonOrderByWithRelationInput | LessonOrderByWithRelationInput[]
+    cursor?: LessonWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LessonScalarFieldEnum | LessonScalarFieldEnum[]
+  }
+
+  /**
+   * Teacher.salaryRecords
+   */
+  export type Teacher$salaryRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SalaryRecord
+     */
+    select?: SalaryRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SalaryRecordInclude<ExtArgs> | null
+    where?: SalaryRecordWhereInput
+    orderBy?: SalaryRecordOrderByWithRelationInput | SalaryRecordOrderByWithRelationInput[]
+    cursor?: SalaryRecordWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SalaryRecordScalarFieldEnum | SalaryRecordScalarFieldEnum[]
+  }
+
+  /**
+   * Teacher.students
+   */
+  export type Teacher$studentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Student
+     */
+    select?: StudentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentInclude<ExtArgs> | null
+    where?: StudentWhereInput
+    orderBy?: StudentOrderByWithRelationInput | StudentOrderByWithRelationInput[]
+    cursor?: StudentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: StudentScalarFieldEnum | StudentScalarFieldEnum[]
   }
 
   /**
@@ -7627,7 +8737,6 @@ export namespace Prisma {
   export type StudentMinAggregateOutputType = {
     id: string | null
     userId: string | null
-    leadId: string | null
     groupId: string | null
     teacherId: string | null
     parentName: string | null
@@ -7640,12 +8749,12 @@ export namespace Prisma {
     receiveReports: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
+    leadId: string | null
   }
 
   export type StudentMaxAggregateOutputType = {
     id: string | null
     userId: string | null
-    leadId: string | null
     groupId: string | null
     teacherId: string | null
     parentName: string | null
@@ -7658,12 +8767,12 @@ export namespace Prisma {
     receiveReports: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
+    leadId: string | null
   }
 
   export type StudentCountAggregateOutputType = {
     id: number
     userId: number
-    leadId: number
     groupId: number
     teacherId: number
     parentName: number
@@ -7676,6 +8785,7 @@ export namespace Prisma {
     receiveReports: number
     createdAt: number
     updatedAt: number
+    leadId: number
     _all: number
   }
 
@@ -7691,7 +8801,6 @@ export namespace Prisma {
   export type StudentMinAggregateInputType = {
     id?: true
     userId?: true
-    leadId?: true
     groupId?: true
     teacherId?: true
     parentName?: true
@@ -7704,12 +8813,12 @@ export namespace Prisma {
     receiveReports?: true
     createdAt?: true
     updatedAt?: true
+    leadId?: true
   }
 
   export type StudentMaxAggregateInputType = {
     id?: true
     userId?: true
-    leadId?: true
     groupId?: true
     teacherId?: true
     parentName?: true
@@ -7722,12 +8831,12 @@ export namespace Prisma {
     receiveReports?: true
     createdAt?: true
     updatedAt?: true
+    leadId?: true
   }
 
   export type StudentCountAggregateInputType = {
     id?: true
     userId?: true
-    leadId?: true
     groupId?: true
     teacherId?: true
     parentName?: true
@@ -7740,6 +8849,7 @@ export namespace Prisma {
     receiveReports?: true
     createdAt?: true
     updatedAt?: true
+    leadId?: true
     _all?: true
   }
 
@@ -7832,7 +8942,6 @@ export namespace Prisma {
   export type StudentGroupByOutputType = {
     id: string
     userId: string
-    leadId: string | null
     groupId: string | null
     teacherId: string | null
     parentName: string | null
@@ -7845,6 +8954,7 @@ export namespace Prisma {
     receiveReports: boolean
     createdAt: Date
     updatedAt: Date
+    leadId: string | null
     _count: StudentCountAggregateOutputType | null
     _avg: StudentAvgAggregateOutputType | null
     _sum: StudentSumAggregateOutputType | null
@@ -7869,7 +8979,6 @@ export namespace Prisma {
   export type StudentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    leadId?: boolean
     groupId?: boolean
     teacherId?: boolean
     parentName?: boolean
@@ -7882,20 +8991,20 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    lead?: boolean | Student$leadArgs<ExtArgs>
-    group?: boolean | Student$groupArgs<ExtArgs>
-    teacher?: boolean | Student$teacherArgs<ExtArgs>
+    leadId?: boolean
     attendances?: boolean | Student$attendancesArgs<ExtArgs>
     feedbacks?: boolean | Student$feedbacksArgs<ExtArgs>
     payments?: boolean | Student$paymentsArgs<ExtArgs>
+    group?: boolean | Student$groupArgs<ExtArgs>
+    lead?: boolean | Student$leadArgs<ExtArgs>
+    teacher?: boolean | Student$teacherArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["student"]>
 
   export type StudentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    leadId?: boolean
     groupId?: boolean
     teacherId?: boolean
     parentName?: boolean
@@ -7908,16 +9017,16 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    lead?: boolean | Student$leadArgs<ExtArgs>
+    leadId?: boolean
     group?: boolean | Student$groupArgs<ExtArgs>
+    lead?: boolean | Student$leadArgs<ExtArgs>
     teacher?: boolean | Student$teacherArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["student"]>
 
   export type StudentSelectScalar = {
     id?: boolean
     userId?: boolean
-    leadId?: boolean
     groupId?: boolean
     teacherId?: boolean
     parentName?: boolean
@@ -7930,40 +9039,40 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    leadId?: boolean
   }
 
   export type StudentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    lead?: boolean | Student$leadArgs<ExtArgs>
-    group?: boolean | Student$groupArgs<ExtArgs>
-    teacher?: boolean | Student$teacherArgs<ExtArgs>
     attendances?: boolean | Student$attendancesArgs<ExtArgs>
     feedbacks?: boolean | Student$feedbacksArgs<ExtArgs>
     payments?: boolean | Student$paymentsArgs<ExtArgs>
+    group?: boolean | Student$groupArgs<ExtArgs>
+    lead?: boolean | Student$leadArgs<ExtArgs>
+    teacher?: boolean | Student$teacherArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type StudentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    lead?: boolean | Student$leadArgs<ExtArgs>
     group?: boolean | Student$groupArgs<ExtArgs>
+    lead?: boolean | Student$leadArgs<ExtArgs>
     teacher?: boolean | Student$teacherArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
 
   export type $StudentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Student"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-      lead: Prisma.$CrmLeadPayload<ExtArgs> | null
-      group: Prisma.$GroupPayload<ExtArgs> | null
-      teacher: Prisma.$TeacherPayload<ExtArgs> | null
       attendances: Prisma.$AttendancePayload<ExtArgs>[]
       feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
       payments: Prisma.$PaymentPayload<ExtArgs>[]
+      group: Prisma.$GroupPayload<ExtArgs> | null
+      lead: Prisma.$CrmLeadPayload<ExtArgs> | null
+      teacher: Prisma.$TeacherPayload<ExtArgs> | null
+      user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
-      leadId: string | null
       groupId: string | null
       teacherId: string | null
       parentName: string | null
@@ -7976,6 +9085,7 @@ export namespace Prisma {
       receiveReports: boolean
       createdAt: Date
       updatedAt: Date
+      leadId: string | null
     }, ExtArgs["result"]["student"]>
     composites: {}
   }
@@ -8340,13 +9450,13 @@ export namespace Prisma {
    */
   export interface Prisma__StudentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    lead<T extends Student$leadArgs<ExtArgs> = {}>(args?: Subset<T, Student$leadArgs<ExtArgs>>): Prisma__CrmLeadClient<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    group<T extends Student$groupArgs<ExtArgs> = {}>(args?: Subset<T, Student$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    teacher<T extends Student$teacherArgs<ExtArgs> = {}>(args?: Subset<T, Student$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     attendances<T extends Student$attendancesArgs<ExtArgs> = {}>(args?: Subset<T, Student$attendancesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttendancePayload<ExtArgs>, T, "findMany"> | Null>
     feedbacks<T extends Student$feedbacksArgs<ExtArgs> = {}>(args?: Subset<T, Student$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany"> | Null>
     payments<T extends Student$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Student$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany"> | Null>
+    group<T extends Student$groupArgs<ExtArgs> = {}>(args?: Subset<T, Student$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    lead<T extends Student$leadArgs<ExtArgs> = {}>(args?: Subset<T, Student$leadArgs<ExtArgs>>): Prisma__CrmLeadClient<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    teacher<T extends Student$teacherArgs<ExtArgs> = {}>(args?: Subset<T, Student$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8378,7 +9488,6 @@ export namespace Prisma {
   interface StudentFieldRefs {
     readonly id: FieldRef<"Student", 'String'>
     readonly userId: FieldRef<"Student", 'String'>
-    readonly leadId: FieldRef<"Student", 'String'>
     readonly groupId: FieldRef<"Student", 'String'>
     readonly teacherId: FieldRef<"Student", 'String'>
     readonly parentName: FieldRef<"Student", 'String'>
@@ -8391,6 +9500,7 @@ export namespace Prisma {
     readonly receiveReports: FieldRef<"Student", 'Boolean'>
     readonly createdAt: FieldRef<"Student", 'DateTime'>
     readonly updatedAt: FieldRef<"Student", 'DateTime'>
+    readonly leadId: FieldRef<"Student", 'String'>
   }
     
 
@@ -8709,51 +9819,6 @@ export namespace Prisma {
   }
 
   /**
-   * Student.lead
-   */
-  export type Student$leadArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the CrmLead
-     */
-    select?: CrmLeadSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CrmLeadInclude<ExtArgs> | null
-    where?: CrmLeadWhereInput
-  }
-
-  /**
-   * Student.group
-   */
-  export type Student$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Group
-     */
-    select?: GroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: GroupInclude<ExtArgs> | null
-    where?: GroupWhereInput
-  }
-
-  /**
-   * Student.teacher
-   */
-  export type Student$teacherArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Teacher
-     */
-    select?: TeacherSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TeacherInclude<ExtArgs> | null
-    where?: TeacherWhereInput
-  }
-
-  /**
    * Student.attendances
    */
   export type Student$attendancesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8811,6 +9876,51 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
+  }
+
+  /**
+   * Student.group
+   */
+  export type Student$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+  }
+
+  /**
+   * Student.lead
+   */
+  export type Student$leadArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CrmLead
+     */
+    select?: CrmLeadSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CrmLeadInclude<ExtArgs> | null
+    where?: CrmLeadWhereInput
+  }
+
+  /**
+   * Student.teacher
+   */
+  export type Student$teacherArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Teacher
+     */
+    select?: TeacherSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TeacherInclude<ExtArgs> | null
+    where?: TeacherWhereInput
   }
 
   /**
@@ -9154,10 +10264,10 @@ export namespace Prisma {
     notes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    group?: boolean | GroupDefaultArgs<ExtArgs>
-    teacher?: boolean | TeacherDefaultArgs<ExtArgs>
     attendances?: boolean | Lesson$attendancesArgs<ExtArgs>
     feedbacks?: boolean | Lesson$feedbacksArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+    teacher?: boolean | TeacherDefaultArgs<ExtArgs>
     _count?: boolean | LessonCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lesson"]>
 
@@ -9212,10 +10322,10 @@ export namespace Prisma {
   }
 
   export type LessonInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | GroupDefaultArgs<ExtArgs>
-    teacher?: boolean | TeacherDefaultArgs<ExtArgs>
     attendances?: boolean | Lesson$attendancesArgs<ExtArgs>
     feedbacks?: boolean | Lesson$feedbacksArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+    teacher?: boolean | TeacherDefaultArgs<ExtArgs>
     _count?: boolean | LessonCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type LessonIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9226,10 +10336,10 @@ export namespace Prisma {
   export type $LessonPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Lesson"
     objects: {
-      group: Prisma.$GroupPayload<ExtArgs>
-      teacher: Prisma.$TeacherPayload<ExtArgs>
       attendances: Prisma.$AttendancePayload<ExtArgs>[]
       feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
+      group: Prisma.$GroupPayload<ExtArgs>
+      teacher: Prisma.$TeacherPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9617,10 +10727,10 @@ export namespace Prisma {
    */
   export interface Prisma__LessonClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    group<T extends GroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GroupDefaultArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    teacher<T extends TeacherDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TeacherDefaultArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     attendances<T extends Lesson$attendancesArgs<ExtArgs> = {}>(args?: Subset<T, Lesson$attendancesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttendancePayload<ExtArgs>, T, "findMany"> | Null>
     feedbacks<T extends Lesson$feedbacksArgs<ExtArgs> = {}>(args?: Subset<T, Lesson$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany"> | Null>
+    group<T extends GroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GroupDefaultArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    teacher<T extends TeacherDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TeacherDefaultArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10057,6 +11167,7 @@ export namespace Prisma {
     id: string | null
     lessonId: string | null
     studentId: string | null
+    markedById: string | null
     isPresent: boolean | null
     absenceType: $Enums.AbsenceType | null
     note: string | null
@@ -10069,6 +11180,7 @@ export namespace Prisma {
     id: string | null
     lessonId: string | null
     studentId: string | null
+    markedById: string | null
     isPresent: boolean | null
     absenceType: $Enums.AbsenceType | null
     note: string | null
@@ -10081,6 +11193,7 @@ export namespace Prisma {
     id: number
     lessonId: number
     studentId: number
+    markedById: number
     isPresent: number
     absenceType: number
     note: number
@@ -10095,6 +11208,7 @@ export namespace Prisma {
     id?: true
     lessonId?: true
     studentId?: true
+    markedById?: true
     isPresent?: true
     absenceType?: true
     note?: true
@@ -10107,6 +11221,7 @@ export namespace Prisma {
     id?: true
     lessonId?: true
     studentId?: true
+    markedById?: true
     isPresent?: true
     absenceType?: true
     note?: true
@@ -10119,6 +11234,7 @@ export namespace Prisma {
     id?: true
     lessonId?: true
     studentId?: true
+    markedById?: true
     isPresent?: true
     absenceType?: true
     note?: true
@@ -10204,6 +11320,7 @@ export namespace Prisma {
     id: string
     lessonId: string
     studentId: string
+    markedById: string | null
     isPresent: boolean
     absenceType: $Enums.AbsenceType | null
     note: string | null
@@ -10233,6 +11350,7 @@ export namespace Prisma {
     id?: boolean
     lessonId?: boolean
     studentId?: boolean
+    markedById?: boolean
     isPresent?: boolean
     absenceType?: boolean
     note?: boolean
@@ -10240,6 +11358,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     lesson?: boolean | LessonDefaultArgs<ExtArgs>
+    markedBy?: boolean | Attendance$markedByArgs<ExtArgs>
     student?: boolean | StudentDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["attendance"]>
 
@@ -10247,6 +11366,7 @@ export namespace Prisma {
     id?: boolean
     lessonId?: boolean
     studentId?: boolean
+    markedById?: boolean
     isPresent?: boolean
     absenceType?: boolean
     note?: boolean
@@ -10254,6 +11374,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     lesson?: boolean | LessonDefaultArgs<ExtArgs>
+    markedBy?: boolean | Attendance$markedByArgs<ExtArgs>
     student?: boolean | StudentDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["attendance"]>
 
@@ -10261,6 +11382,7 @@ export namespace Prisma {
     id?: boolean
     lessonId?: boolean
     studentId?: boolean
+    markedById?: boolean
     isPresent?: boolean
     absenceType?: boolean
     note?: boolean
@@ -10271,10 +11393,12 @@ export namespace Prisma {
 
   export type AttendanceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     lesson?: boolean | LessonDefaultArgs<ExtArgs>
+    markedBy?: boolean | Attendance$markedByArgs<ExtArgs>
     student?: boolean | StudentDefaultArgs<ExtArgs>
   }
   export type AttendanceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     lesson?: boolean | LessonDefaultArgs<ExtArgs>
+    markedBy?: boolean | Attendance$markedByArgs<ExtArgs>
     student?: boolean | StudentDefaultArgs<ExtArgs>
   }
 
@@ -10282,12 +11406,14 @@ export namespace Prisma {
     name: "Attendance"
     objects: {
       lesson: Prisma.$LessonPayload<ExtArgs>
+      markedBy: Prisma.$UserPayload<ExtArgs> | null
       student: Prisma.$StudentPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       lessonId: string
       studentId: string
+      markedById: string | null
       isPresent: boolean
       absenceType: $Enums.AbsenceType | null
       note: string | null
@@ -10659,6 +11785,7 @@ export namespace Prisma {
   export interface Prisma__AttendanceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     lesson<T extends LessonDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LessonDefaultArgs<ExtArgs>>): Prisma__LessonClient<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    markedBy<T extends Attendance$markedByArgs<ExtArgs> = {}>(args?: Subset<T, Attendance$markedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     student<T extends StudentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, StudentDefaultArgs<ExtArgs>>): Prisma__StudentClient<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -10692,6 +11819,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Attendance", 'String'>
     readonly lessonId: FieldRef<"Attendance", 'String'>
     readonly studentId: FieldRef<"Attendance", 'String'>
+    readonly markedById: FieldRef<"Attendance", 'String'>
     readonly isPresent: FieldRef<"Attendance", 'Boolean'>
     readonly absenceType: FieldRef<"Attendance", 'AbsenceType'>
     readonly note: FieldRef<"Attendance", 'String'>
@@ -11013,6 +12141,21 @@ export namespace Prisma {
      * Filter which Attendances to delete
      */
     where?: AttendanceWhereInput
+  }
+
+  /**
+   * Attendance.markedBy
+   */
+  export type Attendance$markedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -15394,8 +16537,8 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    group?: boolean | Chat$groupArgs<ExtArgs>
     participants?: boolean | Chat$participantsArgs<ExtArgs>
+    group?: boolean | Chat$groupArgs<ExtArgs>
     messages?: boolean | Chat$messagesArgs<ExtArgs>
     _count?: boolean | ChatCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["chat"]>
@@ -15422,8 +16565,8 @@ export namespace Prisma {
   }
 
   export type ChatInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | Chat$groupArgs<ExtArgs>
     participants?: boolean | Chat$participantsArgs<ExtArgs>
+    group?: boolean | Chat$groupArgs<ExtArgs>
     messages?: boolean | Chat$messagesArgs<ExtArgs>
     _count?: boolean | ChatCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -15434,8 +16577,8 @@ export namespace Prisma {
   export type $ChatPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Chat"
     objects: {
-      group: Prisma.$GroupPayload<ExtArgs> | null
       participants: Prisma.$ChatParticipantPayload<ExtArgs>[]
+      group: Prisma.$GroupPayload<ExtArgs> | null
       messages: Prisma.$MessagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -15810,8 +16953,8 @@ export namespace Prisma {
    */
   export interface Prisma__ChatClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    group<T extends Chat$groupArgs<ExtArgs> = {}>(args?: Subset<T, Chat$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     participants<T extends Chat$participantsArgs<ExtArgs> = {}>(args?: Subset<T, Chat$participantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatParticipantPayload<ExtArgs>, T, "findMany"> | Null>
+    group<T extends Chat$groupArgs<ExtArgs> = {}>(args?: Subset<T, Chat$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     messages<T extends Chat$messagesArgs<ExtArgs> = {}>(args?: Subset<T, Chat$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -16167,21 +17310,6 @@ export namespace Prisma {
   }
 
   /**
-   * Chat.group
-   */
-  export type Chat$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Group
-     */
-    select?: GroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: GroupInclude<ExtArgs> | null
-    where?: GroupWhereInput
-  }
-
-  /**
    * Chat.participants
    */
   export type Chat$participantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16199,6 +17327,21 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ChatParticipantScalarFieldEnum | ChatParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * Chat.group
+   */
+  export type Chat$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
   }
 
   /**
@@ -20413,10 +21556,10 @@ export namespace Prisma {
     centerId: string | null
     transferFlag: boolean | null
     transferComment: string | null
-    teacherApprovedAt: Date | null
     archivedReason: string | null
     source: string | null
     notes: string | null
+    teacherApprovedAt: Date | null
   }
 
   export type CrmLeadMaxAggregateOutputType = {
@@ -20436,10 +21579,10 @@ export namespace Prisma {
     centerId: string | null
     transferFlag: boolean | null
     transferComment: string | null
-    teacherApprovedAt: Date | null
     archivedReason: string | null
     source: string | null
     notes: string | null
+    teacherApprovedAt: Date | null
   }
 
   export type CrmLeadCountAggregateOutputType = {
@@ -20459,10 +21602,10 @@ export namespace Prisma {
     centerId: number
     transferFlag: number
     transferComment: number
-    teacherApprovedAt: number
     archivedReason: number
     source: number
     notes: number
+    teacherApprovedAt: number
     _all: number
   }
 
@@ -20492,10 +21635,10 @@ export namespace Prisma {
     centerId?: true
     transferFlag?: true
     transferComment?: true
-    teacherApprovedAt?: true
     archivedReason?: true
     source?: true
     notes?: true
+    teacherApprovedAt?: true
   }
 
   export type CrmLeadMaxAggregateInputType = {
@@ -20515,10 +21658,10 @@ export namespace Prisma {
     centerId?: true
     transferFlag?: true
     transferComment?: true
-    teacherApprovedAt?: true
     archivedReason?: true
     source?: true
     notes?: true
+    teacherApprovedAt?: true
   }
 
   export type CrmLeadCountAggregateInputType = {
@@ -20538,10 +21681,10 @@ export namespace Prisma {
     centerId?: true
     transferFlag?: true
     transferComment?: true
-    teacherApprovedAt?: true
     archivedReason?: true
     source?: true
     notes?: true
+    teacherApprovedAt?: true
     _all?: true
   }
 
@@ -20648,10 +21791,10 @@ export namespace Prisma {
     centerId: string | null
     transferFlag: boolean
     transferComment: string | null
-    teacherApprovedAt: Date | null
     archivedReason: string | null
     source: string | null
     notes: string | null
+    teacherApprovedAt: Date | null
     _count: CrmLeadCountAggregateOutputType | null
     _avg: CrmLeadAvgAggregateOutputType | null
     _sum: CrmLeadSumAggregateOutputType | null
@@ -20690,17 +21833,17 @@ export namespace Prisma {
     centerId?: boolean
     transferFlag?: boolean
     transferComment?: boolean
-    teacherApprovedAt?: boolean
     archivedReason?: boolean
     source?: boolean
     notes?: boolean
-    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
-    assignedManager?: boolean | CrmLead$assignedManagerArgs<ExtArgs>
-    teacher?: boolean | CrmLead$teacherArgs<ExtArgs>
-    group?: boolean | CrmLead$groupArgs<ExtArgs>
-    center?: boolean | CrmLead$centerArgs<ExtArgs>
+    teacherApprovedAt?: boolean
     activities?: boolean | CrmLead$activitiesArgs<ExtArgs>
     attachments?: boolean | CrmLead$attachmentsArgs<ExtArgs>
+    assignedManager?: boolean | CrmLead$assignedManagerArgs<ExtArgs>
+    center?: boolean | CrmLead$centerArgs<ExtArgs>
+    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | CrmLead$groupArgs<ExtArgs>
+    teacher?: boolean | CrmLead$teacherArgs<ExtArgs>
     student?: boolean | CrmLead$studentArgs<ExtArgs>
     _count?: boolean | CrmLeadCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["crmLead"]>
@@ -20722,15 +21865,15 @@ export namespace Prisma {
     centerId?: boolean
     transferFlag?: boolean
     transferComment?: boolean
-    teacherApprovedAt?: boolean
     archivedReason?: boolean
     source?: boolean
     notes?: boolean
-    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
+    teacherApprovedAt?: boolean
     assignedManager?: boolean | CrmLead$assignedManagerArgs<ExtArgs>
-    teacher?: boolean | CrmLead$teacherArgs<ExtArgs>
-    group?: boolean | CrmLead$groupArgs<ExtArgs>
     center?: boolean | CrmLead$centerArgs<ExtArgs>
+    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | CrmLead$groupArgs<ExtArgs>
+    teacher?: boolean | CrmLead$teacherArgs<ExtArgs>
   }, ExtArgs["result"]["crmLead"]>
 
   export type CrmLeadSelectScalar = {
@@ -20750,41 +21893,41 @@ export namespace Prisma {
     centerId?: boolean
     transferFlag?: boolean
     transferComment?: boolean
-    teacherApprovedAt?: boolean
     archivedReason?: boolean
     source?: boolean
     notes?: boolean
+    teacherApprovedAt?: boolean
   }
 
   export type CrmLeadInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
-    assignedManager?: boolean | CrmLead$assignedManagerArgs<ExtArgs>
-    teacher?: boolean | CrmLead$teacherArgs<ExtArgs>
-    group?: boolean | CrmLead$groupArgs<ExtArgs>
-    center?: boolean | CrmLead$centerArgs<ExtArgs>
     activities?: boolean | CrmLead$activitiesArgs<ExtArgs>
     attachments?: boolean | CrmLead$attachmentsArgs<ExtArgs>
+    assignedManager?: boolean | CrmLead$assignedManagerArgs<ExtArgs>
+    center?: boolean | CrmLead$centerArgs<ExtArgs>
+    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | CrmLead$groupArgs<ExtArgs>
+    teacher?: boolean | CrmLead$teacherArgs<ExtArgs>
     student?: boolean | CrmLead$studentArgs<ExtArgs>
     _count?: boolean | CrmLeadCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CrmLeadIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
     assignedManager?: boolean | CrmLead$assignedManagerArgs<ExtArgs>
-    teacher?: boolean | CrmLead$teacherArgs<ExtArgs>
-    group?: boolean | CrmLead$groupArgs<ExtArgs>
     center?: boolean | CrmLead$centerArgs<ExtArgs>
+    createdByUser?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | CrmLead$groupArgs<ExtArgs>
+    teacher?: boolean | CrmLead$teacherArgs<ExtArgs>
   }
 
   export type $CrmLeadPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "CrmLead"
     objects: {
-      createdByUser: Prisma.$UserPayload<ExtArgs>
-      assignedManager: Prisma.$UserPayload<ExtArgs> | null
-      teacher: Prisma.$TeacherPayload<ExtArgs> | null
-      group: Prisma.$GroupPayload<ExtArgs> | null
-      center: Prisma.$CenterPayload<ExtArgs> | null
       activities: Prisma.$CrmLeadActivityPayload<ExtArgs>[]
       attachments: Prisma.$CrmLeadAttachmentPayload<ExtArgs>[]
+      assignedManager: Prisma.$UserPayload<ExtArgs> | null
+      center: Prisma.$CenterPayload<ExtArgs> | null
+      createdByUser: Prisma.$UserPayload<ExtArgs>
+      group: Prisma.$GroupPayload<ExtArgs> | null
+      teacher: Prisma.$TeacherPayload<ExtArgs> | null
       student: Prisma.$StudentPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -20804,10 +21947,10 @@ export namespace Prisma {
       centerId: string | null
       transferFlag: boolean
       transferComment: string | null
-      teacherApprovedAt: Date | null
       archivedReason: string | null
       source: string | null
       notes: string | null
+      teacherApprovedAt: Date | null
     }, ExtArgs["result"]["crmLead"]>
     composites: {}
   }
@@ -21172,13 +22315,13 @@ export namespace Prisma {
    */
   export interface Prisma__CrmLeadClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    createdByUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    assignedManager<T extends CrmLead$assignedManagerArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$assignedManagerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    teacher<T extends CrmLead$teacherArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    group<T extends CrmLead$groupArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    center<T extends CrmLead$centerArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$centerArgs<ExtArgs>>): Prisma__CenterClient<$Result.GetResult<Prisma.$CenterPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     activities<T extends CrmLead$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadActivityPayload<ExtArgs>, T, "findMany"> | Null>
     attachments<T extends CrmLead$attachmentsArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadAttachmentPayload<ExtArgs>, T, "findMany"> | Null>
+    assignedManager<T extends CrmLead$assignedManagerArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$assignedManagerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    center<T extends CrmLead$centerArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$centerArgs<ExtArgs>>): Prisma__CenterClient<$Result.GetResult<Prisma.$CenterPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    createdByUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    group<T extends CrmLead$groupArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    teacher<T extends CrmLead$teacherArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     student<T extends CrmLead$studentArgs<ExtArgs> = {}>(args?: Subset<T, CrmLead$studentArgs<ExtArgs>>): Prisma__StudentClient<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -21225,10 +22368,10 @@ export namespace Prisma {
     readonly centerId: FieldRef<"CrmLead", 'String'>
     readonly transferFlag: FieldRef<"CrmLead", 'Boolean'>
     readonly transferComment: FieldRef<"CrmLead", 'String'>
-    readonly teacherApprovedAt: FieldRef<"CrmLead", 'DateTime'>
     readonly archivedReason: FieldRef<"CrmLead", 'String'>
     readonly source: FieldRef<"CrmLead", 'String'>
     readonly notes: FieldRef<"CrmLead", 'String'>
+    readonly teacherApprovedAt: FieldRef<"CrmLead", 'DateTime'>
   }
     
 
@@ -21547,66 +22690,6 @@ export namespace Prisma {
   }
 
   /**
-   * CrmLead.assignedManager
-   */
-  export type CrmLead$assignedManagerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the User
-     */
-    select?: UserSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserInclude<ExtArgs> | null
-    where?: UserWhereInput
-  }
-
-  /**
-   * CrmLead.teacher
-   */
-  export type CrmLead$teacherArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Teacher
-     */
-    select?: TeacherSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TeacherInclude<ExtArgs> | null
-    where?: TeacherWhereInput
-  }
-
-  /**
-   * CrmLead.group
-   */
-  export type CrmLead$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Group
-     */
-    select?: GroupSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: GroupInclude<ExtArgs> | null
-    where?: GroupWhereInput
-  }
-
-  /**
-   * CrmLead.center
-   */
-  export type CrmLead$centerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Center
-     */
-    select?: CenterSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CenterInclude<ExtArgs> | null
-    where?: CenterWhereInput
-  }
-
-  /**
    * CrmLead.activities
    */
   export type CrmLead$activitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -21644,6 +22727,66 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CrmLeadAttachmentScalarFieldEnum | CrmLeadAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * CrmLead.assignedManager
+   */
+  export type CrmLead$assignedManagerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * CrmLead.center
+   */
+  export type CrmLead$centerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Center
+     */
+    select?: CenterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CenterInclude<ExtArgs> | null
+    where?: CenterWhereInput
+  }
+
+  /**
+   * CrmLead.group
+   */
+  export type CrmLead$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+  }
+
+  /**
+   * CrmLead.teacher
+   */
+  export type CrmLead$teacherArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Teacher
+     */
+    select?: TeacherSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TeacherInclude<ExtArgs> | null
+    where?: TeacherWhereInput
   }
 
   /**
@@ -24586,6 +25729,17 @@ export namespace Prisma {
   export type CenterScalarFieldEnum = (typeof CenterScalarFieldEnum)[keyof typeof CenterScalarFieldEnum]
 
 
+  export const ManagerProfileScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    centerId: 'centerId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ManagerProfileScalarFieldEnum = (typeof ManagerProfileScalarFieldEnum)[keyof typeof ManagerProfileScalarFieldEnum]
+
+
   export const GroupScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -24622,7 +25776,6 @@ export namespace Prisma {
   export const StudentScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
-    leadId: 'leadId',
     groupId: 'groupId',
     teacherId: 'teacherId',
     parentName: 'parentName',
@@ -24634,7 +25787,8 @@ export namespace Prisma {
     notes: 'notes',
     receiveReports: 'receiveReports',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    leadId: 'leadId'
   };
 
   export type StudentScalarFieldEnum = (typeof StudentScalarFieldEnum)[keyof typeof StudentScalarFieldEnum]
@@ -24671,6 +25825,7 @@ export namespace Prisma {
     id: 'id',
     lessonId: 'lessonId',
     studentId: 'studentId',
+    markedById: 'markedById',
     isPresent: 'isPresent',
     absenceType: 'absenceType',
     note: 'note',
@@ -24851,10 +26006,10 @@ export namespace Prisma {
     centerId: 'centerId',
     transferFlag: 'transferFlag',
     transferComment: 'transferComment',
-    teacherApprovedAt: 'teacherApprovedAt',
     archivedReason: 'archivedReason',
     source: 'source',
-    notes: 'notes'
+    notes: 'notes',
+    teacherApprovedAt: 'teacherApprovedAt'
   };
 
   export type CrmLeadScalarFieldEnum = (typeof CrmLeadScalarFieldEnum)[keyof typeof CrmLeadScalarFieldEnum]
@@ -25218,13 +26373,15 @@ export namespace Prisma {
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
-    student?: XOR<StudentNullableRelationFilter, StudentWhereInput> | null
-    sentMessages?: MessageListRelationFilter
     chatParticipants?: ChatParticipantListRelationFilter
-    notifications?: NotificationListRelationFilter
-    crmLeadsCreated?: CrmLeadListRelationFilter
     crmLeadsAssignedManager?: CrmLeadListRelationFilter
+    crmLeadsCreated?: CrmLeadListRelationFilter
+    managerProfile?: XOR<ManagerProfileNullableRelationFilter, ManagerProfileWhereInput> | null
+    sentMessages?: MessageListRelationFilter
+    notifications?: NotificationListRelationFilter
+    markedAttendances?: AttendanceListRelationFilter
+    student?: XOR<StudentNullableRelationFilter, StudentWhereInput> | null
+    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
@@ -25240,13 +26397,15 @@ export namespace Prisma {
     lastLoginAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    teacher?: TeacherOrderByWithRelationInput
-    student?: StudentOrderByWithRelationInput
-    sentMessages?: MessageOrderByRelationAggregateInput
     chatParticipants?: ChatParticipantOrderByRelationAggregateInput
-    notifications?: NotificationOrderByRelationAggregateInput
-    crmLeadsCreated?: CrmLeadOrderByRelationAggregateInput
     crmLeadsAssignedManager?: CrmLeadOrderByRelationAggregateInput
+    crmLeadsCreated?: CrmLeadOrderByRelationAggregateInput
+    managerProfile?: ManagerProfileOrderByWithRelationInput
+    sentMessages?: MessageOrderByRelationAggregateInput
+    notifications?: NotificationOrderByRelationAggregateInput
+    markedAttendances?: AttendanceOrderByRelationAggregateInput
+    student?: StudentOrderByWithRelationInput
+    teacher?: TeacherOrderByWithRelationInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -25265,13 +26424,15 @@ export namespace Prisma {
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
-    student?: XOR<StudentNullableRelationFilter, StudentWhereInput> | null
-    sentMessages?: MessageListRelationFilter
     chatParticipants?: ChatParticipantListRelationFilter
-    notifications?: NotificationListRelationFilter
-    crmLeadsCreated?: CrmLeadListRelationFilter
     crmLeadsAssignedManager?: CrmLeadListRelationFilter
+    crmLeadsCreated?: CrmLeadListRelationFilter
+    managerProfile?: XOR<ManagerProfileNullableRelationFilter, ManagerProfileWhereInput> | null
+    sentMessages?: MessageListRelationFilter
+    notifications?: NotificationListRelationFilter
+    markedAttendances?: AttendanceListRelationFilter
+    student?: XOR<StudentNullableRelationFilter, StudentWhereInput> | null
+    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -25324,8 +26485,9 @@ export namespace Prisma {
     isActive?: BoolFilter<"Center"> | boolean
     createdAt?: DateTimeFilter<"Center"> | Date | string
     updatedAt?: DateTimeFilter<"Center"> | Date | string
-    groups?: GroupListRelationFilter
     crmLeads?: CrmLeadListRelationFilter
+    groups?: GroupListRelationFilter
+    managerProfiles?: ManagerProfileListRelationFilter
   }
 
   export type CenterOrderByWithRelationInput = {
@@ -25339,8 +26501,9 @@ export namespace Prisma {
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    groups?: GroupOrderByRelationAggregateInput
     crmLeads?: CrmLeadOrderByRelationAggregateInput
+    groups?: GroupOrderByRelationAggregateInput
+    managerProfiles?: ManagerProfileOrderByRelationAggregateInput
   }
 
   export type CenterWhereUniqueInput = Prisma.AtLeast<{
@@ -25357,8 +26520,9 @@ export namespace Prisma {
     isActive?: BoolFilter<"Center"> | boolean
     createdAt?: DateTimeFilter<"Center"> | Date | string
     updatedAt?: DateTimeFilter<"Center"> | Date | string
-    groups?: GroupListRelationFilter
     crmLeads?: CrmLeadListRelationFilter
+    groups?: GroupListRelationFilter
+    managerProfiles?: ManagerProfileListRelationFilter
   }, "id">
 
   export type CenterOrderByWithAggregationInput = {
@@ -25393,6 +26557,64 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Center"> | Date | string
   }
 
+  export type ManagerProfileWhereInput = {
+    AND?: ManagerProfileWhereInput | ManagerProfileWhereInput[]
+    OR?: ManagerProfileWhereInput[]
+    NOT?: ManagerProfileWhereInput | ManagerProfileWhereInput[]
+    id?: StringFilter<"ManagerProfile"> | string
+    userId?: StringFilter<"ManagerProfile"> | string
+    centerId?: StringFilter<"ManagerProfile"> | string
+    createdAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    updatedAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    center?: XOR<CenterRelationFilter, CenterWhereInput>
+    user?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type ManagerProfileOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    center?: CenterOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type ManagerProfileWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    centerId?: string
+    AND?: ManagerProfileWhereInput | ManagerProfileWhereInput[]
+    OR?: ManagerProfileWhereInput[]
+    NOT?: ManagerProfileWhereInput | ManagerProfileWhereInput[]
+    createdAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    updatedAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    center?: XOR<CenterRelationFilter, CenterWhereInput>
+    user?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id" | "userId" | "centerId">
+
+  export type ManagerProfileOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ManagerProfileCountOrderByAggregateInput
+    _max?: ManagerProfileMaxOrderByAggregateInput
+    _min?: ManagerProfileMinOrderByAggregateInput
+  }
+
+  export type ManagerProfileScalarWhereWithAggregatesInput = {
+    AND?: ManagerProfileScalarWhereWithAggregatesInput | ManagerProfileScalarWhereWithAggregatesInput[]
+    OR?: ManagerProfileScalarWhereWithAggregatesInput[]
+    NOT?: ManagerProfileScalarWhereWithAggregatesInput | ManagerProfileScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ManagerProfile"> | string
+    userId?: StringWithAggregatesFilter<"ManagerProfile"> | string
+    centerId?: StringWithAggregatesFilter<"ManagerProfile"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ManagerProfile"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ManagerProfile"> | Date | string
+  }
+
   export type GroupWhereInput = {
     AND?: GroupWhereInput | GroupWhereInput[]
     OR?: GroupWhereInput[]
@@ -25407,12 +26629,12 @@ export namespace Prisma {
     isActive?: BoolFilter<"Group"> | boolean
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
-    center?: XOR<CenterRelationFilter, CenterWhereInput>
-    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
-    students?: StudentListRelationFilter
-    lessons?: LessonListRelationFilter
     chat?: XOR<ChatNullableRelationFilter, ChatWhereInput> | null
     crmLeads?: CrmLeadListRelationFilter
+    center?: XOR<CenterRelationFilter, CenterWhereInput>
+    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
+    lessons?: LessonListRelationFilter
+    students?: StudentListRelationFilter
   }
 
   export type GroupOrderByWithRelationInput = {
@@ -25426,12 +26648,12 @@ export namespace Prisma {
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    center?: CenterOrderByWithRelationInput
-    teacher?: TeacherOrderByWithRelationInput
-    students?: StudentOrderByRelationAggregateInput
-    lessons?: LessonOrderByRelationAggregateInput
     chat?: ChatOrderByWithRelationInput
     crmLeads?: CrmLeadOrderByRelationAggregateInput
+    center?: CenterOrderByWithRelationInput
+    teacher?: TeacherOrderByWithRelationInput
+    lessons?: LessonOrderByRelationAggregateInput
+    students?: StudentOrderByRelationAggregateInput
   }
 
   export type GroupWhereUniqueInput = Prisma.AtLeast<{
@@ -25448,12 +26670,12 @@ export namespace Prisma {
     isActive?: BoolFilter<"Group"> | boolean
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
-    center?: XOR<CenterRelationFilter, CenterWhereInput>
-    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
-    students?: StudentListRelationFilter
-    lessons?: LessonListRelationFilter
     chat?: XOR<ChatNullableRelationFilter, ChatWhereInput> | null
     crmLeads?: CrmLeadListRelationFilter
+    center?: XOR<CenterRelationFilter, CenterWhereInput>
+    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
+    lessons?: LessonListRelationFilter
+    students?: StudentListRelationFilter
   }, "id">
 
   export type GroupOrderByWithAggregationInput = {
@@ -25505,14 +26727,14 @@ export namespace Prisma {
     hireDate?: DateTimeFilter<"Teacher"> | Date | string
     createdAt?: DateTimeFilter<"Teacher"> | Date | string
     updatedAt?: DateTimeFilter<"Teacher"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    groups?: GroupListRelationFilter
-    students?: StudentListRelationFilter
-    lessons?: LessonListRelationFilter
-    feedbacks?: FeedbackListRelationFilter
-    salaryRecords?: SalaryRecordListRelationFilter
-    deductions?: DeductionListRelationFilter
     crmLeads?: CrmLeadListRelationFilter
+    deductions?: DeductionListRelationFilter
+    feedbacks?: FeedbackListRelationFilter
+    groups?: GroupListRelationFilter
+    lessons?: LessonListRelationFilter
+    salaryRecords?: SalaryRecordListRelationFilter
+    students?: StudentListRelationFilter
+    user?: XOR<UserRelationFilter, UserWhereInput>
   }
 
   export type TeacherOrderByWithRelationInput = {
@@ -25527,14 +26749,14 @@ export namespace Prisma {
     hireDate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
-    groups?: GroupOrderByRelationAggregateInput
-    students?: StudentOrderByRelationAggregateInput
-    lessons?: LessonOrderByRelationAggregateInput
-    feedbacks?: FeedbackOrderByRelationAggregateInput
-    salaryRecords?: SalaryRecordOrderByRelationAggregateInput
-    deductions?: DeductionOrderByRelationAggregateInput
     crmLeads?: CrmLeadOrderByRelationAggregateInput
+    deductions?: DeductionOrderByRelationAggregateInput
+    feedbacks?: FeedbackOrderByRelationAggregateInput
+    groups?: GroupOrderByRelationAggregateInput
+    lessons?: LessonOrderByRelationAggregateInput
+    salaryRecords?: SalaryRecordOrderByRelationAggregateInput
+    students?: StudentOrderByRelationAggregateInput
+    user?: UserOrderByWithRelationInput
   }
 
   export type TeacherWhereUniqueInput = Prisma.AtLeast<{
@@ -25552,14 +26774,14 @@ export namespace Prisma {
     hireDate?: DateTimeFilter<"Teacher"> | Date | string
     createdAt?: DateTimeFilter<"Teacher"> | Date | string
     updatedAt?: DateTimeFilter<"Teacher"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    groups?: GroupListRelationFilter
-    students?: StudentListRelationFilter
-    lessons?: LessonListRelationFilter
-    feedbacks?: FeedbackListRelationFilter
-    salaryRecords?: SalaryRecordListRelationFilter
-    deductions?: DeductionListRelationFilter
     crmLeads?: CrmLeadListRelationFilter
+    deductions?: DeductionListRelationFilter
+    feedbacks?: FeedbackListRelationFilter
+    groups?: GroupListRelationFilter
+    lessons?: LessonListRelationFilter
+    salaryRecords?: SalaryRecordListRelationFilter
+    students?: StudentListRelationFilter
+    user?: XOR<UserRelationFilter, UserWhereInput>
   }, "id" | "userId">
 
   export type TeacherOrderByWithAggregationInput = {
@@ -25604,7 +26826,6 @@ export namespace Prisma {
     NOT?: StudentWhereInput | StudentWhereInput[]
     id?: StringFilter<"Student"> | string
     userId?: StringFilter<"Student"> | string
-    leadId?: StringNullableFilter<"Student"> | string | null
     groupId?: StringNullableFilter<"Student"> | string | null
     teacherId?: StringNullableFilter<"Student"> | string | null
     parentName?: StringNullableFilter<"Student"> | string | null
@@ -25617,19 +26838,19 @@ export namespace Prisma {
     receiveReports?: BoolFilter<"Student"> | boolean
     createdAt?: DateTimeFilter<"Student"> | Date | string
     updatedAt?: DateTimeFilter<"Student"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    lead?: XOR<CrmLeadNullableRelationFilter, CrmLeadWhereInput> | null
-    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
-    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
+    leadId?: StringNullableFilter<"Student"> | string | null
     attendances?: AttendanceListRelationFilter
     feedbacks?: FeedbackListRelationFilter
     payments?: PaymentListRelationFilter
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    lead?: XOR<CrmLeadNullableRelationFilter, CrmLeadWhereInput> | null
+    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
+    user?: XOR<UserRelationFilter, UserWhereInput>
   }
 
   export type StudentOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
-    leadId?: SortOrderInput | SortOrder
     groupId?: SortOrderInput | SortOrder
     teacherId?: SortOrderInput | SortOrder
     parentName?: SortOrderInput | SortOrder
@@ -25642,13 +26863,14 @@ export namespace Prisma {
     receiveReports?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
-    lead?: CrmLeadOrderByWithRelationInput
-    group?: GroupOrderByWithRelationInput
-    teacher?: TeacherOrderByWithRelationInput
+    leadId?: SortOrderInput | SortOrder
     attendances?: AttendanceOrderByRelationAggregateInput
     feedbacks?: FeedbackOrderByRelationAggregateInput
     payments?: PaymentOrderByRelationAggregateInput
+    group?: GroupOrderByWithRelationInput
+    lead?: CrmLeadOrderByWithRelationInput
+    teacher?: TeacherOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
   }
 
   export type StudentWhereUniqueInput = Prisma.AtLeast<{
@@ -25670,19 +26892,18 @@ export namespace Prisma {
     receiveReports?: BoolFilter<"Student"> | boolean
     createdAt?: DateTimeFilter<"Student"> | Date | string
     updatedAt?: DateTimeFilter<"Student"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    lead?: XOR<CrmLeadNullableRelationFilter, CrmLeadWhereInput> | null
-    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
-    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     attendances?: AttendanceListRelationFilter
     feedbacks?: FeedbackListRelationFilter
     payments?: PaymentListRelationFilter
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    lead?: XOR<CrmLeadNullableRelationFilter, CrmLeadWhereInput> | null
+    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
+    user?: XOR<UserRelationFilter, UserWhereInput>
   }, "id" | "userId" | "leadId">
 
   export type StudentOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
-    leadId?: SortOrderInput | SortOrder
     groupId?: SortOrderInput | SortOrder
     teacherId?: SortOrderInput | SortOrder
     parentName?: SortOrderInput | SortOrder
@@ -25695,6 +26916,7 @@ export namespace Prisma {
     receiveReports?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    leadId?: SortOrderInput | SortOrder
     _count?: StudentCountOrderByAggregateInput
     _avg?: StudentAvgOrderByAggregateInput
     _max?: StudentMaxOrderByAggregateInput
@@ -25708,7 +26930,6 @@ export namespace Prisma {
     NOT?: StudentScalarWhereWithAggregatesInput | StudentScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Student"> | string
     userId?: StringWithAggregatesFilter<"Student"> | string
-    leadId?: StringNullableWithAggregatesFilter<"Student"> | string | null
     groupId?: StringNullableWithAggregatesFilter<"Student"> | string | null
     teacherId?: StringNullableWithAggregatesFilter<"Student"> | string | null
     parentName?: StringNullableWithAggregatesFilter<"Student"> | string | null
@@ -25721,6 +26942,7 @@ export namespace Prisma {
     receiveReports?: BoolWithAggregatesFilter<"Student"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Student"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Student"> | Date | string
+    leadId?: StringNullableWithAggregatesFilter<"Student"> | string | null
   }
 
   export type LessonWhereInput = {
@@ -25748,10 +26970,10 @@ export namespace Prisma {
     notes?: StringNullableFilter<"Lesson"> | string | null
     createdAt?: DateTimeFilter<"Lesson"> | Date | string
     updatedAt?: DateTimeFilter<"Lesson"> | Date | string
-    group?: XOR<GroupRelationFilter, GroupWhereInput>
-    teacher?: XOR<TeacherRelationFilter, TeacherWhereInput>
     attendances?: AttendanceListRelationFilter
     feedbacks?: FeedbackListRelationFilter
+    group?: XOR<GroupRelationFilter, GroupWhereInput>
+    teacher?: XOR<TeacherRelationFilter, TeacherWhereInput>
   }
 
   export type LessonOrderByWithRelationInput = {
@@ -25776,10 +26998,10 @@ export namespace Prisma {
     notes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    group?: GroupOrderByWithRelationInput
-    teacher?: TeacherOrderByWithRelationInput
     attendances?: AttendanceOrderByRelationAggregateInput
     feedbacks?: FeedbackOrderByRelationAggregateInput
+    group?: GroupOrderByWithRelationInput
+    teacher?: TeacherOrderByWithRelationInput
   }
 
   export type LessonWhereUniqueInput = Prisma.AtLeast<{
@@ -25807,10 +27029,10 @@ export namespace Prisma {
     notes?: StringNullableFilter<"Lesson"> | string | null
     createdAt?: DateTimeFilter<"Lesson"> | Date | string
     updatedAt?: DateTimeFilter<"Lesson"> | Date | string
-    group?: XOR<GroupRelationFilter, GroupWhereInput>
-    teacher?: XOR<TeacherRelationFilter, TeacherWhereInput>
     attendances?: AttendanceListRelationFilter
     feedbacks?: FeedbackListRelationFilter
+    group?: XOR<GroupRelationFilter, GroupWhereInput>
+    teacher?: XOR<TeacherRelationFilter, TeacherWhereInput>
   }, "id">
 
   export type LessonOrderByWithAggregationInput = {
@@ -25876,6 +27098,7 @@ export namespace Prisma {
     id?: StringFilter<"Attendance"> | string
     lessonId?: StringFilter<"Attendance"> | string
     studentId?: StringFilter<"Attendance"> | string
+    markedById?: StringNullableFilter<"Attendance"> | string | null
     isPresent?: BoolFilter<"Attendance"> | boolean
     absenceType?: EnumAbsenceTypeNullableFilter<"Attendance"> | $Enums.AbsenceType | null
     note?: StringNullableFilter<"Attendance"> | string | null
@@ -25883,6 +27106,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Attendance"> | Date | string
     updatedAt?: DateTimeFilter<"Attendance"> | Date | string
     lesson?: XOR<LessonRelationFilter, LessonWhereInput>
+    markedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     student?: XOR<StudentRelationFilter, StudentWhereInput>
   }
 
@@ -25890,6 +27114,7 @@ export namespace Prisma {
     id?: SortOrder
     lessonId?: SortOrder
     studentId?: SortOrder
+    markedById?: SortOrderInput | SortOrder
     isPresent?: SortOrder
     absenceType?: SortOrderInput | SortOrder
     note?: SortOrderInput | SortOrder
@@ -25897,6 +27122,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lesson?: LessonOrderByWithRelationInput
+    markedBy?: UserOrderByWithRelationInput
     student?: StudentOrderByWithRelationInput
   }
 
@@ -25908,6 +27134,7 @@ export namespace Prisma {
     NOT?: AttendanceWhereInput | AttendanceWhereInput[]
     lessonId?: StringFilter<"Attendance"> | string
     studentId?: StringFilter<"Attendance"> | string
+    markedById?: StringNullableFilter<"Attendance"> | string | null
     isPresent?: BoolFilter<"Attendance"> | boolean
     absenceType?: EnumAbsenceTypeNullableFilter<"Attendance"> | $Enums.AbsenceType | null
     note?: StringNullableFilter<"Attendance"> | string | null
@@ -25915,6 +27142,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Attendance"> | Date | string
     updatedAt?: DateTimeFilter<"Attendance"> | Date | string
     lesson?: XOR<LessonRelationFilter, LessonWhereInput>
+    markedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     student?: XOR<StudentRelationFilter, StudentWhereInput>
   }, "id" | "lessonId_studentId">
 
@@ -25922,6 +27150,7 @@ export namespace Prisma {
     id?: SortOrder
     lessonId?: SortOrder
     studentId?: SortOrder
+    markedById?: SortOrderInput | SortOrder
     isPresent?: SortOrder
     absenceType?: SortOrderInput | SortOrder
     note?: SortOrderInput | SortOrder
@@ -25940,6 +27169,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Attendance"> | string
     lessonId?: StringWithAggregatesFilter<"Attendance"> | string
     studentId?: StringWithAggregatesFilter<"Attendance"> | string
+    markedById?: StringNullableWithAggregatesFilter<"Attendance"> | string | null
     isPresent?: BoolWithAggregatesFilter<"Attendance"> | boolean
     absenceType?: EnumAbsenceTypeNullableWithAggregatesFilter<"Attendance"> | $Enums.AbsenceType | null
     note?: StringNullableWithAggregatesFilter<"Attendance"> | string | null
@@ -26316,8 +27546,8 @@ export namespace Prisma {
     isActive?: BoolFilter<"Chat"> | boolean
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     updatedAt?: DateTimeFilter<"Chat"> | Date | string
-    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
     participants?: ChatParticipantListRelationFilter
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
     messages?: MessageListRelationFilter
   }
 
@@ -26329,8 +27559,8 @@ export namespace Prisma {
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    group?: GroupOrderByWithRelationInput
     participants?: ChatParticipantOrderByRelationAggregateInput
+    group?: GroupOrderByWithRelationInput
     messages?: MessageOrderByRelationAggregateInput
   }
 
@@ -26345,8 +27575,8 @@ export namespace Prisma {
     isActive?: BoolFilter<"Chat"> | boolean
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     updatedAt?: DateTimeFilter<"Chat"> | Date | string
-    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
     participants?: ChatParticipantListRelationFilter
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
     messages?: MessageListRelationFilter
   }, "id" | "groupId">
 
@@ -26759,17 +27989,17 @@ export namespace Prisma {
     centerId?: StringNullableFilter<"CrmLead"> | string | null
     transferFlag?: BoolFilter<"CrmLead"> | boolean
     transferComment?: StringNullableFilter<"CrmLead"> | string | null
-    teacherApprovedAt?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     archivedReason?: StringNullableFilter<"CrmLead"> | string | null
     source?: StringNullableFilter<"CrmLead"> | string | null
     notes?: StringNullableFilter<"CrmLead"> | string | null
-    createdByUser?: XOR<UserRelationFilter, UserWhereInput>
-    assignedManager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
-    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
-    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
-    center?: XOR<CenterNullableRelationFilter, CenterWhereInput> | null
+    teacherApprovedAt?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     activities?: CrmLeadActivityListRelationFilter
     attachments?: CrmLeadAttachmentListRelationFilter
+    assignedManager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    center?: XOR<CenterNullableRelationFilter, CenterWhereInput> | null
+    createdByUser?: XOR<UserRelationFilter, UserWhereInput>
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     student?: XOR<StudentNullableRelationFilter, StudentWhereInput> | null
   }
 
@@ -26790,17 +28020,17 @@ export namespace Prisma {
     centerId?: SortOrderInput | SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrderInput | SortOrder
-    teacherApprovedAt?: SortOrderInput | SortOrder
     archivedReason?: SortOrderInput | SortOrder
     source?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
-    createdByUser?: UserOrderByWithRelationInput
-    assignedManager?: UserOrderByWithRelationInput
-    teacher?: TeacherOrderByWithRelationInput
-    group?: GroupOrderByWithRelationInput
-    center?: CenterOrderByWithRelationInput
+    teacherApprovedAt?: SortOrderInput | SortOrder
     activities?: CrmLeadActivityOrderByRelationAggregateInput
     attachments?: CrmLeadAttachmentOrderByRelationAggregateInput
+    assignedManager?: UserOrderByWithRelationInput
+    center?: CenterOrderByWithRelationInput
+    createdByUser?: UserOrderByWithRelationInput
+    group?: GroupOrderByWithRelationInput
+    teacher?: TeacherOrderByWithRelationInput
     student?: StudentOrderByWithRelationInput
   }
 
@@ -26824,17 +28054,17 @@ export namespace Prisma {
     centerId?: StringNullableFilter<"CrmLead"> | string | null
     transferFlag?: BoolFilter<"CrmLead"> | boolean
     transferComment?: StringNullableFilter<"CrmLead"> | string | null
-    teacherApprovedAt?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     archivedReason?: StringNullableFilter<"CrmLead"> | string | null
     source?: StringNullableFilter<"CrmLead"> | string | null
     notes?: StringNullableFilter<"CrmLead"> | string | null
-    createdByUser?: XOR<UserRelationFilter, UserWhereInput>
-    assignedManager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
-    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
-    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
-    center?: XOR<CenterNullableRelationFilter, CenterWhereInput> | null
+    teacherApprovedAt?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     activities?: CrmLeadActivityListRelationFilter
     attachments?: CrmLeadAttachmentListRelationFilter
+    assignedManager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    center?: XOR<CenterNullableRelationFilter, CenterWhereInput> | null
+    createdByUser?: XOR<UserRelationFilter, UserWhereInput>
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     student?: XOR<StudentNullableRelationFilter, StudentWhereInput> | null
   }, "id">
 
@@ -26855,10 +28085,10 @@ export namespace Prisma {
     centerId?: SortOrderInput | SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrderInput | SortOrder
-    teacherApprovedAt?: SortOrderInput | SortOrder
     archivedReason?: SortOrderInput | SortOrder
     source?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    teacherApprovedAt?: SortOrderInput | SortOrder
     _count?: CrmLeadCountOrderByAggregateInput
     _avg?: CrmLeadAvgOrderByAggregateInput
     _max?: CrmLeadMaxOrderByAggregateInput
@@ -26886,10 +28116,10 @@ export namespace Prisma {
     centerId?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
     transferFlag?: BoolWithAggregatesFilter<"CrmLead"> | boolean
     transferComment?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
-    teacherApprovedAt?: DateTimeNullableWithAggregatesFilter<"CrmLead"> | Date | string | null
     archivedReason?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
     source?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
     notes?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
+    teacherApprovedAt?: DateTimeNullableWithAggregatesFilter<"CrmLead"> | Date | string | null
   }
 
   export type CrmLeadActivityWhereInput = {
@@ -27109,13 +28339,15 @@ export namespace Prisma {
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    teacher?: TeacherCreateNestedOneWithoutUserInput
-    student?: StudentCreateNestedOneWithoutUserInput
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -27131,13 +28363,15 @@ export namespace Prisma {
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
-    student?: StudentUncheckedCreateNestedOneWithoutUserInput
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -27153,13 +28387,15 @@ export namespace Prisma {
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUpdateOneWithoutUserNestedInput
-    student?: StudentUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -27175,13 +28411,15 @@ export namespace Prisma {
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
-    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -27240,8 +28478,9 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    groups?: GroupCreateNestedManyWithoutCenterInput
     crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
+    groups?: GroupCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUncheckedCreateInput = {
@@ -27255,8 +28494,9 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
+    groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUpdateInput = {
@@ -27270,8 +28510,9 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUpdateManyWithoutCenterNestedInput
     crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
+    groups?: GroupUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterUncheckedUpdateInput = {
@@ -27285,8 +28526,9 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterCreateManyInput = {
@@ -27328,6 +28570,60 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ManagerProfileCreateInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    center: CenterCreateNestedOneWithoutManagerProfilesInput
+    user: UserCreateNestedOneWithoutManagerProfileInput
+  }
+
+  export type ManagerProfileUncheckedCreateInput = {
+    id?: string
+    userId: string
+    centerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ManagerProfileUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    center?: CenterUpdateOneRequiredWithoutManagerProfilesNestedInput
+    user?: UserUpdateOneRequiredWithoutManagerProfileNestedInput
+  }
+
+  export type ManagerProfileUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    centerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ManagerProfileCreateManyInput = {
+    id?: string
+    userId: string
+    centerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ManagerProfileUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ManagerProfileUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    centerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type GroupCreateInput = {
     id?: string
     name: string
@@ -27337,12 +28633,12 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    center: CenterCreateNestedOneWithoutGroupsInput
-    teacher?: TeacherCreateNestedOneWithoutGroupsInput
-    students?: StudentCreateNestedManyWithoutGroupInput
-    lessons?: LessonCreateNestedManyWithoutGroupInput
     chat?: ChatCreateNestedOneWithoutGroupInput
     crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+    center: CenterCreateNestedOneWithoutGroupsInput
+    teacher?: TeacherCreateNestedOneWithoutGroupsInput
+    lessons?: LessonCreateNestedManyWithoutGroupInput
+    students?: StudentCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateInput = {
@@ -27356,10 +28652,10 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
+    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUpdateInput = {
@@ -27371,12 +28667,12 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
-    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
-    students?: StudentUpdateManyWithoutGroupNestedInput
-    lessons?: LessonUpdateManyWithoutGroupNestedInput
     chat?: ChatUpdateOneWithoutGroupNestedInput
     crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
+    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
+    lessons?: LessonUpdateManyWithoutGroupNestedInput
+    students?: StudentUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateInput = {
@@ -27390,10 +28686,10 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
+    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupCreateManyInput = {
@@ -27444,14 +28740,14 @@ export namespace Prisma {
     hireDate?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTeacherInput
-    groups?: GroupCreateNestedManyWithoutTeacherInput
-    students?: StudentCreateNestedManyWithoutTeacherInput
-    lessons?: LessonCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionCreateNestedManyWithoutTeacherInput
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
+    groups?: GroupCreateNestedManyWithoutTeacherInput
+    lessons?: LessonCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
+    students?: StudentCreateNestedManyWithoutTeacherInput
+    user: UserCreateNestedOneWithoutTeacherInput
   }
 
   export type TeacherUncheckedCreateInput = {
@@ -27466,13 +28762,13 @@ export namespace Prisma {
     hireDate?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
-    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
+    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
+    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
   }
 
   export type TeacherUpdateInput = {
@@ -27486,14 +28782,14 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
-    groups?: GroupUpdateManyWithoutTeacherNestedInput
-    students?: StudentUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
+    students?: StudentUpdateManyWithoutTeacherNestedInput
+    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
   }
 
   export type TeacherUncheckedUpdateInput = {
@@ -27508,13 +28804,13 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
-    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
+    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
   }
 
   export type TeacherCreateManyInput = {
@@ -27570,19 +28866,18 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutStudentInput
-    lead?: CrmLeadCreateNestedOneWithoutStudentInput
-    group?: GroupCreateNestedOneWithoutStudentsInput
-    teacher?: TeacherCreateNestedOneWithoutStudentsInput
     attendances?: AttendanceCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateInput = {
     id?: string
     userId: string
-    leadId?: string | null
     groupId?: string | null
     teacherId?: string | null
     parentName?: string | null
@@ -27595,6 +28890,7 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    leadId?: string | null
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
@@ -27612,19 +28908,18 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutStudentNestedInput
-    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
-    group?: GroupUpdateOneWithoutStudentsNestedInput
-    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     attendances?: AttendanceUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27637,6 +28932,7 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
@@ -27645,7 +28941,6 @@ export namespace Prisma {
   export type StudentCreateManyInput = {
     id?: string
     userId: string
-    leadId?: string | null
     groupId?: string | null
     teacherId?: string | null
     parentName?: string | null
@@ -27658,6 +28953,7 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    leadId?: string | null
   }
 
   export type StudentUpdateManyMutationInput = {
@@ -27677,7 +28973,6 @@ export namespace Prisma {
   export type StudentUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27690,6 +28985,7 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type LessonCreateInput = {
@@ -27712,10 +29008,10 @@ export namespace Prisma {
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    group: GroupCreateNestedOneWithoutLessonsInput
-    teacher: TeacherCreateNestedOneWithoutLessonsInput
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
     feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
+    group: GroupCreateNestedOneWithoutLessonsInput
+    teacher: TeacherCreateNestedOneWithoutLessonsInput
   }
 
   export type LessonUncheckedCreateInput = {
@@ -27764,10 +29060,10 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
-    teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
+    group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
+    teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
   }
 
   export type LessonUncheckedUpdateInput = {
@@ -27875,6 +29171,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     lesson: LessonCreateNestedOneWithoutAttendancesInput
+    markedBy?: UserCreateNestedOneWithoutMarkedAttendancesInput
     student: StudentCreateNestedOneWithoutAttendancesInput
   }
 
@@ -27882,6 +29179,7 @@ export namespace Prisma {
     id?: string
     lessonId: string
     studentId: string
+    markedById?: string | null
     isPresent: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
@@ -27899,6 +29197,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lesson?: LessonUpdateOneRequiredWithoutAttendancesNestedInput
+    markedBy?: UserUpdateOneWithoutMarkedAttendancesNestedInput
     student?: StudentUpdateOneRequiredWithoutAttendancesNestedInput
   }
 
@@ -27906,6 +29205,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     lessonId?: StringFieldUpdateOperationsInput | string
     studentId?: StringFieldUpdateOperationsInput | string
+    markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27918,6 +29218,7 @@ export namespace Prisma {
     id?: string
     lessonId: string
     studentId: string
+    markedById?: string | null
     isPresent: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
@@ -27940,6 +29241,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     lessonId?: StringFieldUpdateOperationsInput | string
     studentId?: StringFieldUpdateOperationsInput | string
+    markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28341,8 +29643,8 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    group?: GroupCreateNestedOneWithoutChatInput
     participants?: ChatParticipantCreateNestedManyWithoutChatInput
+    group?: GroupCreateNestedOneWithoutChatInput
     messages?: MessageCreateNestedManyWithoutChatInput
   }
 
@@ -28365,8 +29667,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    group?: GroupUpdateOneWithoutChatNestedInput
     participants?: ChatParticipantUpdateManyWithoutChatNestedInput
+    group?: GroupUpdateOneWithoutChatNestedInput
     messages?: MessageUpdateManyWithoutChatNestedInput
   }
 
@@ -28831,17 +30133,17 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
-    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
-    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
-    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
-    group?: GroupCreateNestedOneWithoutCrmLeadsInput
-    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    teacherApprovedAt?: Date | string | null
     activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
     attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
+    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
+    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
+    group?: GroupCreateNestedOneWithoutCrmLeadsInput
+    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
     student?: StudentCreateNestedOneWithoutLeadInput
   }
 
@@ -28862,10 +30164,10 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
+    teacherApprovedAt?: Date | string | null
     activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
     attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
     student?: StudentUncheckedCreateNestedOneWithoutLeadInput
@@ -28883,17 +30185,17 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
-    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
-    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
-    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
-    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
     attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
+    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
+    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
+    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
+    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
     student?: StudentUpdateOneWithoutLeadNestedInput
   }
 
@@ -28914,10 +30216,10 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
     attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
     student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
@@ -28940,10 +30242,10 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
+    teacherApprovedAt?: Date | string | null
   }
 
   export type CrmLeadUpdateManyMutationInput = {
@@ -28958,10 +30260,10 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type CrmLeadUncheckedUpdateManyInput = {
@@ -28981,10 +30283,10 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type CrmLeadActivityCreateInput = {
@@ -29275,32 +30577,10 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type TeacherNullableRelationFilter = {
-    is?: TeacherWhereInput | null
-    isNot?: TeacherWhereInput | null
-  }
-
-  export type StudentNullableRelationFilter = {
-    is?: StudentWhereInput | null
-    isNot?: StudentWhereInput | null
-  }
-
-  export type MessageListRelationFilter = {
-    every?: MessageWhereInput
-    some?: MessageWhereInput
-    none?: MessageWhereInput
-  }
-
   export type ChatParticipantListRelationFilter = {
     every?: ChatParticipantWhereInput
     some?: ChatParticipantWhereInput
     none?: ChatParticipantWhereInput
-  }
-
-  export type NotificationListRelationFilter = {
-    every?: NotificationWhereInput
-    some?: NotificationWhereInput
-    none?: NotificationWhereInput
   }
 
   export type CrmLeadListRelationFilter = {
@@ -29309,16 +30589,53 @@ export namespace Prisma {
     none?: CrmLeadWhereInput
   }
 
+  export type ManagerProfileNullableRelationFilter = {
+    is?: ManagerProfileWhereInput | null
+    isNot?: ManagerProfileWhereInput | null
+  }
+
+  export type MessageListRelationFilter = {
+    every?: MessageWhereInput
+    some?: MessageWhereInput
+    none?: MessageWhereInput
+  }
+
+  export type NotificationListRelationFilter = {
+    every?: NotificationWhereInput
+    some?: NotificationWhereInput
+    none?: NotificationWhereInput
+  }
+
+  export type AttendanceListRelationFilter = {
+    every?: AttendanceWhereInput
+    some?: AttendanceWhereInput
+    none?: AttendanceWhereInput
+  }
+
+  export type StudentNullableRelationFilter = {
+    is?: StudentWhereInput | null
+    isNot?: StudentWhereInput | null
+  }
+
+  export type TeacherNullableRelationFilter = {
+    is?: TeacherWhereInput | null
+    isNot?: TeacherWhereInput | null
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
   }
 
-  export type MessageOrderByRelationAggregateInput = {
+  export type ChatParticipantOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type ChatParticipantOrderByRelationAggregateInput = {
+  export type CrmLeadOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type MessageOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29326,7 +30643,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type CrmLeadOrderByRelationAggregateInput = {
+  export type AttendanceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29470,7 +30787,17 @@ export namespace Prisma {
     none?: GroupWhereInput
   }
 
+  export type ManagerProfileListRelationFilter = {
+    every?: ManagerProfileWhereInput
+    some?: ManagerProfileWhereInput
+    none?: ManagerProfileWhereInput
+  }
+
   export type GroupOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ManagerProfileOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29521,6 +30848,40 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type CenterRelationFilter = {
+    is?: CenterWhereInput
+    isNot?: CenterWhereInput
+  }
+
+  export type UserRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type ManagerProfileCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ManagerProfileMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ManagerProfileMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -29532,15 +30893,9 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type CenterRelationFilter = {
-    is?: CenterWhereInput
-    isNot?: CenterWhereInput
-  }
-
-  export type StudentListRelationFilter = {
-    every?: StudentWhereInput
-    some?: StudentWhereInput
-    none?: StudentWhereInput
+  export type ChatNullableRelationFilter = {
+    is?: ChatWhereInput | null
+    isNot?: ChatWhereInput | null
   }
 
   export type LessonListRelationFilter = {
@@ -29549,16 +30904,17 @@ export namespace Prisma {
     none?: LessonWhereInput
   }
 
-  export type ChatNullableRelationFilter = {
-    is?: ChatWhereInput | null
-    isNot?: ChatWhereInput | null
-  }
-
-  export type StudentOrderByRelationAggregateInput = {
-    _count?: SortOrder
+  export type StudentListRelationFilter = {
+    every?: StudentWhereInput
+    some?: StudentWhereInput
+    none?: StudentWhereInput
   }
 
   export type LessonOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type StudentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29677,9 +31033,10 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type UserRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
+  export type DeductionListRelationFilter = {
+    every?: DeductionWhereInput
+    some?: DeductionWhereInput
+    none?: DeductionWhereInput
   }
 
   export type FeedbackListRelationFilter = {
@@ -29694,10 +31051,8 @@ export namespace Prisma {
     none?: SalaryRecordWhereInput
   }
 
-  export type DeductionListRelationFilter = {
-    every?: DeductionWhereInput
-    some?: DeductionWhereInput
-    none?: DeductionWhereInput
+  export type DeductionOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type FeedbackOrderByRelationAggregateInput = {
@@ -29705,10 +31060,6 @@ export namespace Prisma {
   }
 
   export type SalaryRecordOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type DeductionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29817,9 +31168,10 @@ export namespace Prisma {
     _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
-  export type CrmLeadNullableRelationFilter = {
-    is?: CrmLeadWhereInput | null
-    isNot?: CrmLeadWhereInput | null
+  export type PaymentListRelationFilter = {
+    every?: PaymentWhereInput
+    some?: PaymentWhereInput
+    none?: PaymentWhereInput
   }
 
   export type GroupNullableRelationFilter = {
@@ -29827,20 +31179,9 @@ export namespace Prisma {
     isNot?: GroupWhereInput | null
   }
 
-  export type AttendanceListRelationFilter = {
-    every?: AttendanceWhereInput
-    some?: AttendanceWhereInput
-    none?: AttendanceWhereInput
-  }
-
-  export type PaymentListRelationFilter = {
-    every?: PaymentWhereInput
-    some?: PaymentWhereInput
-    none?: PaymentWhereInput
-  }
-
-  export type AttendanceOrderByRelationAggregateInput = {
-    _count?: SortOrder
+  export type CrmLeadNullableRelationFilter = {
+    is?: CrmLeadWhereInput | null
+    isNot?: CrmLeadWhereInput | null
   }
 
   export type PaymentOrderByRelationAggregateInput = {
@@ -29850,7 +31191,6 @@ export namespace Prisma {
   export type StudentCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    leadId?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
     parentName?: SortOrder
@@ -29863,6 +31203,7 @@ export namespace Prisma {
     receiveReports?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    leadId?: SortOrder
   }
 
   export type StudentAvgOrderByAggregateInput = {
@@ -29872,7 +31213,6 @@ export namespace Prisma {
   export type StudentMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    leadId?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
     parentName?: SortOrder
@@ -29885,12 +31225,12 @@ export namespace Prisma {
     receiveReports?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    leadId?: SortOrder
   }
 
   export type StudentMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    leadId?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
     parentName?: SortOrder
@@ -29903,6 +31243,7 @@ export namespace Prisma {
     receiveReports?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    leadId?: SortOrder
   }
 
   export type StudentSumOrderByAggregateInput = {
@@ -30028,6 +31369,11 @@ export namespace Prisma {
     isNot?: LessonWhereInput
   }
 
+  export type UserNullableRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
   export type StudentRelationFilter = {
     is?: StudentWhereInput
     isNot?: StudentWhereInput
@@ -30042,6 +31388,7 @@ export namespace Prisma {
     id?: SortOrder
     lessonId?: SortOrder
     studentId?: SortOrder
+    markedById?: SortOrder
     isPresent?: SortOrder
     absenceType?: SortOrder
     note?: SortOrder
@@ -30054,6 +31401,7 @@ export namespace Prisma {
     id?: SortOrder
     lessonId?: SortOrder
     studentId?: SortOrder
+    markedById?: SortOrder
     isPresent?: SortOrder
     absenceType?: SortOrder
     note?: SortOrder
@@ -30066,6 +31414,7 @@ export namespace Prisma {
     id?: SortOrder
     lessonId?: SortOrder
     studentId?: SortOrder
+    markedById?: SortOrder
     isPresent?: SortOrder
     absenceType?: SortOrder
     note?: SortOrder
@@ -30479,11 +31828,6 @@ export namespace Prisma {
     not?: NestedEnumMessageTypeFilter<$PrismaModel> | $Enums.MessageType
   }
 
-  export type UserNullableRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
-  }
-
   export type MessageCountOrderByAggregateInput = {
     id?: SortOrder
     chatId?: SortOrder
@@ -30686,11 +32030,6 @@ export namespace Prisma {
     not?: NestedEnumCrmLeadStatusFilter<$PrismaModel> | $Enums.CrmLeadStatus
   }
 
-  export type CenterNullableRelationFilter = {
-    is?: CenterWhereInput | null
-    isNot?: CenterWhereInput | null
-  }
-
   export type CrmLeadActivityListRelationFilter = {
     every?: CrmLeadActivityWhereInput
     some?: CrmLeadActivityWhereInput
@@ -30701,6 +32040,11 @@ export namespace Prisma {
     every?: CrmLeadAttachmentWhereInput
     some?: CrmLeadAttachmentWhereInput
     none?: CrmLeadAttachmentWhereInput
+  }
+
+  export type CenterNullableRelationFilter = {
+    is?: CenterWhereInput | null
+    isNot?: CenterWhereInput | null
   }
 
   export type CrmLeadActivityOrderByRelationAggregateInput = {
@@ -30728,10 +32072,10 @@ export namespace Prisma {
     centerId?: SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrder
-    teacherApprovedAt?: SortOrder
     archivedReason?: SortOrder
     source?: SortOrder
     notes?: SortOrder
+    teacherApprovedAt?: SortOrder
   }
 
   export type CrmLeadAvgOrderByAggregateInput = {
@@ -30755,10 +32099,10 @@ export namespace Prisma {
     centerId?: SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrder
-    teacherApprovedAt?: SortOrder
     archivedReason?: SortOrder
     source?: SortOrder
     notes?: SortOrder
+    teacherApprovedAt?: SortOrder
   }
 
   export type CrmLeadMinOrderByAggregateInput = {
@@ -30778,10 +32122,10 @@ export namespace Prisma {
     centerId?: SortOrder
     transferFlag?: SortOrder
     transferComment?: SortOrder
-    teacherApprovedAt?: SortOrder
     archivedReason?: SortOrder
     source?: SortOrder
     notes?: SortOrder
+    teacherApprovedAt?: SortOrder
   }
 
   export type CrmLeadSumOrderByAggregateInput = {
@@ -30935,44 +32279,11 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
-  export type TeacherCreateNestedOneWithoutUserInput = {
-    create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
-    connect?: TeacherWhereUniqueInput
-  }
-
-  export type StudentCreateNestedOneWithoutUserInput = {
-    create?: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
-    connectOrCreate?: StudentCreateOrConnectWithoutUserInput
-    connect?: StudentWhereUniqueInput
-  }
-
-  export type MessageCreateNestedManyWithoutSenderInput = {
-    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
-    createMany?: MessageCreateManySenderInputEnvelope
-    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-  }
-
   export type ChatParticipantCreateNestedManyWithoutUserInput = {
     create?: XOR<ChatParticipantCreateWithoutUserInput, ChatParticipantUncheckedCreateWithoutUserInput> | ChatParticipantCreateWithoutUserInput[] | ChatParticipantUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ChatParticipantCreateOrConnectWithoutUserInput | ChatParticipantCreateOrConnectWithoutUserInput[]
     createMany?: ChatParticipantCreateManyUserInputEnvelope
     connect?: ChatParticipantWhereUniqueInput | ChatParticipantWhereUniqueInput[]
-  }
-
-  export type NotificationCreateNestedManyWithoutUserInput = {
-    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
-    createMany?: NotificationCreateManyUserInputEnvelope
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-  }
-
-  export type CrmLeadCreateNestedManyWithoutCreatedByUserInput = {
-    create?: XOR<CrmLeadCreateWithoutCreatedByUserInput, CrmLeadUncheckedCreateWithoutCreatedByUserInput> | CrmLeadCreateWithoutCreatedByUserInput[] | CrmLeadUncheckedCreateWithoutCreatedByUserInput[]
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutCreatedByUserInput | CrmLeadCreateOrConnectWithoutCreatedByUserInput[]
-    createMany?: CrmLeadCreateManyCreatedByUserInputEnvelope
-    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
   export type CrmLeadCreateNestedManyWithoutAssignedManagerInput = {
@@ -30982,23 +32293,50 @@ export namespace Prisma {
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
-  export type TeacherUncheckedCreateNestedOneWithoutUserInput = {
-    create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
-    connect?: TeacherWhereUniqueInput
+  export type CrmLeadCreateNestedManyWithoutCreatedByUserInput = {
+    create?: XOR<CrmLeadCreateWithoutCreatedByUserInput, CrmLeadUncheckedCreateWithoutCreatedByUserInput> | CrmLeadCreateWithoutCreatedByUserInput[] | CrmLeadUncheckedCreateWithoutCreatedByUserInput[]
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutCreatedByUserInput | CrmLeadCreateOrConnectWithoutCreatedByUserInput[]
+    createMany?: CrmLeadCreateManyCreatedByUserInputEnvelope
+    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
-  export type StudentUncheckedCreateNestedOneWithoutUserInput = {
+  export type ManagerProfileCreateNestedOneWithoutUserInput = {
+    create?: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutUserInput
+    connect?: ManagerProfileWhereUniqueInput
+  }
+
+  export type MessageCreateNestedManyWithoutSenderInput = {
+    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
+    createMany?: MessageCreateManySenderInputEnvelope
+    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+  }
+
+  export type NotificationCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type AttendanceCreateNestedManyWithoutMarkedByInput = {
+    create?: XOR<AttendanceCreateWithoutMarkedByInput, AttendanceUncheckedCreateWithoutMarkedByInput> | AttendanceCreateWithoutMarkedByInput[] | AttendanceUncheckedCreateWithoutMarkedByInput[]
+    connectOrCreate?: AttendanceCreateOrConnectWithoutMarkedByInput | AttendanceCreateOrConnectWithoutMarkedByInput[]
+    createMany?: AttendanceCreateManyMarkedByInputEnvelope
+    connect?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+  }
+
+  export type StudentCreateNestedOneWithoutUserInput = {
     create?: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
     connectOrCreate?: StudentCreateOrConnectWithoutUserInput
     connect?: StudentWhereUniqueInput
   }
 
-  export type MessageUncheckedCreateNestedManyWithoutSenderInput = {
-    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
-    createMany?: MessageCreateManySenderInputEnvelope
-    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+  export type TeacherCreateNestedOneWithoutUserInput = {
+    create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
+    connect?: TeacherWhereUniqueInput
   }
 
   export type ChatParticipantUncheckedCreateNestedManyWithoutUserInput = {
@@ -31008,11 +32346,11 @@ export namespace Prisma {
     connect?: ChatParticipantWhereUniqueInput | ChatParticipantWhereUniqueInput[]
   }
 
-  export type NotificationUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
-    createMany?: NotificationCreateManyUserInputEnvelope
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  export type CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput = {
+    create?: XOR<CrmLeadCreateWithoutAssignedManagerInput, CrmLeadUncheckedCreateWithoutAssignedManagerInput> | CrmLeadCreateWithoutAssignedManagerInput[] | CrmLeadUncheckedCreateWithoutAssignedManagerInput[]
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutAssignedManagerInput | CrmLeadCreateOrConnectWithoutAssignedManagerInput[]
+    createMany?: CrmLeadCreateManyAssignedManagerInputEnvelope
+    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
   export type CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput = {
@@ -31022,11 +32360,43 @@ export namespace Prisma {
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
-  export type CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput = {
-    create?: XOR<CrmLeadCreateWithoutAssignedManagerInput, CrmLeadUncheckedCreateWithoutAssignedManagerInput> | CrmLeadCreateWithoutAssignedManagerInput[] | CrmLeadUncheckedCreateWithoutAssignedManagerInput[]
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutAssignedManagerInput | CrmLeadCreateOrConnectWithoutAssignedManagerInput[]
-    createMany?: CrmLeadCreateManyAssignedManagerInputEnvelope
-    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+  export type ManagerProfileUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutUserInput
+    connect?: ManagerProfileWhereUniqueInput
+  }
+
+  export type MessageUncheckedCreateNestedManyWithoutSenderInput = {
+    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
+    createMany?: MessageCreateManySenderInputEnvelope
+    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+  }
+
+  export type NotificationUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type AttendanceUncheckedCreateNestedManyWithoutMarkedByInput = {
+    create?: XOR<AttendanceCreateWithoutMarkedByInput, AttendanceUncheckedCreateWithoutMarkedByInput> | AttendanceCreateWithoutMarkedByInput[] | AttendanceUncheckedCreateWithoutMarkedByInput[]
+    connectOrCreate?: AttendanceCreateOrConnectWithoutMarkedByInput | AttendanceCreateOrConnectWithoutMarkedByInput[]
+    createMany?: AttendanceCreateManyMarkedByInputEnvelope
+    connect?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+  }
+
+  export type StudentUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
+    connectOrCreate?: StudentCreateOrConnectWithoutUserInput
+    connect?: StudentWhereUniqueInput
+  }
+
+  export type TeacherUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
+    connect?: TeacherWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -31053,40 +32423,6 @@ export namespace Prisma {
     set?: Date | string
   }
 
-  export type TeacherUpdateOneWithoutUserNestedInput = {
-    create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
-    upsert?: TeacherUpsertWithoutUserInput
-    disconnect?: TeacherWhereInput | boolean
-    delete?: TeacherWhereInput | boolean
-    connect?: TeacherWhereUniqueInput
-    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutUserInput, TeacherUpdateWithoutUserInput>, TeacherUncheckedUpdateWithoutUserInput>
-  }
-
-  export type StudentUpdateOneWithoutUserNestedInput = {
-    create?: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
-    connectOrCreate?: StudentCreateOrConnectWithoutUserInput
-    upsert?: StudentUpsertWithoutUserInput
-    disconnect?: StudentWhereInput | boolean
-    delete?: StudentWhereInput | boolean
-    connect?: StudentWhereUniqueInput
-    update?: XOR<XOR<StudentUpdateToOneWithWhereWithoutUserInput, StudentUpdateWithoutUserInput>, StudentUncheckedUpdateWithoutUserInput>
-  }
-
-  export type MessageUpdateManyWithoutSenderNestedInput = {
-    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
-    upsert?: MessageUpsertWithWhereUniqueWithoutSenderInput | MessageUpsertWithWhereUniqueWithoutSenderInput[]
-    createMany?: MessageCreateManySenderInputEnvelope
-    set?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    disconnect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    delete?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    update?: MessageUpdateWithWhereUniqueWithoutSenderInput | MessageUpdateWithWhereUniqueWithoutSenderInput[]
-    updateMany?: MessageUpdateManyWithWhereWithoutSenderInput | MessageUpdateManyWithWhereWithoutSenderInput[]
-    deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
-  }
-
   export type ChatParticipantUpdateManyWithoutUserNestedInput = {
     create?: XOR<ChatParticipantCreateWithoutUserInput, ChatParticipantUncheckedCreateWithoutUserInput> | ChatParticipantCreateWithoutUserInput[] | ChatParticipantUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ChatParticipantCreateOrConnectWithoutUserInput | ChatParticipantCreateOrConnectWithoutUserInput[]
@@ -31099,34 +32435,6 @@ export namespace Prisma {
     update?: ChatParticipantUpdateWithWhereUniqueWithoutUserInput | ChatParticipantUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ChatParticipantUpdateManyWithWhereWithoutUserInput | ChatParticipantUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ChatParticipantScalarWhereInput | ChatParticipantScalarWhereInput[]
-  }
-
-  export type NotificationUpdateManyWithoutUserNestedInput = {
-    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
-    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: NotificationCreateManyUserInputEnvelope
-    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
-  }
-
-  export type CrmLeadUpdateManyWithoutCreatedByUserNestedInput = {
-    create?: XOR<CrmLeadCreateWithoutCreatedByUserInput, CrmLeadUncheckedCreateWithoutCreatedByUserInput> | CrmLeadCreateWithoutCreatedByUserInput[] | CrmLeadUncheckedCreateWithoutCreatedByUserInput[]
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutCreatedByUserInput | CrmLeadCreateOrConnectWithoutCreatedByUserInput[]
-    upsert?: CrmLeadUpsertWithWhereUniqueWithoutCreatedByUserInput | CrmLeadUpsertWithWhereUniqueWithoutCreatedByUserInput[]
-    createMany?: CrmLeadCreateManyCreatedByUserInputEnvelope
-    set?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    disconnect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    delete?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    update?: CrmLeadUpdateWithWhereUniqueWithoutCreatedByUserInput | CrmLeadUpdateWithWhereUniqueWithoutCreatedByUserInput[]
-    updateMany?: CrmLeadUpdateManyWithWhereWithoutCreatedByUserInput | CrmLeadUpdateManyWithWhereWithoutCreatedByUserInput[]
-    deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
   export type CrmLeadUpdateManyWithoutAssignedManagerNestedInput = {
@@ -31143,27 +32451,31 @@ export namespace Prisma {
     deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
-  export type TeacherUncheckedUpdateOneWithoutUserNestedInput = {
-    create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
-    upsert?: TeacherUpsertWithoutUserInput
-    disconnect?: TeacherWhereInput | boolean
-    delete?: TeacherWhereInput | boolean
-    connect?: TeacherWhereUniqueInput
-    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutUserInput, TeacherUpdateWithoutUserInput>, TeacherUncheckedUpdateWithoutUserInput>
+  export type CrmLeadUpdateManyWithoutCreatedByUserNestedInput = {
+    create?: XOR<CrmLeadCreateWithoutCreatedByUserInput, CrmLeadUncheckedCreateWithoutCreatedByUserInput> | CrmLeadCreateWithoutCreatedByUserInput[] | CrmLeadUncheckedCreateWithoutCreatedByUserInput[]
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutCreatedByUserInput | CrmLeadCreateOrConnectWithoutCreatedByUserInput[]
+    upsert?: CrmLeadUpsertWithWhereUniqueWithoutCreatedByUserInput | CrmLeadUpsertWithWhereUniqueWithoutCreatedByUserInput[]
+    createMany?: CrmLeadCreateManyCreatedByUserInputEnvelope
+    set?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    disconnect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    delete?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    update?: CrmLeadUpdateWithWhereUniqueWithoutCreatedByUserInput | CrmLeadUpdateWithWhereUniqueWithoutCreatedByUserInput[]
+    updateMany?: CrmLeadUpdateManyWithWhereWithoutCreatedByUserInput | CrmLeadUpdateManyWithWhereWithoutCreatedByUserInput[]
+    deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
-  export type StudentUncheckedUpdateOneWithoutUserNestedInput = {
-    create?: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
-    connectOrCreate?: StudentCreateOrConnectWithoutUserInput
-    upsert?: StudentUpsertWithoutUserInput
-    disconnect?: StudentWhereInput | boolean
-    delete?: StudentWhereInput | boolean
-    connect?: StudentWhereUniqueInput
-    update?: XOR<XOR<StudentUpdateToOneWithWhereWithoutUserInput, StudentUpdateWithoutUserInput>, StudentUncheckedUpdateWithoutUserInput>
+  export type ManagerProfileUpdateOneWithoutUserNestedInput = {
+    create?: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutUserInput
+    upsert?: ManagerProfileUpsertWithoutUserInput
+    disconnect?: ManagerProfileWhereInput | boolean
+    delete?: ManagerProfileWhereInput | boolean
+    connect?: ManagerProfileWhereUniqueInput
+    update?: XOR<XOR<ManagerProfileUpdateToOneWithWhereWithoutUserInput, ManagerProfileUpdateWithoutUserInput>, ManagerProfileUncheckedUpdateWithoutUserInput>
   }
 
-  export type MessageUncheckedUpdateManyWithoutSenderNestedInput = {
+  export type MessageUpdateManyWithoutSenderNestedInput = {
     create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
     upsert?: MessageUpsertWithWhereUniqueWithoutSenderInput | MessageUpsertWithWhereUniqueWithoutSenderInput[]
@@ -31175,6 +32487,54 @@ export namespace Prisma {
     update?: MessageUpdateWithWhereUniqueWithoutSenderInput | MessageUpdateWithWhereUniqueWithoutSenderInput[]
     updateMany?: MessageUpdateManyWithWhereWithoutSenderInput | MessageUpdateManyWithWhereWithoutSenderInput[]
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
+  }
+
+  export type NotificationUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
+  export type AttendanceUpdateManyWithoutMarkedByNestedInput = {
+    create?: XOR<AttendanceCreateWithoutMarkedByInput, AttendanceUncheckedCreateWithoutMarkedByInput> | AttendanceCreateWithoutMarkedByInput[] | AttendanceUncheckedCreateWithoutMarkedByInput[]
+    connectOrCreate?: AttendanceCreateOrConnectWithoutMarkedByInput | AttendanceCreateOrConnectWithoutMarkedByInput[]
+    upsert?: AttendanceUpsertWithWhereUniqueWithoutMarkedByInput | AttendanceUpsertWithWhereUniqueWithoutMarkedByInput[]
+    createMany?: AttendanceCreateManyMarkedByInputEnvelope
+    set?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+    disconnect?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+    delete?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+    connect?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+    update?: AttendanceUpdateWithWhereUniqueWithoutMarkedByInput | AttendanceUpdateWithWhereUniqueWithoutMarkedByInput[]
+    updateMany?: AttendanceUpdateManyWithWhereWithoutMarkedByInput | AttendanceUpdateManyWithWhereWithoutMarkedByInput[]
+    deleteMany?: AttendanceScalarWhereInput | AttendanceScalarWhereInput[]
+  }
+
+  export type StudentUpdateOneWithoutUserNestedInput = {
+    create?: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
+    connectOrCreate?: StudentCreateOrConnectWithoutUserInput
+    upsert?: StudentUpsertWithoutUserInput
+    disconnect?: StudentWhereInput | boolean
+    delete?: StudentWhereInput | boolean
+    connect?: StudentWhereUniqueInput
+    update?: XOR<XOR<StudentUpdateToOneWithWhereWithoutUserInput, StudentUpdateWithoutUserInput>, StudentUncheckedUpdateWithoutUserInput>
+  }
+
+  export type TeacherUpdateOneWithoutUserNestedInput = {
+    create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
+    upsert?: TeacherUpsertWithoutUserInput
+    disconnect?: TeacherWhereInput | boolean
+    delete?: TeacherWhereInput | boolean
+    connect?: TeacherWhereUniqueInput
+    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutUserInput, TeacherUpdateWithoutUserInput>, TeacherUncheckedUpdateWithoutUserInput>
   }
 
   export type ChatParticipantUncheckedUpdateManyWithoutUserNestedInput = {
@@ -31191,18 +32551,18 @@ export namespace Prisma {
     deleteMany?: ChatParticipantScalarWhereInput | ChatParticipantScalarWhereInput[]
   }
 
-  export type NotificationUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
-    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: NotificationCreateManyUserInputEnvelope
-    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  export type CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput = {
+    create?: XOR<CrmLeadCreateWithoutAssignedManagerInput, CrmLeadUncheckedCreateWithoutAssignedManagerInput> | CrmLeadCreateWithoutAssignedManagerInput[] | CrmLeadUncheckedCreateWithoutAssignedManagerInput[]
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutAssignedManagerInput | CrmLeadCreateOrConnectWithoutAssignedManagerInput[]
+    upsert?: CrmLeadUpsertWithWhereUniqueWithoutAssignedManagerInput | CrmLeadUpsertWithWhereUniqueWithoutAssignedManagerInput[]
+    createMany?: CrmLeadCreateManyAssignedManagerInputEnvelope
+    set?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    disconnect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    delete?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    update?: CrmLeadUpdateWithWhereUniqueWithoutAssignedManagerInput | CrmLeadUpdateWithWhereUniqueWithoutAssignedManagerInput[]
+    updateMany?: CrmLeadUpdateManyWithWhereWithoutAssignedManagerInput | CrmLeadUpdateManyWithWhereWithoutAssignedManagerInput[]
+    deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
   export type CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput = {
@@ -31219,18 +32579,83 @@ export namespace Prisma {
     deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
-  export type CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput = {
-    create?: XOR<CrmLeadCreateWithoutAssignedManagerInput, CrmLeadUncheckedCreateWithoutAssignedManagerInput> | CrmLeadCreateWithoutAssignedManagerInput[] | CrmLeadUncheckedCreateWithoutAssignedManagerInput[]
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutAssignedManagerInput | CrmLeadCreateOrConnectWithoutAssignedManagerInput[]
-    upsert?: CrmLeadUpsertWithWhereUniqueWithoutAssignedManagerInput | CrmLeadUpsertWithWhereUniqueWithoutAssignedManagerInput[]
-    createMany?: CrmLeadCreateManyAssignedManagerInputEnvelope
-    set?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    disconnect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    delete?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+  export type ManagerProfileUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutUserInput
+    upsert?: ManagerProfileUpsertWithoutUserInput
+    disconnect?: ManagerProfileWhereInput | boolean
+    delete?: ManagerProfileWhereInput | boolean
+    connect?: ManagerProfileWhereUniqueInput
+    update?: XOR<XOR<ManagerProfileUpdateToOneWithWhereWithoutUserInput, ManagerProfileUpdateWithoutUserInput>, ManagerProfileUncheckedUpdateWithoutUserInput>
+  }
+
+  export type MessageUncheckedUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
+    upsert?: MessageUpsertWithWhereUniqueWithoutSenderInput | MessageUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: MessageCreateManySenderInputEnvelope
+    set?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    disconnect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    delete?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    update?: MessageUpdateWithWhereUniqueWithoutSenderInput | MessageUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: MessageUpdateManyWithWhereWithoutSenderInput | MessageUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
+  export type AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput = {
+    create?: XOR<AttendanceCreateWithoutMarkedByInput, AttendanceUncheckedCreateWithoutMarkedByInput> | AttendanceCreateWithoutMarkedByInput[] | AttendanceUncheckedCreateWithoutMarkedByInput[]
+    connectOrCreate?: AttendanceCreateOrConnectWithoutMarkedByInput | AttendanceCreateOrConnectWithoutMarkedByInput[]
+    upsert?: AttendanceUpsertWithWhereUniqueWithoutMarkedByInput | AttendanceUpsertWithWhereUniqueWithoutMarkedByInput[]
+    createMany?: AttendanceCreateManyMarkedByInputEnvelope
+    set?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+    disconnect?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+    delete?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+    connect?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+    update?: AttendanceUpdateWithWhereUniqueWithoutMarkedByInput | AttendanceUpdateWithWhereUniqueWithoutMarkedByInput[]
+    updateMany?: AttendanceUpdateManyWithWhereWithoutMarkedByInput | AttendanceUpdateManyWithWhereWithoutMarkedByInput[]
+    deleteMany?: AttendanceScalarWhereInput | AttendanceScalarWhereInput[]
+  }
+
+  export type StudentUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
+    connectOrCreate?: StudentCreateOrConnectWithoutUserInput
+    upsert?: StudentUpsertWithoutUserInput
+    disconnect?: StudentWhereInput | boolean
+    delete?: StudentWhereInput | boolean
+    connect?: StudentWhereUniqueInput
+    update?: XOR<XOR<StudentUpdateToOneWithWhereWithoutUserInput, StudentUpdateWithoutUserInput>, StudentUncheckedUpdateWithoutUserInput>
+  }
+
+  export type TeacherUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
+    upsert?: TeacherUpsertWithoutUserInput
+    disconnect?: TeacherWhereInput | boolean
+    delete?: TeacherWhereInput | boolean
+    connect?: TeacherWhereUniqueInput
+    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutUserInput, TeacherUpdateWithoutUserInput>, TeacherUncheckedUpdateWithoutUserInput>
+  }
+
+  export type CrmLeadCreateNestedManyWithoutCenterInput = {
+    create?: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput> | CrmLeadCreateWithoutCenterInput[] | CrmLeadUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutCenterInput | CrmLeadCreateOrConnectWithoutCenterInput[]
+    createMany?: CrmLeadCreateManyCenterInputEnvelope
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    update?: CrmLeadUpdateWithWhereUniqueWithoutAssignedManagerInput | CrmLeadUpdateWithWhereUniqueWithoutAssignedManagerInput[]
-    updateMany?: CrmLeadUpdateManyWithWhereWithoutAssignedManagerInput | CrmLeadUpdateManyWithWhereWithoutAssignedManagerInput[]
-    deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
   export type GroupCreateNestedManyWithoutCenterInput = {
@@ -31240,7 +32665,14 @@ export namespace Prisma {
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
-  export type CrmLeadCreateNestedManyWithoutCenterInput = {
+  export type ManagerProfileCreateNestedManyWithoutCenterInput = {
+    create?: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput> | ManagerProfileCreateWithoutCenterInput[] | ManagerProfileUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutCenterInput | ManagerProfileCreateOrConnectWithoutCenterInput[]
+    createMany?: ManagerProfileCreateManyCenterInputEnvelope
+    connect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+  }
+
+  export type CrmLeadUncheckedCreateNestedManyWithoutCenterInput = {
     create?: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput> | CrmLeadCreateWithoutCenterInput[] | CrmLeadUncheckedCreateWithoutCenterInput[]
     connectOrCreate?: CrmLeadCreateOrConnectWithoutCenterInput | CrmLeadCreateOrConnectWithoutCenterInput[]
     createMany?: CrmLeadCreateManyCenterInputEnvelope
@@ -31254,15 +32686,29 @@ export namespace Prisma {
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
-  export type CrmLeadUncheckedCreateNestedManyWithoutCenterInput = {
-    create?: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput> | CrmLeadCreateWithoutCenterInput[] | CrmLeadUncheckedCreateWithoutCenterInput[]
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutCenterInput | CrmLeadCreateOrConnectWithoutCenterInput[]
-    createMany?: CrmLeadCreateManyCenterInputEnvelope
-    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+  export type ManagerProfileUncheckedCreateNestedManyWithoutCenterInput = {
+    create?: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput> | ManagerProfileCreateWithoutCenterInput[] | ManagerProfileUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutCenterInput | ManagerProfileCreateOrConnectWithoutCenterInput[]
+    createMany?: ManagerProfileCreateManyCenterInputEnvelope
+    connect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
+  }
+
+  export type CrmLeadUpdateManyWithoutCenterNestedInput = {
+    create?: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput> | CrmLeadCreateWithoutCenterInput[] | CrmLeadUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutCenterInput | CrmLeadCreateOrConnectWithoutCenterInput[]
+    upsert?: CrmLeadUpsertWithWhereUniqueWithoutCenterInput | CrmLeadUpsertWithWhereUniqueWithoutCenterInput[]
+    createMany?: CrmLeadCreateManyCenterInputEnvelope
+    set?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    disconnect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    delete?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    update?: CrmLeadUpdateWithWhereUniqueWithoutCenterInput | CrmLeadUpdateWithWhereUniqueWithoutCenterInput[]
+    updateMany?: CrmLeadUpdateManyWithWhereWithoutCenterInput | CrmLeadUpdateManyWithWhereWithoutCenterInput[]
+    deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
   export type GroupUpdateManyWithoutCenterNestedInput = {
@@ -31279,7 +32725,21 @@ export namespace Prisma {
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
-  export type CrmLeadUpdateManyWithoutCenterNestedInput = {
+  export type ManagerProfileUpdateManyWithoutCenterNestedInput = {
+    create?: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput> | ManagerProfileCreateWithoutCenterInput[] | ManagerProfileUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutCenterInput | ManagerProfileCreateOrConnectWithoutCenterInput[]
+    upsert?: ManagerProfileUpsertWithWhereUniqueWithoutCenterInput | ManagerProfileUpsertWithWhereUniqueWithoutCenterInput[]
+    createMany?: ManagerProfileCreateManyCenterInputEnvelope
+    set?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    disconnect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    delete?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    connect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    update?: ManagerProfileUpdateWithWhereUniqueWithoutCenterInput | ManagerProfileUpdateWithWhereUniqueWithoutCenterInput[]
+    updateMany?: ManagerProfileUpdateManyWithWhereWithoutCenterInput | ManagerProfileUpdateManyWithWhereWithoutCenterInput[]
+    deleteMany?: ManagerProfileScalarWhereInput | ManagerProfileScalarWhereInput[]
+  }
+
+  export type CrmLeadUncheckedUpdateManyWithoutCenterNestedInput = {
     create?: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput> | CrmLeadCreateWithoutCenterInput[] | CrmLeadUncheckedCreateWithoutCenterInput[]
     connectOrCreate?: CrmLeadCreateOrConnectWithoutCenterInput | CrmLeadCreateOrConnectWithoutCenterInput[]
     upsert?: CrmLeadUpsertWithWhereUniqueWithoutCenterInput | CrmLeadUpsertWithWhereUniqueWithoutCenterInput[]
@@ -31307,44 +32767,46 @@ export namespace Prisma {
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
-  export type CrmLeadUncheckedUpdateManyWithoutCenterNestedInput = {
-    create?: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput> | CrmLeadCreateWithoutCenterInput[] | CrmLeadUncheckedCreateWithoutCenterInput[]
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutCenterInput | CrmLeadCreateOrConnectWithoutCenterInput[]
-    upsert?: CrmLeadUpsertWithWhereUniqueWithoutCenterInput | CrmLeadUpsertWithWhereUniqueWithoutCenterInput[]
-    createMany?: CrmLeadCreateManyCenterInputEnvelope
-    set?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    disconnect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    delete?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    update?: CrmLeadUpdateWithWhereUniqueWithoutCenterInput | CrmLeadUpdateWithWhereUniqueWithoutCenterInput[]
-    updateMany?: CrmLeadUpdateManyWithWhereWithoutCenterInput | CrmLeadUpdateManyWithWhereWithoutCenterInput[]
-    deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
+  export type ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput = {
+    create?: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput> | ManagerProfileCreateWithoutCenterInput[] | ManagerProfileUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutCenterInput | ManagerProfileCreateOrConnectWithoutCenterInput[]
+    upsert?: ManagerProfileUpsertWithWhereUniqueWithoutCenterInput | ManagerProfileUpsertWithWhereUniqueWithoutCenterInput[]
+    createMany?: ManagerProfileCreateManyCenterInputEnvelope
+    set?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    disconnect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    delete?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    connect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    update?: ManagerProfileUpdateWithWhereUniqueWithoutCenterInput | ManagerProfileUpdateWithWhereUniqueWithoutCenterInput[]
+    updateMany?: ManagerProfileUpdateManyWithWhereWithoutCenterInput | ManagerProfileUpdateManyWithWhereWithoutCenterInput[]
+    deleteMany?: ManagerProfileScalarWhereInput | ManagerProfileScalarWhereInput[]
   }
 
-  export type CenterCreateNestedOneWithoutGroupsInput = {
-    create?: XOR<CenterCreateWithoutGroupsInput, CenterUncheckedCreateWithoutGroupsInput>
-    connectOrCreate?: CenterCreateOrConnectWithoutGroupsInput
+  export type CenterCreateNestedOneWithoutManagerProfilesInput = {
+    create?: XOR<CenterCreateWithoutManagerProfilesInput, CenterUncheckedCreateWithoutManagerProfilesInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutManagerProfilesInput
     connect?: CenterWhereUniqueInput
   }
 
-  export type TeacherCreateNestedOneWithoutGroupsInput = {
-    create?: XOR<TeacherCreateWithoutGroupsInput, TeacherUncheckedCreateWithoutGroupsInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutGroupsInput
-    connect?: TeacherWhereUniqueInput
+  export type UserCreateNestedOneWithoutManagerProfileInput = {
+    create?: XOR<UserCreateWithoutManagerProfileInput, UserUncheckedCreateWithoutManagerProfileInput>
+    connectOrCreate?: UserCreateOrConnectWithoutManagerProfileInput
+    connect?: UserWhereUniqueInput
   }
 
-  export type StudentCreateNestedManyWithoutGroupInput = {
-    create?: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput> | StudentCreateWithoutGroupInput[] | StudentUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: StudentCreateOrConnectWithoutGroupInput | StudentCreateOrConnectWithoutGroupInput[]
-    createMany?: StudentCreateManyGroupInputEnvelope
-    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+  export type CenterUpdateOneRequiredWithoutManagerProfilesNestedInput = {
+    create?: XOR<CenterCreateWithoutManagerProfilesInput, CenterUncheckedCreateWithoutManagerProfilesInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutManagerProfilesInput
+    upsert?: CenterUpsertWithoutManagerProfilesInput
+    connect?: CenterWhereUniqueInput
+    update?: XOR<XOR<CenterUpdateToOneWithWhereWithoutManagerProfilesInput, CenterUpdateWithoutManagerProfilesInput>, CenterUncheckedUpdateWithoutManagerProfilesInput>
   }
 
-  export type LessonCreateNestedManyWithoutGroupInput = {
-    create?: XOR<LessonCreateWithoutGroupInput, LessonUncheckedCreateWithoutGroupInput> | LessonCreateWithoutGroupInput[] | LessonUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: LessonCreateOrConnectWithoutGroupInput | LessonCreateOrConnectWithoutGroupInput[]
-    createMany?: LessonCreateManyGroupInputEnvelope
-    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+  export type UserUpdateOneRequiredWithoutManagerProfileNestedInput = {
+    create?: XOR<UserCreateWithoutManagerProfileInput, UserUncheckedCreateWithoutManagerProfileInput>
+    connectOrCreate?: UserCreateOrConnectWithoutManagerProfileInput
+    upsert?: UserUpsertWithoutManagerProfileInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutManagerProfileInput, UserUpdateWithoutManagerProfileInput>, UserUncheckedUpdateWithoutManagerProfileInput>
   }
 
   export type ChatCreateNestedOneWithoutGroupInput = {
@@ -31360,18 +32822,30 @@ export namespace Prisma {
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
-  export type StudentUncheckedCreateNestedManyWithoutGroupInput = {
-    create?: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput> | StudentCreateWithoutGroupInput[] | StudentUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: StudentCreateOrConnectWithoutGroupInput | StudentCreateOrConnectWithoutGroupInput[]
-    createMany?: StudentCreateManyGroupInputEnvelope
-    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+  export type CenterCreateNestedOneWithoutGroupsInput = {
+    create?: XOR<CenterCreateWithoutGroupsInput, CenterUncheckedCreateWithoutGroupsInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutGroupsInput
+    connect?: CenterWhereUniqueInput
   }
 
-  export type LessonUncheckedCreateNestedManyWithoutGroupInput = {
+  export type TeacherCreateNestedOneWithoutGroupsInput = {
+    create?: XOR<TeacherCreateWithoutGroupsInput, TeacherUncheckedCreateWithoutGroupsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutGroupsInput
+    connect?: TeacherWhereUniqueInput
+  }
+
+  export type LessonCreateNestedManyWithoutGroupInput = {
     create?: XOR<LessonCreateWithoutGroupInput, LessonUncheckedCreateWithoutGroupInput> | LessonCreateWithoutGroupInput[] | LessonUncheckedCreateWithoutGroupInput[]
     connectOrCreate?: LessonCreateOrConnectWithoutGroupInput | LessonCreateOrConnectWithoutGroupInput[]
     createMany?: LessonCreateManyGroupInputEnvelope
     connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+  }
+
+  export type StudentCreateNestedManyWithoutGroupInput = {
+    create?: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput> | StudentCreateWithoutGroupInput[] | StudentUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutGroupInput | StudentCreateOrConnectWithoutGroupInput[]
+    createMany?: StudentCreateManyGroupInputEnvelope
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
   }
 
   export type ChatUncheckedCreateNestedOneWithoutGroupInput = {
@@ -31387,58 +32861,26 @@ export namespace Prisma {
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
+  export type LessonUncheckedCreateNestedManyWithoutGroupInput = {
+    create?: XOR<LessonCreateWithoutGroupInput, LessonUncheckedCreateWithoutGroupInput> | LessonCreateWithoutGroupInput[] | LessonUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutGroupInput | LessonCreateOrConnectWithoutGroupInput[]
+    createMany?: LessonCreateManyGroupInputEnvelope
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+  }
+
+  export type StudentUncheckedCreateNestedManyWithoutGroupInput = {
+    create?: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput> | StudentCreateWithoutGroupInput[] | StudentUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutGroupInput | StudentCreateOrConnectWithoutGroupInput[]
+    createMany?: StudentCreateManyGroupInputEnvelope
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
     decrement?: number
     multiply?: number
     divide?: number
-  }
-
-  export type CenterUpdateOneRequiredWithoutGroupsNestedInput = {
-    create?: XOR<CenterCreateWithoutGroupsInput, CenterUncheckedCreateWithoutGroupsInput>
-    connectOrCreate?: CenterCreateOrConnectWithoutGroupsInput
-    upsert?: CenterUpsertWithoutGroupsInput
-    connect?: CenterWhereUniqueInput
-    update?: XOR<XOR<CenterUpdateToOneWithWhereWithoutGroupsInput, CenterUpdateWithoutGroupsInput>, CenterUncheckedUpdateWithoutGroupsInput>
-  }
-
-  export type TeacherUpdateOneWithoutGroupsNestedInput = {
-    create?: XOR<TeacherCreateWithoutGroupsInput, TeacherUncheckedCreateWithoutGroupsInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutGroupsInput
-    upsert?: TeacherUpsertWithoutGroupsInput
-    disconnect?: TeacherWhereInput | boolean
-    delete?: TeacherWhereInput | boolean
-    connect?: TeacherWhereUniqueInput
-    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutGroupsInput, TeacherUpdateWithoutGroupsInput>, TeacherUncheckedUpdateWithoutGroupsInput>
-  }
-
-  export type StudentUpdateManyWithoutGroupNestedInput = {
-    create?: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput> | StudentCreateWithoutGroupInput[] | StudentUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: StudentCreateOrConnectWithoutGroupInput | StudentCreateOrConnectWithoutGroupInput[]
-    upsert?: StudentUpsertWithWhereUniqueWithoutGroupInput | StudentUpsertWithWhereUniqueWithoutGroupInput[]
-    createMany?: StudentCreateManyGroupInputEnvelope
-    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    update?: StudentUpdateWithWhereUniqueWithoutGroupInput | StudentUpdateWithWhereUniqueWithoutGroupInput[]
-    updateMany?: StudentUpdateManyWithWhereWithoutGroupInput | StudentUpdateManyWithWhereWithoutGroupInput[]
-    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
-  }
-
-  export type LessonUpdateManyWithoutGroupNestedInput = {
-    create?: XOR<LessonCreateWithoutGroupInput, LessonUncheckedCreateWithoutGroupInput> | LessonCreateWithoutGroupInput[] | LessonUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: LessonCreateOrConnectWithoutGroupInput | LessonCreateOrConnectWithoutGroupInput[]
-    upsert?: LessonUpsertWithWhereUniqueWithoutGroupInput | LessonUpsertWithWhereUniqueWithoutGroupInput[]
-    createMany?: LessonCreateManyGroupInputEnvelope
-    set?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    disconnect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    delete?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    update?: LessonUpdateWithWhereUniqueWithoutGroupInput | LessonUpdateWithWhereUniqueWithoutGroupInput[]
-    updateMany?: LessonUpdateManyWithWhereWithoutGroupInput | LessonUpdateManyWithWhereWithoutGroupInput[]
-    deleteMany?: LessonScalarWhereInput | LessonScalarWhereInput[]
   }
 
   export type ChatUpdateOneWithoutGroupNestedInput = {
@@ -31465,21 +32907,25 @@ export namespace Prisma {
     deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
-  export type StudentUncheckedUpdateManyWithoutGroupNestedInput = {
-    create?: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput> | StudentCreateWithoutGroupInput[] | StudentUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: StudentCreateOrConnectWithoutGroupInput | StudentCreateOrConnectWithoutGroupInput[]
-    upsert?: StudentUpsertWithWhereUniqueWithoutGroupInput | StudentUpsertWithWhereUniqueWithoutGroupInput[]
-    createMany?: StudentCreateManyGroupInputEnvelope
-    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    update?: StudentUpdateWithWhereUniqueWithoutGroupInput | StudentUpdateWithWhereUniqueWithoutGroupInput[]
-    updateMany?: StudentUpdateManyWithWhereWithoutGroupInput | StudentUpdateManyWithWhereWithoutGroupInput[]
-    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
+  export type CenterUpdateOneRequiredWithoutGroupsNestedInput = {
+    create?: XOR<CenterCreateWithoutGroupsInput, CenterUncheckedCreateWithoutGroupsInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutGroupsInput
+    upsert?: CenterUpsertWithoutGroupsInput
+    connect?: CenterWhereUniqueInput
+    update?: XOR<XOR<CenterUpdateToOneWithWhereWithoutGroupsInput, CenterUpdateWithoutGroupsInput>, CenterUncheckedUpdateWithoutGroupsInput>
   }
 
-  export type LessonUncheckedUpdateManyWithoutGroupNestedInput = {
+  export type TeacherUpdateOneWithoutGroupsNestedInput = {
+    create?: XOR<TeacherCreateWithoutGroupsInput, TeacherUncheckedCreateWithoutGroupsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutGroupsInput
+    upsert?: TeacherUpsertWithoutGroupsInput
+    disconnect?: TeacherWhereInput | boolean
+    delete?: TeacherWhereInput | boolean
+    connect?: TeacherWhereUniqueInput
+    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutGroupsInput, TeacherUpdateWithoutGroupsInput>, TeacherUncheckedUpdateWithoutGroupsInput>
+  }
+
+  export type LessonUpdateManyWithoutGroupNestedInput = {
     create?: XOR<LessonCreateWithoutGroupInput, LessonUncheckedCreateWithoutGroupInput> | LessonCreateWithoutGroupInput[] | LessonUncheckedCreateWithoutGroupInput[]
     connectOrCreate?: LessonCreateOrConnectWithoutGroupInput | LessonCreateOrConnectWithoutGroupInput[]
     upsert?: LessonUpsertWithWhereUniqueWithoutGroupInput | LessonUpsertWithWhereUniqueWithoutGroupInput[]
@@ -31491,6 +32937,20 @@ export namespace Prisma {
     update?: LessonUpdateWithWhereUniqueWithoutGroupInput | LessonUpdateWithWhereUniqueWithoutGroupInput[]
     updateMany?: LessonUpdateManyWithWhereWithoutGroupInput | LessonUpdateManyWithWhereWithoutGroupInput[]
     deleteMany?: LessonScalarWhereInput | LessonScalarWhereInput[]
+  }
+
+  export type StudentUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput> | StudentCreateWithoutGroupInput[] | StudentUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutGroupInput | StudentCreateOrConnectWithoutGroupInput[]
+    upsert?: StudentUpsertWithWhereUniqueWithoutGroupInput | StudentUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: StudentCreateManyGroupInputEnvelope
+    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    update?: StudentUpdateWithWhereUniqueWithoutGroupInput | StudentUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: StudentUpdateManyWithWhereWithoutGroupInput | StudentUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
   }
 
   export type ChatUncheckedUpdateOneWithoutGroupNestedInput = {
@@ -31517,56 +32977,36 @@ export namespace Prisma {
     deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
+  export type LessonUncheckedUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<LessonCreateWithoutGroupInput, LessonUncheckedCreateWithoutGroupInput> | LessonCreateWithoutGroupInput[] | LessonUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutGroupInput | LessonCreateOrConnectWithoutGroupInput[]
+    upsert?: LessonUpsertWithWhereUniqueWithoutGroupInput | LessonUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: LessonCreateManyGroupInputEnvelope
+    set?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    disconnect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    delete?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    update?: LessonUpdateWithWhereUniqueWithoutGroupInput | LessonUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: LessonUpdateManyWithWhereWithoutGroupInput | LessonUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: LessonScalarWhereInput | LessonScalarWhereInput[]
+  }
+
+  export type StudentUncheckedUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput> | StudentCreateWithoutGroupInput[] | StudentUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutGroupInput | StudentCreateOrConnectWithoutGroupInput[]
+    upsert?: StudentUpsertWithWhereUniqueWithoutGroupInput | StudentUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: StudentCreateManyGroupInputEnvelope
+    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    update?: StudentUpdateWithWhereUniqueWithoutGroupInput | StudentUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: StudentUpdateManyWithWhereWithoutGroupInput | StudentUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
+  }
+
   export type TeacherCreateworkingDaysInput = {
     set: string[]
-  }
-
-  export type UserCreateNestedOneWithoutTeacherInput = {
-    create?: XOR<UserCreateWithoutTeacherInput, UserUncheckedCreateWithoutTeacherInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTeacherInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type GroupCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput> | GroupCreateWithoutTeacherInput[] | GroupUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutTeacherInput | GroupCreateOrConnectWithoutTeacherInput[]
-    createMany?: GroupCreateManyTeacherInputEnvelope
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-  }
-
-  export type StudentCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput> | StudentCreateWithoutTeacherInput[] | StudentUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: StudentCreateOrConnectWithoutTeacherInput | StudentCreateOrConnectWithoutTeacherInput[]
-    createMany?: StudentCreateManyTeacherInputEnvelope
-    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-  }
-
-  export type LessonCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput> | LessonCreateWithoutTeacherInput[] | LessonUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: LessonCreateOrConnectWithoutTeacherInput | LessonCreateOrConnectWithoutTeacherInput[]
-    createMany?: LessonCreateManyTeacherInputEnvelope
-    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-  }
-
-  export type FeedbackCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<FeedbackCreateWithoutTeacherInput, FeedbackUncheckedCreateWithoutTeacherInput> | FeedbackCreateWithoutTeacherInput[] | FeedbackUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: FeedbackCreateOrConnectWithoutTeacherInput | FeedbackCreateOrConnectWithoutTeacherInput[]
-    createMany?: FeedbackCreateManyTeacherInputEnvelope
-    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
-  }
-
-  export type SalaryRecordCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<SalaryRecordCreateWithoutTeacherInput, SalaryRecordUncheckedCreateWithoutTeacherInput> | SalaryRecordCreateWithoutTeacherInput[] | SalaryRecordUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: SalaryRecordCreateOrConnectWithoutTeacherInput | SalaryRecordCreateOrConnectWithoutTeacherInput[]
-    createMany?: SalaryRecordCreateManyTeacherInputEnvelope
-    connect?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
-  }
-
-  export type DeductionCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<DeductionCreateWithoutTeacherInput, DeductionUncheckedCreateWithoutTeacherInput> | DeductionCreateWithoutTeacherInput[] | DeductionUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: DeductionCreateOrConnectWithoutTeacherInput | DeductionCreateOrConnectWithoutTeacherInput[]
-    createMany?: DeductionCreateManyTeacherInputEnvelope
-    connect?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
   }
 
   export type CrmLeadCreateNestedManyWithoutTeacherInput = {
@@ -31576,39 +33016,59 @@ export namespace Prisma {
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
-  export type GroupUncheckedCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput> | GroupCreateWithoutTeacherInput[] | GroupUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutTeacherInput | GroupCreateOrConnectWithoutTeacherInput[]
-    createMany?: GroupCreateManyTeacherInputEnvelope
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  export type DeductionCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<DeductionCreateWithoutTeacherInput, DeductionUncheckedCreateWithoutTeacherInput> | DeductionCreateWithoutTeacherInput[] | DeductionUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: DeductionCreateOrConnectWithoutTeacherInput | DeductionCreateOrConnectWithoutTeacherInput[]
+    createMany?: DeductionCreateManyTeacherInputEnvelope
+    connect?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
   }
 
-  export type StudentUncheckedCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput> | StudentCreateWithoutTeacherInput[] | StudentUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: StudentCreateOrConnectWithoutTeacherInput | StudentCreateOrConnectWithoutTeacherInput[]
-    createMany?: StudentCreateManyTeacherInputEnvelope
-    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-  }
-
-  export type LessonUncheckedCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput> | LessonCreateWithoutTeacherInput[] | LessonUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: LessonCreateOrConnectWithoutTeacherInput | LessonCreateOrConnectWithoutTeacherInput[]
-    createMany?: LessonCreateManyTeacherInputEnvelope
-    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-  }
-
-  export type FeedbackUncheckedCreateNestedManyWithoutTeacherInput = {
+  export type FeedbackCreateNestedManyWithoutTeacherInput = {
     create?: XOR<FeedbackCreateWithoutTeacherInput, FeedbackUncheckedCreateWithoutTeacherInput> | FeedbackCreateWithoutTeacherInput[] | FeedbackUncheckedCreateWithoutTeacherInput[]
     connectOrCreate?: FeedbackCreateOrConnectWithoutTeacherInput | FeedbackCreateOrConnectWithoutTeacherInput[]
     createMany?: FeedbackCreateManyTeacherInputEnvelope
     connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
   }
 
-  export type SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput = {
+  export type GroupCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput> | GroupCreateWithoutTeacherInput[] | GroupUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutTeacherInput | GroupCreateOrConnectWithoutTeacherInput[]
+    createMany?: GroupCreateManyTeacherInputEnvelope
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  }
+
+  export type LessonCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput> | LessonCreateWithoutTeacherInput[] | LessonUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutTeacherInput | LessonCreateOrConnectWithoutTeacherInput[]
+    createMany?: LessonCreateManyTeacherInputEnvelope
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+  }
+
+  export type SalaryRecordCreateNestedManyWithoutTeacherInput = {
     create?: XOR<SalaryRecordCreateWithoutTeacherInput, SalaryRecordUncheckedCreateWithoutTeacherInput> | SalaryRecordCreateWithoutTeacherInput[] | SalaryRecordUncheckedCreateWithoutTeacherInput[]
     connectOrCreate?: SalaryRecordCreateOrConnectWithoutTeacherInput | SalaryRecordCreateOrConnectWithoutTeacherInput[]
     createMany?: SalaryRecordCreateManyTeacherInputEnvelope
     connect?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
+  }
+
+  export type StudentCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput> | StudentCreateWithoutTeacherInput[] | StudentUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutTeacherInput | StudentCreateOrConnectWithoutTeacherInput[]
+    createMany?: StudentCreateManyTeacherInputEnvelope
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+  }
+
+  export type UserCreateNestedOneWithoutTeacherInput = {
+    create?: XOR<UserCreateWithoutTeacherInput, UserUncheckedCreateWithoutTeacherInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTeacherInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type CrmLeadUncheckedCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<CrmLeadCreateWithoutTeacherInput, CrmLeadUncheckedCreateWithoutTeacherInput> | CrmLeadCreateWithoutTeacherInput[] | CrmLeadUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutTeacherInput | CrmLeadCreateOrConnectWithoutTeacherInput[]
+    createMany?: CrmLeadCreateManyTeacherInputEnvelope
+    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
   export type DeductionUncheckedCreateNestedManyWithoutTeacherInput = {
@@ -31618,11 +33078,39 @@ export namespace Prisma {
     connect?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
   }
 
-  export type CrmLeadUncheckedCreateNestedManyWithoutTeacherInput = {
-    create?: XOR<CrmLeadCreateWithoutTeacherInput, CrmLeadUncheckedCreateWithoutTeacherInput> | CrmLeadCreateWithoutTeacherInput[] | CrmLeadUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutTeacherInput | CrmLeadCreateOrConnectWithoutTeacherInput[]
-    createMany?: CrmLeadCreateManyTeacherInputEnvelope
-    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+  export type FeedbackUncheckedCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<FeedbackCreateWithoutTeacherInput, FeedbackUncheckedCreateWithoutTeacherInput> | FeedbackCreateWithoutTeacherInput[] | FeedbackUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutTeacherInput | FeedbackCreateOrConnectWithoutTeacherInput[]
+    createMany?: FeedbackCreateManyTeacherInputEnvelope
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+  }
+
+  export type GroupUncheckedCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput> | GroupCreateWithoutTeacherInput[] | GroupUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutTeacherInput | GroupCreateOrConnectWithoutTeacherInput[]
+    createMany?: GroupCreateManyTeacherInputEnvelope
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  }
+
+  export type LessonUncheckedCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput> | LessonCreateWithoutTeacherInput[] | LessonUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutTeacherInput | LessonCreateOrConnectWithoutTeacherInput[]
+    createMany?: LessonCreateManyTeacherInputEnvelope
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+  }
+
+  export type SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<SalaryRecordCreateWithoutTeacherInput, SalaryRecordUncheckedCreateWithoutTeacherInput> | SalaryRecordCreateWithoutTeacherInput[] | SalaryRecordUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: SalaryRecordCreateOrConnectWithoutTeacherInput | SalaryRecordCreateOrConnectWithoutTeacherInput[]
+    createMany?: SalaryRecordCreateManyTeacherInputEnvelope
+    connect?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
+  }
+
+  export type StudentUncheckedCreateNestedManyWithoutTeacherInput = {
+    create?: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput> | StudentCreateWithoutTeacherInput[] | StudentUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutTeacherInput | StudentCreateOrConnectWithoutTeacherInput[]
+    createMany?: StudentCreateManyTeacherInputEnvelope
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
   }
 
   export type DecimalFieldUpdateOperationsInput = {
@@ -31646,82 +33134,18 @@ export namespace Prisma {
     push?: string | string[]
   }
 
-  export type UserUpdateOneRequiredWithoutTeacherNestedInput = {
-    create?: XOR<UserCreateWithoutTeacherInput, UserUncheckedCreateWithoutTeacherInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTeacherInput
-    upsert?: UserUpsertWithoutTeacherInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTeacherInput, UserUpdateWithoutTeacherInput>, UserUncheckedUpdateWithoutTeacherInput>
-  }
-
-  export type GroupUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput> | GroupCreateWithoutTeacherInput[] | GroupUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutTeacherInput | GroupCreateOrConnectWithoutTeacherInput[]
-    upsert?: GroupUpsertWithWhereUniqueWithoutTeacherInput | GroupUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: GroupCreateManyTeacherInputEnvelope
-    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    update?: GroupUpdateWithWhereUniqueWithoutTeacherInput | GroupUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: GroupUpdateManyWithWhereWithoutTeacherInput | GroupUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
-  }
-
-  export type StudentUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput> | StudentCreateWithoutTeacherInput[] | StudentUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: StudentCreateOrConnectWithoutTeacherInput | StudentCreateOrConnectWithoutTeacherInput[]
-    upsert?: StudentUpsertWithWhereUniqueWithoutTeacherInput | StudentUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: StudentCreateManyTeacherInputEnvelope
-    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    update?: StudentUpdateWithWhereUniqueWithoutTeacherInput | StudentUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: StudentUpdateManyWithWhereWithoutTeacherInput | StudentUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
-  }
-
-  export type LessonUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput> | LessonCreateWithoutTeacherInput[] | LessonUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: LessonCreateOrConnectWithoutTeacherInput | LessonCreateOrConnectWithoutTeacherInput[]
-    upsert?: LessonUpsertWithWhereUniqueWithoutTeacherInput | LessonUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: LessonCreateManyTeacherInputEnvelope
-    set?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    disconnect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    delete?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    update?: LessonUpdateWithWhereUniqueWithoutTeacherInput | LessonUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: LessonUpdateManyWithWhereWithoutTeacherInput | LessonUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: LessonScalarWhereInput | LessonScalarWhereInput[]
-  }
-
-  export type FeedbackUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<FeedbackCreateWithoutTeacherInput, FeedbackUncheckedCreateWithoutTeacherInput> | FeedbackCreateWithoutTeacherInput[] | FeedbackUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: FeedbackCreateOrConnectWithoutTeacherInput | FeedbackCreateOrConnectWithoutTeacherInput[]
-    upsert?: FeedbackUpsertWithWhereUniqueWithoutTeacherInput | FeedbackUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: FeedbackCreateManyTeacherInputEnvelope
-    set?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
-    disconnect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
-    delete?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
-    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
-    update?: FeedbackUpdateWithWhereUniqueWithoutTeacherInput | FeedbackUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: FeedbackUpdateManyWithWhereWithoutTeacherInput | FeedbackUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
-  }
-
-  export type SalaryRecordUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<SalaryRecordCreateWithoutTeacherInput, SalaryRecordUncheckedCreateWithoutTeacherInput> | SalaryRecordCreateWithoutTeacherInput[] | SalaryRecordUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: SalaryRecordCreateOrConnectWithoutTeacherInput | SalaryRecordCreateOrConnectWithoutTeacherInput[]
-    upsert?: SalaryRecordUpsertWithWhereUniqueWithoutTeacherInput | SalaryRecordUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: SalaryRecordCreateManyTeacherInputEnvelope
-    set?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
-    disconnect?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
-    delete?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
-    connect?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
-    update?: SalaryRecordUpdateWithWhereUniqueWithoutTeacherInput | SalaryRecordUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: SalaryRecordUpdateManyWithWhereWithoutTeacherInput | SalaryRecordUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: SalaryRecordScalarWhereInput | SalaryRecordScalarWhereInput[]
+  export type CrmLeadUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<CrmLeadCreateWithoutTeacherInput, CrmLeadUncheckedCreateWithoutTeacherInput> | CrmLeadCreateWithoutTeacherInput[] | CrmLeadUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutTeacherInput | CrmLeadCreateOrConnectWithoutTeacherInput[]
+    upsert?: CrmLeadUpsertWithWhereUniqueWithoutTeacherInput | CrmLeadUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: CrmLeadCreateManyTeacherInputEnvelope
+    set?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    disconnect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    delete?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+    update?: CrmLeadUpdateWithWhereUniqueWithoutTeacherInput | CrmLeadUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: CrmLeadUpdateManyWithWhereWithoutTeacherInput | CrmLeadUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
   export type DeductionUpdateManyWithoutTeacherNestedInput = {
@@ -31738,63 +33162,7 @@ export namespace Prisma {
     deleteMany?: DeductionScalarWhereInput | DeductionScalarWhereInput[]
   }
 
-  export type CrmLeadUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<CrmLeadCreateWithoutTeacherInput, CrmLeadUncheckedCreateWithoutTeacherInput> | CrmLeadCreateWithoutTeacherInput[] | CrmLeadUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutTeacherInput | CrmLeadCreateOrConnectWithoutTeacherInput[]
-    upsert?: CrmLeadUpsertWithWhereUniqueWithoutTeacherInput | CrmLeadUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: CrmLeadCreateManyTeacherInputEnvelope
-    set?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    disconnect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    delete?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
-    update?: CrmLeadUpdateWithWhereUniqueWithoutTeacherInput | CrmLeadUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: CrmLeadUpdateManyWithWhereWithoutTeacherInput | CrmLeadUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
-  }
-
-  export type GroupUncheckedUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput> | GroupCreateWithoutTeacherInput[] | GroupUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutTeacherInput | GroupCreateOrConnectWithoutTeacherInput[]
-    upsert?: GroupUpsertWithWhereUniqueWithoutTeacherInput | GroupUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: GroupCreateManyTeacherInputEnvelope
-    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    update?: GroupUpdateWithWhereUniqueWithoutTeacherInput | GroupUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: GroupUpdateManyWithWhereWithoutTeacherInput | GroupUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
-  }
-
-  export type StudentUncheckedUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput> | StudentCreateWithoutTeacherInput[] | StudentUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: StudentCreateOrConnectWithoutTeacherInput | StudentCreateOrConnectWithoutTeacherInput[]
-    upsert?: StudentUpsertWithWhereUniqueWithoutTeacherInput | StudentUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: StudentCreateManyTeacherInputEnvelope
-    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
-    update?: StudentUpdateWithWhereUniqueWithoutTeacherInput | StudentUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: StudentUpdateManyWithWhereWithoutTeacherInput | StudentUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
-  }
-
-  export type LessonUncheckedUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput> | LessonCreateWithoutTeacherInput[] | LessonUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: LessonCreateOrConnectWithoutTeacherInput | LessonCreateOrConnectWithoutTeacherInput[]
-    upsert?: LessonUpsertWithWhereUniqueWithoutTeacherInput | LessonUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: LessonCreateManyTeacherInputEnvelope
-    set?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    disconnect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    delete?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
-    update?: LessonUpdateWithWhereUniqueWithoutTeacherInput | LessonUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: LessonUpdateManyWithWhereWithoutTeacherInput | LessonUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: LessonScalarWhereInput | LessonScalarWhereInput[]
-  }
-
-  export type FeedbackUncheckedUpdateManyWithoutTeacherNestedInput = {
+  export type FeedbackUpdateManyWithoutTeacherNestedInput = {
     create?: XOR<FeedbackCreateWithoutTeacherInput, FeedbackUncheckedCreateWithoutTeacherInput> | FeedbackCreateWithoutTeacherInput[] | FeedbackUncheckedCreateWithoutTeacherInput[]
     connectOrCreate?: FeedbackCreateOrConnectWithoutTeacherInput | FeedbackCreateOrConnectWithoutTeacherInput[]
     upsert?: FeedbackUpsertWithWhereUniqueWithoutTeacherInput | FeedbackUpsertWithWhereUniqueWithoutTeacherInput[]
@@ -31808,7 +33176,35 @@ export namespace Prisma {
     deleteMany?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
   }
 
-  export type SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput = {
+  export type GroupUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput> | GroupCreateWithoutTeacherInput[] | GroupUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutTeacherInput | GroupCreateOrConnectWithoutTeacherInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutTeacherInput | GroupUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: GroupCreateManyTeacherInputEnvelope
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutTeacherInput | GroupUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutTeacherInput | GroupUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
+  }
+
+  export type LessonUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput> | LessonCreateWithoutTeacherInput[] | LessonUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutTeacherInput | LessonCreateOrConnectWithoutTeacherInput[]
+    upsert?: LessonUpsertWithWhereUniqueWithoutTeacherInput | LessonUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: LessonCreateManyTeacherInputEnvelope
+    set?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    disconnect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    delete?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    update?: LessonUpdateWithWhereUniqueWithoutTeacherInput | LessonUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: LessonUpdateManyWithWhereWithoutTeacherInput | LessonUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: LessonScalarWhereInput | LessonScalarWhereInput[]
+  }
+
+  export type SalaryRecordUpdateManyWithoutTeacherNestedInput = {
     create?: XOR<SalaryRecordCreateWithoutTeacherInput, SalaryRecordUncheckedCreateWithoutTeacherInput> | SalaryRecordCreateWithoutTeacherInput[] | SalaryRecordUncheckedCreateWithoutTeacherInput[]
     connectOrCreate?: SalaryRecordCreateOrConnectWithoutTeacherInput | SalaryRecordCreateOrConnectWithoutTeacherInput[]
     upsert?: SalaryRecordUpsertWithWhereUniqueWithoutTeacherInput | SalaryRecordUpsertWithWhereUniqueWithoutTeacherInput[]
@@ -31822,18 +33218,26 @@ export namespace Prisma {
     deleteMany?: SalaryRecordScalarWhereInput | SalaryRecordScalarWhereInput[]
   }
 
-  export type DeductionUncheckedUpdateManyWithoutTeacherNestedInput = {
-    create?: XOR<DeductionCreateWithoutTeacherInput, DeductionUncheckedCreateWithoutTeacherInput> | DeductionCreateWithoutTeacherInput[] | DeductionUncheckedCreateWithoutTeacherInput[]
-    connectOrCreate?: DeductionCreateOrConnectWithoutTeacherInput | DeductionCreateOrConnectWithoutTeacherInput[]
-    upsert?: DeductionUpsertWithWhereUniqueWithoutTeacherInput | DeductionUpsertWithWhereUniqueWithoutTeacherInput[]
-    createMany?: DeductionCreateManyTeacherInputEnvelope
-    set?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
-    disconnect?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
-    delete?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
-    connect?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
-    update?: DeductionUpdateWithWhereUniqueWithoutTeacherInput | DeductionUpdateWithWhereUniqueWithoutTeacherInput[]
-    updateMany?: DeductionUpdateManyWithWhereWithoutTeacherInput | DeductionUpdateManyWithWhereWithoutTeacherInput[]
-    deleteMany?: DeductionScalarWhereInput | DeductionScalarWhereInput[]
+  export type StudentUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput> | StudentCreateWithoutTeacherInput[] | StudentUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutTeacherInput | StudentCreateOrConnectWithoutTeacherInput[]
+    upsert?: StudentUpsertWithWhereUniqueWithoutTeacherInput | StudentUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: StudentCreateManyTeacherInputEnvelope
+    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    update?: StudentUpdateWithWhereUniqueWithoutTeacherInput | StudentUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: StudentUpdateManyWithWhereWithoutTeacherInput | StudentUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutTeacherNestedInput = {
+    create?: XOR<UserCreateWithoutTeacherInput, UserUncheckedCreateWithoutTeacherInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTeacherInput
+    upsert?: UserUpsertWithoutTeacherInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTeacherInput, UserUpdateWithoutTeacherInput>, UserUncheckedUpdateWithoutTeacherInput>
   }
 
   export type CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput = {
@@ -31850,28 +33254,88 @@ export namespace Prisma {
     deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
-  export type UserCreateNestedOneWithoutStudentInput = {
-    create?: XOR<UserCreateWithoutStudentInput, UserUncheckedCreateWithoutStudentInput>
-    connectOrCreate?: UserCreateOrConnectWithoutStudentInput
-    connect?: UserWhereUniqueInput
+  export type DeductionUncheckedUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<DeductionCreateWithoutTeacherInput, DeductionUncheckedCreateWithoutTeacherInput> | DeductionCreateWithoutTeacherInput[] | DeductionUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: DeductionCreateOrConnectWithoutTeacherInput | DeductionCreateOrConnectWithoutTeacherInput[]
+    upsert?: DeductionUpsertWithWhereUniqueWithoutTeacherInput | DeductionUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: DeductionCreateManyTeacherInputEnvelope
+    set?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
+    disconnect?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
+    delete?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
+    connect?: DeductionWhereUniqueInput | DeductionWhereUniqueInput[]
+    update?: DeductionUpdateWithWhereUniqueWithoutTeacherInput | DeductionUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: DeductionUpdateManyWithWhereWithoutTeacherInput | DeductionUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: DeductionScalarWhereInput | DeductionScalarWhereInput[]
   }
 
-  export type CrmLeadCreateNestedOneWithoutStudentInput = {
-    create?: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutStudentInput
-    connect?: CrmLeadWhereUniqueInput
+  export type FeedbackUncheckedUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<FeedbackCreateWithoutTeacherInput, FeedbackUncheckedCreateWithoutTeacherInput> | FeedbackCreateWithoutTeacherInput[] | FeedbackUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutTeacherInput | FeedbackCreateOrConnectWithoutTeacherInput[]
+    upsert?: FeedbackUpsertWithWhereUniqueWithoutTeacherInput | FeedbackUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: FeedbackCreateManyTeacherInputEnvelope
+    set?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    disconnect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    delete?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    update?: FeedbackUpdateWithWhereUniqueWithoutTeacherInput | FeedbackUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: FeedbackUpdateManyWithWhereWithoutTeacherInput | FeedbackUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
   }
 
-  export type GroupCreateNestedOneWithoutStudentsInput = {
-    create?: XOR<GroupCreateWithoutStudentsInput, GroupUncheckedCreateWithoutStudentsInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutStudentsInput
-    connect?: GroupWhereUniqueInput
+  export type GroupUncheckedUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput> | GroupCreateWithoutTeacherInput[] | GroupUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutTeacherInput | GroupCreateOrConnectWithoutTeacherInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutTeacherInput | GroupUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: GroupCreateManyTeacherInputEnvelope
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutTeacherInput | GroupUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutTeacherInput | GroupUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
-  export type TeacherCreateNestedOneWithoutStudentsInput = {
-    create?: XOR<TeacherCreateWithoutStudentsInput, TeacherUncheckedCreateWithoutStudentsInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutStudentsInput
-    connect?: TeacherWhereUniqueInput
+  export type LessonUncheckedUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput> | LessonCreateWithoutTeacherInput[] | LessonUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutTeacherInput | LessonCreateOrConnectWithoutTeacherInput[]
+    upsert?: LessonUpsertWithWhereUniqueWithoutTeacherInput | LessonUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: LessonCreateManyTeacherInputEnvelope
+    set?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    disconnect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    delete?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    update?: LessonUpdateWithWhereUniqueWithoutTeacherInput | LessonUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: LessonUpdateManyWithWhereWithoutTeacherInput | LessonUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: LessonScalarWhereInput | LessonScalarWhereInput[]
+  }
+
+  export type SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<SalaryRecordCreateWithoutTeacherInput, SalaryRecordUncheckedCreateWithoutTeacherInput> | SalaryRecordCreateWithoutTeacherInput[] | SalaryRecordUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: SalaryRecordCreateOrConnectWithoutTeacherInput | SalaryRecordCreateOrConnectWithoutTeacherInput[]
+    upsert?: SalaryRecordUpsertWithWhereUniqueWithoutTeacherInput | SalaryRecordUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: SalaryRecordCreateManyTeacherInputEnvelope
+    set?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
+    disconnect?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
+    delete?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
+    connect?: SalaryRecordWhereUniqueInput | SalaryRecordWhereUniqueInput[]
+    update?: SalaryRecordUpdateWithWhereUniqueWithoutTeacherInput | SalaryRecordUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: SalaryRecordUpdateManyWithWhereWithoutTeacherInput | SalaryRecordUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: SalaryRecordScalarWhereInput | SalaryRecordScalarWhereInput[]
+  }
+
+  export type StudentUncheckedUpdateManyWithoutTeacherNestedInput = {
+    create?: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput> | StudentCreateWithoutTeacherInput[] | StudentUncheckedCreateWithoutTeacherInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutTeacherInput | StudentCreateOrConnectWithoutTeacherInput[]
+    upsert?: StudentUpsertWithWhereUniqueWithoutTeacherInput | StudentUpsertWithWhereUniqueWithoutTeacherInput[]
+    createMany?: StudentCreateManyTeacherInputEnvelope
+    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    update?: StudentUpdateWithWhereUniqueWithoutTeacherInput | StudentUpdateWithWhereUniqueWithoutTeacherInput[]
+    updateMany?: StudentUpdateManyWithWhereWithoutTeacherInput | StudentUpdateManyWithWhereWithoutTeacherInput[]
+    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
   }
 
   export type AttendanceCreateNestedManyWithoutStudentInput = {
@@ -31895,6 +33359,30 @@ export namespace Prisma {
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
+  export type GroupCreateNestedOneWithoutStudentsInput = {
+    create?: XOR<GroupCreateWithoutStudentsInput, GroupUncheckedCreateWithoutStudentsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutStudentsInput
+    connect?: GroupWhereUniqueInput
+  }
+
+  export type CrmLeadCreateNestedOneWithoutStudentInput = {
+    create?: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutStudentInput
+    connect?: CrmLeadWhereUniqueInput
+  }
+
+  export type TeacherCreateNestedOneWithoutStudentsInput = {
+    create?: XOR<TeacherCreateWithoutStudentsInput, TeacherUncheckedCreateWithoutStudentsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutStudentsInput
+    connect?: TeacherWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutStudentInput = {
+    create?: XOR<UserCreateWithoutStudentInput, UserUncheckedCreateWithoutStudentInput>
+    connectOrCreate?: UserCreateOrConnectWithoutStudentInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type AttendanceUncheckedCreateNestedManyWithoutStudentInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -31914,44 +33402,6 @@ export namespace Prisma {
     connectOrCreate?: PaymentCreateOrConnectWithoutStudentInput | PaymentCreateOrConnectWithoutStudentInput[]
     createMany?: PaymentCreateManyStudentInputEnvelope
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
-  }
-
-  export type UserUpdateOneRequiredWithoutStudentNestedInput = {
-    create?: XOR<UserCreateWithoutStudentInput, UserUncheckedCreateWithoutStudentInput>
-    connectOrCreate?: UserCreateOrConnectWithoutStudentInput
-    upsert?: UserUpsertWithoutStudentInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutStudentInput, UserUpdateWithoutStudentInput>, UserUncheckedUpdateWithoutStudentInput>
-  }
-
-  export type CrmLeadUpdateOneWithoutStudentNestedInput = {
-    create?: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
-    connectOrCreate?: CrmLeadCreateOrConnectWithoutStudentInput
-    upsert?: CrmLeadUpsertWithoutStudentInput
-    disconnect?: CrmLeadWhereInput | boolean
-    delete?: CrmLeadWhereInput | boolean
-    connect?: CrmLeadWhereUniqueInput
-    update?: XOR<XOR<CrmLeadUpdateToOneWithWhereWithoutStudentInput, CrmLeadUpdateWithoutStudentInput>, CrmLeadUncheckedUpdateWithoutStudentInput>
-  }
-
-  export type GroupUpdateOneWithoutStudentsNestedInput = {
-    create?: XOR<GroupCreateWithoutStudentsInput, GroupUncheckedCreateWithoutStudentsInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutStudentsInput
-    upsert?: GroupUpsertWithoutStudentsInput
-    disconnect?: GroupWhereInput | boolean
-    delete?: GroupWhereInput | boolean
-    connect?: GroupWhereUniqueInput
-    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutStudentsInput, GroupUpdateWithoutStudentsInput>, GroupUncheckedUpdateWithoutStudentsInput>
-  }
-
-  export type TeacherUpdateOneWithoutStudentsNestedInput = {
-    create?: XOR<TeacherCreateWithoutStudentsInput, TeacherUncheckedCreateWithoutStudentsInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutStudentsInput
-    upsert?: TeacherUpsertWithoutStudentsInput
-    disconnect?: TeacherWhereInput | boolean
-    delete?: TeacherWhereInput | boolean
-    connect?: TeacherWhereUniqueInput
-    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutStudentsInput, TeacherUpdateWithoutStudentsInput>, TeacherUncheckedUpdateWithoutStudentsInput>
   }
 
   export type AttendanceUpdateManyWithoutStudentNestedInput = {
@@ -31996,6 +33446,44 @@ export namespace Prisma {
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
+  export type GroupUpdateOneWithoutStudentsNestedInput = {
+    create?: XOR<GroupCreateWithoutStudentsInput, GroupUncheckedCreateWithoutStudentsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutStudentsInput
+    upsert?: GroupUpsertWithoutStudentsInput
+    disconnect?: GroupWhereInput | boolean
+    delete?: GroupWhereInput | boolean
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutStudentsInput, GroupUpdateWithoutStudentsInput>, GroupUncheckedUpdateWithoutStudentsInput>
+  }
+
+  export type CrmLeadUpdateOneWithoutStudentNestedInput = {
+    create?: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
+    connectOrCreate?: CrmLeadCreateOrConnectWithoutStudentInput
+    upsert?: CrmLeadUpsertWithoutStudentInput
+    disconnect?: CrmLeadWhereInput | boolean
+    delete?: CrmLeadWhereInput | boolean
+    connect?: CrmLeadWhereUniqueInput
+    update?: XOR<XOR<CrmLeadUpdateToOneWithWhereWithoutStudentInput, CrmLeadUpdateWithoutStudentInput>, CrmLeadUncheckedUpdateWithoutStudentInput>
+  }
+
+  export type TeacherUpdateOneWithoutStudentsNestedInput = {
+    create?: XOR<TeacherCreateWithoutStudentsInput, TeacherUncheckedCreateWithoutStudentsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutStudentsInput
+    upsert?: TeacherUpsertWithoutStudentsInput
+    disconnect?: TeacherWhereInput | boolean
+    delete?: TeacherWhereInput | boolean
+    connect?: TeacherWhereUniqueInput
+    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutStudentsInput, TeacherUpdateWithoutStudentsInput>, TeacherUncheckedUpdateWithoutStudentsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutStudentNestedInput = {
+    create?: XOR<UserCreateWithoutStudentInput, UserUncheckedCreateWithoutStudentInput>
+    connectOrCreate?: UserCreateOrConnectWithoutStudentInput
+    upsert?: UserUpsertWithoutStudentInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutStudentInput, UserUpdateWithoutStudentInput>, UserUncheckedUpdateWithoutStudentInput>
+  }
+
   export type AttendanceUncheckedUpdateManyWithoutStudentNestedInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -32038,18 +33526,6 @@ export namespace Prisma {
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
-  export type GroupCreateNestedOneWithoutLessonsInput = {
-    create?: XOR<GroupCreateWithoutLessonsInput, GroupUncheckedCreateWithoutLessonsInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutLessonsInput
-    connect?: GroupWhereUniqueInput
-  }
-
-  export type TeacherCreateNestedOneWithoutLessonsInput = {
-    create?: XOR<TeacherCreateWithoutLessonsInput, TeacherUncheckedCreateWithoutLessonsInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutLessonsInput
-    connect?: TeacherWhereUniqueInput
-  }
-
   export type AttendanceCreateNestedManyWithoutLessonInput = {
     create?: XOR<AttendanceCreateWithoutLessonInput, AttendanceUncheckedCreateWithoutLessonInput> | AttendanceCreateWithoutLessonInput[] | AttendanceUncheckedCreateWithoutLessonInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutLessonInput | AttendanceCreateOrConnectWithoutLessonInput[]
@@ -32062,6 +33538,18 @@ export namespace Prisma {
     connectOrCreate?: FeedbackCreateOrConnectWithoutLessonInput | FeedbackCreateOrConnectWithoutLessonInput[]
     createMany?: FeedbackCreateManyLessonInputEnvelope
     connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+  }
+
+  export type GroupCreateNestedOneWithoutLessonsInput = {
+    create?: XOR<GroupCreateWithoutLessonsInput, GroupUncheckedCreateWithoutLessonsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutLessonsInput
+    connect?: GroupWhereUniqueInput
+  }
+
+  export type TeacherCreateNestedOneWithoutLessonsInput = {
+    create?: XOR<TeacherCreateWithoutLessonsInput, TeacherUncheckedCreateWithoutLessonsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutLessonsInput
+    connect?: TeacherWhereUniqueInput
   }
 
   export type AttendanceUncheckedCreateNestedManyWithoutLessonInput = {
@@ -32080,22 +33568,6 @@ export namespace Prisma {
 
   export type EnumLessonStatusFieldUpdateOperationsInput = {
     set?: $Enums.LessonStatus
-  }
-
-  export type GroupUpdateOneRequiredWithoutLessonsNestedInput = {
-    create?: XOR<GroupCreateWithoutLessonsInput, GroupUncheckedCreateWithoutLessonsInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutLessonsInput
-    upsert?: GroupUpsertWithoutLessonsInput
-    connect?: GroupWhereUniqueInput
-    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutLessonsInput, GroupUpdateWithoutLessonsInput>, GroupUncheckedUpdateWithoutLessonsInput>
-  }
-
-  export type TeacherUpdateOneRequiredWithoutLessonsNestedInput = {
-    create?: XOR<TeacherCreateWithoutLessonsInput, TeacherUncheckedCreateWithoutLessonsInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutLessonsInput
-    upsert?: TeacherUpsertWithoutLessonsInput
-    connect?: TeacherWhereUniqueInput
-    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutLessonsInput, TeacherUpdateWithoutLessonsInput>, TeacherUncheckedUpdateWithoutLessonsInput>
   }
 
   export type AttendanceUpdateManyWithoutLessonNestedInput = {
@@ -32124,6 +33596,22 @@ export namespace Prisma {
     update?: FeedbackUpdateWithWhereUniqueWithoutLessonInput | FeedbackUpdateWithWhereUniqueWithoutLessonInput[]
     updateMany?: FeedbackUpdateManyWithWhereWithoutLessonInput | FeedbackUpdateManyWithWhereWithoutLessonInput[]
     deleteMany?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
+  }
+
+  export type GroupUpdateOneRequiredWithoutLessonsNestedInput = {
+    create?: XOR<GroupCreateWithoutLessonsInput, GroupUncheckedCreateWithoutLessonsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutLessonsInput
+    upsert?: GroupUpsertWithoutLessonsInput
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutLessonsInput, GroupUpdateWithoutLessonsInput>, GroupUncheckedUpdateWithoutLessonsInput>
+  }
+
+  export type TeacherUpdateOneRequiredWithoutLessonsNestedInput = {
+    create?: XOR<TeacherCreateWithoutLessonsInput, TeacherUncheckedCreateWithoutLessonsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutLessonsInput
+    upsert?: TeacherUpsertWithoutLessonsInput
+    connect?: TeacherWhereUniqueInput
+    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutLessonsInput, TeacherUpdateWithoutLessonsInput>, TeacherUncheckedUpdateWithoutLessonsInput>
   }
 
   export type AttendanceUncheckedUpdateManyWithoutLessonNestedInput = {
@@ -32160,6 +33648,12 @@ export namespace Prisma {
     connect?: LessonWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutMarkedAttendancesInput = {
+    create?: XOR<UserCreateWithoutMarkedAttendancesInput, UserUncheckedCreateWithoutMarkedAttendancesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMarkedAttendancesInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type StudentCreateNestedOneWithoutAttendancesInput = {
     create?: XOR<StudentCreateWithoutAttendancesInput, StudentUncheckedCreateWithoutAttendancesInput>
     connectOrCreate?: StudentCreateOrConnectWithoutAttendancesInput
@@ -32176,6 +33670,16 @@ export namespace Prisma {
     upsert?: LessonUpsertWithoutAttendancesInput
     connect?: LessonWhereUniqueInput
     update?: XOR<XOR<LessonUpdateToOneWithWhereWithoutAttendancesInput, LessonUpdateWithoutAttendancesInput>, LessonUncheckedUpdateWithoutAttendancesInput>
+  }
+
+  export type UserUpdateOneWithoutMarkedAttendancesNestedInput = {
+    create?: XOR<UserCreateWithoutMarkedAttendancesInput, UserUncheckedCreateWithoutMarkedAttendancesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMarkedAttendancesInput
+    upsert?: UserUpsertWithoutMarkedAttendancesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMarkedAttendancesInput, UserUpdateWithoutMarkedAttendancesInput>, UserUncheckedUpdateWithoutMarkedAttendancesInput>
   }
 
   export type StudentUpdateOneRequiredWithoutAttendancesNestedInput = {
@@ -32290,17 +33794,17 @@ export namespace Prisma {
     update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutDeductionsInput, TeacherUpdateWithoutDeductionsInput>, TeacherUncheckedUpdateWithoutDeductionsInput>
   }
 
-  export type GroupCreateNestedOneWithoutChatInput = {
-    create?: XOR<GroupCreateWithoutChatInput, GroupUncheckedCreateWithoutChatInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutChatInput
-    connect?: GroupWhereUniqueInput
-  }
-
   export type ChatParticipantCreateNestedManyWithoutChatInput = {
     create?: XOR<ChatParticipantCreateWithoutChatInput, ChatParticipantUncheckedCreateWithoutChatInput> | ChatParticipantCreateWithoutChatInput[] | ChatParticipantUncheckedCreateWithoutChatInput[]
     connectOrCreate?: ChatParticipantCreateOrConnectWithoutChatInput | ChatParticipantCreateOrConnectWithoutChatInput[]
     createMany?: ChatParticipantCreateManyChatInputEnvelope
     connect?: ChatParticipantWhereUniqueInput | ChatParticipantWhereUniqueInput[]
+  }
+
+  export type GroupCreateNestedOneWithoutChatInput = {
+    create?: XOR<GroupCreateWithoutChatInput, GroupUncheckedCreateWithoutChatInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutChatInput
+    connect?: GroupWhereUniqueInput
   }
 
   export type MessageCreateNestedManyWithoutChatInput = {
@@ -32328,16 +33832,6 @@ export namespace Prisma {
     set?: $Enums.ChatType
   }
 
-  export type GroupUpdateOneWithoutChatNestedInput = {
-    create?: XOR<GroupCreateWithoutChatInput, GroupUncheckedCreateWithoutChatInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutChatInput
-    upsert?: GroupUpsertWithoutChatInput
-    disconnect?: GroupWhereInput | boolean
-    delete?: GroupWhereInput | boolean
-    connect?: GroupWhereUniqueInput
-    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutChatInput, GroupUpdateWithoutChatInput>, GroupUncheckedUpdateWithoutChatInput>
-  }
-
   export type ChatParticipantUpdateManyWithoutChatNestedInput = {
     create?: XOR<ChatParticipantCreateWithoutChatInput, ChatParticipantUncheckedCreateWithoutChatInput> | ChatParticipantCreateWithoutChatInput[] | ChatParticipantUncheckedCreateWithoutChatInput[]
     connectOrCreate?: ChatParticipantCreateOrConnectWithoutChatInput | ChatParticipantCreateOrConnectWithoutChatInput[]
@@ -32350,6 +33844,16 @@ export namespace Prisma {
     update?: ChatParticipantUpdateWithWhereUniqueWithoutChatInput | ChatParticipantUpdateWithWhereUniqueWithoutChatInput[]
     updateMany?: ChatParticipantUpdateManyWithWhereWithoutChatInput | ChatParticipantUpdateManyWithWhereWithoutChatInput[]
     deleteMany?: ChatParticipantScalarWhereInput | ChatParticipantScalarWhereInput[]
+  }
+
+  export type GroupUpdateOneWithoutChatNestedInput = {
+    create?: XOR<GroupCreateWithoutChatInput, GroupUncheckedCreateWithoutChatInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutChatInput
+    upsert?: GroupUpsertWithoutChatInput
+    disconnect?: GroupWhereInput | boolean
+    delete?: GroupWhereInput | boolean
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutChatInput, GroupUpdateWithoutChatInput>, GroupUncheckedUpdateWithoutChatInput>
   }
 
   export type MessageUpdateManyWithoutChatNestedInput = {
@@ -32470,36 +33974,6 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
   }
 
-  export type UserCreateNestedOneWithoutCrmLeadsCreatedInput = {
-    create?: XOR<UserCreateWithoutCrmLeadsCreatedInput, UserUncheckedCreateWithoutCrmLeadsCreatedInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCrmLeadsCreatedInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput = {
-    create?: XOR<UserCreateWithoutCrmLeadsAssignedManagerInput, UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCrmLeadsAssignedManagerInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type TeacherCreateNestedOneWithoutCrmLeadsInput = {
-    create?: XOR<TeacherCreateWithoutCrmLeadsInput, TeacherUncheckedCreateWithoutCrmLeadsInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutCrmLeadsInput
-    connect?: TeacherWhereUniqueInput
-  }
-
-  export type GroupCreateNestedOneWithoutCrmLeadsInput = {
-    create?: XOR<GroupCreateWithoutCrmLeadsInput, GroupUncheckedCreateWithoutCrmLeadsInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutCrmLeadsInput
-    connect?: GroupWhereUniqueInput
-  }
-
-  export type CenterCreateNestedOneWithoutCrmLeadsInput = {
-    create?: XOR<CenterCreateWithoutCrmLeadsInput, CenterUncheckedCreateWithoutCrmLeadsInput>
-    connectOrCreate?: CenterCreateOrConnectWithoutCrmLeadsInput
-    connect?: CenterWhereUniqueInput
-  }
-
   export type CrmLeadActivityCreateNestedManyWithoutLeadInput = {
     create?: XOR<CrmLeadActivityCreateWithoutLeadInput, CrmLeadActivityUncheckedCreateWithoutLeadInput> | CrmLeadActivityCreateWithoutLeadInput[] | CrmLeadActivityUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: CrmLeadActivityCreateOrConnectWithoutLeadInput | CrmLeadActivityCreateOrConnectWithoutLeadInput[]
@@ -32512,6 +33986,36 @@ export namespace Prisma {
     connectOrCreate?: CrmLeadAttachmentCreateOrConnectWithoutLeadInput | CrmLeadAttachmentCreateOrConnectWithoutLeadInput[]
     createMany?: CrmLeadAttachmentCreateManyLeadInputEnvelope
     connect?: CrmLeadAttachmentWhereUniqueInput | CrmLeadAttachmentWhereUniqueInput[]
+  }
+
+  export type UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput = {
+    create?: XOR<UserCreateWithoutCrmLeadsAssignedManagerInput, UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCrmLeadsAssignedManagerInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type CenterCreateNestedOneWithoutCrmLeadsInput = {
+    create?: XOR<CenterCreateWithoutCrmLeadsInput, CenterUncheckedCreateWithoutCrmLeadsInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutCrmLeadsInput
+    connect?: CenterWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCrmLeadsCreatedInput = {
+    create?: XOR<UserCreateWithoutCrmLeadsCreatedInput, UserUncheckedCreateWithoutCrmLeadsCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCrmLeadsCreatedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type GroupCreateNestedOneWithoutCrmLeadsInput = {
+    create?: XOR<GroupCreateWithoutCrmLeadsInput, GroupUncheckedCreateWithoutCrmLeadsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutCrmLeadsInput
+    connect?: GroupWhereUniqueInput
+  }
+
+  export type TeacherCreateNestedOneWithoutCrmLeadsInput = {
+    create?: XOR<TeacherCreateWithoutCrmLeadsInput, TeacherUncheckedCreateWithoutCrmLeadsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutCrmLeadsInput
+    connect?: TeacherWhereUniqueInput
   }
 
   export type StudentCreateNestedOneWithoutLeadInput = {
@@ -32544,54 +34048,6 @@ export namespace Prisma {
     set?: $Enums.CrmLeadStatus
   }
 
-  export type UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput = {
-    create?: XOR<UserCreateWithoutCrmLeadsCreatedInput, UserUncheckedCreateWithoutCrmLeadsCreatedInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCrmLeadsCreatedInput
-    upsert?: UserUpsertWithoutCrmLeadsCreatedInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCrmLeadsCreatedInput, UserUpdateWithoutCrmLeadsCreatedInput>, UserUncheckedUpdateWithoutCrmLeadsCreatedInput>
-  }
-
-  export type UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput = {
-    create?: XOR<UserCreateWithoutCrmLeadsAssignedManagerInput, UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCrmLeadsAssignedManagerInput
-    upsert?: UserUpsertWithoutCrmLeadsAssignedManagerInput
-    disconnect?: UserWhereInput | boolean
-    delete?: UserWhereInput | boolean
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCrmLeadsAssignedManagerInput, UserUpdateWithoutCrmLeadsAssignedManagerInput>, UserUncheckedUpdateWithoutCrmLeadsAssignedManagerInput>
-  }
-
-  export type TeacherUpdateOneWithoutCrmLeadsNestedInput = {
-    create?: XOR<TeacherCreateWithoutCrmLeadsInput, TeacherUncheckedCreateWithoutCrmLeadsInput>
-    connectOrCreate?: TeacherCreateOrConnectWithoutCrmLeadsInput
-    upsert?: TeacherUpsertWithoutCrmLeadsInput
-    disconnect?: TeacherWhereInput | boolean
-    delete?: TeacherWhereInput | boolean
-    connect?: TeacherWhereUniqueInput
-    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutCrmLeadsInput, TeacherUpdateWithoutCrmLeadsInput>, TeacherUncheckedUpdateWithoutCrmLeadsInput>
-  }
-
-  export type GroupUpdateOneWithoutCrmLeadsNestedInput = {
-    create?: XOR<GroupCreateWithoutCrmLeadsInput, GroupUncheckedCreateWithoutCrmLeadsInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutCrmLeadsInput
-    upsert?: GroupUpsertWithoutCrmLeadsInput
-    disconnect?: GroupWhereInput | boolean
-    delete?: GroupWhereInput | boolean
-    connect?: GroupWhereUniqueInput
-    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutCrmLeadsInput, GroupUpdateWithoutCrmLeadsInput>, GroupUncheckedUpdateWithoutCrmLeadsInput>
-  }
-
-  export type CenterUpdateOneWithoutCrmLeadsNestedInput = {
-    create?: XOR<CenterCreateWithoutCrmLeadsInput, CenterUncheckedCreateWithoutCrmLeadsInput>
-    connectOrCreate?: CenterCreateOrConnectWithoutCrmLeadsInput
-    upsert?: CenterUpsertWithoutCrmLeadsInput
-    disconnect?: CenterWhereInput | boolean
-    delete?: CenterWhereInput | boolean
-    connect?: CenterWhereUniqueInput
-    update?: XOR<XOR<CenterUpdateToOneWithWhereWithoutCrmLeadsInput, CenterUpdateWithoutCrmLeadsInput>, CenterUncheckedUpdateWithoutCrmLeadsInput>
-  }
-
   export type CrmLeadActivityUpdateManyWithoutLeadNestedInput = {
     create?: XOR<CrmLeadActivityCreateWithoutLeadInput, CrmLeadActivityUncheckedCreateWithoutLeadInput> | CrmLeadActivityCreateWithoutLeadInput[] | CrmLeadActivityUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: CrmLeadActivityCreateOrConnectWithoutLeadInput | CrmLeadActivityCreateOrConnectWithoutLeadInput[]
@@ -32618,6 +34074,54 @@ export namespace Prisma {
     update?: CrmLeadAttachmentUpdateWithWhereUniqueWithoutLeadInput | CrmLeadAttachmentUpdateWithWhereUniqueWithoutLeadInput[]
     updateMany?: CrmLeadAttachmentUpdateManyWithWhereWithoutLeadInput | CrmLeadAttachmentUpdateManyWithWhereWithoutLeadInput[]
     deleteMany?: CrmLeadAttachmentScalarWhereInput | CrmLeadAttachmentScalarWhereInput[]
+  }
+
+  export type UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput = {
+    create?: XOR<UserCreateWithoutCrmLeadsAssignedManagerInput, UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCrmLeadsAssignedManagerInput
+    upsert?: UserUpsertWithoutCrmLeadsAssignedManagerInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCrmLeadsAssignedManagerInput, UserUpdateWithoutCrmLeadsAssignedManagerInput>, UserUncheckedUpdateWithoutCrmLeadsAssignedManagerInput>
+  }
+
+  export type CenterUpdateOneWithoutCrmLeadsNestedInput = {
+    create?: XOR<CenterCreateWithoutCrmLeadsInput, CenterUncheckedCreateWithoutCrmLeadsInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutCrmLeadsInput
+    upsert?: CenterUpsertWithoutCrmLeadsInput
+    disconnect?: CenterWhereInput | boolean
+    delete?: CenterWhereInput | boolean
+    connect?: CenterWhereUniqueInput
+    update?: XOR<XOR<CenterUpdateToOneWithWhereWithoutCrmLeadsInput, CenterUpdateWithoutCrmLeadsInput>, CenterUncheckedUpdateWithoutCrmLeadsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput = {
+    create?: XOR<UserCreateWithoutCrmLeadsCreatedInput, UserUncheckedCreateWithoutCrmLeadsCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCrmLeadsCreatedInput
+    upsert?: UserUpsertWithoutCrmLeadsCreatedInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCrmLeadsCreatedInput, UserUpdateWithoutCrmLeadsCreatedInput>, UserUncheckedUpdateWithoutCrmLeadsCreatedInput>
+  }
+
+  export type GroupUpdateOneWithoutCrmLeadsNestedInput = {
+    create?: XOR<GroupCreateWithoutCrmLeadsInput, GroupUncheckedCreateWithoutCrmLeadsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutCrmLeadsInput
+    upsert?: GroupUpsertWithoutCrmLeadsInput
+    disconnect?: GroupWhereInput | boolean
+    delete?: GroupWhereInput | boolean
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutCrmLeadsInput, GroupUpdateWithoutCrmLeadsInput>, GroupUncheckedUpdateWithoutCrmLeadsInput>
+  }
+
+  export type TeacherUpdateOneWithoutCrmLeadsNestedInput = {
+    create?: XOR<TeacherCreateWithoutCrmLeadsInput, TeacherUncheckedCreateWithoutCrmLeadsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutCrmLeadsInput
+    upsert?: TeacherUpsertWithoutCrmLeadsInput
+    disconnect?: TeacherWhereInput | boolean
+    delete?: TeacherWhereInput | boolean
+    connect?: TeacherWhereUniqueInput
+    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutCrmLeadsInput, TeacherUpdateWithoutCrmLeadsInput>, TeacherUncheckedUpdateWithoutCrmLeadsInput>
   }
 
   export type StudentUpdateOneWithoutLeadNestedInput = {
@@ -33185,94 +34689,171 @@ export namespace Prisma {
     _max?: NestedEnumCrmLeadAttachmentTypeFilter<$PrismaModel>
   }
 
-  export type TeacherCreateWithoutUserInput = {
+  export type ChatParticipantCreateWithoutUserInput = {
     id?: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    isAdmin?: boolean
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    lastReadAt?: Date | string | null
+    chat: ChatCreateNestedOneWithoutParticipantsInput
+  }
+
+  export type ChatParticipantUncheckedCreateWithoutUserInput = {
+    id?: string
+    chatId: string
+    isAdmin?: boolean
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    lastReadAt?: Date | string | null
+  }
+
+  export type ChatParticipantCreateOrConnectWithoutUserInput = {
+    where: ChatParticipantWhereUniqueInput
+    create: XOR<ChatParticipantCreateWithoutUserInput, ChatParticipantUncheckedCreateWithoutUserInput>
+  }
+
+  export type ChatParticipantCreateManyUserInputEnvelope = {
+    data: ChatParticipantCreateManyUserInput | ChatParticipantCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CrmLeadCreateWithoutAssignedManagerInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
     createdAt?: Date | string
     updatedAt?: Date | string
-    groups?: GroupCreateNestedManyWithoutTeacherInput
-    students?: StudentCreateNestedManyWithoutTeacherInput
-    lessons?: LessonCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
-  }
-
-  export type TeacherUncheckedCreateWithoutUserInput = {
-    id?: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
-    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
-  }
-
-  export type TeacherCreateOrConnectWithoutUserInput = {
-    where: TeacherWhereUniqueInput
-    create: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
-  }
-
-  export type StudentCreateWithoutUserInput = {
-    id?: string
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
     notes?: string | null
-    receiveReports?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    lead?: CrmLeadCreateNestedOneWithoutStudentInput
-    group?: GroupCreateNestedOneWithoutStudentsInput
-    teacher?: TeacherCreateNestedOneWithoutStudentsInput
-    attendances?: AttendanceCreateNestedManyWithoutStudentInput
-    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
-    payments?: PaymentCreateNestedManyWithoutStudentInput
+    teacherApprovedAt?: Date | string | null
+    activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
+    attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
+    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
+    group?: GroupCreateNestedOneWithoutCrmLeadsInput
+    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
+    student?: StudentCreateNestedOneWithoutLeadInput
   }
 
-  export type StudentUncheckedCreateWithoutUserInput = {
+  export type CrmLeadUncheckedCreateWithoutAssignedManagerInput = {
     id?: string
-    leadId?: string | null
-    groupId?: string | null
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdByUserId: string
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
     teacherId?: string | null
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
+    groupId?: string | null
+    centerId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
     notes?: string | null
-    receiveReports?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
-    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    teacherApprovedAt?: Date | string | null
+    activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
+    student?: StudentUncheckedCreateNestedOneWithoutLeadInput
   }
 
-  export type StudentCreateOrConnectWithoutUserInput = {
-    where: StudentWhereUniqueInput
-    create: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
+  export type CrmLeadCreateOrConnectWithoutAssignedManagerInput = {
+    where: CrmLeadWhereUniqueInput
+    create: XOR<CrmLeadCreateWithoutAssignedManagerInput, CrmLeadUncheckedCreateWithoutAssignedManagerInput>
+  }
+
+  export type CrmLeadCreateManyAssignedManagerInputEnvelope = {
+    data: CrmLeadCreateManyAssignedManagerInput | CrmLeadCreateManyAssignedManagerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CrmLeadCreateWithoutCreatedByUserInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
+    activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
+    attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
+    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
+    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    group?: GroupCreateNestedOneWithoutCrmLeadsInput
+    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
+    student?: StudentCreateNestedOneWithoutLeadInput
+  }
+
+  export type CrmLeadUncheckedCreateWithoutCreatedByUserInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignedManagerId?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    teacherId?: string | null
+    groupId?: string | null
+    centerId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
+    activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
+    student?: StudentUncheckedCreateNestedOneWithoutLeadInput
+  }
+
+  export type CrmLeadCreateOrConnectWithoutCreatedByUserInput = {
+    where: CrmLeadWhereUniqueInput
+    create: XOR<CrmLeadCreateWithoutCreatedByUserInput, CrmLeadUncheckedCreateWithoutCreatedByUserInput>
+  }
+
+  export type CrmLeadCreateManyCreatedByUserInputEnvelope = {
+    data: CrmLeadCreateManyCreatedByUserInput | CrmLeadCreateManyCreatedByUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ManagerProfileCreateWithoutUserInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    center: CenterCreateNestedOneWithoutManagerProfilesInput
+  }
+
+  export type ManagerProfileUncheckedCreateWithoutUserInput = {
+    id?: string
+    centerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ManagerProfileCreateOrConnectWithoutUserInput = {
+    where: ManagerProfileWhereUniqueInput
+    create: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
   }
 
   export type MessageCreateWithoutSenderInput = {
@@ -33319,34 +34900,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type ChatParticipantCreateWithoutUserInput = {
-    id?: string
-    isAdmin?: boolean
-    joinedAt?: Date | string
-    leftAt?: Date | string | null
-    lastReadAt?: Date | string | null
-    chat: ChatCreateNestedOneWithoutParticipantsInput
-  }
-
-  export type ChatParticipantUncheckedCreateWithoutUserInput = {
-    id?: string
-    chatId: string
-    isAdmin?: boolean
-    joinedAt?: Date | string
-    leftAt?: Date | string | null
-    lastReadAt?: Date | string | null
-  }
-
-  export type ChatParticipantCreateOrConnectWithoutUserInput = {
-    where: ChatParticipantWhereUniqueInput
-    create: XOR<ChatParticipantCreateWithoutUserInput, ChatParticipantUncheckedCreateWithoutUserInput>
-  }
-
-  export type ChatParticipantCreateManyUserInputEnvelope = {
-    data: ChatParticipantCreateManyUserInput | ChatParticipantCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
   export type NotificationCreateWithoutUserInput = {
     id?: string
     type: string
@@ -33379,226 +34932,240 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type CrmLeadCreateWithoutCreatedByUserInput = {
+  export type AttendanceCreateWithoutMarkedByInput = {
     id?: string
-    status?: $Enums.CrmLeadStatus
+    isPresent: boolean
+    absenceType?: $Enums.AbsenceType | null
+    note?: string | null
+    markedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
-    notes?: string | null
-    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
-    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
-    group?: GroupCreateNestedOneWithoutCrmLeadsInput
-    center?: CenterCreateNestedOneWithoutCrmLeadsInput
-    activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
-    attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
-    student?: StudentCreateNestedOneWithoutLeadInput
+    lesson: LessonCreateNestedOneWithoutAttendancesInput
+    student: StudentCreateNestedOneWithoutAttendancesInput
   }
 
-  export type CrmLeadUncheckedCreateWithoutCreatedByUserInput = {
+  export type AttendanceUncheckedCreateWithoutMarkedByInput = {
     id?: string
-    status?: $Enums.CrmLeadStatus
+    lessonId: string
+    studentId: string
+    isPresent: boolean
+    absenceType?: $Enums.AbsenceType | null
+    note?: string | null
+    markedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    assignedManagerId?: string | null
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    teacherId?: string | null
-    groupId?: string | null
-    centerId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
-    notes?: string | null
-    activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
-    attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
-    student?: StudentUncheckedCreateNestedOneWithoutLeadInput
   }
 
-  export type CrmLeadCreateOrConnectWithoutCreatedByUserInput = {
-    where: CrmLeadWhereUniqueInput
-    create: XOR<CrmLeadCreateWithoutCreatedByUserInput, CrmLeadUncheckedCreateWithoutCreatedByUserInput>
+  export type AttendanceCreateOrConnectWithoutMarkedByInput = {
+    where: AttendanceWhereUniqueInput
+    create: XOR<AttendanceCreateWithoutMarkedByInput, AttendanceUncheckedCreateWithoutMarkedByInput>
   }
 
-  export type CrmLeadCreateManyCreatedByUserInputEnvelope = {
-    data: CrmLeadCreateManyCreatedByUserInput | CrmLeadCreateManyCreatedByUserInput[]
+  export type AttendanceCreateManyMarkedByInputEnvelope = {
+    data: AttendanceCreateManyMarkedByInput | AttendanceCreateManyMarkedByInput[]
     skipDuplicates?: boolean
   }
 
-  export type CrmLeadCreateWithoutAssignedManagerInput = {
+  export type StudentCreateWithoutUserInput = {
     id?: string
-    status?: $Enums.CrmLeadStatus
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
-    notes?: string | null
-    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
-    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
-    group?: GroupCreateNestedOneWithoutCrmLeadsInput
-    center?: CenterCreateNestedOneWithoutCrmLeadsInput
-    activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
-    attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
-    student?: StudentCreateNestedOneWithoutLeadInput
+    attendances?: AttendanceCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
+    payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
   }
 
-  export type CrmLeadUncheckedCreateWithoutAssignedManagerInput = {
+  export type StudentUncheckedCreateWithoutUserInput = {
     id?: string
-    status?: $Enums.CrmLeadStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    createdByUserId: string
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    teacherId?: string | null
     groupId?: string | null
-    centerId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
+    teacherId?: string | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
     notes?: string | null
-    activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
-    attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
-    student?: StudentUncheckedCreateNestedOneWithoutLeadInput
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leadId?: string | null
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
   }
 
-  export type CrmLeadCreateOrConnectWithoutAssignedManagerInput = {
+  export type StudentCreateOrConnectWithoutUserInput = {
+    where: StudentWhereUniqueInput
+    create: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
+  }
+
+  export type TeacherCreateWithoutUserInput = {
+    id?: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
+    groups?: GroupCreateNestedManyWithoutTeacherInput
+    lessons?: LessonCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
+    students?: StudentCreateNestedManyWithoutTeacherInput
+  }
+
+  export type TeacherUncheckedCreateWithoutUserInput = {
+    id?: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
+    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
+    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
+  }
+
+  export type TeacherCreateOrConnectWithoutUserInput = {
+    where: TeacherWhereUniqueInput
+    create: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
+  }
+
+  export type ChatParticipantUpsertWithWhereUniqueWithoutUserInput = {
+    where: ChatParticipantWhereUniqueInput
+    update: XOR<ChatParticipantUpdateWithoutUserInput, ChatParticipantUncheckedUpdateWithoutUserInput>
+    create: XOR<ChatParticipantCreateWithoutUserInput, ChatParticipantUncheckedCreateWithoutUserInput>
+  }
+
+  export type ChatParticipantUpdateWithWhereUniqueWithoutUserInput = {
+    where: ChatParticipantWhereUniqueInput
+    data: XOR<ChatParticipantUpdateWithoutUserInput, ChatParticipantUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ChatParticipantUpdateManyWithWhereWithoutUserInput = {
+    where: ChatParticipantScalarWhereInput
+    data: XOR<ChatParticipantUpdateManyMutationInput, ChatParticipantUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type ChatParticipantScalarWhereInput = {
+    AND?: ChatParticipantScalarWhereInput | ChatParticipantScalarWhereInput[]
+    OR?: ChatParticipantScalarWhereInput[]
+    NOT?: ChatParticipantScalarWhereInput | ChatParticipantScalarWhereInput[]
+    id?: StringFilter<"ChatParticipant"> | string
+    chatId?: StringFilter<"ChatParticipant"> | string
+    userId?: StringFilter<"ChatParticipant"> | string
+    isAdmin?: BoolFilter<"ChatParticipant"> | boolean
+    joinedAt?: DateTimeFilter<"ChatParticipant"> | Date | string
+    leftAt?: DateTimeNullableFilter<"ChatParticipant"> | Date | string | null
+    lastReadAt?: DateTimeNullableFilter<"ChatParticipant"> | Date | string | null
+  }
+
+  export type CrmLeadUpsertWithWhereUniqueWithoutAssignedManagerInput = {
     where: CrmLeadWhereUniqueInput
+    update: XOR<CrmLeadUpdateWithoutAssignedManagerInput, CrmLeadUncheckedUpdateWithoutAssignedManagerInput>
     create: XOR<CrmLeadCreateWithoutAssignedManagerInput, CrmLeadUncheckedCreateWithoutAssignedManagerInput>
   }
 
-  export type CrmLeadCreateManyAssignedManagerInputEnvelope = {
-    data: CrmLeadCreateManyAssignedManagerInput | CrmLeadCreateManyAssignedManagerInput[]
-    skipDuplicates?: boolean
+  export type CrmLeadUpdateWithWhereUniqueWithoutAssignedManagerInput = {
+    where: CrmLeadWhereUniqueInput
+    data: XOR<CrmLeadUpdateWithoutAssignedManagerInput, CrmLeadUncheckedUpdateWithoutAssignedManagerInput>
   }
 
-  export type TeacherUpsertWithoutUserInput = {
-    update: XOR<TeacherUpdateWithoutUserInput, TeacherUncheckedUpdateWithoutUserInput>
-    create: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
-    where?: TeacherWhereInput
+  export type CrmLeadUpdateManyWithWhereWithoutAssignedManagerInput = {
+    where: CrmLeadScalarWhereInput
+    data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutAssignedManagerInput>
   }
 
-  export type TeacherUpdateToOneWithWhereWithoutUserInput = {
-    where?: TeacherWhereInput
-    data: XOR<TeacherUpdateWithoutUserInput, TeacherUncheckedUpdateWithoutUserInput>
+  export type CrmLeadScalarWhereInput = {
+    AND?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
+    OR?: CrmLeadScalarWhereInput[]
+    NOT?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
+    id?: StringFilter<"CrmLead"> | string
+    status?: EnumCrmLeadStatusFilter<"CrmLead"> | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFilter<"CrmLead"> | Date | string
+    updatedAt?: DateTimeFilter<"CrmLead"> | Date | string
+    createdByUserId?: StringFilter<"CrmLead"> | string
+    assignedManagerId?: StringNullableFilter<"CrmLead"> | string | null
+    firstName?: StringNullableFilter<"CrmLead"> | string | null
+    lastName?: StringNullableFilter<"CrmLead"> | string | null
+    phone?: StringNullableFilter<"CrmLead"> | string | null
+    age?: IntNullableFilter<"CrmLead"> | number | null
+    levelId?: StringNullableFilter<"CrmLead"> | string | null
+    teacherId?: StringNullableFilter<"CrmLead"> | string | null
+    groupId?: StringNullableFilter<"CrmLead"> | string | null
+    centerId?: StringNullableFilter<"CrmLead"> | string | null
+    transferFlag?: BoolFilter<"CrmLead"> | boolean
+    transferComment?: StringNullableFilter<"CrmLead"> | string | null
+    archivedReason?: StringNullableFilter<"CrmLead"> | string | null
+    source?: StringNullableFilter<"CrmLead"> | string | null
+    notes?: StringNullableFilter<"CrmLead"> | string | null
+    teacherApprovedAt?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
   }
 
-  export type TeacherUpdateWithoutUserInput = {
+  export type CrmLeadUpsertWithWhereUniqueWithoutCreatedByUserInput = {
+    where: CrmLeadWhereUniqueInput
+    update: XOR<CrmLeadUpdateWithoutCreatedByUserInput, CrmLeadUncheckedUpdateWithoutCreatedByUserInput>
+    create: XOR<CrmLeadCreateWithoutCreatedByUserInput, CrmLeadUncheckedCreateWithoutCreatedByUserInput>
+  }
+
+  export type CrmLeadUpdateWithWhereUniqueWithoutCreatedByUserInput = {
+    where: CrmLeadWhereUniqueInput
+    data: XOR<CrmLeadUpdateWithoutCreatedByUserInput, CrmLeadUncheckedUpdateWithoutCreatedByUserInput>
+  }
+
+  export type CrmLeadUpdateManyWithWhereWithoutCreatedByUserInput = {
+    where: CrmLeadScalarWhereInput
+    data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutCreatedByUserInput>
+  }
+
+  export type ManagerProfileUpsertWithoutUserInput = {
+    update: XOR<ManagerProfileUpdateWithoutUserInput, ManagerProfileUncheckedUpdateWithoutUserInput>
+    create: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    where?: ManagerProfileWhereInput
+  }
+
+  export type ManagerProfileUpdateToOneWithWhereWithoutUserInput = {
+    where?: ManagerProfileWhereInput
+    data: XOR<ManagerProfileUpdateWithoutUserInput, ManagerProfileUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ManagerProfileUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUpdateManyWithoutTeacherNestedInput
-    students?: StudentUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    center?: CenterUpdateOneRequiredWithoutManagerProfilesNestedInput
   }
 
-  export type TeacherUncheckedUpdateWithoutUserInput = {
+  export type ManagerProfileUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    centerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
-    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
-  }
-
-  export type StudentUpsertWithoutUserInput = {
-    update: XOR<StudentUpdateWithoutUserInput, StudentUncheckedUpdateWithoutUserInput>
-    create: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
-    where?: StudentWhereInput
-  }
-
-  export type StudentUpdateToOneWithWhereWithoutUserInput = {
-    where?: StudentWhereInput
-    data: XOR<StudentUpdateWithoutUserInput, StudentUncheckedUpdateWithoutUserInput>
-  }
-
-  export type StudentUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
-    group?: GroupUpdateOneWithoutStudentsNestedInput
-    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
-    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
-    payments?: PaymentUpdateManyWithoutStudentNestedInput
-  }
-
-  export type StudentUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
-    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutSenderInput = {
@@ -33638,35 +35205,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Message"> | Date | string
   }
 
-  export type ChatParticipantUpsertWithWhereUniqueWithoutUserInput = {
-    where: ChatParticipantWhereUniqueInput
-    update: XOR<ChatParticipantUpdateWithoutUserInput, ChatParticipantUncheckedUpdateWithoutUserInput>
-    create: XOR<ChatParticipantCreateWithoutUserInput, ChatParticipantUncheckedCreateWithoutUserInput>
-  }
-
-  export type ChatParticipantUpdateWithWhereUniqueWithoutUserInput = {
-    where: ChatParticipantWhereUniqueInput
-    data: XOR<ChatParticipantUpdateWithoutUserInput, ChatParticipantUncheckedUpdateWithoutUserInput>
-  }
-
-  export type ChatParticipantUpdateManyWithWhereWithoutUserInput = {
-    where: ChatParticipantScalarWhereInput
-    data: XOR<ChatParticipantUpdateManyMutationInput, ChatParticipantUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type ChatParticipantScalarWhereInput = {
-    AND?: ChatParticipantScalarWhereInput | ChatParticipantScalarWhereInput[]
-    OR?: ChatParticipantScalarWhereInput[]
-    NOT?: ChatParticipantScalarWhereInput | ChatParticipantScalarWhereInput[]
-    id?: StringFilter<"ChatParticipant"> | string
-    chatId?: StringFilter<"ChatParticipant"> | string
-    userId?: StringFilter<"ChatParticipant"> | string
-    isAdmin?: BoolFilter<"ChatParticipant"> | boolean
-    joinedAt?: DateTimeFilter<"ChatParticipant"> | Date | string
-    leftAt?: DateTimeNullableFilter<"ChatParticipant"> | Date | string | null
-    lastReadAt?: DateTimeNullableFilter<"ChatParticipant"> | Date | string | null
-  }
-
   export type NotificationUpsertWithWhereUniqueWithoutUserInput = {
     where: NotificationWhereUniqueInput
     update: XOR<NotificationUpdateWithoutUserInput, NotificationUncheckedUpdateWithoutUserInput>
@@ -33698,104 +35236,138 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
-  export type CrmLeadUpsertWithWhereUniqueWithoutCreatedByUserInput = {
-    where: CrmLeadWhereUniqueInput
-    update: XOR<CrmLeadUpdateWithoutCreatedByUserInput, CrmLeadUncheckedUpdateWithoutCreatedByUserInput>
-    create: XOR<CrmLeadCreateWithoutCreatedByUserInput, CrmLeadUncheckedCreateWithoutCreatedByUserInput>
+  export type AttendanceUpsertWithWhereUniqueWithoutMarkedByInput = {
+    where: AttendanceWhereUniqueInput
+    update: XOR<AttendanceUpdateWithoutMarkedByInput, AttendanceUncheckedUpdateWithoutMarkedByInput>
+    create: XOR<AttendanceCreateWithoutMarkedByInput, AttendanceUncheckedCreateWithoutMarkedByInput>
   }
 
-  export type CrmLeadUpdateWithWhereUniqueWithoutCreatedByUserInput = {
-    where: CrmLeadWhereUniqueInput
-    data: XOR<CrmLeadUpdateWithoutCreatedByUserInput, CrmLeadUncheckedUpdateWithoutCreatedByUserInput>
+  export type AttendanceUpdateWithWhereUniqueWithoutMarkedByInput = {
+    where: AttendanceWhereUniqueInput
+    data: XOR<AttendanceUpdateWithoutMarkedByInput, AttendanceUncheckedUpdateWithoutMarkedByInput>
   }
 
-  export type CrmLeadUpdateManyWithWhereWithoutCreatedByUserInput = {
-    where: CrmLeadScalarWhereInput
-    data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutCreatedByUserInput>
+  export type AttendanceUpdateManyWithWhereWithoutMarkedByInput = {
+    where: AttendanceScalarWhereInput
+    data: XOR<AttendanceUpdateManyMutationInput, AttendanceUncheckedUpdateManyWithoutMarkedByInput>
   }
 
-  export type CrmLeadScalarWhereInput = {
-    AND?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
-    OR?: CrmLeadScalarWhereInput[]
-    NOT?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
-    id?: StringFilter<"CrmLead"> | string
-    status?: EnumCrmLeadStatusFilter<"CrmLead"> | $Enums.CrmLeadStatus
-    createdAt?: DateTimeFilter<"CrmLead"> | Date | string
-    updatedAt?: DateTimeFilter<"CrmLead"> | Date | string
-    createdByUserId?: StringFilter<"CrmLead"> | string
-    assignedManagerId?: StringNullableFilter<"CrmLead"> | string | null
-    firstName?: StringNullableFilter<"CrmLead"> | string | null
-    lastName?: StringNullableFilter<"CrmLead"> | string | null
-    phone?: StringNullableFilter<"CrmLead"> | string | null
-    age?: IntNullableFilter<"CrmLead"> | number | null
-    levelId?: StringNullableFilter<"CrmLead"> | string | null
-    teacherId?: StringNullableFilter<"CrmLead"> | string | null
-    groupId?: StringNullableFilter<"CrmLead"> | string | null
-    centerId?: StringNullableFilter<"CrmLead"> | string | null
-    transferFlag?: BoolFilter<"CrmLead"> | boolean
-    transferComment?: StringNullableFilter<"CrmLead"> | string | null
-    teacherApprovedAt?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
-    archivedReason?: StringNullableFilter<"CrmLead"> | string | null
-    source?: StringNullableFilter<"CrmLead"> | string | null
-    notes?: StringNullableFilter<"CrmLead"> | string | null
+  export type AttendanceScalarWhereInput = {
+    AND?: AttendanceScalarWhereInput | AttendanceScalarWhereInput[]
+    OR?: AttendanceScalarWhereInput[]
+    NOT?: AttendanceScalarWhereInput | AttendanceScalarWhereInput[]
+    id?: StringFilter<"Attendance"> | string
+    lessonId?: StringFilter<"Attendance"> | string
+    studentId?: StringFilter<"Attendance"> | string
+    markedById?: StringNullableFilter<"Attendance"> | string | null
+    isPresent?: BoolFilter<"Attendance"> | boolean
+    absenceType?: EnumAbsenceTypeNullableFilter<"Attendance"> | $Enums.AbsenceType | null
+    note?: StringNullableFilter<"Attendance"> | string | null
+    markedAt?: DateTimeFilter<"Attendance"> | Date | string
+    createdAt?: DateTimeFilter<"Attendance"> | Date | string
+    updatedAt?: DateTimeFilter<"Attendance"> | Date | string
   }
 
-  export type CrmLeadUpsertWithWhereUniqueWithoutAssignedManagerInput = {
-    where: CrmLeadWhereUniqueInput
-    update: XOR<CrmLeadUpdateWithoutAssignedManagerInput, CrmLeadUncheckedUpdateWithoutAssignedManagerInput>
-    create: XOR<CrmLeadCreateWithoutAssignedManagerInput, CrmLeadUncheckedCreateWithoutAssignedManagerInput>
+  export type StudentUpsertWithoutUserInput = {
+    update: XOR<StudentUpdateWithoutUserInput, StudentUncheckedUpdateWithoutUserInput>
+    create: XOR<StudentCreateWithoutUserInput, StudentUncheckedCreateWithoutUserInput>
+    where?: StudentWhereInput
   }
 
-  export type CrmLeadUpdateWithWhereUniqueWithoutAssignedManagerInput = {
-    where: CrmLeadWhereUniqueInput
-    data: XOR<CrmLeadUpdateWithoutAssignedManagerInput, CrmLeadUncheckedUpdateWithoutAssignedManagerInput>
+  export type StudentUpdateToOneWithWhereWithoutUserInput = {
+    where?: StudentWhereInput
+    data: XOR<StudentUpdateWithoutUserInput, StudentUncheckedUpdateWithoutUserInput>
   }
 
-  export type CrmLeadUpdateManyWithWhereWithoutAssignedManagerInput = {
-    where: CrmLeadScalarWhereInput
-    data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutAssignedManagerInput>
+  export type StudentUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
   }
 
-  export type GroupCreateWithoutCenterInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    teacher?: TeacherCreateNestedOneWithoutGroupsInput
-    students?: StudentCreateNestedManyWithoutGroupInput
-    lessons?: LessonCreateNestedManyWithoutGroupInput
-    chat?: ChatCreateNestedOneWithoutGroupInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+  export type StudentUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
   }
 
-  export type GroupUncheckedCreateWithoutCenterInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    teacherId?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
-    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+  export type TeacherUpsertWithoutUserInput = {
+    update: XOR<TeacherUpdateWithoutUserInput, TeacherUncheckedUpdateWithoutUserInput>
+    create: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
+    where?: TeacherWhereInput
   }
 
-  export type GroupCreateOrConnectWithoutCenterInput = {
-    where: GroupWhereUniqueInput
-    create: XOR<GroupCreateWithoutCenterInput, GroupUncheckedCreateWithoutCenterInput>
+  export type TeacherUpdateToOneWithWhereWithoutUserInput = {
+    where?: TeacherWhereInput
+    data: XOR<TeacherUpdateWithoutUserInput, TeacherUncheckedUpdateWithoutUserInput>
   }
 
-  export type GroupCreateManyCenterInputEnvelope = {
-    data: GroupCreateManyCenterInput | GroupCreateManyCenterInput[]
-    skipDuplicates?: boolean
+  export type TeacherUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
+    students?: StudentUpdateManyWithoutTeacherNestedInput
+  }
+
+  export type TeacherUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
+    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
   }
 
   export type CrmLeadCreateWithoutCenterInput = {
@@ -33810,16 +35382,16 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
-    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
-    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
-    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
-    group?: GroupCreateNestedOneWithoutCrmLeadsInput
+    teacherApprovedAt?: Date | string | null
     activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
     attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
+    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
+    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
+    group?: GroupCreateNestedOneWithoutCrmLeadsInput
+    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
     student?: StudentCreateNestedOneWithoutLeadInput
   }
 
@@ -33839,10 +35411,10 @@ export namespace Prisma {
     groupId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
+    teacherApprovedAt?: Date | string | null
     activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
     attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
     student?: StudentUncheckedCreateNestedOneWithoutLeadInput
@@ -33856,6 +35428,88 @@ export namespace Prisma {
   export type CrmLeadCreateManyCenterInputEnvelope = {
     data: CrmLeadCreateManyCenterInput | CrmLeadCreateManyCenterInput[]
     skipDuplicates?: boolean
+  }
+
+  export type GroupCreateWithoutCenterInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+    teacher?: TeacherCreateNestedOneWithoutGroupsInput
+    lessons?: LessonCreateNestedManyWithoutGroupInput
+    students?: StudentCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutCenterInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    teacherId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
+    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutCenterInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutCenterInput, GroupUncheckedCreateWithoutCenterInput>
+  }
+
+  export type GroupCreateManyCenterInputEnvelope = {
+    data: GroupCreateManyCenterInput | GroupCreateManyCenterInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ManagerProfileCreateWithoutCenterInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutManagerProfileInput
+  }
+
+  export type ManagerProfileUncheckedCreateWithoutCenterInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ManagerProfileCreateOrConnectWithoutCenterInput = {
+    where: ManagerProfileWhereUniqueInput
+    create: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput>
+  }
+
+  export type ManagerProfileCreateManyCenterInputEnvelope = {
+    data: ManagerProfileCreateManyCenterInput | ManagerProfileCreateManyCenterInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CrmLeadUpsertWithWhereUniqueWithoutCenterInput = {
+    where: CrmLeadWhereUniqueInput
+    update: XOR<CrmLeadUpdateWithoutCenterInput, CrmLeadUncheckedUpdateWithoutCenterInput>
+    create: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput>
+  }
+
+  export type CrmLeadUpdateWithWhereUniqueWithoutCenterInput = {
+    where: CrmLeadWhereUniqueInput
+    data: XOR<CrmLeadUpdateWithoutCenterInput, CrmLeadUncheckedUpdateWithoutCenterInput>
+  }
+
+  export type CrmLeadUpdateManyWithWhereWithoutCenterInput = {
+    where: CrmLeadScalarWhereInput
+    data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutCenterInput>
   }
 
   export type GroupUpsertWithWhereUniqueWithoutCenterInput = {
@@ -33890,23 +35544,34 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Group"> | Date | string
   }
 
-  export type CrmLeadUpsertWithWhereUniqueWithoutCenterInput = {
-    where: CrmLeadWhereUniqueInput
-    update: XOR<CrmLeadUpdateWithoutCenterInput, CrmLeadUncheckedUpdateWithoutCenterInput>
-    create: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput>
+  export type ManagerProfileUpsertWithWhereUniqueWithoutCenterInput = {
+    where: ManagerProfileWhereUniqueInput
+    update: XOR<ManagerProfileUpdateWithoutCenterInput, ManagerProfileUncheckedUpdateWithoutCenterInput>
+    create: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput>
   }
 
-  export type CrmLeadUpdateWithWhereUniqueWithoutCenterInput = {
-    where: CrmLeadWhereUniqueInput
-    data: XOR<CrmLeadUpdateWithoutCenterInput, CrmLeadUncheckedUpdateWithoutCenterInput>
+  export type ManagerProfileUpdateWithWhereUniqueWithoutCenterInput = {
+    where: ManagerProfileWhereUniqueInput
+    data: XOR<ManagerProfileUpdateWithoutCenterInput, ManagerProfileUncheckedUpdateWithoutCenterInput>
   }
 
-  export type CrmLeadUpdateManyWithWhereWithoutCenterInput = {
-    where: CrmLeadScalarWhereInput
-    data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutCenterInput>
+  export type ManagerProfileUpdateManyWithWhereWithoutCenterInput = {
+    where: ManagerProfileScalarWhereInput
+    data: XOR<ManagerProfileUpdateManyMutationInput, ManagerProfileUncheckedUpdateManyWithoutCenterInput>
   }
 
-  export type CenterCreateWithoutGroupsInput = {
+  export type ManagerProfileScalarWhereInput = {
+    AND?: ManagerProfileScalarWhereInput | ManagerProfileScalarWhereInput[]
+    OR?: ManagerProfileScalarWhereInput[]
+    NOT?: ManagerProfileScalarWhereInput | ManagerProfileScalarWhereInput[]
+    id?: StringFilter<"ManagerProfile"> | string
+    userId?: StringFilter<"ManagerProfile"> | string
+    centerId?: StringFilter<"ManagerProfile"> | string
+    createdAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    updatedAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+  }
+
+  export type CenterCreateWithoutManagerProfilesInput = {
     id?: string
     name: string
     address?: string | null
@@ -33918,9 +35583,10 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
+    groups?: GroupCreateNestedManyWithoutCenterInput
   }
 
-  export type CenterUncheckedCreateWithoutGroupsInput = {
+  export type CenterUncheckedCreateWithoutManagerProfilesInput = {
     id?: string
     name: string
     address?: string | null
@@ -33932,166 +35598,161 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
+    groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
   }
 
-  export type CenterCreateOrConnectWithoutGroupsInput = {
+  export type CenterCreateOrConnectWithoutManagerProfilesInput = {
     where: CenterWhereUniqueInput
-    create: XOR<CenterCreateWithoutGroupsInput, CenterUncheckedCreateWithoutGroupsInput>
+    create: XOR<CenterCreateWithoutManagerProfilesInput, CenterUncheckedCreateWithoutManagerProfilesInput>
   }
 
-  export type TeacherCreateWithoutGroupsInput = {
+  export type UserCreateWithoutManagerProfileInput = {
     id?: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTeacherInput
-    students?: StudentCreateNestedManyWithoutTeacherInput
-    lessons?: LessonCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
   }
 
-  export type TeacherUncheckedCreateWithoutGroupsInput = {
+  export type UserUncheckedCreateWithoutManagerProfileInput = {
     id?: string
-    userId: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
   }
 
-  export type TeacherCreateOrConnectWithoutGroupsInput = {
-    where: TeacherWhereUniqueInput
-    create: XOR<TeacherCreateWithoutGroupsInput, TeacherUncheckedCreateWithoutGroupsInput>
+  export type UserCreateOrConnectWithoutManagerProfileInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutManagerProfileInput, UserUncheckedCreateWithoutManagerProfileInput>
   }
 
-  export type StudentCreateWithoutGroupInput = {
-    id?: string
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
-    notes?: string | null
-    receiveReports?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutStudentInput
-    lead?: CrmLeadCreateNestedOneWithoutStudentInput
-    teacher?: TeacherCreateNestedOneWithoutStudentsInput
-    attendances?: AttendanceCreateNestedManyWithoutStudentInput
-    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
-    payments?: PaymentCreateNestedManyWithoutStudentInput
+  export type CenterUpsertWithoutManagerProfilesInput = {
+    update: XOR<CenterUpdateWithoutManagerProfilesInput, CenterUncheckedUpdateWithoutManagerProfilesInput>
+    create: XOR<CenterCreateWithoutManagerProfilesInput, CenterUncheckedCreateWithoutManagerProfilesInput>
+    where?: CenterWhereInput
   }
 
-  export type StudentUncheckedCreateWithoutGroupInput = {
-    id?: string
-    userId: string
-    leadId?: string | null
-    teacherId?: string | null
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
-    notes?: string | null
-    receiveReports?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
-    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+  export type CenterUpdateToOneWithWhereWithoutManagerProfilesInput = {
+    where?: CenterWhereInput
+    data: XOR<CenterUpdateWithoutManagerProfilesInput, CenterUncheckedUpdateWithoutManagerProfilesInput>
   }
 
-  export type StudentCreateOrConnectWithoutGroupInput = {
-    where: StudentWhereUniqueInput
-    create: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput>
+  export type CenterUpdateWithoutManagerProfilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
+    groups?: GroupUpdateManyWithoutCenterNestedInput
   }
 
-  export type StudentCreateManyGroupInputEnvelope = {
-    data: StudentCreateManyGroupInput | StudentCreateManyGroupInput[]
-    skipDuplicates?: boolean
+  export type CenterUncheckedUpdateWithoutManagerProfilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
   }
 
-  export type LessonCreateWithoutGroupInput = {
-    id?: string
-    scheduledAt: Date | string
-    duration?: number
-    topic?: string | null
-    description?: string | null
-    status?: $Enums.LessonStatus
-    vocabularySent?: boolean
-    vocabularySentAt?: Date | string | null
-    feedbacksCompleted?: boolean
-    absenceMarked?: boolean
-    absenceMarkedAt?: Date | string | null
-    voiceSent?: boolean
-    voiceSentAt?: Date | string | null
-    textSent?: boolean
-    textSentAt?: Date | string | null
-    completedAt?: Date | string | null
-    notes?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    teacher: TeacherCreateNestedOneWithoutLessonsInput
-    attendances?: AttendanceCreateNestedManyWithoutLessonInput
-    feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
+  export type UserUpsertWithoutManagerProfileInput = {
+    update: XOR<UserUpdateWithoutManagerProfileInput, UserUncheckedUpdateWithoutManagerProfileInput>
+    create: XOR<UserCreateWithoutManagerProfileInput, UserUncheckedCreateWithoutManagerProfileInput>
+    where?: UserWhereInput
   }
 
-  export type LessonUncheckedCreateWithoutGroupInput = {
-    id?: string
-    teacherId: string
-    scheduledAt: Date | string
-    duration?: number
-    topic?: string | null
-    description?: string | null
-    status?: $Enums.LessonStatus
-    vocabularySent?: boolean
-    vocabularySentAt?: Date | string | null
-    feedbacksCompleted?: boolean
-    absenceMarked?: boolean
-    absenceMarkedAt?: Date | string | null
-    voiceSent?: boolean
-    voiceSentAt?: Date | string | null
-    textSent?: boolean
-    textSentAt?: Date | string | null
-    completedAt?: Date | string | null
-    notes?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutLessonInput
+  export type UserUpdateToOneWithWhereWithoutManagerProfileInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutManagerProfileInput, UserUncheckedUpdateWithoutManagerProfileInput>
   }
 
-  export type LessonCreateOrConnectWithoutGroupInput = {
-    where: LessonWhereUniqueInput
-    create: XOR<LessonCreateWithoutGroupInput, LessonUncheckedCreateWithoutGroupInput>
+  export type UserUpdateWithoutManagerProfileInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
   }
 
-  export type LessonCreateManyGroupInputEnvelope = {
-    data: LessonCreateManyGroupInput | LessonCreateManyGroupInput[]
-    skipDuplicates?: boolean
+  export type UserUncheckedUpdateWithoutManagerProfileInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ChatCreateWithoutGroupInput = {
@@ -34133,16 +35794,16 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
-    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
-    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
-    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
-    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    teacherApprovedAt?: Date | string | null
     activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
     attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
+    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
+    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
+    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
     student?: StudentCreateNestedOneWithoutLeadInput
   }
 
@@ -34162,10 +35823,10 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
+    teacherApprovedAt?: Date | string | null
     activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
     attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
     student?: StudentUncheckedCreateNestedOneWithoutLeadInput
@@ -34181,174 +35842,194 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type CenterUpsertWithoutGroupsInput = {
-    update: XOR<CenterUpdateWithoutGroupsInput, CenterUncheckedUpdateWithoutGroupsInput>
+  export type CenterCreateWithoutGroupsInput = {
+    id?: string
+    name: string
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    description?: string | null
+    colorHex?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
+  }
+
+  export type CenterUncheckedCreateWithoutGroupsInput = {
+    id?: string
+    name: string
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    description?: string | null
+    colorHex?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
+  }
+
+  export type CenterCreateOrConnectWithoutGroupsInput = {
+    where: CenterWhereUniqueInput
     create: XOR<CenterCreateWithoutGroupsInput, CenterUncheckedCreateWithoutGroupsInput>
-    where?: CenterWhereInput
   }
 
-  export type CenterUpdateToOneWithWhereWithoutGroupsInput = {
-    where?: CenterWhereInput
-    data: XOR<CenterUpdateWithoutGroupsInput, CenterUncheckedUpdateWithoutGroupsInput>
+  export type TeacherCreateWithoutGroupsInput = {
+    id?: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
+    lessons?: LessonCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
+    students?: StudentCreateNestedManyWithoutTeacherInput
+    user: UserCreateNestedOneWithoutTeacherInput
   }
 
-  export type CenterUpdateWithoutGroupsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
+  export type TeacherUncheckedCreateWithoutGroupsInput = {
+    id?: string
+    userId: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
+    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
   }
 
-  export type CenterUncheckedUpdateWithoutGroupsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
-  }
-
-  export type TeacherUpsertWithoutGroupsInput = {
-    update: XOR<TeacherUpdateWithoutGroupsInput, TeacherUncheckedUpdateWithoutGroupsInput>
+  export type TeacherCreateOrConnectWithoutGroupsInput = {
+    where: TeacherWhereUniqueInput
     create: XOR<TeacherCreateWithoutGroupsInput, TeacherUncheckedCreateWithoutGroupsInput>
-    where?: TeacherWhereInput
   }
 
-  export type TeacherUpdateToOneWithWhereWithoutGroupsInput = {
-    where?: TeacherWhereInput
-    data: XOR<TeacherUpdateWithoutGroupsInput, TeacherUncheckedUpdateWithoutGroupsInput>
+  export type LessonCreateWithoutGroupInput = {
+    id?: string
+    scheduledAt: Date | string
+    duration?: number
+    topic?: string | null
+    description?: string | null
+    status?: $Enums.LessonStatus
+    vocabularySent?: boolean
+    vocabularySentAt?: Date | string | null
+    feedbacksCompleted?: boolean
+    absenceMarked?: boolean
+    absenceMarkedAt?: Date | string | null
+    voiceSent?: boolean
+    voiceSentAt?: Date | string | null
+    textSent?: boolean
+    textSentAt?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceCreateNestedManyWithoutLessonInput
+    feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
+    teacher: TeacherCreateNestedOneWithoutLessonsInput
   }
 
-  export type TeacherUpdateWithoutGroupsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
-    students?: StudentUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+  export type LessonUncheckedCreateWithoutGroupInput = {
+    id?: string
+    teacherId: string
+    scheduledAt: Date | string
+    duration?: number
+    topic?: string | null
+    description?: string | null
+    status?: $Enums.LessonStatus
+    vocabularySent?: boolean
+    vocabularySentAt?: Date | string | null
+    feedbacksCompleted?: boolean
+    absenceMarked?: boolean
+    absenceMarkedAt?: Date | string | null
+    voiceSent?: boolean
+    voiceSentAt?: Date | string | null
+    textSent?: boolean
+    textSentAt?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutLessonInput
   }
 
-  export type TeacherUncheckedUpdateWithoutGroupsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
-  }
-
-  export type StudentUpsertWithWhereUniqueWithoutGroupInput = {
-    where: StudentWhereUniqueInput
-    update: XOR<StudentUpdateWithoutGroupInput, StudentUncheckedUpdateWithoutGroupInput>
-    create: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput>
-  }
-
-  export type StudentUpdateWithWhereUniqueWithoutGroupInput = {
-    where: StudentWhereUniqueInput
-    data: XOR<StudentUpdateWithoutGroupInput, StudentUncheckedUpdateWithoutGroupInput>
-  }
-
-  export type StudentUpdateManyWithWhereWithoutGroupInput = {
-    where: StudentScalarWhereInput
-    data: XOR<StudentUpdateManyMutationInput, StudentUncheckedUpdateManyWithoutGroupInput>
-  }
-
-  export type StudentScalarWhereInput = {
-    AND?: StudentScalarWhereInput | StudentScalarWhereInput[]
-    OR?: StudentScalarWhereInput[]
-    NOT?: StudentScalarWhereInput | StudentScalarWhereInput[]
-    id?: StringFilter<"Student"> | string
-    userId?: StringFilter<"Student"> | string
-    leadId?: StringNullableFilter<"Student"> | string | null
-    groupId?: StringNullableFilter<"Student"> | string | null
-    teacherId?: StringNullableFilter<"Student"> | string | null
-    parentName?: StringNullableFilter<"Student"> | string | null
-    parentPhone?: StringNullableFilter<"Student"> | string | null
-    parentEmail?: StringNullableFilter<"Student"> | string | null
-    monthlyFee?: DecimalFilter<"Student"> | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFilter<"Student"> | Date | string
-    registerDate?: DateTimeNullableFilter<"Student"> | Date | string | null
-    notes?: StringNullableFilter<"Student"> | string | null
-    receiveReports?: BoolFilter<"Student"> | boolean
-    createdAt?: DateTimeFilter<"Student"> | Date | string
-    updatedAt?: DateTimeFilter<"Student"> | Date | string
-  }
-
-  export type LessonUpsertWithWhereUniqueWithoutGroupInput = {
+  export type LessonCreateOrConnectWithoutGroupInput = {
     where: LessonWhereUniqueInput
-    update: XOR<LessonUpdateWithoutGroupInput, LessonUncheckedUpdateWithoutGroupInput>
     create: XOR<LessonCreateWithoutGroupInput, LessonUncheckedCreateWithoutGroupInput>
   }
 
-  export type LessonUpdateWithWhereUniqueWithoutGroupInput = {
-    where: LessonWhereUniqueInput
-    data: XOR<LessonUpdateWithoutGroupInput, LessonUncheckedUpdateWithoutGroupInput>
+  export type LessonCreateManyGroupInputEnvelope = {
+    data: LessonCreateManyGroupInput | LessonCreateManyGroupInput[]
+    skipDuplicates?: boolean
   }
 
-  export type LessonUpdateManyWithWhereWithoutGroupInput = {
-    where: LessonScalarWhereInput
-    data: XOR<LessonUpdateManyMutationInput, LessonUncheckedUpdateManyWithoutGroupInput>
+  export type StudentCreateWithoutGroupInput = {
+    id?: string
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
+    payments?: PaymentCreateNestedManyWithoutStudentInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
   }
 
-  export type LessonScalarWhereInput = {
-    AND?: LessonScalarWhereInput | LessonScalarWhereInput[]
-    OR?: LessonScalarWhereInput[]
-    NOT?: LessonScalarWhereInput | LessonScalarWhereInput[]
-    id?: StringFilter<"Lesson"> | string
-    groupId?: StringFilter<"Lesson"> | string
-    teacherId?: StringFilter<"Lesson"> | string
-    scheduledAt?: DateTimeFilter<"Lesson"> | Date | string
-    duration?: IntFilter<"Lesson"> | number
-    topic?: StringNullableFilter<"Lesson"> | string | null
-    description?: StringNullableFilter<"Lesson"> | string | null
-    status?: EnumLessonStatusFilter<"Lesson"> | $Enums.LessonStatus
-    vocabularySent?: BoolFilter<"Lesson"> | boolean
-    vocabularySentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
-    feedbacksCompleted?: BoolFilter<"Lesson"> | boolean
-    absenceMarked?: BoolFilter<"Lesson"> | boolean
-    absenceMarkedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
-    voiceSent?: BoolFilter<"Lesson"> | boolean
-    voiceSentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
-    textSent?: BoolFilter<"Lesson"> | boolean
-    textSentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
-    completedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
-    notes?: StringNullableFilter<"Lesson"> | string | null
-    createdAt?: DateTimeFilter<"Lesson"> | Date | string
-    updatedAt?: DateTimeFilter<"Lesson"> | Date | string
+  export type StudentUncheckedCreateWithoutGroupInput = {
+    id?: string
+    userId: string
+    teacherId?: string | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leadId?: string | null
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+  }
+
+  export type StudentCreateOrConnectWithoutGroupInput = {
+    where: StudentWhereUniqueInput
+    create: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput>
+  }
+
+  export type StudentCreateManyGroupInputEnvelope = {
+    data: StudentCreateManyGroupInput | StudentCreateManyGroupInput[]
+    skipDuplicates?: boolean
   }
 
   export type ChatUpsertWithoutGroupInput = {
@@ -34400,202 +36081,267 @@ export namespace Prisma {
     data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutGroupInput>
   }
 
-  export type UserCreateWithoutTeacherInput = {
-    id?: string
-    email: string
-    passwordHash: string
-    firstName: string
-    lastName: string
-    phone?: string | null
-    avatarUrl?: string | null
-    role: $Enums.UserRole
-    status?: $Enums.UserStatus
-    lastLoginAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    student?: StudentCreateNestedOneWithoutUserInput
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
-    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
-    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+  export type CenterUpsertWithoutGroupsInput = {
+    update: XOR<CenterUpdateWithoutGroupsInput, CenterUncheckedUpdateWithoutGroupsInput>
+    create: XOR<CenterCreateWithoutGroupsInput, CenterUncheckedCreateWithoutGroupsInput>
+    where?: CenterWhereInput
   }
 
-  export type UserUncheckedCreateWithoutTeacherInput = {
-    id?: string
-    email: string
-    passwordHash: string
-    firstName: string
-    lastName: string
-    phone?: string | null
-    avatarUrl?: string | null
-    role: $Enums.UserRole
-    status?: $Enums.UserStatus
-    lastLoginAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    student?: StudentUncheckedCreateNestedOneWithoutUserInput
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
-    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
-    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+  export type CenterUpdateToOneWithWhereWithoutGroupsInput = {
+    where?: CenterWhereInput
+    data: XOR<CenterUpdateWithoutGroupsInput, CenterUncheckedUpdateWithoutGroupsInput>
   }
 
-  export type UserCreateOrConnectWithoutTeacherInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutTeacherInput, UserUncheckedCreateWithoutTeacherInput>
+  export type CenterUpdateWithoutGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
   }
 
-  export type GroupCreateWithoutTeacherInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    center: CenterCreateNestedOneWithoutGroupsInput
-    students?: StudentCreateNestedManyWithoutGroupInput
-    lessons?: LessonCreateNestedManyWithoutGroupInput
-    chat?: ChatCreateNestedOneWithoutGroupInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+  export type CenterUncheckedUpdateWithoutGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
   }
 
-  export type GroupUncheckedCreateWithoutTeacherInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    centerId: string
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
-    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+  export type TeacherUpsertWithoutGroupsInput = {
+    update: XOR<TeacherUpdateWithoutGroupsInput, TeacherUncheckedUpdateWithoutGroupsInput>
+    create: XOR<TeacherCreateWithoutGroupsInput, TeacherUncheckedCreateWithoutGroupsInput>
+    where?: TeacherWhereInput
   }
 
-  export type GroupCreateOrConnectWithoutTeacherInput = {
-    where: GroupWhereUniqueInput
-    create: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput>
+  export type TeacherUpdateToOneWithWhereWithoutGroupsInput = {
+    where?: TeacherWhereInput
+    data: XOR<TeacherUpdateWithoutGroupsInput, TeacherUncheckedUpdateWithoutGroupsInput>
   }
 
-  export type GroupCreateManyTeacherInputEnvelope = {
-    data: GroupCreateManyTeacherInput | GroupCreateManyTeacherInput[]
-    skipDuplicates?: boolean
+  export type TeacherUpdateWithoutGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
+    students?: StudentUpdateManyWithoutTeacherNestedInput
+    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
   }
 
-  export type StudentCreateWithoutTeacherInput = {
-    id?: string
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
-    notes?: string | null
-    receiveReports?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutStudentInput
-    lead?: CrmLeadCreateNestedOneWithoutStudentInput
-    group?: GroupCreateNestedOneWithoutStudentsInput
-    attendances?: AttendanceCreateNestedManyWithoutStudentInput
-    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
-    payments?: PaymentCreateNestedManyWithoutStudentInput
+  export type TeacherUncheckedUpdateWithoutGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
+    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
   }
 
-  export type StudentUncheckedCreateWithoutTeacherInput = {
-    id?: string
-    userId: string
-    leadId?: string | null
-    groupId?: string | null
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
-    notes?: string | null
-    receiveReports?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
-    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
-  }
-
-  export type StudentCreateOrConnectWithoutTeacherInput = {
-    where: StudentWhereUniqueInput
-    create: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput>
-  }
-
-  export type StudentCreateManyTeacherInputEnvelope = {
-    data: StudentCreateManyTeacherInput | StudentCreateManyTeacherInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type LessonCreateWithoutTeacherInput = {
-    id?: string
-    scheduledAt: Date | string
-    duration?: number
-    topic?: string | null
-    description?: string | null
-    status?: $Enums.LessonStatus
-    vocabularySent?: boolean
-    vocabularySentAt?: Date | string | null
-    feedbacksCompleted?: boolean
-    absenceMarked?: boolean
-    absenceMarkedAt?: Date | string | null
-    voiceSent?: boolean
-    voiceSentAt?: Date | string | null
-    textSent?: boolean
-    textSentAt?: Date | string | null
-    completedAt?: Date | string | null
-    notes?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    group: GroupCreateNestedOneWithoutLessonsInput
-    attendances?: AttendanceCreateNestedManyWithoutLessonInput
-    feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
-  }
-
-  export type LessonUncheckedCreateWithoutTeacherInput = {
-    id?: string
-    groupId: string
-    scheduledAt: Date | string
-    duration?: number
-    topic?: string | null
-    description?: string | null
-    status?: $Enums.LessonStatus
-    vocabularySent?: boolean
-    vocabularySentAt?: Date | string | null
-    feedbacksCompleted?: boolean
-    absenceMarked?: boolean
-    absenceMarkedAt?: Date | string | null
-    voiceSent?: boolean
-    voiceSentAt?: Date | string | null
-    textSent?: boolean
-    textSentAt?: Date | string | null
-    completedAt?: Date | string | null
-    notes?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutLessonInput
-  }
-
-  export type LessonCreateOrConnectWithoutTeacherInput = {
+  export type LessonUpsertWithWhereUniqueWithoutGroupInput = {
     where: LessonWhereUniqueInput
-    create: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput>
+    update: XOR<LessonUpdateWithoutGroupInput, LessonUncheckedUpdateWithoutGroupInput>
+    create: XOR<LessonCreateWithoutGroupInput, LessonUncheckedCreateWithoutGroupInput>
   }
 
-  export type LessonCreateManyTeacherInputEnvelope = {
-    data: LessonCreateManyTeacherInput | LessonCreateManyTeacherInput[]
+  export type LessonUpdateWithWhereUniqueWithoutGroupInput = {
+    where: LessonWhereUniqueInput
+    data: XOR<LessonUpdateWithoutGroupInput, LessonUncheckedUpdateWithoutGroupInput>
+  }
+
+  export type LessonUpdateManyWithWhereWithoutGroupInput = {
+    where: LessonScalarWhereInput
+    data: XOR<LessonUpdateManyMutationInput, LessonUncheckedUpdateManyWithoutGroupInput>
+  }
+
+  export type LessonScalarWhereInput = {
+    AND?: LessonScalarWhereInput | LessonScalarWhereInput[]
+    OR?: LessonScalarWhereInput[]
+    NOT?: LessonScalarWhereInput | LessonScalarWhereInput[]
+    id?: StringFilter<"Lesson"> | string
+    groupId?: StringFilter<"Lesson"> | string
+    teacherId?: StringFilter<"Lesson"> | string
+    scheduledAt?: DateTimeFilter<"Lesson"> | Date | string
+    duration?: IntFilter<"Lesson"> | number
+    topic?: StringNullableFilter<"Lesson"> | string | null
+    description?: StringNullableFilter<"Lesson"> | string | null
+    status?: EnumLessonStatusFilter<"Lesson"> | $Enums.LessonStatus
+    vocabularySent?: BoolFilter<"Lesson"> | boolean
+    vocabularySentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
+    feedbacksCompleted?: BoolFilter<"Lesson"> | boolean
+    absenceMarked?: BoolFilter<"Lesson"> | boolean
+    absenceMarkedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
+    voiceSent?: BoolFilter<"Lesson"> | boolean
+    voiceSentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
+    textSent?: BoolFilter<"Lesson"> | boolean
+    textSentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
+    notes?: StringNullableFilter<"Lesson"> | string | null
+    createdAt?: DateTimeFilter<"Lesson"> | Date | string
+    updatedAt?: DateTimeFilter<"Lesson"> | Date | string
+  }
+
+  export type StudentUpsertWithWhereUniqueWithoutGroupInput = {
+    where: StudentWhereUniqueInput
+    update: XOR<StudentUpdateWithoutGroupInput, StudentUncheckedUpdateWithoutGroupInput>
+    create: XOR<StudentCreateWithoutGroupInput, StudentUncheckedCreateWithoutGroupInput>
+  }
+
+  export type StudentUpdateWithWhereUniqueWithoutGroupInput = {
+    where: StudentWhereUniqueInput
+    data: XOR<StudentUpdateWithoutGroupInput, StudentUncheckedUpdateWithoutGroupInput>
+  }
+
+  export type StudentUpdateManyWithWhereWithoutGroupInput = {
+    where: StudentScalarWhereInput
+    data: XOR<StudentUpdateManyMutationInput, StudentUncheckedUpdateManyWithoutGroupInput>
+  }
+
+  export type StudentScalarWhereInput = {
+    AND?: StudentScalarWhereInput | StudentScalarWhereInput[]
+    OR?: StudentScalarWhereInput[]
+    NOT?: StudentScalarWhereInput | StudentScalarWhereInput[]
+    id?: StringFilter<"Student"> | string
+    userId?: StringFilter<"Student"> | string
+    groupId?: StringNullableFilter<"Student"> | string | null
+    teacherId?: StringNullableFilter<"Student"> | string | null
+    parentName?: StringNullableFilter<"Student"> | string | null
+    parentPhone?: StringNullableFilter<"Student"> | string | null
+    parentEmail?: StringNullableFilter<"Student"> | string | null
+    monthlyFee?: DecimalFilter<"Student"> | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFilter<"Student"> | Date | string
+    registerDate?: DateTimeNullableFilter<"Student"> | Date | string | null
+    notes?: StringNullableFilter<"Student"> | string | null
+    receiveReports?: BoolFilter<"Student"> | boolean
+    createdAt?: DateTimeFilter<"Student"> | Date | string
+    updatedAt?: DateTimeFilter<"Student"> | Date | string
+    leadId?: StringNullableFilter<"Student"> | string | null
+  }
+
+  export type CrmLeadCreateWithoutTeacherInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
+    activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
+    attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
+    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
+    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
+    group?: GroupCreateNestedOneWithoutCrmLeadsInput
+    student?: StudentCreateNestedOneWithoutLeadInput
+  }
+
+  export type CrmLeadUncheckedCreateWithoutTeacherInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdByUserId: string
+    assignedManagerId?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    groupId?: string | null
+    centerId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
+    activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
+    student?: StudentUncheckedCreateNestedOneWithoutLeadInput
+  }
+
+  export type CrmLeadCreateOrConnectWithoutTeacherInput = {
+    where: CrmLeadWhereUniqueInput
+    create: XOR<CrmLeadCreateWithoutTeacherInput, CrmLeadUncheckedCreateWithoutTeacherInput>
+  }
+
+  export type CrmLeadCreateManyTeacherInputEnvelope = {
+    data: CrmLeadCreateManyTeacherInput | CrmLeadCreateManyTeacherInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DeductionCreateWithoutTeacherInput = {
+    id?: string
+    lessonId?: string | null
+    reason: $Enums.DeductionReason
+    amount: Decimal | DecimalJsLike | number | string
+    percentage?: Decimal | DecimalJsLike | number | string | null
+    note?: string | null
+    appliedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type DeductionUncheckedCreateWithoutTeacherInput = {
+    id?: string
+    lessonId?: string | null
+    reason: $Enums.DeductionReason
+    amount: Decimal | DecimalJsLike | number | string
+    percentage?: Decimal | DecimalJsLike | number | string | null
+    note?: string | null
+    appliedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type DeductionCreateOrConnectWithoutTeacherInput = {
+    where: DeductionWhereUniqueInput
+    create: XOR<DeductionCreateWithoutTeacherInput, DeductionUncheckedCreateWithoutTeacherInput>
+  }
+
+  export type DeductionCreateManyTeacherInputEnvelope = {
+    data: DeductionCreateManyTeacherInput | DeductionCreateManyTeacherInput[]
     skipDuplicates?: boolean
   }
 
@@ -34630,6 +36376,108 @@ export namespace Prisma {
 
   export type FeedbackCreateManyTeacherInputEnvelope = {
     data: FeedbackCreateManyTeacherInput | FeedbackCreateManyTeacherInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GroupCreateWithoutTeacherInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+    center: CenterCreateNestedOneWithoutGroupsInput
+    lessons?: LessonCreateNestedManyWithoutGroupInput
+    students?: StudentCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutTeacherInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    centerId: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
+    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutTeacherInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput>
+  }
+
+  export type GroupCreateManyTeacherInputEnvelope = {
+    data: GroupCreateManyTeacherInput | GroupCreateManyTeacherInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LessonCreateWithoutTeacherInput = {
+    id?: string
+    scheduledAt: Date | string
+    duration?: number
+    topic?: string | null
+    description?: string | null
+    status?: $Enums.LessonStatus
+    vocabularySent?: boolean
+    vocabularySentAt?: Date | string | null
+    feedbacksCompleted?: boolean
+    absenceMarked?: boolean
+    absenceMarkedAt?: Date | string | null
+    voiceSent?: boolean
+    voiceSentAt?: Date | string | null
+    textSent?: boolean
+    textSentAt?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceCreateNestedManyWithoutLessonInput
+    feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
+    group: GroupCreateNestedOneWithoutLessonsInput
+  }
+
+  export type LessonUncheckedCreateWithoutTeacherInput = {
+    id?: string
+    groupId: string
+    scheduledAt: Date | string
+    duration?: number
+    topic?: string | null
+    description?: string | null
+    status?: $Enums.LessonStatus
+    vocabularySent?: boolean
+    vocabularySentAt?: Date | string | null
+    feedbacksCompleted?: boolean
+    absenceMarked?: boolean
+    absenceMarkedAt?: Date | string | null
+    voiceSent?: boolean
+    voiceSentAt?: Date | string | null
+    textSent?: boolean
+    textSentAt?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutLessonInput
+  }
+
+  export type LessonCreateOrConnectWithoutTeacherInput = {
+    where: LessonWhereUniqueInput
+    create: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput>
+  }
+
+  export type LessonCreateManyTeacherInputEnvelope = {
+    data: LessonCreateManyTeacherInput | LessonCreateManyTeacherInput[]
     skipDuplicates?: boolean
   }
 
@@ -34671,197 +36519,152 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type DeductionCreateWithoutTeacherInput = {
+  export type StudentCreateWithoutTeacherInput = {
     id?: string
-    lessonId?: string | null
-    reason: $Enums.DeductionReason
-    amount: Decimal | DecimalJsLike | number | string
-    percentage?: Decimal | DecimalJsLike | number | string | null
-    note?: string | null
-    appliedAt?: Date | string
-    createdAt?: Date | string
-  }
-
-  export type DeductionUncheckedCreateWithoutTeacherInput = {
-    id?: string
-    lessonId?: string | null
-    reason: $Enums.DeductionReason
-    amount: Decimal | DecimalJsLike | number | string
-    percentage?: Decimal | DecimalJsLike | number | string | null
-    note?: string | null
-    appliedAt?: Date | string
-    createdAt?: Date | string
-  }
-
-  export type DeductionCreateOrConnectWithoutTeacherInput = {
-    where: DeductionWhereUniqueInput
-    create: XOR<DeductionCreateWithoutTeacherInput, DeductionUncheckedCreateWithoutTeacherInput>
-  }
-
-  export type DeductionCreateManyTeacherInputEnvelope = {
-    data: DeductionCreateManyTeacherInput | DeductionCreateManyTeacherInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type CrmLeadCreateWithoutTeacherInput = {
-    id?: string
-    status?: $Enums.CrmLeadStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
     notes?: string | null
-    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
-    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
-    group?: GroupCreateNestedOneWithoutCrmLeadsInput
-    center?: CenterCreateNestedOneWithoutCrmLeadsInput
-    activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
-    attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
-    student?: StudentCreateNestedOneWithoutLeadInput
-  }
-
-  export type CrmLeadUncheckedCreateWithoutTeacherInput = {
-    id?: string
-    status?: $Enums.CrmLeadStatus
+    receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    createdByUserId: string
-    assignedManagerId?: string | null
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
+    attendances?: AttendanceCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
+    payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    user: UserCreateNestedOneWithoutStudentInput
+  }
+
+  export type StudentUncheckedCreateWithoutTeacherInput = {
+    id?: string
+    userId: string
     groupId?: string | null
-    centerId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
     notes?: string | null
-    activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
-    attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
-    student?: StudentUncheckedCreateNestedOneWithoutLeadInput
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leadId?: string | null
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
   }
 
-  export type CrmLeadCreateOrConnectWithoutTeacherInput = {
-    where: CrmLeadWhereUniqueInput
-    create: XOR<CrmLeadCreateWithoutTeacherInput, CrmLeadUncheckedCreateWithoutTeacherInput>
-  }
-
-  export type CrmLeadCreateManyTeacherInputEnvelope = {
-    data: CrmLeadCreateManyTeacherInput | CrmLeadCreateManyTeacherInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type UserUpsertWithoutTeacherInput = {
-    update: XOR<UserUpdateWithoutTeacherInput, UserUncheckedUpdateWithoutTeacherInput>
-    create: XOR<UserCreateWithoutTeacherInput, UserUncheckedCreateWithoutTeacherInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutTeacherInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutTeacherInput, UserUncheckedUpdateWithoutTeacherInput>
-  }
-
-  export type UserUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    student?: StudentUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
-    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
-    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
-    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
-  }
-
-  export type GroupUpsertWithWhereUniqueWithoutTeacherInput = {
-    where: GroupWhereUniqueInput
-    update: XOR<GroupUpdateWithoutTeacherInput, GroupUncheckedUpdateWithoutTeacherInput>
-    create: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput>
-  }
-
-  export type GroupUpdateWithWhereUniqueWithoutTeacherInput = {
-    where: GroupWhereUniqueInput
-    data: XOR<GroupUpdateWithoutTeacherInput, GroupUncheckedUpdateWithoutTeacherInput>
-  }
-
-  export type GroupUpdateManyWithWhereWithoutTeacherInput = {
-    where: GroupScalarWhereInput
-    data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutTeacherInput>
-  }
-
-  export type StudentUpsertWithWhereUniqueWithoutTeacherInput = {
+  export type StudentCreateOrConnectWithoutTeacherInput = {
     where: StudentWhereUniqueInput
-    update: XOR<StudentUpdateWithoutTeacherInput, StudentUncheckedUpdateWithoutTeacherInput>
     create: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput>
   }
 
-  export type StudentUpdateWithWhereUniqueWithoutTeacherInput = {
-    where: StudentWhereUniqueInput
-    data: XOR<StudentUpdateWithoutTeacherInput, StudentUncheckedUpdateWithoutTeacherInput>
+  export type StudentCreateManyTeacherInputEnvelope = {
+    data: StudentCreateManyTeacherInput | StudentCreateManyTeacherInput[]
+    skipDuplicates?: boolean
   }
 
-  export type StudentUpdateManyWithWhereWithoutTeacherInput = {
-    where: StudentScalarWhereInput
-    data: XOR<StudentUpdateManyMutationInput, StudentUncheckedUpdateManyWithoutTeacherInput>
+  export type UserCreateWithoutTeacherInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    student?: StudentCreateNestedOneWithoutUserInput
   }
 
-  export type LessonUpsertWithWhereUniqueWithoutTeacherInput = {
-    where: LessonWhereUniqueInput
-    update: XOR<LessonUpdateWithoutTeacherInput, LessonUncheckedUpdateWithoutTeacherInput>
-    create: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput>
+  export type UserUncheckedCreateWithoutTeacherInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
   }
 
-  export type LessonUpdateWithWhereUniqueWithoutTeacherInput = {
-    where: LessonWhereUniqueInput
-    data: XOR<LessonUpdateWithoutTeacherInput, LessonUncheckedUpdateWithoutTeacherInput>
+  export type UserCreateOrConnectWithoutTeacherInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTeacherInput, UserUncheckedCreateWithoutTeacherInput>
   }
 
-  export type LessonUpdateManyWithWhereWithoutTeacherInput = {
-    where: LessonScalarWhereInput
-    data: XOR<LessonUpdateManyMutationInput, LessonUncheckedUpdateManyWithoutTeacherInput>
+  export type CrmLeadUpsertWithWhereUniqueWithoutTeacherInput = {
+    where: CrmLeadWhereUniqueInput
+    update: XOR<CrmLeadUpdateWithoutTeacherInput, CrmLeadUncheckedUpdateWithoutTeacherInput>
+    create: XOR<CrmLeadCreateWithoutTeacherInput, CrmLeadUncheckedCreateWithoutTeacherInput>
+  }
+
+  export type CrmLeadUpdateWithWhereUniqueWithoutTeacherInput = {
+    where: CrmLeadWhereUniqueInput
+    data: XOR<CrmLeadUpdateWithoutTeacherInput, CrmLeadUncheckedUpdateWithoutTeacherInput>
+  }
+
+  export type CrmLeadUpdateManyWithWhereWithoutTeacherInput = {
+    where: CrmLeadScalarWhereInput
+    data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutTeacherInput>
+  }
+
+  export type DeductionUpsertWithWhereUniqueWithoutTeacherInput = {
+    where: DeductionWhereUniqueInput
+    update: XOR<DeductionUpdateWithoutTeacherInput, DeductionUncheckedUpdateWithoutTeacherInput>
+    create: XOR<DeductionCreateWithoutTeacherInput, DeductionUncheckedCreateWithoutTeacherInput>
+  }
+
+  export type DeductionUpdateWithWhereUniqueWithoutTeacherInput = {
+    where: DeductionWhereUniqueInput
+    data: XOR<DeductionUpdateWithoutTeacherInput, DeductionUncheckedUpdateWithoutTeacherInput>
+  }
+
+  export type DeductionUpdateManyWithWhereWithoutTeacherInput = {
+    where: DeductionScalarWhereInput
+    data: XOR<DeductionUpdateManyMutationInput, DeductionUncheckedUpdateManyWithoutTeacherInput>
+  }
+
+  export type DeductionScalarWhereInput = {
+    AND?: DeductionScalarWhereInput | DeductionScalarWhereInput[]
+    OR?: DeductionScalarWhereInput[]
+    NOT?: DeductionScalarWhereInput | DeductionScalarWhereInput[]
+    id?: StringFilter<"Deduction"> | string
+    teacherId?: StringFilter<"Deduction"> | string
+    lessonId?: StringNullableFilter<"Deduction"> | string | null
+    reason?: EnumDeductionReasonFilter<"Deduction"> | $Enums.DeductionReason
+    amount?: DecimalFilter<"Deduction"> | Decimal | DecimalJsLike | number | string
+    percentage?: DecimalNullableFilter<"Deduction"> | Decimal | DecimalJsLike | number | string | null
+    note?: StringNullableFilter<"Deduction"> | string | null
+    appliedAt?: DateTimeFilter<"Deduction"> | Date | string
+    createdAt?: DateTimeFilter<"Deduction"> | Date | string
   }
 
   export type FeedbackUpsertWithWhereUniqueWithoutTeacherInput = {
@@ -34894,6 +36697,38 @@ export namespace Prisma {
     improvements?: StringNullableFilter<"Feedback"> | string | null
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
     updatedAt?: DateTimeFilter<"Feedback"> | Date | string
+  }
+
+  export type GroupUpsertWithWhereUniqueWithoutTeacherInput = {
+    where: GroupWhereUniqueInput
+    update: XOR<GroupUpdateWithoutTeacherInput, GroupUncheckedUpdateWithoutTeacherInput>
+    create: XOR<GroupCreateWithoutTeacherInput, GroupUncheckedCreateWithoutTeacherInput>
+  }
+
+  export type GroupUpdateWithWhereUniqueWithoutTeacherInput = {
+    where: GroupWhereUniqueInput
+    data: XOR<GroupUpdateWithoutTeacherInput, GroupUncheckedUpdateWithoutTeacherInput>
+  }
+
+  export type GroupUpdateManyWithWhereWithoutTeacherInput = {
+    where: GroupScalarWhereInput
+    data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutTeacherInput>
+  }
+
+  export type LessonUpsertWithWhereUniqueWithoutTeacherInput = {
+    where: LessonWhereUniqueInput
+    update: XOR<LessonUpdateWithoutTeacherInput, LessonUncheckedUpdateWithoutTeacherInput>
+    create: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput>
+  }
+
+  export type LessonUpdateWithWhereUniqueWithoutTeacherInput = {
+    where: LessonWhereUniqueInput
+    data: XOR<LessonUpdateWithoutTeacherInput, LessonUncheckedUpdateWithoutTeacherInput>
+  }
+
+  export type LessonUpdateManyWithWhereWithoutTeacherInput = {
+    where: LessonScalarWhereInput
+    data: XOR<LessonUpdateManyMutationInput, LessonUncheckedUpdateManyWithoutTeacherInput>
   }
 
   export type SalaryRecordUpsertWithWhereUniqueWithoutTeacherInput = {
@@ -34930,235 +36765,77 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"SalaryRecord"> | Date | string
   }
 
-  export type DeductionUpsertWithWhereUniqueWithoutTeacherInput = {
-    where: DeductionWhereUniqueInput
-    update: XOR<DeductionUpdateWithoutTeacherInput, DeductionUncheckedUpdateWithoutTeacherInput>
-    create: XOR<DeductionCreateWithoutTeacherInput, DeductionUncheckedCreateWithoutTeacherInput>
+  export type StudentUpsertWithWhereUniqueWithoutTeacherInput = {
+    where: StudentWhereUniqueInput
+    update: XOR<StudentUpdateWithoutTeacherInput, StudentUncheckedUpdateWithoutTeacherInput>
+    create: XOR<StudentCreateWithoutTeacherInput, StudentUncheckedCreateWithoutTeacherInput>
   }
 
-  export type DeductionUpdateWithWhereUniqueWithoutTeacherInput = {
-    where: DeductionWhereUniqueInput
-    data: XOR<DeductionUpdateWithoutTeacherInput, DeductionUncheckedUpdateWithoutTeacherInput>
+  export type StudentUpdateWithWhereUniqueWithoutTeacherInput = {
+    where: StudentWhereUniqueInput
+    data: XOR<StudentUpdateWithoutTeacherInput, StudentUncheckedUpdateWithoutTeacherInput>
   }
 
-  export type DeductionUpdateManyWithWhereWithoutTeacherInput = {
-    where: DeductionScalarWhereInput
-    data: XOR<DeductionUpdateManyMutationInput, DeductionUncheckedUpdateManyWithoutTeacherInput>
+  export type StudentUpdateManyWithWhereWithoutTeacherInput = {
+    where: StudentScalarWhereInput
+    data: XOR<StudentUpdateManyMutationInput, StudentUncheckedUpdateManyWithoutTeacherInput>
   }
 
-  export type DeductionScalarWhereInput = {
-    AND?: DeductionScalarWhereInput | DeductionScalarWhereInput[]
-    OR?: DeductionScalarWhereInput[]
-    NOT?: DeductionScalarWhereInput | DeductionScalarWhereInput[]
-    id?: StringFilter<"Deduction"> | string
-    teacherId?: StringFilter<"Deduction"> | string
-    lessonId?: StringNullableFilter<"Deduction"> | string | null
-    reason?: EnumDeductionReasonFilter<"Deduction"> | $Enums.DeductionReason
-    amount?: DecimalFilter<"Deduction"> | Decimal | DecimalJsLike | number | string
-    percentage?: DecimalNullableFilter<"Deduction"> | Decimal | DecimalJsLike | number | string | null
-    note?: StringNullableFilter<"Deduction"> | string | null
-    appliedAt?: DateTimeFilter<"Deduction"> | Date | string
-    createdAt?: DateTimeFilter<"Deduction"> | Date | string
+  export type UserUpsertWithoutTeacherInput = {
+    update: XOR<UserUpdateWithoutTeacherInput, UserUncheckedUpdateWithoutTeacherInput>
+    create: XOR<UserCreateWithoutTeacherInput, UserUncheckedCreateWithoutTeacherInput>
+    where?: UserWhereInput
   }
 
-  export type CrmLeadUpsertWithWhereUniqueWithoutTeacherInput = {
-    where: CrmLeadWhereUniqueInput
-    update: XOR<CrmLeadUpdateWithoutTeacherInput, CrmLeadUncheckedUpdateWithoutTeacherInput>
-    create: XOR<CrmLeadCreateWithoutTeacherInput, CrmLeadUncheckedCreateWithoutTeacherInput>
+  export type UserUpdateToOneWithWhereWithoutTeacherInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTeacherInput, UserUncheckedUpdateWithoutTeacherInput>
   }
 
-  export type CrmLeadUpdateWithWhereUniqueWithoutTeacherInput = {
-    where: CrmLeadWhereUniqueInput
-    data: XOR<CrmLeadUpdateWithoutTeacherInput, CrmLeadUncheckedUpdateWithoutTeacherInput>
+  export type UserUpdateWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
   }
 
-  export type CrmLeadUpdateManyWithWhereWithoutTeacherInput = {
-    where: CrmLeadScalarWhereInput
-    data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutTeacherInput>
-  }
-
-  export type UserCreateWithoutStudentInput = {
-    id?: string
-    email: string
-    passwordHash: string
-    firstName: string
-    lastName: string
-    phone?: string | null
-    avatarUrl?: string | null
-    role: $Enums.UserRole
-    status?: $Enums.UserStatus
-    lastLoginAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    teacher?: TeacherCreateNestedOneWithoutUserInput
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
-    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
-    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
-  }
-
-  export type UserUncheckedCreateWithoutStudentInput = {
-    id?: string
-    email: string
-    passwordHash: string
-    firstName: string
-    lastName: string
-    phone?: string | null
-    avatarUrl?: string | null
-    role: $Enums.UserRole
-    status?: $Enums.UserStatus
-    lastLoginAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
-    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
-    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
-  }
-
-  export type UserCreateOrConnectWithoutStudentInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutStudentInput, UserUncheckedCreateWithoutStudentInput>
-  }
-
-  export type CrmLeadCreateWithoutStudentInput = {
-    id?: string
-    status?: $Enums.CrmLeadStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
-    notes?: string | null
-    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
-    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
-    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
-    group?: GroupCreateNestedOneWithoutCrmLeadsInput
-    center?: CenterCreateNestedOneWithoutCrmLeadsInput
-    activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
-    attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
-  }
-
-  export type CrmLeadUncheckedCreateWithoutStudentInput = {
-    id?: string
-    status?: $Enums.CrmLeadStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    createdByUserId: string
-    assignedManagerId?: string | null
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    teacherId?: string | null
-    groupId?: string | null
-    centerId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
-    notes?: string | null
-    activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
-    attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
-  }
-
-  export type CrmLeadCreateOrConnectWithoutStudentInput = {
-    where: CrmLeadWhereUniqueInput
-    create: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
-  }
-
-  export type GroupCreateWithoutStudentsInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    center: CenterCreateNestedOneWithoutGroupsInput
-    teacher?: TeacherCreateNestedOneWithoutGroupsInput
-    lessons?: LessonCreateNestedManyWithoutGroupInput
-    chat?: ChatCreateNestedOneWithoutGroupInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
-  }
-
-  export type GroupUncheckedCreateWithoutStudentsInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    centerId: string
-    teacherId?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
-    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
-  }
-
-  export type GroupCreateOrConnectWithoutStudentsInput = {
-    where: GroupWhereUniqueInput
-    create: XOR<GroupCreateWithoutStudentsInput, GroupUncheckedCreateWithoutStudentsInput>
-  }
-
-  export type TeacherCreateWithoutStudentsInput = {
-    id?: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTeacherInput
-    groups?: GroupCreateNestedManyWithoutTeacherInput
-    lessons?: LessonCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
-  }
-
-  export type TeacherUncheckedCreateWithoutStudentsInput = {
-    id?: string
-    userId: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
-  }
-
-  export type TeacherCreateOrConnectWithoutStudentsInput = {
-    where: TeacherWhereUniqueInput
-    create: XOR<TeacherCreateWithoutStudentsInput, TeacherUncheckedCreateWithoutStudentsInput>
+  export type UserUncheckedUpdateWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type AttendanceCreateWithoutStudentInput = {
@@ -35170,11 +36847,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     lesson: LessonCreateNestedOneWithoutAttendancesInput
+    markedBy?: UserCreateNestedOneWithoutMarkedAttendancesInput
   }
 
   export type AttendanceUncheckedCreateWithoutStudentInput = {
     id?: string
     lessonId: string
+    markedById?: string | null
     isPresent: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
@@ -35267,212 +36946,192 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type UserUpsertWithoutStudentInput = {
-    update: XOR<UserUpdateWithoutStudentInput, UserUncheckedUpdateWithoutStudentInput>
-    create: XOR<UserCreateWithoutStudentInput, UserUncheckedCreateWithoutStudentInput>
-    where?: UserWhereInput
+  export type GroupCreateWithoutStudentsInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+    center: CenterCreateNestedOneWithoutGroupsInput
+    teacher?: TeacherCreateNestedOneWithoutGroupsInput
+    lessons?: LessonCreateNestedManyWithoutGroupInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutStudentInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutStudentInput, UserUncheckedUpdateWithoutStudentInput>
+  export type GroupUncheckedCreateWithoutStudentsInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    centerId: string
+    teacherId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
   }
 
-  export type UserUpdateWithoutStudentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
-    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
-    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutStudentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
-    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
-  }
-
-  export type CrmLeadUpsertWithoutStudentInput = {
-    update: XOR<CrmLeadUpdateWithoutStudentInput, CrmLeadUncheckedUpdateWithoutStudentInput>
-    create: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
-    where?: CrmLeadWhereInput
-  }
-
-  export type CrmLeadUpdateToOneWithWhereWithoutStudentInput = {
-    where?: CrmLeadWhereInput
-    data: XOR<CrmLeadUpdateWithoutStudentInput, CrmLeadUncheckedUpdateWithoutStudentInput>
-  }
-
-  export type CrmLeadUpdateWithoutStudentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
-    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
-    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
-    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
-    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
-    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
-  }
-
-  export type CrmLeadUncheckedUpdateWithoutStudentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdByUserId?: StringFieldUpdateOperationsInput | string
-    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    centerId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
-  }
-
-  export type GroupUpsertWithoutStudentsInput = {
-    update: XOR<GroupUpdateWithoutStudentsInput, GroupUncheckedUpdateWithoutStudentsInput>
+  export type GroupCreateOrConnectWithoutStudentsInput = {
+    where: GroupWhereUniqueInput
     create: XOR<GroupCreateWithoutStudentsInput, GroupUncheckedCreateWithoutStudentsInput>
-    where?: GroupWhereInput
   }
 
-  export type GroupUpdateToOneWithWhereWithoutStudentsInput = {
-    where?: GroupWhereInput
-    data: XOR<GroupUpdateWithoutStudentsInput, GroupUncheckedUpdateWithoutStudentsInput>
+  export type CrmLeadCreateWithoutStudentInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
+    activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
+    attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
+    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
+    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
+    group?: GroupCreateNestedOneWithoutCrmLeadsInput
+    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
   }
 
-  export type GroupUpdateWithoutStudentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    level?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxStudents?: IntFieldUpdateOperationsInput | number
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
-    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
-    lessons?: LessonUpdateManyWithoutGroupNestedInput
-    chat?: ChatUpdateOneWithoutGroupNestedInput
-    crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+  export type CrmLeadUncheckedCreateWithoutStudentInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdByUserId: string
+    assignedManagerId?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    teacherId?: string | null
+    groupId?: string | null
+    centerId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
+    activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
+    attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
   }
 
-  export type GroupUncheckedUpdateWithoutStudentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    level?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxStudents?: IntFieldUpdateOperationsInput | number
-    centerId?: StringFieldUpdateOperationsInput | string
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
-    chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
-    crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
+  export type CrmLeadCreateOrConnectWithoutStudentInput = {
+    where: CrmLeadWhereUniqueInput
+    create: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
   }
 
-  export type TeacherUpsertWithoutStudentsInput = {
-    update: XOR<TeacherUpdateWithoutStudentsInput, TeacherUncheckedUpdateWithoutStudentsInput>
+  export type TeacherCreateWithoutStudentsInput = {
+    id?: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
+    groups?: GroupCreateNestedManyWithoutTeacherInput
+    lessons?: LessonCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
+    user: UserCreateNestedOneWithoutTeacherInput
+  }
+
+  export type TeacherUncheckedCreateWithoutStudentsInput = {
+    id?: string
+    userId: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
+    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
+  }
+
+  export type TeacherCreateOrConnectWithoutStudentsInput = {
+    where: TeacherWhereUniqueInput
     create: XOR<TeacherCreateWithoutStudentsInput, TeacherUncheckedCreateWithoutStudentsInput>
-    where?: TeacherWhereInput
   }
 
-  export type TeacherUpdateToOneWithWhereWithoutStudentsInput = {
-    where?: TeacherWhereInput
-    data: XOR<TeacherUpdateWithoutStudentsInput, TeacherUncheckedUpdateWithoutStudentsInput>
+  export type UserCreateWithoutStudentInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
   }
 
-  export type TeacherUpdateWithoutStudentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
-    groups?: GroupUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+  export type UserUncheckedCreateWithoutStudentInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
   }
 
-  export type TeacherUncheckedUpdateWithoutStudentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+  export type UserCreateOrConnectWithoutStudentInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutStudentInput, UserUncheckedCreateWithoutStudentInput>
   }
 
   export type AttendanceUpsertWithWhereUniqueWithoutStudentInput = {
@@ -35489,21 +37148,6 @@ export namespace Prisma {
   export type AttendanceUpdateManyWithWhereWithoutStudentInput = {
     where: AttendanceScalarWhereInput
     data: XOR<AttendanceUpdateManyMutationInput, AttendanceUncheckedUpdateManyWithoutStudentInput>
-  }
-
-  export type AttendanceScalarWhereInput = {
-    AND?: AttendanceScalarWhereInput | AttendanceScalarWhereInput[]
-    OR?: AttendanceScalarWhereInput[]
-    NOT?: AttendanceScalarWhereInput | AttendanceScalarWhereInput[]
-    id?: StringFilter<"Attendance"> | string
-    lessonId?: StringFilter<"Attendance"> | string
-    studentId?: StringFilter<"Attendance"> | string
-    isPresent?: BoolFilter<"Attendance"> | boolean
-    absenceType?: EnumAbsenceTypeNullableFilter<"Attendance"> | $Enums.AbsenceType | null
-    note?: StringNullableFilter<"Attendance"> | string | null
-    markedAt?: DateTimeFilter<"Attendance"> | Date | string
-    createdAt?: DateTimeFilter<"Attendance"> | Date | string
-    updatedAt?: DateTimeFilter<"Attendance"> | Date | string
   }
 
   export type FeedbackUpsertWithWhereUniqueWithoutStudentInput = {
@@ -35557,86 +37201,216 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
   }
 
-  export type GroupCreateWithoutLessonsInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    center: CenterCreateNestedOneWithoutGroupsInput
-    teacher?: TeacherCreateNestedOneWithoutGroupsInput
-    students?: StudentCreateNestedManyWithoutGroupInput
-    chat?: ChatCreateNestedOneWithoutGroupInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+  export type GroupUpsertWithoutStudentsInput = {
+    update: XOR<GroupUpdateWithoutStudentsInput, GroupUncheckedUpdateWithoutStudentsInput>
+    create: XOR<GroupCreateWithoutStudentsInput, GroupUncheckedCreateWithoutStudentsInput>
+    where?: GroupWhereInput
   }
 
-  export type GroupUncheckedCreateWithoutLessonsInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    centerId: string
-    teacherId?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
-    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+  export type GroupUpdateToOneWithWhereWithoutStudentsInput = {
+    where?: GroupWhereInput
+    data: XOR<GroupUpdateWithoutStudentsInput, GroupUncheckedUpdateWithoutStudentsInput>
   }
 
-  export type GroupCreateOrConnectWithoutLessonsInput = {
-    where: GroupWhereUniqueInput
-    create: XOR<GroupCreateWithoutLessonsInput, GroupUncheckedCreateWithoutLessonsInput>
+  export type GroupUpdateWithoutStudentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUpdateOneWithoutGroupNestedInput
+    crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
+    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
+    lessons?: LessonUpdateManyWithoutGroupNestedInput
   }
 
-  export type TeacherCreateWithoutLessonsInput = {
-    id?: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
+  export type GroupUncheckedUpdateWithoutStudentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    centerId?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type CrmLeadUpsertWithoutStudentInput = {
+    update: XOR<CrmLeadUpdateWithoutStudentInput, CrmLeadUncheckedUpdateWithoutStudentInput>
+    create: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
+    where?: CrmLeadWhereInput
+  }
+
+  export type CrmLeadUpdateToOneWithWhereWithoutStudentInput = {
+    where?: CrmLeadWhereInput
+    data: XOR<CrmLeadUpdateWithoutStudentInput, CrmLeadUncheckedUpdateWithoutStudentInput>
+  }
+
+  export type CrmLeadUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
+    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
+    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
+    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
+    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
+  }
+
+  export type CrmLeadUncheckedUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByUserId?: StringFieldUpdateOperationsInput | string
+    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
+  }
+
+  export type TeacherUpsertWithoutStudentsInput = {
+    update: XOR<TeacherUpdateWithoutStudentsInput, TeacherUncheckedUpdateWithoutStudentsInput>
+    create: XOR<TeacherCreateWithoutStudentsInput, TeacherUncheckedCreateWithoutStudentsInput>
+    where?: TeacherWhereInput
+  }
+
+  export type TeacherUpdateToOneWithWhereWithoutStudentsInput = {
+    where?: TeacherWhereInput
+    data: XOR<TeacherUpdateWithoutStudentsInput, TeacherUncheckedUpdateWithoutStudentsInput>
+  }
+
+  export type TeacherUpdateWithoutStudentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTeacherInput
-    groups?: GroupCreateNestedManyWithoutTeacherInput
-    students?: StudentCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
+    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
   }
 
-  export type TeacherUncheckedCreateWithoutLessonsInput = {
-    id?: string
-    userId: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
+  export type TeacherUncheckedUpdateWithoutStudentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
-    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
   }
 
-  export type TeacherCreateOrConnectWithoutLessonsInput = {
-    where: TeacherWhereUniqueInput
-    create: XOR<TeacherCreateWithoutLessonsInput, TeacherUncheckedCreateWithoutLessonsInput>
+  export type UserUpsertWithoutStudentInput = {
+    update: XOR<UserUpdateWithoutStudentInput, UserUncheckedUpdateWithoutStudentInput>
+    create: XOR<UserCreateWithoutStudentInput, UserUncheckedCreateWithoutStudentInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutStudentInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutStudentInput, UserUncheckedUpdateWithoutStudentInput>
+  }
+
+  export type UserUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type AttendanceCreateWithoutLessonInput = {
@@ -35647,12 +37421,14 @@ export namespace Prisma {
     markedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    markedBy?: UserCreateNestedOneWithoutMarkedAttendancesInput
     student: StudentCreateNestedOneWithoutAttendancesInput
   }
 
   export type AttendanceUncheckedCreateWithoutLessonInput = {
     id?: string
     studentId: string
+    markedById?: string | null
     isPresent: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
@@ -35705,98 +37481,86 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type GroupUpsertWithoutLessonsInput = {
-    update: XOR<GroupUpdateWithoutLessonsInput, GroupUncheckedUpdateWithoutLessonsInput>
+  export type GroupCreateWithoutLessonsInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+    center: CenterCreateNestedOneWithoutGroupsInput
+    teacher?: TeacherCreateNestedOneWithoutGroupsInput
+    students?: StudentCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutLessonsInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    centerId: string
+    teacherId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutLessonsInput = {
+    where: GroupWhereUniqueInput
     create: XOR<GroupCreateWithoutLessonsInput, GroupUncheckedCreateWithoutLessonsInput>
-    where?: GroupWhereInput
   }
 
-  export type GroupUpdateToOneWithWhereWithoutLessonsInput = {
-    where?: GroupWhereInput
-    data: XOR<GroupUpdateWithoutLessonsInput, GroupUncheckedUpdateWithoutLessonsInput>
+  export type TeacherCreateWithoutLessonsInput = {
+    id?: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
+    groups?: GroupCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
+    students?: StudentCreateNestedManyWithoutTeacherInput
+    user: UserCreateNestedOneWithoutTeacherInput
   }
 
-  export type GroupUpdateWithoutLessonsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    level?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxStudents?: IntFieldUpdateOperationsInput | number
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
-    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
-    students?: StudentUpdateManyWithoutGroupNestedInput
-    chat?: ChatUpdateOneWithoutGroupNestedInput
-    crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+  export type TeacherUncheckedCreateWithoutLessonsInput = {
+    id?: string
+    userId: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
+    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
+    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
   }
 
-  export type GroupUncheckedUpdateWithoutLessonsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    level?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxStudents?: IntFieldUpdateOperationsInput | number
-    centerId?: StringFieldUpdateOperationsInput | string
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
-    chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
-    crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
-  }
-
-  export type TeacherUpsertWithoutLessonsInput = {
-    update: XOR<TeacherUpdateWithoutLessonsInput, TeacherUncheckedUpdateWithoutLessonsInput>
+  export type TeacherCreateOrConnectWithoutLessonsInput = {
+    where: TeacherWhereUniqueInput
     create: XOR<TeacherCreateWithoutLessonsInput, TeacherUncheckedCreateWithoutLessonsInput>
-    where?: TeacherWhereInput
-  }
-
-  export type TeacherUpdateToOneWithWhereWithoutLessonsInput = {
-    where?: TeacherWhereInput
-    data: XOR<TeacherUpdateWithoutLessonsInput, TeacherUncheckedUpdateWithoutLessonsInput>
-  }
-
-  export type TeacherUpdateWithoutLessonsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
-    groups?: GroupUpdateManyWithoutTeacherNestedInput
-    students?: StudentUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
-  }
-
-  export type TeacherUncheckedUpdateWithoutLessonsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
-    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
   }
 
   export type AttendanceUpsertWithWhereUniqueWithoutLessonInput = {
@@ -35831,6 +37595,100 @@ export namespace Prisma {
     data: XOR<FeedbackUpdateManyMutationInput, FeedbackUncheckedUpdateManyWithoutLessonInput>
   }
 
+  export type GroupUpsertWithoutLessonsInput = {
+    update: XOR<GroupUpdateWithoutLessonsInput, GroupUncheckedUpdateWithoutLessonsInput>
+    create: XOR<GroupCreateWithoutLessonsInput, GroupUncheckedCreateWithoutLessonsInput>
+    where?: GroupWhereInput
+  }
+
+  export type GroupUpdateToOneWithWhereWithoutLessonsInput = {
+    where?: GroupWhereInput
+    data: XOR<GroupUpdateWithoutLessonsInput, GroupUncheckedUpdateWithoutLessonsInput>
+  }
+
+  export type GroupUpdateWithoutLessonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUpdateOneWithoutGroupNestedInput
+    crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
+    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
+    students?: StudentUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutLessonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    centerId?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
+    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type TeacherUpsertWithoutLessonsInput = {
+    update: XOR<TeacherUpdateWithoutLessonsInput, TeacherUncheckedUpdateWithoutLessonsInput>
+    create: XOR<TeacherCreateWithoutLessonsInput, TeacherUncheckedCreateWithoutLessonsInput>
+    where?: TeacherWhereInput
+  }
+
+  export type TeacherUpdateToOneWithWhereWithoutLessonsInput = {
+    where?: TeacherWhereInput
+    data: XOR<TeacherUpdateWithoutLessonsInput, TeacherUncheckedUpdateWithoutLessonsInput>
+  }
+
+  export type TeacherUpdateWithoutLessonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
+    students?: StudentUpdateManyWithoutTeacherNestedInput
+    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
+  }
+
+  export type TeacherUncheckedUpdateWithoutLessonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
+    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
+  }
+
   export type LessonCreateWithoutAttendancesInput = {
     id?: string
     scheduledAt: Date | string
@@ -35851,9 +37709,9 @@ export namespace Prisma {
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
     group: GroupCreateNestedOneWithoutLessonsInput
     teacher: TeacherCreateNestedOneWithoutLessonsInput
-    feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
   }
 
   export type LessonUncheckedCreateWithoutAttendancesInput = {
@@ -35886,6 +37744,57 @@ export namespace Prisma {
     create: XOR<LessonCreateWithoutAttendancesInput, LessonUncheckedCreateWithoutAttendancesInput>
   }
 
+  export type UserCreateWithoutMarkedAttendancesInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutMarkedAttendancesInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutMarkedAttendancesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutMarkedAttendancesInput, UserUncheckedCreateWithoutMarkedAttendancesInput>
+  }
+
   export type StudentCreateWithoutAttendancesInput = {
     id?: string
     parentName?: string | null
@@ -35898,18 +37807,17 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutStudentInput
-    lead?: CrmLeadCreateNestedOneWithoutStudentInput
-    group?: GroupCreateNestedOneWithoutStudentsInput
-    teacher?: TeacherCreateNestedOneWithoutStudentsInput
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutAttendancesInput = {
     id?: string
     userId: string
-    leadId?: string | null
     groupId?: string | null
     teacherId?: string | null
     parentName?: string | null
@@ -35922,6 +37830,7 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    leadId?: string | null
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
   }
@@ -35962,9 +37871,9 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
     group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
   }
 
   export type LessonUncheckedUpdateWithoutAttendancesInput = {
@@ -35992,6 +37901,63 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutLessonNestedInput
   }
 
+  export type UserUpsertWithoutMarkedAttendancesInput = {
+    update: XOR<UserUpdateWithoutMarkedAttendancesInput, UserUncheckedUpdateWithoutMarkedAttendancesInput>
+    create: XOR<UserCreateWithoutMarkedAttendancesInput, UserUncheckedCreateWithoutMarkedAttendancesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutMarkedAttendancesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutMarkedAttendancesInput, UserUncheckedUpdateWithoutMarkedAttendancesInput>
+  }
+
+  export type UserUpdateWithoutMarkedAttendancesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutMarkedAttendancesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
+  }
+
   export type StudentUpsertWithoutAttendancesInput = {
     update: XOR<StudentUpdateWithoutAttendancesInput, StudentUncheckedUpdateWithoutAttendancesInput>
     create: XOR<StudentCreateWithoutAttendancesInput, StudentUncheckedCreateWithoutAttendancesInput>
@@ -36015,18 +37981,17 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutStudentNestedInput
-    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
-    group?: GroupUpdateOneWithoutStudentsNestedInput
-    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutAttendancesInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36039,6 +38004,7 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
   }
@@ -36063,9 +38029,9 @@ export namespace Prisma {
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    attendances?: AttendanceCreateNestedManyWithoutLessonInput
     group: GroupCreateNestedOneWithoutLessonsInput
     teacher: TeacherCreateNestedOneWithoutLessonsInput
-    attendances?: AttendanceCreateNestedManyWithoutLessonInput
   }
 
   export type LessonUncheckedCreateWithoutFeedbacksInput = {
@@ -36110,18 +38076,17 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutStudentInput
-    lead?: CrmLeadCreateNestedOneWithoutStudentInput
-    group?: GroupCreateNestedOneWithoutStudentsInput
-    teacher?: TeacherCreateNestedOneWithoutStudentsInput
     attendances?: AttendanceCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutFeedbacksInput = {
     id?: string
     userId: string
-    leadId?: string | null
     groupId?: string | null
     teacherId?: string | null
     parentName?: string | null
@@ -36134,6 +38099,7 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    leadId?: string | null
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
   }
@@ -36154,13 +38120,13 @@ export namespace Prisma {
     hireDate?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTeacherInput
+    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
-    students?: StudentCreateNestedManyWithoutTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    students?: StudentCreateNestedManyWithoutTeacherInput
+    user: UserCreateNestedOneWithoutTeacherInput
   }
 
   export type TeacherUncheckedCreateWithoutFeedbacksInput = {
@@ -36175,12 +38141,12 @@ export namespace Prisma {
     hireDate?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
-    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
   }
 
   export type TeacherCreateOrConnectWithoutFeedbacksInput = {
@@ -36219,9 +38185,9 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attendances?: AttendanceUpdateManyWithoutLessonNestedInput
     group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
-    attendances?: AttendanceUpdateManyWithoutLessonNestedInput
   }
 
   export type LessonUncheckedUpdateWithoutFeedbacksInput = {
@@ -36272,18 +38238,17 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutStudentNestedInput
-    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
-    group?: GroupUpdateOneWithoutStudentsNestedInput
-    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     attendances?: AttendanceUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutFeedbacksInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36296,6 +38261,7 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
   }
@@ -36322,13 +38288,13 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
+    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
-    students?: StudentUpdateManyWithoutTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    students?: StudentUpdateManyWithoutTeacherNestedInput
+    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
   }
 
   export type TeacherUncheckedUpdateWithoutFeedbacksInput = {
@@ -36343,12 +38309,12 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
-    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
-    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
   }
 
   export type StudentCreateWithoutPaymentsInput = {
@@ -36363,18 +38329,17 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutStudentInput
-    lead?: CrmLeadCreateNestedOneWithoutStudentInput
-    group?: GroupCreateNestedOneWithoutStudentsInput
-    teacher?: TeacherCreateNestedOneWithoutStudentsInput
     attendances?: AttendanceCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutPaymentsInput = {
     id?: string
     userId: string
-    leadId?: string | null
     groupId?: string | null
     teacherId?: string | null
     parentName?: string | null
@@ -36387,6 +38352,7 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    leadId?: string | null
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
   }
@@ -36419,18 +38385,17 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutStudentNestedInput
-    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
-    group?: GroupUpdateOneWithoutStudentsNestedInput
-    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     attendances?: AttendanceUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutPaymentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36443,6 +38408,7 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
   }
@@ -36458,13 +38424,13 @@ export namespace Prisma {
     hireDate?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTeacherInput
-    groups?: GroupCreateNestedManyWithoutTeacherInput
-    students?: StudentCreateNestedManyWithoutTeacherInput
-    lessons?: LessonCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionCreateNestedManyWithoutTeacherInput
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
+    groups?: GroupCreateNestedManyWithoutTeacherInput
+    lessons?: LessonCreateNestedManyWithoutTeacherInput
+    students?: StudentCreateNestedManyWithoutTeacherInput
+    user: UserCreateNestedOneWithoutTeacherInput
   }
 
   export type TeacherUncheckedCreateWithoutSalaryRecordsInput = {
@@ -36479,12 +38445,12 @@ export namespace Prisma {
     hireDate?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
-    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
+    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
+    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
   }
 
   export type TeacherCreateOrConnectWithoutSalaryRecordsInput = {
@@ -36514,13 +38480,13 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
-    groups?: GroupUpdateManyWithoutTeacherNestedInput
-    students?: StudentUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUpdateManyWithoutTeacherNestedInput
+    students?: StudentUpdateManyWithoutTeacherNestedInput
+    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
   }
 
   export type TeacherUncheckedUpdateWithoutSalaryRecordsInput = {
@@ -36535,12 +38501,12 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
-    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
+    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
   }
 
   export type TeacherCreateWithoutDeductionsInput = {
@@ -36554,13 +38520,13 @@ export namespace Prisma {
     hireDate?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTeacherInput
-    groups?: GroupCreateNestedManyWithoutTeacherInput
-    students?: StudentCreateNestedManyWithoutTeacherInput
-    lessons?: LessonCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
+    groups?: GroupCreateNestedManyWithoutTeacherInput
+    lessons?: LessonCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
+    students?: StudentCreateNestedManyWithoutTeacherInput
+    user: UserCreateNestedOneWithoutTeacherInput
   }
 
   export type TeacherUncheckedCreateWithoutDeductionsInput = {
@@ -36575,12 +38541,12 @@ export namespace Prisma {
     hireDate?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
-    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
+    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
+    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
   }
 
   export type TeacherCreateOrConnectWithoutDeductionsInput = {
@@ -36610,13 +38576,13 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
-    groups?: GroupUpdateManyWithoutTeacherNestedInput
-    students?: StudentUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
+    students?: StudentUpdateManyWithoutTeacherNestedInput
+    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
   }
 
   export type TeacherUncheckedUpdateWithoutDeductionsInput = {
@@ -36631,49 +38597,12 @@ export namespace Prisma {
     hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
-    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
-  }
-
-  export type GroupCreateWithoutChatInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    center: CenterCreateNestedOneWithoutGroupsInput
-    teacher?: TeacherCreateNestedOneWithoutGroupsInput
-    students?: StudentCreateNestedManyWithoutGroupInput
-    lessons?: LessonCreateNestedManyWithoutGroupInput
-    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
-  }
-
-  export type GroupUncheckedCreateWithoutChatInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    centerId: string
-    teacherId?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
-    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
-  }
-
-  export type GroupCreateOrConnectWithoutChatInput = {
-    where: GroupWhereUniqueInput
-    create: XOR<GroupCreateWithoutChatInput, GroupUncheckedCreateWithoutChatInput>
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
+    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
   }
 
   export type ChatParticipantCreateWithoutChatInput = {
@@ -36702,6 +38631,43 @@ export namespace Prisma {
   export type ChatParticipantCreateManyChatInputEnvelope = {
     data: ChatParticipantCreateManyChatInput | ChatParticipantCreateManyChatInput[]
     skipDuplicates?: boolean
+  }
+
+  export type GroupCreateWithoutChatInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+    center: CenterCreateNestedOneWithoutGroupsInput
+    teacher?: TeacherCreateNestedOneWithoutGroupsInput
+    lessons?: LessonCreateNestedManyWithoutGroupInput
+    students?: StudentCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutChatInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    centerId: string
+    teacherId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
+    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutChatInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutChatInput, GroupUncheckedCreateWithoutChatInput>
   }
 
   export type MessageCreateWithoutChatInput = {
@@ -36748,6 +38714,22 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ChatParticipantUpsertWithWhereUniqueWithoutChatInput = {
+    where: ChatParticipantWhereUniqueInput
+    update: XOR<ChatParticipantUpdateWithoutChatInput, ChatParticipantUncheckedUpdateWithoutChatInput>
+    create: XOR<ChatParticipantCreateWithoutChatInput, ChatParticipantUncheckedCreateWithoutChatInput>
+  }
+
+  export type ChatParticipantUpdateWithWhereUniqueWithoutChatInput = {
+    where: ChatParticipantWhereUniqueInput
+    data: XOR<ChatParticipantUpdateWithoutChatInput, ChatParticipantUncheckedUpdateWithoutChatInput>
+  }
+
+  export type ChatParticipantUpdateManyWithWhereWithoutChatInput = {
+    where: ChatParticipantScalarWhereInput
+    data: XOR<ChatParticipantUpdateManyMutationInput, ChatParticipantUncheckedUpdateManyWithoutChatInput>
+  }
+
   export type GroupUpsertWithoutChatInput = {
     update: XOR<GroupUpdateWithoutChatInput, GroupUncheckedUpdateWithoutChatInput>
     create: XOR<GroupCreateWithoutChatInput, GroupUncheckedCreateWithoutChatInput>
@@ -36768,11 +38750,11 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
     center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
     teacher?: TeacherUpdateOneWithoutGroupsNestedInput
-    students?: StudentUpdateManyWithoutGroupNestedInput
     lessons?: LessonUpdateManyWithoutGroupNestedInput
-    crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+    students?: StudentUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutChatInput = {
@@ -36786,25 +38768,9 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
-  }
-
-  export type ChatParticipantUpsertWithWhereUniqueWithoutChatInput = {
-    where: ChatParticipantWhereUniqueInput
-    update: XOR<ChatParticipantUpdateWithoutChatInput, ChatParticipantUncheckedUpdateWithoutChatInput>
-    create: XOR<ChatParticipantCreateWithoutChatInput, ChatParticipantUncheckedCreateWithoutChatInput>
-  }
-
-  export type ChatParticipantUpdateWithWhereUniqueWithoutChatInput = {
-    where: ChatParticipantWhereUniqueInput
-    data: XOR<ChatParticipantUpdateWithoutChatInput, ChatParticipantUncheckedUpdateWithoutChatInput>
-  }
-
-  export type ChatParticipantUpdateManyWithWhereWithoutChatInput = {
-    where: ChatParticipantScalarWhereInput
-    data: XOR<ChatParticipantUpdateManyMutationInput, ChatParticipantUncheckedUpdateManyWithoutChatInput>
+    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
+    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutChatInput = {
@@ -36863,12 +38829,14 @@ export namespace Prisma {
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    teacher?: TeacherCreateNestedOneWithoutUserInput
-    student?: StudentCreateNestedOneWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
-    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChatParticipantsInput = {
@@ -36884,12 +38852,14 @@ export namespace Prisma {
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
-    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
-    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChatParticipantsInput = {
@@ -36954,12 +38924,14 @@ export namespace Prisma {
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUpdateOneWithoutUserNestedInput
-    student?: StudentUpdateOneWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
-    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatParticipantsInput = {
@@ -36975,12 +38947,14 @@ export namespace Prisma {
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
-    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
-    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ChatCreateWithoutMessagesInput = {
@@ -36990,8 +38964,8 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    group?: GroupCreateNestedOneWithoutChatInput
     participants?: ChatParticipantCreateNestedManyWithoutChatInput
+    group?: GroupCreateNestedOneWithoutChatInput
   }
 
   export type ChatUncheckedCreateWithoutMessagesInput = {
@@ -37023,12 +38997,14 @@ export namespace Prisma {
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    teacher?: TeacherCreateNestedOneWithoutUserInput
-    student?: StudentCreateNestedOneWithoutUserInput
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -37044,12 +39020,14 @@ export namespace Prisma {
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
-    student?: StudentUncheckedCreateNestedOneWithoutUserInput
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -37075,8 +39053,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    group?: GroupUpdateOneWithoutChatNestedInput
     participants?: ChatParticipantUpdateManyWithoutChatNestedInput
+    group?: GroupUpdateOneWithoutChatNestedInput
   }
 
   export type ChatUncheckedUpdateWithoutMessagesInput = {
@@ -37114,12 +39092,14 @@ export namespace Prisma {
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUpdateOneWithoutUserNestedInput
-    student?: StudentUpdateOneWithoutUserNestedInput
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -37135,12 +39115,14 @@ export namespace Prisma {
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
-    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -37156,12 +39138,14 @@ export namespace Prisma {
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    teacher?: TeacherCreateNestedOneWithoutUserInput
-    student?: StudentCreateNestedOneWithoutUserInput
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -37177,12 +39161,14 @@ export namespace Prisma {
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
-    student?: StudentUncheckedCreateNestedOneWithoutUserInput
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -37214,12 +39200,14 @@ export namespace Prisma {
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUpdateOneWithoutUserNestedInput
-    student?: StudentUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -37235,221 +39223,14 @@ export namespace Prisma {
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
-    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
-  }
-
-  export type UserCreateWithoutCrmLeadsCreatedInput = {
-    id?: string
-    email: string
-    passwordHash: string
-    firstName: string
-    lastName: string
-    phone?: string | null
-    avatarUrl?: string | null
-    role: $Enums.UserRole
-    status?: $Enums.UserStatus
-    lastLoginAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    teacher?: TeacherCreateNestedOneWithoutUserInput
-    student?: StudentCreateNestedOneWithoutUserInput
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
-    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
-  }
-
-  export type UserUncheckedCreateWithoutCrmLeadsCreatedInput = {
-    id?: string
-    email: string
-    passwordHash: string
-    firstName: string
-    lastName: string
-    phone?: string | null
-    avatarUrl?: string | null
-    role: $Enums.UserRole
-    status?: $Enums.UserStatus
-    lastLoginAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
-    student?: StudentUncheckedCreateNestedOneWithoutUserInput
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
-    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
-  }
-
-  export type UserCreateOrConnectWithoutCrmLeadsCreatedInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutCrmLeadsCreatedInput, UserUncheckedCreateWithoutCrmLeadsCreatedInput>
-  }
-
-  export type UserCreateWithoutCrmLeadsAssignedManagerInput = {
-    id?: string
-    email: string
-    passwordHash: string
-    firstName: string
-    lastName: string
-    phone?: string | null
-    avatarUrl?: string | null
-    role: $Enums.UserRole
-    status?: $Enums.UserStatus
-    lastLoginAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    teacher?: TeacherCreateNestedOneWithoutUserInput
-    student?: StudentCreateNestedOneWithoutUserInput
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
-    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
-  }
-
-  export type UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput = {
-    id?: string
-    email: string
-    passwordHash: string
-    firstName: string
-    lastName: string
-    phone?: string | null
-    avatarUrl?: string | null
-    role: $Enums.UserRole
-    status?: $Enums.UserStatus
-    lastLoginAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
-    student?: StudentUncheckedCreateNestedOneWithoutUserInput
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
-    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
-  }
-
-  export type UserCreateOrConnectWithoutCrmLeadsAssignedManagerInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutCrmLeadsAssignedManagerInput, UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput>
-  }
-
-  export type TeacherCreateWithoutCrmLeadsInput = {
-    id?: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTeacherInput
-    groups?: GroupCreateNestedManyWithoutTeacherInput
-    students?: StudentCreateNestedManyWithoutTeacherInput
-    lessons?: LessonCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionCreateNestedManyWithoutTeacherInput
-  }
-
-  export type TeacherUncheckedCreateWithoutCrmLeadsInput = {
-    id?: string
-    userId: string
-    bio?: string | null
-    specialization?: string | null
-    hourlyRate: Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherCreateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
-    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
-    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
-    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
-  }
-
-  export type TeacherCreateOrConnectWithoutCrmLeadsInput = {
-    where: TeacherWhereUniqueInput
-    create: XOR<TeacherCreateWithoutCrmLeadsInput, TeacherUncheckedCreateWithoutCrmLeadsInput>
-  }
-
-  export type GroupCreateWithoutCrmLeadsInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    center: CenterCreateNestedOneWithoutGroupsInput
-    teacher?: TeacherCreateNestedOneWithoutGroupsInput
-    students?: StudentCreateNestedManyWithoutGroupInput
-    lessons?: LessonCreateNestedManyWithoutGroupInput
-    chat?: ChatCreateNestedOneWithoutGroupInput
-  }
-
-  export type GroupUncheckedCreateWithoutCrmLeadsInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    centerId: string
-    teacherId?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
-    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
-    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
-  }
-
-  export type GroupCreateOrConnectWithoutCrmLeadsInput = {
-    where: GroupWhereUniqueInput
-    create: XOR<GroupCreateWithoutCrmLeadsInput, GroupUncheckedCreateWithoutCrmLeadsInput>
-  }
-
-  export type CenterCreateWithoutCrmLeadsInput = {
-    id?: string
-    name: string
-    address?: string | null
-    phone?: string | null
-    email?: string | null
-    description?: string | null
-    colorHex?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    groups?: GroupCreateNestedManyWithoutCenterInput
-  }
-
-  export type CenterUncheckedCreateWithoutCrmLeadsInput = {
-    id?: string
-    name: string
-    address?: string | null
-    phone?: string | null
-    email?: string | null
-    description?: string | null
-    colorHex?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
-  }
-
-  export type CenterCreateOrConnectWithoutCrmLeadsInput = {
-    where: CenterWhereUniqueInput
-    create: XOR<CenterCreateWithoutCrmLeadsInput, CenterUncheckedCreateWithoutCrmLeadsInput>
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type CrmLeadActivityCreateWithoutLeadInput = {
@@ -37506,6 +39287,225 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UserCreateWithoutCrmLeadsAssignedManagerInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCrmLeadsAssignedManagerInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCrmLeadsAssignedManagerInput, UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput>
+  }
+
+  export type CenterCreateWithoutCrmLeadsInput = {
+    id?: string
+    name: string
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    description?: string | null
+    colorHex?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    groups?: GroupCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
+  }
+
+  export type CenterUncheckedCreateWithoutCrmLeadsInput = {
+    id?: string
+    name: string
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    description?: string | null
+    colorHex?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
+  }
+
+  export type CenterCreateOrConnectWithoutCrmLeadsInput = {
+    where: CenterWhereUniqueInput
+    create: XOR<CenterCreateWithoutCrmLeadsInput, CenterUncheckedCreateWithoutCrmLeadsInput>
+  }
+
+  export type UserCreateWithoutCrmLeadsCreatedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCrmLeadsCreatedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCrmLeadsCreatedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCrmLeadsCreatedInput, UserUncheckedCreateWithoutCrmLeadsCreatedInput>
+  }
+
+  export type GroupCreateWithoutCrmLeadsInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatCreateNestedOneWithoutGroupInput
+    center: CenterCreateNestedOneWithoutGroupsInput
+    teacher?: TeacherCreateNestedOneWithoutGroupsInput
+    lessons?: LessonCreateNestedManyWithoutGroupInput
+    students?: StudentCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutCrmLeadsInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    centerId: string
+    teacherId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
+    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutCrmLeadsInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutCrmLeadsInput, GroupUncheckedCreateWithoutCrmLeadsInput>
+  }
+
+  export type TeacherCreateWithoutCrmLeadsInput = {
+    id?: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deductions?: DeductionCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
+    groups?: GroupCreateNestedManyWithoutTeacherInput
+    lessons?: LessonCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
+    students?: StudentCreateNestedManyWithoutTeacherInput
+    user: UserCreateNestedOneWithoutTeacherInput
+  }
+
+  export type TeacherUncheckedCreateWithoutCrmLeadsInput = {
+    id?: string
+    userId: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
+    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
+    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
+  }
+
+  export type TeacherCreateOrConnectWithoutCrmLeadsInput = {
+    where: TeacherWhereUniqueInput
+    create: XOR<TeacherCreateWithoutCrmLeadsInput, TeacherUncheckedCreateWithoutCrmLeadsInput>
+  }
+
   export type StudentCreateWithoutLeadInput = {
     id?: string
     parentName?: string | null
@@ -37518,12 +39518,12 @@ export namespace Prisma {
     receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutStudentInput
-    group?: GroupCreateNestedOneWithoutStudentsInput
-    teacher?: TeacherCreateNestedOneWithoutStudentsInput
     attendances?: AttendanceCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutLeadInput = {
@@ -37549,245 +39549,6 @@ export namespace Prisma {
   export type StudentCreateOrConnectWithoutLeadInput = {
     where: StudentWhereUniqueInput
     create: XOR<StudentCreateWithoutLeadInput, StudentUncheckedCreateWithoutLeadInput>
-  }
-
-  export type UserUpsertWithoutCrmLeadsCreatedInput = {
-    update: XOR<UserUpdateWithoutCrmLeadsCreatedInput, UserUncheckedUpdateWithoutCrmLeadsCreatedInput>
-    create: XOR<UserCreateWithoutCrmLeadsCreatedInput, UserUncheckedCreateWithoutCrmLeadsCreatedInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutCrmLeadsCreatedInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutCrmLeadsCreatedInput, UserUncheckedUpdateWithoutCrmLeadsCreatedInput>
-  }
-
-  export type UserUpdateWithoutCrmLeadsCreatedInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUpdateOneWithoutUserNestedInput
-    student?: StudentUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
-    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutCrmLeadsCreatedInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
-    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
-    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
-  }
-
-  export type UserUpsertWithoutCrmLeadsAssignedManagerInput = {
-    update: XOR<UserUpdateWithoutCrmLeadsAssignedManagerInput, UserUncheckedUpdateWithoutCrmLeadsAssignedManagerInput>
-    create: XOR<UserCreateWithoutCrmLeadsAssignedManagerInput, UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutCrmLeadsAssignedManagerInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutCrmLeadsAssignedManagerInput, UserUncheckedUpdateWithoutCrmLeadsAssignedManagerInput>
-  }
-
-  export type UserUpdateWithoutCrmLeadsAssignedManagerInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUpdateOneWithoutUserNestedInput
-    student?: StudentUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
-    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutCrmLeadsAssignedManagerInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
-    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
-    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
-  }
-
-  export type TeacherUpsertWithoutCrmLeadsInput = {
-    update: XOR<TeacherUpdateWithoutCrmLeadsInput, TeacherUncheckedUpdateWithoutCrmLeadsInput>
-    create: XOR<TeacherCreateWithoutCrmLeadsInput, TeacherUncheckedCreateWithoutCrmLeadsInput>
-    where?: TeacherWhereInput
-  }
-
-  export type TeacherUpdateToOneWithWhereWithoutCrmLeadsInput = {
-    where?: TeacherWhereInput
-    data: XOR<TeacherUpdateWithoutCrmLeadsInput, TeacherUncheckedUpdateWithoutCrmLeadsInput>
-  }
-
-  export type TeacherUpdateWithoutCrmLeadsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
-    groups?: GroupUpdateManyWithoutTeacherNestedInput
-    students?: StudentUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
-  }
-
-  export type TeacherUncheckedUpdateWithoutCrmLeadsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    specialization?: NullableStringFieldUpdateOperationsInput | string | null
-    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    workingDays?: TeacherUpdateworkingDaysInput | string[]
-    workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
-    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
-    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
-    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
-  }
-
-  export type GroupUpsertWithoutCrmLeadsInput = {
-    update: XOR<GroupUpdateWithoutCrmLeadsInput, GroupUncheckedUpdateWithoutCrmLeadsInput>
-    create: XOR<GroupCreateWithoutCrmLeadsInput, GroupUncheckedCreateWithoutCrmLeadsInput>
-    where?: GroupWhereInput
-  }
-
-  export type GroupUpdateToOneWithWhereWithoutCrmLeadsInput = {
-    where?: GroupWhereInput
-    data: XOR<GroupUpdateWithoutCrmLeadsInput, GroupUncheckedUpdateWithoutCrmLeadsInput>
-  }
-
-  export type GroupUpdateWithoutCrmLeadsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    level?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxStudents?: IntFieldUpdateOperationsInput | number
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
-    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
-    students?: StudentUpdateManyWithoutGroupNestedInput
-    lessons?: LessonUpdateManyWithoutGroupNestedInput
-    chat?: ChatUpdateOneWithoutGroupNestedInput
-  }
-
-  export type GroupUncheckedUpdateWithoutCrmLeadsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    level?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxStudents?: IntFieldUpdateOperationsInput | number
-    centerId?: StringFieldUpdateOperationsInput | string
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
-    chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
-  }
-
-  export type CenterUpsertWithoutCrmLeadsInput = {
-    update: XOR<CenterUpdateWithoutCrmLeadsInput, CenterUncheckedUpdateWithoutCrmLeadsInput>
-    create: XOR<CenterCreateWithoutCrmLeadsInput, CenterUncheckedCreateWithoutCrmLeadsInput>
-    where?: CenterWhereInput
-  }
-
-  export type CenterUpdateToOneWithWhereWithoutCrmLeadsInput = {
-    where?: CenterWhereInput
-    data: XOR<CenterUpdateWithoutCrmLeadsInput, CenterUncheckedUpdateWithoutCrmLeadsInput>
-  }
-
-  export type CenterUpdateWithoutCrmLeadsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUpdateManyWithoutCenterNestedInput
-  }
-
-  export type CenterUncheckedUpdateWithoutCrmLeadsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type CrmLeadActivityUpsertWithWhereUniqueWithoutLeadInput = {
@@ -37847,6 +39608,255 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"CrmLeadAttachment"> | Date | string
   }
 
+  export type UserUpsertWithoutCrmLeadsAssignedManagerInput = {
+    update: XOR<UserUpdateWithoutCrmLeadsAssignedManagerInput, UserUncheckedUpdateWithoutCrmLeadsAssignedManagerInput>
+    create: XOR<UserCreateWithoutCrmLeadsAssignedManagerInput, UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCrmLeadsAssignedManagerInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCrmLeadsAssignedManagerInput, UserUncheckedUpdateWithoutCrmLeadsAssignedManagerInput>
+  }
+
+  export type UserUpdateWithoutCrmLeadsAssignedManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCrmLeadsAssignedManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type CenterUpsertWithoutCrmLeadsInput = {
+    update: XOR<CenterUpdateWithoutCrmLeadsInput, CenterUncheckedUpdateWithoutCrmLeadsInput>
+    create: XOR<CenterCreateWithoutCrmLeadsInput, CenterUncheckedCreateWithoutCrmLeadsInput>
+    where?: CenterWhereInput
+  }
+
+  export type CenterUpdateToOneWithWhereWithoutCrmLeadsInput = {
+    where?: CenterWhereInput
+    data: XOR<CenterUpdateWithoutCrmLeadsInput, CenterUncheckedUpdateWithoutCrmLeadsInput>
+  }
+
+  export type CenterUpdateWithoutCrmLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    groups?: GroupUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
+  }
+
+  export type CenterUncheckedUpdateWithoutCrmLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
+  }
+
+  export type UserUpsertWithoutCrmLeadsCreatedInput = {
+    update: XOR<UserUpdateWithoutCrmLeadsCreatedInput, UserUncheckedUpdateWithoutCrmLeadsCreatedInput>
+    create: XOR<UserCreateWithoutCrmLeadsCreatedInput, UserUncheckedCreateWithoutCrmLeadsCreatedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCrmLeadsCreatedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCrmLeadsCreatedInput, UserUncheckedUpdateWithoutCrmLeadsCreatedInput>
+  }
+
+  export type UserUpdateWithoutCrmLeadsCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCrmLeadsCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type GroupUpsertWithoutCrmLeadsInput = {
+    update: XOR<GroupUpdateWithoutCrmLeadsInput, GroupUncheckedUpdateWithoutCrmLeadsInput>
+    create: XOR<GroupCreateWithoutCrmLeadsInput, GroupUncheckedCreateWithoutCrmLeadsInput>
+    where?: GroupWhereInput
+  }
+
+  export type GroupUpdateToOneWithWhereWithoutCrmLeadsInput = {
+    where?: GroupWhereInput
+    data: XOR<GroupUpdateWithoutCrmLeadsInput, GroupUncheckedUpdateWithoutCrmLeadsInput>
+  }
+
+  export type GroupUpdateWithoutCrmLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUpdateOneWithoutGroupNestedInput
+    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
+    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
+    lessons?: LessonUpdateManyWithoutGroupNestedInput
+    students?: StudentUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutCrmLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    centerId?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
+    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type TeacherUpsertWithoutCrmLeadsInput = {
+    update: XOR<TeacherUpdateWithoutCrmLeadsInput, TeacherUncheckedUpdateWithoutCrmLeadsInput>
+    create: XOR<TeacherCreateWithoutCrmLeadsInput, TeacherUncheckedCreateWithoutCrmLeadsInput>
+    where?: TeacherWhereInput
+  }
+
+  export type TeacherUpdateToOneWithWhereWithoutCrmLeadsInput = {
+    where?: TeacherWhereInput
+    data: XOR<TeacherUpdateWithoutCrmLeadsInput, TeacherUncheckedUpdateWithoutCrmLeadsInput>
+  }
+
+  export type TeacherUpdateWithoutCrmLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
+    students?: StudentUpdateManyWithoutTeacherNestedInput
+    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
+  }
+
+  export type TeacherUncheckedUpdateWithoutCrmLeadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
+    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
+  }
+
   export type StudentUpsertWithoutLeadInput = {
     update: XOR<StudentUpdateWithoutLeadInput, StudentUncheckedUpdateWithoutLeadInput>
     create: XOR<StudentCreateWithoutLeadInput, StudentUncheckedCreateWithoutLeadInput>
@@ -37870,12 +39880,12 @@ export namespace Prisma {
     receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutStudentNestedInput
-    group?: GroupUpdateOneWithoutStudentsNestedInput
-    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     attendances?: AttendanceUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutLeadInput = {
@@ -37910,16 +39920,16 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
-    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
-    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
-    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
-    group?: GroupCreateNestedOneWithoutCrmLeadsInput
-    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    teacherApprovedAt?: Date | string | null
     attachments?: CrmLeadAttachmentCreateNestedManyWithoutLeadInput
+    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
+    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
+    group?: GroupCreateNestedOneWithoutCrmLeadsInput
+    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
     student?: StudentCreateNestedOneWithoutLeadInput
   }
 
@@ -37940,10 +39950,10 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
+    teacherApprovedAt?: Date | string | null
     attachments?: CrmLeadAttachmentUncheckedCreateNestedManyWithoutLeadInput
     student?: StudentUncheckedCreateNestedOneWithoutLeadInput
   }
@@ -37976,16 +39986,16 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
-    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
-    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
-    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
-    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
+    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
+    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
+    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
+    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
     student?: StudentUpdateOneWithoutLeadNestedInput
   }
 
@@ -38006,10 +40016,10 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
     student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
   }
@@ -38026,16 +40036,16 @@ export namespace Prisma {
     levelId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
-    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
-    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
-    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
-    group?: GroupCreateNestedOneWithoutCrmLeadsInput
-    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    teacherApprovedAt?: Date | string | null
     activities?: CrmLeadActivityCreateNestedManyWithoutLeadInput
+    assignedManager?: UserCreateNestedOneWithoutCrmLeadsAssignedManagerInput
+    center?: CenterCreateNestedOneWithoutCrmLeadsInput
+    createdByUser: UserCreateNestedOneWithoutCrmLeadsCreatedInput
+    group?: GroupCreateNestedOneWithoutCrmLeadsInput
+    teacher?: TeacherCreateNestedOneWithoutCrmLeadsInput
     student?: StudentCreateNestedOneWithoutLeadInput
   }
 
@@ -38056,10 +40066,10 @@ export namespace Prisma {
     centerId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
+    teacherApprovedAt?: Date | string | null
     activities?: CrmLeadActivityUncheckedCreateNestedManyWithoutLeadInput
     student?: StudentUncheckedCreateNestedOneWithoutLeadInput
   }
@@ -38092,16 +40102,16 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
-    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
-    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
-    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
-    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
+    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
+    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
+    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
+    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
     student?: StudentUpdateOneWithoutLeadNestedInput
   }
 
@@ -38122,12 +40132,65 @@ export namespace Prisma {
     centerId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
     student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
+  export type ChatParticipantCreateManyUserInput = {
+    id?: string
+    chatId: string
+    isAdmin?: boolean
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    lastReadAt?: Date | string | null
+  }
+
+  export type CrmLeadCreateManyAssignedManagerInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdByUserId: string
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    teacherId?: string | null
+    groupId?: string | null
+    centerId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
+  }
+
+  export type CrmLeadCreateManyCreatedByUserInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignedManagerId?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    teacherId?: string | null
+    groupId?: string | null
+    centerId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
   }
 
   export type MessageCreateManySenderInput = {
@@ -38147,15 +40210,6 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type ChatParticipantCreateManyUserInput = {
-    id?: string
-    chatId: string
-    isAdmin?: boolean
-    joinedAt?: Date | string
-    leftAt?: Date | string | null
-    lastReadAt?: Date | string | null
-  }
-
   export type NotificationCreateManyUserInput = {
     id?: string
     type: string
@@ -38167,48 +40221,187 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
-  export type CrmLeadCreateManyCreatedByUserInput = {
+  export type AttendanceCreateManyMarkedByInput = {
     id?: string
-    status?: $Enums.CrmLeadStatus
+    lessonId: string
+    studentId: string
+    isPresent: boolean
+    absenceType?: $Enums.AbsenceType | null
+    note?: string | null
+    markedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    assignedManagerId?: string | null
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    teacherId?: string | null
-    groupId?: string | null
-    centerId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
-    notes?: string | null
   }
 
-  export type CrmLeadCreateManyAssignedManagerInput = {
-    id?: string
-    status?: $Enums.CrmLeadStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    createdByUserId: string
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    teacherId?: string | null
-    groupId?: string | null
-    centerId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
-    notes?: string | null
+  export type ChatParticipantUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    chat?: ChatUpdateOneRequiredWithoutParticipantsNestedInput
+  }
+
+  export type ChatParticipantUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chatId?: StringFieldUpdateOperationsInput | string
+    isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ChatParticipantUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chatId?: StringFieldUpdateOperationsInput | string
+    isAdmin?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CrmLeadUpdateWithoutAssignedManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
+    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
+    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
+    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
+    student?: StudentUpdateOneWithoutLeadNestedInput
+  }
+
+  export type CrmLeadUncheckedUpdateWithoutAssignedManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByUserId?: StringFieldUpdateOperationsInput | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
+    student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
+  export type CrmLeadUncheckedUpdateManyWithoutAssignedManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByUserId?: StringFieldUpdateOperationsInput | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CrmLeadUpdateWithoutCreatedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
+    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
+    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
+    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
+    student?: StudentUpdateOneWithoutLeadNestedInput
+  }
+
+  export type CrmLeadUncheckedUpdateWithoutCreatedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
+    student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
+  export type CrmLeadUncheckedUpdateManyWithoutCreatedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type MessageUpdateWithoutSenderInput = {
@@ -38262,33 +40455,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ChatParticipantUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    chat?: ChatUpdateOneRequiredWithoutParticipantsNestedInput
-  }
-
-  export type ChatParticipantUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    chatId?: StringFieldUpdateOperationsInput | string
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type ChatParticipantUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    chatId?: StringFieldUpdateOperationsInput | string
-    isAdmin?: BoolFieldUpdateOperationsInput | boolean
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lastReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
   export type NotificationUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -38322,160 +40488,40 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CrmLeadUpdateWithoutCreatedByUserInput = {
+  export type AttendanceUpdateWithoutMarkedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    isPresent?: BoolFieldUpdateOperationsInput | boolean
+    absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
-    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
-    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
-    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
-    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
-    student?: StudentUpdateOneWithoutLeadNestedInput
+    lesson?: LessonUpdateOneRequiredWithoutAttendancesNestedInput
+    student?: StudentUpdateOneRequiredWithoutAttendancesNestedInput
   }
 
-  export type CrmLeadUncheckedUpdateWithoutCreatedByUserInput = {
+  export type AttendanceUncheckedUpdateWithoutMarkedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    lessonId?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    isPresent?: BoolFieldUpdateOperationsInput | boolean
+    absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    centerId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
-    student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
   }
 
-  export type CrmLeadUncheckedUpdateManyWithoutCreatedByUserInput = {
+  export type AttendanceUncheckedUpdateManyWithoutMarkedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    lessonId?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    isPresent?: BoolFieldUpdateOperationsInput | boolean
+    absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    centerId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type CrmLeadUpdateWithoutAssignedManagerInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
-    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
-    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
-    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
-    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
-    student?: StudentUpdateOneWithoutLeadNestedInput
-  }
-
-  export type CrmLeadUncheckedUpdateWithoutAssignedManagerInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdByUserId?: StringFieldUpdateOperationsInput | string
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    centerId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
-    student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
-  }
-
-  export type CrmLeadUncheckedUpdateManyWithoutAssignedManagerInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdByUserId?: StringFieldUpdateOperationsInput | string
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    centerId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type GroupCreateManyCenterInput = {
-    id?: string
-    name: string
-    level?: string | null
-    description?: string | null
-    maxStudents?: number
-    teacherId?: string | null
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
   }
 
   export type CrmLeadCreateManyCenterInput = {
@@ -38494,54 +40540,29 @@ export namespace Prisma {
     groupId?: string | null
     transferFlag?: boolean
     transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
     archivedReason?: string | null
     source?: string | null
     notes?: string | null
+    teacherApprovedAt?: Date | string | null
   }
 
-  export type GroupUpdateWithoutCenterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    level?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxStudents?: IntFieldUpdateOperationsInput | number
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
-    students?: StudentUpdateManyWithoutGroupNestedInput
-    lessons?: LessonUpdateManyWithoutGroupNestedInput
-    chat?: ChatUpdateOneWithoutGroupNestedInput
-    crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+  export type GroupCreateManyCenterInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    teacherId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
-  export type GroupUncheckedUpdateWithoutCenterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    level?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxStudents?: IntFieldUpdateOperationsInput | number
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
-    chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
-    crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
-  }
-
-  export type GroupUncheckedUpdateManyWithoutCenterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    level?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxStudents?: IntFieldUpdateOperationsInput | number
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type ManagerProfileCreateManyCenterInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type CrmLeadUpdateWithoutCenterInput = {
@@ -38556,16 +40577,16 @@ export namespace Prisma {
     levelId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
-    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
-    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
-    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
     attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
+    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
+    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
+    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
+    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
     student?: StudentUpdateOneWithoutLeadNestedInput
   }
 
@@ -38585,10 +40606,10 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
     attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
     student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
@@ -38610,27 +40631,97 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     transferFlag?: BoolFieldUpdateOperationsInput | boolean
     transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type StudentCreateManyGroupInput = {
+  export type GroupUpdateWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUpdateOneWithoutGroupNestedInput
+    crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
+    lessons?: LessonUpdateManyWithoutGroupNestedInput
+    students?: StudentUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
+    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateManyWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ManagerProfileUpdateWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutManagerProfileNestedInput
+  }
+
+  export type ManagerProfileUncheckedUpdateWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ManagerProfileUncheckedUpdateManyWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CrmLeadCreateManyGroupInput = {
     id?: string
-    userId: string
-    leadId?: string | null
-    teacherId?: string | null
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
-    notes?: string | null
-    receiveReports?: boolean
+    status?: $Enums.CrmLeadStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    createdByUserId: string
+    assignedManagerId?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    teacherId?: string | null
+    centerId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
   }
 
   export type LessonCreateManyGroupInput = {
@@ -38656,83 +40747,93 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type CrmLeadCreateManyGroupInput = {
+  export type StudentCreateManyGroupInput = {
     id?: string
-    status?: $Enums.CrmLeadStatus
+    userId: string
+    teacherId?: string | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    createdByUserId: string
-    assignedManagerId?: string | null
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    teacherId?: string | null
-    centerId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
-    notes?: string | null
+    leadId?: string | null
   }
 
-  export type StudentUpdateWithoutGroupInput = {
+  export type CrmLeadUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutStudentNestedInput
-    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
-    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
-    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
-    payments?: PaymentUpdateManyWithoutStudentNestedInput
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
+    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
+    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
+    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
+    student?: StudentUpdateOneWithoutLeadNestedInput
   }
 
-  export type StudentUncheckedUpdateWithoutGroupInput = {
+  export type CrmLeadUncheckedUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByUserId?: StringFieldUpdateOperationsInput | string
+    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
-    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
+    student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
   }
 
-  export type StudentUncheckedUpdateManyWithoutGroupInput = {
+  export type CrmLeadUncheckedUpdateManyWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByUserId?: StringFieldUpdateOperationsInput | string
+    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type LessonUpdateWithoutGroupInput = {
@@ -38755,9 +40856,9 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
+    teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
   }
 
   export type LessonUncheckedUpdateWithoutGroupInput = {
@@ -38808,76 +40909,106 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CrmLeadUpdateWithoutGroupInput = {
+  export type StudentUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
-    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
-    teacher?: TeacherUpdateOneWithoutCrmLeadsNestedInput
-    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
-    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
-    student?: StudentUpdateOneWithoutLeadNestedInput
+    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUpdateManyWithoutStudentNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
   }
 
-  export type CrmLeadUncheckedUpdateWithoutGroupInput = {
+  export type StudentUncheckedUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    userId?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdByUserId?: StringFieldUpdateOperationsInput | string
-    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    centerId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
-    student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
   }
 
-  export type CrmLeadUncheckedUpdateManyWithoutGroupInput = {
+  export type StudentUncheckedUpdateManyWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    userId?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdByUserId?: StringFieldUpdateOperationsInput | string
-    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    centerId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CrmLeadCreateManyTeacherInput = {
+    id?: string
+    status?: $Enums.CrmLeadStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdByUserId: string
+    assignedManagerId?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    phone?: string | null
+    age?: number | null
+    levelId?: string | null
+    groupId?: string | null
+    centerId?: string | null
+    transferFlag?: boolean
+    transferComment?: string | null
+    archivedReason?: string | null
+    source?: string | null
+    notes?: string | null
+    teacherApprovedAt?: Date | string | null
+  }
+
+  export type DeductionCreateManyTeacherInput = {
+    id?: string
+    lessonId?: string | null
+    reason: $Enums.DeductionReason
+    amount: Decimal | DecimalJsLike | number | string
+    percentage?: Decimal | DecimalJsLike | number | string | null
+    note?: string | null
+    appliedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type FeedbackCreateManyTeacherInput = {
+    id?: string
+    lessonId: string
+    studentId: string
+    content: string
+    rating?: number | null
+    strengths?: string | null
+    improvements?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type GroupCreateManyTeacherInput = {
@@ -38888,23 +41019,6 @@ export namespace Prisma {
     maxStudents?: number
     centerId: string
     isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type StudentCreateManyTeacherInput = {
-    id?: string
-    userId: string
-    leadId?: string | null
-    groupId?: string | null
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
-    notes?: string | null
-    receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38932,18 +41046,6 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type FeedbackCreateManyTeacherInput = {
-    id?: string
-    lessonId: string
-    studentId: string
-    content: string
-    rating?: number | null
-    strengths?: string | null
-    improvements?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
   export type SalaryRecordCreateManyTeacherInput = {
     id?: string
     month: Date | string
@@ -38958,37 +41060,162 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type DeductionCreateManyTeacherInput = {
+  export type StudentCreateManyTeacherInput = {
     id?: string
-    lessonId?: string | null
-    reason: $Enums.DeductionReason
-    amount: Decimal | DecimalJsLike | number | string
-    percentage?: Decimal | DecimalJsLike | number | string | null
-    note?: string | null
-    appliedAt?: Date | string
-    createdAt?: Date | string
-  }
-
-  export type CrmLeadCreateManyTeacherInput = {
-    id?: string
-    status?: $Enums.CrmLeadStatus
+    userId: string
+    groupId?: string | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    createdByUserId: string
-    assignedManagerId?: string | null
-    firstName?: string | null
-    lastName?: string | null
-    phone?: string | null
-    age?: number | null
-    levelId?: string | null
-    groupId?: string | null
-    centerId?: string | null
-    transferFlag?: boolean
-    transferComment?: string | null
-    teacherApprovedAt?: Date | string | null
-    archivedReason?: string | null
-    source?: string | null
-    notes?: string | null
+    leadId?: string | null
+  }
+
+  export type CrmLeadUpdateWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
+    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
+    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
+    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
+    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
+    student?: StudentUpdateOneWithoutLeadNestedInput
+  }
+
+  export type CrmLeadUncheckedUpdateWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByUserId?: StringFieldUpdateOperationsInput | string
+    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
+    student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
+  }
+
+  export type CrmLeadUncheckedUpdateManyWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByUserId?: StringFieldUpdateOperationsInput | string
+    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    transferFlag?: BoolFieldUpdateOperationsInput | boolean
+    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
+    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type DeductionUpdateWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: EnumDeductionReasonFieldUpdateOperationsInput | $Enums.DeductionReason
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    percentage?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeductionUncheckedUpdateWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: EnumDeductionReasonFieldUpdateOperationsInput | $Enums.DeductionReason
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    percentage?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DeductionUncheckedUpdateManyWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: EnumDeductionReasonFieldUpdateOperationsInput | $Enums.DeductionReason
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    percentage?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeedbackUpdateWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    strengths?: NullableStringFieldUpdateOperationsInput | string | null
+    improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lesson?: LessonUpdateOneRequiredWithoutFeedbacksNestedInput
+    student?: StudentUpdateOneRequiredWithoutFeedbacksNestedInput
+  }
+
+  export type FeedbackUncheckedUpdateWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lessonId?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    strengths?: NullableStringFieldUpdateOperationsInput | string | null
+    improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeedbackUncheckedUpdateManyWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lessonId?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    strengths?: NullableStringFieldUpdateOperationsInput | string | null
+    improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type GroupUpdateWithoutTeacherInput = {
@@ -39000,11 +41227,11 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
-    students?: StudentUpdateManyWithoutGroupNestedInput
-    lessons?: LessonUpdateManyWithoutGroupNestedInput
     chat?: ChatUpdateOneWithoutGroupNestedInput
     crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
+    lessons?: LessonUpdateManyWithoutGroupNestedInput
+    students?: StudentUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutTeacherInput = {
@@ -39017,10 +41244,10 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
-    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
+    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateManyWithoutTeacherInput = {
@@ -39031,63 +41258,6 @@ export namespace Prisma {
     maxStudents?: IntFieldUpdateOperationsInput | number
     centerId?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type StudentUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutStudentNestedInput
-    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
-    group?: GroupUpdateOneWithoutStudentsNestedInput
-    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
-    payments?: PaymentUpdateManyWithoutStudentNestedInput
-  }
-
-  export type StudentUncheckedUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
-    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
-  }
-
-  export type StudentUncheckedUpdateManyWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -39112,9 +41282,9 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
+    group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
   }
 
   export type LessonUncheckedUpdateWithoutTeacherInput = {
@@ -39165,42 +41335,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type FeedbackUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    rating?: NullableIntFieldUpdateOperationsInput | number | null
-    strengths?: NullableStringFieldUpdateOperationsInput | string | null
-    improvements?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lesson?: LessonUpdateOneRequiredWithoutFeedbacksNestedInput
-    student?: StudentUpdateOneRequiredWithoutFeedbacksNestedInput
-  }
-
-  export type FeedbackUncheckedUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    lessonId?: StringFieldUpdateOperationsInput | string
-    studentId?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    rating?: NullableIntFieldUpdateOperationsInput | number | null
-    strengths?: NullableStringFieldUpdateOperationsInput | string | null
-    improvements?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FeedbackUncheckedUpdateManyWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    lessonId?: StringFieldUpdateOperationsInput | string
-    studentId?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    rating?: NullableIntFieldUpdateOperationsInput | number | null
-    strengths?: NullableStringFieldUpdateOperationsInput | string | null
-    improvements?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type SalaryRecordUpdateWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     month?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39243,114 +41377,67 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type DeductionUpdateWithoutTeacherInput = {
+  export type StudentUpdateWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
-    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
-    reason?: EnumDeductionReasonFieldUpdateOperationsInput | $Enums.DeductionReason
-    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    percentage?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    note?: NullableStringFieldUpdateOperationsInput | string | null
-    appliedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DeductionUncheckedUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
-    reason?: EnumDeductionReasonFieldUpdateOperationsInput | $Enums.DeductionReason
-    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    percentage?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    note?: NullableStringFieldUpdateOperationsInput | string | null
-    appliedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DeductionUncheckedUpdateManyWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
-    reason?: EnumDeductionReasonFieldUpdateOperationsInput | $Enums.DeductionReason
-    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    percentage?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    note?: NullableStringFieldUpdateOperationsInput | string | null
-    appliedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CrmLeadUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    createdByUser?: UserUpdateOneRequiredWithoutCrmLeadsCreatedNestedInput
-    assignedManager?: UserUpdateOneWithoutCrmLeadsAssignedManagerNestedInput
-    group?: GroupUpdateOneWithoutCrmLeadsNestedInput
-    center?: CenterUpdateOneWithoutCrmLeadsNestedInput
-    activities?: CrmLeadActivityUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUpdateManyWithoutLeadNestedInput
-    student?: StudentUpdateOneWithoutLeadNestedInput
-  }
-
-  export type CrmLeadUncheckedUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdByUserId?: StringFieldUpdateOperationsInput | string
-    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
+  }
+
+  export type StudentUncheckedUpdateWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    centerId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    activities?: CrmLeadActivityUncheckedUpdateManyWithoutLeadNestedInput
-    attachments?: CrmLeadAttachmentUncheckedUpdateManyWithoutLeadNestedInput
-    student?: StudentUncheckedUpdateOneWithoutLeadNestedInput
-  }
-
-  export type CrmLeadUncheckedUpdateManyWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdByUserId?: StringFieldUpdateOperationsInput | string
-    assignedManagerId?: NullableStringFieldUpdateOperationsInput | string | null
-    firstName?: NullableStringFieldUpdateOperationsInput | string | null
-    lastName?: NullableStringFieldUpdateOperationsInput | string | null
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    levelId?: NullableStringFieldUpdateOperationsInput | string | null
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+  }
+
+  export type StudentUncheckedUpdateManyWithoutTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    centerId?: NullableStringFieldUpdateOperationsInput | string | null
-    transferFlag?: BoolFieldUpdateOperationsInput | boolean
-    transferComment?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherApprovedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
-    source?: NullableStringFieldUpdateOperationsInput | string | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type AttendanceCreateManyStudentInput = {
     id?: string
     lessonId: string
+    markedById?: string | null
     isPresent: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
@@ -39395,11 +41482,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lesson?: LessonUpdateOneRequiredWithoutAttendancesNestedInput
+    markedBy?: UserUpdateOneWithoutMarkedAttendancesNestedInput
   }
 
   export type AttendanceUncheckedUpdateWithoutStudentInput = {
     id?: StringFieldUpdateOperationsInput | string
     lessonId?: StringFieldUpdateOperationsInput | string
+    markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39411,6 +41500,7 @@ export namespace Prisma {
   export type AttendanceUncheckedUpdateManyWithoutStudentInput = {
     id?: StringFieldUpdateOperationsInput | string
     lessonId?: StringFieldUpdateOperationsInput | string
+    markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39503,6 +41593,7 @@ export namespace Prisma {
   export type AttendanceCreateManyLessonInput = {
     id?: string
     studentId: string
+    markedById?: string | null
     isPresent: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
@@ -39531,12 +41622,14 @@ export namespace Prisma {
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    markedBy?: UserUpdateOneWithoutMarkedAttendancesNestedInput
     student?: StudentUpdateOneRequiredWithoutAttendancesNestedInput
   }
 
   export type AttendanceUncheckedUpdateWithoutLessonInput = {
     id?: StringFieldUpdateOperationsInput | string
     studentId?: StringFieldUpdateOperationsInput | string
+    markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39548,6 +41641,7 @@ export namespace Prisma {
   export type AttendanceUncheckedUpdateManyWithoutLessonInput = {
     id?: StringFieldUpdateOperationsInput | string
     studentId?: StringFieldUpdateOperationsInput | string
+    markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39809,6 +41903,10 @@ export namespace Prisma {
      * @deprecated Use CenterDefaultArgs instead
      */
     export type CenterArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = CenterDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ManagerProfileDefaultArgs instead
+     */
+    export type ManagerProfileArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ManagerProfileDefaultArgs<ExtArgs>
     /**
      * @deprecated Use GroupDefaultArgs instead
      */

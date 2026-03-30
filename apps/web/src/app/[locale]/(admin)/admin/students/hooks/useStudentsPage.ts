@@ -16,6 +16,7 @@ import { useGroups } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { groupStudentsByCenter } from '../utils';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 type ViewMode = 'list' | 'board';
 
@@ -29,6 +30,8 @@ export function useStudentsPage() {
   const tCommon = useTranslations('common');
   const tTeachers = useTranslations('teachers');
   const tStatus = useTranslations('status');
+  const { user } = useAuthStore();
+  const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,8 +138,12 @@ export function useStudentsPage() {
     [selectedTeacherIds]
   );
   const centerIdsArray = useMemo(() => 
-    selectedCenterIds.size > 0 ? Array.from(selectedCenterIds) : undefined,
-    [selectedCenterIds]
+    managerCenterId
+      ? [managerCenterId]
+      : selectedCenterIds.size > 0
+        ? Array.from(selectedCenterIds)
+        : undefined,
+    [managerCenterId, selectedCenterIds]
   );
   const statusIdsArray = useMemo(() => 
     selectedStatusIds.size > 0 ? Array.from(selectedStatusIds) as ('ACTIVE' | 'INACTIVE' | 'SUSPENDED')[] : undefined,
@@ -170,7 +177,11 @@ export function useStudentsPage() {
   const students = useMemo(() => studentsData?.items || [], [studentsData?.items]);
   const totalStudents = studentsData?.total || 0;
   const totalPages = studentsData?.totalPages || 1;
-  const allCenters = useMemo(() => centersData?.items || [], [centersData?.items]);
+  const allCenters = useMemo(() => {
+    const centers = centersData?.items || [];
+    if (!managerCenterId) return centers;
+    return centers.filter((center) => center.id === managerCenterId);
+  }, [centersData?.items, managerCenterId]);
 
   // Group students by center for board view
   const studentsByCenter = useMemo(() => 
@@ -432,11 +443,11 @@ export function useStudentsPage() {
   const groups = useMemo(() => groupsData?.items ?? [], [groupsData]);
 
   const centerOptions = useMemo(() => 
-    (centersData?.items || []).map(center => ({
+    allCenters.map(center => ({
       id: center.id,
       label: center.name,
     })),
-    [centersData]
+    [allCenters]
   );
 
   const teacherFilterOptions = useMemo(() => 
@@ -448,11 +459,11 @@ export function useStudentsPage() {
   );
 
   const centerFilterOptions = useMemo(() => 
-    (centersData?.items || []).map(center => ({
+    allCenters.map(center => ({
       id: center.id,
       label: center.name,
     })),
-    [centersData]
+    [allCenters]
   );
 
   const statusFilterOptions = useMemo(() => [

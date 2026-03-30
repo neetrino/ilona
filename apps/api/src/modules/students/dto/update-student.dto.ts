@@ -38,11 +38,11 @@ export class UpdateStudentDto {
   // Student fields
   @IsString()
   @IsOptional()
-  groupId?: string;
+  groupId?: string | null;
 
   @IsString()
   @IsOptional()
-  teacherId?: string;
+  teacherId?: string | null;
 
   @IsString()
   @IsOptional()

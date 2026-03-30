@@ -19,8 +19,8 @@ export class TeachersController {
   constructor(private readonly teachersService: TeachersService) {}
 
   @Get()
-  @Roles(UserRole.ADMIN)
-  async findAll(@Query() query: QueryTeacherDto): Promise<unknown> {
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async findAll(@Query() query: QueryTeacherDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     return this.teachersService.findAll({
       skip: query.skip,
       take: query.take,
@@ -28,6 +28,7 @@ export class TeachersController {
       status: query.status as UserStatus | undefined,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
+      currentUser: user,
     });
   }
 
@@ -54,52 +55,54 @@ export class TeachersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN)
-  async findById(@Param('id') id: string): Promise<unknown> {
-    return this.teachersService.findById(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload): Promise<unknown> {
+    return this.teachersService.findById(id, user);
   }
 
   @Get(':id/statistics')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async getStatistics(
     @Param('id') id: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
+    @CurrentUser() user?: JwtPayload,
   ): Promise<unknown> {
     return this.teachersService.getStatistics(
       id,
       dateFrom ? new Date(dateFrom) : undefined,
       dateTo ? new Date(dateTo) : undefined,
+      user,
     );
   }
 
   @Get(':id/obligation')
-  @Roles(UserRole.ADMIN)
-  async getObligationDetails(@Param('id') id: string) {
-    return this.teachersService.getObligationDetails(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async getObligationDetails(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.teachersService.getObligationDetails(id, user);
   }
 
   @Post()
-  @Roles(UserRole.ADMIN)
-  async create(@Body() dto: CreateTeacherDto): Promise<unknown> {
-    return this.teachersService.create(dto);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async create(@Body() dto: CreateTeacherDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
+    return this.teachersService.create(dto, user);
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMIN)
-  async update(@Param('id') id: string, @Body() dto: UpdateTeacherDto): Promise<unknown> {
-    return this.teachersService.update(id, dto);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async update(@Param('id') id: string, @Body() dto: UpdateTeacherDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
+    return this.teachersService.update(id, dto, user);
   }
 
   @Delete('bulk')
-  @Roles(UserRole.ADMIN)
-  async deleteMany(@Body() body: { ids: string[] }) {
-    return this.teachersService.deleteMany(body.ids);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async deleteMany(@Body() body: { ids: string[] }, @CurrentUser() user?: JwtPayload) {
+    return this.teachersService.deleteMany(body.ids, user);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  async delete(@Param('id') id: string) {
-    return this.teachersService.delete(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async delete(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.teachersService.delete(id, user);
   }
 }

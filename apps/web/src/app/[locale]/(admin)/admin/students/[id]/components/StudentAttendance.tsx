@@ -8,6 +8,13 @@ interface StudentWithAttendances extends Student {
     id: string;
     isPresent: boolean;
     absenceType?: 'JUSTIFIED' | 'UNJUSTIFIED' | null;
+    note?: string;
+    markedBy?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      role: 'ADMIN' | 'MANAGER' | 'TEACHER' | 'STUDENT';
+    } | null;
     lesson?: {
       id: string;
       topic?: string;
@@ -44,6 +51,14 @@ export function StudentAttendance({ student }: StudentAttendanceProps) {
             <Badge variant={attendance.isPresent ? 'success' : 'warning'}>
               {attendance.isPresent ? 'PRESENT' : (attendance.absenceType || 'ABSENT')}
             </Badge>
+            {!attendance.isPresent && attendance.note && (
+              <p className="mt-1 text-xs text-slate-600 max-w-[280px] text-right">{attendance.note}</p>
+            )}
+            {!attendance.isPresent && attendance.markedBy && (
+              <p className="mt-1 text-xs text-slate-500 max-w-[280px] text-right">
+                By: {attendance.markedBy.firstName} {attendance.markedBy.lastName}
+              </p>
+            )}
           </div>
         ))}
       </div>

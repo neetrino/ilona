@@ -51,7 +51,6 @@ export interface CreateGroupDto {
   name: string;
   level?: string;
   description?: string;
-  maxStudents?: number;
   centerId: string;
   teacherId?: string;
   isActive?: boolean;
@@ -61,7 +60,6 @@ export interface UpdateGroupDto {
   name?: string;
   level?: string;
   description?: string;
-  maxStudents?: number;
   centerId?: string;
   teacherId?: string;
   isActive?: boolean;

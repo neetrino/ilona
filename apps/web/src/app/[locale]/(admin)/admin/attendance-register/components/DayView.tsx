@@ -29,7 +29,7 @@ interface DayViewProps {
   effectiveDateRange: { from: string; to: string };
   onLessonSave: (
     lessonId: string,
-    attendances: Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType }>
+    attendances: Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType; note?: string }>
   ) => Promise<void>;
   onSaveSuccess: (id: string) => void;
   onSaveError: (id: string, error: string) => void;

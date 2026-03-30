@@ -7,6 +7,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   role: UserRole;
+  managerCenterId?: string | null;
   iat?: number;
   exp?: number;
 }
@@ -30,6 +31,7 @@ export interface SafeUser {
   phone: string | null;
   avatarUrl: string | null;
   role: UserRole;
+  managerCenterId?: string | null;
   status: UserStatus;
   lastLoginAt: Date | null;
   createdAt: Date;

@@ -150,6 +150,14 @@ exports.Prisma.CenterScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ManagerProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  centerId: 'centerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.GroupScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -180,7 +188,6 @@ exports.Prisma.TeacherScalarFieldEnum = {
 exports.Prisma.StudentScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  leadId: 'leadId',
   groupId: 'groupId',
   teacherId: 'teacherId',
   parentName: 'parentName',
@@ -192,7 +199,8 @@ exports.Prisma.StudentScalarFieldEnum = {
   notes: 'notes',
   receiveReports: 'receiveReports',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  leadId: 'leadId'
 };
 
 exports.Prisma.LessonScalarFieldEnum = {
@@ -223,6 +231,7 @@ exports.Prisma.AttendanceScalarFieldEnum = {
   id: 'id',
   lessonId: 'lessonId',
   studentId: 'studentId',
+  markedById: 'markedById',
   isPresent: 'isPresent',
   absenceType: 'absenceType',
   note: 'note',
@@ -373,10 +382,10 @@ exports.Prisma.CrmLeadScalarFieldEnum = {
   centerId: 'centerId',
   transferFlag: 'transferFlag',
   transferComment: 'transferComment',
-  teacherApprovedAt: 'teacherApprovedAt',
   archivedReason: 'archivedReason',
   source: 'source',
-  notes: 'notes'
+  notes: 'notes',
+  teacherApprovedAt: 'teacherApprovedAt'
 };
 
 exports.Prisma.CrmLeadActivityScalarFieldEnum = {
@@ -524,6 +533,7 @@ exports.CrmLeadAttachmentType = exports.$Enums.CrmLeadAttachmentType = {
 exports.Prisma.ModelName = {
   User: 'User',
   Center: 'Center',
+  ManagerProfile: 'ManagerProfile',
   Group: 'Group',
   Teacher: 'Teacher',
   Student: 'Student',

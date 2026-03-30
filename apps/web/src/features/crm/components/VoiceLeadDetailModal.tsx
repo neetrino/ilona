@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { CrmLead } from '@/features/crm/types';
 import { fetchLead, deleteLead, updateLead } from '@/features/crm/api/crm.api';
@@ -30,6 +30,7 @@ interface TeacherOption {
 interface GroupOption {
   id: string;
   name: string;
+  teacherId?: string | null;
 }
 
 interface VoiceLeadDetailModalProps {
@@ -86,7 +87,12 @@ export function VoiceLeadDetailModal({
 
   const centers = centersProp ?? centersData?.items ?? [];
   const teachers = teachersProp ?? teachersData?.items ?? [];
-  const groups = groupsProp ?? groupsData?.items ?? [];
+  const groups = useMemo(() => groupsProp ?? groupsData?.items ?? [], [groupsProp, groupsData?.items]);
+  const selectedTeacherId = form.teacherId ?? '';
+  const groupsForSelectedTeacher = useMemo(
+    () => (selectedTeacherId ? groups.filter((group) => group.teacherId === selectedTeacherId) : []),
+    [groups, selectedTeacherId],
+  );
 
   useEffect(() => {
     if (lead) {
@@ -104,6 +110,21 @@ export function VoiceLeadDetailModal({
       setSaveError(null);
     }
   }, [lead]);
+
+  useEffect(() => {
+    const selectedGroupId = form.groupId ?? '';
+
+    if (!selectedTeacherId) {
+      if (selectedGroupId) {
+        setForm((prev) => ({ ...prev, groupId: '' }));
+      }
+      return;
+    }
+
+    if (selectedGroupId && !groupsForSelectedTeacher.some((group) => group.id === selectedGroupId)) {
+      setForm((prev) => ({ ...prev, groupId: '' }));
+    }
+  }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
 
   const handleDeleteClick = () => setShowDeleteConfirm(true);
   const handleDeleteConfirm = async () => {
@@ -315,7 +336,7 @@ export function VoiceLeadDetailModal({
                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('teacher')}</label>
                     <select
                       value={form.teacherId ?? ''}
-                      onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value }))}
+                      onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value, groupId: '' }))}
                       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
@@ -331,10 +352,13 @@ export function VoiceLeadDetailModal({
                     <select
                       value={form.groupId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value }))}
+                      disabled={!selectedTeacherId}
                       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
-                      <option value="">—</option>
-                      {groups.map((g) => (
+                      <option value="">
+                        {selectedTeacherId ? '—' : 'Select Teacher first'}
+                      </option>
+                      {groupsForSelectedTeacher.map((g) => (
                         <option key={g.id} value={g.id}>{g.name}</option>
                       ))}
                     </select>

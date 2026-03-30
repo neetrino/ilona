@@ -4,10 +4,17 @@ export interface AttendanceRecord {
   id: string;
   lessonId: string;
   studentId: string;
+  markedById?: string | null;
   isPresent: boolean;
   absenceType?: AbsenceType | null;
   note?: string;
   markedAt?: string;
+  markedBy?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    role: 'ADMIN' | 'MANAGER' | 'TEACHER' | 'STUDENT';
+  } | null;
   student: {
     id: string;
     user: {
@@ -55,6 +62,13 @@ export interface StudentAttendanceHistory {
     isPresent: boolean;
     absenceType?: AbsenceType | null;
     note?: string;
+    markedById?: string | null;
+    markedBy?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      role: 'ADMIN' | 'MANAGER' | 'TEACHER' | 'STUDENT';
+    } | null;
     lesson: {
       id: string;
       scheduledAt: string;

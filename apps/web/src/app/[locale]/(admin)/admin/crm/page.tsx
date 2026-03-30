@@ -32,6 +32,60 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
 
 const VOICE_LEAD_PARAM = 'voiceLead';
 const ARCHIVE_PARAM = 'archive';
+const EDIT_LEAD_PARAM = 'editLead';
+
+function normalize(value?: string | null): string {
+  return (value ?? '').trim().toLowerCase();
+}
+
+function containsNormalized(haystack?: string | null, needle?: string): boolean {
+  if (!needle) return true;
+  return normalize(haystack).includes(needle);
+}
+
+function leadMatchesFilters(lead: CrmLead, filters: CrmLeadFilters): boolean {
+  if (filters.status && lead.status !== filters.status) return false;
+  if (filters.centerId && lead.centerId !== filters.centerId) return false;
+  if (filters.teacherId && lead.teacherId !== filters.teacherId) return false;
+  if (filters.groupId && lead.groupId !== filters.groupId) return false;
+  if (filters.levelId && lead.levelId !== filters.levelId) return false;
+
+  const search = normalize(filters.search);
+  if (search) {
+    const matched =
+      containsNormalized(lead.firstName, search) ||
+      containsNormalized(lead.lastName, search) ||
+      containsNormalized(lead.phone, search);
+    if (!matched) return false;
+  }
+
+  const createdAtTs = new Date(lead.createdAt).getTime();
+  if (filters.dateFrom) {
+    const fromTs = new Date(filters.dateFrom).getTime();
+    if (!Number.isNaN(fromTs) && createdAtTs < fromTs) return false;
+  }
+  if (filters.dateTo) {
+    const dateTo = new Date(filters.dateTo);
+    dateTo.setHours(23, 59, 59, 999);
+    const toTs = dateTo.getTime();
+    if (!Number.isNaN(toTs) && createdAtTs > toTs) return false;
+  }
+
+  return true;
+}
+
+function sortLeadsByFilters(leads: CrmLead[], filters: CrmLeadFilters): CrmLead[] {
+  const sortBy = filters.sortBy ?? 'createdAt';
+  const sortOrder = filters.sortOrder ?? 'desc';
+  const direction = sortOrder === 'asc' ? 1 : -1;
+
+  return [...leads].sort((a, b) => {
+    const aTs = new Date(sortBy === 'updatedAt' ? a.updatedAt : a.createdAt).getTime();
+    const bTs = new Date(sortBy === 'updatedAt' ? b.updatedAt : b.createdAt).getTime();
+    if (aTs === bTs) return b.id.localeCompare(a.id);
+    return (aTs - bTs) * direction;
+  });
+}
 
 export default function AdminCrmPage() {
   const t = useTranslations('nav');
@@ -44,7 +98,7 @@ export default function AdminCrmPage() {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
-  const [editLeadId, setEditLeadId] = useState<string | null>(null);
+  const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
   const [statusError, setStatusError] = useState<string | null>(null);
 
   // Restore voice lead popup from URL after refresh
@@ -56,6 +110,11 @@ export default function AdminCrmPage() {
   // Restore Archive column visibility from URL after refresh
   useEffect(() => {
     setShowArchiveColumn(searchParams.get(ARCHIVE_PARAM) === '1');
+  }, [searchParams]);
+
+  // Restore edit lead modal from URL after refresh
+  useEffect(() => {
+    setEditLeadId(searchParams.get(EDIT_LEAD_PARAM));
   }, [searchParams]);
 
   const queryClient = useQueryClient();
@@ -151,6 +210,20 @@ export default function AdminCrmPage() {
     window.history.replaceState(null, '', url.pathname + (url.search || ''));
   };
 
+  const openEditLead = (id: string) => {
+    setEditLeadId(id);
+    const url = new URL(window.location.href);
+    url.searchParams.set(EDIT_LEAD_PARAM, id);
+    window.history.replaceState(null, '', url.pathname + url.search);
+  };
+
+  const closeEditLead = () => {
+    setEditLeadId(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete(EDIT_LEAD_PARAM);
+    window.history.replaceState(null, '', url.pathname + (url.search || ''));
+  };
+
   const handleCardClick = (lead: CrmLead) => {
     const isVoiceLead = lead.attachments?.some((a) => a.type === 'VOICE_RECORDING');
     if (isVoiceLead) {
@@ -161,12 +234,42 @@ export default function AdminCrmPage() {
     }
   };
   const handleCardEdit = (lead: CrmLead) => {
-    setEditLeadId(lead.id);
+    openEditLead(lead.id);
   };
   const handleCardStatusChange = (leadId: string, status: CrmLeadStatus) => {
     statusMutation.mutate({ leadId, status });
   };
   const handleAddLead = () => setVoiceModalOpen(true);
+
+  const upsertCreatedLeadIntoCaches = (createdLead: CrmLead) => {
+    const crmQueries = queryClient.getQueriesData<CrmLeadsResponse>({ queryKey: ['crm-leads'] });
+
+    for (const [queryKey, currentData] of crmQueries) {
+      if (!currentData) continue;
+
+      const queryFilters = ((queryKey as unknown[])[1] as CrmLeadFilters | undefined) ?? DEFAULT_FILTERS;
+      const skip = queryFilters.skip ?? 0;
+      const take = queryFilters.take ?? currentData.items.length;
+      const nextCounts = {
+        ...currentData.countsByStatus,
+        NEW: (currentData.countsByStatus?.NEW ?? 0) + 1,
+      };
+
+      let nextItems = currentData.items;
+      if (skip === 0 && leadMatchesFilters(createdLead, queryFilters)) {
+        const withoutDuplicate = currentData.items.filter((lead) => lead.id !== createdLead.id);
+        const sorted = sortLeadsByFilters([createdLead, ...withoutDuplicate], queryFilters);
+        nextItems = sorted.slice(0, take);
+      }
+
+      queryClient.setQueryData<CrmLeadsResponse>(queryKey, {
+        ...currentData,
+        items: nextItems,
+        total: currentData.total + 1,
+        countsByStatus: nextCounts,
+      });
+    }
+  };
 
   return (
     <DashboardLayout title={t('crm')} subtitle="Lead management">
@@ -303,10 +406,10 @@ export default function AdminCrmPage() {
       <EditLeadModal
         open={!!editLeadId}
         leadId={editLeadId}
-        onClose={() => setEditLeadId(null)}
+        onClose={closeEditLead}
         onSaved={() => {
           refetch();
-          setEditLeadId(null);
+          closeEditLead();
         }}
         centers={centers}
         teachers={teachers}
@@ -316,8 +419,9 @@ export default function AdminCrmPage() {
       <VoiceLeadModal
         open={voiceModalOpen}
         onClose={() => setVoiceModalOpen(false)}
-        onCreated={() => {
-          refetch();
+        onCreated={(createdLead) => {
+          upsertCreatedLeadIntoCaches(createdLead);
+          queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
           setVoiceModalOpen(false);
         }}
       />

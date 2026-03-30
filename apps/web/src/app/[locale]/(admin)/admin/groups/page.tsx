@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { GroupsTab } from './components/GroupsTab';
 import { CentersTab } from './components/CentersTab';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 type TabType = 'groups' | 'centers';
 type ViewMode = 'list' | 'board';
@@ -13,11 +14,13 @@ export default function GroupsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { user } = useAuthStore();
+  const isManager = user?.role === 'MANAGER';
   
   // Initialize active tab from URL
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl === 'groups' || tabFromUrl === 'centers') {
+    if (!isManager && (tabFromUrl === 'groups' || tabFromUrl === 'centers')) {
       return tabFromUrl;
     }
     return 'groups';
@@ -38,7 +41,7 @@ export default function GroupsPage() {
   });
 
   // Update URL helper function
-  const updateUrl = (updates: Record<string, string | null>) => {
+  const updateUrl = useCallback((updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([key, value]) => {
       if (value === null || value === '') {
@@ -49,17 +52,17 @@ export default function GroupsPage() {
     });
     // Use replace instead of push to avoid history stack issues and prevent flicker
     router.replace(`${pathname}?${params.toString()}`);
-  };
+  }, [pathname, router, searchParams]);
 
   // Update URL when view mode changes
-  const updateViewModeInUrl = (mode: ViewMode) => {
+  const updateViewModeInUrl = useCallback((mode: ViewMode) => {
     updateUrl({ view: mode !== 'list' ? mode : null });
-  };
+  }, [updateUrl]);
 
   // Update URL when tab changes
-  const updateTabInUrl = (tab: TabType) => {
+  const updateTabInUrl = useCallback((tab: TabType) => {
     updateUrl({ tab: tab !== 'groups' ? tab : null });
-  };
+  }, [updateUrl]);
 
   // Sync view mode from URL
   useEffect(() => {
@@ -74,12 +77,15 @@ export default function GroupsPage() {
   // Sync active tab from URL
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl === 'groups' || tabFromUrl === 'centers') {
+    if (!isManager && (tabFromUrl === 'groups' || tabFromUrl === 'centers')) {
       setActiveTab(tabFromUrl);
     } else if (!tabFromUrl) {
       setActiveTab('groups');
+    } else if (isManager && tabFromUrl === 'centers') {
+      setActiveTab('groups');
+      updateTabInUrl('groups');
     }
-  }, [searchParams]);
+  }, [isManager, searchParams, updateTabInUrl]);
 
   // Handle search
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,19 +107,21 @@ export default function GroupsPage() {
         {/* Tabs */}
         <div className="border-b border-slate-200">
           <nav className="flex gap-4">
-            <button
-              onClick={() => {
-                setActiveTab('centers');
-                updateTabInUrl('centers');
-              }}
-              className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
-                activeTab === 'centers'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-slate-600 hover:text-slate-800'
-              }`}
-            >
-              Centers / Branches
-            </button>
+            {!isManager && (
+              <button
+                onClick={() => {
+                  setActiveTab('centers');
+                  updateTabInUrl('centers');
+                }}
+                className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                  activeTab === 'centers'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-slate-600 hover:text-slate-800'
+                }`}
+              >
+                Centers / Branches
+              </button>
+            )}
             <button
               onClick={() => {
                 setActiveTab('groups');
@@ -130,12 +138,11 @@ export default function GroupsPage() {
           </nav>
         </div>
 
-        {activeTab === 'centers' && (
+        {!isManager && activeTab === 'centers' && (
           <CentersTab
             centerSearchQuery={centerSearchQuery}
             onSearchChange={handleCenterSearchChange}
             centerPage={centerPage}
-            setCenterPage={setCenterPage}
             updateUrl={updateUrl}
             searchParams={searchParams}
           />

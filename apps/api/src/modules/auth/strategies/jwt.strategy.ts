@@ -93,6 +93,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         sub: payload.sub,
         email: payload.email,
         role: payload.role,
+        managerCenterId:
+          payload.role === 'MANAGER'
+            ? await this.usersService.getManagerCenterId(payload.sub)
+            : null,
       };
     } catch (error) {
       // If it's a database connection error, return 503 instead of 500

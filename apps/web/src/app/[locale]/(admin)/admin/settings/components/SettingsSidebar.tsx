@@ -2,17 +2,18 @@
 
 import { useTranslations } from 'next-intl';
 
-type SettingsTab = 'security' | 'notifications' | 'system' | 'penalty';
+type SettingsTab = 'security' | 'notifications' | 'system' | 'penalty' | 'manager';
 
 interface SettingsSidebarProps {
   activeTab: SettingsTab;
   onTabChange: (tab: SettingsTab) => void;
+  allowedTabs?: SettingsTab[];
 }
 
-export function SettingsSidebar({ activeTab, onTabChange }: SettingsSidebarProps) {
+export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: SettingsSidebarProps) {
   const t = useTranslations('settings');
 
-  const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
+  const allTabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     {
       id: 'security',
       label: t('security'),
@@ -50,7 +51,20 @@ export function SettingsSidebar({ activeTab, onTabChange }: SettingsSidebarProps
         </svg>
       ),
     },
+    {
+      id: 'manager',
+      label: t('manager'),
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5V4H2v16h5m10 0v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4m10 0H7M9 8h6m-6 4h6" />
+        </svg>
+      ),
+    },
   ];
+
+  const tabs = allowedTabs?.length
+    ? allTabs.filter((tab) => allowedTabs.includes(tab.id))
+    : allTabs;
 
   return (
     <div className="w-64 flex-shrink-0">

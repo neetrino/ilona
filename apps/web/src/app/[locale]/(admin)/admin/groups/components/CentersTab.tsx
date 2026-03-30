@@ -1,46 +1,22 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { StatCard, DataTable, Button, ActionButtons } from '@/shared/components/ui';
-import { CreateCenterForm, EditCenterForm, type CenterWithCount } from '@/features/centers';
+import { StatCard, Button } from '@/shared/components/ui';
+import {
+  CreateCenterForm,
+  EditCenterForm,
+  CenterCard,
+  DeactivateCenterDialog,
+  type CenterWithCount,
+} from '@/features/centers';
 import { DeleteConfirmationDialog } from '@/features/groups';
+import { getErrorMessage } from '@/shared/lib/api';
 import { useCentersManagement } from '../hooks/useCentersManagement';
-
-interface SelectAllCheckboxProps {
-  checked: boolean;
-  indeterminate: boolean;
-  onChange: () => void;
-  disabled?: boolean;
-}
-
-function SelectAllCheckbox({ checked, indeterminate, onChange, disabled }: SelectAllCheckboxProps) {
-  const checkboxRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = indeterminate;
-    }
-  }, [indeterminate]);
-
-  return (
-    <input
-      ref={checkboxRef}
-      type="checkbox"
-      className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-      checked={checked}
-      onChange={onChange}
-      onClick={(e) => e.stopPropagation()}
-      disabled={disabled}
-      aria-label="Select all"
-    />
-  );
-}
 
 interface CentersTabProps {
   centerSearchQuery: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   centerPage: number;
-  setCenterPage: (page: number | ((prev: number) => number)) => void;
   updateUrl: (updates: Record<string, string | null>) => void;
   searchParams: URLSearchParams;
 }
@@ -49,17 +25,16 @@ export function CentersTab({
   centerSearchQuery,
   onSearchChange,
   centerPage,
-  setCenterPage,
   updateUrl,
   searchParams,
 }: CentersTabProps) {
   const {
     centers,
     totalCenters,
-    totalCenterPages,
     activeCenters,
     isLoadingCenters,
     deleteCenter,
+    toggleCenterActive,
     createCenterOpen,
     setCreateCenterOpen,
     editCenterId,
@@ -70,22 +45,9 @@ export function CentersTab({
     handleDeleteCenterClick,
     handleDeleteCenterConfirm,
     handleToggleCenterActive,
-    selectedCenterIds,
-    setSelectedCenterIds,
-    handleToggleSelectCenter,
-    handleSelectAllCenters,
-    allCentersSelected,
-    someCentersSelected,
-    isBulkDeleteCentersDialogOpen,
-    setIsBulkDeleteCentersDialogOpen,
-    bulkDeleteCentersError,
-    setBulkDeleteCentersError,
-    bulkDeleteCentersSuccess,
-    setBulkDeleteCentersSuccess,
-    deletedCentersCount,
-    handleBulkDeleteCentersClick,
-    handleBulkDeleteCentersConfirm,
-  } = useCentersManagement(centerSearchQuery, centerPage);
+  } = useCentersManagement('board', centerSearchQuery, centerPage);
+  const [deactivateCenter, setDeactivateCenter] = React.useState<CenterWithCount | null>(null);
+  const [deactivateError, setDeactivateError] = React.useState<string | null>(null);
 
   // Ref to track if we're intentionally closing to prevent effect from reopening
   const isClosingRef = useRef(false);
@@ -127,92 +89,32 @@ export function CentersTab({
     }
   };
 
-  const pageSize = 10;
+  const handleCenterActivationAction = async (center: CenterWithCount) => {
+    if (center.isActive) {
+      setDeactivateError(null);
+      setDeactivateCenter(center);
+      return;
+    }
 
-  const centerColumns = [
-    {
-      key: 'checkbox',
-      header: (
-        <SelectAllCheckbox
-          checked={allCentersSelected}
-          indeterminate={someCentersSelected}
-          onChange={handleSelectAllCenters}
-          disabled={deleteCenter.isPending || isLoadingCenters}
-        />
-      ),
-      render: (center: CenterWithCount) => (
-        <input
-          type="checkbox"
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          checked={selectedCenterIds.has(center.id)}
-          onChange={() => handleToggleSelectCenter(center.id)}
-          onClick={(e) => e.stopPropagation()}
-          disabled={deleteCenter.isPending || isLoadingCenters}
-          aria-label={`Select ${center.name}`}
-        />
-      ),
-      className: '!pl-4 !pr-2 w-12',
-    },
-    {
-      key: 'name',
-      header: 'Center Name',
-      render: (center: CenterWithCount) => (
-        <div>
-          <p className="font-semibold text-slate-800">{center.name}</p>
-          {center.address && (
-            <p className="text-sm text-slate-500">{center.address}</p>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'contact',
-      header: 'Contact',
-      render: (center: CenterWithCount) => (
-        <div className="space-y-1">
-          {center.phone && (
-            <p className="text-sm text-slate-700">{center.phone}</p>
-          )}
-          {center.email && (
-            <p className="text-sm text-slate-600">{center.email}</p>
-          )}
-          {!center.phone && !center.email && (
-            <span className="text-slate-400 text-sm">—</span>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'groups',
-      header: 'Groups',
-      className: 'text-center',
-      render: (center: CenterWithCount) => (
-        <span className="text-slate-700">{center._count?.groups || 0}</span>
-      ),
-    },
-    {
-      key: 'actions',
-      header: 'Actions',
-      render: (center: CenterWithCount) => (
-        <ActionButtons
-          onEdit={() => handleEditCenterIdChange(center.id)}
-          onDisable={() => handleToggleCenterActive(center.id)}
-          onDelete={() => handleDeleteCenterClick(center.id)}
-          isActive={center.isActive}
-          ariaLabels={{
-            edit: 'Edit center',
-            disable: center.isActive ? 'Deactivate center' : 'Activate center',
-            delete: 'Delete center',
-          }}
-          titles={{
-            edit: 'Edit center',
-            disable: center.isActive ? 'Deactivate center' : 'Activate center',
-            delete: 'Delete center',
-          }}
-        />
-      ),
-    },
-  ];
+    try {
+      await handleToggleCenterActive(center.id);
+    } catch (err) {
+      console.error('Failed to activate center:', err);
+    }
+  };
+
+  const handleDeactivateConfirm = async () => {
+    if (!deactivateCenter) return;
+
+    try {
+      await handleToggleCenterActive(deactivateCenter.id);
+      setDeactivateCenter(null);
+      setDeactivateError(null);
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to deactivate center. Please try again.');
+      setDeactivateError(message);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -248,15 +150,6 @@ export function CentersTab({
             className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
-        {selectedCenterIds.size > 0 && (
-          <Button
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium"
-            onClick={handleBulkDeleteCentersClick}
-            disabled={deleteCenter.isPending || isLoadingCenters}
-          >
-            Delete All ({selectedCenterIds.size})
-          </Button>
-        )}
         <Button 
           className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium"
           onClick={() => setCreateCenterOpen(true)}
@@ -265,47 +158,30 @@ export function CentersTab({
         </Button>
       </div>
 
-      {/* Centers Table */}
-      <DataTable
-        columns={centerColumns}
-        data={centers}
-        keyExtractor={(center) => center.id}
-        isLoading={isLoadingCenters}
-        emptyMessage={centerSearchQuery ? "No centers match your search" : "No centers found"}
-      />
-
-      {/* Centers Pagination */}
-      <div className="flex items-center justify-between text-sm text-slate-500">
-        <span>
-          Showing {Math.min(centerPage * pageSize + 1, totalCenters)}-{Math.min((centerPage + 1) * pageSize, totalCenters)} of {totalCenters} centers
-        </span>
-        <div className="flex items-center gap-2">
-          <button 
-            className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
-            disabled={centerPage === 0}
-            onClick={() => {
-              setCenterPage(p => Math.max(0, p - 1));
-              setSelectedCenterIds(new Set());
-            }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <span>Page {centerPage + 1} of {totalCenterPages || 1}</span>
-          <button 
-            className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
-            disabled={centerPage >= totalCenterPages - 1}
-            onClick={() => {
-              setCenterPage(p => p + 1);
-              setSelectedCenterIds(new Set());
-            }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
+      <div className="w-full overflow-x-auto">
+        {isLoadingCenters ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-slate-500">Loading centers...</div>
+          </div>
+        ) : centers.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-slate-500">
+              {centerSearchQuery ? 'No centers match your search' : 'No centers found'}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {centers.map((center) => (
+              <CenterCard
+                key={center.id}
+                center={center}
+                onEdit={() => handleEditCenterIdChange(center.id)}
+                onDelete={() => handleDeleteCenterClick(center.id)}
+                onToggleActive={() => handleCenterActivationAction(center)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modals */}
@@ -333,33 +209,19 @@ export function CentersTab({
         error={deleteCenterError || undefined}
         itemType="center"
       />
-      <DeleteConfirmationDialog
-        open={isBulkDeleteCentersDialogOpen}
-        onOpenChange={(open: boolean) => {
-          setIsBulkDeleteCentersDialogOpen(open);
+      <DeactivateCenterDialog
+        open={!!deactivateCenter}
+        onOpenChange={(open) => {
           if (!open) {
-            setBulkDeleteCentersError(null);
-            setBulkDeleteCentersSuccess(false);
+            setDeactivateCenter(null);
+            setDeactivateError(null);
           }
         }}
-        onConfirm={handleBulkDeleteCentersConfirm}
-        itemName={selectedCenterIds.size > 0 ? `${selectedCenterIds.size} ${selectedCenterIds.size === 1 ? 'center' : 'centers'}` : undefined}
-        isLoading={deleteCenter.isPending}
-        error={bulkDeleteCentersError || undefined}
-        itemType="center"
-        title="Delete Centers"
+        onConfirm={handleDeactivateConfirm}
+        centerName={deactivateCenter?.name}
+        isLoading={toggleCenterActive.isPending}
+        error={deactivateError}
       />
-
-      {/* Success Messages */}
-      {bulkDeleteCentersSuccess && (
-        <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
-          <p className="text-sm text-green-600 font-medium">
-            {deletedCentersCount > 0 
-              ? `${deletedCentersCount} ${deletedCentersCount === 1 ? 'center' : 'centers'} deleted successfully!`
-              : 'Centers deleted successfully!'}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

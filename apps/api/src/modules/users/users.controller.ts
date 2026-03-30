@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Body, UseGuards, Post } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CurrentUser, Roles } from '../../common/decorators';
@@ -6,6 +6,7 @@ import { RolesGuard } from '../../common/guards';
 import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateManagerDto } from './dto/create-manager.dto';
 
 @ApiTags('users')
 @ApiBearerAuth('access-token')
@@ -39,5 +40,21 @@ export class UsersController {
   @ApiOperation({ summary: 'Get user by ID (Admin only)' })
   async findOne(@Param('id') id: string): Promise<unknown> {
     return this.usersService.findById(id);
+  }
+
+  @Get('managers/list')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get managers list (Admin only)' })
+  async findManagers(): Promise<unknown> {
+    return this.usersService.findManagers();
+  }
+
+  @Post('managers')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Create manager (Admin only)' })
+  async createManager(@Body() dto: CreateManagerDto): Promise<unknown> {
+    return this.usersService.createManager(dto);
   }
 }

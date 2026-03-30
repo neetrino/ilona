@@ -9,10 +9,49 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
 import { Prisma, UserRole, UserStatus } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
+import { JwtPayload } from '../../common/types/auth.types';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
+import {
+  FIXED_GROUP_MAX_STUDENTS,
+  GROUP_CAPACITY_EXCEEDED_MESSAGE,
+} from '../groups/group.constants';
 
 @Injectable()
 export class StudentCrudService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async assertManagerStudentAccess(studentId: string, currentUserId?: string, userRole?: UserRole) {
+    if (userRole !== UserRole.MANAGER || !currentUserId) {
+      return;
+    }
+
+    const managerProfile = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
+      SELECT "centerId" FROM "manager_profiles" WHERE "userId" = ${currentUserId} LIMIT 1
+    `;
+
+    const managerCenterId = managerProfile[0]?.centerId;
+    if (!managerCenterId) {
+      throw new ForbiddenException('Manager account is not assigned to a center');
+    }
+
+    const student = await this.prisma.student.findUnique({
+      where: { id: studentId },
+      select: {
+        id: true,
+        group: {
+          select: { centerId: true },
+        },
+      },
+    });
+
+    if (!student) {
+      throw new NotFoundException(`Student with ID ${studentId} not found`);
+    }
+
+    if (student.group?.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this student');
+    }
+  }
 
   async findAll(params?: {
     skip?: number;
@@ -375,6 +414,14 @@ export class StudentCrudService {
           take: 10,
           orderBy: { lesson: { scheduledAt: 'desc' } },
           include: {
+            markedBy: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+              },
+            },
             lesson: {
               select: { id: true, scheduledAt: true, topic: true },
             },
@@ -401,6 +448,19 @@ export class StudentCrudService {
 
     if (!student) {
       throw new NotFoundException(`Student with ID ${id} not found`);
+    }
+
+    if (userRole === UserRole.MANAGER && currentUserId) {
+      const managerProfile = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
+        SELECT "centerId" FROM "manager_profiles" WHERE "userId" = ${currentUserId} LIMIT 1
+      `;
+      const managerCenterId = managerProfile[0]?.centerId;
+      if (!managerCenterId) {
+        throw new ForbiddenException('Manager account is not assigned to a center');
+      }
+      if (student.group?.centerId !== managerCenterId) {
+        throw new ForbiddenException('You do not have access to this student');
+      }
     }
 
     // Authorization check: If user is a teacher, verify they are assigned to this student
@@ -467,7 +527,7 @@ export class StudentCrudService {
     return student;
   }
 
-  async create(dto: CreateStudentDto) {
+  async create(dto: CreateStudentDto, user?: JwtPayload) {
     // Check if email already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -476,6 +536,8 @@ export class StudentCrudService {
     if (existingUser) {
       throw new ConflictException('Email already registered');
     }
+
+    const managerCenterId = getManagerCenterIdOrThrow(user);
 
     // Validate group if provided
     if (dto.groupId) {
@@ -488,8 +550,12 @@ export class StudentCrudService {
         throw new BadRequestException(`Group with ID ${dto.groupId} not found`);
       }
 
-      if (group._count.students >= group.maxStudents) {
-        throw new BadRequestException('Group is full');
+      if (managerCenterId && group.centerId !== managerCenterId) {
+        throw new ForbiddenException('You can only create students inside your assigned center');
+      }
+
+      if (group._count.students >= FIXED_GROUP_MAX_STUDENTS) {
+        throw new BadRequestException(GROUP_CAPACITY_EXCEEDED_MESSAGE);
       }
     }
 
@@ -497,10 +563,24 @@ export class StudentCrudService {
     if (dto.teacherId) {
       const teacher = await this.prisma.teacher.findUnique({
         where: { id: dto.teacherId },
+        include: {
+          groups: {
+            select: {
+              centerId: true,
+            },
+          },
+        },
       });
 
       if (!teacher) {
         throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
+      }
+
+      if (managerCenterId) {
+        const teacherInManagerCenter = teacher.groups.some((group) => group.centerId === managerCenterId);
+        if (!teacherInManagerCenter) {
+          throw new ForbiddenException('You can only assign teachers from your center');
+        }
       }
     }
 
@@ -573,8 +653,10 @@ export class StudentCrudService {
     return result;
   }
 
-  async update(id: string, dto: UpdateStudentDto) {
-    const student = await this.findById(id);
+  async update(id: string, dto: UpdateStudentDto, user?: JwtPayload) {
+    await this.assertManagerStudentAccess(id, user?.sub, user?.role);
+    const student = await this.findById(id, user?.sub, user?.role);
+    const managerCenterId = getManagerCenterIdOrThrow(user);
 
     if (dto.teacherId) {
       const teacher = await this.prisma.teacher.findUnique({
@@ -626,10 +708,13 @@ export class StudentCrudService {
       if (newGroupId) {
         const group = await this.prisma.group.findUnique({
           where: { id: newGroupId },
-          select: { teacherId: true },
+          select: { teacherId: true, centerId: true },
         });
         if (!group) {
           throw new BadRequestException(`Group with ID ${newGroupId} not found`);
+        }
+        if (managerCenterId && group.centerId !== managerCenterId) {
+          throw new ForbiddenException('You can only move students to groups in your center');
         }
         // If teacherId is also provided, ensure the group belongs to that teacher
         if (dto.teacherId !== undefined && dto.teacherId !== null && dto.teacherId !== '') {
@@ -695,8 +780,9 @@ export class StudentCrudService {
     });
   }
 
-  async delete(id: string) {
-    const student = await this.findById(id);
+  async delete(id: string, user?: JwtPayload) {
+    await this.assertManagerStudentAccess(id, user?.sub, user?.role);
+    const student = await this.findById(id, user?.sub, user?.role);
 
     // Delete user (cascades to student)
     await this.prisma.user.delete({
@@ -709,11 +795,35 @@ export class StudentCrudService {
   /**
    * Delete multiple students by id in a single transaction. Only ADMIN can call this.
    */
-  async deleteMany(ids: string[]) {
+  async deleteMany(ids: string[], user?: JwtPayload) {
     if (!ids || ids.length === 0) {
       return { success: true, deleted: 0 };
     }
     const uniqueIds = [...new Set(ids)];
+    if (user?.role === UserRole.MANAGER) {
+      const managerCenterId = getManagerCenterIdOrThrow(user);
+      if (managerCenterId) {
+        const scopedStudents = await this.prisma.student.findMany({
+          where: {
+            id: { in: uniqueIds },
+            group: { centerId: managerCenterId },
+          },
+          select: { id: true, userId: true },
+        });
+
+        if (scopedStudents.length !== uniqueIds.length) {
+          throw new ForbiddenException('One or more students are outside your assigned center');
+        }
+
+        const scopedUserIds = scopedStudents.map((s) => s.userId);
+        await this.prisma.$transaction([
+          this.prisma.student.deleteMany({ where: { id: { in: scopedStudents.map((s) => s.id) } } }),
+          this.prisma.user.deleteMany({ where: { id: { in: scopedUserIds } } }),
+        ]);
+        return { success: true, deleted: scopedStudents.length };
+      }
+    }
+
     const students = await this.prisma.student.findMany({
       where: { id: { in: uniqueIds } },
       select: { id: true, userId: true },

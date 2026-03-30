@@ -4,7 +4,11 @@ import { getErrorMessage } from '@/shared/lib/api';
 
 const PAGE_SIZE = 10;
 
-export function useCentersManagement(centerSearchQuery: string, centerPage: number) {
+export function useCentersManagement(
+  viewMode: 'list' | 'board',
+  centerSearchQuery: string,
+  centerPage: number
+) {
   const [createCenterOpen, setCreateCenterOpen] = useState(false);
   const [editCenterId, setEditCenterId] = useState<string | null>(null);
   const [deleteCenterId, setDeleteCenterId] = useState<string | null>(null);
@@ -15,12 +19,13 @@ export function useCentersManagement(centerSearchQuery: string, centerPage: numb
   const [deletedCentersCount, setDeletedCentersCount] = useState<number>(0);
   const [selectedCenterIds, setSelectedCenterIds] = useState<Set<string>>(new Set());
 
+  const shouldFetchAll = viewMode === 'board';
   const { 
     data: centersData, 
     isLoading: isLoadingCenters 
   } = useCenters({ 
-    skip: centerPage * PAGE_SIZE,
-    take: PAGE_SIZE,
+    skip: shouldFetchAll ? 0 : centerPage * PAGE_SIZE,
+    take: shouldFetchAll ? 100 : PAGE_SIZE,
     search: centerSearchQuery || undefined,
   });
 
@@ -142,6 +147,7 @@ export function useCentersManagement(centerSearchQuery: string, centerPage: numb
       await toggleCenterActive.mutateAsync(id);
     } catch (err) {
       console.error('Failed to toggle center status:', err);
+      throw err;
     }
   };
 
@@ -152,6 +158,7 @@ export function useCentersManagement(centerSearchQuery: string, centerPage: numb
     activeCenters,
     isLoadingCenters,
     deleteCenter,
+    toggleCenterActive,
     createCenterOpen,
     setCreateCenterOpen,
     editCenterId,

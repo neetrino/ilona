@@ -14,6 +14,7 @@ import {
 } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { groupGroupsByCenter, calculateGroupStats } from '../utils';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 type TabType = 'groups' | 'centers';
 type ViewMode = 'list' | 'board';
@@ -24,6 +25,8 @@ export function useGroupsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { user } = useAuthStore();
+  const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
   
   // Tab state
   const [activeTab, setActiveTab] = useState<TabType>('groups');
@@ -82,6 +85,7 @@ export function useGroupsPage() {
     skip: shouldFetchAll ? 0 : page * PAGE_SIZE,
     take: shouldFetchAll ? 100 : PAGE_SIZE, // API max is 100
     search: searchQuery || undefined,
+    centerId: managerCenterId || undefined,
   });
 
   // Fetch all centers for board view (only when in board mode)
@@ -111,7 +115,11 @@ export function useGroupsPage() {
   const groups = useMemo(() => groupsData?.items || [], [groupsData?.items]);
   const totalGroups = groupsData?.total || 0;
   const totalPages = groupsData?.totalPages || 1;
-  const allCenters = useMemo(() => allCentersData?.items || [], [allCentersData?.items]);
+  const allCenters = useMemo(() => {
+    const centers = allCentersData?.items || [];
+    if (!managerCenterId) return centers;
+    return centers.filter((center) => center.id === managerCenterId);
+  }, [allCentersData?.items, managerCenterId]);
   const centers = centersData?.items || [];
   const totalCenters = centersData?.total || 0;
   const totalCenterPages = centersData?.totalPages || 1;

@@ -18,10 +18,19 @@ export default function AdminLayout({
 
     if (!isAuthenticated) {
       router.replace('/');
-    } else if (user?.role !== 'ADMIN') {
+    } else if (user?.role !== 'ADMIN' && user?.role !== 'MANAGER') {
       router.replace('/');
     }
   }, [isAuthenticated, isHydrated, user, router]);
+
+  useEffect(() => {
+    if (!isHydrated || !isAuthenticated || user?.role !== 'MANAGER') return;
+
+    const path = window.location.pathname.replace(/^\/[a-z]{2}/, '');
+    if (path.startsWith('/admin/finance') || path.startsWith('/admin/analytics')) {
+      router.replace('/admin/dashboard');
+    }
+  }, [isHydrated, isAuthenticated, user, router]);
 
   // Show loading while hydrating or checking auth
   if (!isHydrated) {
@@ -33,7 +42,7 @@ export default function AdminLayout({
   }
 
   // Show loading while redirecting
-  if (!isAuthenticated || user?.role !== 'ADMIN') {
+  if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'MANAGER')) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

@@ -5,6 +5,7 @@ import { StudentCrudService } from './student-crud.service';
 import { StudentQueryService } from './student-query.service';
 import { StudentStatisticsService } from './student-statistics.service';
 import { StudentGroupService } from './student-group.service';
+import { JwtPayload } from '../../common/types/auth.types';
 
 /**
  * Main Students Service - Facade that delegates to specialized services
@@ -50,20 +51,20 @@ export class StudentsService {
     return this.crudService.findByUserId(userId);
   }
 
-  async create(dto: CreateStudentDto): Promise<unknown> {
-    return this.crudService.create(dto);
+  async create(dto: CreateStudentDto, user?: JwtPayload): Promise<unknown> {
+    return this.crudService.create(dto, user);
   }
 
-  async update(id: string, dto: UpdateStudentDto): Promise<unknown> {
-    return this.crudService.update(id, dto);
+  async update(id: string, dto: UpdateStudentDto, user?: JwtPayload): Promise<unknown> {
+    return this.crudService.update(id, dto, user);
   }
 
-  async delete(id: string) {
-    return this.crudService.delete(id);
+  async delete(id: string, user?: JwtPayload) {
+    return this.crudService.delete(id, user);
   }
 
-  async deleteMany(ids: string[]) {
-    return this.crudService.deleteMany(ids);
+  async deleteMany(ids: string[], user?: JwtPayload) {
+    return this.crudService.deleteMany(ids, user);
   }
 
   // Query Methods
@@ -101,7 +102,7 @@ export class StudentsService {
   }
 
   // Group Methods
-  async changeGroup(id: string, newGroupId: string | null): Promise<unknown> {
-    return this.groupService.changeGroup(id, newGroupId);
+  async changeGroup(id: string, newGroupId: string | null, user?: JwtPayload): Promise<unknown> {
+    return this.groupService.changeGroup(id, newGroupId, user);
   }
 }

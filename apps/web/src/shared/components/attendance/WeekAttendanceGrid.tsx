@@ -3,6 +3,16 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
+import {
+  Input,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/shared/components/ui';
+import { Pencil, X } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import type { AbsenceType } from '@/features/attendance';
 import { formatDateString, formatDateDisplay, isToday } from '@/features/attendance/utils/dateUtils';
@@ -15,6 +25,7 @@ interface AttendanceCell {
   status: AttendanceStatus;
   isPresent: boolean;
   absenceType?: AbsenceType;
+  note?: string;
 }
 
 interface WeekAttendanceGridProps {
@@ -29,7 +40,10 @@ interface WeekAttendanceGridProps {
   }>;
   lessons: Lesson[];
   initialAttendance?: Record<string, Record<string, AttendanceCell>>; // lessonId -> studentId -> cell
-  onDaySave?: (date: string, attendances: Array<{ studentId: string; lessonId: string; isPresent: boolean; absenceType?: AbsenceType }>) => Promise<void>;
+  onDaySave?: (
+    date: string,
+    attendances: Array<{ studentId: string; lessonId: string; isPresent: boolean; absenceType?: AbsenceType; note?: string }>
+  ) => Promise<void>;
   isLoading?: boolean;
   isSaving?: Record<string, boolean>; // date -> isSaving
   weekDates: Date[]; // Array of 7 dates (Mon-Sun)
@@ -56,11 +70,32 @@ export function WeekAttendanceGrid({
   const [pendingChanges, setPendingChanges] = useState<Record<string, Set<string>>>({}); // date -> Set of studentIds
   const [saveError, setSaveError] = useState<Record<string, string>>({}); // date -> error message
   const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({}); // date -> success
+  const [justificationDialog, setJustificationDialog] = useState<{
+    studentId: string;
+    dateStr: string;
+  } | null>(null);
+  const [commentPreviewDialog, setCommentPreviewDialog] = useState<{
+    studentId: string;
+    dateStr: string;
+  } | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const initialDataRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
   const prevInitialAttendanceRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
   const isInitialMountRef = useRef(true);
   const pendingChangesRef = useRef<Record<string, Set<string>>>({});
+  const editSnapshotRef = useRef<{
+    attendanceData: Record<string, Record<string, AttendanceCell>>;
+    pendingChanges: Record<string, Set<string>>;
+  } | null>(null);
+
+  const clonePendingChanges = useCallback((source: Record<string, Set<string>>) => {
+    const cloned: Record<string, Set<string>> = {};
+    Object.entries(source).forEach(([dateStr, studentsSet]) => {
+      cloned[dateStr] = new Set(studentsSet);
+    });
+    return cloned;
+  }, []);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -167,6 +202,28 @@ export function WeekAttendanceGrid({
     return grouped;
   }, [lessons, weekDates]);
 
+  const updateDayNote = useCallback(
+    (studentId: string, dateStr: string, note: string) => {
+      const dayLessons = lessonsByDate[dateStr] || [];
+      setAttendanceData((prev) => {
+        const updated = { ...prev };
+        dayLessons.forEach((lesson) => {
+          const existing = updated[lesson.id]?.[studentId];
+          if (!existing) return;
+          updated[lesson.id] = {
+            ...updated[lesson.id],
+            [studentId]: {
+              ...existing,
+              note,
+            },
+          };
+        });
+        return updated;
+      });
+    },
+    [lessonsByDate]
+  );
+
   // Get attendance status for a student on a specific date
   // If multiple lessons exist, use the first lesson's attendance
   const getCellStatus = useCallback(
@@ -223,6 +280,10 @@ export function WeekAttendanceGrid({
               status: newStatus,
               isPresent: newStatus === 'present',
               absenceType: newStatus === 'absent_justified' ? 'JUSTIFIED' : newStatus === 'absent_unjustified' ? 'UNJUSTIFIED' : undefined,
+              note:
+                newStatus === 'present' || newStatus === 'not_marked'
+                  ? undefined
+                  : updated[lesson.id]?.[studentId]?.note,
             },
           };
         });
@@ -250,8 +311,14 @@ export function WeekAttendanceGrid({
         delete next[dateStr];
         return next;
       });
+
+      if (newStatus === 'absent_justified') {
+        setJustificationDialog({ studentId, dateStr });
+      } else if (justificationDialog?.studentId === studentId && justificationDialog.dateStr === dateStr) {
+        setJustificationDialog(null);
+      }
     },
-    [getCellStatus, lessonsByDate]
+    [getCellStatus, lessonsByDate, justificationDialog]
   );
 
   // Handle manual save for a specific date
@@ -265,7 +332,14 @@ export function WeekAttendanceGrid({
       const dayLessons = lessonsByDate[dateStr] || [];
       if (dayLessons.length === 0) return;
 
-      const attendances: Array<{ studentId: string; lessonId: string; isPresent: boolean; absenceType?: AbsenceType }> = [];
+      const attendances: Array<{
+        studentId: string;
+        lessonId: string;
+        isPresent: boolean;
+        absenceType?: AbsenceType;
+        note?: string;
+      }> = [];
+      const studentsMissingJustification: string[] = [];
 
       pendingChanges[dateStr].forEach((studentId) => {
         // Get status from first lesson (they should all be the same since we update all together)
@@ -273,6 +347,11 @@ export function WeekAttendanceGrid({
         const cell = attendanceData[firstLesson.id]?.[studentId];
         
         if (cell) {
+          const trimmedNote = cell.note?.trim();
+          if (cell.status === 'absent_justified' && !trimmedNote) {
+            studentsMissingJustification.push(studentId);
+            return;
+          }
           // Apply to all lessons on this day
           dayLessons.forEach((lesson) => {
             attendances.push({
@@ -280,10 +359,20 @@ export function WeekAttendanceGrid({
               lessonId: lesson.id,
               isPresent: cell.isPresent,
               absenceType: cell.absenceType,
+              note: trimmedNote || undefined,
             });
           });
         }
       });
+
+      if (studentsMissingJustification.length > 0) {
+        setJustificationDialog({ studentId: studentsMissingJustification[0], dateStr });
+        setSaveError((prev) => ({
+          ...prev,
+          [dateStr]: 'Please add a justification comment for all justified absences before saving.',
+        }));
+        return;
+      }
 
       if (attendances.length > 0) {
         try {
@@ -348,6 +437,39 @@ export function WeekAttendanceGrid({
     }
   }, [pendingChanges, handleDaySave, weekDates]);
 
+  const handleStartEditMode = useCallback(() => {
+    editSnapshotRef.current = {
+      attendanceData: JSON.parse(JSON.stringify(attendanceData)) as Record<string, Record<string, AttendanceCell>>,
+      pendingChanges: clonePendingChanges(pendingChanges),
+    };
+    setSaveError({});
+    setSaveSuccess({});
+    setIsEditMode(true);
+  }, [attendanceData, pendingChanges, clonePendingChanges]);
+
+  const handleCancelEditMode = useCallback(() => {
+    if (editSnapshotRef.current) {
+      setAttendanceData(editSnapshotRef.current.attendanceData);
+      setPendingChanges(clonePendingChanges(editSnapshotRef.current.pendingChanges));
+    }
+    setJustificationDialog(null);
+    setSaveError({});
+    setSaveSuccess({});
+    setIsEditMode(false);
+  }, [clonePendingChanges]);
+
+  const handleConfirmEditMode = useCallback(async () => {
+    if (Object.values(pendingChanges).some((set) => set.size > 0)) {
+      await handleSaveAll();
+      const stillHasPending = Object.values(pendingChangesRef.current).some((set) => set.size > 0);
+      if (stillHasPending) {
+        return;
+      }
+    }
+    editSnapshotRef.current = null;
+    setIsEditMode(false);
+  }, [pendingChanges, handleSaveAll]);
+
   // Get status styles
   const getStatusStyles = (status: AttendanceStatus) => {
     const styles = {
@@ -394,6 +516,18 @@ export function WeekAttendanceGrid({
   const datesWithChanges = Object.keys(pendingChanges).filter(
     (dateStr) => pendingChanges[dateStr] && pendingChanges[dateStr].size > 0
   );
+  const missingJustificationCount = Object.entries(pendingChanges).reduce((sum, [dateStr, studentIds]) => {
+    const dayLessons = lessonsByDate[dateStr] || [];
+    if (dayLessons.length === 0) return sum;
+    const firstLessonId = dayLessons[0].id;
+    studentIds.forEach((studentId) => {
+      const cell = attendanceData[firstLessonId]?.[studentId];
+      if (cell?.status === 'absent_justified' && !cell.note?.trim()) {
+        sum += 1;
+      }
+    });
+    return sum;
+  }, 0);
 
   return (
     <div className="space-y-4">
@@ -424,6 +558,8 @@ export function WeekAttendanceGrid({
                 <span className="text-amber-700 text-xs mt-0.5 block">Click "Save All" to save your changes</span>
               </div>
             </>
+          ) : isEditMode ? (
+            <span className="text-primary font-semibold text-base">Editing mode enabled</span>
           ) : Object.keys(saveSuccess).length > 0 ? (
             <>
               <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -436,15 +572,36 @@ export function WeekAttendanceGrid({
           )}
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            size="icon"
+            variant={isEditMode ? 'destructive' : 'outline'}
+            className="h-9 w-9"
+            onClick={isEditMode ? handleCancelEditMode : handleStartEditMode}
+            title={isEditMode ? 'Cancel editing' : 'Enable editing'}
+            aria-label={isEditMode ? 'Cancel editing' : 'Enable editing'}
+          >
+            {isEditMode ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+          </Button>
           {Object.keys(saveError).length > 0 && (
             <span className="text-red-700 text-sm font-medium px-3 py-1 bg-red-100 rounded">
               {Object.values(saveError)[0]} {Object.keys(saveError).length > 1 && `(+${Object.keys(saveError).length - 1} more)`}
             </span>
           )}
-          {totalPendingChanges > 0 && !hasAnySaving && (
+          {isEditMode && (
+            <Button
+              onClick={handleConfirmEditMode}
+              disabled={hasAnySaving || missingJustificationCount > 0}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
+              size="lg"
+            >
+              Confirm Changes
+            </Button>
+          )}
+          {isEditMode && totalPendingChanges > 0 && !hasAnySaving && (
             <Button
               onClick={handleSaveAll}
-              disabled={datesWithChanges.length === 0 || hasAnySaving}
+              disabled={datesWithChanges.length === 0 || hasAnySaving || missingJustificationCount > 0}
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
               size="lg"
             >
@@ -453,6 +610,12 @@ export function WeekAttendanceGrid({
           )}
         </div>
       </div>
+
+      {missingJustificationCount > 0 && (
+        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+          Add a required comment for each justified absence before saving ({missingJustificationCount} pending).
+        </div>
+      )}
 
       {/* Grid - Fixed height container */}
       <div
@@ -559,23 +722,39 @@ export function WeekAttendanceGrid({
                       const hasPendingChange = pendingChanges[dateStr]?.has(student.id) || false;
                       const isDateSaving = isSaving[dateStr] || false;
                       const hasLessons = dayLessons.length > 0;
+                      const firstLessonId = dayLessons[0]?.id;
+                      const cellNote = firstLessonId
+                        ? attendanceData[firstLessonId]?.[student.id]?.note?.trim() || ''
+                        : '';
+                      const hasMissingJustification =
+                        status === 'absent_justified' &&
+                        hasLessons &&
+                        !cellNote;
 
                       return (
                         <td
                           key={dateStr}
                           className={cn(
-                            'border-r-2 border-b-2 border-slate-300 px-2 md:px-3 py-3 text-center cursor-pointer transition-all relative min-h-[60px]',
+                            'border-r-2 border-b-2 border-slate-300 px-2 md:px-3 py-3 text-center transition-all relative min-h-[60px]',
                             getStatusStyles(status),
                             hasPendingChange && 'ring-2 ring-amber-500',
+                            hasMissingJustification && 'ring-2 ring-red-500',
+                            isEditMode ? 'cursor-pointer' : 'cursor-default',
                             isDateSaving && 'opacity-60 cursor-wait',
                             !hasLessons && 'cursor-not-allowed opacity-50'
                           )}
-                          onClick={() => hasLessons && !isDateSaving && toggleCellStatus(student.id, date)}
-                          tabIndex={hasLessons && !isDateSaving ? 0 : -1}
+                          onClick={() => hasLessons && isEditMode && !isDateSaving && toggleCellStatus(student.id, date)}
+                          tabIndex={hasLessons && isEditMode && !isDateSaving ? 0 : -1}
                           role="gridcell"
                           aria-label={`${student.user.firstName} ${student.user.lastName} - ${formatDateDisplay(date)} - ${status === 'present' ? 'Present' : status === 'absent_justified' ? 'Absent Justified' : status === 'absent_unjustified' ? 'Absent Unjustified' : 'Not Marked'}`}
                           aria-disabled={!hasLessons || isDateSaving}
-                          title={hasLessons ? `Click to mark: ${status === 'not_marked' ? 'Present' : status === 'present' ? 'Absent (Justified)' : status === 'absent_justified' ? 'Absent (Unjustified)' : 'Not Marked'}` : 'No sessions scheduled'}
+                          title={
+                            hasLessons
+                              ? isEditMode
+                                ? `Click to mark: ${status === 'not_marked' ? 'Present' : status === 'present' ? 'Absent (Justified)' : status === 'absent_justified' ? 'Absent (Unjustified)' : 'Not Marked'}`
+                                : 'Click pencil icon to enable editing'
+                              : 'No sessions scheduled'
+                          }
                         >
                           {hasLessons ? (
                             <>
@@ -589,6 +768,25 @@ export function WeekAttendanceGrid({
                               </div>
                               {hasPendingChange && !isDateSaving && (
                                 <div className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-amber-500 shadow-sm animate-pulse"></div>
+                              )}
+                              {hasMissingJustification && !isDateSaving && (
+                                <div className="absolute bottom-1 right-1 rounded bg-red-600 px-1 text-[10px] font-semibold text-white">
+                                  !
+                                </div>
+                              )}
+                              {status === 'absent_justified' && !!cellNote && !isDateSaving && (
+                                <button
+                                  type="button"
+                                  className="absolute bottom-2 left-1.5 rounded-md bg-slate-800 px-2.5 py-1 text-xs font-bold tracking-wide text-white shadow-md hover:bg-slate-700"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCommentPreviewDialog({ studentId: student.id, dateStr });
+                                  }}
+                                  title="View justification comment"
+                                  aria-label="View justification comment"
+                                >
+                                  NOTE
+                                </button>
                               )}
                             </>
                           ) : (
@@ -606,6 +804,102 @@ export function WeekAttendanceGrid({
           </table>
         </div>
       </div>
+
+      <Dialog open={!!justificationDialog} onOpenChange={(open) => !open && setJustificationDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Justification comment required</DialogTitle>
+            <DialogDescription>
+              Add a reason for marking this student as justified absent.
+            </DialogDescription>
+          </DialogHeader>
+          {justificationDialog && (
+            <div className="space-y-2">
+              <div className="text-sm text-slate-600">
+                {students.find((s) => s.id === justificationDialog.studentId)?.user.firstName}{' '}
+                {students.find((s) => s.id === justificationDialog.studentId)?.user.lastName}
+              </div>
+              <Input
+                value={
+                  (() => {
+                    const firstLessonId = lessonsByDate[justificationDialog.dateStr]?.[0]?.id;
+                    if (!firstLessonId) return '';
+                    return attendanceData[firstLessonId]?.[justificationDialog.studentId]?.note ?? '';
+                  })()
+                }
+                onChange={(e) =>
+                  updateDayNote(justificationDialog.studentId, justificationDialog.dateStr, e.target.value)
+                }
+                placeholder="Enter justification comment"
+                maxLength={500}
+                autoFocus
+              />
+              {(() => {
+                const firstLessonId = lessonsByDate[justificationDialog.dateStr]?.[0]?.id;
+                const note = firstLessonId
+                  ? attendanceData[firstLessonId]?.[justificationDialog.studentId]?.note?.trim()
+                  : '';
+                return !note ? (
+                  <p className="text-xs text-red-600">This field is required for justified absence.</p>
+                ) : null;
+              })()}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                if (!justificationDialog) return;
+                const firstLessonId = lessonsByDate[justificationDialog.dateStr]?.[0]?.id;
+                const note = firstLessonId
+                  ? attendanceData[firstLessonId]?.[justificationDialog.studentId]?.note?.trim()
+                  : '';
+                if (note) {
+                  setJustificationDialog(null);
+                }
+              }}
+              disabled={
+                !justificationDialog ||
+                !(() => {
+                  const firstLessonId = justificationDialog
+                    ? lessonsByDate[justificationDialog.dateStr]?.[0]?.id
+                    : undefined;
+                  return firstLessonId
+                    ? attendanceData[firstLessonId]?.[justificationDialog.studentId]?.note?.trim()
+                    : '';
+                })()
+              }
+            >
+              Save comment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!commentPreviewDialog} onOpenChange={(open) => !open && setCommentPreviewDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Justification comment</DialogTitle>
+            <DialogDescription>
+              Comment saved for this justified absence.
+            </DialogDescription>
+          </DialogHeader>
+          {commentPreviewDialog && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-slate-700">
+                {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.firstName}{' '}
+                {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.lastName}
+              </div>
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
+                {(() => {
+                  const firstLessonId = lessonsByDate[commentPreviewDialog.dateStr]?.[0]?.id;
+                  if (!firstLessonId) return '';
+                  return attendanceData[firstLessonId]?.[commentPreviewDialog.studentId]?.note;
+                })()}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm bg-slate-100 rounded-lg px-5 py-4 border-2 border-slate-300">

@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@ilona/database';
@@ -9,16 +10,34 @@ import { UserRole } from '@ilona/database';
 export class StudentStatisticsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getStatistics(id: string, _currentUserId?: string, _userRole?: UserRole) {
-    // Verify student exists and check authorization (delegate to crud service)
-    // For now, we'll just check existence
+  async getStatistics(id: string, currentUserId?: string, userRole?: UserRole) {
     const student = await this.prisma.student.findUnique({
       where: { id },
-      select: { id: true },
+      select: {
+        id: true,
+        group: {
+          select: { centerId: true },
+        },
+      },
     });
 
     if (!student) {
       throw new NotFoundException(`Student with ID ${id} not found`);
+    }
+
+    if (userRole === UserRole.MANAGER && currentUserId) {
+      const managerProfile = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
+        SELECT "centerId" FROM "manager_profiles" WHERE "userId" = ${currentUserId} LIMIT 1
+      `;
+
+      const managerCenterId = managerProfile[0]?.centerId;
+      if (!managerCenterId) {
+        throw new ForbiddenException('Manager account is not assigned to a center');
+      }
+
+      if (student.group?.centerId !== managerCenterId) {
+        throw new ForbiddenException('You do not have access to this student');
+      }
     }
 
     // Get attendance stats

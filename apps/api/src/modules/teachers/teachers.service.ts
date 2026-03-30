@@ -4,6 +4,7 @@ import { UserStatus } from '@ilona/database';
 import { TeacherCrudService } from './teacher-crud.service';
 import { TeacherObligationService } from './teacher-obligation.service';
 import { TeacherStatisticsService } from './teacher-statistics.service';
+import { JwtPayload } from '../../common/types/auth.types';
 
 /**
  * Main Teachers Service - Facade that delegates to specialized services
@@ -25,42 +26,49 @@ export class TeachersService {
     status?: UserStatus;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    currentUser?: JwtPayload;
   }): Promise<unknown> {
     return this.crudService.findAll(params);
   }
 
-  async findById(id: string): Promise<unknown> {
-    return this.crudService.findById(id);
+  async findById(id: string, currentUser?: JwtPayload): Promise<unknown> {
+    return this.crudService.findById(id, currentUser);
   }
 
   async findByUserId(userId: string): Promise<unknown> {
     return this.crudService.findByUserId(userId);
   }
 
-  async create(dto: CreateTeacherDto): Promise<unknown> {
-    return this.crudService.create(dto);
+  async create(dto: CreateTeacherDto, currentUser?: JwtPayload): Promise<unknown> {
+    return this.crudService.create(dto, currentUser);
   }
 
-  async update(id: string, dto: UpdateTeacherDto): Promise<unknown> {
-    return this.crudService.update(id, dto);
+  async update(id: string, dto: UpdateTeacherDto, currentUser?: JwtPayload): Promise<unknown> {
+    return this.crudService.update(id, dto, currentUser);
   }
 
-  async delete(id: string) {
-    return this.crudService.delete(id);
+  async delete(id: string, currentUser?: JwtPayload) {
+    return this.crudService.delete(id, currentUser);
   }
 
-  async deleteMany(ids: string[]) {
-    return this.crudService.deleteMany(ids);
+  async deleteMany(ids: string[], currentUser?: JwtPayload) {
+    return this.crudService.deleteMany(ids, currentUser);
   }
 
   // Obligation Methods
-  async getObligationDetails(teacherId: string) {
+  async getObligationDetails(teacherId: string, currentUser?: JwtPayload) {
+    if (currentUser?.role === 'MANAGER') {
+      const teacher = await this.crudService.findById(teacherId, currentUser);
+      if (!teacher) {
+        return null;
+      }
+    }
     return this.obligationService.getObligationDetails(teacherId);
   }
 
   // Statistics Methods
-  async getStatistics(id: string, dateFrom?: Date, dateTo?: Date): Promise<unknown> {
-    return this.statisticsService.getStatistics(id, dateFrom, dateTo);
+  async getStatistics(id: string, dateFrom?: Date, dateTo?: Date, currentUser?: JwtPayload): Promise<unknown> {
+    return this.statisticsService.getStatistics(id, dateFrom, dateTo, currentUser);
   }
 
   async getMyDashboard(userId: string): Promise<unknown> {

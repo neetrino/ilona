@@ -66,6 +66,11 @@ export function usePayments(filters?: PaymentFilters) {
   return useQuery({
     queryKey: financeKeys.paymentsList(filters),
     queryFn: () => fetchPayments(filters),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchInterval: 3000,
+    refetchIntervalInBackground: true,
   });
 }
 

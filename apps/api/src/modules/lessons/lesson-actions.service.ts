@@ -2,6 +2,7 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SalariesService } from '../finance/salaries.service';
 import { LessonCrudService } from './lesson-crud.service';
+import { UserRole } from '@ilona/database';
 
 /**
  * Service responsible for lesson action completion
@@ -28,9 +29,9 @@ export class LessonActionsService {
     });
   }
 
-  async markAbsenceComplete(id: string) {
+  async markAbsenceComplete(id: string, userId?: string, userRole?: UserRole) {
     // Verify lesson exists and get lesson data
-    const lesson = await this.crudService.findById(id);
+    const lesson = await this.crudService.findById(id, userId, userRole);
 
     const wasAlreadyMarked = lesson.absenceMarked;
     const updated = await this.prisma.lesson.update({
@@ -55,9 +56,9 @@ export class LessonActionsService {
     return updated;
   }
 
-  async markVoiceSent(id: string) {
+  async markVoiceSent(id: string, userId?: string, userRole?: UserRole) {
     // Verify lesson exists and get lesson data
-    const lesson = await this.crudService.findById(id);
+    const lesson = await this.crudService.findById(id, userId, userRole);
 
     const wasAlreadySent = lesson.voiceSent;
     const updated = await this.prisma.lesson.update({
@@ -82,9 +83,9 @@ export class LessonActionsService {
     return updated;
   }
 
-  async markTextSent(id: string) {
+  async markTextSent(id: string, userId?: string, userRole?: UserRole) {
     // Verify lesson exists and get lesson data
-    const lesson = await this.crudService.findById(id);
+    const lesson = await this.crudService.findById(id, userId, userRole);
 
     const wasAlreadySent = lesson.textSent;
     const updated = await this.prisma.lesson.update({

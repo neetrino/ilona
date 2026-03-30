@@ -15,6 +15,7 @@ export interface UpdateProfileDto {
   lastName?: string;
   phone?: string;
   avatarUrl?: string | null;
+  email?: string;
 }
 
 export interface ChangePasswordDto {
@@ -35,4 +36,30 @@ export interface AppSettings {
   language: 'en' | 'hy';
   theme: 'light' | 'dark' | 'system';
   timezone: string;
+}
+
+export interface ManagerAccount {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  status: string;
+  createdAt: string;
+  managerProfile?: {
+    centerId: string;
+    center?: {
+      id: string;
+      name: string;
+    };
+  };
+}
+
+export interface CreateManagerDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone?: string;
+  centerId: string;
 }

@@ -4,7 +4,15 @@ import React, { useEffect, useRef } from 'react';
 import { List, LayoutGrid } from 'lucide-react';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn, lightenColor, getContrastColor } from '@/shared/lib/utils';
-import { GroupCard, CreateGroupForm, EditGroupForm, DeleteConfirmationDialog, useGroup, type Group } from '@/features/groups';
+import {
+  GroupCard,
+  CreateGroupForm,
+  EditGroupForm,
+  DeleteConfirmationDialog,
+  useGroup,
+  getGroupOccupancyMeta,
+  type Group,
+} from '@/features/groups';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
 import { GroupStudentsModal } from './GroupStudentsModal';
 
@@ -99,8 +107,10 @@ export function GroupsTab({
     handleBulkDeleteGroupsConfirm,
   } = useGroupsManagement(viewMode, searchQuery, page);
 
-  // Ref to track if we're intentionally closing to prevent effect from reopening
+  // Ref to track edit modal closing to prevent effect from reopening
   const isClosingRef = useRef(false);
+  // Ref to track create modal closing to prevent effect from reopening
+  const isCreateClosingRef = useRef(false);
 
   // Sync editGroupId from URL on mount and when URL changes
   useEffect(() => {
@@ -137,6 +147,34 @@ export function GroupsTab({
       setEditGroupId(id);
       updateUrl({ editGroup: id });
     }
+  };
+
+  // Sync createGroupOpen from URL so create modal survives refresh
+  useEffect(() => {
+    if (isCreateClosingRef.current) {
+      return;
+    }
+
+    const shouldOpenCreateGroup = searchParams.get('createGroup') === '1';
+    if (createGroupOpen !== shouldOpenCreateGroup) {
+      setCreateGroupOpen(shouldOpenCreateGroup);
+    }
+  }, [searchParams, createGroupOpen, setCreateGroupOpen]);
+
+  const handleCreateGroupOpenChange = (open: boolean) => {
+    if (!open) {
+      isCreateClosingRef.current = true;
+      setCreateGroupOpen(false);
+      updateUrl({ createGroup: null });
+      setTimeout(() => {
+        isCreateClosingRef.current = false;
+      }, 100);
+      return;
+    }
+
+    isCreateClosingRef.current = false;
+    setCreateGroupOpen(true);
+    updateUrl({ createGroup: '1' });
   };
 
   const pageSize = 10;
@@ -242,6 +280,31 @@ export function GroupsTab({
             >
               {count}/{group.maxStudents}
             </button>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      className: 'text-center',
+      render: (group: Group) => {
+        const count = group._count?.students || 0;
+        const occupancy = getGroupOccupancyMeta(count);
+        const dotColorClass =
+          occupancy.status === 'full'
+            ? 'bg-green-500'
+            : occupancy.status === 'filling'
+              ? 'bg-yellow-500'
+              : 'bg-red-500';
+
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <span
+              className={cn('inline-flex h-2.5 w-2.5 rounded-full', dotColorClass)}
+              aria-hidden="true"
+            />
+            <span className="text-sm font-medium text-slate-700">{occupancy.label}</span>
           </div>
         );
       },
@@ -361,7 +424,7 @@ export function GroupsTab({
 
         <Button 
           className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium"
-          onClick={() => setCreateGroupOpen(true)}
+          onClick={() => handleCreateGroupOpenChange(true)}
         >
           + Add Group
         </Button>
@@ -553,7 +616,7 @@ export function GroupsTab({
       {/* Modals */}
       <CreateGroupForm 
         open={createGroupOpen} 
-        onOpenChange={setCreateGroupOpen} 
+        onOpenChange={handleCreateGroupOpenChange} 
       />
       {editGroupId && (
         <EditGroupForm 

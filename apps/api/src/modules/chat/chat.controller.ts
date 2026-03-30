@@ -246,6 +246,44 @@ export class ChatController {
   }
 
   /**
+   * Get all student voice recordings for admin (grouped/filtered on UI).
+   * Optional query: groupId, studentUserId, search.
+   */
+  @Get('admin/student-recordings')
+  @Roles(UserRole.ADMIN)
+  async getAdminStudentRecordings(
+    @CurrentUser() user: JwtPayload,
+    @Query('groupId') groupId?: string,
+    @Query('studentUserId') studentUserId?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.chatService.getAdminStudentRecordings(user.sub, {
+      groupId,
+      studentUserId,
+      search,
+    });
+  }
+
+  /**
+   * Get student voice recordings visible to the current teacher.
+   * Optional query: groupId, studentUserId, search.
+   */
+  @Get('teacher/student-recordings')
+  @Roles(UserRole.TEACHER)
+  async getTeacherStudentRecordings(
+    @CurrentUser() user: JwtPayload,
+    @Query('groupId') groupId?: string,
+    @Query('studentUserId') studentUserId?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.chatService.getTeacherStudentRecordings(user.sub, {
+      groupId,
+      studentUserId,
+      search,
+    });
+  }
+
+  /**
    * Add a member to a group chat. Admin only.
    */
   @Post('group/:groupId/members')

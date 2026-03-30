@@ -21,7 +21,7 @@ export class LessonStatusService {
   ) {}
 
   async startLesson(id: string, userId: string, userRole: UserRole) {
-    const lesson = await this.crudService.findById(id);
+    const lesson = await this.crudService.findById(id, userId, userRole);
 
     // Check if teacher owns this lesson
     if (userRole === UserRole.TEACHER) {
@@ -45,7 +45,7 @@ export class LessonStatusService {
   }
 
   async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: UserRole): Promise<unknown> {
-    const lesson = await this.crudService.findById(id);
+    const lesson = await this.crudService.findById(id, userId, userRole);
 
     // Check if teacher owns this lesson
     if (userRole === UserRole.TEACHER) {
@@ -105,8 +105,8 @@ export class LessonStatusService {
     return this.enrichmentService.enrichLesson(updated);
   }
 
-  async cancelLesson(id: string, reason?: string) {
-    const lesson = await this.crudService.findById(id);
+  async cancelLesson(id: string, reason?: string, userId?: string, userRole?: UserRole) {
+    const lesson = await this.crudService.findById(id, userId, userRole);
 
     if (['COMPLETED', 'CANCELLED'].includes(lesson.status)) {
       throw new BadRequestException('Lesson cannot be cancelled');

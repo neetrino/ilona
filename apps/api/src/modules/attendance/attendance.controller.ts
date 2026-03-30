@@ -75,7 +75,7 @@ export class AttendanceController {
   }
 
   @Get('group/:groupId/report')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async getGroupReport(
     @Param('groupId') groupId: string,
     @Query() query: QueryAttendanceDto,
@@ -88,13 +88,13 @@ export class AttendanceController {
   }
 
   @Get('at-risk')
-  @Roles(UserRole.ADMIN)
-  async getAtRiskStudents() {
-    return this.attendanceService.getAtRiskStudents();
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async getAtRiskStudents(@CurrentUser() user: JwtPayload) {
+    return this.attendanceService.getAtRiskStudents(undefined, user);
   }
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async markAttendance(
     @Body() dto: MarkAttendanceDto,
     @CurrentUser() user: JwtPayload,
@@ -103,7 +103,7 @@ export class AttendanceController {
   }
 
   @Post('bulk')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async markBulkAttendance(
     @Body() dto: BulkAttendanceDto,
     @CurrentUser() user: JwtPayload,
@@ -112,7 +112,7 @@ export class AttendanceController {
   }
 
   @Patch(':id/absence-type')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async updateAbsenceType(
     @Param('id') id: string,
     @Body('absenceType') absenceType: AbsenceType,

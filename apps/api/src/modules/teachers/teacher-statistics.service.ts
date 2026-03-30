@@ -1,15 +1,32 @@
 import {
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@ilona/database';
+import { JwtPayload } from '../../common/types/auth.types';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
 @Injectable()
 export class TeacherStatisticsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getStatistics(id: string, dateFrom?: Date, dateTo?: Date) {
+  async getStatistics(id: string, dateFrom?: Date, dateTo?: Date, currentUser?: JwtPayload) {
+    const managerCenterId = getManagerCenterIdOrThrow(currentUser);
+    if (managerCenterId) {
+      const teacherInCenter = await this.prisma.group.findFirst({
+        where: {
+          teacherId: id,
+          centerId: managerCenterId,
+        },
+        select: { id: true },
+      });
+      if (!teacherInCenter) {
+        throw new ForbiddenException('You do not have access to this teacher');
+      }
+    }
+
     const teacher = await this.prisma.teacher.findUnique({
       where: { id },
       select: { id: true, _count: { select: { groups: true } } },

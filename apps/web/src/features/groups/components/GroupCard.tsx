@@ -1,5 +1,6 @@
 import { Badge, ActionButtons } from '@/shared/components/ui';
 import type { Group } from '../types';
+import { getGroupOccupancyMeta } from '../occupancy';
 
 interface GroupCardProps {
   group: Group;
@@ -15,6 +16,13 @@ export function GroupCard({ group, onEdit, onDelete, onToggleActive, onStudentsC
     ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`
     : null;
   const studentCount = group._count?.students || 0;
+  const occupancy = getGroupOccupancyMeta(studentCount);
+  const dotColorClass =
+    occupancy.status === 'full'
+      ? 'bg-green-500'
+      : occupancy.status === 'filling'
+        ? 'bg-yellow-500'
+        : 'bg-red-500';
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
@@ -89,6 +97,10 @@ export function GroupCard({ group, onEdit, onDelete, onToggleActive, onStudentsC
               {studentCount}/{group.maxStudents} students
             </span>
           )}
+        </div>
+        <div className="flex items-center gap-2 text-slate-600">
+          <span className={`inline-flex h-2.5 w-2.5 rounded-full ${dotColorClass}`} aria-hidden="true" />
+          <span className="font-medium text-slate-700">{occupancy.label}</span>
         </div>
 
         {!group.isActive && (

@@ -13,7 +13,6 @@ import { getErrorMessage } from '@/shared/lib/api';
 const createGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters'),
   level: z.string().max(50, 'Level must be at most 50 characters').optional().or(z.literal('')),
-  maxStudents: z.number().int('Max students must be a whole number').min(1, 'Max students must be at least 1').max(50, 'Max students must be at most 50').optional(),
   centerId: z.string().min(1, 'Please select a center'),
   teacherId: z.string().optional().or(z.literal('')),
   isActive: z.boolean().optional(),
@@ -54,7 +53,6 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
     defaultValues: {
       name: '',
       level: '',
-      maxStudents: undefined,
       centerId: defaultCenterId || '',
       teacherId: '',
       isActive: true,
@@ -77,7 +75,6 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       reset({
         name: '',
         level: '',
-        maxStudents: undefined,
         centerId: defaultCenterId || '',
         teacherId: '',
         isActive: true,
@@ -94,7 +91,6 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       const payload: CreateGroupDto = {
         name: data.name,
         level: data.level || undefined,
-        maxStudents: data.maxStudents,
         centerId: data.centerId,
         teacherId: data.teacherId || undefined,
         isActive: data.isActive ?? true,
@@ -110,7 +106,6 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       reset({
         name: '',
         level: '',
-        maxStudents: undefined,
         centerId: defaultCenterId || '',
         teacherId: '',
         isActive: true,
@@ -162,31 +157,15 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="level">Level</Label>
-              <Input
-                id="level"
-                {...register('level')}
-                error={errors.level?.message}
-                placeholder="A1, A2, B1, etc."
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="maxStudents">Max Students</Label>
-              <Input
-                id="maxStudents"
-                type="number"
-                {...register('maxStudents', { valueAsNumber: true })}
-                error={errors.maxStudents?.message}
-                placeholder="15"
-                min={1}
-                max={50}
-                disabled={isSubmitting}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="level">Level</Label>
+            <Input
+              id="level"
+              {...register('level')}
+              error={errors.level?.message}
+              placeholder="A1, A2, B1, etc."
+              disabled={isSubmitting}
+            />
           </div>
 
           <div className="space-y-2">

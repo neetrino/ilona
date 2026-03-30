@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, PaymentStatus } from '@ilona/database';
+import { Prisma, PaymentStatus, UserStatus } from '@ilona/database';
 import { CreatePaymentDto, UpdatePaymentDto, ProcessPaymentDto } from './dto/create-payment.dto';
 
 /** Payment row with student (and user/group) for monthly grouped list. */
@@ -70,6 +70,8 @@ export function isPaymentAllowedInWindow(
 @Injectable()
 export class PaymentsService {
   constructor(private readonly prisma: PrismaService) {}
+  private lastActiveStudentsSyncAt = 0;
+  private static readonly ACTIVE_STUDENTS_SYNC_TTL_MS = 60_000;
 
   /** Prisma delegate access (payment, student, systemSettings). Cast for TS when PrismaClient typings are not resolved. */
   private get db(): {
@@ -113,13 +115,22 @@ export class PaymentsService {
     const searchTerm = typeof q === 'string' ? q.trim() : '';
     if (searchTerm.length > 0) {
       where.student = {
-        user: {
-          OR: [
-            { firstName: { contains: searchTerm, mode: 'insensitive' } },
-            { lastName: { contains: searchTerm, mode: 'insensitive' } },
-            { email: { contains: searchTerm, mode: 'insensitive' } },
-          ],
-        },
+        OR: [
+          {
+            user: {
+              OR: [
+                { firstName: { contains: searchTerm, mode: 'insensitive' } },
+                { lastName: { contains: searchTerm, mode: 'insensitive' } },
+                { email: { contains: searchTerm, mode: 'insensitive' } },
+              ],
+            },
+          },
+          {
+            group: {
+              name: { contains: searchTerm, mode: 'insensitive' },
+            },
+          },
+        ],
       };
     }
 
@@ -132,17 +143,17 @@ export class PaymentsService {
           email: true,
         },
       },
+      group: {
+        select: { id: true, name: true },
+      },
     };
-    if (studentId) {
-      studentInclude.group = { select: { id: true, name: true } };
-    }
 
     const [items, total] = await Promise.all([
       this.db.payment.findMany({
         where,
         skip,
         take,
-        orderBy: studentId ? { month: 'desc' } : { createdAt: 'desc' },
+        orderBy: [{ month: 'desc' }, { createdAt: 'desc' }],
         include: {
           student: {
             include: studentInclude,
@@ -678,6 +689,76 @@ export class PaymentsService {
         throw err;
       }
     }
+  }
+
+  /**
+   * Ensure active students have a payment row for the current calendar month.
+   * This keeps Admin -> Student Payments complete even if a student has never opened their own payments page.
+   * Throttled in-memory to reduce repeated heavy work under frequent admin polling.
+   */
+  async ensureCurrentMonthPaymentsForActiveStudents(): Promise<void> {
+    const nowTs = Date.now();
+    if (nowTs - this.lastActiveStudentsSyncAt < PaymentsService.ACTIVE_STUDENTS_SYNC_TTL_MS) {
+      return;
+    }
+
+    const [settings, students] = await Promise.all([
+      this.db.systemSettings.findFirst({
+        orderBy: { id: 'desc' },
+        select: { paymentDueDays: true },
+      }),
+      this.db.student.findMany({
+        where: {
+          user: { status: UserStatus.ACTIVE },
+          enrolledAt: { lte: new Date() },
+        },
+        select: {
+          id: true,
+          monthlyFee: true,
+        },
+      }),
+    ]);
+
+    if (students.length === 0) {
+      this.lastActiveStudentsSyncAt = nowTs;
+      return;
+    }
+
+    const now = new Date();
+    const monthStart = startOfMonth(now);
+    const monthEnd = startOfNextMonth(monthStart);
+    const dueDays = settings?.paymentDueDays ?? 5;
+
+    const existingForCurrentMonth = await this.db.payment.findMany({
+      where: {
+        studentId: { in: students.map((s) => s.id) },
+        month: { gte: monthStart, lt: monthEnd },
+      },
+      select: { studentId: true },
+    });
+
+    const existingStudentIds = new Set(existingForCurrentMonth.map((row) => row.studentId));
+    const dueDate = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, dueDays);
+    const status = dueDate < now ? PaymentStatus.OVERDUE : PaymentStatus.PENDING;
+
+    const rowsToCreate = students
+      .filter((student) => !existingStudentIds.has(student.id))
+      .map((student) => ({
+        studentId: student.id,
+        amount: Number(student.monthlyFee) || 0,
+        month: monthStart,
+        dueDate,
+        status,
+      }));
+
+    if (rowsToCreate.length > 0) {
+      await this.db.payment.createMany({
+        data: rowsToCreate,
+        skipDuplicates: true,
+      });
+    }
+
+    this.lastActiveStudentsSyncAt = nowTs;
   }
 
   /**

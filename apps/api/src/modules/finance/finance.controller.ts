@@ -259,6 +259,8 @@ export class FinanceController {
   @Get('payments')
   @Roles(UserRole.ADMIN)
   async getPayments(@Query() query: QueryPaymentDto): Promise<unknown> {
+    await this.paymentsService.ensureCurrentMonthPaymentsForActiveStudents();
+
     return this.paymentsService.findAll({
       skip: query.skip,
       take: query.take,

@@ -165,6 +165,7 @@ export const useAuthStore = create<AuthStore>()(
 export function getDashboardPath(role: UserRole): string {
   switch (role) {
     case 'ADMIN':
+    case 'MANAGER':
       return '/admin/dashboard';
     case 'TEACHER':
       return '/teacher/dashboard';

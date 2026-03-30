@@ -41,11 +41,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const updateStudent = useUpdateStudent();
   const { data: student, isLoading: isLoadingStudent } = useStudent(studentId, open);
 
-  // Fetch groups and teachers for dropdowns
-  const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
-  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
-  const teachers = teachersData?.items || [];
-
   const {
     register,
     handleSubmit,
@@ -73,10 +68,19 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   });
 
   const watchedTeacherId = watch('teacherId') || '';
-  const groupsForTeacher = useMemo(() => {
-    const allGroups = groupsData?.items ?? [];
-    return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
-  }, [groupsData?.items, watchedTeacherId]);
+  const watchedGroupId = watch('groupId') || '';
+
+  // Fetch teachers list and groups scoped to selected teacher
+  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroups(
+    { isActive: true, teacherId: watchedTeacherId || undefined },
+    !!watchedTeacherId,
+  );
+  const teachers = teachersData?.items || [];
+  const groupsForTeacher = useMemo(
+    () => (watchedTeacherId ? groupsData?.items ?? [] : []),
+    [watchedTeacherId, groupsData?.items],
+  );
 
   // Pre-fill form when student data is loaded
   useEffect(() => {
@@ -85,8 +89,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       setValue('lastName', student.user?.lastName || '');
       setValue('phone', student.user?.phone || '');
       setValue('status', student.user?.status || 'ACTIVE');
-      setValue('groupId', student.groupId || '');
       setValue('teacherId', student.teacherId || '');
+      setValue('groupId', student.groupId || '');
       setValue('parentName', student.parentName || '');
       setValue('parentPhone', student.parentPhone || '');
       setValue('parentEmail', student.parentEmail || '');
@@ -108,6 +112,21 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     }
   }, [open, reset]);
 
+  // Keep group value valid for selected teacher.
+  // If teacher changes or current group is outside teacher's groups, clear it.
+  useEffect(() => {
+    if (!watchedTeacherId) {
+      if (watchedGroupId) {
+        setValue('groupId', '');
+      }
+      return;
+    }
+
+    if (watchedGroupId && !groupsForTeacher.some((group) => group.id === watchedGroupId)) {
+      setValue('groupId', '');
+    }
+  }, [watchedTeacherId, watchedGroupId, groupsForTeacher, setValue]);
+
   const onSubmit = async (data: UpdateStudentFormData) => {
     setErrorMessage(null);
     
@@ -117,8 +136,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
         lastName: data.lastName,
         phone: data.phone || undefined,
         status: data.status,
-        groupId: data.groupId || undefined,
-        teacherId: data.teacherId || undefined,
+        groupId: data.groupId?.trim() ? data.groupId.trim() : null,
+        teacherId: data.teacherId?.trim() ? data.teacherId.trim() : null,
         parentName: data.parentName || undefined,
         parentPhone: data.parentPhone || undefined,
         parentEmail: data.parentEmail || undefined,
@@ -273,6 +292,9 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 </select>
                 {errors.groupId && (
                   <p className="text-sm text-red-600">{errors.groupId.message}</p>
+                )}
+                {watchedTeacherId && isLoadingGroups && (
+                  <p className="text-sm text-slate-500">Loading groups...</p>
                 )}
               </div>
             </div>

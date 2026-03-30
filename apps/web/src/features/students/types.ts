@@ -120,8 +120,8 @@ export interface UpdateStudentDto {
   lastName?: string;
   phone?: string;
   status?: UserStatus;
-  groupId?: string;
-  teacherId?: string;
+  groupId?: string | null;
+  teacherId?: string | null;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;

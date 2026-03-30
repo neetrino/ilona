@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
 import { Prisma } from '@ilona/database';
 import { ChatService } from '../chat/chat.service';
+import {
+  FIXED_GROUP_MAX_STUDENTS,
+  GROUP_CAPACITY_EXCEEDED_MESSAGE,
+} from './group.constants';
+import { JwtPayload } from '../../common/types/auth.types';
+import { assertManagerCenterAccess, getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
 @Injectable()
 export class GroupsService {
@@ -10,6 +16,24 @@ export class GroupsService {
     private readonly prisma: PrismaService,
     private readonly chatService: ChatService,
   ) {}
+
+  private async assertManagerGroupAccess(groupId: string, user?: JwtPayload) {
+    const managerCenterId = getManagerCenterIdOrThrow(user);
+    if (!managerCenterId) return;
+
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      select: { id: true, centerId: true },
+    });
+
+    if (!group) {
+      throw new NotFoundException(`Group with ID ${groupId} not found`);
+    }
+
+    if (group.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this group');
+    }
+  }
 
   async findAll(params?: {
     skip?: number;
@@ -19,8 +43,9 @@ export class GroupsService {
     teacherId?: string;
     isActive?: boolean;
     level?: string;
+    currentUser?: JwtPayload;
   }) {
-    const { skip = 0, take = 50, search, centerId, teacherId, isActive, level } = params || {};
+    const { skip = 0, take = 50, search, centerId, teacherId, isActive, level, currentUser } = params || {};
 
     const where: Prisma.GroupWhereInput = {};
 
@@ -31,7 +56,8 @@ export class GroupsService {
       ];
     }
 
-    if (centerId) where.centerId = centerId;
+    const scopedCenterId = assertManagerCenterAccess(currentUser, centerId);
+    if (scopedCenterId) where.centerId = scopedCenterId;
     if (teacherId) where.teacherId = teacherId;
     if (isActive !== undefined) where.isActive = isActive;
     if (level) where.level = level;
@@ -90,9 +116,10 @@ export class GroupsService {
   async findStudentsByGroupId(
     groupId: string,
     params?: { skip?: number; take?: number },
+    currentUser?: JwtPayload,
   ) {
     const { skip = 0, take = 20 } = params || {};
-    await this.findById(groupId);
+    await this.findById(groupId, currentUser);
 
     const [items, total] = await Promise.all([
       this.prisma.student.findMany({
@@ -124,7 +151,9 @@ export class GroupsService {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, currentUser?: JwtPayload) {
+    await this.assertManagerGroupAccess(id, currentUser);
+
     const group = await this.prisma.group.findUnique({
       where: { id },
       include: {
@@ -253,7 +282,12 @@ export class GroupsService {
     return this.findByTeacher(teacher.id);
   }
 
-  async create(dto: CreateGroupDto) {
+  async create(dto: CreateGroupDto, currentUser?: JwtPayload) {
+    const managerCenterId = getManagerCenterIdOrThrow(currentUser);
+    if (managerCenterId && dto.centerId !== managerCenterId) {
+      throw new ForbiddenException('You can only create groups in your assigned center');
+    }
+
     // Validate center exists
     const center = await this.prisma.center.findUnique({
       where: { id: dto.centerId },
@@ -280,7 +314,7 @@ export class GroupsService {
         name: dto.name,
         level: dto.level,
         description: dto.description,
-        maxStudents: dto.maxStudents ?? 15,
+        maxStudents: FIXED_GROUP_MAX_STUDENTS,
         centerId: dto.centerId,
         teacherId: dto.teacherId,
         isActive: dto.isActive ?? true,
@@ -303,8 +337,10 @@ export class GroupsService {
     return group;
   }
 
-  async update(id: string, dto: UpdateGroupDto) {
-    const currentGroup = await this.findById(id);
+  async update(id: string, dto: UpdateGroupDto, currentUser?: JwtPayload) {
+    await this.assertManagerGroupAccess(id, currentUser);
+    const currentGroup = await this.findById(id, currentUser);
+    const managerCenterId = getManagerCenterIdOrThrow(currentUser);
 
     // Validate center if changing (centerId is required in DB, so if provided it must be valid)
     if (dto.centerId !== undefined) {
@@ -318,6 +354,9 @@ export class GroupsService {
 
       if (!center) {
         throw new BadRequestException(`Center with ID ${dto.centerId} not found`);
+      }
+      if (managerCenterId && dto.centerId !== managerCenterId) {
+        throw new ForbiddenException('You can only move group inside your assigned center');
       }
     }
 
@@ -394,7 +433,10 @@ export class GroupsService {
 
     return this.prisma.group.update({
       where: { id },
-      data: dto,
+      data: {
+        ...dto,
+        maxStudents: FIXED_GROUP_MAX_STUDENTS,
+      },
       include: {
         center: { select: { id: true, name: true } },
         teacher: {
@@ -408,16 +450,16 @@ export class GroupsService {
     });
   }
 
-  async delete(id: string) {
-    await this.findById(id);
+  async delete(id: string, currentUser?: JwtPayload) {
+    await this.findById(id, currentUser);
 
     return this.prisma.group.delete({
       where: { id },
     });
   }
 
-  async toggleActive(id: string) {
-    const group = await this.findById(id);
+  async toggleActive(id: string, currentUser?: JwtPayload) {
+    const group = await this.findById(id, currentUser);
 
     return this.prisma.group.update({
       where: { id },
@@ -425,7 +467,21 @@ export class GroupsService {
     });
   }
 
-  async assignTeacher(groupId: string, teacherId: string) {
+  async assignTeacher(groupId: string, teacherId: string, currentUser?: JwtPayload) {
+    await this.assertManagerGroupAccess(groupId, currentUser);
+    const managerCenterId = getManagerCenterIdOrThrow(currentUser);
+
+    if (managerCenterId) {
+      const teacherInCenter = await this.prisma.group.findFirst({
+        where: { teacherId, centerId: managerCenterId },
+        select: { id: true },
+      });
+
+      if (!teacherInCenter) {
+        throw new ForbiddenException('You can only assign teachers from your center');
+      }
+    }
+
     // Use transaction to ensure atomicity: Group.teacherId and ChatParticipant must be updated together
     return await this.prisma.$transaction(async (tx) => {
       // Verify group exists
@@ -507,16 +563,17 @@ export class GroupsService {
     });
   }
 
-  async addStudent(groupId: string, studentId: string) {
-    const group = await this.findById(groupId);
+  async addStudent(groupId: string, studentId: string, currentUser?: JwtPayload) {
+    await this.findById(groupId, currentUser);
+    const managerCenterId = getManagerCenterIdOrThrow(currentUser);
 
     // Check max students
     const currentCount = await this.prisma.student.count({
       where: { groupId },
     });
 
-    if (currentCount >= group.maxStudents) {
-      throw new BadRequestException('Group is full');
+    if (currentCount >= FIXED_GROUP_MAX_STUDENTS) {
+      throw new BadRequestException(GROUP_CAPACITY_EXCEEDED_MESSAGE);
     }
 
     const student = await this.prisma.student.findUnique({
@@ -526,6 +583,20 @@ export class GroupsService {
 
     if (!student) {
       throw new BadRequestException(`Student with ID ${studentId} not found`);
+    }
+
+    if (managerCenterId) {
+      const studentInCenter = await this.prisma.student.findFirst({
+        where: {
+          id: studentId,
+          group: { centerId: managerCenterId },
+        },
+        select: { id: true },
+      });
+
+      if (!studentInCenter) {
+        throw new ForbiddenException('You can only add students from your assigned center');
+      }
     }
 
     // Update student's group
@@ -577,7 +648,8 @@ export class GroupsService {
     return { success: true };
   }
 
-  async removeStudent(groupId: string, studentId: string) {
+  async removeStudent(groupId: string, studentId: string, currentUser?: JwtPayload) {
+    await this.assertManagerGroupAccess(groupId, currentUser);
     const student = await this.prisma.student.findUnique({
       where: { id: studentId },
     });
