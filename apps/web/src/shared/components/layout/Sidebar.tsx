@@ -112,6 +112,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
   ),
+  schedule: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
 };
 
 function getNavItems(role: string, t: (key: string) => string): NavItem[] {
@@ -123,6 +128,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('groups'), href: '/admin/groups', icon: icons.groups },
         { label: t('teachers'), href: '/admin/teachers', icon: icons.teachers },
         { label: t('students'), href: '/admin/students', icon: icons.students },
+        { label: t('schedule'), href: '/admin/schedule', icon: icons.schedule },
         { label: t('finance'), href: '/admin/finance', icon: icons.finance },
         { label: t('calendar'), href: '/admin/calendar', icon: icons.calendar },
         { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
