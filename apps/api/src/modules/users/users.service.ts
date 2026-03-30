@@ -276,10 +276,12 @@ export class UsersService {
         },
       });
 
-      await tx.$executeRaw`
-        INSERT INTO "manager_profiles" ("id", "userId", "centerId", "createdAt", "updatedAt")
-        VALUES (${`mgr_${user.id}`}, ${user.id}, ${data.centerId}, NOW(), NOW())
-      `;
+      await tx.managerProfile.create({
+        data: {
+          userId: user.id,
+          centerId: data.centerId,
+        },
+      });
 
       return tx.user.findUnique({
         where: { id: user.id },
