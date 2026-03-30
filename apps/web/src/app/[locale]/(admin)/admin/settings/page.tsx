@@ -8,6 +8,7 @@ import { SecurityTab } from './components/SecurityTab';
 import { NotificationsTab } from './components/NotificationsTab';
 import { SystemTab } from './components/SystemTab';
 import { PenaltyTab } from './components/PenaltyTab';
+import { ManagerTab } from './components/ManagerTab';
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
@@ -42,6 +43,10 @@ export default function SettingsPage() {
 
           {activeTab === 'penalty' && (
             <PenaltyTab />
+          )}
+
+          {activeTab === 'manager' && (
+            <ManagerTab />
           )}
         </div>
       </div>

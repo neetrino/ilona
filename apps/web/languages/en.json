@@ -538,6 +538,7 @@
     "savePreferences": "Save Preferences",
     "percent": "Percent",
     "penalty": "Penalty",
+    "manager": "Manager",
     "penaltyAmounts": "Penalty Amounts",
     "penaltyAmountsDescription": "Configure fixed penalty amounts in AMD for missing actions. Each action (Absence, Feedbacks, Voice, Text) has a fixed penalty that is deducted from the lesson rate when the action is not completed.",
     "penaltyAbsenceAmd": "Absence Penalty (AMD)",
