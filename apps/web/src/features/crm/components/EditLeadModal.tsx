@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
 import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
@@ -21,6 +21,7 @@ interface TeacherOption {
 interface GroupOption {
   id: string;
   name: string;
+  teacherId?: string | null;
 }
 
 interface EditLeadModalProps {
@@ -56,6 +57,12 @@ export function EditLeadModal({
     enabled: !!leadId && open,
   });
 
+  const selectedTeacherId = form.teacherId ?? '';
+  const groupsForSelectedTeacher = useMemo(
+    () => (selectedTeacherId ? groups.filter((group) => group.teacherId === selectedTeacherId) : []),
+    [groups, selectedTeacherId],
+  );
+
   // Sync form whenever modal opens or lead data is available (so edit always shows current saved values)
   useEffect(() => {
     if (!open || !leadId) return;
@@ -77,6 +84,21 @@ export function EditLeadModal({
     });
     setError(null);
   }, [open, leadId, lead]);
+
+  useEffect(() => {
+    const selectedGroupId = form.groupId ?? '';
+
+    if (!selectedTeacherId) {
+      if (selectedGroupId) {
+        setForm((prev) => ({ ...prev, groupId: undefined }));
+      }
+      return;
+    }
+
+    if (selectedGroupId && !groupsForSelectedTeacher.some((group) => group.id === selectedGroupId)) {
+      setForm((prev) => ({ ...prev, groupId: undefined }));
+    }
+  }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,7 +211,7 @@ export function EditLeadModal({
               <select
                 value={form.teacherId ?? ''}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, teacherId: e.target.value || undefined }))
+                  setForm((f) => ({ ...f, teacherId: e.target.value || undefined, groupId: undefined }))
                 }
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
@@ -208,10 +230,13 @@ export function EditLeadModal({
                 onChange={(e) =>
                   setForm((f) => ({ ...f, groupId: e.target.value || undefined }))
                 }
+                disabled={!selectedTeacherId}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
-                <option value="">—</option>
-                {groups.map((g) => (
+                <option value="">
+                  {selectedTeacherId ? '—' : 'Select Teacher first'}
+                </option>
+                {groupsForSelectedTeacher.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name}
                   </option>

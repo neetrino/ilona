@@ -35,10 +35,11 @@ export const groupKeys = {
 /**
  * Hook to fetch groups list
  */
-export function useGroups(filters?: GroupFilters) {
+export function useGroups(filters?: GroupFilters, enabled = true) {
   return useQuery({
     queryKey: groupKeys.list(filters),
     queryFn: () => fetchGroups(filters),
+    enabled,
     staleTime: 60 * 1000, // 1 minute - invalidate on mutation
     // Don't retry on 503 (Service Unavailable) errors
     retry: (failureCount, error) => {

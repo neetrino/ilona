@@ -79,7 +79,7 @@ export class LeadsController {
     if (!file?.buffer?.length) {
       throw new BadRequestException('No audio file provided. Please record and send a voice message.');
     }
-    return this.leadsService.createLeadFromVoice(file, user.sub);
+    return this.leadsService.createLeadFromVoice(file, user.sub, user);
   }
 
   @Get()

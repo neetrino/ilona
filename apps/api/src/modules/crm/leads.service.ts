@@ -100,14 +100,17 @@ export class LeadsService {
   async createLeadFromVoice(
     file: Express.Multer.File,
     createdByUserId: string,
+    user?: JwtPayload,
   ) {
     if (!file?.buffer?.length) {
       throw new BadRequestException('No audio file provided');
     }
+    const centerId = this.ensureManagerCenterInput(undefined, user);
     const lead = await this.prisma.crmLead.create({
       data: {
         status: 'NEW',
         createdByUserId,
+        centerId,
       },
     });
     const uploadResult = await this.storage.upload(
