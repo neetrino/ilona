@@ -31,7 +31,6 @@ export function CentersTab({
   const {
     centers,
     totalCenters,
-    totalCenterPages,
     activeCenters,
     isLoadingCenters,
     deleteCenter,

@@ -87,6 +87,13 @@ export class ChatService {
     return this.chatListsService.getAdminAllUsers(adminId, search);
   }
 
+  async getAdminStudentRecordings(
+    adminId: string,
+    filters?: { groupId?: string; studentUserId?: string; search?: string },
+  ) {
+    return this.messageService.getAdminStudentRecordings(adminId, filters);
+  }
+
   async addGroupChatMember(groupId: string, userId: string, adminId: string) {
     return this.chatManagementService.addGroupChatMember(groupId, userId, adminId);
   }

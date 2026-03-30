@@ -360,3 +360,45 @@ export async function fetchStudentVoiceToTeacherRecordings(
     : `${CHAT_ENDPOINT}/student/voice-to-teacher-recordings`;
   return api.get<VoiceToTeacherRecording[]>(url);
 }
+
+export interface AdminStudentRecording {
+  id: string;
+  fileUrl: string;
+  fileName?: string;
+  duration: number;
+  createdAt: string;
+  student: {
+    userId: string;
+    firstName: string;
+    lastName: string;
+  };
+  group: {
+    id: string | null;
+    name: string;
+  };
+}
+
+export interface AdminStudentRecordingsFilters {
+  groupId?: string;
+  studentUserId?: string;
+  search?: string;
+}
+
+/**
+ * Admin-only: Get all student voice recordings for Recordings section
+ */
+export async function fetchAdminStudentRecordings(
+  filters?: AdminStudentRecordingsFilters,
+): Promise<AdminStudentRecording[]> {
+  const params = new URLSearchParams();
+  if (filters?.groupId) params.append('groupId', filters.groupId);
+  if (filters?.studentUserId) params.append('studentUserId', filters.studentUserId);
+  if (filters?.search) params.append('search', filters.search);
+
+  const query = params.toString();
+  const url = query
+    ? `${CHAT_ENDPOINT}/admin/student-recordings?${query}`
+    : `${CHAT_ENDPOINT}/admin/student-recordings`;
+
+  return api.get<AdminStudentRecording[]>(url);
+}

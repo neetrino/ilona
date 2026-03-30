@@ -47,6 +47,12 @@ export interface SendMessageResponse {
   navigation?: { conversationId: string; groupId: string; messageId: string };
 }
 
+export interface AdminStudentRecordingFilters {
+  groupId?: string;
+  studentUserId?: string;
+  search?: string;
+}
+
 /**
  * Service responsible for message operations
  */
@@ -687,6 +693,94 @@ export class MessageService {
           : null,
       };
     });
+  }
+
+  /**
+   * Get all student voice messages sent to teachers for admin dashboards.
+   * Includes student and group information for grouping and filtering in UI.
+   */
+  async getAdminStudentRecordings(
+    _adminUserId: string,
+    filters?: AdminStudentRecordingFilters,
+  ) {
+    const messages = await this.prisma.message.findMany({
+      where: {
+        type: MessageType.VOICE,
+        fileUrl: { not: null },
+        sender: {
+          role: UserRole.STUDENT,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            student: {
+              select: {
+                id: true,
+                group: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const normalizedSearch = filters?.search?.trim().toLowerCase();
+
+    const result = messages
+      .filter((message) => {
+        const meta = message.metadata as Record<string, unknown> | null;
+        if (!meta || meta.voiceToTeacher !== true) {
+          return false;
+        }
+
+        if (filters?.studentUserId && message.senderId !== filters.studentUserId) {
+          return false;
+        }
+
+        const groupId = message.sender?.student?.group?.id ?? null;
+        if (filters?.groupId && groupId !== filters.groupId) {
+          return false;
+        }
+
+        if (normalizedSearch) {
+          const fullName = `${message.sender?.firstName ?? ''} ${message.sender?.lastName ?? ''}`
+            .trim()
+            .toLowerCase();
+          if (!fullName.includes(normalizedSearch)) {
+            return false;
+          }
+        }
+
+        return true;
+      })
+      .map((message) => ({
+        id: message.id,
+        fileUrl: message.fileUrl as string,
+        fileName: message.fileName ?? undefined,
+        duration: message.duration ?? 0,
+        createdAt: message.createdAt,
+        student: {
+          userId: message.sender?.id ?? '',
+          firstName: message.sender?.firstName ?? '',
+          lastName: message.sender?.lastName ?? '',
+        },
+        group: {
+          id: message.sender?.student?.group?.id ?? null,
+          name: message.sender?.student?.group?.name ?? 'Ungrouped',
+        },
+      }));
+
+    return result;
   }
 }
 
