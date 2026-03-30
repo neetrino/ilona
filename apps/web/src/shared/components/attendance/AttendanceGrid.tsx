@@ -3,6 +3,15 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
+import {
+  Input,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/shared/components/ui';
 import type { Lesson } from '@/features/lessons';
 import type { AbsenceType } from '@/features/attendance';
 
@@ -14,6 +23,7 @@ interface AttendanceCell {
   status: AttendanceStatus;
   isPresent: boolean;
   absenceType?: AbsenceType;
+  note?: string;
 }
 
 interface AttendanceGridProps {
@@ -29,7 +39,10 @@ interface AttendanceGridProps {
   lessons: Lesson[];
   initialAttendance?: Record<string, Record<string, AttendanceCell>>; // lessonId -> studentId -> cell
   onCellChange?: (studentId: string, lessonId: string, status: AttendanceStatus) => void;
-  onLessonSave?: (lessonId: string, attendances: Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType }>) => Promise<void>;
+  onLessonSave?: (
+    lessonId: string,
+    attendances: Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType; note?: string }>
+  ) => Promise<void>;
   isLoading?: boolean;
   isSaving?: Record<string, boolean>; // lessonId -> isSaving
   dateRange?: { from: string; to: string };
@@ -58,6 +71,10 @@ export function AttendanceGrid({
   const [pendingChanges, setPendingChanges] = useState<Record<string, Set<string>>>({}); // lessonId -> Set of studentIds
   const [saveError, setSaveError] = useState<Record<string, string>>({}); // lessonId -> error message
   const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({}); // lessonId -> success
+  const [justificationDialog, setJustificationDialog] = useState<{
+    studentId: string;
+    lessonId: string;
+  } | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const cellRefs = useRef<Record<string, HTMLTableCellElement>>({});
   const initialDataRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
@@ -180,6 +197,24 @@ export function AttendanceGrid({
     [attendanceData]
   );
 
+  const updateCellNote = useCallback((studentId: string, lessonId: string, note: string) => {
+    setAttendanceData((prev) => {
+      const lessonData = prev[lessonId] || {};
+      const existing = lessonData[studentId];
+      if (!existing) return prev;
+      return {
+        ...prev,
+        [lessonId]: {
+          ...lessonData,
+          [studentId]: {
+            ...existing,
+            note,
+          },
+        },
+      };
+    });
+  }, []);
+
   // Toggle cell status - simplified cycle: Not Marked → Present → Absent (Justified) → Absent (Unjustified) → Not Marked
   const toggleCellStatus = useCallback(
     (studentId: string, lessonId: string) => {
@@ -191,6 +226,7 @@ export function AttendanceGrid({
 
       setAttendanceData((prev) => {
         const lessonData = prev[lessonId] || {};
+        const existingCell = lessonData[studentId];
         return {
           ...prev,
           [lessonId]: {
@@ -201,10 +237,20 @@ export function AttendanceGrid({
               status: newStatus,
               isPresent: newStatus === 'present',
               absenceType: newStatus === 'absent_justified' ? 'JUSTIFIED' : newStatus === 'absent_unjustified' ? 'UNJUSTIFIED' : undefined,
+              note: newStatus === 'present' || newStatus === 'not_marked' ? undefined : existingCell?.note,
             },
           },
         };
       });
+
+      if (newStatus === 'absent_justified') {
+        setJustificationDialog({ studentId, lessonId });
+      } else if (
+        justificationDialog?.studentId === studentId &&
+        justificationDialog.lessonId === lessonId
+      ) {
+        setJustificationDialog(null);
+      }
 
       // Add to pending changes for this lesson
       setPendingChanges((prev) => {
@@ -231,7 +277,7 @@ export function AttendanceGrid({
         onCellChange(studentId, lessonId, newStatus);
       }
     },
-    [getCellStatus, onCellChange]
+    [getCellStatus, onCellChange, justificationDialog]
   );
 
   // Handle manual save for a specific lesson
@@ -239,18 +285,36 @@ export function AttendanceGrid({
     async (lessonId: string) => {
       if (!onLessonSave || !pendingChanges[lessonId] || pendingChanges[lessonId].size === 0) return;
 
-      const attendances: Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType }> = [];
+      const attendances: Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType; note?: string }> = [];
+      const studentsMissingJustification: string[] = [];
 
       pendingChanges[lessonId].forEach((studentId) => {
         const cell = attendanceData[lessonId]?.[studentId];
         if (cell) {
+          const trimmedNote = cell.note?.trim();
+          if (cell.status === 'absent_justified' && !trimmedNote) {
+            studentsMissingJustification.push(studentId);
+            return;
+          }
           attendances.push({
             studentId,
             isPresent: cell.isPresent,
             absenceType: cell.absenceType,
+            note: trimmedNote || undefined,
           });
         }
       });
+
+      if (studentsMissingJustification.length > 0) {
+        const firstStudentId = studentsMissingJustification[0];
+        setFocusedCell({ studentId: firstStudentId, lessonId });
+        setJustificationDialog({ studentId: firstStudentId, lessonId });
+        setSaveError((prev) => ({
+          ...prev,
+          [lessonId]: 'Please add a justification comment for all justified absences before saving.',
+        }));
+        return;
+      }
 
       if (attendances.length > 0) {
         try {
@@ -446,6 +510,15 @@ export function AttendanceGrid({
   const lessonsWithChanges = Object.keys(pendingChanges).filter(
     (lessonId) => pendingChanges[lessonId] && pendingChanges[lessonId].size > 0
   );
+  const missingJustificationCount = Object.entries(pendingChanges).reduce((sum, [lessonId, studentIds]) => {
+    studentIds.forEach((studentId) => {
+      const cell = attendanceData[lessonId]?.[studentId];
+      if (cell?.status === 'absent_justified' && !cell.note?.trim()) {
+        sum += 1;
+      }
+    });
+    return sum;
+  }, 0);
 
   return (
     <div className="space-y-4">
@@ -496,7 +569,7 @@ export function AttendanceGrid({
           {totalPendingChanges > 0 && !hasAnySaving && (
             <Button
               onClick={handleSaveAll}
-              disabled={lessonsWithChanges.length === 0 || hasAnySaving}
+              disabled={lessonsWithChanges.length === 0 || hasAnySaving || missingJustificationCount > 0}
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
               size="lg"
             >
@@ -505,6 +578,12 @@ export function AttendanceGrid({
           )}
         </div>
       </div>
+
+      {missingJustificationCount > 0 && (
+        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+          Add a required comment for each justified absence before saving ({missingJustificationCount} pending).
+        </div>
+      )}
 
       {/* Grid - Fixed height container to fit viewport */}
       <div
@@ -562,6 +641,10 @@ export function AttendanceGrid({
                       const isFocused = focusedCell?.studentId === student.id && focusedCell?.lessonId === lesson.id;
                       const hasPendingChange = pendingChanges[lesson.id]?.has(student.id) || false;
                       const isLessonSaving = isSaving?.[lesson.id] || false;
+                      const requiresJustification = status === 'absent_justified';
+                      const hasJustification =
+                        !!attendanceData[lesson.id]?.[student.id]?.note?.trim();
+                      const hasMissingJustification = requiresJustification && !hasJustification;
                       const _hasLessonChanges = pendingChanges[lesson.id] && pendingChanges[lesson.id].size > 0;
 
                       const cellKey = `${student.id}-${lesson.id}`;
@@ -576,6 +659,7 @@ export function AttendanceGrid({
                             getStatusStyles(status),
                             isFocused && 'ring-4 ring-primary ring-offset-2 shadow-lg',
                             hasPendingChange && 'ring-2 ring-amber-500',
+                            hasMissingJustification && 'ring-2 ring-red-500',
                             isLessonSaving && 'opacity-60 cursor-wait'
                           )}
                           onClick={() => !isLessonSaving && toggleCellStatus(student.id, lesson.id)}
@@ -597,6 +681,11 @@ export function AttendanceGrid({
                           {hasPendingChange && !isLessonSaving && (
                             <div className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-amber-500 shadow-sm animate-pulse"></div>
                           )}
+                          {hasMissingJustification && !isLessonSaving && (
+                            <div className="absolute bottom-1 right-1 rounded bg-red-600 px-1 text-[10px] font-semibold text-white">
+                              !
+                            </div>
+                          )}
                         </td>
                       );
                     })}
@@ -607,6 +696,55 @@ export function AttendanceGrid({
           </table>
         </div>
       </div>
+
+      <Dialog open={!!justificationDialog} onOpenChange={(open) => !open && setJustificationDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Justification comment required</DialogTitle>
+            <DialogDescription>
+              Add a reason for marking this student as justified absent.
+            </DialogDescription>
+          </DialogHeader>
+          {justificationDialog && (
+            <div className="space-y-2">
+              <div className="text-sm text-slate-600">
+                {students.find((s) => s.id === justificationDialog.studentId)?.user.firstName}{' '}
+                {students.find((s) => s.id === justificationDialog.studentId)?.user.lastName}
+              </div>
+              <Input
+                value={attendanceData[justificationDialog.lessonId]?.[justificationDialog.studentId]?.note ?? ''}
+                onChange={(e) =>
+                  updateCellNote(justificationDialog.studentId, justificationDialog.lessonId, e.target.value)
+                }
+                placeholder="Enter justification comment"
+                maxLength={500}
+                autoFocus
+              />
+              {!attendanceData[justificationDialog.lessonId]?.[justificationDialog.studentId]?.note?.trim() && (
+                <p className="text-xs text-red-600">This field is required for justified absence.</p>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                const note =
+                  justificationDialog &&
+                  attendanceData[justificationDialog.lessonId]?.[justificationDialog.studentId]?.note?.trim();
+                if (note) {
+                  setJustificationDialog(null);
+                }
+              }}
+              disabled={
+                !justificationDialog ||
+                !attendanceData[justificationDialog.lessonId]?.[justificationDialog.studentId]?.note?.trim()
+              }
+            >
+              Save comment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 
       {/* Enhanced Legend */}

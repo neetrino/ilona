@@ -28,6 +28,7 @@ model User {
   managerProfile          ManagerProfile?
   sentMessages            Message[]         @relation("SentMessages")
   notifications           Notification[]
+  markedAttendances       Attendance[]      @relation("AttendanceMarkedBy")
   student                 Student?
   teacher                 Teacher?
 
@@ -182,6 +183,7 @@ model Attendance {
   id          String       @id @default(cuid())
   lessonId    String
   studentId   String
+  markedById  String?
   isPresent   Boolean
   absenceType AbsenceType?
   note        String?
@@ -189,11 +191,13 @@ model Attendance {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   lesson      Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  markedBy    User?        @relation("AttendanceMarkedBy", fields: [markedById], references: [id], onDelete: SetNull)
   student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([lessonId, studentId])
   @@index([lessonId])
   @@index([studentId])
+  @@index([markedById])
   @@index([isPresent])
   @@map("attendances")
 }

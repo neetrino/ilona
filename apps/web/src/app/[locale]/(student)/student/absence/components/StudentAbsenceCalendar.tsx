@@ -40,6 +40,7 @@ interface DayStatus {
     group: { name: string };
     isPresent: boolean;
     absenceType?: 'JUSTIFIED' | 'UNJUSTIFIED' | null;
+    note?: string;
   }>;
 }
 
@@ -79,6 +80,7 @@ export function StudentAbsenceCalendar({
         group: attendance.lesson.group,
         isPresent: attendance.isPresent,
         absenceType: attendance.absenceType,
+        note: attendance.note,
       });
       
       // If any lesson has absence, mark the day as having absence
@@ -302,6 +304,9 @@ export function StudentAbsenceCalendar({
                           ? t('justified')
                           : t('unjustified')}
                       </p>
+                    )}
+                    {!lesson.isPresent && lesson.note && (
+                      <p className="text-xs text-slate-600 mt-1">{lesson.note}</p>
                     )}
                   </div>
                 );

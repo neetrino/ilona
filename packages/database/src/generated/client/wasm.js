@@ -231,6 +231,7 @@ exports.Prisma.AttendanceScalarFieldEnum = {
   id: 'id',
   lessonId: 'lessonId',
   studentId: 'studentId',
+  markedById: 'markedById',
   isPresent: 'isPresent',
   absenceType: 'absenceType',
   note: 'note',

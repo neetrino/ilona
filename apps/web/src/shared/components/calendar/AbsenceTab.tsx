@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useLessonAttendance, useMarkBulkAttendance } from '@/features/attendance';
 import { useLesson } from '@/features/lessons';
 import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
 import { markAbsenceComplete } from '@/features/lessons/api/obligations.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
@@ -20,7 +21,9 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   const { data: lesson } = useLesson(lessonId);
   const { data: attendanceData, isLoading } = useLessonAttendance(lessonId);
   const markBulkAttendance = useMarkBulkAttendance();
-  const [attendance, setAttendance] = useState<Record<string, { isPresent: boolean; absenceType?: AbsenceType }>>({});
+  const [attendance, setAttendance] = useState<
+    Record<string, { isPresent: boolean; absenceType?: AbsenceType; note?: string }>
+  >({});
   const [hasChanges, setHasChanges] = useState(false);
 
   // Declare students before useEffect that uses it
@@ -30,7 +33,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   // Initialize attendance state from saved data - only prefill students with saved attendance
   useEffect(() => {
     if (attendanceData?.studentsWithAttendance && attendanceData.studentsWithAttendance.length > 0) {
-      const initial: Record<string, { isPresent: boolean; absenceType?: AbsenceType }> = {};
+      const initial: Record<string, { isPresent: boolean; absenceType?: AbsenceType; note?: string }> = {};
       
       // Initialize only students with saved attendance (do not default to present)
       attendanceData.studentsWithAttendance.forEach((swa) => {
@@ -41,6 +44,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
           initial[swa.student.id] = {
             isPresent: savedAttendance.isPresent,
             absenceType: savedAttendance.absenceType || undefined,
+            note: savedAttendance.note || undefined,
           };
         }
         // If no saved attendance, don't set any value - student will show as 'not_marked'
@@ -59,6 +63,21 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
       [studentId]: {
         isPresent: status === 'present',
         absenceType: status === 'absent_justified' ? 'JUSTIFIED' : status === 'absent_unjustified' ? 'UNJUSTIFIED' : undefined,
+        note:
+          status === 'present' || status === 'not_marked'
+            ? undefined
+            : prev[studentId]?.note,
+      },
+    }));
+  };
+
+  const handleNoteChange = (studentId: string, note: string) => {
+    setHasChanges(true);
+    setAttendance((prev) => ({
+      ...prev,
+      [studentId]: {
+        ...(prev[studentId] || { isPresent: false, absenceType: 'JUSTIFIED' }),
+        note,
       },
     }));
   };
@@ -76,11 +95,20 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
           studentId: student.id,
           isPresent: att.isPresent,
           absenceType: att.absenceType,
+          note: att.note?.trim() || undefined,
         };
       })
       .filter((att): att is NonNullable<typeof att> => att !== null);
 
     try {
+      const hasMissingJustification = attendances.some(
+        (att) => att.absenceType === 'JUSTIFIED' && !att.note?.trim()
+      );
+      if (hasMissingJustification) {
+        alert('Please add a justification comment for all justified absences.');
+        return;
+      }
+
       await markBulkAttendance.mutateAsync({
         lessonId: lesson.id,
         attendances,
@@ -172,9 +200,10 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
           return (
             <div
               key={student.id}
-              className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50"
+              className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold">
                   {student.user.firstName[0]}{student.user.lastName[0]}
                 </div>
@@ -185,38 +214,49 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleAttendanceChange(student.id, 'present')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    status === 'present'
-                      ? 'bg-green-100 text-green-700 border-2 border-green-500'
-                      : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
-                  }`}
-                >
-                  Present
-                </button>
-                <button
-                  onClick={() => handleAttendanceChange(student.id, 'absent_justified')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    status === 'absent_justified'
-                      ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-500'
-                      : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
-                  }`}
-                >
-                  Justified
-                </button>
-                <button
-                  onClick={() => handleAttendanceChange(student.id, 'absent_unjustified')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    status === 'absent_unjustified'
-                      ? 'bg-red-100 text-red-700 border-2 border-red-500'
-                      : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
-                  }`}
-                >
-                  Unjustified
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleAttendanceChange(student.id, 'present')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      status === 'present'
+                        ? 'bg-green-100 text-green-700 border-2 border-green-500'
+                        : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
+                    }`}
+                  >
+                    Present
+                  </button>
+                  <button
+                    onClick={() => handleAttendanceChange(student.id, 'absent_justified')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      status === 'absent_justified'
+                        ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-500'
+                        : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
+                    }`}
+                  >
+                    Justified
+                  </button>
+                  <button
+                    onClick={() => handleAttendanceChange(student.id, 'absent_unjustified')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      status === 'absent_unjustified'
+                        ? 'bg-red-100 text-red-700 border-2 border-red-500'
+                        : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
+                    }`}
+                  >
+                    Unjustified
+                  </button>
+                </div>
               </div>
+              {status === 'absent_justified' && (
+                <div className="mt-3">
+                  <Input
+                    placeholder="Justification comment (required)"
+                    value={attendance[student.id]?.note || ''}
+                    onChange={(e) => handleNoteChange(student.id, e.target.value)}
+                    maxLength={500}
+                  />
+                </div>
+              )}
             </div>
           );
         })}

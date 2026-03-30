@@ -11,6 +11,7 @@ export interface Attendance {
   id: string;
   lessonId: string;
   studentId: string;
+  markedById?: string | null;
   isPresent: boolean;
   absenceType?: AbsenceType | null;
   note?: string | null;

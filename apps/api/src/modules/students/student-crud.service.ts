@@ -414,6 +414,14 @@ export class StudentCrudService {
           take: 10,
           orderBy: { lesson: { scheduledAt: 'desc' } },
           include: {
+            markedBy: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+              },
+            },
             lesson: {
               select: { id: true, scheduledAt: true, topic: true },
             },

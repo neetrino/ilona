@@ -22,6 +22,7 @@ export interface AttendanceCell {
   status: AttendanceStatus;
   isPresent: boolean;
   absenceType?: AbsenceType;
+  note?: string;
 }
 
 interface UseTeacherAttendanceDataProps {
@@ -183,6 +184,7 @@ export function useTeacherAttendanceData({
               status,
               isPresent: s.attendance.isPresent,
               absenceType: s.attendance.absenceType || undefined,
+              note: s.attendance.note || undefined,
             };
           }
         });
@@ -249,7 +251,7 @@ export function useTeacherAttendanceData({
   // Handle lesson save (for day view)
   const handleLessonSave = async (
     lessonId: string,
-    attendances: Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType }>
+    attendances: Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType; note?: string }>
   ) => {
     setSavingLessons((prev) => ({ ...prev, [lessonId]: true }));
     try {
@@ -269,12 +271,15 @@ export function useTeacherAttendanceData({
   // Handle day save (for week view)
   const handleDaySave = async (
     date: string,
-    attendances: Array<{ studentId: string; lessonId: string; isPresent: boolean; absenceType?: AbsenceType }>
+    attendances: Array<{ studentId: string; lessonId: string; isPresent: boolean; absenceType?: AbsenceType; note?: string }>
   ) => {
     setSavingLessons((prev) => ({ ...prev, [date]: true }));
     try {
       // Group attendances by lessonId
-      const attendancesByLesson: Record<string, Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType }>> = {};
+      const attendancesByLesson: Record<
+        string,
+        Array<{ studentId: string; isPresent: boolean; absenceType?: AbsenceType; note?: string }>
+      > = {};
       attendances.forEach((att) => {
         if (!attendancesByLesson[att.lessonId]) {
           attendancesByLesson[att.lessonId] = [];
@@ -283,6 +288,7 @@ export function useTeacherAttendanceData({
           studentId: att.studentId,
           isPresent: att.isPresent,
           absenceType: att.absenceType,
+          note: att.note,
         });
       });
 

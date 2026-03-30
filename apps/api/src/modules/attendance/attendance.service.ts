@@ -60,6 +60,14 @@ export class AttendanceService {
         },
         attendances: {
           include: {
+            markedBy: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+              },
+            },
             student: {
               include: {
                 user: {
@@ -154,6 +162,14 @@ export class AttendanceService {
         },
         attendances: {
           include: {
+            markedBy: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+              },
+            },
             student: {
               include: {
                 user: {
@@ -231,6 +247,14 @@ export class AttendanceService {
     const attendances = await this.prisma.attendance.findMany({
       where,
       include: {
+        markedBy: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+          },
+        },
         lesson: {
           select: {
             id: true,
@@ -270,7 +294,8 @@ export class AttendanceService {
 
   async markAttendance(dto: MarkAttendanceDto, userId?: string, userRole?: UserRole) {
     const managerCenterId = await this.getManagerCenterId(userId, userRole);
-    const { lessonId, studentId, isPresent, absenceType, note } = dto;
+    const { lessonId, studentId, isPresent, absenceType, note: rawNote } = dto;
+    const note = rawNote?.trim() || undefined;
 
     // Validate lesson exists
     const lesson = await this.prisma.lesson.findUnique({
@@ -322,6 +347,9 @@ export class AttendanceService {
     if (!isPresent && !absenceType) {
       throw new BadRequestException('Absence type is required when marking absent');
     }
+    if (!isPresent && absenceType === AbsenceType.JUSTIFIED && !note) {
+      throw new BadRequestException('Justification comment is required when marking justified absence');
+    }
 
     // Upsert attendance
     const attendance = await this.prisma.attendance.upsert({
@@ -331,7 +359,8 @@ export class AttendanceService {
       update: {
         isPresent,
         absenceType: isPresent ? null : absenceType,
-        note,
+        note: isPresent ? null : note ?? null,
+        markedById: userId ?? null,
         markedAt: new Date(),
       },
       create: {
@@ -339,9 +368,13 @@ export class AttendanceService {
         studentId,
         isPresent,
         absenceType: isPresent ? null : absenceType,
-        note,
+        note: isPresent ? null : note ?? null,
+        markedById: userId ?? null,
       },
       include: {
+        markedBy: {
+          select: { id: true, firstName: true, lastName: true, role: true },
+        },
         student: {
           include: {
             user: {
@@ -496,10 +529,18 @@ export class AttendanceService {
     if (attendance.isPresent) {
       throw new BadRequestException('Cannot set absence type for present student');
     }
+    const normalizedNote = note?.trim() || undefined;
+    if (absenceType === AbsenceType.JUSTIFIED && !normalizedNote) {
+      throw new BadRequestException('Justification comment is required when marking justified absence');
+    }
 
     return this.prisma.attendance.update({
       where: { id: attendanceId },
-      data: { absenceType, note },
+      data: {
+        absenceType,
+        note: normalizedNote ?? null,
+        markedById: userId ?? null,
+      },
     });
   }
 
