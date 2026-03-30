@@ -163,7 +163,7 @@ model Group {
   name        String
   level       String?  // Beginner, Elementary, Intermediate, etc.
   description String?
-  maxStudents Int      @default(15)
+  maxStudents Int      @default(8)
   centerId    String
   teacherId   String?
   isActive    Boolean  @default(true)

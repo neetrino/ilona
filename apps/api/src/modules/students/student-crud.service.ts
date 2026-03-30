@@ -9,6 +9,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
 import { Prisma, UserRole, UserStatus } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
+import {
+  FIXED_GROUP_MAX_STUDENTS,
+  GROUP_CAPACITY_EXCEEDED_MESSAGE,
+} from '../groups/group.constants';
 
 @Injectable()
 export class StudentCrudService {
@@ -488,8 +492,8 @@ export class StudentCrudService {
         throw new BadRequestException(`Group with ID ${dto.groupId} not found`);
       }
 
-      if (group._count.students >= group.maxStudents) {
-        throw new BadRequestException('Group is full');
+      if (group._count.students >= FIXED_GROUP_MAX_STUDENTS) {
+        throw new BadRequestException(GROUP_CAPACITY_EXCEEDED_MESSAGE);
       }
     }
 

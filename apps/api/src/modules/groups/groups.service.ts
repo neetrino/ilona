@@ -3,6 +3,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
 import { Prisma } from '@ilona/database';
 import { ChatService } from '../chat/chat.service';
+import {
+  FIXED_GROUP_MAX_STUDENTS,
+  GROUP_CAPACITY_EXCEEDED_MESSAGE,
+} from './group.constants';
 
 @Injectable()
 export class GroupsService {
@@ -280,7 +284,7 @@ export class GroupsService {
         name: dto.name,
         level: dto.level,
         description: dto.description,
-        maxStudents: dto.maxStudents ?? 15,
+        maxStudents: FIXED_GROUP_MAX_STUDENTS,
         centerId: dto.centerId,
         teacherId: dto.teacherId,
         isActive: dto.isActive ?? true,
@@ -394,7 +398,10 @@ export class GroupsService {
 
     return this.prisma.group.update({
       where: { id },
-      data: dto,
+      data: {
+        ...dto,
+        maxStudents: FIXED_GROUP_MAX_STUDENTS,
+      },
       include: {
         center: { select: { id: true, name: true } },
         teacher: {
@@ -508,15 +515,15 @@ export class GroupsService {
   }
 
   async addStudent(groupId: string, studentId: string) {
-    const group = await this.findById(groupId);
+    await this.findById(groupId);
 
     // Check max students
     const currentCount = await this.prisma.student.count({
       where: { groupId },
     });
 
-    if (currentCount >= group.maxStudents) {
-      throw new BadRequestException('Group is full');
+    if (currentCount >= FIXED_GROUP_MAX_STUDENTS) {
+      throw new BadRequestException(GROUP_CAPACITY_EXCEEDED_MESSAGE);
     }
 
     const student = await this.prisma.student.findUnique({

@@ -14,7 +14,6 @@ const updateGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters').optional(),
   level: z.string().max(50, 'Level must be at most 50 characters').optional().or(z.literal('')),
   description: z.string().max(500, 'Description must be at most 500 characters').optional().or(z.literal('')),
-  maxStudents: z.number().int('Max students must be a whole number').min(1, 'Max students must be at least 1').max(50, 'Max students must be at most 50').optional(),
   centerId: z.string().min(1, 'Center is required').optional().or(z.literal('')),
   teacherId: z.string().optional().or(z.literal('')),
   isActive: z.boolean().optional(),
@@ -55,7 +54,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       name: '',
       level: '',
       description: '',
-      maxStudents: undefined,
       centerId: '',
       teacherId: '',
       isActive: true,
@@ -69,7 +67,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         name: group.name,
         level: group.level || '',
         description: group.description || '',
-        maxStudents: group.maxStudents,
         centerId: group.centerId,
         teacherId: group.teacherId || '',
         isActive: group.isActive,
@@ -93,7 +90,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         name: data.name,
         level: data.level || undefined,
         description: data.description || undefined,
-        maxStudents: data.maxStudents,
         // Only include centerId if it's not empty (centerId is required in DB, so we must provide it if changing)
         centerId: data.centerId && data.centerId.trim() !== '' ? data.centerId : undefined,
         teacherId: data.teacherId || undefined,
@@ -167,31 +163,15 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="level">Level</Label>
-              <Input
-                id="level"
-                {...register('level')}
-                error={errors.level?.message}
-                placeholder="A1, A2, B1, etc."
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="maxStudents">Max Students</Label>
-              <Input
-                id="maxStudents"
-                type="number"
-                {...register('maxStudents', { valueAsNumber: true })}
-                error={errors.maxStudents?.message}
-                placeholder="15"
-                min={1}
-                max={50}
-                disabled={isSubmitting}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="level">Level</Label>
+            <Input
+              id="level"
+              {...register('level')}
+              error={errors.level?.message}
+              placeholder="A1, A2, B1, etc."
+              disabled={isSubmitting}
+            />
           </div>
 
           <div className="space-y-2">

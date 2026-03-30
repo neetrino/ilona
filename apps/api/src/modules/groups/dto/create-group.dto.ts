@@ -2,10 +2,7 @@ import {
   IsString,
   IsOptional,
   IsBoolean,
-  IsInt,
   IsNotEmpty,
-  Min,
-  Max,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -25,12 +22,6 @@ export class CreateGroupDto {
   @IsOptional()
   @MaxLength(500)
   description?: string;
-
-  @IsInt()
-  @IsOptional()
-  @Min(1)
-  @Max(50)
-  maxStudents?: number;
 
   @IsString()
   @IsNotEmpty({ message: 'Center ID is required' })

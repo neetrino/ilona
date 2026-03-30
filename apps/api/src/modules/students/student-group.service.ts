@@ -4,6 +4,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatService } from '../chat/chat.service';
+import {
+  FIXED_GROUP_MAX_STUDENTS,
+  GROUP_CAPACITY_EXCEEDED_MESSAGE,
+} from '../groups/group.constants';
 
 @Injectable()
 export class StudentGroupService {
@@ -40,8 +44,8 @@ export class StudentGroupService {
         throw new BadRequestException(`Group with ID ${newGroupId} not found`);
       }
 
-      if (group._count.students >= group.maxStudents) {
-        throw new BadRequestException('Group is full');
+      if (group._count.students >= FIXED_GROUP_MAX_STUDENTS) {
+        throw new BadRequestException(GROUP_CAPACITY_EXCEEDED_MESSAGE);
       }
       newGroupTeacherId = group.teacherId;
     }
