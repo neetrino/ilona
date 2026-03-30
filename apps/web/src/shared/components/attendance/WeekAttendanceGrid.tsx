@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/shared/components/ui';
+import { Pencil, X } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import type { AbsenceType } from '@/features/attendance';
 import { formatDateString, formatDateDisplay, isToday } from '@/features/attendance/utils/dateUtils';
@@ -77,11 +78,24 @@ export function WeekAttendanceGrid({
     studentId: string;
     dateStr: string;
   } | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const initialDataRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
   const prevInitialAttendanceRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
   const isInitialMountRef = useRef(true);
   const pendingChangesRef = useRef<Record<string, Set<string>>>({});
+  const editSnapshotRef = useRef<{
+    attendanceData: Record<string, Record<string, AttendanceCell>>;
+    pendingChanges: Record<string, Set<string>>;
+  } | null>(null);
+
+  const clonePendingChanges = useCallback((source: Record<string, Set<string>>) => {
+    const cloned: Record<string, Set<string>> = {};
+    Object.entries(source).forEach(([dateStr, studentsSet]) => {
+      cloned[dateStr] = new Set(studentsSet);
+    });
+    return cloned;
+  }, []);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -423,6 +437,39 @@ export function WeekAttendanceGrid({
     }
   }, [pendingChanges, handleDaySave, weekDates]);
 
+  const handleStartEditMode = useCallback(() => {
+    editSnapshotRef.current = {
+      attendanceData: JSON.parse(JSON.stringify(attendanceData)) as Record<string, Record<string, AttendanceCell>>,
+      pendingChanges: clonePendingChanges(pendingChanges),
+    };
+    setSaveError({});
+    setSaveSuccess({});
+    setIsEditMode(true);
+  }, [attendanceData, pendingChanges, clonePendingChanges]);
+
+  const handleCancelEditMode = useCallback(() => {
+    if (editSnapshotRef.current) {
+      setAttendanceData(editSnapshotRef.current.attendanceData);
+      setPendingChanges(clonePendingChanges(editSnapshotRef.current.pendingChanges));
+    }
+    setJustificationDialog(null);
+    setSaveError({});
+    setSaveSuccess({});
+    setIsEditMode(false);
+  }, [clonePendingChanges]);
+
+  const handleConfirmEditMode = useCallback(async () => {
+    if (Object.values(pendingChanges).some((set) => set.size > 0)) {
+      await handleSaveAll();
+      const stillHasPending = Object.values(pendingChangesRef.current).some((set) => set.size > 0);
+      if (stillHasPending) {
+        return;
+      }
+    }
+    editSnapshotRef.current = null;
+    setIsEditMode(false);
+  }, [pendingChanges, handleSaveAll]);
+
   // Get status styles
   const getStatusStyles = (status: AttendanceStatus) => {
     const styles = {
@@ -511,6 +558,8 @@ export function WeekAttendanceGrid({
                 <span className="text-amber-700 text-xs mt-0.5 block">Click "Save All" to save your changes</span>
               </div>
             </>
+          ) : isEditMode ? (
+            <span className="text-primary font-semibold text-base">Editing mode enabled</span>
           ) : Object.keys(saveSuccess).length > 0 ? (
             <>
               <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -523,12 +572,33 @@ export function WeekAttendanceGrid({
           )}
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            size="icon"
+            variant={isEditMode ? 'destructive' : 'outline'}
+            className="h-9 w-9"
+            onClick={isEditMode ? handleCancelEditMode : handleStartEditMode}
+            title={isEditMode ? 'Cancel editing' : 'Enable editing'}
+            aria-label={isEditMode ? 'Cancel editing' : 'Enable editing'}
+          >
+            {isEditMode ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+          </Button>
           {Object.keys(saveError).length > 0 && (
             <span className="text-red-700 text-sm font-medium px-3 py-1 bg-red-100 rounded">
               {Object.values(saveError)[0]} {Object.keys(saveError).length > 1 && `(+${Object.keys(saveError).length - 1} more)`}
             </span>
           )}
-          {totalPendingChanges > 0 && !hasAnySaving && (
+          {isEditMode && (
+            <Button
+              onClick={handleConfirmEditMode}
+              disabled={hasAnySaving || missingJustificationCount > 0}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
+              size="lg"
+            >
+              Confirm Changes
+            </Button>
+          )}
+          {isEditMode && totalPendingChanges > 0 && !hasAnySaving && (
             <Button
               onClick={handleSaveAll}
               disabled={datesWithChanges.length === 0 || hasAnySaving || missingJustificationCount > 0}
@@ -665,19 +735,26 @@ export function WeekAttendanceGrid({
                         <td
                           key={dateStr}
                           className={cn(
-                            'border-r-2 border-b-2 border-slate-300 px-2 md:px-3 py-3 text-center cursor-pointer transition-all relative min-h-[60px]',
+                            'border-r-2 border-b-2 border-slate-300 px-2 md:px-3 py-3 text-center transition-all relative min-h-[60px]',
                             getStatusStyles(status),
                             hasPendingChange && 'ring-2 ring-amber-500',
                             hasMissingJustification && 'ring-2 ring-red-500',
+                            isEditMode ? 'cursor-pointer' : 'cursor-default',
                             isDateSaving && 'opacity-60 cursor-wait',
                             !hasLessons && 'cursor-not-allowed opacity-50'
                           )}
-                          onClick={() => hasLessons && !isDateSaving && toggleCellStatus(student.id, date)}
-                          tabIndex={hasLessons && !isDateSaving ? 0 : -1}
+                          onClick={() => hasLessons && isEditMode && !isDateSaving && toggleCellStatus(student.id, date)}
+                          tabIndex={hasLessons && isEditMode && !isDateSaving ? 0 : -1}
                           role="gridcell"
                           aria-label={`${student.user.firstName} ${student.user.lastName} - ${formatDateDisplay(date)} - ${status === 'present' ? 'Present' : status === 'absent_justified' ? 'Absent Justified' : status === 'absent_unjustified' ? 'Absent Unjustified' : 'Not Marked'}`}
                           aria-disabled={!hasLessons || isDateSaving}
-                          title={hasLessons ? `Click to mark: ${status === 'not_marked' ? 'Present' : status === 'present' ? 'Absent (Justified)' : status === 'absent_justified' ? 'Absent (Unjustified)' : 'Not Marked'}` : 'No sessions scheduled'}
+                          title={
+                            hasLessons
+                              ? isEditMode
+                                ? `Click to mark: ${status === 'not_marked' ? 'Present' : status === 'present' ? 'Absent (Justified)' : status === 'absent_justified' ? 'Absent (Unjustified)' : 'Not Marked'}`
+                                : 'Click pencil icon to enable editing'
+                              : 'No sessions scheduled'
+                          }
                         >
                           {hasLessons ? (
                             <>
