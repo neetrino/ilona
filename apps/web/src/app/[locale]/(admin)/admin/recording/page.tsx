@@ -283,7 +283,7 @@ export default function AdminRecordingPage() {
 
   return (
     <DashboardLayout
-      title={t('recording')}
+      title={t('recordings')}
       subtitle="All student voice recordings in one place, grouped by class"
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
