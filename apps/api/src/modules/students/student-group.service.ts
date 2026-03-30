@@ -11,6 +11,7 @@ import {
 } from '../groups/group.constants';
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class StudentGroupService {
@@ -70,9 +71,29 @@ export class StudentGroupService {
       groupId: newGroupId,
       teacherId: newGroupId ? newGroupTeacherId : null,
     };
-    await this.prisma.student.update({
-      where: { id },
-      data: updatePayload,
+    const now = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      await tx.student.update({
+        where: { id },
+        data: updatePayload,
+      });
+
+      if (oldGroupId !== newGroupId) {
+        if (oldGroupId) {
+          await tx.$executeRaw`
+            UPDATE "student_group_histories"
+            SET "leftAt" = ${now}, "updatedAt" = ${now}
+            WHERE "studentId" = ${id} AND "leftAt" IS NULL
+          `;
+        }
+
+        if (newGroupId) {
+          await tx.$executeRaw`
+            INSERT INTO "student_group_histories" ("id", "studentId", "groupId", "joinedAt", "createdAt", "updatedAt")
+            VALUES (${randomUUID()}, ${id}, ${newGroupId}, ${now}, ${now}, ${now})
+          `;
+        }
+      }
     });
 
     // Update chat memberships

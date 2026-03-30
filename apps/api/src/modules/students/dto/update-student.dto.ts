@@ -4,9 +4,11 @@ import {
   IsOptional,
   IsBoolean,
   IsNumber,
+  IsInt,
   IsEnum,
   IsDateString,
   Min,
+  Max,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -30,6 +32,12 @@ export class UpdateStudentDto {
   @IsOptional()
   @MaxLength(50)
   phone?: string;
+
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  @Max(120)
+  age?: number;
 
   @IsEnum(UserStatus)
   @IsOptional()
@@ -57,6 +65,11 @@ export class UpdateStudentDto {
   @IsEmail()
   @IsOptional()
   parentEmail?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  parentPassportInfo?: string;
 
   @IsNumber()
   @IsOptional()

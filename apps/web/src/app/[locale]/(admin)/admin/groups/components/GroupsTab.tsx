@@ -181,15 +181,22 @@ export function GroupsTab({
 
   // Students modal state from URL so it survives refresh
   const studentsGroupId = searchParams.get('studentsGroup');
+  const selectedStudentId = searchParams.get('studentId');
   const { data: studentsGroupData } = useGroup(studentsGroupId ?? '', !!studentsGroupId);
   const studentsModalGroupName =
     groups.find((g) => g.id === studentsGroupId)?.name ?? studentsGroupData?.name ?? 'Group';
 
   const openStudentsModal = (groupId: string) => {
-    updateUrl({ studentsGroup: groupId });
+    updateUrl({ studentsGroup: groupId, studentId: null });
+  };
+  const openStudentDetails = (studentId: string) => {
+    updateUrl({ studentId });
+  };
+  const closeStudentDetails = () => {
+    updateUrl({ studentId: null });
   };
   const closeStudentsModal = () => {
-    updateUrl({ studentsGroup: null });
+    updateUrl({ studentsGroup: null, studentId: null });
   };
 
   const groupColumns = [
@@ -660,6 +667,13 @@ export function GroupsTab({
         onOpenChange={(open) => !open && closeStudentsModal()}
         groupId={studentsGroupId ?? null}
         groupName={studentsModalGroupName}
+        selectedStudentId={selectedStudentId}
+        onStudentSelect={openStudentDetails}
+        onStudentDetailsOpenChange={(isOpen) => {
+          if (!isOpen) {
+            closeStudentDetails();
+          }
+        }}
       />
 
       {/* Success Messages */}

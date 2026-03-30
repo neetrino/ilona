@@ -25,13 +25,15 @@ export class FeedbackController {
   }
 
   @Get('student/:studentId')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER, UserRole.STUDENT)
   async getByStudent(
     @Param('studentId') studentId: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('teacherId') teacherId?: string,
+    @CurrentUser() user?: JwtPayload,
   ): Promise<unknown> {
-    return this.feedbackService.getByStudent(studentId, {
+    return this.feedbackService.getByStudent(studentId, user!.sub, user!.role, {
       dateFrom: dateFrom ? new Date(dateFrom) : undefined,
       dateTo: dateTo ? new Date(dateTo) : undefined,
       teacherId: teacherId || undefined,

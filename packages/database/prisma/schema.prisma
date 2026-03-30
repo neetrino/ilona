@@ -84,6 +84,7 @@ model Group {
   teacher     Teacher?  @relation(fields: [teacherId], references: [id])
   lessons     Lesson[]
   students    Student[]
+  studentHistoryEntries StudentGroupHistory[]
 
   @@index([centerId])
   @@index([teacherId])
@@ -119,9 +120,11 @@ model Student {
   userId         String       @unique
   groupId        String?
   teacherId      String?
+  age            Int?
   parentName     String?
   parentPhone    String?
   parentEmail    String?
+  parentPassportInfo String?
   monthlyFee     Decimal      @db.Decimal(10, 2)
   enrolledAt     DateTime     @default(now())
   registerDate   DateTime?
@@ -137,11 +140,29 @@ model Student {
   lead           CrmLead?     @relation(fields: [leadId], references: [id])
   teacher        Teacher?     @relation(fields: [teacherId], references: [id])
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupHistory   StudentGroupHistory[]
 
   @@index([groupId])
   @@index([teacherId])
   @@index([leadId])
   @@map("students")
+}
+
+model StudentGroupHistory {
+  id        String   @id @default(cuid())
+  studentId String
+  groupId   String
+  joinedAt  DateTime @default(now())
+  leftAt    DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([groupId])
+  @@index([studentId, leftAt])
+  @@map("student_group_histories")
 }
 
 model Lesson {

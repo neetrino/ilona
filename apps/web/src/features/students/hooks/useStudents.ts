@@ -24,6 +24,12 @@ import type {
 } from '../types';
 import { getItemId, isOnboardingItem } from '../types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { groupKeys } from '@/features/groups/hooks/useGroups';
+import { teacherKeys } from '@/features/teachers/hooks/useTeachers';
+import { centerKeys } from '@/features/centers/hooks/useCenters';
+import { dashboardKeys } from '@/features/dashboard/hooks/useDashboard';
+import { analyticsKeys } from '@/features/analytics/hooks/useAnalytics';
+import { chatKeys } from '@/features/chat/hooks/useChat';
 
 // Query keys
 export const studentKeys = {
@@ -93,6 +99,64 @@ export function useCreateStudent() {
  */
 export function useUpdateStudent() {
   const queryClient = useQueryClient();
+
+  const syncStudentInCachedLists = (studentId: string, updatedStudent: Student) => {
+    const patchListData = (oldData: unknown): unknown => {
+      if (!oldData || typeof oldData !== 'object' || !('items' in oldData)) {
+        return oldData;
+      }
+
+      const response = oldData as StudentsResponse;
+      const items = response.items || [];
+      const nextItems = items.map((item) => {
+        if (getItemId(item) !== studentId || isOnboardingItem(item)) {
+          return item;
+        }
+        return {
+          ...item,
+          ...updatedStudent,
+          user: {
+            ...item.user,
+            ...updatedStudent.user,
+          },
+          group: updatedStudent.group ?? null,
+          teacher: updatedStudent.teacher ?? null,
+          groupId: updatedStudent.groupId ?? null,
+          teacherId: updatedStudent.teacherId ?? null,
+          registerDate: updatedStudent.registerDate ?? null,
+        };
+      });
+
+      return {
+        ...response,
+        items: nextItems,
+      };
+    };
+
+    queryClient.setQueriesData({ queryKey: studentKeys.lists() }, patchListData);
+    queryClient.setQueriesData({ queryKey: [...studentKeys.all, 'my-assigned'] }, patchListData);
+  };
+
+  const invalidateStudentRelatedQueries = (studentId: string) => {
+    queryClient.invalidateQueries({ queryKey: studentKeys.detail(studentId) });
+    queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
+    queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
+
+    // Student reassignment impacts groups, teachers, centers, dashboards, analytics and chat lists.
+    queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+    queryClient.invalidateQueries({ queryKey: groupKeys.details() });
+    queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
+    queryClient.invalidateQueries({ queryKey: teacherKeys.lists() });
+    queryClient.invalidateQueries({ queryKey: teacherKeys.details() });
+    queryClient.invalidateQueries({ queryKey: centerKeys.lists() });
+    queryClient.invalidateQueries({ queryKey: centerKeys.details() });
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+    queryClient.invalidateQueries({ queryKey: analyticsKeys.all });
+    queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+    queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
+    queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'teacher'] });
+    queryClient.invalidateQueries({ queryKey: chatKeys.details() });
+  };
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateStudentDto }) =>
@@ -191,11 +255,11 @@ export function useUpdateStudent() {
         });
       }
     },
-    onSuccess: (_, { id }) => {
-      // Invalidate to refetch and ensure consistency
-      queryClient.invalidateQueries({ queryKey: studentKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
+    onSuccess: (updatedStudent, { id }) => {
+      // Ensure immediate UI sync without waiting for refetch.
+      queryClient.setQueryData(studentKeys.detail(id), updatedStudent);
+      syncStudentInCachedLists(id, updatedStudent);
+      invalidateStudentRelatedQueries(id);
     },
   });
 }
@@ -209,10 +273,21 @@ export function useChangeStudentGroup() {
   return useMutation({
     mutationFn: ({ id, groupId }: { id: string; groupId: string | null }) =>
       changeStudentGroup(id, groupId),
-    onSuccess: (_, { id }) => {
+    onSuccess: (updatedStudent, { id }) => {
+      queryClient.setQueryData(studentKeys.detail(id), updatedStudent);
       queryClient.invalidateQueries({ queryKey: studentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
       queryClient.invalidateQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
+      queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: groupKeys.details() });
+      queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
+      queryClient.invalidateQueries({ queryKey: teacherKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: centerKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.all });
+      queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'teacher'] });
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
     },
   });
 }

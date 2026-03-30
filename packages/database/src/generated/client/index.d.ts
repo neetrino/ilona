@@ -44,6 +44,11 @@ export type Teacher = $Result.DefaultSelection<Prisma.$TeacherPayload>
  */
 export type Student = $Result.DefaultSelection<Prisma.$StudentPayload>
 /**
+ * Model StudentGroupHistory
+ * 
+ */
+export type StudentGroupHistory = $Result.DefaultSelection<Prisma.$StudentGroupHistoryPayload>
+/**
  * Model Lesson
  * 
  */
@@ -475,6 +480,16 @@ export class PrismaClient<
     * ```
     */
   get student(): Prisma.StudentDelegate<ExtArgs>;
+
+  /**
+   * `prisma.studentGroupHistory`: Exposes CRUD operations for the **StudentGroupHistory** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more StudentGroupHistories
+    * const studentGroupHistories = await prisma.studentGroupHistory.findMany()
+    * ```
+    */
+  get studentGroupHistory(): Prisma.StudentGroupHistoryDelegate<ExtArgs>;
 
   /**
    * `prisma.lesson`: Exposes CRUD operations for the **Lesson** model.
@@ -1072,6 +1087,7 @@ export namespace Prisma {
     Group: 'Group',
     Teacher: 'Teacher',
     Student: 'Student',
+    StudentGroupHistory: 'StudentGroupHistory',
     Lesson: 'Lesson',
     Attendance: 'Attendance',
     Feedback: 'Feedback',
@@ -1102,7 +1118,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "student" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
+      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "student" | "studentGroupHistory" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1523,6 +1539,76 @@ export namespace Prisma {
           count: {
             args: Prisma.StudentCountArgs<ExtArgs>
             result: $Utils.Optional<StudentCountAggregateOutputType> | number
+          }
+        }
+      }
+      StudentGroupHistory: {
+        payload: Prisma.$StudentGroupHistoryPayload<ExtArgs>
+        fields: Prisma.StudentGroupHistoryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.StudentGroupHistoryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.StudentGroupHistoryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload>
+          }
+          findFirst: {
+            args: Prisma.StudentGroupHistoryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.StudentGroupHistoryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload>
+          }
+          findMany: {
+            args: Prisma.StudentGroupHistoryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload>[]
+          }
+          create: {
+            args: Prisma.StudentGroupHistoryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload>
+          }
+          createMany: {
+            args: Prisma.StudentGroupHistoryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.StudentGroupHistoryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload>[]
+          }
+          delete: {
+            args: Prisma.StudentGroupHistoryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload>
+          }
+          update: {
+            args: Prisma.StudentGroupHistoryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload>
+          }
+          deleteMany: {
+            args: Prisma.StudentGroupHistoryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.StudentGroupHistoryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.StudentGroupHistoryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StudentGroupHistoryPayload>
+          }
+          aggregate: {
+            args: Prisma.StudentGroupHistoryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateStudentGroupHistory>
+          }
+          groupBy: {
+            args: Prisma.StudentGroupHistoryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<StudentGroupHistoryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.StudentGroupHistoryCountArgs<ExtArgs>
+            result: $Utils.Optional<StudentGroupHistoryCountAggregateOutputType> | number
           }
         }
       }
@@ -2865,12 +2951,14 @@ export namespace Prisma {
     crmLeads: number
     lessons: number
     students: number
+    studentHistoryEntries: number
   }
 
   export type GroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     crmLeads?: boolean | GroupCountOutputTypeCountCrmLeadsArgs
     lessons?: boolean | GroupCountOutputTypeCountLessonsArgs
     students?: boolean | GroupCountOutputTypeCountStudentsArgs
+    studentHistoryEntries?: boolean | GroupCountOutputTypeCountStudentHistoryEntriesArgs
   }
 
   // Custom InputTypes
@@ -2903,6 +2991,13 @@ export namespace Prisma {
    */
   export type GroupCountOutputTypeCountStudentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: StudentWhereInput
+  }
+
+  /**
+   * GroupCountOutputType without action
+   */
+  export type GroupCountOutputTypeCountStudentHistoryEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StudentGroupHistoryWhereInput
   }
 
 
@@ -2999,12 +3094,14 @@ export namespace Prisma {
     attendances: number
     feedbacks: number
     payments: number
+    groupHistory: number
   }
 
   export type StudentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     attendances?: boolean | StudentCountOutputTypeCountAttendancesArgs
     feedbacks?: boolean | StudentCountOutputTypeCountFeedbacksArgs
     payments?: boolean | StudentCountOutputTypeCountPaymentsArgs
+    groupHistory?: boolean | StudentCountOutputTypeCountGroupHistoryArgs
   }
 
   // Custom InputTypes
@@ -3037,6 +3134,13 @@ export namespace Prisma {
    */
   export type StudentCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PaymentWhereInput
+  }
+
+  /**
+   * StudentCountOutputType without action
+   */
+  export type StudentCountOutputTypeCountGroupHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StudentGroupHistoryWhereInput
   }
 
 
@@ -6612,6 +6716,7 @@ export namespace Prisma {
     teacher?: boolean | Group$teacherArgs<ExtArgs>
     lessons?: boolean | Group$lessonsArgs<ExtArgs>
     students?: boolean | Group$studentsArgs<ExtArgs>
+    studentHistoryEntries?: boolean | Group$studentHistoryEntriesArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["group"]>
 
@@ -6650,6 +6755,7 @@ export namespace Prisma {
     teacher?: boolean | Group$teacherArgs<ExtArgs>
     lessons?: boolean | Group$lessonsArgs<ExtArgs>
     students?: boolean | Group$studentsArgs<ExtArgs>
+    studentHistoryEntries?: boolean | Group$studentHistoryEntriesArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6666,6 +6772,7 @@ export namespace Prisma {
       teacher: Prisma.$TeacherPayload<ExtArgs> | null
       lessons: Prisma.$LessonPayload<ExtArgs>[]
       students: Prisma.$StudentPayload<ExtArgs>[]
+      studentHistoryEntries: Prisma.$StudentGroupHistoryPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7048,6 +7155,7 @@ export namespace Prisma {
     teacher<T extends Group$teacherArgs<ExtArgs> = {}>(args?: Subset<T, Group$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     lessons<T extends Group$lessonsArgs<ExtArgs> = {}>(args?: Subset<T, Group$lessonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findMany"> | Null>
     students<T extends Group$studentsArgs<ExtArgs> = {}>(args?: Subset<T, Group$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findMany"> | Null>
+    studentHistoryEntries<T extends Group$studentHistoryEntriesArgs<ExtArgs> = {}>(args?: Subset<T, Group$studentHistoryEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7492,6 +7600,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: StudentScalarFieldEnum | StudentScalarFieldEnum[]
+  }
+
+  /**
+   * Group.studentHistoryEntries
+   */
+  export type Group$studentHistoryEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    where?: StudentGroupHistoryWhereInput
+    orderBy?: StudentGroupHistoryOrderByWithRelationInput | StudentGroupHistoryOrderByWithRelationInput[]
+    cursor?: StudentGroupHistoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: StudentGroupHistoryScalarFieldEnum | StudentGroupHistoryScalarFieldEnum[]
   }
 
   /**
@@ -8727,10 +8855,12 @@ export namespace Prisma {
   }
 
   export type StudentAvgAggregateOutputType = {
+    age: number | null
     monthlyFee: Decimal | null
   }
 
   export type StudentSumAggregateOutputType = {
+    age: number | null
     monthlyFee: Decimal | null
   }
 
@@ -8739,9 +8869,11 @@ export namespace Prisma {
     userId: string | null
     groupId: string | null
     teacherId: string | null
+    age: number | null
     parentName: string | null
     parentPhone: string | null
     parentEmail: string | null
+    parentPassportInfo: string | null
     monthlyFee: Decimal | null
     enrolledAt: Date | null
     registerDate: Date | null
@@ -8757,9 +8889,11 @@ export namespace Prisma {
     userId: string | null
     groupId: string | null
     teacherId: string | null
+    age: number | null
     parentName: string | null
     parentPhone: string | null
     parentEmail: string | null
+    parentPassportInfo: string | null
     monthlyFee: Decimal | null
     enrolledAt: Date | null
     registerDate: Date | null
@@ -8775,9 +8909,11 @@ export namespace Prisma {
     userId: number
     groupId: number
     teacherId: number
+    age: number
     parentName: number
     parentPhone: number
     parentEmail: number
+    parentPassportInfo: number
     monthlyFee: number
     enrolledAt: number
     registerDate: number
@@ -8791,10 +8927,12 @@ export namespace Prisma {
 
 
   export type StudentAvgAggregateInputType = {
+    age?: true
     monthlyFee?: true
   }
 
   export type StudentSumAggregateInputType = {
+    age?: true
     monthlyFee?: true
   }
 
@@ -8803,9 +8941,11 @@ export namespace Prisma {
     userId?: true
     groupId?: true
     teacherId?: true
+    age?: true
     parentName?: true
     parentPhone?: true
     parentEmail?: true
+    parentPassportInfo?: true
     monthlyFee?: true
     enrolledAt?: true
     registerDate?: true
@@ -8821,9 +8961,11 @@ export namespace Prisma {
     userId?: true
     groupId?: true
     teacherId?: true
+    age?: true
     parentName?: true
     parentPhone?: true
     parentEmail?: true
+    parentPassportInfo?: true
     monthlyFee?: true
     enrolledAt?: true
     registerDate?: true
@@ -8839,9 +8981,11 @@ export namespace Prisma {
     userId?: true
     groupId?: true
     teacherId?: true
+    age?: true
     parentName?: true
     parentPhone?: true
     parentEmail?: true
+    parentPassportInfo?: true
     monthlyFee?: true
     enrolledAt?: true
     registerDate?: true
@@ -8944,9 +9088,11 @@ export namespace Prisma {
     userId: string
     groupId: string | null
     teacherId: string | null
+    age: number | null
     parentName: string | null
     parentPhone: string | null
     parentEmail: string | null
+    parentPassportInfo: string | null
     monthlyFee: Decimal
     enrolledAt: Date
     registerDate: Date | null
@@ -8981,9 +9127,11 @@ export namespace Prisma {
     userId?: boolean
     groupId?: boolean
     teacherId?: boolean
+    age?: boolean
     parentName?: boolean
     parentPhone?: boolean
     parentEmail?: boolean
+    parentPassportInfo?: boolean
     monthlyFee?: boolean
     enrolledAt?: boolean
     registerDate?: boolean
@@ -8999,6 +9147,7 @@ export namespace Prisma {
     lead?: boolean | Student$leadArgs<ExtArgs>
     teacher?: boolean | Student$teacherArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    groupHistory?: boolean | Student$groupHistoryArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["student"]>
 
@@ -9007,9 +9156,11 @@ export namespace Prisma {
     userId?: boolean
     groupId?: boolean
     teacherId?: boolean
+    age?: boolean
     parentName?: boolean
     parentPhone?: boolean
     parentEmail?: boolean
+    parentPassportInfo?: boolean
     monthlyFee?: boolean
     enrolledAt?: boolean
     registerDate?: boolean
@@ -9029,9 +9180,11 @@ export namespace Prisma {
     userId?: boolean
     groupId?: boolean
     teacherId?: boolean
+    age?: boolean
     parentName?: boolean
     parentPhone?: boolean
     parentEmail?: boolean
+    parentPassportInfo?: boolean
     monthlyFee?: boolean
     enrolledAt?: boolean
     registerDate?: boolean
@@ -9050,6 +9203,7 @@ export namespace Prisma {
     lead?: boolean | Student$leadArgs<ExtArgs>
     teacher?: boolean | Student$teacherArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    groupHistory?: boolean | Student$groupHistoryArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type StudentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9069,15 +9223,18 @@ export namespace Prisma {
       lead: Prisma.$CrmLeadPayload<ExtArgs> | null
       teacher: Prisma.$TeacherPayload<ExtArgs> | null
       user: Prisma.$UserPayload<ExtArgs>
+      groupHistory: Prisma.$StudentGroupHistoryPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
       groupId: string | null
       teacherId: string | null
+      age: number | null
       parentName: string | null
       parentPhone: string | null
       parentEmail: string | null
+      parentPassportInfo: string | null
       monthlyFee: Prisma.Decimal
       enrolledAt: Date
       registerDate: Date | null
@@ -9457,6 +9614,7 @@ export namespace Prisma {
     lead<T extends Student$leadArgs<ExtArgs> = {}>(args?: Subset<T, Student$leadArgs<ExtArgs>>): Prisma__CrmLeadClient<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     teacher<T extends Student$teacherArgs<ExtArgs> = {}>(args?: Subset<T, Student$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    groupHistory<T extends Student$groupHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Student$groupHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9490,9 +9648,11 @@ export namespace Prisma {
     readonly userId: FieldRef<"Student", 'String'>
     readonly groupId: FieldRef<"Student", 'String'>
     readonly teacherId: FieldRef<"Student", 'String'>
+    readonly age: FieldRef<"Student", 'Int'>
     readonly parentName: FieldRef<"Student", 'String'>
     readonly parentPhone: FieldRef<"Student", 'String'>
     readonly parentEmail: FieldRef<"Student", 'String'>
+    readonly parentPassportInfo: FieldRef<"Student", 'String'>
     readonly monthlyFee: FieldRef<"Student", 'Decimal'>
     readonly enrolledAt: FieldRef<"Student", 'DateTime'>
     readonly registerDate: FieldRef<"Student", 'DateTime'>
@@ -9924,6 +10084,26 @@ export namespace Prisma {
   }
 
   /**
+   * Student.groupHistory
+   */
+  export type Student$groupHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    where?: StudentGroupHistoryWhereInput
+    orderBy?: StudentGroupHistoryOrderByWithRelationInput | StudentGroupHistoryOrderByWithRelationInput[]
+    cursor?: StudentGroupHistoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: StudentGroupHistoryScalarFieldEnum | StudentGroupHistoryScalarFieldEnum[]
+  }
+
+  /**
    * Student without action
    */
   export type StudentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9935,6 +10115,969 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: StudentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model StudentGroupHistory
+   */
+
+  export type AggregateStudentGroupHistory = {
+    _count: StudentGroupHistoryCountAggregateOutputType | null
+    _min: StudentGroupHistoryMinAggregateOutputType | null
+    _max: StudentGroupHistoryMaxAggregateOutputType | null
+  }
+
+  export type StudentGroupHistoryMinAggregateOutputType = {
+    id: string | null
+    studentId: string | null
+    groupId: string | null
+    joinedAt: Date | null
+    leftAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type StudentGroupHistoryMaxAggregateOutputType = {
+    id: string | null
+    studentId: string | null
+    groupId: string | null
+    joinedAt: Date | null
+    leftAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type StudentGroupHistoryCountAggregateOutputType = {
+    id: number
+    studentId: number
+    groupId: number
+    joinedAt: number
+    leftAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type StudentGroupHistoryMinAggregateInputType = {
+    id?: true
+    studentId?: true
+    groupId?: true
+    joinedAt?: true
+    leftAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type StudentGroupHistoryMaxAggregateInputType = {
+    id?: true
+    studentId?: true
+    groupId?: true
+    joinedAt?: true
+    leftAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type StudentGroupHistoryCountAggregateInputType = {
+    id?: true
+    studentId?: true
+    groupId?: true
+    joinedAt?: true
+    leftAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type StudentGroupHistoryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which StudentGroupHistory to aggregate.
+     */
+    where?: StudentGroupHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StudentGroupHistories to fetch.
+     */
+    orderBy?: StudentGroupHistoryOrderByWithRelationInput | StudentGroupHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: StudentGroupHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StudentGroupHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StudentGroupHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned StudentGroupHistories
+    **/
+    _count?: true | StudentGroupHistoryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: StudentGroupHistoryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: StudentGroupHistoryMaxAggregateInputType
+  }
+
+  export type GetStudentGroupHistoryAggregateType<T extends StudentGroupHistoryAggregateArgs> = {
+        [P in keyof T & keyof AggregateStudentGroupHistory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateStudentGroupHistory[P]>
+      : GetScalarType<T[P], AggregateStudentGroupHistory[P]>
+  }
+
+
+
+
+  export type StudentGroupHistoryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StudentGroupHistoryWhereInput
+    orderBy?: StudentGroupHistoryOrderByWithAggregationInput | StudentGroupHistoryOrderByWithAggregationInput[]
+    by: StudentGroupHistoryScalarFieldEnum[] | StudentGroupHistoryScalarFieldEnum
+    having?: StudentGroupHistoryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: StudentGroupHistoryCountAggregateInputType | true
+    _min?: StudentGroupHistoryMinAggregateInputType
+    _max?: StudentGroupHistoryMaxAggregateInputType
+  }
+
+  export type StudentGroupHistoryGroupByOutputType = {
+    id: string
+    studentId: string
+    groupId: string
+    joinedAt: Date
+    leftAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: StudentGroupHistoryCountAggregateOutputType | null
+    _min: StudentGroupHistoryMinAggregateOutputType | null
+    _max: StudentGroupHistoryMaxAggregateOutputType | null
+  }
+
+  type GetStudentGroupHistoryGroupByPayload<T extends StudentGroupHistoryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<StudentGroupHistoryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof StudentGroupHistoryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], StudentGroupHistoryGroupByOutputType[P]>
+            : GetScalarType<T[P], StudentGroupHistoryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type StudentGroupHistorySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    studentId?: boolean
+    groupId?: boolean
+    joinedAt?: boolean
+    leftAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["studentGroupHistory"]>
+
+  export type StudentGroupHistorySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    studentId?: boolean
+    groupId?: boolean
+    joinedAt?: boolean
+    leftAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["studentGroupHistory"]>
+
+  export type StudentGroupHistorySelectScalar = {
+    id?: boolean
+    studentId?: boolean
+    groupId?: boolean
+    joinedAt?: boolean
+    leftAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type StudentGroupHistoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+  }
+  export type StudentGroupHistoryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+  }
+
+  export type $StudentGroupHistoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "StudentGroupHistory"
+    objects: {
+      student: Prisma.$StudentPayload<ExtArgs>
+      group: Prisma.$GroupPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      studentId: string
+      groupId: string
+      joinedAt: Date
+      leftAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["studentGroupHistory"]>
+    composites: {}
+  }
+
+  type StudentGroupHistoryGetPayload<S extends boolean | null | undefined | StudentGroupHistoryDefaultArgs> = $Result.GetResult<Prisma.$StudentGroupHistoryPayload, S>
+
+  type StudentGroupHistoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<StudentGroupHistoryFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: StudentGroupHistoryCountAggregateInputType | true
+    }
+
+  export interface StudentGroupHistoryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['StudentGroupHistory'], meta: { name: 'StudentGroupHistory' } }
+    /**
+     * Find zero or one StudentGroupHistory that matches the filter.
+     * @param {StudentGroupHistoryFindUniqueArgs} args - Arguments to find a StudentGroupHistory
+     * @example
+     * // Get one StudentGroupHistory
+     * const studentGroupHistory = await prisma.studentGroupHistory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends StudentGroupHistoryFindUniqueArgs>(args: SelectSubset<T, StudentGroupHistoryFindUniqueArgs<ExtArgs>>): Prisma__StudentGroupHistoryClient<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one StudentGroupHistory that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {StudentGroupHistoryFindUniqueOrThrowArgs} args - Arguments to find a StudentGroupHistory
+     * @example
+     * // Get one StudentGroupHistory
+     * const studentGroupHistory = await prisma.studentGroupHistory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends StudentGroupHistoryFindUniqueOrThrowArgs>(args: SelectSubset<T, StudentGroupHistoryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__StudentGroupHistoryClient<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first StudentGroupHistory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StudentGroupHistoryFindFirstArgs} args - Arguments to find a StudentGroupHistory
+     * @example
+     * // Get one StudentGroupHistory
+     * const studentGroupHistory = await prisma.studentGroupHistory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends StudentGroupHistoryFindFirstArgs>(args?: SelectSubset<T, StudentGroupHistoryFindFirstArgs<ExtArgs>>): Prisma__StudentGroupHistoryClient<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first StudentGroupHistory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StudentGroupHistoryFindFirstOrThrowArgs} args - Arguments to find a StudentGroupHistory
+     * @example
+     * // Get one StudentGroupHistory
+     * const studentGroupHistory = await prisma.studentGroupHistory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends StudentGroupHistoryFindFirstOrThrowArgs>(args?: SelectSubset<T, StudentGroupHistoryFindFirstOrThrowArgs<ExtArgs>>): Prisma__StudentGroupHistoryClient<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more StudentGroupHistories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StudentGroupHistoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all StudentGroupHistories
+     * const studentGroupHistories = await prisma.studentGroupHistory.findMany()
+     * 
+     * // Get first 10 StudentGroupHistories
+     * const studentGroupHistories = await prisma.studentGroupHistory.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const studentGroupHistoryWithIdOnly = await prisma.studentGroupHistory.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends StudentGroupHistoryFindManyArgs>(args?: SelectSubset<T, StudentGroupHistoryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a StudentGroupHistory.
+     * @param {StudentGroupHistoryCreateArgs} args - Arguments to create a StudentGroupHistory.
+     * @example
+     * // Create one StudentGroupHistory
+     * const StudentGroupHistory = await prisma.studentGroupHistory.create({
+     *   data: {
+     *     // ... data to create a StudentGroupHistory
+     *   }
+     * })
+     * 
+     */
+    create<T extends StudentGroupHistoryCreateArgs>(args: SelectSubset<T, StudentGroupHistoryCreateArgs<ExtArgs>>): Prisma__StudentGroupHistoryClient<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many StudentGroupHistories.
+     * @param {StudentGroupHistoryCreateManyArgs} args - Arguments to create many StudentGroupHistories.
+     * @example
+     * // Create many StudentGroupHistories
+     * const studentGroupHistory = await prisma.studentGroupHistory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends StudentGroupHistoryCreateManyArgs>(args?: SelectSubset<T, StudentGroupHistoryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many StudentGroupHistories and returns the data saved in the database.
+     * @param {StudentGroupHistoryCreateManyAndReturnArgs} args - Arguments to create many StudentGroupHistories.
+     * @example
+     * // Create many StudentGroupHistories
+     * const studentGroupHistory = await prisma.studentGroupHistory.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many StudentGroupHistories and only return the `id`
+     * const studentGroupHistoryWithIdOnly = await prisma.studentGroupHistory.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends StudentGroupHistoryCreateManyAndReturnArgs>(args?: SelectSubset<T, StudentGroupHistoryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a StudentGroupHistory.
+     * @param {StudentGroupHistoryDeleteArgs} args - Arguments to delete one StudentGroupHistory.
+     * @example
+     * // Delete one StudentGroupHistory
+     * const StudentGroupHistory = await prisma.studentGroupHistory.delete({
+     *   where: {
+     *     // ... filter to delete one StudentGroupHistory
+     *   }
+     * })
+     * 
+     */
+    delete<T extends StudentGroupHistoryDeleteArgs>(args: SelectSubset<T, StudentGroupHistoryDeleteArgs<ExtArgs>>): Prisma__StudentGroupHistoryClient<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one StudentGroupHistory.
+     * @param {StudentGroupHistoryUpdateArgs} args - Arguments to update one StudentGroupHistory.
+     * @example
+     * // Update one StudentGroupHistory
+     * const studentGroupHistory = await prisma.studentGroupHistory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends StudentGroupHistoryUpdateArgs>(args: SelectSubset<T, StudentGroupHistoryUpdateArgs<ExtArgs>>): Prisma__StudentGroupHistoryClient<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more StudentGroupHistories.
+     * @param {StudentGroupHistoryDeleteManyArgs} args - Arguments to filter StudentGroupHistories to delete.
+     * @example
+     * // Delete a few StudentGroupHistories
+     * const { count } = await prisma.studentGroupHistory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends StudentGroupHistoryDeleteManyArgs>(args?: SelectSubset<T, StudentGroupHistoryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more StudentGroupHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StudentGroupHistoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many StudentGroupHistories
+     * const studentGroupHistory = await prisma.studentGroupHistory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends StudentGroupHistoryUpdateManyArgs>(args: SelectSubset<T, StudentGroupHistoryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one StudentGroupHistory.
+     * @param {StudentGroupHistoryUpsertArgs} args - Arguments to update or create a StudentGroupHistory.
+     * @example
+     * // Update or create a StudentGroupHistory
+     * const studentGroupHistory = await prisma.studentGroupHistory.upsert({
+     *   create: {
+     *     // ... data to create a StudentGroupHistory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the StudentGroupHistory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends StudentGroupHistoryUpsertArgs>(args: SelectSubset<T, StudentGroupHistoryUpsertArgs<ExtArgs>>): Prisma__StudentGroupHistoryClient<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of StudentGroupHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StudentGroupHistoryCountArgs} args - Arguments to filter StudentGroupHistories to count.
+     * @example
+     * // Count the number of StudentGroupHistories
+     * const count = await prisma.studentGroupHistory.count({
+     *   where: {
+     *     // ... the filter for the StudentGroupHistories we want to count
+     *   }
+     * })
+    **/
+    count<T extends StudentGroupHistoryCountArgs>(
+      args?: Subset<T, StudentGroupHistoryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], StudentGroupHistoryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a StudentGroupHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StudentGroupHistoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends StudentGroupHistoryAggregateArgs>(args: Subset<T, StudentGroupHistoryAggregateArgs>): Prisma.PrismaPromise<GetStudentGroupHistoryAggregateType<T>>
+
+    /**
+     * Group by StudentGroupHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StudentGroupHistoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends StudentGroupHistoryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: StudentGroupHistoryGroupByArgs['orderBy'] }
+        : { orderBy?: StudentGroupHistoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, StudentGroupHistoryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetStudentGroupHistoryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the StudentGroupHistory model
+   */
+  readonly fields: StudentGroupHistoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for StudentGroupHistory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__StudentGroupHistoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    student<T extends StudentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, StudentDefaultArgs<ExtArgs>>): Prisma__StudentClient<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    group<T extends GroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GroupDefaultArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the StudentGroupHistory model
+   */ 
+  interface StudentGroupHistoryFieldRefs {
+    readonly id: FieldRef<"StudentGroupHistory", 'String'>
+    readonly studentId: FieldRef<"StudentGroupHistory", 'String'>
+    readonly groupId: FieldRef<"StudentGroupHistory", 'String'>
+    readonly joinedAt: FieldRef<"StudentGroupHistory", 'DateTime'>
+    readonly leftAt: FieldRef<"StudentGroupHistory", 'DateTime'>
+    readonly createdAt: FieldRef<"StudentGroupHistory", 'DateTime'>
+    readonly updatedAt: FieldRef<"StudentGroupHistory", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * StudentGroupHistory findUnique
+   */
+  export type StudentGroupHistoryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which StudentGroupHistory to fetch.
+     */
+    where: StudentGroupHistoryWhereUniqueInput
+  }
+
+  /**
+   * StudentGroupHistory findUniqueOrThrow
+   */
+  export type StudentGroupHistoryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which StudentGroupHistory to fetch.
+     */
+    where: StudentGroupHistoryWhereUniqueInput
+  }
+
+  /**
+   * StudentGroupHistory findFirst
+   */
+  export type StudentGroupHistoryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which StudentGroupHistory to fetch.
+     */
+    where?: StudentGroupHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StudentGroupHistories to fetch.
+     */
+    orderBy?: StudentGroupHistoryOrderByWithRelationInput | StudentGroupHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for StudentGroupHistories.
+     */
+    cursor?: StudentGroupHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StudentGroupHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StudentGroupHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of StudentGroupHistories.
+     */
+    distinct?: StudentGroupHistoryScalarFieldEnum | StudentGroupHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * StudentGroupHistory findFirstOrThrow
+   */
+  export type StudentGroupHistoryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which StudentGroupHistory to fetch.
+     */
+    where?: StudentGroupHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StudentGroupHistories to fetch.
+     */
+    orderBy?: StudentGroupHistoryOrderByWithRelationInput | StudentGroupHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for StudentGroupHistories.
+     */
+    cursor?: StudentGroupHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StudentGroupHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StudentGroupHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of StudentGroupHistories.
+     */
+    distinct?: StudentGroupHistoryScalarFieldEnum | StudentGroupHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * StudentGroupHistory findMany
+   */
+  export type StudentGroupHistoryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    /**
+     * Filter, which StudentGroupHistories to fetch.
+     */
+    where?: StudentGroupHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StudentGroupHistories to fetch.
+     */
+    orderBy?: StudentGroupHistoryOrderByWithRelationInput | StudentGroupHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing StudentGroupHistories.
+     */
+    cursor?: StudentGroupHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StudentGroupHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StudentGroupHistories.
+     */
+    skip?: number
+    distinct?: StudentGroupHistoryScalarFieldEnum | StudentGroupHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * StudentGroupHistory create
+   */
+  export type StudentGroupHistoryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a StudentGroupHistory.
+     */
+    data: XOR<StudentGroupHistoryCreateInput, StudentGroupHistoryUncheckedCreateInput>
+  }
+
+  /**
+   * StudentGroupHistory createMany
+   */
+  export type StudentGroupHistoryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many StudentGroupHistories.
+     */
+    data: StudentGroupHistoryCreateManyInput | StudentGroupHistoryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * StudentGroupHistory createManyAndReturn
+   */
+  export type StudentGroupHistoryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many StudentGroupHistories.
+     */
+    data: StudentGroupHistoryCreateManyInput | StudentGroupHistoryCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * StudentGroupHistory update
+   */
+  export type StudentGroupHistoryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a StudentGroupHistory.
+     */
+    data: XOR<StudentGroupHistoryUpdateInput, StudentGroupHistoryUncheckedUpdateInput>
+    /**
+     * Choose, which StudentGroupHistory to update.
+     */
+    where: StudentGroupHistoryWhereUniqueInput
+  }
+
+  /**
+   * StudentGroupHistory updateMany
+   */
+  export type StudentGroupHistoryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update StudentGroupHistories.
+     */
+    data: XOR<StudentGroupHistoryUpdateManyMutationInput, StudentGroupHistoryUncheckedUpdateManyInput>
+    /**
+     * Filter which StudentGroupHistories to update
+     */
+    where?: StudentGroupHistoryWhereInput
+  }
+
+  /**
+   * StudentGroupHistory upsert
+   */
+  export type StudentGroupHistoryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the StudentGroupHistory to update in case it exists.
+     */
+    where: StudentGroupHistoryWhereUniqueInput
+    /**
+     * In case the StudentGroupHistory found by the `where` argument doesn't exist, create a new StudentGroupHistory with this data.
+     */
+    create: XOR<StudentGroupHistoryCreateInput, StudentGroupHistoryUncheckedCreateInput>
+    /**
+     * In case the StudentGroupHistory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<StudentGroupHistoryUpdateInput, StudentGroupHistoryUncheckedUpdateInput>
+  }
+
+  /**
+   * StudentGroupHistory delete
+   */
+  export type StudentGroupHistoryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
+    /**
+     * Filter which StudentGroupHistory to delete.
+     */
+    where: StudentGroupHistoryWhereUniqueInput
+  }
+
+  /**
+   * StudentGroupHistory deleteMany
+   */
+  export type StudentGroupHistoryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which StudentGroupHistories to delete
+     */
+    where?: StudentGroupHistoryWhereInput
+  }
+
+  /**
+   * StudentGroupHistory without action
+   */
+  export type StudentGroupHistoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StudentGroupHistory
+     */
+    select?: StudentGroupHistorySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentGroupHistoryInclude<ExtArgs> | null
   }
 
 
@@ -25778,9 +26921,11 @@ export namespace Prisma {
     userId: 'userId',
     groupId: 'groupId',
     teacherId: 'teacherId',
+    age: 'age',
     parentName: 'parentName',
     parentPhone: 'parentPhone',
     parentEmail: 'parentEmail',
+    parentPassportInfo: 'parentPassportInfo',
     monthlyFee: 'monthlyFee',
     enrolledAt: 'enrolledAt',
     registerDate: 'registerDate',
@@ -25792,6 +26937,19 @@ export namespace Prisma {
   };
 
   export type StudentScalarFieldEnum = (typeof StudentScalarFieldEnum)[keyof typeof StudentScalarFieldEnum]
+
+
+  export const StudentGroupHistoryScalarFieldEnum: {
+    id: 'id',
+    studentId: 'studentId',
+    groupId: 'groupId',
+    joinedAt: 'joinedAt',
+    leftAt: 'leftAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type StudentGroupHistoryScalarFieldEnum = (typeof StudentGroupHistoryScalarFieldEnum)[keyof typeof StudentGroupHistoryScalarFieldEnum]
 
 
   export const LessonScalarFieldEnum: {
@@ -26635,6 +27793,7 @@ export namespace Prisma {
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     lessons?: LessonListRelationFilter
     students?: StudentListRelationFilter
+    studentHistoryEntries?: StudentGroupHistoryListRelationFilter
   }
 
   export type GroupOrderByWithRelationInput = {
@@ -26654,6 +27813,7 @@ export namespace Prisma {
     teacher?: TeacherOrderByWithRelationInput
     lessons?: LessonOrderByRelationAggregateInput
     students?: StudentOrderByRelationAggregateInput
+    studentHistoryEntries?: StudentGroupHistoryOrderByRelationAggregateInput
   }
 
   export type GroupWhereUniqueInput = Prisma.AtLeast<{
@@ -26676,6 +27836,7 @@ export namespace Prisma {
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     lessons?: LessonListRelationFilter
     students?: StudentListRelationFilter
+    studentHistoryEntries?: StudentGroupHistoryListRelationFilter
   }, "id">
 
   export type GroupOrderByWithAggregationInput = {
@@ -26828,9 +27989,11 @@ export namespace Prisma {
     userId?: StringFilter<"Student"> | string
     groupId?: StringNullableFilter<"Student"> | string | null
     teacherId?: StringNullableFilter<"Student"> | string | null
+    age?: IntNullableFilter<"Student"> | number | null
     parentName?: StringNullableFilter<"Student"> | string | null
     parentPhone?: StringNullableFilter<"Student"> | string | null
     parentEmail?: StringNullableFilter<"Student"> | string | null
+    parentPassportInfo?: StringNullableFilter<"Student"> | string | null
     monthlyFee?: DecimalFilter<"Student"> | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFilter<"Student"> | Date | string
     registerDate?: DateTimeNullableFilter<"Student"> | Date | string | null
@@ -26846,6 +28009,7 @@ export namespace Prisma {
     lead?: XOR<CrmLeadNullableRelationFilter, CrmLeadWhereInput> | null
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     user?: XOR<UserRelationFilter, UserWhereInput>
+    groupHistory?: StudentGroupHistoryListRelationFilter
   }
 
   export type StudentOrderByWithRelationInput = {
@@ -26853,9 +28017,11 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrderInput | SortOrder
     teacherId?: SortOrderInput | SortOrder
+    age?: SortOrderInput | SortOrder
     parentName?: SortOrderInput | SortOrder
     parentPhone?: SortOrderInput | SortOrder
     parentEmail?: SortOrderInput | SortOrder
+    parentPassportInfo?: SortOrderInput | SortOrder
     monthlyFee?: SortOrder
     enrolledAt?: SortOrder
     registerDate?: SortOrderInput | SortOrder
@@ -26871,6 +28037,7 @@ export namespace Prisma {
     lead?: CrmLeadOrderByWithRelationInput
     teacher?: TeacherOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
+    groupHistory?: StudentGroupHistoryOrderByRelationAggregateInput
   }
 
   export type StudentWhereUniqueInput = Prisma.AtLeast<{
@@ -26882,9 +28049,11 @@ export namespace Prisma {
     NOT?: StudentWhereInput | StudentWhereInput[]
     groupId?: StringNullableFilter<"Student"> | string | null
     teacherId?: StringNullableFilter<"Student"> | string | null
+    age?: IntNullableFilter<"Student"> | number | null
     parentName?: StringNullableFilter<"Student"> | string | null
     parentPhone?: StringNullableFilter<"Student"> | string | null
     parentEmail?: StringNullableFilter<"Student"> | string | null
+    parentPassportInfo?: StringNullableFilter<"Student"> | string | null
     monthlyFee?: DecimalFilter<"Student"> | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFilter<"Student"> | Date | string
     registerDate?: DateTimeNullableFilter<"Student"> | Date | string | null
@@ -26899,6 +28068,7 @@ export namespace Prisma {
     lead?: XOR<CrmLeadNullableRelationFilter, CrmLeadWhereInput> | null
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     user?: XOR<UserRelationFilter, UserWhereInput>
+    groupHistory?: StudentGroupHistoryListRelationFilter
   }, "id" | "userId" | "leadId">
 
   export type StudentOrderByWithAggregationInput = {
@@ -26906,9 +28076,11 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrderInput | SortOrder
     teacherId?: SortOrderInput | SortOrder
+    age?: SortOrderInput | SortOrder
     parentName?: SortOrderInput | SortOrder
     parentPhone?: SortOrderInput | SortOrder
     parentEmail?: SortOrderInput | SortOrder
+    parentPassportInfo?: SortOrderInput | SortOrder
     monthlyFee?: SortOrder
     enrolledAt?: SortOrder
     registerDate?: SortOrderInput | SortOrder
@@ -26932,9 +28104,11 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Student"> | string
     groupId?: StringNullableWithAggregatesFilter<"Student"> | string | null
     teacherId?: StringNullableWithAggregatesFilter<"Student"> | string | null
+    age?: IntNullableWithAggregatesFilter<"Student"> | number | null
     parentName?: StringNullableWithAggregatesFilter<"Student"> | string | null
     parentPhone?: StringNullableWithAggregatesFilter<"Student"> | string | null
     parentEmail?: StringNullableWithAggregatesFilter<"Student"> | string | null
+    parentPassportInfo?: StringNullableWithAggregatesFilter<"Student"> | string | null
     monthlyFee?: DecimalWithAggregatesFilter<"Student"> | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeWithAggregatesFilter<"Student"> | Date | string
     registerDate?: DateTimeNullableWithAggregatesFilter<"Student"> | Date | string | null
@@ -26943,6 +28117,74 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Student"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Student"> | Date | string
     leadId?: StringNullableWithAggregatesFilter<"Student"> | string | null
+  }
+
+  export type StudentGroupHistoryWhereInput = {
+    AND?: StudentGroupHistoryWhereInput | StudentGroupHistoryWhereInput[]
+    OR?: StudentGroupHistoryWhereInput[]
+    NOT?: StudentGroupHistoryWhereInput | StudentGroupHistoryWhereInput[]
+    id?: StringFilter<"StudentGroupHistory"> | string
+    studentId?: StringFilter<"StudentGroupHistory"> | string
+    groupId?: StringFilter<"StudentGroupHistory"> | string
+    joinedAt?: DateTimeFilter<"StudentGroupHistory"> | Date | string
+    leftAt?: DateTimeNullableFilter<"StudentGroupHistory"> | Date | string | null
+    createdAt?: DateTimeFilter<"StudentGroupHistory"> | Date | string
+    updatedAt?: DateTimeFilter<"StudentGroupHistory"> | Date | string
+    student?: XOR<StudentRelationFilter, StudentWhereInput>
+    group?: XOR<GroupRelationFilter, GroupWhereInput>
+  }
+
+  export type StudentGroupHistoryOrderByWithRelationInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    groupId?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    student?: StudentOrderByWithRelationInput
+    group?: GroupOrderByWithRelationInput
+  }
+
+  export type StudentGroupHistoryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: StudentGroupHistoryWhereInput | StudentGroupHistoryWhereInput[]
+    OR?: StudentGroupHistoryWhereInput[]
+    NOT?: StudentGroupHistoryWhereInput | StudentGroupHistoryWhereInput[]
+    studentId?: StringFilter<"StudentGroupHistory"> | string
+    groupId?: StringFilter<"StudentGroupHistory"> | string
+    joinedAt?: DateTimeFilter<"StudentGroupHistory"> | Date | string
+    leftAt?: DateTimeNullableFilter<"StudentGroupHistory"> | Date | string | null
+    createdAt?: DateTimeFilter<"StudentGroupHistory"> | Date | string
+    updatedAt?: DateTimeFilter<"StudentGroupHistory"> | Date | string
+    student?: XOR<StudentRelationFilter, StudentWhereInput>
+    group?: XOR<GroupRelationFilter, GroupWhereInput>
+  }, "id">
+
+  export type StudentGroupHistoryOrderByWithAggregationInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    groupId?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: StudentGroupHistoryCountOrderByAggregateInput
+    _max?: StudentGroupHistoryMaxOrderByAggregateInput
+    _min?: StudentGroupHistoryMinOrderByAggregateInput
+  }
+
+  export type StudentGroupHistoryScalarWhereWithAggregatesInput = {
+    AND?: StudentGroupHistoryScalarWhereWithAggregatesInput | StudentGroupHistoryScalarWhereWithAggregatesInput[]
+    OR?: StudentGroupHistoryScalarWhereWithAggregatesInput[]
+    NOT?: StudentGroupHistoryScalarWhereWithAggregatesInput | StudentGroupHistoryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"StudentGroupHistory"> | string
+    studentId?: StringWithAggregatesFilter<"StudentGroupHistory"> | string
+    groupId?: StringWithAggregatesFilter<"StudentGroupHistory"> | string
+    joinedAt?: DateTimeWithAggregatesFilter<"StudentGroupHistory"> | Date | string
+    leftAt?: DateTimeNullableWithAggregatesFilter<"StudentGroupHistory"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"StudentGroupHistory"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"StudentGroupHistory"> | Date | string
   }
 
   export type LessonWhereInput = {
@@ -28639,6 +29881,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutGroupsInput
     lessons?: LessonCreateNestedManyWithoutGroupInput
     students?: StudentCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateInput = {
@@ -28656,6 +29899,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
     lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
     students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUpdateInput = {
@@ -28673,6 +29917,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutGroupsNestedInput
     lessons?: LessonUpdateManyWithoutGroupNestedInput
     students?: StudentUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateInput = {
@@ -28690,6 +29935,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
     students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupCreateManyInput = {
@@ -28856,9 +30102,11 @@ export namespace Prisma {
 
   export type StudentCreateInput = {
     id?: string
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -28873,6 +30121,7 @@ export namespace Prisma {
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateInput = {
@@ -28880,9 +30129,11 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -28894,13 +30145,16 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28915,6 +30169,7 @@ export namespace Prisma {
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateInput = {
@@ -28922,9 +30177,11 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28936,6 +30193,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentCreateManyInput = {
@@ -28943,9 +30201,11 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -28958,9 +30218,11 @@ export namespace Prisma {
 
   export type StudentUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28975,9 +30237,11 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -28986,6 +30250,74 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type StudentGroupHistoryCreateInput = {
+    id?: string
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    student: StudentCreateNestedOneWithoutGroupHistoryInput
+    group: GroupCreateNestedOneWithoutStudentHistoryEntriesInput
+  }
+
+  export type StudentGroupHistoryUncheckedCreateInput = {
+    id?: string
+    studentId: string
+    groupId: string
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type StudentGroupHistoryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    student?: StudentUpdateOneRequiredWithoutGroupHistoryNestedInput
+    group?: GroupUpdateOneRequiredWithoutStudentHistoryEntriesNestedInput
+  }
+
+  export type StudentGroupHistoryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StudentGroupHistoryCreateManyInput = {
+    id?: string
+    studentId: string
+    groupId: string
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type StudentGroupHistoryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StudentGroupHistoryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LessonCreateInput = {
@@ -30910,11 +32242,21 @@ export namespace Prisma {
     none?: StudentWhereInput
   }
 
+  export type StudentGroupHistoryListRelationFilter = {
+    every?: StudentGroupHistoryWhereInput
+    some?: StudentGroupHistoryWhereInput
+    none?: StudentGroupHistoryWhereInput
+  }
+
   export type LessonOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type StudentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type StudentGroupHistoryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -31168,6 +32510,17 @@ export namespace Prisma {
     _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type PaymentListRelationFilter = {
     every?: PaymentWhereInput
     some?: PaymentWhereInput
@@ -31193,9 +32546,11 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    age?: SortOrder
     parentName?: SortOrder
     parentPhone?: SortOrder
     parentEmail?: SortOrder
+    parentPassportInfo?: SortOrder
     monthlyFee?: SortOrder
     enrolledAt?: SortOrder
     registerDate?: SortOrder
@@ -31207,6 +32562,7 @@ export namespace Prisma {
   }
 
   export type StudentAvgOrderByAggregateInput = {
+    age?: SortOrder
     monthlyFee?: SortOrder
   }
 
@@ -31215,9 +32571,11 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    age?: SortOrder
     parentName?: SortOrder
     parentPhone?: SortOrder
     parentEmail?: SortOrder
+    parentPassportInfo?: SortOrder
     monthlyFee?: SortOrder
     enrolledAt?: SortOrder
     registerDate?: SortOrder
@@ -31233,9 +32591,11 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    age?: SortOrder
     parentName?: SortOrder
     parentPhone?: SortOrder
     parentEmail?: SortOrder
+    parentPassportInfo?: SortOrder
     monthlyFee?: SortOrder
     enrolledAt?: SortOrder
     registerDate?: SortOrder
@@ -31247,7 +32607,64 @@ export namespace Prisma {
   }
 
   export type StudentSumOrderByAggregateInput = {
+    age?: SortOrder
     monthlyFee?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type StudentRelationFilter = {
+    is?: StudentWhereInput
+    isNot?: StudentWhereInput
+  }
+
+  export type GroupRelationFilter = {
+    is?: GroupWhereInput
+    isNot?: GroupWhereInput
+  }
+
+  export type StudentGroupHistoryCountOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    groupId?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type StudentGroupHistoryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    groupId?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type StudentGroupHistoryMinOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    groupId?: SortOrder
+    joinedAt?: SortOrder
+    leftAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type EnumLessonStatusFilter<$PrismaModel = never> = {
@@ -31255,11 +32672,6 @@ export namespace Prisma {
     in?: $Enums.LessonStatus[] | ListEnumLessonStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.LessonStatus[] | ListEnumLessonStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumLessonStatusFilter<$PrismaModel> | $Enums.LessonStatus
-  }
-
-  export type GroupRelationFilter = {
-    is?: GroupWhereInput
-    isNot?: GroupWhereInput
   }
 
   export type TeacherRelationFilter = {
@@ -31374,11 +32786,6 @@ export namespace Prisma {
     isNot?: UserWhereInput | null
   }
 
-  export type StudentRelationFilter = {
-    is?: StudentWhereInput
-    isNot?: StudentWhereInput
-  }
-
   export type AttendanceLessonIdStudentIdCompoundUniqueInput = {
     lessonId: string
     studentId: string
@@ -31433,17 +32840,6 @@ export namespace Prisma {
     _max?: NestedEnumAbsenceTypeNullableFilter<$PrismaModel>
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type FeedbackLessonIdStudentIdCompoundUniqueInput = {
     lessonId: string
     studentId: string
@@ -31494,22 +32890,6 @@ export namespace Prisma {
 
   export type FeedbackSumOrderByAggregateInput = {
     rating?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type EnumPaymentStatusFilter<$PrismaModel = never> = {
@@ -32848,6 +34228,13 @@ export namespace Prisma {
     connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
   }
 
+  export type StudentGroupHistoryCreateNestedManyWithoutGroupInput = {
+    create?: XOR<StudentGroupHistoryCreateWithoutGroupInput, StudentGroupHistoryUncheckedCreateWithoutGroupInput> | StudentGroupHistoryCreateWithoutGroupInput[] | StudentGroupHistoryUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: StudentGroupHistoryCreateOrConnectWithoutGroupInput | StudentGroupHistoryCreateOrConnectWithoutGroupInput[]
+    createMany?: StudentGroupHistoryCreateManyGroupInputEnvelope
+    connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+  }
+
   export type ChatUncheckedCreateNestedOneWithoutGroupInput = {
     create?: XOR<ChatCreateWithoutGroupInput, ChatUncheckedCreateWithoutGroupInput>
     connectOrCreate?: ChatCreateOrConnectWithoutGroupInput
@@ -32873,6 +34260,13 @@ export namespace Prisma {
     connectOrCreate?: StudentCreateOrConnectWithoutGroupInput | StudentCreateOrConnectWithoutGroupInput[]
     createMany?: StudentCreateManyGroupInputEnvelope
     connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+  }
+
+  export type StudentGroupHistoryUncheckedCreateNestedManyWithoutGroupInput = {
+    create?: XOR<StudentGroupHistoryCreateWithoutGroupInput, StudentGroupHistoryUncheckedCreateWithoutGroupInput> | StudentGroupHistoryCreateWithoutGroupInput[] | StudentGroupHistoryUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: StudentGroupHistoryCreateOrConnectWithoutGroupInput | StudentGroupHistoryCreateOrConnectWithoutGroupInput[]
+    createMany?: StudentGroupHistoryCreateManyGroupInputEnvelope
+    connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -32953,6 +34347,20 @@ export namespace Prisma {
     deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
   }
 
+  export type StudentGroupHistoryUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<StudentGroupHistoryCreateWithoutGroupInput, StudentGroupHistoryUncheckedCreateWithoutGroupInput> | StudentGroupHistoryCreateWithoutGroupInput[] | StudentGroupHistoryUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: StudentGroupHistoryCreateOrConnectWithoutGroupInput | StudentGroupHistoryCreateOrConnectWithoutGroupInput[]
+    upsert?: StudentGroupHistoryUpsertWithWhereUniqueWithoutGroupInput | StudentGroupHistoryUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: StudentGroupHistoryCreateManyGroupInputEnvelope
+    set?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    disconnect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    delete?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    update?: StudentGroupHistoryUpdateWithWhereUniqueWithoutGroupInput | StudentGroupHistoryUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: StudentGroupHistoryUpdateManyWithWhereWithoutGroupInput | StudentGroupHistoryUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: StudentGroupHistoryScalarWhereInput | StudentGroupHistoryScalarWhereInput[]
+  }
+
   export type ChatUncheckedUpdateOneWithoutGroupNestedInput = {
     create?: XOR<ChatCreateWithoutGroupInput, ChatUncheckedCreateWithoutGroupInput>
     connectOrCreate?: ChatCreateOrConnectWithoutGroupInput
@@ -33003,6 +34411,20 @@ export namespace Prisma {
     update?: StudentUpdateWithWhereUniqueWithoutGroupInput | StudentUpdateWithWhereUniqueWithoutGroupInput[]
     updateMany?: StudentUpdateManyWithWhereWithoutGroupInput | StudentUpdateManyWithWhereWithoutGroupInput[]
     deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
+  }
+
+  export type StudentGroupHistoryUncheckedUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<StudentGroupHistoryCreateWithoutGroupInput, StudentGroupHistoryUncheckedCreateWithoutGroupInput> | StudentGroupHistoryCreateWithoutGroupInput[] | StudentGroupHistoryUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: StudentGroupHistoryCreateOrConnectWithoutGroupInput | StudentGroupHistoryCreateOrConnectWithoutGroupInput[]
+    upsert?: StudentGroupHistoryUpsertWithWhereUniqueWithoutGroupInput | StudentGroupHistoryUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: StudentGroupHistoryCreateManyGroupInputEnvelope
+    set?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    disconnect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    delete?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    update?: StudentGroupHistoryUpdateWithWhereUniqueWithoutGroupInput | StudentGroupHistoryUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: StudentGroupHistoryUpdateManyWithWhereWithoutGroupInput | StudentGroupHistoryUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: StudentGroupHistoryScalarWhereInput | StudentGroupHistoryScalarWhereInput[]
   }
 
   export type TeacherCreateworkingDaysInput = {
@@ -33383,6 +34805,13 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type StudentGroupHistoryCreateNestedManyWithoutStudentInput = {
+    create?: XOR<StudentGroupHistoryCreateWithoutStudentInput, StudentGroupHistoryUncheckedCreateWithoutStudentInput> | StudentGroupHistoryCreateWithoutStudentInput[] | StudentGroupHistoryUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: StudentGroupHistoryCreateOrConnectWithoutStudentInput | StudentGroupHistoryCreateOrConnectWithoutStudentInput[]
+    createMany?: StudentGroupHistoryCreateManyStudentInputEnvelope
+    connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+  }
+
   export type AttendanceUncheckedCreateNestedManyWithoutStudentInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -33402,6 +34831,21 @@ export namespace Prisma {
     connectOrCreate?: PaymentCreateOrConnectWithoutStudentInput | PaymentCreateOrConnectWithoutStudentInput[]
     createMany?: PaymentCreateManyStudentInputEnvelope
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
+  export type StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput = {
+    create?: XOR<StudentGroupHistoryCreateWithoutStudentInput, StudentGroupHistoryUncheckedCreateWithoutStudentInput> | StudentGroupHistoryCreateWithoutStudentInput[] | StudentGroupHistoryUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: StudentGroupHistoryCreateOrConnectWithoutStudentInput | StudentGroupHistoryCreateOrConnectWithoutStudentInput[]
+    createMany?: StudentGroupHistoryCreateManyStudentInputEnvelope
+    connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type AttendanceUpdateManyWithoutStudentNestedInput = {
@@ -33484,6 +34928,20 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutStudentInput, UserUpdateWithoutStudentInput>, UserUncheckedUpdateWithoutStudentInput>
   }
 
+  export type StudentGroupHistoryUpdateManyWithoutStudentNestedInput = {
+    create?: XOR<StudentGroupHistoryCreateWithoutStudentInput, StudentGroupHistoryUncheckedCreateWithoutStudentInput> | StudentGroupHistoryCreateWithoutStudentInput[] | StudentGroupHistoryUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: StudentGroupHistoryCreateOrConnectWithoutStudentInput | StudentGroupHistoryCreateOrConnectWithoutStudentInput[]
+    upsert?: StudentGroupHistoryUpsertWithWhereUniqueWithoutStudentInput | StudentGroupHistoryUpsertWithWhereUniqueWithoutStudentInput[]
+    createMany?: StudentGroupHistoryCreateManyStudentInputEnvelope
+    set?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    disconnect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    delete?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    update?: StudentGroupHistoryUpdateWithWhereUniqueWithoutStudentInput | StudentGroupHistoryUpdateWithWhereUniqueWithoutStudentInput[]
+    updateMany?: StudentGroupHistoryUpdateManyWithWhereWithoutStudentInput | StudentGroupHistoryUpdateManyWithWhereWithoutStudentInput[]
+    deleteMany?: StudentGroupHistoryScalarWhereInput | StudentGroupHistoryScalarWhereInput[]
+  }
+
   export type AttendanceUncheckedUpdateManyWithoutStudentNestedInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -33524,6 +34982,48 @@ export namespace Prisma {
     update?: PaymentUpdateWithWhereUniqueWithoutStudentInput | PaymentUpdateWithWhereUniqueWithoutStudentInput[]
     updateMany?: PaymentUpdateManyWithWhereWithoutStudentInput | PaymentUpdateManyWithWhereWithoutStudentInput[]
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
+  export type StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput = {
+    create?: XOR<StudentGroupHistoryCreateWithoutStudentInput, StudentGroupHistoryUncheckedCreateWithoutStudentInput> | StudentGroupHistoryCreateWithoutStudentInput[] | StudentGroupHistoryUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: StudentGroupHistoryCreateOrConnectWithoutStudentInput | StudentGroupHistoryCreateOrConnectWithoutStudentInput[]
+    upsert?: StudentGroupHistoryUpsertWithWhereUniqueWithoutStudentInput | StudentGroupHistoryUpsertWithWhereUniqueWithoutStudentInput[]
+    createMany?: StudentGroupHistoryCreateManyStudentInputEnvelope
+    set?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    disconnect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    delete?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+    update?: StudentGroupHistoryUpdateWithWhereUniqueWithoutStudentInput | StudentGroupHistoryUpdateWithWhereUniqueWithoutStudentInput[]
+    updateMany?: StudentGroupHistoryUpdateManyWithWhereWithoutStudentInput | StudentGroupHistoryUpdateManyWithWhereWithoutStudentInput[]
+    deleteMany?: StudentGroupHistoryScalarWhereInput | StudentGroupHistoryScalarWhereInput[]
+  }
+
+  export type StudentCreateNestedOneWithoutGroupHistoryInput = {
+    create?: XOR<StudentCreateWithoutGroupHistoryInput, StudentUncheckedCreateWithoutGroupHistoryInput>
+    connectOrCreate?: StudentCreateOrConnectWithoutGroupHistoryInput
+    connect?: StudentWhereUniqueInput
+  }
+
+  export type GroupCreateNestedOneWithoutStudentHistoryEntriesInput = {
+    create?: XOR<GroupCreateWithoutStudentHistoryEntriesInput, GroupUncheckedCreateWithoutStudentHistoryEntriesInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutStudentHistoryEntriesInput
+    connect?: GroupWhereUniqueInput
+  }
+
+  export type StudentUpdateOneRequiredWithoutGroupHistoryNestedInput = {
+    create?: XOR<StudentCreateWithoutGroupHistoryInput, StudentUncheckedCreateWithoutGroupHistoryInput>
+    connectOrCreate?: StudentCreateOrConnectWithoutGroupHistoryInput
+    upsert?: StudentUpsertWithoutGroupHistoryInput
+    connect?: StudentWhereUniqueInput
+    update?: XOR<XOR<StudentUpdateToOneWithWhereWithoutGroupHistoryInput, StudentUpdateWithoutGroupHistoryInput>, StudentUncheckedUpdateWithoutGroupHistoryInput>
+  }
+
+  export type GroupUpdateOneRequiredWithoutStudentHistoryEntriesNestedInput = {
+    create?: XOR<GroupCreateWithoutStudentHistoryEntriesInput, GroupUncheckedCreateWithoutStudentHistoryEntriesInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutStudentHistoryEntriesInput
+    upsert?: GroupUpsertWithoutStudentHistoryEntriesInput
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutStudentHistoryEntriesInput, GroupUpdateWithoutStudentHistoryEntriesInput>, GroupUncheckedUpdateWithoutStudentHistoryEntriesInput>
   }
 
   export type AttendanceCreateNestedManyWithoutLessonInput = {
@@ -33706,14 +35206,6 @@ export namespace Prisma {
     create?: XOR<TeacherCreateWithoutFeedbacksInput, TeacherUncheckedCreateWithoutFeedbacksInput>
     connectOrCreate?: TeacherCreateOrConnectWithoutFeedbacksInput
     connect?: TeacherWhereUniqueInput
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type LessonUpdateOneRequiredWithoutFeedbacksNestedInput = {
@@ -34492,6 +35984,33 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedEnumLessonStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.LessonStatus | EnumLessonStatusFieldRefInput<$PrismaModel>
     in?: $Enums.LessonStatus[] | ListEnumLessonStatusFieldRefInput<$PrismaModel>
@@ -34524,33 +36043,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedEnumAbsenceTypeNullableFilter<$PrismaModel>
     _max?: NestedEnumAbsenceTypeNullableFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedEnumPaymentStatusFilter<$PrismaModel = never> = {
@@ -34968,9 +36460,11 @@ export namespace Prisma {
 
   export type StudentCreateWithoutUserInput = {
     id?: string
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -34984,15 +36478,18 @@ export namespace Prisma {
     group?: GroupCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutUserInput = {
     id?: string
     groupId?: string | null
     teacherId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -35004,6 +36501,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutUserInput = {
@@ -35281,9 +36779,11 @@ export namespace Prisma {
 
   export type StudentUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -35297,15 +36797,18 @@ export namespace Prisma {
     group?: GroupUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -35317,6 +36820,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type TeacherUpsertWithoutUserInput = {
@@ -35444,6 +36948,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutGroupsInput
     lessons?: LessonCreateNestedManyWithoutGroupInput
     students?: StudentCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutCenterInput = {
@@ -35460,6 +36965,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
     lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
     students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutCenterInput = {
@@ -35984,9 +37490,11 @@ export namespace Prisma {
 
   export type StudentCreateWithoutGroupInput = {
     id?: string
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -36000,15 +37508,18 @@ export namespace Prisma {
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutGroupInput = {
     id?: string
     userId: string
     teacherId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -36020,6 +37531,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutGroupInput = {
@@ -36029,6 +37541,34 @@ export namespace Prisma {
 
   export type StudentCreateManyGroupInputEnvelope = {
     data: StudentCreateManyGroupInput | StudentCreateManyGroupInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type StudentGroupHistoryCreateWithoutGroupInput = {
+    id?: string
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    student: StudentCreateNestedOneWithoutGroupHistoryInput
+  }
+
+  export type StudentGroupHistoryUncheckedCreateWithoutGroupInput = {
+    id?: string
+    studentId: string
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type StudentGroupHistoryCreateOrConnectWithoutGroupInput = {
+    where: StudentGroupHistoryWhereUniqueInput
+    create: XOR<StudentGroupHistoryCreateWithoutGroupInput, StudentGroupHistoryUncheckedCreateWithoutGroupInput>
+  }
+
+  export type StudentGroupHistoryCreateManyGroupInputEnvelope = {
+    data: StudentGroupHistoryCreateManyGroupInput | StudentGroupHistoryCreateManyGroupInput[]
     skipDuplicates?: boolean
   }
 
@@ -36240,9 +37780,11 @@ export namespace Prisma {
     userId?: StringFilter<"Student"> | string
     groupId?: StringNullableFilter<"Student"> | string | null
     teacherId?: StringNullableFilter<"Student"> | string | null
+    age?: IntNullableFilter<"Student"> | number | null
     parentName?: StringNullableFilter<"Student"> | string | null
     parentPhone?: StringNullableFilter<"Student"> | string | null
     parentEmail?: StringNullableFilter<"Student"> | string | null
+    parentPassportInfo?: StringNullableFilter<"Student"> | string | null
     monthlyFee?: DecimalFilter<"Student"> | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFilter<"Student"> | Date | string
     registerDate?: DateTimeNullableFilter<"Student"> | Date | string | null
@@ -36251,6 +37793,35 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Student"> | Date | string
     updatedAt?: DateTimeFilter<"Student"> | Date | string
     leadId?: StringNullableFilter<"Student"> | string | null
+  }
+
+  export type StudentGroupHistoryUpsertWithWhereUniqueWithoutGroupInput = {
+    where: StudentGroupHistoryWhereUniqueInput
+    update: XOR<StudentGroupHistoryUpdateWithoutGroupInput, StudentGroupHistoryUncheckedUpdateWithoutGroupInput>
+    create: XOR<StudentGroupHistoryCreateWithoutGroupInput, StudentGroupHistoryUncheckedCreateWithoutGroupInput>
+  }
+
+  export type StudentGroupHistoryUpdateWithWhereUniqueWithoutGroupInput = {
+    where: StudentGroupHistoryWhereUniqueInput
+    data: XOR<StudentGroupHistoryUpdateWithoutGroupInput, StudentGroupHistoryUncheckedUpdateWithoutGroupInput>
+  }
+
+  export type StudentGroupHistoryUpdateManyWithWhereWithoutGroupInput = {
+    where: StudentGroupHistoryScalarWhereInput
+    data: XOR<StudentGroupHistoryUpdateManyMutationInput, StudentGroupHistoryUncheckedUpdateManyWithoutGroupInput>
+  }
+
+  export type StudentGroupHistoryScalarWhereInput = {
+    AND?: StudentGroupHistoryScalarWhereInput | StudentGroupHistoryScalarWhereInput[]
+    OR?: StudentGroupHistoryScalarWhereInput[]
+    NOT?: StudentGroupHistoryScalarWhereInput | StudentGroupHistoryScalarWhereInput[]
+    id?: StringFilter<"StudentGroupHistory"> | string
+    studentId?: StringFilter<"StudentGroupHistory"> | string
+    groupId?: StringFilter<"StudentGroupHistory"> | string
+    joinedAt?: DateTimeFilter<"StudentGroupHistory"> | Date | string
+    leftAt?: DateTimeNullableFilter<"StudentGroupHistory"> | Date | string | null
+    createdAt?: DateTimeFilter<"StudentGroupHistory"> | Date | string
+    updatedAt?: DateTimeFilter<"StudentGroupHistory"> | Date | string
   }
 
   export type CrmLeadCreateWithoutTeacherInput = {
@@ -36393,6 +37964,7 @@ export namespace Prisma {
     center: CenterCreateNestedOneWithoutGroupsInput
     lessons?: LessonCreateNestedManyWithoutGroupInput
     students?: StudentCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutTeacherInput = {
@@ -36409,6 +37981,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
     lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
     students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutTeacherInput = {
@@ -36521,9 +38094,11 @@ export namespace Prisma {
 
   export type StudentCreateWithoutTeacherInput = {
     id?: string
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -36537,15 +38112,18 @@ export namespace Prisma {
     group?: GroupCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutTeacherInput = {
     id?: string
     userId: string
     groupId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -36557,6 +38135,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutTeacherInput = {
@@ -36960,6 +38539,7 @@ export namespace Prisma {
     center: CenterCreateNestedOneWithoutGroupsInput
     teacher?: TeacherCreateNestedOneWithoutGroupsInput
     lessons?: LessonCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutStudentsInput = {
@@ -36976,6 +38556,7 @@ export namespace Prisma {
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
     lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutStudentsInput = {
@@ -37134,6 +38715,34 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutStudentInput, UserUncheckedCreateWithoutStudentInput>
   }
 
+  export type StudentGroupHistoryCreateWithoutStudentInput = {
+    id?: string
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    group: GroupCreateNestedOneWithoutStudentHistoryEntriesInput
+  }
+
+  export type StudentGroupHistoryUncheckedCreateWithoutStudentInput = {
+    id?: string
+    groupId: string
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type StudentGroupHistoryCreateOrConnectWithoutStudentInput = {
+    where: StudentGroupHistoryWhereUniqueInput
+    create: XOR<StudentGroupHistoryCreateWithoutStudentInput, StudentGroupHistoryUncheckedCreateWithoutStudentInput>
+  }
+
+  export type StudentGroupHistoryCreateManyStudentInputEnvelope = {
+    data: StudentGroupHistoryCreateManyStudentInput | StudentGroupHistoryCreateManyStudentInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AttendanceUpsertWithWhereUniqueWithoutStudentInput = {
     where: AttendanceWhereUniqueInput
     update: XOR<AttendanceUpdateWithoutStudentInput, AttendanceUncheckedUpdateWithoutStudentInput>
@@ -37226,6 +38835,7 @@ export namespace Prisma {
     center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
     teacher?: TeacherUpdateOneWithoutGroupsNestedInput
     lessons?: LessonUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutStudentsInput = {
@@ -37242,6 +38852,7 @@ export namespace Prisma {
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type CrmLeadUpsertWithoutStudentInput = {
@@ -37413,6 +39024,214 @@ export namespace Prisma {
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
   }
 
+  export type StudentGroupHistoryUpsertWithWhereUniqueWithoutStudentInput = {
+    where: StudentGroupHistoryWhereUniqueInput
+    update: XOR<StudentGroupHistoryUpdateWithoutStudentInput, StudentGroupHistoryUncheckedUpdateWithoutStudentInput>
+    create: XOR<StudentGroupHistoryCreateWithoutStudentInput, StudentGroupHistoryUncheckedCreateWithoutStudentInput>
+  }
+
+  export type StudentGroupHistoryUpdateWithWhereUniqueWithoutStudentInput = {
+    where: StudentGroupHistoryWhereUniqueInput
+    data: XOR<StudentGroupHistoryUpdateWithoutStudentInput, StudentGroupHistoryUncheckedUpdateWithoutStudentInput>
+  }
+
+  export type StudentGroupHistoryUpdateManyWithWhereWithoutStudentInput = {
+    where: StudentGroupHistoryScalarWhereInput
+    data: XOR<StudentGroupHistoryUpdateManyMutationInput, StudentGroupHistoryUncheckedUpdateManyWithoutStudentInput>
+  }
+
+  export type StudentCreateWithoutGroupHistoryInput = {
+    id?: string
+    age?: number | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    parentPassportInfo?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
+    payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
+  }
+
+  export type StudentUncheckedCreateWithoutGroupHistoryInput = {
+    id?: string
+    userId: string
+    groupId?: string | null
+    teacherId?: string | null
+    age?: number | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    parentPassportInfo?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leadId?: string | null
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+  }
+
+  export type StudentCreateOrConnectWithoutGroupHistoryInput = {
+    where: StudentWhereUniqueInput
+    create: XOR<StudentCreateWithoutGroupHistoryInput, StudentUncheckedCreateWithoutGroupHistoryInput>
+  }
+
+  export type GroupCreateWithoutStudentHistoryEntriesInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
+    center: CenterCreateNestedOneWithoutGroupsInput
+    teacher?: TeacherCreateNestedOneWithoutGroupsInput
+    lessons?: LessonCreateNestedManyWithoutGroupInput
+    students?: StudentCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutStudentHistoryEntriesInput = {
+    id?: string
+    name: string
+    level?: string | null
+    description?: string | null
+    maxStudents?: number
+    centerId: string
+    teacherId?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
+    students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutStudentHistoryEntriesInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutStudentHistoryEntriesInput, GroupUncheckedCreateWithoutStudentHistoryEntriesInput>
+  }
+
+  export type StudentUpsertWithoutGroupHistoryInput = {
+    update: XOR<StudentUpdateWithoutGroupHistoryInput, StudentUncheckedUpdateWithoutGroupHistoryInput>
+    create: XOR<StudentCreateWithoutGroupHistoryInput, StudentUncheckedCreateWithoutGroupHistoryInput>
+    where?: StudentWhereInput
+  }
+
+  export type StudentUpdateToOneWithWhereWithoutGroupHistoryInput = {
+    where?: StudentWhereInput
+    data: XOR<StudentUpdateWithoutGroupHistoryInput, StudentUncheckedUpdateWithoutGroupHistoryInput>
+  }
+
+  export type StudentUpdateWithoutGroupHistoryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
+  }
+
+  export type StudentUncheckedUpdateWithoutGroupHistoryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+  }
+
+  export type GroupUpsertWithoutStudentHistoryEntriesInput = {
+    update: XOR<GroupUpdateWithoutStudentHistoryEntriesInput, GroupUncheckedUpdateWithoutStudentHistoryEntriesInput>
+    create: XOR<GroupCreateWithoutStudentHistoryEntriesInput, GroupUncheckedCreateWithoutStudentHistoryEntriesInput>
+    where?: GroupWhereInput
+  }
+
+  export type GroupUpdateToOneWithWhereWithoutStudentHistoryEntriesInput = {
+    where?: GroupWhereInput
+    data: XOR<GroupUpdateWithoutStudentHistoryEntriesInput, GroupUncheckedUpdateWithoutStudentHistoryEntriesInput>
+  }
+
+  export type GroupUpdateWithoutStudentHistoryEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUpdateOneWithoutGroupNestedInput
+    crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
+    center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
+    teacher?: TeacherUpdateOneWithoutGroupsNestedInput
+    lessons?: LessonUpdateManyWithoutGroupNestedInput
+    students?: StudentUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutStudentHistoryEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    level?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxStudents?: IntFieldUpdateOperationsInput | number
+    centerId?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
+    students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
   export type AttendanceCreateWithoutLessonInput = {
     id?: string
     isPresent: boolean
@@ -37495,6 +39314,7 @@ export namespace Prisma {
     center: CenterCreateNestedOneWithoutGroupsInput
     teacher?: TeacherCreateNestedOneWithoutGroupsInput
     students?: StudentCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutLessonsInput = {
@@ -37511,6 +39331,7 @@ export namespace Prisma {
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
     students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutLessonsInput = {
@@ -37620,6 +39441,7 @@ export namespace Prisma {
     center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
     teacher?: TeacherUpdateOneWithoutGroupsNestedInput
     students?: StudentUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutLessonsInput = {
@@ -37636,6 +39458,7 @@ export namespace Prisma {
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
     students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type TeacherUpsertWithoutLessonsInput = {
@@ -37797,9 +39620,11 @@ export namespace Prisma {
 
   export type StudentCreateWithoutAttendancesInput = {
     id?: string
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -37813,6 +39638,7 @@ export namespace Prisma {
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutAttendancesInput = {
@@ -37820,9 +39646,11 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -37833,6 +39661,7 @@ export namespace Prisma {
     leadId?: string | null
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutAttendancesInput = {
@@ -37971,9 +39800,11 @@ export namespace Prisma {
 
   export type StudentUpdateWithoutAttendancesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -37987,6 +39818,7 @@ export namespace Prisma {
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutAttendancesInput = {
@@ -37994,9 +39826,11 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -38007,6 +39841,7 @@ export namespace Prisma {
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type LessonCreateWithoutFeedbacksInput = {
@@ -38066,9 +39901,11 @@ export namespace Prisma {
 
   export type StudentCreateWithoutFeedbacksInput = {
     id?: string
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -38082,6 +39919,7 @@ export namespace Prisma {
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutFeedbacksInput = {
@@ -38089,9 +39927,11 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -38102,6 +39942,7 @@ export namespace Prisma {
     leadId?: string | null
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutFeedbacksInput = {
@@ -38228,9 +40069,11 @@ export namespace Prisma {
 
   export type StudentUpdateWithoutFeedbacksInput = {
     id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -38244,6 +40087,7 @@ export namespace Prisma {
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutFeedbacksInput = {
@@ -38251,9 +40095,11 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -38264,6 +40110,7 @@ export namespace Prisma {
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type TeacherUpsertWithoutFeedbacksInput = {
@@ -38319,9 +40166,11 @@ export namespace Prisma {
 
   export type StudentCreateWithoutPaymentsInput = {
     id?: string
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -38335,6 +40184,7 @@ export namespace Prisma {
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutPaymentsInput = {
@@ -38342,9 +40192,11 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -38355,6 +40207,7 @@ export namespace Prisma {
     leadId?: string | null
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutPaymentsInput = {
@@ -38375,9 +40228,11 @@ export namespace Prisma {
 
   export type StudentUpdateWithoutPaymentsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -38391,6 +40246,7 @@ export namespace Prisma {
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutPaymentsInput = {
@@ -38398,9 +40254,11 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -38411,6 +40269,7 @@ export namespace Prisma {
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type TeacherCreateWithoutSalaryRecordsInput = {
@@ -38647,6 +40506,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutGroupsInput
     lessons?: LessonCreateNestedManyWithoutGroupInput
     students?: StudentCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutChatInput = {
@@ -38663,6 +40523,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
     lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
     students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutChatInput = {
@@ -38755,6 +40616,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutGroupsNestedInput
     lessons?: LessonUpdateManyWithoutGroupNestedInput
     students?: StudentUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutChatInput = {
@@ -38771,6 +40633,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
     students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutChatInput = {
@@ -39438,6 +41301,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutGroupsInput
     lessons?: LessonCreateNestedManyWithoutGroupInput
     students?: StudentCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutCrmLeadsInput = {
@@ -39454,6 +41318,7 @@ export namespace Prisma {
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
     lessons?: LessonUncheckedCreateNestedManyWithoutGroupInput
     students?: StudentUncheckedCreateNestedManyWithoutGroupInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutCrmLeadsInput = {
@@ -39508,9 +41373,11 @@ export namespace Prisma {
 
   export type StudentCreateWithoutLeadInput = {
     id?: string
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -39524,6 +41391,7 @@ export namespace Prisma {
     group?: GroupCreateNestedOneWithoutStudentsInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutLeadInput = {
@@ -39531,9 +41399,11 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -39544,6 +41414,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutLeadInput = {
@@ -39788,6 +41659,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutGroupsNestedInput
     lessons?: LessonUpdateManyWithoutGroupNestedInput
     students?: StudentUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutCrmLeadsInput = {
@@ -39804,6 +41676,7 @@ export namespace Prisma {
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
     students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type TeacherUpsertWithoutCrmLeadsInput = {
@@ -39870,9 +41743,11 @@ export namespace Prisma {
 
   export type StudentUpdateWithoutLeadInput = {
     id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39886,6 +41761,7 @@ export namespace Prisma {
     group?: GroupUpdateOneWithoutStudentsNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutLeadInput = {
@@ -39893,9 +41769,11 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39906,6 +41784,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type CrmLeadCreateWithoutActivitiesInput = {
@@ -40651,6 +42530,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutGroupsNestedInput
     lessons?: LessonUpdateManyWithoutGroupNestedInput
     students?: StudentUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutCenterInput = {
@@ -40667,6 +42547,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
     students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateManyWithoutCenterInput = {
@@ -40751,9 +42632,11 @@ export namespace Prisma {
     id?: string
     userId: string
     teacherId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -40762,6 +42645,15 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     leadId?: string | null
+  }
+
+  export type StudentGroupHistoryCreateManyGroupInput = {
+    id?: string
+    studentId: string
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type CrmLeadUpdateWithoutGroupInput = {
@@ -40911,9 +42803,11 @@ export namespace Prisma {
 
   export type StudentUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -40927,15 +42821,18 @@ export namespace Prisma {
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -40947,15 +42844,18 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateManyWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -40964,6 +42864,33 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type StudentGroupHistoryUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    student?: StudentUpdateOneRequiredWithoutGroupHistoryNestedInput
+  }
+
+  export type StudentGroupHistoryUncheckedUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StudentGroupHistoryUncheckedUpdateManyWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CrmLeadCreateManyTeacherInput = {
@@ -41064,9 +42991,11 @@ export namespace Prisma {
     id?: string
     userId: string
     groupId?: string | null
+    age?: number | null
     parentName?: string | null
     parentPhone?: string | null
     parentEmail?: string | null
+    parentPassportInfo?: string | null
     monthlyFee: Decimal | DecimalJsLike | number | string
     enrolledAt?: Date | string
     registerDate?: Date | string | null
@@ -41232,6 +43161,7 @@ export namespace Prisma {
     center?: CenterUpdateOneRequiredWithoutGroupsNestedInput
     lessons?: LessonUpdateManyWithoutGroupNestedInput
     students?: StudentUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutTeacherInput = {
@@ -41248,6 +43178,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutGroupNestedInput
     students?: StudentUncheckedUpdateManyWithoutGroupNestedInput
+    studentHistoryEntries?: StudentGroupHistoryUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateManyWithoutTeacherInput = {
@@ -41379,9 +43310,11 @@ export namespace Prisma {
 
   export type StudentUpdateWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41395,15 +43328,18 @@ export namespace Prisma {
     group?: GroupUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41415,15 +43351,18 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateManyWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
     parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41469,6 +43408,15 @@ export namespace Prisma {
     transactionId?: string | null
     receiptUrl?: string | null
     notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type StudentGroupHistoryCreateManyStudentInput = {
+    id?: string
+    groupId: string
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -41586,6 +43534,33 @@ export namespace Prisma {
     transactionId?: NullableStringFieldUpdateOperationsInput | string | null
     receiptUrl?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StudentGroupHistoryUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    group?: GroupUpdateOneRequiredWithoutStudentHistoryEntriesNestedInput
+  }
+
+  export type StudentGroupHistoryUncheckedUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StudentGroupHistoryUncheckedUpdateManyWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41919,6 +43894,10 @@ export namespace Prisma {
      * @deprecated Use StudentDefaultArgs instead
      */
     export type StudentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = StudentDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use StudentGroupHistoryDefaultArgs instead
+     */
+    export type StudentGroupHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = StudentGroupHistoryDefaultArgs<ExtArgs>
     /**
      * @deprecated Use LessonDefaultArgs instead
      */

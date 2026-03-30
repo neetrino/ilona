@@ -4,7 +4,9 @@ import {
   IsOptional,
   IsBoolean,
   IsNumber,
+  IsInt,
   Min,
+  Max,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -34,6 +36,11 @@ export class CreateStudentDto {
   @MaxLength(50)
   phone?: string;
 
+  @IsInt()
+  @Min(1)
+  @Max(120)
+  age!: number;
+
   // Student fields
   @IsString()
   @IsOptional()
@@ -56,6 +63,11 @@ export class CreateStudentDto {
   @IsEmail()
   @IsOptional()
   parentEmail?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  parentPassportInfo?: string;
 
   @IsNumber()
   @Min(0)

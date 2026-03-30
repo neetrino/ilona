@@ -94,6 +94,8 @@ export class FeedbackService {
    */
   async getByStudent(
     studentId: string,
+    userId: string,
+    userRole: UserRole,
     params?: {
       dateFrom?: Date;
       dateTo?: Date;
@@ -101,8 +103,43 @@ export class FeedbackService {
     },
   ) {
     const where: Prisma.FeedbackWhereInput = { studentId };
+    let teacherProfileId: string | null = null;
+
+    if (userRole === UserRole.STUDENT) {
+      const student = await this.prisma.student.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+
+      if (!student) {
+        throw new NotFoundException('Student profile not found');
+      }
+
+      if (student.id !== studentId) {
+        throw new ForbiddenException('You can only view your own feedback');
+      }
+    }
+
+    if (userRole === UserRole.TEACHER) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+
+      if (!teacher) {
+        throw new ForbiddenException('Teacher profile not found');
+      }
+
+      teacherProfileId = teacher.id;
+      where.teacherId = teacherProfileId;
+    }
 
     if (params?.teacherId) {
+      if (userRole === UserRole.TEACHER) {
+        if (!teacherProfileId || teacherProfileId !== params.teacherId) {
+          throw new ForbiddenException('You can only filter by your own teacher profile');
+        }
+      }
       where.teacherId = params.teacherId;
     }
 
@@ -149,9 +186,7 @@ export class FeedbackService {
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [{ lesson: { scheduledAt: 'desc' } }, { createdAt: 'desc' }],
     });
 
     return feedbacks;

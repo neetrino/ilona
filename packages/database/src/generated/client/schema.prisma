@@ -68,22 +68,23 @@ model ManagerProfile {
 }
 
 model Group {
-  id          String    @id @default(cuid())
-  name        String
-  level       String?
-  description String?
-  maxStudents Int       @default(8)
-  centerId    String
-  teacherId   String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  chat        Chat?
-  crmLeads    CrmLead[]
-  center      Center    @relation(fields: [centerId], references: [id], onDelete: Cascade)
-  teacher     Teacher?  @relation(fields: [teacherId], references: [id])
-  lessons     Lesson[]
-  students    Student[]
+  id                    String                @id @default(cuid())
+  name                  String
+  level                 String?
+  description           String?
+  maxStudents           Int                   @default(8)
+  centerId              String
+  teacherId             String?
+  isActive              Boolean               @default(true)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  chat                  Chat?
+  crmLeads              CrmLead[]
+  center                Center                @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  teacher               Teacher?              @relation(fields: [teacherId], references: [id])
+  lessons               Lesson[]
+  students              Student[]
+  studentHistoryEntries StudentGroupHistory[]
 
   @@index([centerId])
   @@index([teacherId])
@@ -115,33 +116,53 @@ model Teacher {
 }
 
 model Student {
-  id             String       @id @default(cuid())
-  userId         String       @unique
-  groupId        String?
-  teacherId      String?
-  parentName     String?
-  parentPhone    String?
-  parentEmail    String?
-  monthlyFee     Decimal      @db.Decimal(10, 2)
-  enrolledAt     DateTime     @default(now())
-  registerDate   DateTime?
-  notes          String?
-  receiveReports Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  leadId         String?      @unique
-  attendances    Attendance[]
-  feedbacks      Feedback[]
-  payments       Payment[]
-  group          Group?       @relation(fields: [groupId], references: [id])
-  lead           CrmLead?     @relation(fields: [leadId], references: [id])
-  teacher        Teacher?     @relation(fields: [teacherId], references: [id])
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String                @id @default(cuid())
+  userId             String                @unique
+  groupId            String?
+  teacherId          String?
+  age                Int?
+  parentName         String?
+  parentPhone        String?
+  parentEmail        String?
+  parentPassportInfo String?
+  monthlyFee         Decimal               @db.Decimal(10, 2)
+  enrolledAt         DateTime              @default(now())
+  registerDate       DateTime?
+  notes              String?
+  receiveReports     Boolean               @default(true)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  leadId             String?               @unique
+  attendances        Attendance[]
+  feedbacks          Feedback[]
+  payments           Payment[]
+  group              Group?                @relation(fields: [groupId], references: [id])
+  lead               CrmLead?              @relation(fields: [leadId], references: [id])
+  teacher            Teacher?              @relation(fields: [teacherId], references: [id])
+  user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupHistory       StudentGroupHistory[]
 
   @@index([groupId])
   @@index([teacherId])
   @@index([leadId])
   @@map("students")
+}
+
+model StudentGroupHistory {
+  id        String    @id @default(cuid())
+  studentId String
+  groupId   String
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([groupId])
+  @@index([studentId, leftAt])
+  @@map("student_group_histories")
 }
 
 model Lesson {

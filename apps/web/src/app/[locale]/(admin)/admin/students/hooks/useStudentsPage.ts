@@ -390,18 +390,18 @@ export function useStudentsPage() {
     }
   };
 
-  // Handle inline updates (when teacher changes, clear group so admin must pick a group for the new teacher)
+  // Handle inline updates
   const handleTeacherChange = async (studentId: string, teacherId: string | null) => {
     await updateStudent.mutateAsync({
       id: studentId,
-      data: { teacherId: teacherId || undefined, groupId: '' },
+      data: { teacherId: teacherId || undefined },
     });
   };
 
   const handleGroupChange = async (studentId: string, groupId: string | null) => {
     await updateStudent.mutateAsync({
       id: studentId,
-      data: { groupId: groupId || undefined },
+      data: { groupId: groupId === null ? null : groupId },
     });
   };
 

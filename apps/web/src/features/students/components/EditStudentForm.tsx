@@ -15,12 +15,14 @@ const updateStudentSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
   phone: z.string().max(50, 'Phone must be at most 50 characters').optional().or(z.literal('')),
+  age: z.number().int('Age must be a whole number').min(1, 'Age must be at least 1').max(120, 'Age must be reasonable').optional(),
   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
   groupId: z.string().optional().or(z.literal('')),
   teacherId: z.string().optional().or(z.literal('')),
   parentName: z.string().max(100, 'Parent name must be at most 100 characters').optional().or(z.literal('')),
   parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional().or(z.literal('')),
   parentEmail: z.string().email('Invalid email address').optional().or(z.literal('')),
+  parentPassportInfo: z.string().max(100, 'Passport info must be at most 100 characters').optional().or(z.literal('')),
   monthlyFee: z.number().min(0, 'Monthly fee must be positive'),
   notes: z.string().max(500, 'Notes must be at most 500 characters').optional().or(z.literal('')),
   receiveReports: z.boolean().optional(),
@@ -44,7 +46,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, dirtyFields },
     reset,
     watch,
     setValue,
@@ -54,12 +56,14 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       firstName: '',
       lastName: '',
       phone: '',
+      age: undefined,
       status: 'ACTIVE' as UserStatus,
       groupId: '',
       teacherId: '',
       parentName: '',
       parentPhone: '',
       parentEmail: '',
+      parentPassportInfo: '',
       monthlyFee: 0,
       notes: '',
       receiveReports: false,
@@ -68,19 +72,15 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   });
 
   const watchedTeacherId = watch('teacherId') || '';
-  const watchedGroupId = watch('groupId') || '';
+  const watchedAge = watch('age');
+  const showParentSection = watchedAge !== undefined && watchedAge < 18;
 
-  // Fetch teachers list and groups scoped to selected teacher
+  // Fetch teachers and all active groups.
+  // Do not auto-filter groups by teacher in edit mode, otherwise unchanged group can be reset.
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
-  const { data: groupsData, isLoading: isLoadingGroups } = useGroups(
-    { isActive: true, teacherId: watchedTeacherId || undefined },
-    !!watchedTeacherId,
-  );
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
   const teachers = teachersData?.items || [];
-  const groupsForTeacher = useMemo(
-    () => (watchedTeacherId ? groupsData?.items ?? [] : []),
-    [watchedTeacherId, groupsData?.items],
-  );
+  const groupsForTeacher = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
 
   // Pre-fill form when student data is loaded
   useEffect(() => {
@@ -88,12 +88,14 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       setValue('firstName', student.user?.firstName || '');
       setValue('lastName', student.user?.lastName || '');
       setValue('phone', student.user?.phone || '');
+      setValue('age', student.age ?? undefined);
       setValue('status', student.user?.status || 'ACTIVE');
       setValue('teacherId', student.teacherId || '');
       setValue('groupId', student.groupId || '');
       setValue('parentName', student.parentName || '');
       setValue('parentPhone', student.parentPhone || '');
       setValue('parentEmail', student.parentEmail || '');
+      setValue('parentPassportInfo', student.parentPassportInfo || '');
       setValue('monthlyFee', typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) || 0 : Number(student.monthlyFee || 0));
       setValue('notes', student.notes || '');
       setValue('receiveReports', student.receiveReports ?? true);
@@ -112,40 +114,33 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     }
   }, [open, reset]);
 
-  // Keep group value valid for selected teacher.
-  // If teacher changes or current group is outside teacher's groups, clear it.
-  useEffect(() => {
-    if (!watchedTeacherId) {
-      if (watchedGroupId) {
-        setValue('groupId', '');
-      }
-      return;
-    }
-
-    if (watchedGroupId && !groupsForTeacher.some((group) => group.id === watchedGroupId)) {
-      setValue('groupId', '');
-    }
-  }, [watchedTeacherId, watchedGroupId, groupsForTeacher, setValue]);
-
   const onSubmit = async (data: UpdateStudentFormData) => {
     setErrorMessage(null);
     
     try {
-      const payload: UpdateStudentDto = {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone || undefined,
-        status: data.status,
-        groupId: data.groupId?.trim() ? data.groupId.trim() : null,
-        teacherId: data.teacherId?.trim() ? data.teacherId.trim() : null,
-        parentName: data.parentName || undefined,
-        parentPhone: data.parentPhone || undefined,
-        parentEmail: data.parentEmail || undefined,
-        monthlyFee: data.monthlyFee,
-        notes: data.notes || undefined,
-        receiveReports: data.receiveReports,
-        registerDate: data.registerDate?.trim() ? data.registerDate.trim() : null,
-      };
+      const payload: UpdateStudentDto = {};
+
+      if (dirtyFields.firstName) payload.firstName = data.firstName;
+      if (dirtyFields.lastName) payload.lastName = data.lastName;
+      if (dirtyFields.phone) payload.phone = data.phone || undefined;
+      if (dirtyFields.age) payload.age = data.age;
+      if (dirtyFields.status) payload.status = data.status;
+      if (dirtyFields.groupId) payload.groupId = data.groupId?.trim() ? data.groupId.trim() : null;
+      if (dirtyFields.teacherId) payload.teacherId = data.teacherId?.trim() ? data.teacherId.trim() : null;
+      if (dirtyFields.parentName) payload.parentName = data.parentName || undefined;
+      if (dirtyFields.parentPhone) payload.parentPhone = data.parentPhone || undefined;
+      if (dirtyFields.parentEmail) payload.parentEmail = data.parentEmail || undefined;
+      if (dirtyFields.parentPassportInfo) payload.parentPassportInfo = data.parentPassportInfo || undefined;
+      if (dirtyFields.monthlyFee) payload.monthlyFee = data.monthlyFee;
+      if (dirtyFields.notes) payload.notes = data.notes || undefined;
+      if (dirtyFields.receiveReports) payload.receiveReports = data.receiveReports;
+      if (dirtyFields.registerDate) payload.registerDate = data.registerDate?.trim() ? data.registerDate.trim() : null;
+
+      // Nothing changed: just close without a redundant API call.
+      if (Object.keys(payload).length === 0) {
+        onOpenChange(false);
+        return;
+      }
 
       await updateStudent.mutateAsync({ id: studentId, data: payload });
       
@@ -231,6 +226,19 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="age">Age</Label>
+              <Input
+                id="age"
+                type="number"
+                min="1"
+                max="120"
+                {...register('age', { valueAsNumber: true })}
+                error={errors.age?.message}
+                placeholder="Enter student's age"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <select
                 id="status"
@@ -251,9 +259,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 <Label htmlFor="teacherId">Teacher</Label>
                 <select
                   id="teacherId"
-                  {...register('teacherId', {
-                    onChange: () => setValue('groupId', ''),
-                  })}
+                  {...register('teacherId')}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isLoadingTeachers || isSubmitting}
                 >
@@ -279,10 +285,10 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   id="groupId"
                   {...register('groupId')}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={isLoadingGroups || !watchedTeacherId}
+                  disabled={isLoadingGroups || isSubmitting}
                 >
                   <option value="">
-                    {watchedTeacherId ? 'No group assigned' : 'Select Teacher first'}
+                    No group assigned
                   </option>
                   {groupsForTeacher.map((group) => (
                     <option key={group.id} value={group.id}>
@@ -325,6 +331,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               <p className="text-xs text-slate-500">Optional. Date when the student joined the group. Leave empty if not set.</p>
             </div>
 
+            {showParentSection && (
             <div className="border-t pt-4">
               <h3 className="text-sm font-semibold text-slate-800 mb-4">
                 Parent/Guardian Information
@@ -362,8 +369,19 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                     placeholder="parent@example.com"
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="parentPassportInfo">Parent Passport Information</Label>
+                  <Input
+                    id="parentPassportInfo"
+                    {...register('parentPassportInfo')}
+                    error={errors.parentPassportInfo?.message}
+                    placeholder="Passport number / ID"
+                  />
+                </div>
               </div>
             </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
