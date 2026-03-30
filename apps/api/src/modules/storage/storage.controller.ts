@@ -235,7 +235,7 @@ export class StorageController {
   /**
    * Get a file (for local storage - public endpoint, no auth required)
    */
-  @Get('file/:key(*)')
+  @Get('file/:key(.*)')
   @Public()
   @ApiOperation({ summary: 'Get a file (public endpoint for local storage)' })
   async getFile(
