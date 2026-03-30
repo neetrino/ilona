@@ -91,11 +91,9 @@ export function FinanceFilters({
             <option value="">All statuses</option>
             {activeTab === 'payments' ? (
               <>
-                <option value="PENDING">{t('pending')}</option>
                 <option value="PAID">{t('paid')}</option>
                 <option value="OVERDUE">{t('overdue')}</option>
                 <option value="CANCELLED">{t('cancelled')}</option>
-                <option value="REFUNDED">{t('refunded')}</option>
               </>
             ) : activeTab === 'salaries' ? (
               <>
