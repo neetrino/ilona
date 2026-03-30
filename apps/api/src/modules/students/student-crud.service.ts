@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
 import { Prisma, UserRole, UserStatus } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 import {
@@ -19,6 +20,33 @@ import {
 @Injectable()
 export class StudentCrudService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async syncStudentGroupHistory(
+    tx: Prisma.TransactionClient,
+    studentId: string,
+    previousGroupId: string | null,
+    nextGroupId: string | null,
+    joinedAt: Date = new Date(),
+  ) {
+    if (previousGroupId === nextGroupId) {
+      return;
+    }
+
+    if (previousGroupId) {
+      await tx.$executeRaw`
+        UPDATE "student_group_histories"
+        SET "leftAt" = ${joinedAt}, "updatedAt" = ${joinedAt}
+        WHERE "studentId" = ${studentId} AND "leftAt" IS NULL
+      `;
+    }
+
+    if (nextGroupId) {
+      await tx.$executeRaw`
+        INSERT INTO "student_group_histories" ("id", "studentId", "groupId", "joinedAt", "createdAt", "updatedAt")
+        VALUES (${randomUUID()}, ${studentId}, ${nextGroupId}, ${joinedAt}, ${joinedAt}, ${joinedAt})
+      `;
+    }
+  }
 
   private async assertManagerStudentAccess(studentId: string, currentUserId?: string, userRole?: UserRole) {
     if (userRole !== UserRole.MANAGER || !currentUserId) {
@@ -488,7 +516,50 @@ export class StudentCrudService {
       }
     }
 
-    return student;
+    const groupHistory = await this.prisma.$queryRaw<Array<{
+      id: string;
+      groupId: string;
+      joinedAt: Date;
+      leftAt: Date | null;
+      group_name: string;
+      group_level: string | null;
+      center_id: string;
+      center_name: string;
+    }>>`
+      SELECT
+        h."id",
+        h."groupId",
+        h."joinedAt",
+        h."leftAt",
+        g."name" AS "group_name",
+        g."level" AS "group_level",
+        c."id" AS "center_id",
+        c."name" AS "center_name"
+      FROM "student_group_histories" h
+      INNER JOIN "groups" g ON g."id" = h."groupId"
+      INNER JOIN "centers" c ON c."id" = g."centerId"
+      WHERE h."studentId" = ${id}
+      ORDER BY h."joinedAt" DESC
+    `;
+
+    return {
+      ...student,
+      groupHistory: groupHistory.map((entry) => ({
+        id: entry.id,
+        groupId: entry.groupId,
+        joinedAt: entry.joinedAt,
+        leftAt: entry.leftAt,
+        group: {
+          id: entry.groupId,
+          name: entry.group_name,
+          level: entry.group_level,
+          center: {
+            id: entry.center_id,
+            name: entry.center_name,
+          },
+        },
+      })),
+    };
   }
 
   async findByUserId(userId: string) {
@@ -603,18 +674,22 @@ export class StudentCrudService {
       });
 
       // Create student profile
+      const studentCreateData: Prisma.StudentUncheckedCreateInput = {
+        userId: user.id,
+        groupId: dto.groupId,
+        teacherId: dto.teacherId,
+        parentName: dto.parentName,
+        parentPhone: dto.parentPhone,
+        parentEmail: dto.parentEmail,
+        monthlyFee: dto.monthlyFee,
+        notes: dto.notes,
+        receiveReports: dto.receiveReports ?? true,
+      };
+      (studentCreateData as Record<string, unknown>).age = dto.age;
+      (studentCreateData as Record<string, unknown>).parentPassportInfo = dto.parentPassportInfo;
+
       const student = await tx.student.create({
-        data: {
-          userId: user.id,
-          groupId: dto.groupId,
-          teacherId: dto.teacherId,
-          parentName: dto.parentName,
-          parentPhone: dto.parentPhone,
-          parentEmail: dto.parentEmail,
-          monthlyFee: dto.monthlyFee,
-          notes: dto.notes,
-          receiveReports: dto.receiveReports ?? true,
-        },
+        data: studentCreateData,
         include: {
           user: {
             select: {
@@ -629,6 +704,14 @@ export class StudentCrudService {
           group: { select: { id: true, name: true } },
         },
       });
+
+      if (dto.groupId) {
+        const now = new Date();
+        await tx.$executeRaw`
+          INSERT INTO "student_group_histories" ("id", "studentId", "groupId", "joinedAt", "createdAt", "updatedAt")
+          VALUES (${randomUUID()}, ${student.id}, ${dto.groupId}, ${now}, ${now}, ${now})
+        `;
+      }
 
       // Add to group chat if group exists
       if (dto.groupId) {
@@ -683,9 +766,11 @@ export class StudentCrudService {
 
     // Update student fields
     const updateData: {
+      age?: number;
       parentName?: string;
       parentPhone?: string;
       parentEmail?: string;
+      parentPassportInfo?: string;
       monthlyFee?: number;
       notes?: string;
       receiveReports?: boolean;
@@ -693,9 +778,11 @@ export class StudentCrudService {
       teacherId?: string | null;
       registerDate?: Date | null;
     } = {
+      age: dto.age,
       parentName: dto.parentName,
       parentPhone: dto.parentPhone,
       parentEmail: dto.parentEmail,
+      parentPassportInfo: dto.parentPassportInfo,
       monthlyFee: dto.monthlyFee,
       notes: dto.notes,
       receiveReports: dto.receiveReports,
@@ -740,43 +827,58 @@ export class StudentCrudService {
         : null;
     }
 
-    return this.prisma.student.update({
-      where: { id },
-      data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            phone: true,
-            status: true,
+    const previousGroupId = student.groupId ?? null;
+    const joinedAtForNewGroup = dto.registerDate ? new Date(dto.registerDate) : new Date();
+
+    return this.prisma.$transaction(async (tx) => {
+      const updatedStudent = await tx.student.update({
+        where: { id },
+        data: updateData,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              phone: true,
+              status: true,
+            },
           },
-        },
-        group: { 
-          select: { 
-            id: true, 
-            name: true,
-            level: true,
-            center: { select: { id: true, name: true } },
-          } 
-        },
-        teacher: {
-          select: {
-            id: true,
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                phone: true,
+          group: { 
+            select: { 
+              id: true, 
+              name: true,
+              level: true,
+              center: { select: { id: true, name: true } },
+            } 
+          },
+          teacher: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  phone: true,
+                },
               },
             },
           },
         },
-      },
+      });
+
+      await this.syncStudentGroupHistory(
+        tx,
+        id,
+        previousGroupId,
+        updatedStudent.groupId ?? null,
+        joinedAtForNewGroup,
+      );
+
+      return updatedStudent;
     });
   }
 

@@ -15,12 +15,14 @@ const updateStudentSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
   phone: z.string().max(50, 'Phone must be at most 50 characters').optional().or(z.literal('')),
+  age: z.number().int('Age must be a whole number').min(1, 'Age must be at least 1').max(120, 'Age must be reasonable').optional(),
   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
   groupId: z.string().optional().or(z.literal('')),
   teacherId: z.string().optional().or(z.literal('')),
   parentName: z.string().max(100, 'Parent name must be at most 100 characters').optional().or(z.literal('')),
   parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional().or(z.literal('')),
   parentEmail: z.string().email('Invalid email address').optional().or(z.literal('')),
+  parentPassportInfo: z.string().max(100, 'Passport info must be at most 100 characters').optional().or(z.literal('')),
   monthlyFee: z.number().min(0, 'Monthly fee must be positive'),
   notes: z.string().max(500, 'Notes must be at most 500 characters').optional().or(z.literal('')),
   receiveReports: z.boolean().optional(),
@@ -54,12 +56,14 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       firstName: '',
       lastName: '',
       phone: '',
+      age: undefined,
       status: 'ACTIVE' as UserStatus,
       groupId: '',
       teacherId: '',
       parentName: '',
       parentPhone: '',
       parentEmail: '',
+      parentPassportInfo: '',
       monthlyFee: 0,
       notes: '',
       receiveReports: false,
@@ -69,6 +73,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
+  const watchedAge = watch('age');
+  const showParentSection = watchedAge !== undefined && watchedAge < 18;
 
   // Fetch teachers list and groups scoped to selected teacher
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
@@ -88,12 +94,14 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       setValue('firstName', student.user?.firstName || '');
       setValue('lastName', student.user?.lastName || '');
       setValue('phone', student.user?.phone || '');
+      setValue('age', student.age ?? undefined);
       setValue('status', student.user?.status || 'ACTIVE');
       setValue('teacherId', student.teacherId || '');
       setValue('groupId', student.groupId || '');
       setValue('parentName', student.parentName || '');
       setValue('parentPhone', student.parentPhone || '');
       setValue('parentEmail', student.parentEmail || '');
+      setValue('parentPassportInfo', student.parentPassportInfo || '');
       setValue('monthlyFee', typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) || 0 : Number(student.monthlyFee || 0));
       setValue('notes', student.notes || '');
       setValue('receiveReports', student.receiveReports ?? true);
@@ -135,12 +143,14 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone || undefined,
+        age: data.age,
         status: data.status,
         groupId: data.groupId?.trim() ? data.groupId.trim() : null,
         teacherId: data.teacherId?.trim() ? data.teacherId.trim() : null,
         parentName: data.parentName || undefined,
         parentPhone: data.parentPhone || undefined,
         parentEmail: data.parentEmail || undefined,
+        parentPassportInfo: data.parentPassportInfo || undefined,
         monthlyFee: data.monthlyFee,
         notes: data.notes || undefined,
         receiveReports: data.receiveReports,
@@ -227,6 +237,19 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 {...register('phone')}
                 error={errors.phone?.message}
                 placeholder="+1 (555) 123-4567"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="age">Age</Label>
+              <Input
+                id="age"
+                type="number"
+                min="1"
+                max="120"
+                {...register('age', { valueAsNumber: true })}
+                error={errors.age?.message}
+                placeholder="Enter student's age"
               />
             </div>
 
@@ -325,6 +348,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               <p className="text-xs text-slate-500">Optional. Date when the student joined the group. Leave empty if not set.</p>
             </div>
 
+            {showParentSection && (
             <div className="border-t pt-4">
               <h3 className="text-sm font-semibold text-slate-800 mb-4">
                 Parent/Guardian Information
@@ -362,8 +386,19 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                     placeholder="parent@example.com"
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="parentPassportInfo">Parent Passport Information</Label>
+                  <Input
+                    id="parentPassportInfo"
+                    {...register('parentPassportInfo')}
+                    error={errors.parentPassportInfo?.message}
+                    placeholder="Passport number / ID"
+                  />
+                </div>
               </div>
             </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>

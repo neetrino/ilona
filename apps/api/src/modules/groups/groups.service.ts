@@ -9,6 +9,7 @@ import {
 } from './group.constants';
 import { JwtPayload } from '../../common/types/auth.types';
 import { assertManagerCenterAccess, getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class GroupsService {
@@ -599,10 +600,29 @@ export class GroupsService {
       }
     }
 
-    // Update student's group
-    await this.prisma.student.update({
-      where: { id: studentId },
-      data: { groupId },
+    const now = new Date();
+    const previousGroupId = student.groupId ?? null;
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.student.update({
+        where: { id: studentId },
+        data: { groupId },
+      });
+
+      if (previousGroupId !== groupId) {
+        if (previousGroupId) {
+          await tx.$executeRaw`
+            UPDATE "student_group_histories"
+            SET "leftAt" = ${now}, "updatedAt" = ${now}
+            WHERE "studentId" = ${studentId} AND "leftAt" IS NULL
+          `;
+        }
+
+        await tx.$executeRaw`
+          INSERT INTO "student_group_histories" ("id", "studentId", "groupId", "joinedAt", "createdAt", "updatedAt")
+          VALUES (${randomUUID()}, ${studentId}, ${groupId}, ${now}, ${now}, ${now})
+        `;
+      }
     });
 
     // Add student to group chat
@@ -658,10 +678,18 @@ export class GroupsService {
       throw new BadRequestException('Student is not in this group');
     }
 
-    // Remove from group
-    await this.prisma.student.update({
-      where: { id: studentId },
-      data: { groupId: null },
+    const now = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      await tx.student.update({
+        where: { id: studentId },
+        data: { groupId: null },
+      });
+
+      await tx.$executeRaw`
+        UPDATE "student_group_histories"
+        SET "leftAt" = ${now}, "updatedAt" = ${now}
+        WHERE "studentId" = ${studentId} AND "leftAt" IS NULL
+      `;
     });
 
     // Mark as left in chat

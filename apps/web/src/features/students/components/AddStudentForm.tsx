@@ -22,6 +22,7 @@ const createStudentSchema = z.object({
   parentName: z.string().max(100, 'Parent name must be at most 100 characters').optional(),
   parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional(),
   parentEmail: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),
+  parentPassportInfo: z.string().max(100, 'Passport info must be at most 100 characters').optional(),
   monthlyFee: z.number().min(0, 'Monthly fee must be positive'),
   notes: z.string().max(500, 'Notes must be at most 500 characters').optional(),
   receiveReports: z.boolean().optional(),
@@ -53,6 +54,13 @@ const createStudentSchema = z.object({
         code: z.ZodIssueCode.custom,
         message: 'Please enter a valid email address',
         path: ['parentEmail'],
+      });
+    }
+    if (!data.parentPassportInfo || data.parentPassportInfo.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Parent passport information is required for students under 18',
+        path: ['parentPassportInfo'],
       });
     }
   }
@@ -96,6 +104,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       parentName: '',
       parentPhone: '',
       parentEmail: '',
+      parentPassportInfo: '',
       monthlyFee: 0,
       notes: '',
       receiveReports: true,
@@ -130,6 +139,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       setValue('parentName', '');
       setValue('parentPhone', '');
       setValue('parentEmail', '');
+      setValue('parentPassportInfo', '');
     }
   }, [age, setValue]);
 
@@ -143,11 +153,13 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone || undefined,
+        age: data.age,
         groupId: data.groupId || undefined,
         teacherId: data.teacherId || undefined,
         parentName: data.parentName || undefined,
         parentPhone: data.parentPhone || undefined,
         parentEmail: data.parentEmail || undefined,
+        parentPassportInfo: data.parentPassportInfo || undefined,
         monthlyFee: data.monthlyFee,
         notes: data.notes || undefined,
         receiveReports: data.receiveReports ?? true,
@@ -384,6 +396,18 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
                     {...register('parentEmail')}
                     error={errors.parentEmail?.message}
                     placeholder="parent@example.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="parentPassportInfo">
+                    Parent Passport Information <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="parentPassportInfo"
+                    {...register('parentPassportInfo')}
+                    error={errors.parentPassportInfo?.message}
+                    placeholder="Passport number / ID"
                   />
                 </div>
               </div>

@@ -31,9 +31,9 @@ export class FeedbackController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('teacherId') teacherId?: string,
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user?: JwtPayload,
   ): Promise<unknown> {
-    return this.feedbackService.getByStudent(studentId, user.sub, user.role, {
+    return this.feedbackService.getByStudent(studentId, user!.sub, user!.role, {
       dateFrom: dateFrom ? new Date(dateFrom) : undefined,
       dateTo: dateTo ? new Date(dateTo) : undefined,
       teacherId: teacherId || undefined,

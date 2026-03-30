@@ -28,6 +28,7 @@ import {
 } from '@ilona/database';
 import type { Prisma } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
@@ -417,15 +418,26 @@ export class LeadsService {
       },
     });
 
-    await tx.student.create({
-      data: {
-        userId: user.id,
-        leadId,
-        groupId: lead.groupId ?? undefined,
-        teacherId: lead.teacherId ?? undefined,
-        monthlyFee: DEFAULT_MONTHLY_FEE,
-      },
+    const studentCreateData: Prisma.StudentUncheckedCreateInput = {
+      userId: user.id,
+      leadId,
+      groupId: lead.groupId ?? undefined,
+      teacherId: lead.teacherId ?? undefined,
+      monthlyFee: DEFAULT_MONTHLY_FEE,
+    };
+    (studentCreateData as Record<string, unknown>).age = lead.age ?? undefined;
+
+    const createdStudent = await tx.student.create({
+      data: studentCreateData,
     });
+
+    if (lead.groupId) {
+      const now = new Date();
+      await tx.$executeRaw`
+        INSERT INTO "student_group_histories" ("id", "studentId", "groupId", "joinedAt", "createdAt", "updatedAt")
+        VALUES (${randomUUID()}, ${createdStudent.id}, ${lead.groupId}, ${now}, ${now}, ${now})
+      `;
+    }
   }
 
   async getActivities(leadId: string, user?: JwtPayload) {

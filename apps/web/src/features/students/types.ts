@@ -5,9 +5,11 @@ export interface Student {
   userId: string;
   groupId?: string | null;
   teacherId?: string | null;
+  age?: number | null;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
+  parentPassportInfo?: string;
   monthlyFee: number;
   notes?: string;
   receiveReports: boolean;
@@ -29,8 +31,18 @@ export interface Student {
   };
   /** Date when student joined a group (manual, Admin-only). ISO date string. */
   registerDate?: string | null;
+  enrolledAt?: string;
+  groupHistory?: StudentGroupHistoryEntry[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface StudentGroupHistoryEntry {
+  id: string;
+  groupId: string;
+  joinedAt: string;
+  leftAt?: string | null;
+  group: StudentGroup;
 }
 
 export interface StudentGroup {
@@ -105,11 +117,13 @@ export interface CreateStudentDto {
   firstName: string;
   lastName: string;
   phone?: string;
+  age: number;
   groupId?: string;
   teacherId?: string;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
+  parentPassportInfo?: string;
   monthlyFee: number;
   notes?: string;
   receiveReports?: boolean;
@@ -119,12 +133,14 @@ export interface UpdateStudentDto {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  age?: number;
   status?: UserStatus;
   groupId?: string | null;
   teacherId?: string | null;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
+  parentPassportInfo?: string;
   monthlyFee?: number;
   notes?: string;
   receiveReports?: boolean;
