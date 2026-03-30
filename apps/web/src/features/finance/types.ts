@@ -17,6 +17,10 @@ export interface Payment {
   paymentMethod?: string | null;
   student: {
     id: string;
+    group?: {
+      id: string;
+      name: string;
+    } | null;
     user: {
       id: string;
       firstName: string;

@@ -62,7 +62,11 @@ export function FinanceFilters({
             type="search"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={`Search ${activeTab === 'payments' ? 'payments' : 'salaries'}...`}
+            placeholder={
+              activeTab === 'payments'
+                ? 'Search groups, students, payments...'
+                : 'Search salaries...'
+            }
             className="w-full pl-10 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
           {isSearching && (
