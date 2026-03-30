@@ -7,7 +7,7 @@ import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle,
 import { useUpdateStudent, useStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
 
@@ -77,7 +77,10 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     !!watchedTeacherId,
   );
   const teachers = teachersData?.items || [];
-  const groupsForTeacher = watchedTeacherId ? groupsData?.items ?? [] : [];
+  const groupsForTeacher = useMemo(
+    () => (watchedTeacherId ? groupsData?.items ?? [] : []),
+    [watchedTeacherId, groupsData?.items],
+  );
 
   // Pre-fill form when student data is loaded
   useEffect(() => {

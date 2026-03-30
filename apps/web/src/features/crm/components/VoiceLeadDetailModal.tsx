@@ -87,7 +87,7 @@ export function VoiceLeadDetailModal({
 
   const centers = centersProp ?? centersData?.items ?? [];
   const teachers = teachersProp ?? teachersData?.items ?? [];
-  const groups = groupsProp ?? groupsData?.items ?? [];
+  const groups = useMemo(() => groupsProp ?? groupsData?.items ?? [], [groupsProp, groupsData?.items]);
   const selectedTeacherId = form.teacherId ?? '';
   const groupsForSelectedTeacher = useMemo(
     () => (selectedTeacherId ? groups.filter((group) => group.teacherId === selectedTeacherId) : []),

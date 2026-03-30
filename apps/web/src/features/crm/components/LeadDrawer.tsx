@@ -45,7 +45,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
     enabled: !!leadId,
   });
   const [form, setForm] = useState<Partial<CrmLead>>({});
-  const groups = groupsData?.items ?? [];
+  const groups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
   const selectedTeacherId = form.teacherId ?? '';
   const groupsForSelectedTeacher = useMemo(
     () => (selectedTeacherId ? groups.filter((group) => group.teacherId === selectedTeacherId) : []),
