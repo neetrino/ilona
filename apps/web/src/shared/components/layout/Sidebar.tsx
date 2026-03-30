@@ -117,7 +117,6 @@ const icons = {
 function getNavItems(role: string, t: (key: string) => string): NavItem[] {
   switch (role) {
     case 'ADMIN':
-    case 'MANAGER':
       return [
         { label: t('dashboard'), href: '/admin/dashboard', icon: icons.dashboard },
         { label: t('crm'), href: '/admin/crm', icon: icons.crm },
@@ -129,6 +128,16 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
         { label: t('analytics'), href: '/admin/analytics', icon: icons.analytics },
         { label: t('settings'), href: '/admin/settings', icon: icons.settings },
+      ];
+    case 'MANAGER':
+      return [
+        { label: t('dashboard'), href: '/admin/dashboard', icon: icons.dashboard },
+        { label: t('crm'), href: '/admin/crm', icon: icons.crm },
+        { label: t('groups'), href: '/admin/groups', icon: icons.groups },
+        { label: t('teachers'), href: '/admin/teachers', icon: icons.teachers },
+        { label: t('students'), href: '/admin/students', icon: icons.students },
+        { label: t('calendar'), href: '/admin/calendar', icon: icons.calendar },
+        { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
       ];
     case 'TEACHER':
       return [

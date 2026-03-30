@@ -150,6 +150,14 @@ exports.Prisma.CenterScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ManagerProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  centerId: 'centerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.GroupScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -524,6 +532,7 @@ exports.CrmLeadAttachmentType = exports.$Enums.CrmLeadAttachmentType = {
 exports.Prisma.ModelName = {
   User: 'User',
   Center: 'Center',
+  ManagerProfile: 'ManagerProfile',
   Group: 'Group',
   Teacher: 'Teacher',
   Student: 'Student',

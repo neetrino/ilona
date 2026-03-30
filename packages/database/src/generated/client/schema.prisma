@@ -129,6 +129,7 @@ model User {
   notifications           Notification[]
   crmLeadsCreated         CrmLead[]         @relation("LeadCreatedBy")
   crmLeadsAssignedManager CrmLead[]         @relation("LeadAssignedManager")
+  managerProfile          ManagerProfile?
 
   @@index([email])
   @@index([role])
@@ -152,10 +153,26 @@ model Center {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  groups   Group[]
-  crmLeads CrmLead[]
+  groups          Group[]
+  crmLeads        CrmLead[]
+  managerProfiles ManagerProfile[]
 
   @@map("centers")
+}
+
+model ManagerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  centerId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  center Center @relation(fields: [centerId], references: [id], onDelete: Restrict)
+
+  @@index([centerId])
+  @@map("manager_profiles")
 }
 
 model Group {
@@ -163,7 +180,7 @@ model Group {
   name        String
   level       String? // Beginner, Elementary, Intermediate, etc.
   description String?
-  maxStudents Int      @default(15)
+  maxStudents Int      @default(8)
   centerId    String
   teacherId   String?
   isActive    Boolean  @default(true)

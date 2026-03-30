@@ -44,7 +44,7 @@ export class LeadsController {
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Create a new lead' })
   create(@Body() dto: CreateLeadDto, @CurrentUser() user: JwtPayload): Promise<unknown> {
-    return this.leadsService.create(dto, user.sub);
+    return this.leadsService.create(dto, user.sub, user);
   }
 
   @Post('voice')
@@ -101,7 +101,7 @@ export class LeadsController {
         sortBy: query.sortBy,
         sortOrder: query.sortOrder,
       },
-      user.role,
+      user,
     );
   }
 
@@ -123,7 +123,7 @@ export class LeadsController {
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Get lead by ID' })
   findById(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.leadsService.findById(id, user.sub, user.role);
+    return this.leadsService.findById(id, user.sub, user);
   }
 
   @Patch(':id')
@@ -134,7 +134,7 @@ export class LeadsController {
     @Body() dto: UpdateLeadDto,
     @CurrentUser() user: JwtPayload,
   ): Promise<unknown> {
-    return this.leadsService.update(id, dto, user.sub, user.role);
+    return this.leadsService.update(id, dto, user.sub, user);
   }
 
   @Post(':id/status')
@@ -146,15 +146,15 @@ export class LeadsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<unknown> {
     return this.leadsService.changeStatus(id, dto, user.sub, {
-      userRole: user.role,
+      user,
     });
   }
 
   @Get(':id/activities')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Get lead activity timeline' })
-  getActivities(@Param('id') id: string): Promise<unknown> {
-    return this.leadsService.getActivities(id);
+  getActivities(@Param('id') id: string, @CurrentUser() user: JwtPayload): Promise<unknown> {
+    return this.leadsService.getActivities(id, user);
   }
 
   @Post(':id/comments')
@@ -165,7 +165,7 @@ export class LeadsController {
     @Body() dto: AddCommentDto,
     @CurrentUser() user: JwtPayload,
   ): Promise<unknown> {
-    return this.leadsService.addComment(id, dto, user.sub);
+    return this.leadsService.addComment(id, dto, user.sub, user);
   }
 
   @Post(':id/recordings/presign')
@@ -174,12 +174,13 @@ export class LeadsController {
   getPresignedRecordingUrl(
     @Param('id') id: string,
     @Body() body: { fileName: string; mimeType: string },
-    @CurrentUser() _user: JwtPayload,
+    @CurrentUser() user: JwtPayload,
   ) {
     return this.leadsService.getPresignedRecordingUrl(
       id,
       body.fileName,
       body.mimeType,
+      user,
     );
   }
 
@@ -191,13 +192,13 @@ export class LeadsController {
     @Body() dto: ConfirmRecordingDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.leadsService.confirmRecording(id, dto, user.sub);
+    return this.leadsService.confirmRecording(id, dto, user.sub, user);
   }
 
   @Delete(':id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Delete a lead (and its voice recordings)' })
   delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.leadsService.delete(id, user.sub, user.role);
+    return this.leadsService.delete(id, user);
   }
 }

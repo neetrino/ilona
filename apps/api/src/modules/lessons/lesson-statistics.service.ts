@@ -9,10 +9,11 @@ import { Prisma } from '@ilona/database';
 export class LessonStatisticsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getLessonStatistics(teacherId?: string, dateFrom?: Date, dateTo?: Date) {
+  async getLessonStatistics(teacherId?: string, dateFrom?: Date, dateTo?: Date, centerId?: string) {
     const where: Prisma.LessonWhereInput = {};
 
     if (teacherId) where.teacherId = teacherId;
+    if (centerId) where.group = { centerId };
 
     if (dateFrom || dateTo) {
       where.scheduledAt = {};

@@ -24,6 +24,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Center = $Result.DefaultSelection<Prisma.$CenterPayload>
 /**
+ * Model ManagerProfile
+ * 
+ */
+export type ManagerProfile = $Result.DefaultSelection<Prisma.$ManagerProfilePayload>
+/**
  * Model Group
  * 
  */
@@ -430,6 +435,16 @@ export class PrismaClient<
     * ```
     */
   get center(): Prisma.CenterDelegate<ExtArgs>;
+
+  /**
+   * `prisma.managerProfile`: Exposes CRUD operations for the **ManagerProfile** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ManagerProfiles
+    * const managerProfiles = await prisma.managerProfile.findMany()
+    * ```
+    */
+  get managerProfile(): Prisma.ManagerProfileDelegate<ExtArgs>;
 
   /**
    * `prisma.group`: Exposes CRUD operations for the **Group** model.
@@ -1053,6 +1068,7 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Center: 'Center',
+    ManagerProfile: 'ManagerProfile',
     Group: 'Group',
     Teacher: 'Teacher',
     Student: 'Student',
@@ -1086,7 +1102,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "center" | "group" | "teacher" | "student" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
+      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "student" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1227,6 +1243,76 @@ export namespace Prisma {
           count: {
             args: Prisma.CenterCountArgs<ExtArgs>
             result: $Utils.Optional<CenterCountAggregateOutputType> | number
+          }
+        }
+      }
+      ManagerProfile: {
+        payload: Prisma.$ManagerProfilePayload<ExtArgs>
+        fields: Prisma.ManagerProfileFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ManagerProfileFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ManagerProfileFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          findFirst: {
+            args: Prisma.ManagerProfileFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ManagerProfileFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          findMany: {
+            args: Prisma.ManagerProfileFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>[]
+          }
+          create: {
+            args: Prisma.ManagerProfileCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          createMany: {
+            args: Prisma.ManagerProfileCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ManagerProfileCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>[]
+          }
+          delete: {
+            args: Prisma.ManagerProfileDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          update: {
+            args: Prisma.ManagerProfileUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          deleteMany: {
+            args: Prisma.ManagerProfileDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ManagerProfileUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ManagerProfileUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ManagerProfilePayload>
+          }
+          aggregate: {
+            args: Prisma.ManagerProfileAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateManagerProfile>
+          }
+          groupBy: {
+            args: Prisma.ManagerProfileGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ManagerProfileGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ManagerProfileCountArgs<ExtArgs>
+            result: $Utils.Optional<ManagerProfileCountAggregateOutputType> | number
           }
         }
       }
@@ -2720,11 +2806,13 @@ export namespace Prisma {
   export type CenterCountOutputType = {
     groups: number
     crmLeads: number
+    managerProfiles: number
   }
 
   export type CenterCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     groups?: boolean | CenterCountOutputTypeCountGroupsArgs
     crmLeads?: boolean | CenterCountOutputTypeCountCrmLeadsArgs
+    managerProfiles?: boolean | CenterCountOutputTypeCountManagerProfilesArgs
   }
 
   // Custom InputTypes
@@ -2750,6 +2838,13 @@ export namespace Prisma {
    */
   export type CenterCountOutputTypeCountCrmLeadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CrmLeadWhereInput
+  }
+
+  /**
+   * CenterCountOutputType without action
+   */
+  export type CenterCountOutputTypeCountManagerProfilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ManagerProfileWhereInput
   }
 
 
@@ -3287,6 +3382,7 @@ export namespace Prisma {
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     crmLeadsCreated?: boolean | User$crmLeadsCreatedArgs<ExtArgs>
     crmLeadsAssignedManager?: boolean | User$crmLeadsAssignedManagerArgs<ExtArgs>
+    managerProfile?: boolean | User$managerProfileArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3328,6 +3424,7 @@ export namespace Prisma {
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     crmLeadsCreated?: boolean | User$crmLeadsCreatedArgs<ExtArgs>
     crmLeadsAssignedManager?: boolean | User$crmLeadsAssignedManagerArgs<ExtArgs>
+    managerProfile?: boolean | User$managerProfileArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3342,6 +3439,7 @@ export namespace Prisma {
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       crmLeadsCreated: Prisma.$CrmLeadPayload<ExtArgs>[]
       crmLeadsAssignedManager: Prisma.$CrmLeadPayload<ExtArgs>[]
+      managerProfile: Prisma.$ManagerProfilePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3727,6 +3825,7 @@ export namespace Prisma {
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
     crmLeadsCreated<T extends User$crmLeadsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$crmLeadsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findMany"> | Null>
     crmLeadsAssignedManager<T extends User$crmLeadsAssignedManagerArgs<ExtArgs> = {}>(args?: Subset<T, User$crmLeadsAssignedManagerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findMany"> | Null>
+    managerProfile<T extends User$managerProfileArgs<ExtArgs> = {}>(args?: Subset<T, User$managerProfileArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4212,6 +4311,21 @@ export namespace Prisma {
   }
 
   /**
+   * User.managerProfile
+   */
+  export type User$managerProfileArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    where?: ManagerProfileWhereInput
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4432,6 +4546,7 @@ export namespace Prisma {
     updatedAt?: boolean
     groups?: boolean | Center$groupsArgs<ExtArgs>
     crmLeads?: boolean | Center$crmLeadsArgs<ExtArgs>
+    managerProfiles?: boolean | Center$managerProfilesArgs<ExtArgs>
     _count?: boolean | CenterCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["center"]>
 
@@ -4464,6 +4579,7 @@ export namespace Prisma {
   export type CenterInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     groups?: boolean | Center$groupsArgs<ExtArgs>
     crmLeads?: boolean | Center$crmLeadsArgs<ExtArgs>
+    managerProfiles?: boolean | Center$managerProfilesArgs<ExtArgs>
     _count?: boolean | CenterCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CenterIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -4473,6 +4589,7 @@ export namespace Prisma {
     objects: {
       groups: Prisma.$GroupPayload<ExtArgs>[]
       crmLeads: Prisma.$CrmLeadPayload<ExtArgs>[]
+      managerProfiles: Prisma.$ManagerProfilePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4851,6 +4968,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     groups<T extends Center$groupsArgs<ExtArgs> = {}>(args?: Subset<T, Center$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany"> | Null>
     crmLeads<T extends Center$crmLeadsArgs<ExtArgs> = {}>(args?: Subset<T, Center$crmLeadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findMany"> | Null>
+    managerProfiles<T extends Center$managerProfilesArgs<ExtArgs> = {}>(args?: Subset<T, Center$managerProfilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5244,6 +5362,26 @@ export namespace Prisma {
   }
 
   /**
+   * Center.managerProfiles
+   */
+  export type Center$managerProfilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    where?: ManagerProfileWhereInput
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    cursor?: ManagerProfileWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ManagerProfileScalarFieldEnum | ManagerProfileScalarFieldEnum[]
+  }
+
+  /**
    * Center without action
    */
   export type CenterDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5255,6 +5393,945 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CenterInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ManagerProfile
+   */
+
+  export type AggregateManagerProfile = {
+    _count: ManagerProfileCountAggregateOutputType | null
+    _min: ManagerProfileMinAggregateOutputType | null
+    _max: ManagerProfileMaxAggregateOutputType | null
+  }
+
+  export type ManagerProfileMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    centerId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ManagerProfileMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    centerId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ManagerProfileCountAggregateOutputType = {
+    id: number
+    userId: number
+    centerId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ManagerProfileMinAggregateInputType = {
+    id?: true
+    userId?: true
+    centerId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ManagerProfileMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    centerId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ManagerProfileCountAggregateInputType = {
+    id?: true
+    userId?: true
+    centerId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ManagerProfileAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ManagerProfile to aggregate.
+     */
+    where?: ManagerProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ManagerProfiles to fetch.
+     */
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ManagerProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ManagerProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ManagerProfiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ManagerProfiles
+    **/
+    _count?: true | ManagerProfileCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ManagerProfileMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ManagerProfileMaxAggregateInputType
+  }
+
+  export type GetManagerProfileAggregateType<T extends ManagerProfileAggregateArgs> = {
+        [P in keyof T & keyof AggregateManagerProfile]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateManagerProfile[P]>
+      : GetScalarType<T[P], AggregateManagerProfile[P]>
+  }
+
+
+
+
+  export type ManagerProfileGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ManagerProfileWhereInput
+    orderBy?: ManagerProfileOrderByWithAggregationInput | ManagerProfileOrderByWithAggregationInput[]
+    by: ManagerProfileScalarFieldEnum[] | ManagerProfileScalarFieldEnum
+    having?: ManagerProfileScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ManagerProfileCountAggregateInputType | true
+    _min?: ManagerProfileMinAggregateInputType
+    _max?: ManagerProfileMaxAggregateInputType
+  }
+
+  export type ManagerProfileGroupByOutputType = {
+    id: string
+    userId: string
+    centerId: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ManagerProfileCountAggregateOutputType | null
+    _min: ManagerProfileMinAggregateOutputType | null
+    _max: ManagerProfileMaxAggregateOutputType | null
+  }
+
+  type GetManagerProfileGroupByPayload<T extends ManagerProfileGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ManagerProfileGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ManagerProfileGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ManagerProfileGroupByOutputType[P]>
+            : GetScalarType<T[P], ManagerProfileGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ManagerProfileSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    centerId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["managerProfile"]>
+
+  export type ManagerProfileSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    centerId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["managerProfile"]>
+
+  export type ManagerProfileSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    centerId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ManagerProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+  }
+  export type ManagerProfileIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    center?: boolean | CenterDefaultArgs<ExtArgs>
+  }
+
+  export type $ManagerProfilePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ManagerProfile"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      center: Prisma.$CenterPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      centerId: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["managerProfile"]>
+    composites: {}
+  }
+
+  type ManagerProfileGetPayload<S extends boolean | null | undefined | ManagerProfileDefaultArgs> = $Result.GetResult<Prisma.$ManagerProfilePayload, S>
+
+  type ManagerProfileCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ManagerProfileFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ManagerProfileCountAggregateInputType | true
+    }
+
+  export interface ManagerProfileDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ManagerProfile'], meta: { name: 'ManagerProfile' } }
+    /**
+     * Find zero or one ManagerProfile that matches the filter.
+     * @param {ManagerProfileFindUniqueArgs} args - Arguments to find a ManagerProfile
+     * @example
+     * // Get one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ManagerProfileFindUniqueArgs>(args: SelectSubset<T, ManagerProfileFindUniqueArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ManagerProfile that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ManagerProfileFindUniqueOrThrowArgs} args - Arguments to find a ManagerProfile
+     * @example
+     * // Get one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ManagerProfileFindUniqueOrThrowArgs>(args: SelectSubset<T, ManagerProfileFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ManagerProfile that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileFindFirstArgs} args - Arguments to find a ManagerProfile
+     * @example
+     * // Get one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ManagerProfileFindFirstArgs>(args?: SelectSubset<T, ManagerProfileFindFirstArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ManagerProfile that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileFindFirstOrThrowArgs} args - Arguments to find a ManagerProfile
+     * @example
+     * // Get one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ManagerProfileFindFirstOrThrowArgs>(args?: SelectSubset<T, ManagerProfileFindFirstOrThrowArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ManagerProfiles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ManagerProfiles
+     * const managerProfiles = await prisma.managerProfile.findMany()
+     * 
+     * // Get first 10 ManagerProfiles
+     * const managerProfiles = await prisma.managerProfile.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const managerProfileWithIdOnly = await prisma.managerProfile.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ManagerProfileFindManyArgs>(args?: SelectSubset<T, ManagerProfileFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ManagerProfile.
+     * @param {ManagerProfileCreateArgs} args - Arguments to create a ManagerProfile.
+     * @example
+     * // Create one ManagerProfile
+     * const ManagerProfile = await prisma.managerProfile.create({
+     *   data: {
+     *     // ... data to create a ManagerProfile
+     *   }
+     * })
+     * 
+     */
+    create<T extends ManagerProfileCreateArgs>(args: SelectSubset<T, ManagerProfileCreateArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ManagerProfiles.
+     * @param {ManagerProfileCreateManyArgs} args - Arguments to create many ManagerProfiles.
+     * @example
+     * // Create many ManagerProfiles
+     * const managerProfile = await prisma.managerProfile.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ManagerProfileCreateManyArgs>(args?: SelectSubset<T, ManagerProfileCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ManagerProfiles and returns the data saved in the database.
+     * @param {ManagerProfileCreateManyAndReturnArgs} args - Arguments to create many ManagerProfiles.
+     * @example
+     * // Create many ManagerProfiles
+     * const managerProfile = await prisma.managerProfile.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ManagerProfiles and only return the `id`
+     * const managerProfileWithIdOnly = await prisma.managerProfile.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ManagerProfileCreateManyAndReturnArgs>(args?: SelectSubset<T, ManagerProfileCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a ManagerProfile.
+     * @param {ManagerProfileDeleteArgs} args - Arguments to delete one ManagerProfile.
+     * @example
+     * // Delete one ManagerProfile
+     * const ManagerProfile = await prisma.managerProfile.delete({
+     *   where: {
+     *     // ... filter to delete one ManagerProfile
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ManagerProfileDeleteArgs>(args: SelectSubset<T, ManagerProfileDeleteArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ManagerProfile.
+     * @param {ManagerProfileUpdateArgs} args - Arguments to update one ManagerProfile.
+     * @example
+     * // Update one ManagerProfile
+     * const managerProfile = await prisma.managerProfile.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ManagerProfileUpdateArgs>(args: SelectSubset<T, ManagerProfileUpdateArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ManagerProfiles.
+     * @param {ManagerProfileDeleteManyArgs} args - Arguments to filter ManagerProfiles to delete.
+     * @example
+     * // Delete a few ManagerProfiles
+     * const { count } = await prisma.managerProfile.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ManagerProfileDeleteManyArgs>(args?: SelectSubset<T, ManagerProfileDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ManagerProfiles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ManagerProfiles
+     * const managerProfile = await prisma.managerProfile.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ManagerProfileUpdateManyArgs>(args: SelectSubset<T, ManagerProfileUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ManagerProfile.
+     * @param {ManagerProfileUpsertArgs} args - Arguments to update or create a ManagerProfile.
+     * @example
+     * // Update or create a ManagerProfile
+     * const managerProfile = await prisma.managerProfile.upsert({
+     *   create: {
+     *     // ... data to create a ManagerProfile
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ManagerProfile we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ManagerProfileUpsertArgs>(args: SelectSubset<T, ManagerProfileUpsertArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ManagerProfiles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileCountArgs} args - Arguments to filter ManagerProfiles to count.
+     * @example
+     * // Count the number of ManagerProfiles
+     * const count = await prisma.managerProfile.count({
+     *   where: {
+     *     // ... the filter for the ManagerProfiles we want to count
+     *   }
+     * })
+    **/
+    count<T extends ManagerProfileCountArgs>(
+      args?: Subset<T, ManagerProfileCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ManagerProfileCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ManagerProfile.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ManagerProfileAggregateArgs>(args: Subset<T, ManagerProfileAggregateArgs>): Prisma.PrismaPromise<GetManagerProfileAggregateType<T>>
+
+    /**
+     * Group by ManagerProfile.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ManagerProfileGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ManagerProfileGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ManagerProfileGroupByArgs['orderBy'] }
+        : { orderBy?: ManagerProfileGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ManagerProfileGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetManagerProfileGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ManagerProfile model
+   */
+  readonly fields: ManagerProfileFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ManagerProfile.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ManagerProfileClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    center<T extends CenterDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CenterDefaultArgs<ExtArgs>>): Prisma__CenterClient<$Result.GetResult<Prisma.$CenterPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ManagerProfile model
+   */ 
+  interface ManagerProfileFieldRefs {
+    readonly id: FieldRef<"ManagerProfile", 'String'>
+    readonly userId: FieldRef<"ManagerProfile", 'String'>
+    readonly centerId: FieldRef<"ManagerProfile", 'String'>
+    readonly createdAt: FieldRef<"ManagerProfile", 'DateTime'>
+    readonly updatedAt: FieldRef<"ManagerProfile", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ManagerProfile findUnique
+   */
+  export type ManagerProfileFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfile to fetch.
+     */
+    where: ManagerProfileWhereUniqueInput
+  }
+
+  /**
+   * ManagerProfile findUniqueOrThrow
+   */
+  export type ManagerProfileFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfile to fetch.
+     */
+    where: ManagerProfileWhereUniqueInput
+  }
+
+  /**
+   * ManagerProfile findFirst
+   */
+  export type ManagerProfileFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfile to fetch.
+     */
+    where?: ManagerProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ManagerProfiles to fetch.
+     */
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ManagerProfiles.
+     */
+    cursor?: ManagerProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ManagerProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ManagerProfiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ManagerProfiles.
+     */
+    distinct?: ManagerProfileScalarFieldEnum | ManagerProfileScalarFieldEnum[]
+  }
+
+  /**
+   * ManagerProfile findFirstOrThrow
+   */
+  export type ManagerProfileFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfile to fetch.
+     */
+    where?: ManagerProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ManagerProfiles to fetch.
+     */
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ManagerProfiles.
+     */
+    cursor?: ManagerProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ManagerProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ManagerProfiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ManagerProfiles.
+     */
+    distinct?: ManagerProfileScalarFieldEnum | ManagerProfileScalarFieldEnum[]
+  }
+
+  /**
+   * ManagerProfile findMany
+   */
+  export type ManagerProfileFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which ManagerProfiles to fetch.
+     */
+    where?: ManagerProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ManagerProfiles to fetch.
+     */
+    orderBy?: ManagerProfileOrderByWithRelationInput | ManagerProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ManagerProfiles.
+     */
+    cursor?: ManagerProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ManagerProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ManagerProfiles.
+     */
+    skip?: number
+    distinct?: ManagerProfileScalarFieldEnum | ManagerProfileScalarFieldEnum[]
+  }
+
+  /**
+   * ManagerProfile create
+   */
+  export type ManagerProfileCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ManagerProfile.
+     */
+    data: XOR<ManagerProfileCreateInput, ManagerProfileUncheckedCreateInput>
+  }
+
+  /**
+   * ManagerProfile createMany
+   */
+  export type ManagerProfileCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ManagerProfiles.
+     */
+    data: ManagerProfileCreateManyInput | ManagerProfileCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ManagerProfile createManyAndReturn
+   */
+  export type ManagerProfileCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many ManagerProfiles.
+     */
+    data: ManagerProfileCreateManyInput | ManagerProfileCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ManagerProfile update
+   */
+  export type ManagerProfileUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ManagerProfile.
+     */
+    data: XOR<ManagerProfileUpdateInput, ManagerProfileUncheckedUpdateInput>
+    /**
+     * Choose, which ManagerProfile to update.
+     */
+    where: ManagerProfileWhereUniqueInput
+  }
+
+  /**
+   * ManagerProfile updateMany
+   */
+  export type ManagerProfileUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ManagerProfiles.
+     */
+    data: XOR<ManagerProfileUpdateManyMutationInput, ManagerProfileUncheckedUpdateManyInput>
+    /**
+     * Filter which ManagerProfiles to update
+     */
+    where?: ManagerProfileWhereInput
+  }
+
+  /**
+   * ManagerProfile upsert
+   */
+  export type ManagerProfileUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ManagerProfile to update in case it exists.
+     */
+    where: ManagerProfileWhereUniqueInput
+    /**
+     * In case the ManagerProfile found by the `where` argument doesn't exist, create a new ManagerProfile with this data.
+     */
+    create: XOR<ManagerProfileCreateInput, ManagerProfileUncheckedCreateInput>
+    /**
+     * In case the ManagerProfile was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ManagerProfileUpdateInput, ManagerProfileUncheckedUpdateInput>
+  }
+
+  /**
+   * ManagerProfile delete
+   */
+  export type ManagerProfileDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
+    /**
+     * Filter which ManagerProfile to delete.
+     */
+    where: ManagerProfileWhereUniqueInput
+  }
+
+  /**
+   * ManagerProfile deleteMany
+   */
+  export type ManagerProfileDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ManagerProfiles to delete
+     */
+    where?: ManagerProfileWhereInput
+  }
+
+  /**
+   * ManagerProfile without action
+   */
+  export type ManagerProfileDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ManagerProfile
+     */
+    select?: ManagerProfileSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ManagerProfileInclude<ExtArgs> | null
   }
 
 
@@ -24586,6 +25663,17 @@ export namespace Prisma {
   export type CenterScalarFieldEnum = (typeof CenterScalarFieldEnum)[keyof typeof CenterScalarFieldEnum]
 
 
+  export const ManagerProfileScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    centerId: 'centerId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ManagerProfileScalarFieldEnum = (typeof ManagerProfileScalarFieldEnum)[keyof typeof ManagerProfileScalarFieldEnum]
+
+
   export const GroupScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -25225,6 +26313,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     crmLeadsCreated?: CrmLeadListRelationFilter
     crmLeadsAssignedManager?: CrmLeadListRelationFilter
+    managerProfile?: XOR<ManagerProfileNullableRelationFilter, ManagerProfileWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
@@ -25247,6 +26336,7 @@ export namespace Prisma {
     notifications?: NotificationOrderByRelationAggregateInput
     crmLeadsCreated?: CrmLeadOrderByRelationAggregateInput
     crmLeadsAssignedManager?: CrmLeadOrderByRelationAggregateInput
+    managerProfile?: ManagerProfileOrderByWithRelationInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -25272,6 +26362,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     crmLeadsCreated?: CrmLeadListRelationFilter
     crmLeadsAssignedManager?: CrmLeadListRelationFilter
+    managerProfile?: XOR<ManagerProfileNullableRelationFilter, ManagerProfileWhereInput> | null
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -25326,6 +26417,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Center"> | Date | string
     groups?: GroupListRelationFilter
     crmLeads?: CrmLeadListRelationFilter
+    managerProfiles?: ManagerProfileListRelationFilter
   }
 
   export type CenterOrderByWithRelationInput = {
@@ -25341,6 +26433,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     groups?: GroupOrderByRelationAggregateInput
     crmLeads?: CrmLeadOrderByRelationAggregateInput
+    managerProfiles?: ManagerProfileOrderByRelationAggregateInput
   }
 
   export type CenterWhereUniqueInput = Prisma.AtLeast<{
@@ -25359,6 +26452,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Center"> | Date | string
     groups?: GroupListRelationFilter
     crmLeads?: CrmLeadListRelationFilter
+    managerProfiles?: ManagerProfileListRelationFilter
   }, "id">
 
   export type CenterOrderByWithAggregationInput = {
@@ -25391,6 +26485,64 @@ export namespace Prisma {
     isActive?: BoolWithAggregatesFilter<"Center"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Center"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Center"> | Date | string
+  }
+
+  export type ManagerProfileWhereInput = {
+    AND?: ManagerProfileWhereInput | ManagerProfileWhereInput[]
+    OR?: ManagerProfileWhereInput[]
+    NOT?: ManagerProfileWhereInput | ManagerProfileWhereInput[]
+    id?: StringFilter<"ManagerProfile"> | string
+    userId?: StringFilter<"ManagerProfile"> | string
+    centerId?: StringFilter<"ManagerProfile"> | string
+    createdAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    updatedAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    center?: XOR<CenterRelationFilter, CenterWhereInput>
+  }
+
+  export type ManagerProfileOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    center?: CenterOrderByWithRelationInput
+  }
+
+  export type ManagerProfileWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: ManagerProfileWhereInput | ManagerProfileWhereInput[]
+    OR?: ManagerProfileWhereInput[]
+    NOT?: ManagerProfileWhereInput | ManagerProfileWhereInput[]
+    centerId?: StringFilter<"ManagerProfile"> | string
+    createdAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    updatedAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    center?: XOR<CenterRelationFilter, CenterWhereInput>
+  }, "id" | "userId">
+
+  export type ManagerProfileOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ManagerProfileCountOrderByAggregateInput
+    _max?: ManagerProfileMaxOrderByAggregateInput
+    _min?: ManagerProfileMinOrderByAggregateInput
+  }
+
+  export type ManagerProfileScalarWhereWithAggregatesInput = {
+    AND?: ManagerProfileScalarWhereWithAggregatesInput | ManagerProfileScalarWhereWithAggregatesInput[]
+    OR?: ManagerProfileScalarWhereWithAggregatesInput[]
+    NOT?: ManagerProfileScalarWhereWithAggregatesInput | ManagerProfileScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ManagerProfile"> | string
+    userId?: StringWithAggregatesFilter<"ManagerProfile"> | string
+    centerId?: StringWithAggregatesFilter<"ManagerProfile"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ManagerProfile"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ManagerProfile"> | Date | string
   }
 
   export type GroupWhereInput = {
@@ -27116,6 +28268,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -27138,6 +28291,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -27160,6 +28314,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -27182,6 +28337,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -27242,6 +28398,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     groups?: GroupCreateNestedManyWithoutCenterInput
     crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUncheckedCreateInput = {
@@ -27257,6 +28414,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUpdateInput = {
@@ -27272,6 +28430,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     groups?: GroupUpdateManyWithoutCenterNestedInput
     crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterUncheckedUpdateInput = {
@@ -27287,6 +28446,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterCreateManyInput = {
@@ -27324,6 +28484,60 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     colorHex?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ManagerProfileCreateInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutManagerProfileInput
+    center: CenterCreateNestedOneWithoutManagerProfilesInput
+  }
+
+  export type ManagerProfileUncheckedCreateInput = {
+    id?: string
+    userId: string
+    centerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ManagerProfileUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutManagerProfileNestedInput
+    center?: CenterUpdateOneRequiredWithoutManagerProfilesNestedInput
+  }
+
+  export type ManagerProfileUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    centerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ManagerProfileCreateManyInput = {
+    id?: string
+    userId: string
+    centerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ManagerProfileUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ManagerProfileUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    centerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29309,6 +30523,11 @@ export namespace Prisma {
     none?: CrmLeadWhereInput
   }
 
+  export type ManagerProfileNullableRelationFilter = {
+    is?: ManagerProfileWhereInput | null
+    isNot?: ManagerProfileWhereInput | null
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -29470,7 +30689,17 @@ export namespace Prisma {
     none?: GroupWhereInput
   }
 
+  export type ManagerProfileListRelationFilter = {
+    every?: ManagerProfileWhereInput
+    some?: ManagerProfileWhereInput
+    none?: ManagerProfileWhereInput
+  }
+
   export type GroupOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ManagerProfileOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29521,6 +30750,40 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type UserRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type CenterRelationFilter = {
+    is?: CenterWhereInput
+    isNot?: CenterWhereInput
+  }
+
+  export type ManagerProfileCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ManagerProfileMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ManagerProfileMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    centerId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -29530,11 +30793,6 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntFilter<$PrismaModel> | number
-  }
-
-  export type CenterRelationFilter = {
-    is?: CenterWhereInput
-    isNot?: CenterWhereInput
   }
 
   export type StudentListRelationFilter = {
@@ -29675,11 +30933,6 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type UserRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
   }
 
   export type FeedbackListRelationFilter = {
@@ -30982,6 +32235,12 @@ export namespace Prisma {
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
+  export type ManagerProfileCreateNestedOneWithoutUserInput = {
+    create?: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutUserInput
+    connect?: ManagerProfileWhereUniqueInput
+  }
+
   export type TeacherUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
     connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
@@ -31027,6 +32286,12 @@ export namespace Prisma {
     connectOrCreate?: CrmLeadCreateOrConnectWithoutAssignedManagerInput | CrmLeadCreateOrConnectWithoutAssignedManagerInput[]
     createMany?: CrmLeadCreateManyAssignedManagerInputEnvelope
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+  }
+
+  export type ManagerProfileUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutUserInput
+    connect?: ManagerProfileWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -31143,6 +32408,16 @@ export namespace Prisma {
     deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
+  export type ManagerProfileUpdateOneWithoutUserNestedInput = {
+    create?: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutUserInput
+    upsert?: ManagerProfileUpsertWithoutUserInput
+    disconnect?: ManagerProfileWhereInput | boolean
+    delete?: ManagerProfileWhereInput | boolean
+    connect?: ManagerProfileWhereUniqueInput
+    update?: XOR<XOR<ManagerProfileUpdateToOneWithWhereWithoutUserInput, ManagerProfileUpdateWithoutUserInput>, ManagerProfileUncheckedUpdateWithoutUserInput>
+  }
+
   export type TeacherUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
     connectOrCreate?: TeacherCreateOrConnectWithoutUserInput
@@ -31233,6 +32508,16 @@ export namespace Prisma {
     deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
+  export type ManagerProfileUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutUserInput
+    upsert?: ManagerProfileUpsertWithoutUserInput
+    disconnect?: ManagerProfileWhereInput | boolean
+    delete?: ManagerProfileWhereInput | boolean
+    connect?: ManagerProfileWhereUniqueInput
+    update?: XOR<XOR<ManagerProfileUpdateToOneWithWhereWithoutUserInput, ManagerProfileUpdateWithoutUserInput>, ManagerProfileUncheckedUpdateWithoutUserInput>
+  }
+
   export type GroupCreateNestedManyWithoutCenterInput = {
     create?: XOR<GroupCreateWithoutCenterInput, GroupUncheckedCreateWithoutCenterInput> | GroupCreateWithoutCenterInput[] | GroupUncheckedCreateWithoutCenterInput[]
     connectOrCreate?: GroupCreateOrConnectWithoutCenterInput | GroupCreateOrConnectWithoutCenterInput[]
@@ -31247,6 +32532,13 @@ export namespace Prisma {
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
   }
 
+  export type ManagerProfileCreateNestedManyWithoutCenterInput = {
+    create?: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput> | ManagerProfileCreateWithoutCenterInput[] | ManagerProfileUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutCenterInput | ManagerProfileCreateOrConnectWithoutCenterInput[]
+    createMany?: ManagerProfileCreateManyCenterInputEnvelope
+    connect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+  }
+
   export type GroupUncheckedCreateNestedManyWithoutCenterInput = {
     create?: XOR<GroupCreateWithoutCenterInput, GroupUncheckedCreateWithoutCenterInput> | GroupCreateWithoutCenterInput[] | GroupUncheckedCreateWithoutCenterInput[]
     connectOrCreate?: GroupCreateOrConnectWithoutCenterInput | GroupCreateOrConnectWithoutCenterInput[]
@@ -31259,6 +32551,13 @@ export namespace Prisma {
     connectOrCreate?: CrmLeadCreateOrConnectWithoutCenterInput | CrmLeadCreateOrConnectWithoutCenterInput[]
     createMany?: CrmLeadCreateManyCenterInputEnvelope
     connect?: CrmLeadWhereUniqueInput | CrmLeadWhereUniqueInput[]
+  }
+
+  export type ManagerProfileUncheckedCreateNestedManyWithoutCenterInput = {
+    create?: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput> | ManagerProfileCreateWithoutCenterInput[] | ManagerProfileUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutCenterInput | ManagerProfileCreateOrConnectWithoutCenterInput[]
+    createMany?: ManagerProfileCreateManyCenterInputEnvelope
+    connect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -31293,6 +32592,20 @@ export namespace Prisma {
     deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
   }
 
+  export type ManagerProfileUpdateManyWithoutCenterNestedInput = {
+    create?: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput> | ManagerProfileCreateWithoutCenterInput[] | ManagerProfileUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutCenterInput | ManagerProfileCreateOrConnectWithoutCenterInput[]
+    upsert?: ManagerProfileUpsertWithWhereUniqueWithoutCenterInput | ManagerProfileUpsertWithWhereUniqueWithoutCenterInput[]
+    createMany?: ManagerProfileCreateManyCenterInputEnvelope
+    set?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    disconnect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    delete?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    connect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    update?: ManagerProfileUpdateWithWhereUniqueWithoutCenterInput | ManagerProfileUpdateWithWhereUniqueWithoutCenterInput[]
+    updateMany?: ManagerProfileUpdateManyWithWhereWithoutCenterInput | ManagerProfileUpdateManyWithWhereWithoutCenterInput[]
+    deleteMany?: ManagerProfileScalarWhereInput | ManagerProfileScalarWhereInput[]
+  }
+
   export type GroupUncheckedUpdateManyWithoutCenterNestedInput = {
     create?: XOR<GroupCreateWithoutCenterInput, GroupUncheckedCreateWithoutCenterInput> | GroupCreateWithoutCenterInput[] | GroupUncheckedCreateWithoutCenterInput[]
     connectOrCreate?: GroupCreateOrConnectWithoutCenterInput | GroupCreateOrConnectWithoutCenterInput[]
@@ -31319,6 +32632,48 @@ export namespace Prisma {
     update?: CrmLeadUpdateWithWhereUniqueWithoutCenterInput | CrmLeadUpdateWithWhereUniqueWithoutCenterInput[]
     updateMany?: CrmLeadUpdateManyWithWhereWithoutCenterInput | CrmLeadUpdateManyWithWhereWithoutCenterInput[]
     deleteMany?: CrmLeadScalarWhereInput | CrmLeadScalarWhereInput[]
+  }
+
+  export type ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput = {
+    create?: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput> | ManagerProfileCreateWithoutCenterInput[] | ManagerProfileUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: ManagerProfileCreateOrConnectWithoutCenterInput | ManagerProfileCreateOrConnectWithoutCenterInput[]
+    upsert?: ManagerProfileUpsertWithWhereUniqueWithoutCenterInput | ManagerProfileUpsertWithWhereUniqueWithoutCenterInput[]
+    createMany?: ManagerProfileCreateManyCenterInputEnvelope
+    set?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    disconnect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    delete?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    connect?: ManagerProfileWhereUniqueInput | ManagerProfileWhereUniqueInput[]
+    update?: ManagerProfileUpdateWithWhereUniqueWithoutCenterInput | ManagerProfileUpdateWithWhereUniqueWithoutCenterInput[]
+    updateMany?: ManagerProfileUpdateManyWithWhereWithoutCenterInput | ManagerProfileUpdateManyWithWhereWithoutCenterInput[]
+    deleteMany?: ManagerProfileScalarWhereInput | ManagerProfileScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutManagerProfileInput = {
+    create?: XOR<UserCreateWithoutManagerProfileInput, UserUncheckedCreateWithoutManagerProfileInput>
+    connectOrCreate?: UserCreateOrConnectWithoutManagerProfileInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type CenterCreateNestedOneWithoutManagerProfilesInput = {
+    create?: XOR<CenterCreateWithoutManagerProfilesInput, CenterUncheckedCreateWithoutManagerProfilesInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutManagerProfilesInput
+    connect?: CenterWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutManagerProfileNestedInput = {
+    create?: XOR<UserCreateWithoutManagerProfileInput, UserUncheckedCreateWithoutManagerProfileInput>
+    connectOrCreate?: UserCreateOrConnectWithoutManagerProfileInput
+    upsert?: UserUpsertWithoutManagerProfileInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutManagerProfileInput, UserUpdateWithoutManagerProfileInput>, UserUncheckedUpdateWithoutManagerProfileInput>
+  }
+
+  export type CenterUpdateOneRequiredWithoutManagerProfilesNestedInput = {
+    create?: XOR<CenterCreateWithoutManagerProfilesInput, CenterUncheckedCreateWithoutManagerProfilesInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutManagerProfilesInput
+    upsert?: CenterUpsertWithoutManagerProfilesInput
+    connect?: CenterWhereUniqueInput
+    update?: XOR<XOR<CenterUpdateToOneWithWhereWithoutManagerProfilesInput, CenterUpdateWithoutManagerProfilesInput>, CenterUncheckedUpdateWithoutManagerProfilesInput>
   }
 
   export type CenterCreateNestedOneWithoutGroupsInput = {
@@ -33499,6 +34854,25 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ManagerProfileCreateWithoutUserInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    center: CenterCreateNestedOneWithoutManagerProfilesInput
+  }
+
+  export type ManagerProfileUncheckedCreateWithoutUserInput = {
+    id?: string
+    centerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ManagerProfileCreateOrConnectWithoutUserInput = {
+    where: ManagerProfileWhereUniqueInput
+    create: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+  }
+
   export type TeacherUpsertWithoutUserInput = {
     update: XOR<TeacherUpdateWithoutUserInput, TeacherUncheckedUpdateWithoutUserInput>
     create: XOR<TeacherCreateWithoutUserInput, TeacherUncheckedCreateWithoutUserInput>
@@ -33756,6 +35130,31 @@ export namespace Prisma {
     data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutAssignedManagerInput>
   }
 
+  export type ManagerProfileUpsertWithoutUserInput = {
+    update: XOR<ManagerProfileUpdateWithoutUserInput, ManagerProfileUncheckedUpdateWithoutUserInput>
+    create: XOR<ManagerProfileCreateWithoutUserInput, ManagerProfileUncheckedCreateWithoutUserInput>
+    where?: ManagerProfileWhereInput
+  }
+
+  export type ManagerProfileUpdateToOneWithWhereWithoutUserInput = {
+    where?: ManagerProfileWhereInput
+    data: XOR<ManagerProfileUpdateWithoutUserInput, ManagerProfileUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ManagerProfileUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    center?: CenterUpdateOneRequiredWithoutManagerProfilesNestedInput
+  }
+
+  export type ManagerProfileUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    centerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type GroupCreateWithoutCenterInput = {
     id?: string
     name: string
@@ -33858,6 +35257,30 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ManagerProfileCreateWithoutCenterInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutManagerProfileInput
+  }
+
+  export type ManagerProfileUncheckedCreateWithoutCenterInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ManagerProfileCreateOrConnectWithoutCenterInput = {
+    where: ManagerProfileWhereUniqueInput
+    create: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput>
+  }
+
+  export type ManagerProfileCreateManyCenterInputEnvelope = {
+    data: ManagerProfileCreateManyCenterInput | ManagerProfileCreateManyCenterInput[]
+    skipDuplicates?: boolean
+  }
+
   export type GroupUpsertWithWhereUniqueWithoutCenterInput = {
     where: GroupWhereUniqueInput
     update: XOR<GroupUpdateWithoutCenterInput, GroupUncheckedUpdateWithoutCenterInput>
@@ -33906,6 +35329,213 @@ export namespace Prisma {
     data: XOR<CrmLeadUpdateManyMutationInput, CrmLeadUncheckedUpdateManyWithoutCenterInput>
   }
 
+  export type ManagerProfileUpsertWithWhereUniqueWithoutCenterInput = {
+    where: ManagerProfileWhereUniqueInput
+    update: XOR<ManagerProfileUpdateWithoutCenterInput, ManagerProfileUncheckedUpdateWithoutCenterInput>
+    create: XOR<ManagerProfileCreateWithoutCenterInput, ManagerProfileUncheckedCreateWithoutCenterInput>
+  }
+
+  export type ManagerProfileUpdateWithWhereUniqueWithoutCenterInput = {
+    where: ManagerProfileWhereUniqueInput
+    data: XOR<ManagerProfileUpdateWithoutCenterInput, ManagerProfileUncheckedUpdateWithoutCenterInput>
+  }
+
+  export type ManagerProfileUpdateManyWithWhereWithoutCenterInput = {
+    where: ManagerProfileScalarWhereInput
+    data: XOR<ManagerProfileUpdateManyMutationInput, ManagerProfileUncheckedUpdateManyWithoutCenterInput>
+  }
+
+  export type ManagerProfileScalarWhereInput = {
+    AND?: ManagerProfileScalarWhereInput | ManagerProfileScalarWhereInput[]
+    OR?: ManagerProfileScalarWhereInput[]
+    NOT?: ManagerProfileScalarWhereInput | ManagerProfileScalarWhereInput[]
+    id?: StringFilter<"ManagerProfile"> | string
+    userId?: StringFilter<"ManagerProfile"> | string
+    centerId?: StringFilter<"ManagerProfile"> | string
+    createdAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+    updatedAt?: DateTimeFilter<"ManagerProfile"> | Date | string
+  }
+
+  export type UserCreateWithoutManagerProfileInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    teacher?: TeacherCreateNestedOneWithoutUserInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+  }
+
+  export type UserUncheckedCreateWithoutManagerProfileInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+  }
+
+  export type UserCreateOrConnectWithoutManagerProfileInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutManagerProfileInput, UserUncheckedCreateWithoutManagerProfileInput>
+  }
+
+  export type CenterCreateWithoutManagerProfilesInput = {
+    id?: string
+    name: string
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    description?: string | null
+    colorHex?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    groups?: GroupCreateNestedManyWithoutCenterInput
+    crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
+  }
+
+  export type CenterUncheckedCreateWithoutManagerProfilesInput = {
+    id?: string
+    name: string
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    description?: string | null
+    colorHex?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
+  }
+
+  export type CenterCreateOrConnectWithoutManagerProfilesInput = {
+    where: CenterWhereUniqueInput
+    create: XOR<CenterCreateWithoutManagerProfilesInput, CenterUncheckedCreateWithoutManagerProfilesInput>
+  }
+
+  export type UserUpsertWithoutManagerProfileInput = {
+    update: XOR<UserUpdateWithoutManagerProfileInput, UserUncheckedUpdateWithoutManagerProfileInput>
+    create: XOR<UserCreateWithoutManagerProfileInput, UserUncheckedCreateWithoutManagerProfileInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutManagerProfileInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutManagerProfileInput, UserUncheckedUpdateWithoutManagerProfileInput>
+  }
+
+  export type UserUpdateWithoutManagerProfileInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutManagerProfileInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+  }
+
+  export type CenterUpsertWithoutManagerProfilesInput = {
+    update: XOR<CenterUpdateWithoutManagerProfilesInput, CenterUncheckedUpdateWithoutManagerProfilesInput>
+    create: XOR<CenterCreateWithoutManagerProfilesInput, CenterUncheckedCreateWithoutManagerProfilesInput>
+    where?: CenterWhereInput
+  }
+
+  export type CenterUpdateToOneWithWhereWithoutManagerProfilesInput = {
+    where?: CenterWhereInput
+    data: XOR<CenterUpdateWithoutManagerProfilesInput, CenterUncheckedUpdateWithoutManagerProfilesInput>
+  }
+
+  export type CenterUpdateWithoutManagerProfilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    groups?: GroupUpdateManyWithoutCenterNestedInput
+    crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
+  }
+
+  export type CenterUncheckedUpdateWithoutManagerProfilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
+  }
+
   export type CenterCreateWithoutGroupsInput = {
     id?: string
     name: string
@@ -33918,6 +35548,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUncheckedCreateWithoutGroupsInput = {
@@ -33932,6 +35563,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
   }
 
   export type CenterCreateOrConnectWithoutGroupsInput = {
@@ -34204,6 +35836,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterUncheckedUpdateWithoutGroupsInput = {
@@ -34218,6 +35851,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type TeacherUpsertWithoutGroupsInput = {
@@ -34419,6 +36053,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTeacherInput = {
@@ -34440,6 +36075,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTeacherInput = {
@@ -34793,6 +36429,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTeacherInput = {
@@ -34814,6 +36451,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type GroupUpsertWithWhereUniqueWithoutTeacherInput = {
@@ -34996,6 +36634,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutStudentInput = {
@@ -35017,6 +36656,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutStudentInput = {
@@ -35297,6 +36937,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStudentInput = {
@@ -35318,6 +36959,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type CrmLeadUpsertWithoutStudentInput = {
@@ -36869,6 +38511,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChatParticipantsInput = {
@@ -36890,6 +38533,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChatParticipantsInput = {
@@ -36960,6 +38604,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatParticipantsInput = {
@@ -36981,6 +38626,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ChatCreateWithoutMessagesInput = {
@@ -37029,6 +38675,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -37050,6 +38697,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -37120,6 +38768,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -37141,6 +38790,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -37162,6 +38812,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -37183,6 +38834,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -37220,6 +38872,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -37241,6 +38894,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutCrmLeadsCreatedInput = {
@@ -37262,6 +38916,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCrmLeadsCreatedInput = {
@@ -37283,6 +38938,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCrmLeadsCreatedInput = {
@@ -37309,6 +38965,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCrmLeadsAssignedManagerInput = {
@@ -37330,6 +38987,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCrmLeadsAssignedManagerInput = {
@@ -37431,6 +39089,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     groups?: GroupCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUncheckedCreateWithoutCrmLeadsInput = {
@@ -37445,6 +39104,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
   }
 
   export type CenterCreateOrConnectWithoutCrmLeadsInput = {
@@ -37581,6 +39241,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCrmLeadsCreatedInput = {
@@ -37602,6 +39263,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutCrmLeadsAssignedManagerInput = {
@@ -37634,6 +39296,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCrmLeadsAssignedManagerInput = {
@@ -37655,6 +39318,7 @@ export namespace Prisma {
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type TeacherUpsertWithoutCrmLeadsInput = {
@@ -37774,6 +39438,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     groups?: GroupUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterUncheckedUpdateWithoutCrmLeadsInput = {
@@ -37788,6 +39453,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type CrmLeadActivityUpsertWithWhereUniqueWithoutLeadInput = {
@@ -38500,6 +40166,13 @@ export namespace Prisma {
     notes?: string | null
   }
 
+  export type ManagerProfileCreateManyCenterInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type GroupUpdateWithoutCenterInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -38614,6 +40287,27 @@ export namespace Prisma {
     archivedReason?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type ManagerProfileUpdateWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutManagerProfileNestedInput
+  }
+
+  export type ManagerProfileUncheckedUpdateWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ManagerProfileUncheckedUpdateManyWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StudentCreateManyGroupInput = {
@@ -39809,6 +41503,10 @@ export namespace Prisma {
      * @deprecated Use CenterDefaultArgs instead
      */
     export type CenterArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = CenterDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ManagerProfileDefaultArgs instead
+     */
+    export type ManagerProfileArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ManagerProfileDefaultArgs<ExtArgs>
     /**
      * @deprecated Use GroupDefaultArgs instead
      */

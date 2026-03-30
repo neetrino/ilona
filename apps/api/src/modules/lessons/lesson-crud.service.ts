@@ -19,6 +19,23 @@ export class LessonCrudService {
     private readonly enrichmentService: LessonEnrichmentService,
   ) {}
 
+  private async getManagerCenterId(currentUserId?: string, userRole?: UserRole): Promise<string | null> {
+    if (userRole !== UserRole.MANAGER || !currentUserId) {
+      return null;
+    }
+
+    const managerProfile = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
+      SELECT "centerId" FROM "manager_profiles" WHERE "userId" = ${currentUserId} LIMIT 1
+    `;
+
+    const managerCenterId = managerProfile[0]?.centerId;
+    if (!managerCenterId) {
+      throw new ForbiddenException('Manager account is not assigned to a center');
+    }
+
+    return managerCenterId;
+  }
+
   async findAll(params?: {
     skip?: number;
     take?: number;
@@ -39,7 +56,7 @@ export class LessonCrudService {
     const where: Prisma.LessonWhereInput = {};
 
     // Role-based scoping: Teachers can only see their own lessons
-    let teacherScopeCondition: Prisma.LessonWhereInput | null = null;
+    let roleScopeCondition: Prisma.LessonWhereInput | null = null;
     let currentTeacherId: string | null = null;
     
     if (userRole === UserRole.TEACHER && currentUserId) {
@@ -51,7 +68,7 @@ export class LessonCrudService {
       if (teacher) {
         currentTeacherId = teacher.id;
         // Include lessons where teacher is directly assigned OR where teacher is assigned to the group
-        teacherScopeCondition = {
+        roleScopeCondition = {
           OR: [
             { teacherId: teacher.id },
             {
@@ -73,12 +90,23 @@ export class LessonCrudService {
       }
     }
 
+    if (userRole === UserRole.MANAGER && currentUserId) {
+      const managerCenterId = await this.getManagerCenterId(currentUserId, userRole);
+      if (managerCenterId) {
+        roleScopeCondition = {
+          group: {
+            centerId: managerCenterId,
+          },
+        };
+      }
+    }
+
     // Build filter conditions
     const filterConditions: Prisma.LessonWhereInput[] = [];
 
     // Add teacher scope condition if applicable
-    if (teacherScopeCondition) {
-      filterConditions.push(teacherScopeCondition);
+    if (roleScopeCondition) {
+      filterConditions.push(roleScopeCondition);
     }
 
     // Admin can see all lessons, but can still filter
@@ -198,6 +226,7 @@ export class LessonCrudService {
     currentUserId?: string,
     userRole?: UserRole,
   ) {
+    const managerCenterId = await this.getManagerCenterId(currentUserId, userRole);
     const lesson = await this.prisma.lesson.findUnique({
       where: { id },
       include: {
@@ -288,6 +317,10 @@ export class LessonCrudService {
       } else {
         throw new ForbiddenException('Teacher profile not found');
       }
+    }
+
+    if (managerCenterId && lesson.group.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this lesson');
     }
 
     // Enrich lesson with computed fields
@@ -388,7 +421,9 @@ export class LessonCrudService {
     });
   }
 
-  async create(dto: CreateLessonDto) {
+  async create(dto: CreateLessonDto, currentUserId?: string, userRole?: UserRole) {
+    const managerCenterId = await this.getManagerCenterId(currentUserId, userRole);
+
     // Validate group
     const group = await this.prisma.group.findUnique({
       where: { id: dto.groupId },
@@ -396,6 +431,10 @@ export class LessonCrudService {
 
     if (!group) {
       throw new BadRequestException(`Group with ID ${dto.groupId} not found`);
+    }
+
+    if (managerCenterId && group.centerId !== managerCenterId) {
+      throw new ForbiddenException('You can only create lessons inside your center');
     }
 
     // Validate teacher
@@ -431,13 +470,13 @@ export class LessonCrudService {
     });
   }
 
-  async createBulk(lessons: CreateLessonDto[]) {
-    const created = await Promise.all(lessons.map((dto) => this.create(dto)));
+  async createBulk(lessons: CreateLessonDto[], currentUserId?: string, userRole?: UserRole) {
+    const created = await Promise.all(lessons.map((dto) => this.create(dto, currentUserId, userRole)));
     return created;
   }
 
   async update(id: string, dto: UpdateLessonDto, userId?: string, userRole?: UserRole) {
-    const lesson = await this.findById(id);
+    const lesson = await this.findById(id, userId, userRole);
 
     // For teachers, check authorization: they can only edit their own lessons
     if (userRole === UserRole.TEACHER && userId) {
@@ -547,11 +586,23 @@ export class LessonCrudService {
           `You don't have permission to delete ${unauthorizedLessons.length} lesson(s)`,
         );
       }
-    } else if (userRole === UserRole.ADMIN) {
+    } else if (userRole === UserRole.ADMIN || userRole === UserRole.MANAGER) {
       // Admin can delete any lessons
+      const managerCenterId =
+        userRole === UserRole.MANAGER
+          ? await this.getManagerCenterId(currentUserId, userRole)
+          : null;
+
       const lessons = await this.prisma.lesson.findMany({
         where: {
           id: { in: lessonIds },
+          ...(managerCenterId
+            ? {
+                group: {
+                  centerId: managerCenterId,
+                },
+              }
+            : {}),
         },
         select: {
           id: true,

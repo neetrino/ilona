@@ -20,7 +20,8 @@ export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
   @Get()
-  async findAll(@Query() query: QueryGroupDto): Promise<unknown> {
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
+  async findAll(@Query() query: QueryGroupDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     return this.groupsService.findAll({
       skip: query.skip,
       take: query.take,
@@ -29,6 +30,7 @@ export class GroupsController {
       teacherId: query.teacherId,
       isActive: query.isActive,
       level: query.level,
+      currentUser: user,
     });
   }
 
@@ -41,73 +43,78 @@ export class GroupsController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string): Promise<unknown> {
-    return this.groupsService.findById(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
+  async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload): Promise<unknown> {
+    return this.groupsService.findById(id, user);
   }
 
   @Get(':id/students')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getGroupStudents(
     @Param('id') groupId: string,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
+    @CurrentUser() user?: JwtPayload,
   ): Promise<unknown> {
     const skipNum = skip !== undefined ? parseInt(skip, 10) : 0;
     const takeNum = take !== undefined ? Math.min(parseInt(take, 10), 100) : 20;
     return this.groupsService.findStudentsByGroupId(groupId, {
       skip: Number.isNaN(skipNum) ? 0 : skipNum,
       take: Number.isNaN(takeNum) ? 20 : takeNum,
-    });
+    }, user);
   }
 
   @Post()
-  @Roles(UserRole.ADMIN)
-  async create(@Body() dto: CreateGroupDto): Promise<unknown> {
-    return this.groupsService.create(dto);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async create(@Body() dto: CreateGroupDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
+    return this.groupsService.create(dto, user);
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMIN)
-  async update(@Param('id') id: string, @Body() dto: UpdateGroupDto): Promise<unknown> {
-    return this.groupsService.update(id, dto);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async update(@Param('id') id: string, @Body() dto: UpdateGroupDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
+    return this.groupsService.update(id, dto, user);
   }
 
   @Patch(':id/toggle-active')
-  @Roles(UserRole.ADMIN)
-  async toggleActive(@Param('id') id: string) {
-    return this.groupsService.toggleActive(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async toggleActive(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.groupsService.toggleActive(id, user);
   }
 
   @Patch(':id/assign-teacher')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async assignTeacher(
     @Param('id') groupId: string,
     @Body('teacherId') teacherId: string,
+    @CurrentUser() user?: JwtPayload,
   ): Promise<unknown> {
-    return this.groupsService.assignTeacher(groupId, teacherId);
+    return this.groupsService.assignTeacher(groupId, teacherId, user);
   }
 
   @Post(':id/students/:studentId')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async addStudent(
     @Param('id') groupId: string,
     @Param('studentId') studentId: string,
+    @CurrentUser() user?: JwtPayload,
   ) {
-    return this.groupsService.addStudent(groupId, studentId);
+    return this.groupsService.addStudent(groupId, studentId, user);
   }
 
   @Delete(':id/students/:studentId')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async removeStudent(
     @Param('id') groupId: string,
     @Param('studentId') studentId: string,
+    @CurrentUser() user?: JwtPayload,
   ) {
-    return this.groupsService.removeStudent(groupId, studentId);
+    return this.groupsService.removeStudent(groupId, studentId, user);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  async delete(@Param('id') id: string) {
-    return this.groupsService.delete(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async delete(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.groupsService.delete(id, user);
   }
 }

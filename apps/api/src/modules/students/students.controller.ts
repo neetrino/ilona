@@ -14,13 +14,14 @@ import { CreateStudentDto, UpdateStudentDto, QueryStudentDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
 import { UserRole, UserStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
 @Controller('students')
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async findAll(@Query() query: QueryStudentDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     // Handle array query params (e.g., ?teacherIds=id1&teacherIds=id2)
     const teacherIds = query.teacherIds || (query.teacherId ? [query.teacherId] : undefined);
@@ -28,6 +29,7 @@ export class StudentsController {
     const statusIds = query.statusIds || (query.status ? [query.status] : undefined);
     // Handle both single groupId (backward compatibility) and groupIds array
     const groupIds = query.groupIds || (query.groupId ? [query.groupId] : undefined);
+    const managerCenterId = getManagerCenterIdOrThrow(user);
 
     return this.studentsService.findAll({
       skip: query.skip,
@@ -39,8 +41,8 @@ export class StudentsController {
       statusIds: statusIds as UserStatus[] | undefined,
       teacherId: query.teacherId,
       teacherIds,
-      centerId: query.centerId,
-      centerIds,
+      centerId: managerCenterId ?? query.centerId,
+      centerIds: managerCenterId ? [managerCenterId] : centerIds,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
       month: query.month,
@@ -84,47 +86,48 @@ export class StudentsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     return this.studentsService.findById(id, user?.sub, user?.role);
   }
 
   @Get(':id/statistics')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async getStatistics(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
     return this.studentsService.getStatistics(id, user?.sub, user?.role);
   }
 
   @Post()
-  @Roles(UserRole.ADMIN)
-  async create(@Body() dto: CreateStudentDto): Promise<unknown> {
-    return this.studentsService.create(dto);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async create(@Body() dto: CreateStudentDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
+    return this.studentsService.create(dto, user);
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMIN)
-  async update(@Param('id') id: string, @Body() dto: UpdateStudentDto): Promise<unknown> {
-    return this.studentsService.update(id, dto);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async update(@Param('id') id: string, @Body() dto: UpdateStudentDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
+    return this.studentsService.update(id, dto, user);
   }
 
   @Patch(':id/group')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async changeGroup(
     @Param('id') id: string,
     @Body('groupId') groupId: string | null,
+    @CurrentUser() user?: JwtPayload,
   ): Promise<unknown> {
-    return this.studentsService.changeGroup(id, groupId);
+    return this.studentsService.changeGroup(id, groupId, user);
   }
 
   @Delete('bulk')
-  @Roles(UserRole.ADMIN)
-  async deleteBulk(@Body() body: { ids: string[] }) {
-    return this.studentsService.deleteMany(body.ids ?? []);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async deleteBulk(@Body() body: { ids: string[] }, @CurrentUser() user?: JwtPayload) {
+    return this.studentsService.deleteMany(body.ids ?? [], user);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  async delete(@Param('id') id: string) {
-    return this.studentsService.delete(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async delete(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.studentsService.delete(id, user);
   }
 }

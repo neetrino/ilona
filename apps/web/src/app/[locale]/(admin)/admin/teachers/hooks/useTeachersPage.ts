@@ -13,6 +13,7 @@ import {
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { filterTeachersByBranches, groupTeachersByCenter } from '../utils';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 type ViewMode = 'list' | 'board';
 
@@ -26,6 +27,8 @@ export function useTeachersPage() {
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
+  const { user } = useAuthStore();
+  const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -129,6 +132,12 @@ export function useTeachersPage() {
     take: 100, // Maximum allowed by backend API
   });
 
+  const visibleCenters = useMemo(() => {
+    const centers = centersData?.items || [];
+    if (!managerCenterId) return centers;
+    return centers.filter((center) => center.id === managerCenterId);
+  }, [centersData?.items, managerCenterId]);
+
   // Mutations
   const deleteTeacher = useDeleteTeacher();
   const deleteTeachers = useDeleteTeachers();
@@ -144,9 +153,9 @@ export function useTeachersPage() {
 
   // Group teachers by center for board view
   const teachersByCenter = useMemo(() => {
-    const centers = centersData?.items || [];
+    const centers = visibleCenters;
     return groupTeachersByCenter(filteredTeachers, centers, viewMode);
-  }, [filteredTeachers, centersData, viewMode]);
+  }, [filteredTeachers, visibleCenters, viewMode]);
 
   // Apply pagination to filtered results with memoization
   const { teachers, totalTeachers, totalPages } = useMemo(() => {
@@ -401,7 +410,7 @@ export function useTeachersPage() {
     teachersByCenter,
     filteredTeachers,
     allTeachers,
-    centersData,
+    centersData: centersData ? { ...centersData, items: visibleCenters } : centersData,
     activeTeachers,
     totalLessons,
     

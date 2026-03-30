@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, ServiceUnavailableException, Logger, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, ServiceUnavailableException, Logger, Inject, ConflictException, BadRequestException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, UserRole } from '@ilona/database';
+import * as bcrypt from 'bcrypt';
 
 const USER_CACHE_KEY_PREFIX = 'user:';
 const USER_CACHE_TTL_MS = 90 * 1000; // 90s – balance freshness vs DB load from auth
@@ -77,6 +78,16 @@ export class UsersService {
     }
   }
 
+  async getManagerCenterId(userId: string): Promise<string | null> {
+    const rows = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
+      SELECT "centerId"
+      FROM "manager_profiles"
+      WHERE "userId" = ${userId}
+      LIMIT 1
+    `;
+    return rows[0]?.centerId ?? null;
+  }
+
   async findById(id: string) {
     const cacheKey = USER_CACHE_KEY_PREFIX + id;
     try {
@@ -116,8 +127,13 @@ export class UsersService {
         throw new NotFoundException('User not found');
       }
 
-      await this.cache.set(cacheKey, user, USER_CACHE_TTL_MS);
-      return user;
+      const managerCenterId = user.role === UserRole.MANAGER
+        ? await this.getManagerCenterId(user.id)
+        : null;
+      const enrichedUser = { ...user, managerCenterId };
+
+      await this.cache.set(cacheKey, enrichedUser, USER_CACHE_TTL_MS);
+      return enrichedUser;
     } catch (error) {
       // Re-throw NotFoundException as-is
       if (error instanceof NotFoundException) {
@@ -164,6 +180,140 @@ export class UsersService {
         createdAt: 'desc',
       },
     });
+  }
+
+  async findManagers() {
+    const managers = await this.prisma.user.findMany({
+      where: {
+        role: UserRole.MANAGER,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        status: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const managerIds = managers.map((manager) => manager.id);
+    if (managerIds.length === 0) {
+      return managers;
+    }
+
+    const rows = await this.prisma.$queryRaw<Array<{ userId: string; centerId: string; centerName: string }>>`
+      SELECT mp."userId", mp."centerId", c."name" as "centerName"
+      FROM "manager_profiles" mp
+      JOIN "centers" c ON c."id" = mp."centerId"
+      WHERE mp."userId" IN (${Prisma.join(managerIds)})
+    `;
+
+    const profileMap = new Map(rows.map((row) => [row.userId, row]));
+    return managers.map((manager) => {
+      const profile = profileMap.get(manager.id);
+      return {
+        ...manager,
+        managerProfile: profile
+          ? {
+              centerId: profile.centerId,
+              center: {
+                id: profile.centerId,
+                name: profile.centerName,
+              },
+            }
+          : null,
+      };
+    });
+  }
+
+  async createManager(data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    phone?: string;
+    centerId: string;
+  }) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: data.email },
+      select: { id: true },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email already registered');
+    }
+
+    const center = await this.prisma.center.findUnique({
+      where: { id: data.centerId },
+      select: { id: true, isActive: true },
+    });
+
+    if (!center) {
+      throw new BadRequestException('Center not found');
+    }
+
+    if (!center.isActive) {
+      throw new BadRequestException('Cannot assign manager to inactive center');
+    }
+
+    const passwordHash = await bcrypt.hash(data.password, 10);
+
+    const manager = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email: data.email,
+          passwordHash,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone ?? null,
+          role: UserRole.MANAGER,
+          status: 'ACTIVE',
+        },
+      });
+
+      await tx.$executeRaw`
+        INSERT INTO "manager_profiles" ("id", "userId", "centerId", "createdAt", "updatedAt")
+        VALUES (${`mgr_${user.id}`}, ${user.id}, ${data.centerId}, NOW(), NOW())
+      `;
+
+      return tx.user.findUnique({
+        where: { id: user.id },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          role: true,
+          status: true,
+          createdAt: true,
+        },
+      });
+    });
+
+    if (!manager) {
+      throw new ServiceUnavailableException('Failed to create manager');
+    }
+
+    const centerRow = await this.prisma.center.findUnique({
+      where: { id: data.centerId },
+      select: { id: true, name: true },
+    });
+
+    return {
+      ...manager,
+      managerProfile: centerRow
+        ? {
+            centerId: centerRow.id,
+            center: centerRow,
+          }
+        : null,
+    };
   }
 
   /**
@@ -213,8 +363,13 @@ export class UsersService {
         },
       });
 
+      const managerCenterId = user.role === UserRole.MANAGER
+        ? await this.getManagerCenterId(user.id)
+        : null;
+      const enrichedUser = { ...user, managerCenterId };
+
       await this.invalidateUserCache(userId);
-      return user;
+      return enrichedUser;
     } catch (error) {
       if (this.isDatabaseConnectionError(error)) {
         this.logger.error('Database connection error in update', error);

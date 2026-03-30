@@ -24,6 +24,7 @@ import {
 import { Roles, CurrentUser } from '../../common/decorators';
 import { UserRole, LessonStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
 @Controller('lessons')
 export class LessonsController {
@@ -33,6 +34,7 @@ export class LessonsController {
   ) {}
 
   @Get()
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async findAll(@Query() query: QueryLessonDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     // Handle both single groupId (backward compatibility) and groupIds array
     const groupIds = query.groupIds || (query.groupId ? [query.groupId] : undefined);
@@ -103,9 +105,10 @@ export class LessonsController {
   }
 
   @Get('statistics')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async getStatistics(@CurrentUser() user: JwtPayload, @Query() query: QueryLessonDto) {
     let teacherId: string | undefined;
+    let managerCenterId: string | undefined;
 
     if (user.role === UserRole.TEACHER) {
       const teacher = await this.prisma.teacher.findUnique({
@@ -116,20 +119,26 @@ export class LessonsController {
       teacherId = query.teacherId;
     }
 
+    if (user.role === UserRole.MANAGER) {
+      managerCenterId = getManagerCenterIdOrThrow(user);
+    }
+
     return this.lessonsService.getLessonStatistics(
       teacherId,
       query.dateFrom ? new Date(query.dateFrom) : undefined,
       query.dateTo ? new Date(query.dateTo) : undefined,
+      managerCenterId,
     );
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     return this.lessonsService.findById(id, user?.sub, user?.role);
   }
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async create(@Body() dto: CreateLessonDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     // For teachers, validate that they can only create lessons for their own groups
     if (user?.role === UserRole.TEACHER) {
@@ -154,11 +163,11 @@ export class LessonsController {
       }
     }
 
-    return this.lessonsService.create(dto);
+    return this.lessonsService.create(dto, user?.sub, user?.role);
   }
 
   @Post('recurring')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async createRecurring(@Body() dto: CreateRecurringLessonDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     // Validate date range
     const startDate = new Date(dto.startDate);
@@ -191,6 +200,19 @@ export class LessonsController {
       }
     }
 
+    if (user?.role === UserRole.MANAGER) {
+      const managerCenterId = getManagerCenterIdOrThrow(user);
+      if (managerCenterId) {
+        const group = await this.prisma.group.findUnique({
+          where: { id: dto.groupId },
+          select: { centerId: true },
+        });
+        if (!group || group.centerId !== managerCenterId) {
+          throw new ForbiddenException('You can only create recurring lessons in your center');
+        }
+      }
+    }
+
     return this.lessonsService.createRecurring({
       groupId: dto.groupId,
       teacherId,
@@ -205,7 +227,7 @@ export class LessonsController {
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateLessonDto,
@@ -215,13 +237,13 @@ export class LessonsController {
   }
 
   @Patch(':id/start')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async startLesson(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.lessonsService.startLesson(id, user.sub, user.role);
   }
 
   @Patch(':id/complete')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async completeLesson(
     @Param('id') id: string,
     @Body() dto: CompleteLessonDto,
@@ -231,9 +253,9 @@ export class LessonsController {
   }
 
   @Patch(':id/cancel')
-  @Roles(UserRole.ADMIN)
-  async cancelLesson(@Param('id') id: string, @Body('reason') reason?: string) {
-    return this.lessonsService.cancelLesson(id, reason);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async cancelLesson(@Param('id') id: string, @Body('reason') reason?: string, @CurrentUser() user?: JwtPayload) {
+    return this.lessonsService.cancelLesson(id, reason, user?.sub, user?.role);
   }
 
   @Patch(':id/vocabulary-sent')
@@ -243,32 +265,35 @@ export class LessonsController {
   }
 
   @Patch(':id/absence-complete')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async markAbsenceComplete(@Param('id') id: string) {
-    return this.lessonsService.markAbsenceComplete(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
+  async markAbsenceComplete(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.lessonsService.markAbsenceComplete(id, user?.sub, user?.role);
   }
 
   @Patch(':id/voice-sent')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async markVoiceSent(@Param('id') id: string) {
-    return this.lessonsService.markVoiceSent(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
+  async markVoiceSent(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.lessonsService.markVoiceSent(id, user?.sub, user?.role);
   }
 
   @Patch(':id/text-sent')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async markTextSent(@Param('id') id: string) {
-    return this.lessonsService.markTextSent(id);
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
+  async markTextSent(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    return this.lessonsService.markTextSent(id, user?.sub, user?.role);
   }
 
   @Delete('bulk')
-  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async deleteBulk(@Body() body: { lessonIds: string[] }, @CurrentUser() user?: JwtPayload) {
     return this.lessonsService.deleteBulk(body.lessonIds, user?.sub, user?.role);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  async delete(@Param('id') id: string) {
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async delete(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+    if (user?.role === UserRole.MANAGER) {
+      await this.lessonsService.findById(id, user.sub, user.role);
+    }
     return this.lessonsService.delete(id);
   }
 }

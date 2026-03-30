@@ -28,6 +28,8 @@ import {
 } from '@ilona/database';
 import type { Prisma } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
+import { JwtPayload } from '../../common/types/auth.types';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
 type CrmLeadWhereInput = Prisma.CrmLeadWhereInput;
 type TransactionClient = Prisma.TransactionClient;
@@ -41,7 +43,35 @@ export class LeadsService {
     private readonly storage: StorageService,
   ) {}
 
-  async create(dto: CreateLeadDto, createdByUserId: string) {
+  private applyManagerScope(where: CrmLeadWhereInput, user?: JwtPayload): CrmLeadWhereInput {
+    const managerCenterId = getManagerCenterIdOrThrow(user);
+    if (!managerCenterId) {
+      return where;
+    }
+
+    return {
+      AND: [
+        where,
+        { centerId: managerCenterId },
+      ],
+    };
+  }
+
+  private ensureManagerCenterInput(centerId: string | undefined, user?: JwtPayload): string | undefined {
+    const managerCenterId = getManagerCenterIdOrThrow(user);
+    if (!managerCenterId) {
+      return centerId;
+    }
+
+    if (centerId && centerId !== managerCenterId) {
+      throw new ForbiddenException('Access to another center is forbidden');
+    }
+
+    return managerCenterId;
+  }
+
+  async create(dto: CreateLeadDto, createdByUserId: string, user?: JwtPayload) {
+    const centerId = this.ensureManagerCenterInput(dto.centerId, user);
     const lead = await this.prisma.crmLead.create({
       data: {
         status: 'NEW',
@@ -53,7 +83,7 @@ export class LeadsService {
         levelId: dto.levelId,
         teacherId: dto.teacherId,
         groupId: dto.groupId,
-        centerId: dto.centerId,
+        centerId,
         source: dto.source,
         notes: dto.notes,
       },
@@ -117,7 +147,7 @@ export class LeadsService {
       sortBy?: 'createdAt' | 'updatedAt';
       sortOrder?: 'asc' | 'desc';
     },
-    _userRole?: UserRole,
+    user?: JwtPayload,
   ) {
     const skip = query.skip ?? 0;
     const take = query.take ?? 50;
@@ -127,7 +157,7 @@ export class LeadsService {
     const where: CrmLeadWhereInput = {};
 
     if (query.status) where.status = query.status;
-    if (query.centerId) where.centerId = query.centerId;
+    if (query.centerId) where.centerId = this.ensureManagerCenterInput(query.centerId, user);
     if (query.teacherId) where.teacherId = query.teacherId;
     if (query.groupId) where.groupId = query.groupId;
     if (query.levelId) where.levelId = query.levelId;
@@ -153,20 +183,25 @@ export class LeadsService {
       ];
     }
 
+    const scopedWhere = this.applyManagerScope(where, user);
+
     const [items, total] = await Promise.all([
       this.prisma.crmLead.findMany({
-        where,
+        where: scopedWhere,
         skip,
         take,
         orderBy: { [sortBy]: sortOrder },
         include: this.leadInclude(),
       }),
-      this.prisma.crmLead.count({ where }),
+      this.prisma.crmLead.count({ where: scopedWhere }),
     ]);
 
     const countsByStatus = await this.prisma.crmLead.groupBy({
       by: ['status'],
-      where: { status: { in: ['NEW', 'FIRST_LESSON', 'PAID', 'WAITLIST', 'ARCHIVE'] } },
+      where: this.applyManagerScope(
+        { status: { in: ['NEW', 'FIRST_LESSON', 'PAID', 'WAITLIST', 'ARCHIVE'] } },
+        user,
+      ),
       _count: true,
     });
     const countMap = Object.fromEntries(
@@ -183,12 +218,16 @@ export class LeadsService {
     };
   }
 
-  async findById(id: string, _userId?: string, _userRole?: UserRole) {
+  async findById(id: string, _userId?: string, user?: JwtPayload) {
     const lead = await this.prisma.crmLead.findUnique({
       where: { id },
       include: this.leadInclude(),
     });
     if (!lead) throw new NotFoundException(`Lead ${id} not found`);
+    const managerCenterId = getManagerCenterIdOrThrow(user);
+    if (managerCenterId && lead.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this lead');
+    }
     const activities = lead.activities as Array<{ id: string; actorUserId: string | null; type: string; payload: unknown; createdAt: Date }>;
     const actorUserIds = [...new Set(activities.map((a) => a.actorUserId).filter(Boolean))] as string[];
     const actorUsers =
@@ -210,9 +249,10 @@ export class LeadsService {
     id: string,
     dto: UpdateLeadDto,
     actorUserId: string,
-    _userRole?: UserRole,
+    user?: JwtPayload,
   ) {
-    await this.findById(id);
+    await this.findById(id, actorUserId, user);
+    const centerId = this.ensureManagerCenterInput(dto.centerId, user);
     const updated = await this.prisma.crmLead.update({
       where: { id },
       data: {
@@ -223,7 +263,7 @@ export class LeadsService {
         levelId: dto.levelId,
         teacherId: dto.teacherId,
         groupId: dto.groupId,
-        centerId: dto.centerId,
+        centerId,
         source: dto.source,
         notes: dto.notes,
         assignedManagerId: dto.assignedManagerId,
@@ -240,8 +280,8 @@ export class LeadsService {
   }
 
   /** Delete a lead and its attachments. Removes R2 files for voice recordings. */
-  async delete(id: string, _userId?: string, _userRole?: UserRole) {
-    const lead = await this.findById(id);
+  async delete(id: string, user?: JwtPayload) {
+    const lead = await this.findById(id, user?.sub, user);
     const attachments = (lead as { attachments?: { r2Key: string }[] }).attachments ?? [];
     for (const a of attachments) {
       if (a.r2Key) {
@@ -259,13 +299,13 @@ export class LeadsService {
     id: string,
     dto: ChangeStatusDto,
     actorUserId: string,
-    options?: { isTeacherApprove?: boolean; userRole?: UserRole },
+    options?: { isTeacherApprove?: boolean; user?: JwtPayload },
   ) {
-    const lead = await this.findById(id);
+    const lead = await this.findById(id, actorUserId, options?.user);
     const from = lead.status;
     const to = dto.status;
 
-    const adminCanSetAnyStatus = options?.userRole === UserRole.ADMIN;
+    const adminCanSetAnyStatus = options?.user?.role === 'ADMIN';
     if (!adminCanSetAnyStatus) {
       if (!canTransition(from, to, { isTeacherApprove: options?.isTeacherApprove })) {
         throw new BadRequestException(
@@ -385,16 +425,16 @@ export class LeadsService {
     });
   }
 
-  async getActivities(leadId: string) {
-    await this.findById(leadId);
+  async getActivities(leadId: string, user?: JwtPayload) {
+    await this.findById(leadId, user?.sub, user);
     return this.prisma.crmLeadActivity.findMany({
       where: { leadId },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async addComment(leadId: string, dto: AddCommentDto, actorUserId: string) {
-    await this.findById(leadId);
+  async addComment(leadId: string, dto: AddCommentDto, actorUserId: string, user?: JwtPayload) {
+    await this.findById(leadId, actorUserId, user);
     await this.prisma.crmLeadActivity.create({
       data: {
         leadId,
@@ -403,11 +443,11 @@ export class LeadsService {
         payload: { content: dto.content },
       },
     });
-    return this.getActivities(leadId);
+    return this.getActivities(leadId, user);
   }
 
-  async getPresignedRecordingUrl(leadId: string, fileName: string, mimeType: string) {
-    await this.findById(leadId);
+  async getPresignedRecordingUrl(leadId: string, fileName: string, mimeType: string, user?: JwtPayload) {
+    await this.findById(leadId, user?.sub, user);
     const result = await this.storage.getPresignedUploadUrl(
       fileName,
       mimeType,
@@ -425,8 +465,9 @@ export class LeadsService {
     leadId: string,
     dto: ConfirmRecordingDto,
     actorUserId: string,
+    user?: JwtPayload,
   ) {
-    await this.findById(leadId);
+    await this.findById(leadId, actorUserId, user);
     const attachment = await this.prisma.crmLeadAttachment.create({
       data: {
         leadId,
@@ -440,7 +481,7 @@ export class LeadsService {
       attachmentId: attachment.id,
       key: dto.key,
     });
-    return this.findById(leadId);
+    return this.findById(leadId, actorUserId, user);
   }
 
   getAllowedTransitions(status: CrmLeadStatus): CrmLeadStatus[] {

@@ -19,7 +19,25 @@ export class AttendanceService {
     private readonly salariesService: SalariesService,
   ) {}
 
+  private async getManagerCenterId(userId?: string, userRole?: UserRole): Promise<string | null> {
+    if (userRole !== UserRole.MANAGER || !userId) {
+      return null;
+    }
+
+    const managerProfile = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
+      SELECT "centerId" FROM "manager_profiles" WHERE "userId" = ${userId} LIMIT 1
+    `;
+
+    const managerCenterId = managerProfile[0]?.centerId;
+    if (!managerCenterId) {
+      throw new ForbiddenException('Manager account is not assigned to a center');
+    }
+
+    return managerCenterId;
+  }
+
   async getByLesson(lessonId: string, userId?: string, userRole?: UserRole) {
+    const managerCenterId = await this.getManagerCenterId(userId, userRole);
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
       include: {
@@ -74,6 +92,10 @@ export class AttendanceService {
       }
     }
 
+    if (managerCenterId && lesson.group.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this lesson');
+    }
+
     // Combine students with their attendance records
     const studentsWithAttendance = lesson.group.students.map((student) => {
       const attendance = lesson.attendances.find((a) => a.studentId === student.id);
@@ -105,6 +127,7 @@ export class AttendanceService {
    * Lessons not found or not authorized are omitted from the result.
    */
   async getByLessons(lessonIds: string[], userId?: string, userRole?: UserRole) {
+    const managerCenterId = await this.getManagerCenterId(userId, userRole);
     if (!lessonIds || lessonIds.length === 0) {
       return {};
     }
@@ -160,6 +183,9 @@ export class AttendanceService {
     const result: Record<string, Awaited<ReturnType<AttendanceService['getByLesson']>>> = {};
     for (const lesson of lessons) {
       if (teacherId !== null && lesson.group.teacherId !== teacherId) {
+        continue;
+      }
+      if (managerCenterId && lesson.group.centerId !== managerCenterId) {
         continue;
       }
       const studentsWithAttendance = lesson.group.students.map((student) => {
@@ -243,6 +269,7 @@ export class AttendanceService {
   }
 
   async markAttendance(dto: MarkAttendanceDto, userId?: string, userRole?: UserRole) {
+    const managerCenterId = await this.getManagerCenterId(userId, userRole);
     const { lessonId, studentId, isPresent, absenceType, note } = dto;
 
     // Validate lesson exists
@@ -253,6 +280,7 @@ export class AttendanceService {
           select: {
             id: true,
             teacherId: true,
+            centerId: true,
           },
         },
       },
@@ -271,6 +299,10 @@ export class AttendanceService {
       if (!teacher || lesson.group.teacherId !== teacher.id) {
         throw new ForbiddenException('You do not have access to this lesson');
       }
+    }
+
+    if (managerCenterId && lesson.group.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this lesson');
     }
 
     // Validate student exists and is in the group
@@ -367,6 +399,7 @@ export class AttendanceService {
   }
 
   async markBulkAttendance(dto: BulkAttendanceDto, userId?: string, userRole?: UserRole) {
+    const managerCenterId = await this.getManagerCenterId(userId, userRole);
     const { lessonId, attendances } = dto;
 
     // Validate lesson
@@ -377,6 +410,7 @@ export class AttendanceService {
           select: {
             id: true,
             teacherId: true,
+            centerId: true,
           },
         },
       },
@@ -395,6 +429,10 @@ export class AttendanceService {
       if (!teacher || lesson.group.teacherId !== teacher.id) {
         throw new ForbiddenException('You do not have access to this lesson');
       }
+    }
+
+    if (managerCenterId && lesson.group.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this lesson');
     }
 
     // Process each attendance
@@ -418,6 +456,7 @@ export class AttendanceService {
   }
 
   async updateAbsenceType(attendanceId: string, absenceType: AbsenceType, note?: string, userId?: string, userRole?: UserRole) {
+    const managerCenterId = await this.getManagerCenterId(userId, userRole);
     const attendance = await this.prisma.attendance.findUnique({
       where: { id: attendanceId },
       include: {
@@ -427,6 +466,7 @@ export class AttendanceService {
               select: {
                 id: true,
                 teacherId: true,
+                centerId: true,
               },
             },
           },
@@ -449,6 +489,10 @@ export class AttendanceService {
       }
     }
 
+    if (managerCenterId && attendance.lesson.group.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this attendance record');
+    }
+
     if (attendance.isPresent) {
       throw new BadRequestException('Cannot set absence type for present student');
     }
@@ -460,12 +504,14 @@ export class AttendanceService {
   }
 
   async getGroupAttendanceReport(groupId: string, dateFrom: Date, dateTo: Date, userId?: string, userRole?: UserRole) {
+    const managerCenterId = await this.getManagerCenterId(userId, userRole);
     // Verify group exists and check authorization
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
       select: {
         id: true,
         teacherId: true,
+        centerId: true,
       },
     });
 
@@ -482,6 +528,10 @@ export class AttendanceService {
       if (!teacher || group.teacherId !== teacher.id) {
         throw new ForbiddenException('You do not have access to this group');
       }
+    }
+
+    if (managerCenterId && group.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this group');
     }
 
     // Get all students in group
@@ -552,7 +602,7 @@ export class AttendanceService {
     };
   }
 
-  async getAtRiskStudents(maxUnjustifiedAbsences = 3) {
+  async getAtRiskStudents(maxUnjustifiedAbsences = 3, currentUser?: { sub: string; role: UserRole }) {
     // Get system settings for threshold
     const settings = await this.prisma.systemSettings.findFirst();
     const threshold = settings?.maxUnjustifiedAbsences ?? maxUnjustifiedAbsences;
@@ -561,8 +611,11 @@ export class AttendanceService {
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
+    const managerCenterId = await this.getManagerCenterId(currentUser?.sub, currentUser?.role);
+
     const atRiskStudents = await this.prisma.student.findMany({
       where: {
+        ...(managerCenterId ? { group: { centerId: managerCenterId } } : {}),
         attendances: {
           some: {
             isPresent: false,

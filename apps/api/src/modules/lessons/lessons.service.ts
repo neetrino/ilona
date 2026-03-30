@@ -56,12 +56,12 @@ export class LessonsService {
     return this.crudService.getUpcoming(teacherId, limit);
   }
 
-  async create(dto: CreateLessonDto): Promise<unknown> {
-    return this.crudService.create(dto);
+  async create(dto: CreateLessonDto, currentUserId?: string, userRole?: UserRole): Promise<unknown> {
+    return this.crudService.create(dto, currentUserId, userRole);
   }
 
-  async createBulk(lessons: CreateLessonDto[]): Promise<unknown> {
-    return this.crudService.createBulk(lessons);
+  async createBulk(lessons: CreateLessonDto[], currentUserId?: string, userRole?: UserRole): Promise<unknown> {
+    return this.crudService.createBulk(lessons, currentUserId, userRole);
   }
 
   async update(id: string, dto: UpdateLessonDto, userId?: string, userRole?: UserRole) {
@@ -85,8 +85,8 @@ export class LessonsService {
     return this.statusService.completeLesson(id, dto, userId, userRole);
   }
 
-  async cancelLesson(id: string, reason?: string) {
-    return this.statusService.cancelLesson(id, reason);
+  async cancelLesson(id: string, reason?: string, userId?: string, userRole?: UserRole) {
+    return this.statusService.cancelLesson(id, reason, userId, userRole);
   }
 
   async markMissed(id: string) {
@@ -98,16 +98,16 @@ export class LessonsService {
     return this.actionsService.markVocabularySent(id);
   }
 
-  async markAbsenceComplete(id: string) {
-    return this.actionsService.markAbsenceComplete(id);
+  async markAbsenceComplete(id: string, userId?: string, userRole?: UserRole) {
+    return this.actionsService.markAbsenceComplete(id, userId, userRole);
   }
 
-  async markVoiceSent(id: string) {
-    return this.actionsService.markVoiceSent(id);
+  async markVoiceSent(id: string, userId?: string, userRole?: UserRole) {
+    return this.actionsService.markVoiceSent(id, userId, userRole);
   }
 
-  async markTextSent(id: string) {
-    return this.actionsService.markTextSent(id);
+  async markTextSent(id: string, userId?: string, userRole?: UserRole) {
+    return this.actionsService.markTextSent(id, userId, userRole);
   }
 
   // Scheduling Methods
@@ -126,7 +126,7 @@ export class LessonsService {
   }
 
   // Statistics Methods
-  async getLessonStatistics(teacherId?: string, dateFrom?: Date, dateTo?: Date) {
-    return this.statisticsService.getLessonStatistics(teacherId, dateFrom, dateTo);
+  async getLessonStatistics(teacherId?: string, dateFrom?: Date, dateTo?: Date, centerId?: string) {
+    return this.statisticsService.getLessonStatistics(teacherId, dateFrom, dateTo, centerId);
   }
 }

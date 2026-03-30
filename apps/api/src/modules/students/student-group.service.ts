@@ -1,6 +1,7 @@
 import {
   Injectable,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatService } from '../chat/chat.service';
@@ -8,6 +9,8 @@ import {
   FIXED_GROUP_MAX_STUDENTS,
   GROUP_CAPACITY_EXCEEDED_MESSAGE,
 } from '../groups/group.constants';
+import { JwtPayload } from '../../common/types/auth.types';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
 @Injectable()
 export class StudentGroupService {
@@ -16,12 +19,15 @@ export class StudentGroupService {
     private readonly chatService: ChatService,
   ) {}
 
-  async changeGroup(id: string, newGroupId: string | null): Promise<unknown> {
+  async changeGroup(id: string, newGroupId: string | null, user?: JwtPayload): Promise<unknown> {
     const student = await this.prisma.student.findUnique({
       where: { id },
       include: {
         user: {
           select: { id: true },
+        },
+        group: {
+          select: { centerId: true },
         },
       },
     });
@@ -31,6 +37,11 @@ export class StudentGroupService {
     }
 
     const oldGroupId = student.groupId;
+    const managerCenterId = getManagerCenterIdOrThrow(user);
+
+    if (managerCenterId && student.group?.centerId !== managerCenterId) {
+      throw new ForbiddenException('You do not have access to this student');
+    }
 
     // Validate new group if provided and get teacherId for sync
     let newGroupTeacherId: string | null = null;
@@ -42,6 +53,10 @@ export class StudentGroupService {
 
       if (!group) {
         throw new BadRequestException(`Group with ID ${newGroupId} not found`);
+      }
+
+      if (managerCenterId && group.centerId !== managerCenterId) {
+        throw new ForbiddenException('You can only move students to groups in your center');
       }
 
       if (group._count.students >= FIXED_GROUP_MAX_STUDENTS) {

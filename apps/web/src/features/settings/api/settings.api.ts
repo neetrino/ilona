@@ -1,5 +1,11 @@
 import { api, ApiError } from '@/shared/lib/api';
-import type { UserProfile, UpdateProfileDto, ChangePasswordDto } from '../types';
+import type {
+  UserProfile,
+  UpdateProfileDto,
+  ChangePasswordDto,
+  ManagerAccount,
+  CreateManagerDto,
+} from '../types';
 
 /**
  * Get current user profile
@@ -205,4 +211,18 @@ export async function updatePenalties(data: {
     penaltyVoiceAmd: number;
     penaltyTextAmd: number;
   }>('/settings/penalties', data);
+}
+
+/**
+ * Get manager accounts (Admin only)
+ */
+export async function fetchManagers(): Promise<ManagerAccount[]> {
+  return api.get<ManagerAccount[]>('/users/managers/list');
+}
+
+/**
+ * Create manager account (Admin only)
+ */
+export async function createManager(data: CreateManagerDto): Promise<ManagerAccount> {
+  return api.post<ManagerAccount>('/users/managers', data);
 }

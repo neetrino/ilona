@@ -5,6 +5,8 @@ export {
   useChangePassword,
   useUploadAvatar,
   useDeleteAvatar,
+  useManagers,
+  useCreateManager,
   settingsKeys,
 } from './hooks';
 
@@ -15,4 +17,6 @@ export type {
   ChangePasswordDto,
   NotificationSettings,
   AppSettings,
+  ManagerAccount,
+  CreateManagerDto,
 } from './types';

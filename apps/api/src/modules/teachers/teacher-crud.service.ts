@@ -2,11 +2,14 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTeacherDto, UpdateTeacherDto } from './dto';
 import { Prisma, UserRole, UserStatus } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
+import { JwtPayload } from '../../common/types/auth.types';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
 // Constant for deduction amount per missing action (in AMD)
 const DEDUCTION_PER_MISSING_ACTION = 1500;
@@ -15,6 +18,23 @@ const DEDUCTION_PER_MISSING_ACTION = 1500;
 export class TeacherCrudService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async assertManagerTeacherAccess(teacherId: string, currentUser?: JwtPayload) {
+    const managerCenterId = getManagerCenterIdOrThrow(currentUser);
+    if (!managerCenterId) return;
+
+    const teacherInCenter = await this.prisma.group.findFirst({
+      where: {
+        teacherId,
+        centerId: managerCenterId,
+      },
+      select: { id: true },
+    });
+
+    if (!teacherInCenter) {
+      throw new ForbiddenException('You do not have access to this teacher');
+    }
+  }
+
   async findAll(params?: {
     skip?: number;
     take?: number;
@@ -22,8 +42,9 @@ export class TeacherCrudService {
     status?: UserStatus;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    currentUser?: JwtPayload;
   }) {
-    const { skip = 0, take = 50, search, status, sortBy, sortOrder = 'asc' } = params || {};
+    const { skip = 0, take = 50, search, status, sortBy, sortOrder = 'asc', currentUser } = params || {};
 
     const where: Prisma.TeacherWhereInput = {};
     const userWhere: Prisma.UserWhereInput = {};
@@ -42,6 +63,15 @@ export class TeacherCrudService {
 
     if (Object.keys(userWhere).length > 0) {
       where.user = userWhere;
+    }
+
+    const managerCenterId = getManagerCenterIdOrThrow(currentUser);
+    if (managerCenterId) {
+      where.groups = {
+        some: {
+          centerId: managerCenterId,
+        },
+      };
     }
 
     const total = await this.prisma.teacher.count({ where });
@@ -377,7 +407,9 @@ export class TeacherCrudService {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, currentUser?: JwtPayload) {
+    await this.assertManagerTeacherAccess(id, currentUser);
+
     const teacher = await this.prisma.teacher.findUnique({
       where: { id },
       include: {
@@ -444,7 +476,7 @@ export class TeacherCrudService {
     return teacher;
   }
 
-  async create(dto: CreateTeacherDto) {
+  async create(dto: CreateTeacherDto, _currentUser?: JwtPayload) {
     // Check if email already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -503,8 +535,8 @@ export class TeacherCrudService {
     return result;
   }
 
-  async update(id: string, dto: UpdateTeacherDto) {
-    const teacher = await this.findById(id);
+  async update(id: string, dto: UpdateTeacherDto, currentUser?: JwtPayload) {
+    const teacher = await this.findById(id, currentUser);
 
     // Update user fields if provided
     if (dto.firstName || dto.lastName || dto.phone || dto.status) {
@@ -545,8 +577,8 @@ export class TeacherCrudService {
     });
   }
 
-  async delete(id: string) {
-    const teacher = await this.findById(id);
+  async delete(id: string, currentUser?: JwtPayload) {
+    const teacher = await this.findById(id, currentUser);
 
     // Delete in transaction to handle foreign key constraints
     await this.prisma.$transaction(async (tx) => {
@@ -597,7 +629,7 @@ export class TeacherCrudService {
     return { success: true };
   }
 
-  async deleteMany(ids: string[]) {
+  async deleteMany(ids: string[], currentUser?: JwtPayload) {
     if (!ids || ids.length === 0) {
       return { success: true, deletedCount: 0 };
     }
@@ -607,6 +639,21 @@ export class TeacherCrudService {
       where: { id: { in: ids } },
       include: { user: true },
     });
+
+    const managerCenterId = getManagerCenterIdOrThrow(currentUser);
+    if (managerCenterId) {
+      const accessibleTeacherIds = await this.prisma.group.findMany({
+        where: {
+          centerId: managerCenterId,
+          teacherId: { in: ids },
+        },
+        select: { teacherId: true },
+      });
+      const accessibleSet = new Set(accessibleTeacherIds.map((entry) => entry.teacherId).filter(Boolean));
+      if (accessibleSet.size !== ids.length) {
+        throw new ForbiddenException('One or more teachers are outside your assigned center');
+      }
+    }
 
     if (teachers.length !== ids.length) {
       throw new NotFoundException('One or more teachers not found');

@@ -36,3 +36,29 @@ export interface AppSettings {
   theme: 'light' | 'dark' | 'system';
   timezone: string;
 }
+
+export interface ManagerAccount {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  status: string;
+  createdAt: string;
+  managerProfile?: {
+    centerId: string;
+    center?: {
+      id: string;
+      name: string;
+    };
+  };
+}
+
+export interface CreateManagerDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone?: string;
+  centerId: string;
+}

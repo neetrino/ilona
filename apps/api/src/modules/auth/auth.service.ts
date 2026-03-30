@@ -51,10 +51,15 @@ export class AuthService {
       }
 
       // Generate tokens
+      const managerCenterId = user.role === 'MANAGER'
+        ? await this.usersService.getManagerCenterId(user.id)
+        : null;
+
       const tokens = await this.generateTokens({
         sub: user.id,
         email: user.email,
         role: user.role,
+        managerCenterId,
       });
 
       // Return response (without passwordHash)
@@ -66,6 +71,7 @@ export class AuthService {
         phone: user.phone,
         avatarUrl: user.avatarUrl,
         role: user.role,
+        managerCenterId,
         status: user.status,
         lastLoginAt: user.lastLoginAt,
         createdAt: user.createdAt,
@@ -102,10 +108,15 @@ export class AuthService {
       }
 
       // Generate new tokens
+      const managerCenterId = user.role === 'MANAGER'
+        ? await this.usersService.getManagerCenterId(user.id)
+        : null;
+
       return this.generateTokens({
         sub: user.id,
         email: user.email,
         role: user.role,
+        managerCenterId,
       });
     } catch {
       throw new UnauthorizedException('Invalid refresh token');

@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'TEACHER' | 'STUDENT';
+export type UserRole = 'ADMIN' | 'MANAGER' | 'TEACHER' | 'STUDENT';
 
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 
@@ -10,6 +10,7 @@ export interface User {
   phone?: string;
   avatarUrl?: string;
   role: UserRole;
+  managerCenterId?: string | null;
   status: UserStatus;
   lastLoginAt?: string;
   createdAt: string;
