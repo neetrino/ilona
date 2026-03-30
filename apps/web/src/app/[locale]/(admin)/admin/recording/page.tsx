@@ -18,7 +18,6 @@ import type { Student, TeacherAssignedItem } from '@/features/students/types';
 function getStudentFullName(recording: AdminStudentRecording): string {
   return `${recording.student.firstName} ${recording.student.lastName}`.trim() || recording.student.userId;
 }
-console.log("test")
 
 function formatSubmittedAt(value: string): string {
   return new Date(value).toLocaleString(undefined, {
