@@ -17,6 +17,9 @@ interface GroupStudentsModalProps {
   onOpenChange: (open: boolean) => void;
   groupId: string | null;
   groupName: string;
+  selectedStudentId: string | null;
+  onStudentSelect: (studentId: string) => void;
+  onStudentDetailsOpenChange: (open: boolean) => void;
 }
 
 function formatEnrolledAt(dateStr: string): string {
@@ -33,12 +36,13 @@ export function GroupStudentsModal({
   onOpenChange,
   groupId,
   groupName,
+  selectedStudentId,
+  onStudentSelect,
+  onStudentDetailsOpenChange,
 }: GroupStudentsModalProps) {
   const [page, setPage] = useState(0);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   useEffect(() => {
     if (!open) {
-      setSelectedStudentId(null);
       setPage(0);
     }
   }, [open]);
@@ -88,7 +92,7 @@ export function GroupStudentsModal({
                           <td className="py-3 px-4 text-slate-800">
                             <button
                               type="button"
-                              onClick={() => setSelectedStudentId(student.id)}
+                              onClick={() => onStudentSelect(student.id)}
                               className="underline decoration-slate-400 underline-offset-2 hover:decoration-primary hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 rounded"
                               title="Open student details"
                             >
@@ -142,12 +146,8 @@ export function GroupStudentsModal({
       </Dialog>
 
       <StudentDetailsModal
-        open={!!selectedStudentId}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            setSelectedStudentId(null);
-          }
-        }}
+        open={open && !!selectedStudentId}
+        onOpenChange={onStudentDetailsOpenChange}
         studentId={selectedStudentId}
       />
     </>

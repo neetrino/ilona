@@ -46,7 +46,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, dirtyFields },
     reset,
     watch,
     setValue,
@@ -72,21 +72,15 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   });
 
   const watchedTeacherId = watch('teacherId') || '';
-  const watchedGroupId = watch('groupId') || '';
   const watchedAge = watch('age');
   const showParentSection = watchedAge !== undefined && watchedAge < 18;
 
-  // Fetch teachers list and groups scoped to selected teacher
+  // Fetch teachers and all active groups.
+  // Do not auto-filter groups by teacher in edit mode, otherwise unchanged group can be reset.
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
-  const { data: groupsData, isLoading: isLoadingGroups } = useGroups(
-    { isActive: true, teacherId: watchedTeacherId || undefined },
-    !!watchedTeacherId,
-  );
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
   const teachers = teachersData?.items || [];
-  const groupsForTeacher = useMemo(
-    () => (watchedTeacherId ? groupsData?.items ?? [] : []),
-    [watchedTeacherId, groupsData?.items],
-  );
+  const groupsForTeacher = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
 
   // Pre-fill form when student data is loaded
   useEffect(() => {
@@ -120,42 +114,33 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     }
   }, [open, reset]);
 
-  // Keep group value valid for selected teacher.
-  // If teacher changes or current group is outside teacher's groups, clear it.
-  useEffect(() => {
-    if (!watchedTeacherId) {
-      if (watchedGroupId) {
-        setValue('groupId', '');
-      }
-      return;
-    }
-
-    if (watchedGroupId && !groupsForTeacher.some((group) => group.id === watchedGroupId)) {
-      setValue('groupId', '');
-    }
-  }, [watchedTeacherId, watchedGroupId, groupsForTeacher, setValue]);
-
   const onSubmit = async (data: UpdateStudentFormData) => {
     setErrorMessage(null);
     
     try {
-      const payload: UpdateStudentDto = {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone || undefined,
-        age: data.age,
-        status: data.status,
-        groupId: data.groupId?.trim() ? data.groupId.trim() : null,
-        teacherId: data.teacherId?.trim() ? data.teacherId.trim() : null,
-        parentName: data.parentName || undefined,
-        parentPhone: data.parentPhone || undefined,
-        parentEmail: data.parentEmail || undefined,
-        parentPassportInfo: data.parentPassportInfo || undefined,
-        monthlyFee: data.monthlyFee,
-        notes: data.notes || undefined,
-        receiveReports: data.receiveReports,
-        registerDate: data.registerDate?.trim() ? data.registerDate.trim() : null,
-      };
+      const payload: UpdateStudentDto = {};
+
+      if (dirtyFields.firstName) payload.firstName = data.firstName;
+      if (dirtyFields.lastName) payload.lastName = data.lastName;
+      if (dirtyFields.phone) payload.phone = data.phone || undefined;
+      if (dirtyFields.age) payload.age = data.age;
+      if (dirtyFields.status) payload.status = data.status;
+      if (dirtyFields.groupId) payload.groupId = data.groupId?.trim() ? data.groupId.trim() : null;
+      if (dirtyFields.teacherId) payload.teacherId = data.teacherId?.trim() ? data.teacherId.trim() : null;
+      if (dirtyFields.parentName) payload.parentName = data.parentName || undefined;
+      if (dirtyFields.parentPhone) payload.parentPhone = data.parentPhone || undefined;
+      if (dirtyFields.parentEmail) payload.parentEmail = data.parentEmail || undefined;
+      if (dirtyFields.parentPassportInfo) payload.parentPassportInfo = data.parentPassportInfo || undefined;
+      if (dirtyFields.monthlyFee) payload.monthlyFee = data.monthlyFee;
+      if (dirtyFields.notes) payload.notes = data.notes || undefined;
+      if (dirtyFields.receiveReports) payload.receiveReports = data.receiveReports;
+      if (dirtyFields.registerDate) payload.registerDate = data.registerDate?.trim() ? data.registerDate.trim() : null;
+
+      // Nothing changed: just close without a redundant API call.
+      if (Object.keys(payload).length === 0) {
+        onOpenChange(false);
+        return;
+      }
 
       await updateStudent.mutateAsync({ id: studentId, data: payload });
       
@@ -274,9 +259,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 <Label htmlFor="teacherId">Teacher</Label>
                 <select
                   id="teacherId"
-                  {...register('teacherId', {
-                    onChange: () => setValue('groupId', ''),
-                  })}
+                  {...register('teacherId')}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isLoadingTeachers || isSubmitting}
                 >
@@ -302,10 +285,10 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   id="groupId"
                   {...register('groupId')}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={isLoadingGroups || !watchedTeacherId}
+                  disabled={isLoadingGroups || isSubmitting}
                 >
                   <option value="">
-                    {watchedTeacherId ? 'No group assigned' : 'Select Teacher first'}
+                    No group assigned
                   </option>
                   {groupsForTeacher.map((group) => (
                     <option key={group.id} value={group.id}>
