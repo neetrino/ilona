@@ -32,6 +32,7 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
 
 const VOICE_LEAD_PARAM = 'voiceLead';
 const ARCHIVE_PARAM = 'archive';
+const EDIT_LEAD_PARAM = 'editLead';
 
 function normalize(value?: string | null): string {
   return (value ?? '').trim().toLowerCase();
@@ -97,7 +98,7 @@ export default function AdminCrmPage() {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
-  const [editLeadId, setEditLeadId] = useState<string | null>(null);
+  const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
   const [statusError, setStatusError] = useState<string | null>(null);
 
   // Restore voice lead popup from URL after refresh
@@ -109,6 +110,11 @@ export default function AdminCrmPage() {
   // Restore Archive column visibility from URL after refresh
   useEffect(() => {
     setShowArchiveColumn(searchParams.get(ARCHIVE_PARAM) === '1');
+  }, [searchParams]);
+
+  // Restore edit lead modal from URL after refresh
+  useEffect(() => {
+    setEditLeadId(searchParams.get(EDIT_LEAD_PARAM));
   }, [searchParams]);
 
   const queryClient = useQueryClient();
@@ -204,6 +210,20 @@ export default function AdminCrmPage() {
     window.history.replaceState(null, '', url.pathname + (url.search || ''));
   };
 
+  const openEditLead = (id: string) => {
+    setEditLeadId(id);
+    const url = new URL(window.location.href);
+    url.searchParams.set(EDIT_LEAD_PARAM, id);
+    window.history.replaceState(null, '', url.pathname + url.search);
+  };
+
+  const closeEditLead = () => {
+    setEditLeadId(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete(EDIT_LEAD_PARAM);
+    window.history.replaceState(null, '', url.pathname + (url.search || ''));
+  };
+
   const handleCardClick = (lead: CrmLead) => {
     const isVoiceLead = lead.attachments?.some((a) => a.type === 'VOICE_RECORDING');
     if (isVoiceLead) {
@@ -214,7 +234,7 @@ export default function AdminCrmPage() {
     }
   };
   const handleCardEdit = (lead: CrmLead) => {
-    setEditLeadId(lead.id);
+    openEditLead(lead.id);
   };
   const handleCardStatusChange = (leadId: string, status: CrmLeadStatus) => {
     statusMutation.mutate({ leadId, status });
@@ -386,10 +406,10 @@ export default function AdminCrmPage() {
       <EditLeadModal
         open={!!editLeadId}
         leadId={editLeadId}
-        onClose={() => setEditLeadId(null)}
+        onClose={closeEditLead}
         onSaved={() => {
           refetch();
-          setEditLeadId(null);
+          closeEditLead();
         }}
         centers={centers}
         teachers={teachers}
