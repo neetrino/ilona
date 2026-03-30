@@ -1,6 +1,7 @@
-import { Pencil, Trash2, Ban, Building2, MapPin, Phone, Mail, Users } from 'lucide-react';
+import { Building2, MapPin, Phone, Mail, Users } from 'lucide-react';
 import type { CenterWithCount } from '../types';
 import { getContrastColor } from '@/shared/lib/utils';
+import { ActionButtons } from '@/shared/components/ui';
 
 interface CenterCardProps {
   center: CenterWithCount;
@@ -14,93 +15,107 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive }: CenterC
   const titleColor = getContrastColor(primaryColor) === 'white' ? 'text-white' : 'text-slate-900';
 
   return (
-    <div className="relative bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+    <div className="group relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
       <div
-        className="h-1.5 w-full"
+        className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-15 blur-2xl transition-opacity duration-300 group-hover:opacity-25"
+        style={{ backgroundColor: primaryColor }}
+        aria-hidden
+      />
+      <div
+        className="h-2 w-full"
         style={{ backgroundColor: primaryColor }}
         aria-hidden
       />
 
-      <div className="p-4 space-y-4">
+      <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 space-y-2">
-            {!center.isActive && (
-              <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                Inactive
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset"
+                style={{
+                  backgroundColor: center.isActive ? '#ecfdf3' : '#fffbeb',
+                  color: center.isActive ? '#047857' : '#b45309',
+                  boxShadow: center.isActive
+                    ? 'inset 0 0 0 1px rgba(16, 185, 129, 0.22)'
+                    : 'inset 0 0 0 1px rgba(245, 158, 11, 0.24)',
+                }}
+              >
+                {center.isActive ? 'Active' : 'Inactive'}
               </span>
-            )}
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                Branch
+              </span>
+            </div>
 
             <div className="flex items-center gap-2 min-w-0">
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                className="h-11 w-11 shrink-0 rounded-xl flex items-center justify-center shadow-sm ring-1 ring-black/5"
                 style={{ backgroundColor: primaryColor }}
               >
-                <Building2 className={`w-4 h-4 ${titleColor}`} />
+                <Building2 className={`h-5 w-5 ${titleColor}`} />
               </div>
-              <h4 className="font-semibold text-slate-900 text-sm leading-tight truncate">
+              <h4 className="truncate text-base font-semibold leading-tight text-slate-900">
                 {center.name}
               </h4>
             </div>
           </div>
 
-          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={onEdit}
-              className="p-2 text-slate-600 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-              aria-label="Edit center"
-              title="Edit center"
-            >
-              <Pencil className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onDelete}
-              className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              aria-label="Delete center"
-              title="Delete center"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onToggleActive}
-              className="p-2 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-              aria-label={center.isActive ? 'Deactivate center' : 'Activate center'}
-              title={center.isActive ? 'Deactivate center' : 'Activate center'}
-            >
-              <Ban className="w-4 h-4" />
-            </button>
-          </div>
+          <ActionButtons
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onDisable={onToggleActive}
+            isActive={center.isActive}
+            size="sm"
+            ariaLabels={{
+              edit: 'Edit center',
+              delete: 'Delete center',
+              disable: center.isActive ? 'Deactivate center' : 'Activate center',
+            }}
+            titles={{
+              edit: 'Edit center',
+              delete: 'Delete center',
+              disable: center.isActive ? 'Deactivate center' : 'Activate center',
+            }}
+          />
         </div>
 
         {center.address && (
-          <div className="flex items-start gap-2 text-xs text-slate-600">
-            <MapPin className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-slate-200/80 bg-slate-50 p-3 text-xs text-slate-600">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
             <p className="line-clamp-2" title={center.address}>
               {center.address}
             </p>
           </div>
         )}
 
-        <div className="pt-3 border-t border-slate-100 space-y-2 text-xs">
-        {center.phone && (
-          <div className="flex items-center gap-2 text-slate-600">
-            <Phone className="w-3.5 h-3.5 text-slate-400" />
-            <span className="truncate" title={center.phone}>{center.phone}</span>
-          </div>
-        )}
+        <div className="mt-auto space-y-2.5 rounded-xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/70 p-3 text-xs">
+          {center.phone && (
+            <div className="flex items-center gap-2 text-slate-600">
+              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white shadow-sm ring-1 ring-slate-200/70">
+                <Phone className="h-3.5 w-3.5 text-slate-400" />
+              </span>
+              <span className="truncate" title={center.phone}>{center.phone}</span>
+            </div>
+          )}
 
-        {center.email && (
-          <div className="flex items-center gap-2 text-slate-600">
-            <Mail className="w-3.5 h-3.5 text-slate-400" />
-            <span className="truncate" title={center.email}>{center.email}</span>
-          </div>
-        )}
+          {center.email && (
+            <div className="flex items-center gap-2 text-slate-600">
+              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white shadow-sm ring-1 ring-slate-200/70">
+                <Mail className="h-3.5 w-3.5 text-slate-400" />
+              </span>
+              <span className="truncate" title={center.email}>{center.email}</span>
+            </div>
+          )}
 
-        <div className="flex items-center gap-2 text-slate-600">
-          <Users className="w-3.5 h-3.5 text-slate-400" />
-          <span>
-            {center._count?.groups || 0} {center._count?.groups === 1 ? 'group' : 'groups'}
-          </span>
-        </div>
+          <div className="flex items-center gap-2 text-slate-600">
+            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white shadow-sm ring-1 ring-slate-200/70">
+              <Users className="h-3.5 w-3.5 text-slate-400" />
+            </span>
+            <span className="font-medium text-slate-700">
+              {center._count?.groups || 0} {center._count?.groups === 1 ? 'group' : 'groups'}
+            </span>
+          </div>
         </div>
       </div>
     </div>
