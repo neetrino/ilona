@@ -97,6 +97,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
     </svg>
   ),
+  feedbacks: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h6m-6 8l-4 2 1.2-3.2A7 7 0 013 14V7a4 4 0 014-4h10a4 4 0 014 4v7a4 4 0 01-4 4H7z" />
+    </svg>
+  ),
   absence: (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -163,6 +168,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
       return [
         { label: t('dashboard'), href: '/student/dashboard', icon: icons.dashboard },
         { label: t('recordings'), href: '/student/recordings', icon: icons.recordings },
+        { label: t('myFeedbacks'), href: '/student/my-feedbacks', icon: icons.feedbacks },
         { label: t('payments'), href: '/student/payments', icon: icons.payments },
         { label: t('analytics'), href: '/student/analytics', icon: icons.analytics },
         { label: t('absence'), href: '/student/absence', icon: icons.absence },
