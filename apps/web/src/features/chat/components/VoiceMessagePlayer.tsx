@@ -6,6 +6,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 
 const PLAYBACK_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 type PlaybackSpeed = (typeof PLAYBACK_SPEED_OPTIONS)[number];
+let activeAudioElement: HTMLAudioElement | null = null;
 
 /** Per-user localStorage key to avoid speed preference leaking across accounts. */
 const VOICE_PLAYBACK_SPEED_KEY_PREFIX = 'ilona-voice-playback-speed';
@@ -85,6 +86,15 @@ export function VoiceMessagePlayer({
     }
   }, [playbackSpeed]);
 
+  // Cleanup shared active element pointer when this instance unmounts.
+  useEffect(() => {
+    return () => {
+      if (activeAudioElement === audioRef.current) {
+        activeAudioElement = null;
+      }
+    };
+  }, []);
+
   // When the audio source changes, reset position and progress bar to beginning
   useEffect(() => {
     const el = audioRef.current;
@@ -142,14 +152,26 @@ export function VoiceMessagePlayer({
   };
 
   const handlePlay = () => {
+    const currentAudio = audioRef.current;
+    if (currentAudio && activeAudioElement && activeAudioElement !== currentAudio) {
+      activeAudioElement.pause();
+      activeAudioElement.currentTime = 0;
+    }
+    activeAudioElement = currentAudio;
     setIsPlaying(true);
   };
 
   const handlePause = () => {
+    if (activeAudioElement === audioRef.current) {
+      activeAudioElement = null;
+    }
     setIsPlaying(false);
   };
 
   const handleEnded = () => {
+    if (activeAudioElement === audioRef.current) {
+      activeAudioElement = null;
+    }
     setIsPlaying(false);
     const el = audioRef.current;
     if (el?.duration && isFinite(el.duration)) {
@@ -173,6 +195,13 @@ export function VoiceMessagePlayer({
   const handlePlayClick = () => {
     const el = audioRef.current;
     if (!el) return;
+
+    // Stop any previously playing voice message before starting this one.
+    if (activeAudioElement && activeAudioElement !== el) {
+      activeAudioElement.pause();
+      activeAudioElement.currentTime = 0;
+    }
+
     el.currentTime = 0;
     setProgress(0);
     el.play().catch(() => {});

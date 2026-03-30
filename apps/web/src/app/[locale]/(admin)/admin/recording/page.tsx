@@ -30,6 +30,11 @@ function formatSubmittedAt(value: string): string {
 }
 
 const DIRECTORY_PAGE_SIZE = 100;
+const GROUP_STORAGE_KEY = 'admin-recordings:selected-group';
+const STUDENT_STORAGE_KEY = 'admin-recordings:selected-student';
+const NO_GROUP_SELECTED = '';
+const NO_STUDENT_SELECTED = '';
+const ALL_STUDENTS_VALUE = 'all';
 
 function isFullStudent(item: TeacherAssignedItem): item is Student {
   return 'user' in item;
@@ -66,13 +71,17 @@ async function fetchAllStudentsDirectory(): Promise<Student[]> {
 
 export default function AdminRecordingPage() {
   const t = useTranslations('nav');
-  const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
-  const [selectedStudentId, setSelectedStudentId] = useState<string>('all');
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(NO_GROUP_SELECTED);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(NO_STUDENT_SELECTED);
   const [studentSearch, setStudentSearch] = useState('');
+  const [isSelectionHydrated, setIsSelectionHydrated] = useState(false);
 
   const apiFilters = useMemo(() => ({
-    groupId: selectedGroupId === 'all' ? undefined : selectedGroupId,
-    studentUserId: selectedStudentId === 'all' ? undefined : selectedStudentId,
+    groupId: selectedGroupId || undefined,
+    studentUserId:
+      selectedGroupId && selectedStudentId && selectedStudentId !== ALL_STUDENTS_VALUE
+        ? selectedStudentId
+        : undefined,
   }), [selectedGroupId, selectedStudentId]);
 
   const { data: recordings = [], isLoading } = useQuery({
@@ -124,9 +133,9 @@ export default function AdminRecordingPage() {
   }, [allGroups, studentDirectory]);
 
   const studentOptions = useMemo(() => {
-    const byGroup = selectedGroupId === 'all'
-      ? studentDirectory
-      : studentDirectory.filter((student) => {
+    if (!selectedGroupId) return [];
+
+    const byGroup = studentDirectory.filter((student) => {
         if (selectedGroupId === 'ungrouped') return student.groupId === null;
         return student.groupId === selectedGroupId;
       });
@@ -138,15 +147,76 @@ export default function AdminRecordingPage() {
   }, [studentDirectory, selectedGroupId]);
 
   useEffect(() => {
-    if (selectedStudentId === 'all') return;
+    if (typeof window === 'undefined') return;
+    const storedGroup = localStorage.getItem(GROUP_STORAGE_KEY);
+    const storedStudent = localStorage.getItem(STUDENT_STORAGE_KEY);
+
+    if (storedGroup) {
+      setSelectedGroupId(storedGroup);
+      setSelectedStudentId(storedStudent || ALL_STUDENTS_VALUE);
+    } else {
+      setSelectedGroupId(NO_GROUP_SELECTED);
+      setSelectedStudentId(NO_STUDENT_SELECTED);
+    }
+    setIsSelectionHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isSelectionHydrated || isLoadingDirectory) return;
+
+    if (selectedGroupId && !groupOptions.some((group) => group.id === selectedGroupId)) {
+      setSelectedGroupId(NO_GROUP_SELECTED);
+      setSelectedStudentId(NO_STUDENT_SELECTED);
+      return;
+    }
+
+    if (!selectedGroupId) {
+      if (selectedStudentId !== NO_STUDENT_SELECTED) {
+        setSelectedStudentId(NO_STUDENT_SELECTED);
+      }
+      return;
+    }
+
+    if (selectedStudentId === NO_STUDENT_SELECTED) {
+      setSelectedStudentId(ALL_STUDENTS_VALUE);
+      return;
+    }
+
+    if (selectedStudentId !== ALL_STUDENTS_VALUE) {
+      const stillAvailable = studentOptions.some((student) => student.userId === selectedStudentId);
+      if (!stillAvailable) {
+        setSelectedStudentId(ALL_STUDENTS_VALUE);
+      }
+    }
+  }, [isSelectionHydrated, isLoadingDirectory, selectedGroupId, selectedStudentId, groupOptions, studentOptions]);
+
+  useEffect(() => {
+    if (!isSelectionHydrated || typeof window === 'undefined') return;
+
+    if (!selectedGroupId) {
+      localStorage.removeItem(GROUP_STORAGE_KEY);
+      localStorage.removeItem(STUDENT_STORAGE_KEY);
+      return;
+    }
+
+    localStorage.setItem(GROUP_STORAGE_KEY, selectedGroupId);
+    if (selectedStudentId && selectedStudentId !== NO_STUDENT_SELECTED) {
+      localStorage.setItem(STUDENT_STORAGE_KEY, selectedStudentId);
+    } else {
+      localStorage.removeItem(STUDENT_STORAGE_KEY);
+    }
+  }, [isSelectionHydrated, selectedGroupId, selectedStudentId]);
+
+  useEffect(() => {
+    if (!selectedGroupId || selectedStudentId === ALL_STUDENTS_VALUE) return;
     const stillAvailable = studentOptions.some((student) => student.userId === selectedStudentId);
     if (!stillAvailable) {
-      setSelectedStudentId('all');
+      setSelectedStudentId(ALL_STUDENTS_VALUE);
     }
-  }, [selectedStudentId, studentOptions]);
+  }, [selectedGroupId, selectedStudentId, studentOptions]);
 
   const visibleRecordings = useMemo(() => {
-    const byStudent = selectedStudentId === 'all'
+    const byStudent = !selectedGroupId || selectedStudentId === ALL_STUDENTS_VALUE
       ? recordings
       : recordings.filter((recording) => recording.student.userId === selectedStudentId);
 
@@ -154,7 +224,7 @@ export default function AdminRecordingPage() {
     if (!query) return byStudent;
 
     return byStudent.filter((recording) => getStudentFullName(recording).toLowerCase().includes(query));
-  }, [recordings, selectedStudentId, studentSearch]);
+  }, [recordings, selectedGroupId, selectedStudentId, studentSearch]);
 
   const recordingsByStudent = useMemo(() => {
     const map = new Map<string, AdminStudentRecording[]>();
@@ -167,7 +237,7 @@ export default function AdminRecordingPage() {
   }, [visibleRecordings]);
 
   const visibleGroupSections = useMemo(() => {
-    const groups = selectedGroupId === 'all'
+    const groups = !selectedGroupId
       ? groupOptions
       : groupOptions.filter((group) => group.id === selectedGroupId);
 
@@ -180,7 +250,12 @@ export default function AdminRecordingPage() {
             ? student.groupId === null
             : student.groupId === group.id;
           if (!belongsToGroup) return false;
-          if (selectedStudentId !== 'all' && student.userId !== selectedStudentId) return false;
+          if (
+            selectedGroupId &&
+            selectedStudentId &&
+            selectedStudentId !== ALL_STUDENTS_VALUE &&
+            student.userId !== selectedStudentId
+          ) return false;
           if (searchQuery && !student.fullName.toLowerCase().includes(searchQuery)) return false;
           return true;
         })
@@ -201,8 +276,8 @@ export default function AdminRecordingPage() {
   }, [groupOptions, studentDirectory, selectedGroupId, selectedStudentId, studentSearch, recordingsByStudent]);
 
   const resetFilters = () => {
-    setSelectedGroupId('all');
-    setSelectedStudentId('all');
+    setSelectedGroupId(NO_GROUP_SELECTED);
+    setSelectedStudentId(NO_STUDENT_SELECTED);
     setStudentSearch('');
   };
 
@@ -216,10 +291,14 @@ export default function AdminRecordingPage() {
           <label className="block text-sm font-medium text-slate-600 mb-1.5">Group/Class</label>
           <select
             value={selectedGroupId}
-            onChange={(event) => setSelectedGroupId(event.target.value)}
+            onChange={(event) => {
+              const nextGroupId = event.target.value;
+              setSelectedGroupId(nextGroupId);
+              setSelectedStudentId(nextGroupId ? ALL_STUDENTS_VALUE : NO_STUDENT_SELECTED);
+            }}
             className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           >
-            <option value="all">All groups</option>
+            <option value="">All groups</option>
             {groupOptions.map((group) => (
               <option key={group.id} value={group.id}>
                 {group.name}
@@ -233,9 +312,14 @@ export default function AdminRecordingPage() {
           <select
             value={selectedStudentId}
             onChange={(event) => setSelectedStudentId(event.target.value)}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            disabled={!selectedGroupId}
+            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
           >
-            <option value="all">All students</option>
+            {!selectedGroupId ? (
+              <option value="">Select group first</option>
+            ) : (
+              <option value={ALL_STUDENTS_VALUE}>All students</option>
+            )}
             {studentOptions.map((student) => (
               <option key={student.userId} value={student.userId}>
                 {student.name}
