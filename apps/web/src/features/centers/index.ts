@@ -23,6 +23,7 @@ export type {
 export { CreateCenterForm } from './components/CreateCenterForm';
 export { EditCenterForm } from './components/EditCenterForm';
 export { CenterCard } from './components/CenterCard';
+export { DeactivateCenterDialog } from './components/DeactivateCenterDialog';
 
 
 

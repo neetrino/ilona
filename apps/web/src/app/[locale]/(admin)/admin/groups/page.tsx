@@ -143,7 +143,6 @@ export default function GroupsPage() {
             centerSearchQuery={centerSearchQuery}
             onSearchChange={handleCenterSearchChange}
             centerPage={centerPage}
-            setCenterPage={setCenterPage}
             updateUrl={updateUrl}
             searchParams={searchParams}
           />
