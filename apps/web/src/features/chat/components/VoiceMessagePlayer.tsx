@@ -88,8 +88,9 @@ export function VoiceMessagePlayer({
 
   // Cleanup shared active element pointer when this instance unmounts.
   useEffect(() => {
+    const audioEl = audioRef.current;
     return () => {
-      if (activeAudioElement === audioRef.current) {
+      if (activeAudioElement === audioEl) {
         activeAudioElement = null;
       }
     };
