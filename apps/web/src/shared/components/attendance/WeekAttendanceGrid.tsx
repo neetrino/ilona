@@ -73,6 +73,10 @@ export function WeekAttendanceGrid({
     studentId: string;
     dateStr: string;
   } | null>(null);
+  const [commentPreviewDialog, setCommentPreviewDialog] = useState<{
+    studentId: string;
+    dateStr: string;
+  } | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const initialDataRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
   const prevInitialAttendanceRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
@@ -649,10 +653,13 @@ export function WeekAttendanceGrid({
                       const isDateSaving = isSaving[dateStr] || false;
                       const hasLessons = dayLessons.length > 0;
                       const firstLessonId = dayLessons[0]?.id;
+                      const cellNote = firstLessonId
+                        ? attendanceData[firstLessonId]?.[student.id]?.note?.trim() || ''
+                        : '';
                       const hasMissingJustification =
                         status === 'absent_justified' &&
                         hasLessons &&
-                        !attendanceData[firstLessonId]?.[student.id]?.note?.trim();
+                        !cellNote;
 
                       return (
                         <td
@@ -689,6 +696,20 @@ export function WeekAttendanceGrid({
                                 <div className="absolute bottom-1 right-1 rounded bg-red-600 px-1 text-[10px] font-semibold text-white">
                                   !
                                 </div>
+                              )}
+                              {status === 'absent_justified' && !!cellNote && !isDateSaving && (
+                                <button
+                                  type="button"
+                                  className="absolute bottom-2 left-1.5 rounded-md bg-slate-800 px-2.5 py-1 text-xs font-bold tracking-wide text-white shadow-md hover:bg-slate-700"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCommentPreviewDialog({ studentId: student.id, dateStr });
+                                  }}
+                                  title="View justification comment"
+                                  aria-label="View justification comment"
+                                >
+                                  NOTE
+                                </button>
                               )}
                             </>
                           ) : (
@@ -774,6 +795,32 @@ export function WeekAttendanceGrid({
               Save comment
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!commentPreviewDialog} onOpenChange={(open) => !open && setCommentPreviewDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Justification comment</DialogTitle>
+            <DialogDescription>
+              Comment saved for this justified absence.
+            </DialogDescription>
+          </DialogHeader>
+          {commentPreviewDialog && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-slate-700">
+                {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.firstName}{' '}
+                {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.lastName}
+              </div>
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
+                {(() => {
+                  const firstLessonId = lessonsByDate[commentPreviewDialog.dateStr]?.[0]?.id;
+                  if (!firstLessonId) return '';
+                  return attendanceData[firstLessonId]?.[commentPreviewDialog.studentId]?.note;
+                })()}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

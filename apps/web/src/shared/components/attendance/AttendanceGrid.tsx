@@ -75,6 +75,10 @@ export function AttendanceGrid({
     studentId: string;
     lessonId: string;
   } | null>(null);
+  const [commentPreviewDialog, setCommentPreviewDialog] = useState<{
+    studentId: string;
+    lessonId: string;
+  } | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const cellRefs = useRef<Record<string, HTMLTableCellElement>>({});
   const initialDataRef = useRef<Record<string, Record<string, AttendanceCell>>>(initialAttendance);
@@ -642,8 +646,8 @@ export function AttendanceGrid({
                       const hasPendingChange = pendingChanges[lesson.id]?.has(student.id) || false;
                       const isLessonSaving = isSaving?.[lesson.id] || false;
                       const requiresJustification = status === 'absent_justified';
-                      const hasJustification =
-                        !!attendanceData[lesson.id]?.[student.id]?.note?.trim();
+                      const cellNote = attendanceData[lesson.id]?.[student.id]?.note?.trim() || '';
+                      const hasJustification = !!cellNote;
                       const hasMissingJustification = requiresJustification && !hasJustification;
                       const _hasLessonChanges = pendingChanges[lesson.id] && pendingChanges[lesson.id].size > 0;
 
@@ -685,6 +689,20 @@ export function AttendanceGrid({
                             <div className="absolute bottom-1 right-1 rounded bg-red-600 px-1 text-[10px] font-semibold text-white">
                               !
                             </div>
+                          )}
+                          {status === 'absent_justified' && hasJustification && !isLessonSaving && (
+                            <button
+                              type="button"
+                              className="absolute bottom-2 left-1.5 rounded-md bg-slate-800 px-2.5 py-1 text-xs font-bold tracking-wide text-white shadow-md hover:bg-slate-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCommentPreviewDialog({ studentId: student.id, lessonId: lesson.id });
+                              }}
+                              title="View justification comment"
+                              aria-label="View justification comment"
+                            >
+                              NOTE
+                            </button>
                           )}
                         </td>
                       );
@@ -743,6 +761,28 @@ export function AttendanceGrid({
               Save comment
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!commentPreviewDialog} onOpenChange={(open) => !open && setCommentPreviewDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Justification comment</DialogTitle>
+            <DialogDescription>
+              Comment saved for this justified absence.
+            </DialogDescription>
+          </DialogHeader>
+          {commentPreviewDialog && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-slate-700">
+                {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.firstName}{' '}
+                {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.lastName}
+              </div>
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
+                {attendanceData[commentPreviewDialog.lessonId]?.[commentPreviewDialog.studentId]?.note}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
