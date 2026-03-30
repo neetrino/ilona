@@ -67,6 +67,7 @@ export function useUpdateProfile() {
       if (updatedProfile && user) {
         setUser({
           ...user,
+          email: updatedProfile.email || user.email,
           firstName: updatedProfile.firstName || user.firstName,
           lastName: updatedProfile.lastName || user.lastName,
           phone: updatedProfile.phone || user.phone,

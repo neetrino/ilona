@@ -2,7 +2,9 @@ import { Controller, Post, Body, HttpCode, HttpStatus, Logger } from '@nestjs/co
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { Public } from '../../common/decorators';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { CurrentUser, Public } from '../../common/decorators';
+import { JwtPayload } from '../../common/types/auth.types';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -34,6 +36,19 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
   async refresh(@Body('refreshToken') refreshToken: string) {
     return this.authService.refreshTokens(refreshToken);
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change current user password' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiResponse({ status: 400, description: 'Validation failed' })
+  @ApiResponse({ status: 401, description: 'Current password is incorrect' })
+  async changePassword(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(user.sub, dto);
   }
 }
 

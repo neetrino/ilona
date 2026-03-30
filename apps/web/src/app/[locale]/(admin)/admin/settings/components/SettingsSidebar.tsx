@@ -7,12 +7,13 @@ type SettingsTab = 'security' | 'notifications' | 'system' | 'penalty' | 'manage
 interface SettingsSidebarProps {
   activeTab: SettingsTab;
   onTabChange: (tab: SettingsTab) => void;
+  allowedTabs?: SettingsTab[];
 }
 
-export function SettingsSidebar({ activeTab, onTabChange }: SettingsSidebarProps) {
+export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: SettingsSidebarProps) {
   const t = useTranslations('settings');
 
-  const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
+  const allTabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     {
       id: 'security',
       label: t('security'),
@@ -60,6 +61,10 @@ export function SettingsSidebar({ activeTab, onTabChange }: SettingsSidebarProps
       ),
     },
   ];
+
+  const tabs = allowedTabs?.length
+    ? allTabs.filter((tab) => allowedTabs.includes(tab.id))
+    : allTabs;
 
   return (
     <div className="w-64 flex-shrink-0">

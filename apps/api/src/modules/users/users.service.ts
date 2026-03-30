@@ -78,6 +78,17 @@ export class UsersService {
     }
   }
 
+  async findAuthById(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        passwordHash: true,
+        status: true,
+      },
+    });
+  }
+
   async getManagerCenterId(userId: string): Promise<string | null> {
     const rows = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
       SELECT "centerId"
@@ -330,11 +341,43 @@ export class UsersService {
     });
   }
 
-  async update(userId: string, data: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string }) {
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+    await this.invalidateUserCache(userId);
+  }
+
+  async update(userId: string, data: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string; email?: string }) {
     try {
+      const normalizedEmail = data.email?.trim().toLowerCase();
+      if (normalizedEmail) {
+        const currentUser = await this.prisma.user.findUnique({
+          where: { id: userId },
+          select: { id: true, email: true },
+        });
+
+        if (!currentUser) {
+          throw new NotFoundException('User not found');
+        }
+
+        if (normalizedEmail !== currentUser.email) {
+          const existingByEmail = await this.prisma.user.findUnique({
+            where: { email: normalizedEmail },
+            select: { id: true },
+          });
+
+          if (existingByEmail && existingByEmail.id !== userId) {
+            throw new ConflictException('Email already registered');
+          }
+        }
+      }
+
       const user = await this.prisma.user.update({
         where: { id: userId },
         data: {
+          ...(normalizedEmail !== undefined && { email: normalizedEmail }),
           ...(data.firstName !== undefined && { firstName: data.firstName }),
           ...(data.lastName !== undefined && { lastName: data.lastName }),
           ...(data.phone !== undefined && { phone: data.phone }),

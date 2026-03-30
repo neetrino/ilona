@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, InternalServerErrorException, Logger, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtPayload, AuthTokens, AuthResponse, SafeUser } from '../../common/types/auth.types';
 
 @Injectable()
@@ -121,6 +122,31 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<{ success: boolean }> {
+    const user = await this.usersService.findAuthById(userId);
+    if (!user || user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('User not found or inactive');
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!isCurrentPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    if (dto.currentPassword === dto.newPassword) {
+      throw new BadRequestException('New password must be different from current password');
+    }
+
+    const newPasswordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.usersService.updatePassword(userId, newPasswordHash);
+
+    return { success: true };
   }
 
   private async generateTokens(payload: Omit<JwtPayload, 'iat' | 'exp'>): Promise<AuthTokens> {
