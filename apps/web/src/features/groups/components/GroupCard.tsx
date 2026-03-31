@@ -7,11 +7,17 @@ interface GroupCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onToggleActive: () => void;
-  /** When provided, the student count becomes clickable (e.g. Admin Groups section) */
-  onStudentsClick?: (groupId: string, groupName: string) => void;
+  /** When provided, each student name opens that student's profile (e.g. board view) */
+  onStudentClick?: (studentId: string) => void;
 }
 
-export function GroupCard({ group, onEdit, onDelete, onToggleActive, onStudentsClick }: GroupCardProps) {
+export function GroupCard({
+  group,
+  onEdit,
+  onDelete,
+  onToggleActive,
+  onStudentClick,
+}: GroupCardProps) {
   const teacherName = group.teacher
     ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`
     : null;
@@ -92,45 +98,8 @@ export function GroupCard({ group, onEdit, onDelete, onToggleActive, onStudentsC
           </div>
         )}
 
-        <div
-          className={
-            group.students && group.students.length > 0
-              ? 'space-y-1.5 text-slate-600'
-              : 'text-slate-600'
-          }
-        >
-          <div className="flex items-start gap-1.5 text-xs">
-            <svg
-              className="w-3.5 h-3.5 shrink-0 text-slate-400 mt-0.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <div className="min-w-0 flex-1">
-              {onStudentsClick ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStudentsClick(group.id, group.name);
-                  }}
-                  className="block w-full px-0 py-0 text-left underline decoration-slate-400 underline-offset-2 hover:decoration-primary hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 rounded [text-decoration-skip-ink:none]"
-                  title="View students in this group"
-                >
-                  <span className="inline-block font-medium text-slate-700">
-                    {studentCount}/{group.maxStudents} students
-                  </span>
-                </button>
-              ) : (
-                <span className="block font-medium text-slate-700">
-                  {studentCount}/{group.maxStudents} students
-                </span>
-              )}
-            </div>
-          </div>
-          {group.students && group.students.length > 0 && (
+        {group.students && group.students.length > 0 && (
+          <div className="text-slate-600">
             <ul className="space-y-1.5 pl-0 text-sm text-slate-700">
               {group.students.map((s, index) => (
                 <li
@@ -141,14 +110,27 @@ export function GroupCard({ group, onEdit, onDelete, onToggleActive, onStudentsC
                   <span className="shrink-0 tabular-nums font-semibold text-slate-500">
                     {index + 1}.
                   </span>
-                  <span className="min-w-0 flex-1 truncate font-medium">
-                    {s.user.firstName} {s.user.lastName}
-                  </span>
+                  {onStudentClick ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onStudentClick(s.id);
+                      }}
+                      className="min-w-0 flex-1 truncate text-left font-medium text-primary underline decoration-primary/30 underline-offset-2 hover:decoration-primary hover:text-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 rounded"
+                    >
+                      {s.user.firstName} {s.user.lastName}
+                    </button>
+                  ) : (
+                    <span className="min-w-0 flex-1 truncate font-medium">
+                      {s.user.firstName} {s.user.lastName}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
-          )}
-        </div>
+          </div>
+        )}
         <div className="flex items-center gap-2 text-slate-600">
           <span className={`inline-flex h-2.5 w-2.5 rounded-full ${dotColorClass}`} aria-hidden="true" />
           <span className="font-medium text-slate-700">{occupancy.label}</span>

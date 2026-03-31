@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from '@/shared/components/ui';
 import { useGroupStudents } from '@/features/groups';
-import { StudentDetailsModal } from './StudentDetailsModal';
 
 const PAGE_SIZE = 10;
 
@@ -17,9 +16,7 @@ interface GroupStudentsModalProps {
   onOpenChange: (open: boolean) => void;
   groupId: string | null;
   groupName: string;
-  selectedStudentId: string | null;
   onStudentSelect: (studentId: string) => void;
-  onStudentDetailsOpenChange: (open: boolean) => void;
 }
 
 function formatEnrolledAt(dateStr: string): string {
@@ -36,9 +33,7 @@ export function GroupStudentsModal({
   onOpenChange,
   groupId,
   groupName,
-  selectedStudentId,
   onStudentSelect,
-  onStudentDetailsOpenChange,
 }: GroupStudentsModalProps) {
   const [page, setPage] = useState(0);
   useEffect(() => {
@@ -58,8 +53,7 @@ export function GroupStudentsModal({
   const totalPages = data?.totalPages ?? 0;
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Students in {groupName}</DialogTitle>
@@ -144,12 +138,5 @@ export function GroupStudentsModal({
           </div>
         </DialogContent>
       </Dialog>
-
-      <StudentDetailsModal
-        open={open && !!selectedStudentId}
-        onOpenChange={onStudentDetailsOpenChange}
-        studentId={selectedStudentId}
-      />
-    </>
   );
 }

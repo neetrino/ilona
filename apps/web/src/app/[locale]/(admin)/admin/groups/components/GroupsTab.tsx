@@ -18,6 +18,7 @@ import {
 } from '@/features/groups';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
 import { GroupStudentsModal } from './GroupStudentsModal';
+import { StudentDetailsModal } from './StudentDetailsModal';
 
 interface SelectAllCheckboxProps {
   checked: boolean;
@@ -233,6 +234,10 @@ export function GroupsTab({
   };
   const openStudentDetails = (studentId: string) => {
     updateUrl({ studentId });
+  };
+  /** From group card: open student profile without opening the group list first */
+  const openStudentFromGroupCard = (studentId: string) => {
+    updateUrl({ studentsGroup: null, studentId });
   };
   const closeStudentDetails = () => {
     updateUrl({ studentId: null });
@@ -601,7 +606,7 @@ export function GroupsTab({
                     onEdit={() => handleEditGroupIdChange(group.id)}
                     onDelete={() => handleDeleteClick(group.id)}
                     onToggleActive={() => handleToggleActive(group.id)}
-                    onStudentsClick={(id) => openStudentsModal(id)}
+                    onStudentClick={openStudentFromGroupCard}
                   />
                 ))}
               </div>
@@ -710,13 +715,15 @@ export function GroupsTab({
         onOpenChange={(open) => !open && closeStudentsModal()}
         groupId={studentsGroupId ?? null}
         groupName={studentsModalGroupName}
-        selectedStudentId={selectedStudentId}
         onStudentSelect={openStudentDetails}
-        onStudentDetailsOpenChange={(isOpen) => {
-          if (!isOpen) {
-            closeStudentDetails();
-          }
+      />
+
+      <StudentDetailsModal
+        open={!!selectedStudentId}
+        onOpenChange={(open) => {
+          if (!open) closeStudentDetails();
         }}
+        studentId={selectedStudentId}
       />
 
       {/* Success Messages */}
