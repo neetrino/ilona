@@ -3,12 +3,13 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
-import { MarkAttendanceDto, BulkAttendanceDto, QueryAttendanceDto } from './dto';
+import { MarkAttendanceDto, BulkAttendanceDto, QueryAttendanceDto, CreatePlannedAbsenceDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
 import { UserRole, AbsenceType } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
@@ -20,6 +21,62 @@ export class AttendanceController {
     private readonly attendanceService: AttendanceService,
     private readonly prisma: PrismaService,
   ) {}
+
+  @Get('my/calendar')
+  @Roles(UserRole.STUDENT)
+  async getMyCalendar(@CurrentUser() user: JwtPayload, @Query() query: QueryAttendanceDto) {
+    const student = await this.prisma.student.findFirst({
+      where: { userId: user.sub },
+    });
+
+    if (!student) {
+      return {
+        lessons: [],
+        attendances: [],
+        plannedAbsences: [],
+        statistics: {
+          total: 0,
+          present: 0,
+          absent: 0,
+          absentJustified: 0,
+          absentUnjustified: 0,
+          attendanceRate: 100,
+        },
+      };
+    }
+
+    return this.attendanceService.getStudentCalendarMonth(student.id, {
+      dateFrom: query.dateFrom ? new Date(query.dateFrom) : undefined,
+      dateTo: query.dateTo ? new Date(query.dateTo) : undefined,
+    });
+  }
+
+  @Post('my/planned-absence')
+  @Roles(UserRole.STUDENT)
+  async createMyPlannedAbsence(@CurrentUser() user: JwtPayload, @Body() dto: CreatePlannedAbsenceDto) {
+    return this.attendanceService.createPlannedAbsenceForStudentUser(user.sub, dto.date, dto.comment);
+  }
+
+  @Delete('my/planned-absence/:id')
+  @Roles(UserRole.STUDENT)
+  async deleteMyPlannedAbsence(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.attendanceService.deleteMyPlannedAbsence(user.sub, id);
+  }
+
+  @Get('planned-absences')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
+  async listPlannedAbsences(@CurrentUser() user: JwtPayload, @Query() query: QueryAttendanceDto) {
+    const dateFrom = query.dateFrom ? new Date(query.dateFrom) : new Date();
+    const dateTo = query.dateTo ? new Date(query.dateTo) : new Date();
+    if (!query.dateFrom) {
+      dateFrom.setHours(0, 0, 0, 0);
+    }
+    if (!query.dateTo) {
+      dateTo.setDate(dateTo.getDate() + 30);
+      dateTo.setHours(23, 59, 59, 999);
+    }
+    return this.attendanceService.listPlannedAbsencesForStaff(dateFrom, dateTo, user.sub, user.role);
+  }
 
   @Get('my')
   @Roles(UserRole.STUDENT)

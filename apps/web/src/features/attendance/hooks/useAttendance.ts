@@ -5,6 +5,10 @@ import {
   fetchLessonAttendance,
   fetchAttendanceByLessons,
   fetchStudentAttendance,
+  fetchMyStudentCalendar,
+  createMyPlannedAbsence,
+  deleteMyPlannedAbsence,
+  fetchStaffPlannedAbsences,
   markAttendance,
   markBulkAttendance,
   updateAbsenceType,
@@ -24,6 +28,10 @@ export const attendanceKeys = {
   atRisk: () => [...attendanceKeys.all, 'at-risk'] as const,
   groupReport: (groupId: string, dateFrom: string, dateTo: string) =>
     [...attendanceKeys.all, 'report', groupId, { dateFrom, dateTo }] as const,
+  myCalendar: (dateFrom?: string, dateTo?: string) =>
+    [...attendanceKeys.all, 'my-calendar', { dateFrom, dateTo }] as const,
+  staffPlanned: (dateFrom: string, dateTo: string) =>
+    [...attendanceKeys.all, 'staff-planned', { dateFrom, dateTo }] as const,
 };
 
 /**
@@ -65,6 +73,47 @@ export function useStudentAttendance(
     staleTime: 5 * 60 * 1000, // 5 minutes - attendance data doesn't change frequently
     retry: 2, // Retry up to 2 times on failure
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+  });
+}
+
+export function useMyStudentCalendar(dateFrom?: string, dateTo?: string, enabled = true) {
+  return useQuery({
+    queryKey: attendanceKeys.myCalendar(dateFrom, dateTo),
+    queryFn: () => fetchMyStudentCalendar(dateFrom, dateTo),
+    enabled,
+    staleTime: 60 * 1000,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+}
+
+export function useCreateMyPlannedAbsence() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ date, comment }: { date: string; comment: string }) =>
+      createMyPlannedAbsence(date, comment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: attendanceKeys.all });
+    },
+  });
+}
+
+export function useDeleteMyPlannedAbsence() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteMyPlannedAbsence(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: attendanceKeys.all });
+    },
+  });
+}
+
+export function useStaffPlannedAbsences(dateFrom: string, dateTo: string, enabled = true) {
+  return useQuery({
+    queryKey: attendanceKeys.staffPlanned(dateFrom, dateTo),
+    queryFn: () => fetchStaffPlannedAbsences(dateFrom, dateTo),
+    enabled: enabled && !!dateFrom && !!dateTo,
+    staleTime: 60 * 1000,
   });
 }
 

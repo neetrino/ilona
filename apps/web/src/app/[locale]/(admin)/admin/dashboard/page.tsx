@@ -6,6 +6,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Button } from '@/shared/components/ui';
 import { useAdminDashboardStats } from '@/features/dashboard';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { PlannedAbsencesStaffBlock } from '@/features/attendance';
 
 export default function AdminDashboardPage() {
   const params = useParams();
@@ -122,6 +123,8 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
+
+        <PlannedAbsencesStaffBlock />
       </div>
     </DashboardLayout>
   );

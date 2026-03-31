@@ -5,6 +5,7 @@ import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLessons, useStartLesson, useCompleteLesson, type Lesson } from '@/features/lessons';
 import { useMyGroups } from '@/features/groups';
+import { PlannedAbsencesStaffBlock } from '@/features/attendance';
 
 export default function TeacherDashboardPage() {
   const { user } = useAuthStore();
@@ -182,6 +183,8 @@ export default function TeacherDashboardPage() {
             change={{ value: vocabularySent < todayLessons.length ? 'Send now' : 'All sent', type: vocabularySent < todayLessons.length ? 'warning' : 'positive' }}
           />
         </div>
+
+        <PlannedAbsencesStaffBlock />
 
         {/* Quick Actions */}
         <div className="flex items-center gap-4">
