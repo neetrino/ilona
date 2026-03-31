@@ -48,6 +48,17 @@ export class QueryGroupDto {
   })
   @IsBoolean({ message: 'isActive must be a boolean value' })
   isActive?: boolean;
+
+  /** When true, each group includes `students` with `user.firstName` / `user.lastName` (list/board UI). */
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return undefined;
+  })
+  @IsBoolean({ message: 'includeStudents must be a boolean value' })
+  includeStudents?: boolean;
 }
 
 

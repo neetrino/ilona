@@ -662,53 +662,6 @@ export function GroupsTab({
         </>
       ) : null}
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-primary/10 rounded-xl">
-              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">Bulk Student Assignment</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Quickly assign multiple students to groups using our batch assignment tool.
-              </p>
-              <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90">
-                Open Assignment Tool
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-green-50 rounded-xl">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">Schedule Templates</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Create recurring lesson schedules for groups automatically.
-              </p>
-              <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90">
-                Manage Schedules
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Modals */}
       <CreateGroupForm 
         open={createGroupOpen} 

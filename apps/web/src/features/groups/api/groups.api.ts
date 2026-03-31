@@ -23,6 +23,7 @@ export async function fetchGroups(filters?: GroupFilters): Promise<GroupsRespons
   if (filters?.teacherId) params.append('teacherId', filters.teacherId);
   if (filters?.isActive !== undefined) params.append('isActive', String(filters.isActive));
   if (filters?.level) params.append('level', filters.level);
+  if (filters?.includeStudents === true) params.append('includeStudents', 'true');
 
   const query = params.toString();
   const url = query ? `${GROUPS_ENDPOINT}?${query}` : GROUPS_ENDPOINT;

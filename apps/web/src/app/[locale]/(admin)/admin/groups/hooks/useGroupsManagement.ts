@@ -48,6 +48,7 @@ export function useGroupsManagement(
       take: shouldFetchAll ? 100 : PAGE_SIZE,
       search: searchQuery || undefined,
       centerId: groupCenterFilter,
+      includeStudents: viewMode === 'board',
     },
     shouldFetchGroups
   );

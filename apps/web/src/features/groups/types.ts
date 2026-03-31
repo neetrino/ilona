@@ -25,6 +25,14 @@ export interface Group {
     students: number;
     lessons: number;
   };
+  /** Present when listing groups with `includeStudents` (e.g. board view). */
+  students?: Array<{
+    id: string;
+    user: {
+      firstName: string;
+      lastName: string;
+    };
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +53,8 @@ export interface GroupFilters {
   teacherId?: string;
   isActive?: boolean;
   level?: string;
+  /** Load student names for each group (board cards). */
+  includeStudents?: boolean;
 }
 
 export interface CreateGroupDto {

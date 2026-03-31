@@ -44,9 +44,21 @@ export class GroupsService {
     teacherId?: string;
     isActive?: boolean;
     level?: string;
+    /** Include students (user first/last name) in each group — for board cards. */
+    includeStudents?: boolean;
     currentUser?: JwtPayload;
   }) {
-    const { skip = 0, take = 50, search, centerId, teacherId, isActive, level, currentUser } = params || {};
+    const {
+      skip = 0,
+      take = 50,
+      search,
+      centerId,
+      teacherId,
+      isActive,
+      level,
+      includeStudents,
+      currentUser,
+    } = params || {};
 
     const where: Prisma.GroupWhereInput = {};
 
@@ -63,6 +75,44 @@ export class GroupsService {
     if (isActive !== undefined) where.isActive = isActive;
     if (level) where.level = level;
 
+    const listInclude = {
+      center: {
+        select: { id: true, name: true },
+      },
+      teacher: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              avatarUrl: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: { students: true, lessons: true },
+      },
+      ...(includeStudents
+        ? {
+            students: {
+              orderBy: [{ user: { firstName: 'asc' } }, { user: { lastName: 'asc' } }],
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+          }
+        : {}),
+    } satisfies Prisma.GroupInclude;
+
     // Wrap both queries with retry
     const [items, total] = await Promise.all([
       this.prisma.prismaWithRetry(
@@ -72,27 +122,7 @@ export class GroupsService {
             skip,
             take,
             orderBy: { name: 'asc' },
-            include: {
-              center: {
-                select: { id: true, name: true },
-              },
-              teacher: {
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      firstName: true,
-                      lastName: true,
-                      email: true,
-                      avatarUrl: true,
-                    },
-                  },
-                },
-              },
-              _count: {
-                select: { students: true, lessons: true },
-              },
-            },
+            include: listInclude,
           }),
         { op: 'groups.findAll', meta: { skip, take, teacherId, centerId } },
       ),
