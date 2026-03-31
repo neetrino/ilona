@@ -32,7 +32,7 @@ export function GroupCard({
         : 'bg-red-500';
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="min-w-0 bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
       {/* Group Header */}
       <div className="mb-3">
         <div className="flex items-start justify-between gap-2 mb-1 min-w-0">
