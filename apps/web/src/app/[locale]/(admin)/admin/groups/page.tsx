@@ -37,7 +37,7 @@ export default function GroupsPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       return modeFromUrl;
     }
-    return 'list';
+    return 'board';
   });
 
   // Update URL helper function
@@ -56,7 +56,7 @@ export default function GroupsPage() {
 
   // Update URL when view mode changes
   const updateViewModeInUrl = useCallback((mode: ViewMode) => {
-    updateUrl({ view: mode !== 'list' ? mode : null });
+    updateUrl({ view: mode !== 'board' ? mode : null });
   }, [updateUrl]);
 
   // Update URL when tab changes
@@ -70,7 +70,7 @@ export default function GroupsPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       setViewMode(modeFromUrl);
     } else if (!modeFromUrl) {
-      setViewMode('list');
+      setViewMode('board');
     }
   }, [searchParams]);
 

@@ -379,8 +379,13 @@ export interface AdminStudentRecording {
 }
 
 export interface AdminStudentRecordingsFilters {
+  /** @deprecated Prefer groupIds */
   groupId?: string;
+  /** @deprecated Prefer studentIds */
   studentUserId?: string;
+  groupIds?: string[];
+  /** Student user ids (message sender ids) */
+  studentIds?: string[];
   search?: string;
 }
 
@@ -391,8 +396,16 @@ export async function fetchAdminStudentRecordings(
   filters?: AdminStudentRecordingsFilters,
 ): Promise<AdminStudentRecording[]> {
   const params = new URLSearchParams();
-  if (filters?.groupId) params.append('groupId', filters.groupId);
-  if (filters?.studentUserId) params.append('studentUserId', filters.studentUserId);
+  if (filters?.groupIds?.length) {
+    filters.groupIds.forEach((id) => params.append('groupIds', id));
+  } else if (filters?.groupId) {
+    params.append('groupId', filters.groupId);
+  }
+  if (filters?.studentIds?.length) {
+    filters.studentIds.forEach((id) => params.append('studentIds', id));
+  } else if (filters?.studentUserId) {
+    params.append('studentUserId', filters.studentUserId);
+  }
   if (filters?.search) params.append('search', filters.search);
 
   const query = params.toString();

@@ -50,7 +50,7 @@ export function useGroupsPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       return modeFromUrl;
     }
-    return 'list'; // Default to list view
+    return 'board';
   });
   
   // Centers state
@@ -72,7 +72,7 @@ export function useGroupsPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       setViewMode(modeFromUrl);
     } else if (!modeFromUrl) {
-      setViewMode('list');
+      setViewMode('board');
     }
   }, [searchParams]);
 

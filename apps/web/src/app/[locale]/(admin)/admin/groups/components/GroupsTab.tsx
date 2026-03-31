@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { List, LayoutGrid } from 'lucide-react';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
-import { cn, lightenColor, getContrastColor } from '@/shared/lib/utils';
+import { cn } from '@/shared/lib/utils';
 import {
   GroupCard,
   CreateGroupForm,
@@ -15,6 +18,7 @@ import {
 } from '@/features/groups';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
 import { GroupStudentsModal } from './GroupStudentsModal';
+import { StudentDetailsModal } from './StudentDetailsModal';
 
 interface SelectAllCheckboxProps {
   checked: boolean;
@@ -56,6 +60,8 @@ interface GroupsTabProps {
   updateViewModeInUrl: (mode: 'list' | 'board') => void;
   updateUrl: (updates: Record<string, string | null>) => void;
   searchParams: URLSearchParams;
+  /** When set (center drill-down route), groups are loaded only for this center */
+  selectedCenterId?: string | null;
 }
 
 export function GroupsTab({
@@ -68,13 +74,35 @@ export function GroupsTab({
   updateViewModeInUrl,
   updateUrl,
   searchParams,
+  selectedCenterId = null,
 }: GroupsTabProps) {
+  const locale = useLocale();
+  const router = useRouter();
+  const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedCenterId) {
+      setBoardTabCenterId(null);
+    }
+  }, [selectedCenterId]);
+
+  useEffect(() => {
+    const branch = searchParams.get('branch');
+    if (viewMode === 'board' && !selectedCenterId) {
+      setBoardTabCenterId(branch);
+    }
+  }, [searchParams, viewMode, selectedCenterId]);
+
   const {
     groups,
     totalGroups,
     totalPages,
     allCenters,
-    groupsByCenter,
+    drillDownCenter,
+    activeCenterId,
+    showBoardCenterPicker,
+    isLoadingBranchTabs,
+    totalGroupsAcrossCenters,
     activeGroups,
     totalStudentsInGroups,
     averageGroupSize,
@@ -105,7 +133,22 @@ export function GroupsTab({
     deletedCount,
     handleBulkDeleteGroupsClick,
     handleBulkDeleteGroupsConfirm,
-  } = useGroupsManagement(viewMode, searchQuery, page);
+  } = useGroupsManagement(viewMode, searchQuery, page, selectedCenterId, boardTabCenterId);
+
+  const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
+
+  const handleBranchTabClick = (centerId: string) => {
+    setPage(0);
+    setSelectedGroupIds(new Set());
+    if (selectedCenterId) {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete('view');
+      router.push(`/${locale}/admin/groups/${centerId}?${next.toString()}`);
+    } else {
+      setBoardTabCenterId(centerId);
+      updateUrl({ branch: centerId });
+    }
+  };
 
   // Ref to track edit modal closing to prevent effect from reopening
   const isClosingRef = useRef(false);
@@ -192,12 +235,24 @@ export function GroupsTab({
   const openStudentDetails = (studentId: string) => {
     updateUrl({ studentId });
   };
+  /** From group card: open student profile without opening the group list first */
+  const openStudentFromGroupCard = (studentId: string) => {
+    updateUrl({ studentsGroup: null, studentId });
+  };
   const closeStudentDetails = () => {
     updateUrl({ studentId: null });
   };
   const closeStudentsModal = () => {
     updateUrl({ studentsGroup: null, studentId: null });
   };
+
+  /** Board with a selected branch: only one column — that branch only (never all centers). */
+  /** Branch tabs when no group context yet — filter by branch name */
+  const centersForBranchTabs = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allCenters;
+    return allCenters.filter((c) => c.name.toLowerCase().includes(q));
+  }, [allCenters, searchQuery]);
 
   const groupColumns = [
     {
@@ -342,37 +397,80 @@ export function GroupsTab({
 
   return (
     <div className="space-y-6">
+      {selectedCenterId && viewMode === 'list' && (
+        <nav
+          className="flex flex-wrap items-center gap-2 text-sm text-slate-600"
+          aria-label="Breadcrumb"
+        >
+          <Link
+            href={`/${locale}/admin/groups`}
+            className="font-medium text-primary hover:text-primary/80 hover:underline"
+          >
+            Centers
+          </Link>
+          <span className="text-slate-300" aria-hidden>
+            /
+          </span>
+          <span className="font-medium text-slate-800">
+            {drillDownCenter?.name ?? '…'}
+          </span>
+          <span className="text-slate-300" aria-hidden>
+            /
+          </span>
+          <span className="text-slate-500">Groups</span>
+        </nav>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Groups"
-          value={totalGroups}
-        />
-        <StatCard
-          title="Active Groups"
-          value={activeGroups || totalGroups}
-          change={{ value: 'Currently running', type: 'positive' }}
-        />
-        <StatCard
-          title="Students Enrolled"
-          value={totalStudentsInGroups}
-        />
-        <StatCard
-          title="Avg Group Size"
-          value={averageGroupSize}
-          change={{ value: 'students per group', type: 'neutral' }}
-        />
+        {showBoardCenterPicker ? (
+          <>
+            <StatCard title="Centers" value={allCenters.length} />
+            <StatCard
+              title="Total Groups"
+              value={totalGroupsAcrossCenters}
+              change={{ value: 'Across all centers', type: 'neutral' }}
+            />
+            <StatCard title="Students Enrolled" value="—" change={{ value: 'Open a center', type: 'neutral' }} />
+            <StatCard title="Avg Group Size" value="—" change={{ value: 'Per-center view', type: 'neutral' }} />
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Total Groups"
+              value={totalGroups}
+            />
+            <StatCard
+              title="Active Groups"
+              value={activeGroups || totalGroups}
+              change={{ value: 'Currently running', type: 'positive' }}
+            />
+            <StatCard
+              title="Students Enrolled"
+              value={totalStudentsInGroups}
+            />
+            <StatCard
+              title="Avg Group Size"
+              value={averageGroupSize}
+              change={{ value: 'students per group', type: 'neutral' }}
+            />
+          </>
+        )}
       </div>
 
-      {/* Filters & Actions */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1 relative">
+      {/* Filters & Actions — above branch tabs so group search sits right above the panel */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex-1 relative min-w-[200px]">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="search"
-            placeholder="Search groups by name..."
+            placeholder={
+              viewMode === 'board' && !activeCenterId
+                ? 'Search branches by name...'
+                : 'Search groups by name...'
+            }
             value={searchQuery}
             onChange={onSearchChange}
             className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -387,14 +485,14 @@ export function GroupsTab({
             Delete All ({selectedGroupIds.size})
           </Button>
         )}
-        {/* View Mode Toggle */}
         <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
           <button
             onClick={() => {
               setViewMode('list');
-              updateViewModeInUrl('list');
               setPage(0);
               setSelectedGroupIds(new Set());
+              setBoardTabCenterId(null);
+              updateUrl({ view: 'list', branch: null });
             }}
             className={cn(
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
@@ -437,12 +535,95 @@ export function GroupsTab({
         </Button>
       </div>
 
+      {/* Board: branch tabs + groups directly underneath */}
+      {viewMode === 'board' && (
+        <div className="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-3 pt-3">
+            {isLoadingBranchTabs ? (
+              <div className="py-4 text-sm text-slate-500">Loading branches...</div>
+            ) : allCenters.length === 0 ? (
+              <div className="py-4 text-sm text-slate-500">No branches found. Create a center first.</div>
+            ) : (
+              <nav
+                className="flex flex-wrap gap-x-10 gap-y-2"
+                role="tablist"
+                aria-label="Branches"
+              >
+                {centersForBranchTabs.map((center) => {
+                  const count = center._count?.groups ?? 0;
+                  const isActive = activeBranchTabId === center.id;
+                  return (
+                    <button
+                      type="button"
+                      key={center.id}
+                      role="tab"
+                      aria-selected={isActive}
+                      id={`branch-tab-${center.id}`}
+                      onClick={() => handleBranchTabClick(center.id)}
+                      className={cn(
+                        'relative rounded-t-md px-1 pb-3 text-sm font-medium border-b-[3px] -mb-px transition-colors',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+                        isActive
+                          ? 'border-primary bg-primary/5 text-primary font-semibold'
+                          : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-700'
+                      )}
+                    >
+                      {center.name} ({count})
+                    </button>
+                  );
+                })}
+              </nav>
+            )}
+            {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
+              <p className="py-4 text-sm text-slate-500">No branches match your search.</p>
+            )}
+          </div>
+
+          <div
+            className="p-4 sm:p-5"
+            role="tabpanel"
+            aria-label={activeBranchTabId ? 'Groups for selected branch' : 'Select a branch'}
+          >
+            {showBoardCenterPicker ? (
+              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/60 py-12 text-center">
+                <p className="text-sm text-slate-500">
+                  Select a branch tab above — groups will appear here.
+                </p>
+              </div>
+            ) : isLoading ? (
+              <div className="flex justify-center py-12 text-sm text-slate-500">Loading groups…</div>
+            ) : groups.length === 0 ? (
+              <div className="flex justify-center py-12 text-sm text-slate-500">
+                {searchQuery ? 'No groups match your search' : 'No groups in this branch'}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                {groups.map((group) => (
+                  <GroupCard
+                    key={group.id}
+                    group={group}
+                    onEdit={() => handleEditGroupIdChange(group.id)}
+                    onDelete={() => handleDeleteClick(group.id)}
+                    onToggleActive={() => handleToggleActive(group.id)}
+                    onStudentClick={openStudentFromGroupCard}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Groups View */}
       {viewMode === 'list' ? (
         <>
           {/* Groups Table */}
           <DataTable
-            columns={groupColumns}
+            columns={
+              activeCenterId
+                ? groupColumns.filter((col) => col.key !== 'center')
+                : groupColumns
+            }
             data={groups}
             keyExtractor={(group) => group.id}
             isLoading={isLoading}
@@ -483,147 +664,13 @@ export function GroupsTab({
             </div>
           </div>
         </>
-      ) : (
-        /* Board View */
-        <div className="w-full overflow-x-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-slate-500">Loading groups...</div>
-            </div>
-          ) : allCenters.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-slate-500">No centers found. Please create a center first.</div>
-            </div>
-          ) : (
-            <div className="flex gap-4 pb-4 min-w-max">
-              {allCenters
-                .filter((center) => {
-                  if (searchQuery) {
-                    const centerGroups = groupsByCenter[center.id] || [];
-                    return centerGroups.length > 0;
-                  }
-                  return true;
-                })
-                .map((center) => {
-                  const centerGroups = groupsByCenter[center.id] || [];
-                  const primaryColor = center.colorHex || '#253046'; // Default color
-                  const lightColor = lightenColor(primaryColor);
-                  const textColor = getContrastColor(primaryColor);
-                  
-                  return (
-                    <div
-                      key={center.id}
-                      className="flex-shrink-0 w-80 rounded-xl border border-slate-200 flex flex-col overflow-hidden"
-                      style={{ backgroundColor: lightColor }}
-                    >
-                      {/* Column Header */}
-                      <div 
-                        className="p-4 border-b border-slate-200 rounded-t-xl"
-                        style={{ 
-                          backgroundColor: primaryColor,
-                          borderColor: primaryColor,
-                        }}
-                      >
-                        <h3 
-                          className="font-semibold"
-                          style={{ color: textColor }}
-                        >
-                          {center.name}
-                        </h3>
-                        <p 
-                          className="text-sm mt-1"
-                          style={{ color: textColor === 'white' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.7)' }}
-                        >
-                          {centerGroups.length} {centerGroups.length === 1 ? 'group' : 'groups'}
-                        </p>
-                      </div>
-
-                      {/* Column Content */}
-                      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
-                        {centerGroups.length === 0 ? (
-                          <div className="text-center py-8 text-slate-400 text-sm">
-                            No groups
-                          </div>
-                        ) : (
-                          centerGroups.map((group) => (
-                            <GroupCard
-                              key={group.id}
-                              group={group}
-                              onEdit={() => handleEditGroupIdChange(group.id)}
-                              onDelete={() => handleDeleteClick(group.id)}
-                              onToggleActive={() => handleToggleActive(group.id)}
-                              onStudentsClick={(id) => openStudentsModal(id)}
-                            />
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              {searchQuery && allCenters.filter((center) => {
-                const centerGroups = groupsByCenter[center.id] || [];
-                return centerGroups.length > 0;
-              }).length === 0 && (
-                <div className="flex items-center justify-center py-12 w-full">
-                  <div className="text-slate-500">No groups match your search</div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-primary/10 rounded-xl">
-              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">Bulk Student Assignment</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Quickly assign multiple students to groups using our batch assignment tool.
-              </p>
-              <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90">
-                Open Assignment Tool
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-green-50 rounded-xl">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">Schedule Templates</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Create recurring lesson schedules for groups automatically.
-              </p>
-              <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90">
-                Manage Schedules
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      ) : null}
 
       {/* Modals */}
       <CreateGroupForm 
         open={createGroupOpen} 
-        onOpenChange={handleCreateGroupOpenChange} 
+        onOpenChange={handleCreateGroupOpenChange}
+        defaultCenterId={activeCenterId ?? undefined}
       />
       {editGroupId && (
         <EditGroupForm 
@@ -667,13 +714,15 @@ export function GroupsTab({
         onOpenChange={(open) => !open && closeStudentsModal()}
         groupId={studentsGroupId ?? null}
         groupName={studentsModalGroupName}
-        selectedStudentId={selectedStudentId}
         onStudentSelect={openStudentDetails}
-        onStudentDetailsOpenChange={(isOpen) => {
-          if (!isOpen) {
-            closeStudentDetails();
-          }
+      />
+
+      <StudentDetailsModal
+        open={!!selectedStudentId}
+        onOpenChange={(open) => {
+          if (!open) closeStudentDetails();
         }}
+        studentId={selectedStudentId}
       />
 
       {/* Success Messages */}

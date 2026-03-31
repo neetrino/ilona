@@ -1,8 +1,14 @@
+export { PlannedAbsencesStaffBlock } from './components/PlannedAbsencesStaffBlock';
+
 // Hooks
 export {
   useLessonAttendance,
   useBatchLessonAttendance,
   useStudentAttendance,
+  useMyStudentCalendar,
+  useCreateMyPlannedAbsence,
+  useDeleteMyPlannedAbsence,
+  useStaffPlannedAbsences,
   useMarkAttendance,
   useMarkBulkAttendance,
   useUpdateAbsenceType,
@@ -18,6 +24,10 @@ export type {
   StudentWithAttendance,
   LessonAttendance,
   StudentAttendanceHistory,
+  StudentCalendarMonth,
+  PlannedAbsenceRecord,
+  StaffPlannedAbsenceItem,
+  CalendarLesson,
   MarkAttendanceDto,
   BulkAttendanceDto,
   AtRiskStudent,

@@ -13,7 +13,7 @@ export default function StudentAbsencePage() {
 
   // Fetch attendance for the current month
   const {
-    data: attendanceData,
+    data: calendarData,
     isLoading,
     error,
     refetch,
@@ -23,7 +23,7 @@ export default function StudentAbsencePage() {
     refetch();
   };
 
-  const statistics = attendanceData?.statistics || {
+  const statistics = calendarData?.statistics || {
     total: 0,
     present: 0,
     absent: 0,
@@ -34,8 +34,8 @@ export default function StudentAbsencePage() {
 
   return (
     <DashboardLayout
-      title={t('absenceHistory') || 'Absence History'}
-      subtitle={t('viewAttendanceRecord') || 'View your attendance record and absences.'}
+      title={t('scheduleAndAbsenceTitle')}
+      subtitle={t('scheduleAndAbsenceSubtitle')}
     >
       {/* Statistics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
@@ -161,7 +161,7 @@ export default function StudentAbsencePage() {
         </div>
       ) : (
         <StudentAbsenceCalendar
-          attendanceData={attendanceData}
+          calendarData={calendarData}
           isLoading={isLoading}
           currentMonth={currentMonth}
           onMonthChange={setCurrentMonth}

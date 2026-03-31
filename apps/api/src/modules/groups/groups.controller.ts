@@ -30,6 +30,7 @@ export class GroupsController {
       teacherId: query.teacherId,
       isActive: query.isActive,
       level: query.level,
+      includeStudents: query.includeStudents,
       currentUser: user,
     });
   }

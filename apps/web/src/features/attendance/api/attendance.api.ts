@@ -2,6 +2,8 @@ import { api } from '@/shared/lib/api';
 import type {
   LessonAttendance,
   StudentAttendanceHistory,
+  StudentCalendarMonth,
+  StaffPlannedAbsenceItem,
   AttendanceRecord,
   MarkAttendanceDto,
   BulkAttendanceDto,
@@ -32,6 +34,41 @@ export async function fetchLessonAttendance(lessonId: string): Promise<LessonAtt
 /**
  * Get attendance history for a student
  */
+export async function fetchMyStudentCalendar(
+  dateFrom?: string,
+  dateTo?: string
+): Promise<StudentCalendarMonth> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.append('dateFrom', dateFrom);
+  if (dateTo) params.append('dateTo', dateTo);
+  const query = params.toString();
+  const url = query ? `${ATTENDANCE_ENDPOINT}/my/calendar?${query}` : `${ATTENDANCE_ENDPOINT}/my/calendar`;
+  return api.get<StudentCalendarMonth>(url);
+}
+
+export async function createMyPlannedAbsence(date: string, comment: string): Promise<{
+  id: string;
+  date: string;
+  status: string;
+  comment: string;
+}> {
+  return api.post(`${ATTENDANCE_ENDPOINT}/my/planned-absence`, { date, comment });
+}
+
+export async function deleteMyPlannedAbsence(id: string): Promise<{ success: boolean }> {
+  return api.delete<{ success: boolean }>(`${ATTENDANCE_ENDPOINT}/my/planned-absence/${id}`);
+}
+
+export async function fetchStaffPlannedAbsences(
+  dateFrom: string,
+  dateTo: string
+): Promise<StaffPlannedAbsenceItem[]> {
+  const params = new URLSearchParams({ dateFrom, dateTo });
+  return api.get<StaffPlannedAbsenceItem[]>(
+    `${ATTENDANCE_ENDPOINT}/planned-absences?${params.toString()}`
+  );
+}
+
 export async function fetchStudentAttendance(
   studentId: string,
   dateFrom?: string,

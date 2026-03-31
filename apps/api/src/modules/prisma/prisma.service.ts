@@ -296,6 +296,54 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   /** Delays (ms) before each attempt: initial wait for Neon wake, then backoff between retries */
   private readonly startupRetryDelays = [5000, 5000, 10000, 15000, 20000, 25000];
 
+  /**
+   * If migrations were not applied locally, create `planned_absences` so attendance planned-absence APIs work.
+   * Idempotent: no-op when the table already exists. Matches prisma/migrations/20260331120000_add_planned_absences.
+   */
+  private async ensurePlannedAbsencesTable(): Promise<void> {
+    try {
+      const rows = await this.$queryRawUnsafe<Array<{ cnt: bigint }>>(
+        `SELECT COUNT(*)::bigint AS cnt FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'planned_absences'`,
+      );
+      const cnt = Number(rows[0]?.cnt ?? 0);
+      if (cnt > 0) {
+        return;
+      }
+
+      this.logger.warn(
+        'Table planned_absences is missing; creating it now (run prisma migrate deploy when convenient to record migration history).',
+      );
+
+      await this.$executeRawUnsafe(`
+CREATE TABLE "planned_absences" (
+    "id" TEXT NOT NULL,
+    "studentId" TEXT NOT NULL,
+    "date" DATE NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'planned_absence',
+    "comment" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "planned_absences_pkey" PRIMARY KEY ("id")
+);`);
+
+      await this.$executeRawUnsafe(
+        `CREATE INDEX "planned_absences_studentId_idx" ON "planned_absences"("studentId");`,
+      );
+      await this.$executeRawUnsafe(
+        `CREATE INDEX "planned_absences_date_idx" ON "planned_absences"("date");`,
+      );
+      await this.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX "planned_absences_studentId_date_key" ON "planned_absences"("studentId", "date");`,
+      );
+      await this.$executeRawUnsafe(`
+ALTER TABLE "planned_absences" ADD CONSTRAINT "planned_absences_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "students"("id") ON DELETE CASCADE ON UPDATE CASCADE;`);
+
+      this.logger.log('Table planned_absences created successfully');
+    } catch (err) {
+      this.logger.error('ensurePlannedAbsencesTable failed', err);
+    }
+  }
+
   async onModuleInit() {
     // Per-request DB metrics (must run in onModuleInit so RequestContextService is injected)
     this.$use(async (params, next) => {
@@ -328,6 +376,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         await this.$connect();
         this.isConnected = true;
         this.logger.log('Database connected successfully');
+        await this.ensurePlannedAbsencesTable();
         this.startHealthCheck();
         return;
       } catch (error) {

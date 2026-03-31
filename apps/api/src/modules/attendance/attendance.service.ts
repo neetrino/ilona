@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ForbiddenException,
@@ -8,11 +9,18 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MarkAttendanceDto, BulkAttendanceDto } from './dto';
-import { Prisma, AbsenceType, UserRole } from '@ilona/database';
+import { Prisma, AbsenceType, UserRole, LessonStatus } from '@ilona/database';
 import { SalariesService } from '../finance/salaries.service';
 
 @Injectable()
 export class AttendanceService {
+  private readonly logger = new Logger(AttendanceService.name);
+
+  /** True when `planned_absences` migration has not been applied (Prisma P2021). */
+  private isPlannedAbsencesTableMissing(err: unknown): boolean {
+    return err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2021';
+  }
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => SalariesService))
@@ -707,6 +715,349 @@ export class AttendanceService {
         unjustifiedAbsences: student.attendances.length,
         threshold,
       }));
+  }
+
+  /**
+   * P2021: table missing until `pnpm db:migrate` — avoid 500 on student calendar.
+   */
+  private async findPlannedAbsencesForStudentSafe(
+    studentId: string,
+    dateFrom?: Date,
+    dateTo?: Date,
+  ): Promise<
+    Array<{ id: string; date: Date; status: string; comment: string }>
+  > {
+    try {
+      return await this.prisma.plannedAbsence.findMany({
+        where: {
+          studentId,
+          ...(dateFrom || dateTo
+            ? {
+                date: {
+                  ...(dateFrom && {
+                    gte: new Date(dateFrom.toISOString().split('T')[0]),
+                  }),
+                  ...(dateTo && {
+                    lte: new Date(dateTo.toISOString().split('T')[0]),
+                  }),
+                },
+              }
+            : {}),
+        },
+        orderBy: { date: 'asc' },
+      });
+    } catch (err) {
+      if (this.isPlannedAbsencesTableMissing(err)) {
+        this.logger.warn(
+          'planned_absences table is missing. Run: pnpm db:migrate (repo root, with DATABASE_URL set).',
+        );
+        return [];
+      }
+      throw err;
+    }
+  }
+
+  async getStudentCalendarMonth(
+    studentId: string,
+    params?: { dateFrom?: Date; dateTo?: Date },
+  ) {
+    const { dateFrom, dateTo } = params || {};
+
+    const student = await this.prisma.student.findUnique({
+      where: { id: studentId },
+      select: { id: true, groupId: true },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    const attendancePayload = await this.getByStudent(studentId, { dateFrom, dateTo });
+
+    const lessonWhere: Prisma.LessonWhereInput = {
+      status: { notIn: [LessonStatus.CANCELLED, LessonStatus.REPLACED] },
+      ...(student.groupId ? { groupId: student.groupId } : { id: { in: [] } }),
+      ...(dateFrom || dateTo
+        ? {
+            scheduledAt: {
+              ...(dateFrom && { gte: dateFrom }),
+              ...(dateTo && { lte: dateTo }),
+            },
+          }
+        : {}),
+    };
+
+    const [lessons, plannedAbsences] = await Promise.all([
+      student.groupId
+        ? this.prisma.lesson.findMany({
+            where: lessonWhere,
+            select: {
+              id: true,
+              scheduledAt: true,
+              topic: true,
+              group: { select: { id: true, name: true } },
+            },
+            orderBy: { scheduledAt: 'asc' },
+          })
+        : Promise.resolve([]),
+      this.findPlannedAbsencesForStudentSafe(studentId, dateFrom, dateTo),
+    ]);
+
+    return {
+      lessons,
+      attendances: attendancePayload.attendances,
+      statistics: attendancePayload.statistics,
+      plannedAbsences: plannedAbsences.map((p) => ({
+        id: p.id,
+        date: p.date.toISOString().split('T')[0],
+        status: p.status,
+        comment: p.comment,
+      })),
+    };
+  }
+
+  async createPlannedAbsenceForStudentUser(userId: string, dateStr: string, rawComment: string) {
+    const comment = rawComment.trim();
+    if (!comment) {
+      throw new BadRequestException('Comment is required');
+    }
+
+    const student = await this.prisma.student.findUnique({
+      where: { userId },
+      include: {
+        user: { select: { firstName: true, lastName: true } },
+        group: { select: { id: true, name: true, teacherId: true, centerId: true } },
+      },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student profile not found');
+    }
+    if (!student.groupId || !student.group) {
+      throw new BadRequestException('You are not assigned to a group yet');
+    }
+
+    const dayStart = new Date(`${dateStr}T00:00:00.000Z`);
+    const dayEnd = new Date(`${dateStr}T23:59:59.999Z`);
+
+    const lessonsOnDay = await this.prisma.lesson.findMany({
+      where: {
+        groupId: student.groupId,
+        status: { notIn: [LessonStatus.CANCELLED, LessonStatus.REPLACED] },
+        scheduledAt: { gte: dayStart, lte: dayEnd },
+      },
+    });
+
+    if (lessonsOnDay.length === 0) {
+      throw new BadRequestException('There is no scheduled class on this date');
+    }
+
+    const now = new Date();
+    const hasUpcomingLessonOnDay = lessonsOnDay.some((l) => new Date(l.scheduledAt) > now);
+    if (!hasUpcomingLessonOnDay) {
+      throw new BadRequestException('You can only report absence for upcoming class days');
+    }
+
+    try {
+      const existingRow = await this.prisma.plannedAbsence.findUnique({
+        where: {
+          studentId_date: {
+            studentId: student.id,
+            date: dayStart,
+          },
+        },
+      });
+
+      const record = await this.prisma.plannedAbsence.upsert({
+        where: {
+          studentId_date: {
+            studentId: student.id,
+            date: dayStart,
+          },
+        },
+        create: {
+          studentId: student.id,
+          date: dayStart,
+          comment,
+          status: 'planned_absence',
+        },
+        update: {
+          comment,
+          status: 'planned_absence',
+        },
+      });
+
+      if (!existingRow) {
+        await this.notifyStaffOfPlannedAbsence(student, dateStr, comment);
+      }
+
+      return {
+        id: record.id,
+        date: record.date.toISOString().split('T')[0],
+        status: record.status,
+        comment: record.comment,
+      };
+    } catch (err) {
+      if (this.isPlannedAbsencesTableMissing(err)) {
+        this.logger.warn('planned_absences table is missing. Run: pnpm db:migrate');
+        throw new BadRequestException(
+          'Planned absences are not available until the database is migrated (run pnpm db:migrate on the server).',
+        );
+      }
+      throw err;
+    }
+  }
+
+  async deleteMyPlannedAbsence(userId: string, plannedAbsenceId: string) {
+    const student = await this.prisma.student.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!student) {
+      throw new NotFoundException('Student profile not found');
+    }
+
+    try {
+      const existing = await this.prisma.plannedAbsence.findFirst({
+        where: { id: plannedAbsenceId, studentId: student.id },
+      });
+      if (!existing) {
+        throw new NotFoundException('Planned absence not found');
+      }
+
+      await this.prisma.plannedAbsence.delete({ where: { id: plannedAbsenceId } });
+      return { success: true };
+    } catch (err) {
+      if (this.isPlannedAbsencesTableMissing(err)) {
+        this.logger.warn('planned_absences table is missing. Run: pnpm db:migrate');
+        throw new BadRequestException(
+          'Planned absences are not available until the database is migrated (run pnpm db:migrate on the server).',
+        );
+      }
+      throw err;
+    }
+  }
+
+  async listPlannedAbsencesForStaff(
+    dateFrom: Date,
+    dateTo: Date,
+    userId: string,
+    userRole: UserRole,
+  ) {
+    const fromD = new Date(dateFrom.toISOString().split('T')[0]);
+    const toD = new Date(dateTo.toISOString().split('T')[0]);
+
+    const where: Prisma.PlannedAbsenceWhereInput = {
+      date: { gte: fromD, lte: toD },
+    };
+
+    if (userRole === UserRole.TEACHER) {
+      const teacher = await this.prisma.teacher.findUnique({ where: { userId } });
+      if (!teacher) {
+        return [];
+      }
+      where.student = { group: { teacherId: teacher.id } };
+    } else if (userRole === UserRole.MANAGER) {
+      const centerId = await this.getManagerCenterId(userId, userRole);
+      where.student = { group: { centerId: centerId! } };
+    } else if (userRole !== UserRole.ADMIN) {
+      throw new ForbiddenException('You do not have access to planned absences');
+    }
+
+    try {
+      const rows = await this.prisma.plannedAbsence.findMany({
+        where,
+        include: {
+          student: {
+            include: {
+              user: { select: { firstName: true, lastName: true, email: true } },
+              group: { select: { id: true, name: true } },
+            },
+          },
+        },
+        orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
+      });
+
+      return rows.map((row) => ({
+        id: row.id,
+        date: row.date.toISOString().split('T')[0],
+        status: row.status,
+        comment: row.comment,
+        createdAt: row.createdAt.toISOString(),
+        student: {
+          id: row.student.id,
+          name: `${row.student.user.firstName} ${row.student.user.lastName}`,
+          email: row.student.user.email,
+          group: row.student.group,
+        },
+      }));
+    } catch (err) {
+      if (this.isPlannedAbsencesTableMissing(err)) {
+        this.logger.warn(
+          'planned_absences table is missing. Run: pnpm db:migrate (repo root, with DATABASE_URL set).',
+        );
+        return [];
+      }
+      throw err;
+    }
+  }
+
+  private async notifyStaffOfPlannedAbsence(
+    student: {
+      id: string;
+      user: { firstName: string; lastName: string };
+      group: { name: string; teacherId: string | null; centerId: string } | null;
+    },
+    dateStr: string,
+    comment: string,
+  ) {
+    const groupName = student.group?.name ?? '—';
+    const title = 'Planned student absence';
+    const content = `${student.user.firstName} ${student.user.lastName} (${groupName}) will be absent on ${dateStr}. Note: ${comment}`;
+
+    const userIds = new Set<string>();
+
+    const admins = await this.prisma.user.findMany({
+      where: { role: UserRole.ADMIN },
+      select: { id: true },
+    });
+    admins.forEach((a) => userIds.add(a.id));
+
+    if (student.group?.teacherId) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { id: student.group.teacherId },
+        select: { userId: true },
+      });
+      if (teacher) {
+        userIds.add(teacher.userId);
+      }
+    }
+
+    if (student.group?.centerId) {
+      const managers = await this.prisma.managerProfile.findMany({
+        where: { centerId: student.group.centerId },
+        select: { userId: true },
+      });
+      managers.forEach((m) => userIds.add(m.userId));
+    }
+
+    if (userIds.size === 0) {
+      return;
+    }
+
+    await this.prisma.notification.createMany({
+      data: [...userIds].map((uid) => ({
+        userId: uid,
+        type: 'planned_absence',
+        title,
+        content,
+        data: {
+          studentId: student.id,
+          date: dateStr,
+          status: 'planned_absence',
+        },
+      })),
+    });
   }
 
   private async checkAbsenceThreshold(studentId: string) {

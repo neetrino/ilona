@@ -44,6 +44,11 @@ export type Teacher = $Result.DefaultSelection<Prisma.$TeacherPayload>
  */
 export type Student = $Result.DefaultSelection<Prisma.$StudentPayload>
 /**
+ * Model PlannedAbsence
+ * Student-reported absence for a future class day (calendar date).
+ */
+export type PlannedAbsence = $Result.DefaultSelection<Prisma.$PlannedAbsencePayload>
+/**
  * Model StudentGroupHistory
  * 
  */
@@ -480,6 +485,16 @@ export class PrismaClient<
     * ```
     */
   get student(): Prisma.StudentDelegate<ExtArgs>;
+
+  /**
+   * `prisma.plannedAbsence`: Exposes CRUD operations for the **PlannedAbsence** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PlannedAbsences
+    * const plannedAbsences = await prisma.plannedAbsence.findMany()
+    * ```
+    */
+  get plannedAbsence(): Prisma.PlannedAbsenceDelegate<ExtArgs>;
 
   /**
    * `prisma.studentGroupHistory`: Exposes CRUD operations for the **StudentGroupHistory** model.
@@ -1087,6 +1102,7 @@ export namespace Prisma {
     Group: 'Group',
     Teacher: 'Teacher',
     Student: 'Student',
+    PlannedAbsence: 'PlannedAbsence',
     StudentGroupHistory: 'StudentGroupHistory',
     Lesson: 'Lesson',
     Attendance: 'Attendance',
@@ -1118,7 +1134,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "student" | "studentGroupHistory" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
+      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "student" | "plannedAbsence" | "studentGroupHistory" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1539,6 +1555,76 @@ export namespace Prisma {
           count: {
             args: Prisma.StudentCountArgs<ExtArgs>
             result: $Utils.Optional<StudentCountAggregateOutputType> | number
+          }
+        }
+      }
+      PlannedAbsence: {
+        payload: Prisma.$PlannedAbsencePayload<ExtArgs>
+        fields: Prisma.PlannedAbsenceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PlannedAbsenceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PlannedAbsenceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload>
+          }
+          findFirst: {
+            args: Prisma.PlannedAbsenceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PlannedAbsenceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload>
+          }
+          findMany: {
+            args: Prisma.PlannedAbsenceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload>[]
+          }
+          create: {
+            args: Prisma.PlannedAbsenceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload>
+          }
+          createMany: {
+            args: Prisma.PlannedAbsenceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PlannedAbsenceCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload>[]
+          }
+          delete: {
+            args: Prisma.PlannedAbsenceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload>
+          }
+          update: {
+            args: Prisma.PlannedAbsenceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload>
+          }
+          deleteMany: {
+            args: Prisma.PlannedAbsenceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PlannedAbsenceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PlannedAbsenceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlannedAbsencePayload>
+          }
+          aggregate: {
+            args: Prisma.PlannedAbsenceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePlannedAbsence>
+          }
+          groupBy: {
+            args: Prisma.PlannedAbsenceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PlannedAbsenceGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PlannedAbsenceCountArgs<ExtArgs>
+            result: $Utils.Optional<PlannedAbsenceCountAggregateOutputType> | number
           }
         }
       }
@@ -3095,6 +3181,7 @@ export namespace Prisma {
     feedbacks: number
     payments: number
     groupHistory: number
+    plannedAbsences: number
   }
 
   export type StudentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3102,6 +3189,7 @@ export namespace Prisma {
     feedbacks?: boolean | StudentCountOutputTypeCountFeedbacksArgs
     payments?: boolean | StudentCountOutputTypeCountPaymentsArgs
     groupHistory?: boolean | StudentCountOutputTypeCountGroupHistoryArgs
+    plannedAbsences?: boolean | StudentCountOutputTypeCountPlannedAbsencesArgs
   }
 
   // Custom InputTypes
@@ -3141,6 +3229,13 @@ export namespace Prisma {
    */
   export type StudentCountOutputTypeCountGroupHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: StudentGroupHistoryWhereInput
+  }
+
+  /**
+   * StudentCountOutputType without action
+   */
+  export type StudentCountOutputTypeCountPlannedAbsencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PlannedAbsenceWhereInput
   }
 
 
@@ -9148,6 +9243,7 @@ export namespace Prisma {
     teacher?: boolean | Student$teacherArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     groupHistory?: boolean | Student$groupHistoryArgs<ExtArgs>
+    plannedAbsences?: boolean | Student$plannedAbsencesArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["student"]>
 
@@ -9204,6 +9300,7 @@ export namespace Prisma {
     teacher?: boolean | Student$teacherArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     groupHistory?: boolean | Student$groupHistoryArgs<ExtArgs>
+    plannedAbsences?: boolean | Student$plannedAbsencesArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type StudentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9224,6 +9321,7 @@ export namespace Prisma {
       teacher: Prisma.$TeacherPayload<ExtArgs> | null
       user: Prisma.$UserPayload<ExtArgs>
       groupHistory: Prisma.$StudentGroupHistoryPayload<ExtArgs>[]
+      plannedAbsences: Prisma.$PlannedAbsencePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9615,6 +9713,7 @@ export namespace Prisma {
     teacher<T extends Student$teacherArgs<ExtArgs> = {}>(args?: Subset<T, Student$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     groupHistory<T extends Student$groupHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Student$groupHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "findMany"> | Null>
+    plannedAbsences<T extends Student$plannedAbsencesArgs<ExtArgs> = {}>(args?: Subset<T, Student$plannedAbsencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10104,6 +10203,26 @@ export namespace Prisma {
   }
 
   /**
+   * Student.plannedAbsences
+   */
+  export type Student$plannedAbsencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    where?: PlannedAbsenceWhereInput
+    orderBy?: PlannedAbsenceOrderByWithRelationInput | PlannedAbsenceOrderByWithRelationInput[]
+    cursor?: PlannedAbsenceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PlannedAbsenceScalarFieldEnum | PlannedAbsenceScalarFieldEnum[]
+  }
+
+  /**
    * Student without action
    */
   export type StudentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10115,6 +10234,963 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: StudentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PlannedAbsence
+   */
+
+  export type AggregatePlannedAbsence = {
+    _count: PlannedAbsenceCountAggregateOutputType | null
+    _min: PlannedAbsenceMinAggregateOutputType | null
+    _max: PlannedAbsenceMaxAggregateOutputType | null
+  }
+
+  export type PlannedAbsenceMinAggregateOutputType = {
+    id: string | null
+    studentId: string | null
+    date: Date | null
+    status: string | null
+    comment: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PlannedAbsenceMaxAggregateOutputType = {
+    id: string | null
+    studentId: string | null
+    date: Date | null
+    status: string | null
+    comment: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PlannedAbsenceCountAggregateOutputType = {
+    id: number
+    studentId: number
+    date: number
+    status: number
+    comment: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PlannedAbsenceMinAggregateInputType = {
+    id?: true
+    studentId?: true
+    date?: true
+    status?: true
+    comment?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PlannedAbsenceMaxAggregateInputType = {
+    id?: true
+    studentId?: true
+    date?: true
+    status?: true
+    comment?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PlannedAbsenceCountAggregateInputType = {
+    id?: true
+    studentId?: true
+    date?: true
+    status?: true
+    comment?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PlannedAbsenceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PlannedAbsence to aggregate.
+     */
+    where?: PlannedAbsenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlannedAbsences to fetch.
+     */
+    orderBy?: PlannedAbsenceOrderByWithRelationInput | PlannedAbsenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PlannedAbsenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlannedAbsences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlannedAbsences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PlannedAbsences
+    **/
+    _count?: true | PlannedAbsenceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PlannedAbsenceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PlannedAbsenceMaxAggregateInputType
+  }
+
+  export type GetPlannedAbsenceAggregateType<T extends PlannedAbsenceAggregateArgs> = {
+        [P in keyof T & keyof AggregatePlannedAbsence]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePlannedAbsence[P]>
+      : GetScalarType<T[P], AggregatePlannedAbsence[P]>
+  }
+
+
+
+
+  export type PlannedAbsenceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PlannedAbsenceWhereInput
+    orderBy?: PlannedAbsenceOrderByWithAggregationInput | PlannedAbsenceOrderByWithAggregationInput[]
+    by: PlannedAbsenceScalarFieldEnum[] | PlannedAbsenceScalarFieldEnum
+    having?: PlannedAbsenceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PlannedAbsenceCountAggregateInputType | true
+    _min?: PlannedAbsenceMinAggregateInputType
+    _max?: PlannedAbsenceMaxAggregateInputType
+  }
+
+  export type PlannedAbsenceGroupByOutputType = {
+    id: string
+    studentId: string
+    date: Date
+    status: string
+    comment: string
+    createdAt: Date
+    updatedAt: Date
+    _count: PlannedAbsenceCountAggregateOutputType | null
+    _min: PlannedAbsenceMinAggregateOutputType | null
+    _max: PlannedAbsenceMaxAggregateOutputType | null
+  }
+
+  type GetPlannedAbsenceGroupByPayload<T extends PlannedAbsenceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PlannedAbsenceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PlannedAbsenceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PlannedAbsenceGroupByOutputType[P]>
+            : GetScalarType<T[P], PlannedAbsenceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PlannedAbsenceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    studentId?: boolean
+    date?: boolean
+    status?: boolean
+    comment?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["plannedAbsence"]>
+
+  export type PlannedAbsenceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    studentId?: boolean
+    date?: boolean
+    status?: boolean
+    comment?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["plannedAbsence"]>
+
+  export type PlannedAbsenceSelectScalar = {
+    id?: boolean
+    studentId?: boolean
+    date?: boolean
+    status?: boolean
+    comment?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PlannedAbsenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+  }
+  export type PlannedAbsenceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+  }
+
+  export type $PlannedAbsencePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PlannedAbsence"
+    objects: {
+      student: Prisma.$StudentPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      studentId: string
+      date: Date
+      status: string
+      comment: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["plannedAbsence"]>
+    composites: {}
+  }
+
+  type PlannedAbsenceGetPayload<S extends boolean | null | undefined | PlannedAbsenceDefaultArgs> = $Result.GetResult<Prisma.$PlannedAbsencePayload, S>
+
+  type PlannedAbsenceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PlannedAbsenceFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PlannedAbsenceCountAggregateInputType | true
+    }
+
+  export interface PlannedAbsenceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PlannedAbsence'], meta: { name: 'PlannedAbsence' } }
+    /**
+     * Find zero or one PlannedAbsence that matches the filter.
+     * @param {PlannedAbsenceFindUniqueArgs} args - Arguments to find a PlannedAbsence
+     * @example
+     * // Get one PlannedAbsence
+     * const plannedAbsence = await prisma.plannedAbsence.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PlannedAbsenceFindUniqueArgs>(args: SelectSubset<T, PlannedAbsenceFindUniqueArgs<ExtArgs>>): Prisma__PlannedAbsenceClient<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one PlannedAbsence that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PlannedAbsenceFindUniqueOrThrowArgs} args - Arguments to find a PlannedAbsence
+     * @example
+     * // Get one PlannedAbsence
+     * const plannedAbsence = await prisma.plannedAbsence.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PlannedAbsenceFindUniqueOrThrowArgs>(args: SelectSubset<T, PlannedAbsenceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PlannedAbsenceClient<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first PlannedAbsence that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlannedAbsenceFindFirstArgs} args - Arguments to find a PlannedAbsence
+     * @example
+     * // Get one PlannedAbsence
+     * const plannedAbsence = await prisma.plannedAbsence.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PlannedAbsenceFindFirstArgs>(args?: SelectSubset<T, PlannedAbsenceFindFirstArgs<ExtArgs>>): Prisma__PlannedAbsenceClient<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first PlannedAbsence that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlannedAbsenceFindFirstOrThrowArgs} args - Arguments to find a PlannedAbsence
+     * @example
+     * // Get one PlannedAbsence
+     * const plannedAbsence = await prisma.plannedAbsence.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PlannedAbsenceFindFirstOrThrowArgs>(args?: SelectSubset<T, PlannedAbsenceFindFirstOrThrowArgs<ExtArgs>>): Prisma__PlannedAbsenceClient<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more PlannedAbsences that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlannedAbsenceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PlannedAbsences
+     * const plannedAbsences = await prisma.plannedAbsence.findMany()
+     * 
+     * // Get first 10 PlannedAbsences
+     * const plannedAbsences = await prisma.plannedAbsence.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const plannedAbsenceWithIdOnly = await prisma.plannedAbsence.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PlannedAbsenceFindManyArgs>(args?: SelectSubset<T, PlannedAbsenceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a PlannedAbsence.
+     * @param {PlannedAbsenceCreateArgs} args - Arguments to create a PlannedAbsence.
+     * @example
+     * // Create one PlannedAbsence
+     * const PlannedAbsence = await prisma.plannedAbsence.create({
+     *   data: {
+     *     // ... data to create a PlannedAbsence
+     *   }
+     * })
+     * 
+     */
+    create<T extends PlannedAbsenceCreateArgs>(args: SelectSubset<T, PlannedAbsenceCreateArgs<ExtArgs>>): Prisma__PlannedAbsenceClient<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many PlannedAbsences.
+     * @param {PlannedAbsenceCreateManyArgs} args - Arguments to create many PlannedAbsences.
+     * @example
+     * // Create many PlannedAbsences
+     * const plannedAbsence = await prisma.plannedAbsence.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PlannedAbsenceCreateManyArgs>(args?: SelectSubset<T, PlannedAbsenceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PlannedAbsences and returns the data saved in the database.
+     * @param {PlannedAbsenceCreateManyAndReturnArgs} args - Arguments to create many PlannedAbsences.
+     * @example
+     * // Create many PlannedAbsences
+     * const plannedAbsence = await prisma.plannedAbsence.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PlannedAbsences and only return the `id`
+     * const plannedAbsenceWithIdOnly = await prisma.plannedAbsence.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PlannedAbsenceCreateManyAndReturnArgs>(args?: SelectSubset<T, PlannedAbsenceCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a PlannedAbsence.
+     * @param {PlannedAbsenceDeleteArgs} args - Arguments to delete one PlannedAbsence.
+     * @example
+     * // Delete one PlannedAbsence
+     * const PlannedAbsence = await prisma.plannedAbsence.delete({
+     *   where: {
+     *     // ... filter to delete one PlannedAbsence
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PlannedAbsenceDeleteArgs>(args: SelectSubset<T, PlannedAbsenceDeleteArgs<ExtArgs>>): Prisma__PlannedAbsenceClient<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one PlannedAbsence.
+     * @param {PlannedAbsenceUpdateArgs} args - Arguments to update one PlannedAbsence.
+     * @example
+     * // Update one PlannedAbsence
+     * const plannedAbsence = await prisma.plannedAbsence.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PlannedAbsenceUpdateArgs>(args: SelectSubset<T, PlannedAbsenceUpdateArgs<ExtArgs>>): Prisma__PlannedAbsenceClient<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more PlannedAbsences.
+     * @param {PlannedAbsenceDeleteManyArgs} args - Arguments to filter PlannedAbsences to delete.
+     * @example
+     * // Delete a few PlannedAbsences
+     * const { count } = await prisma.plannedAbsence.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PlannedAbsenceDeleteManyArgs>(args?: SelectSubset<T, PlannedAbsenceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PlannedAbsences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlannedAbsenceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PlannedAbsences
+     * const plannedAbsence = await prisma.plannedAbsence.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PlannedAbsenceUpdateManyArgs>(args: SelectSubset<T, PlannedAbsenceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PlannedAbsence.
+     * @param {PlannedAbsenceUpsertArgs} args - Arguments to update or create a PlannedAbsence.
+     * @example
+     * // Update or create a PlannedAbsence
+     * const plannedAbsence = await prisma.plannedAbsence.upsert({
+     *   create: {
+     *     // ... data to create a PlannedAbsence
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PlannedAbsence we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PlannedAbsenceUpsertArgs>(args: SelectSubset<T, PlannedAbsenceUpsertArgs<ExtArgs>>): Prisma__PlannedAbsenceClient<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of PlannedAbsences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlannedAbsenceCountArgs} args - Arguments to filter PlannedAbsences to count.
+     * @example
+     * // Count the number of PlannedAbsences
+     * const count = await prisma.plannedAbsence.count({
+     *   where: {
+     *     // ... the filter for the PlannedAbsences we want to count
+     *   }
+     * })
+    **/
+    count<T extends PlannedAbsenceCountArgs>(
+      args?: Subset<T, PlannedAbsenceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PlannedAbsenceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PlannedAbsence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlannedAbsenceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PlannedAbsenceAggregateArgs>(args: Subset<T, PlannedAbsenceAggregateArgs>): Prisma.PrismaPromise<GetPlannedAbsenceAggregateType<T>>
+
+    /**
+     * Group by PlannedAbsence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlannedAbsenceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PlannedAbsenceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PlannedAbsenceGroupByArgs['orderBy'] }
+        : { orderBy?: PlannedAbsenceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PlannedAbsenceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPlannedAbsenceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PlannedAbsence model
+   */
+  readonly fields: PlannedAbsenceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PlannedAbsence.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PlannedAbsenceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    student<T extends StudentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, StudentDefaultArgs<ExtArgs>>): Prisma__StudentClient<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PlannedAbsence model
+   */ 
+  interface PlannedAbsenceFieldRefs {
+    readonly id: FieldRef<"PlannedAbsence", 'String'>
+    readonly studentId: FieldRef<"PlannedAbsence", 'String'>
+    readonly date: FieldRef<"PlannedAbsence", 'DateTime'>
+    readonly status: FieldRef<"PlannedAbsence", 'String'>
+    readonly comment: FieldRef<"PlannedAbsence", 'String'>
+    readonly createdAt: FieldRef<"PlannedAbsence", 'DateTime'>
+    readonly updatedAt: FieldRef<"PlannedAbsence", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PlannedAbsence findUnique
+   */
+  export type PlannedAbsenceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    /**
+     * Filter, which PlannedAbsence to fetch.
+     */
+    where: PlannedAbsenceWhereUniqueInput
+  }
+
+  /**
+   * PlannedAbsence findUniqueOrThrow
+   */
+  export type PlannedAbsenceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    /**
+     * Filter, which PlannedAbsence to fetch.
+     */
+    where: PlannedAbsenceWhereUniqueInput
+  }
+
+  /**
+   * PlannedAbsence findFirst
+   */
+  export type PlannedAbsenceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    /**
+     * Filter, which PlannedAbsence to fetch.
+     */
+    where?: PlannedAbsenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlannedAbsences to fetch.
+     */
+    orderBy?: PlannedAbsenceOrderByWithRelationInput | PlannedAbsenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PlannedAbsences.
+     */
+    cursor?: PlannedAbsenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlannedAbsences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlannedAbsences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PlannedAbsences.
+     */
+    distinct?: PlannedAbsenceScalarFieldEnum | PlannedAbsenceScalarFieldEnum[]
+  }
+
+  /**
+   * PlannedAbsence findFirstOrThrow
+   */
+  export type PlannedAbsenceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    /**
+     * Filter, which PlannedAbsence to fetch.
+     */
+    where?: PlannedAbsenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlannedAbsences to fetch.
+     */
+    orderBy?: PlannedAbsenceOrderByWithRelationInput | PlannedAbsenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PlannedAbsences.
+     */
+    cursor?: PlannedAbsenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlannedAbsences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlannedAbsences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PlannedAbsences.
+     */
+    distinct?: PlannedAbsenceScalarFieldEnum | PlannedAbsenceScalarFieldEnum[]
+  }
+
+  /**
+   * PlannedAbsence findMany
+   */
+  export type PlannedAbsenceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    /**
+     * Filter, which PlannedAbsences to fetch.
+     */
+    where?: PlannedAbsenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlannedAbsences to fetch.
+     */
+    orderBy?: PlannedAbsenceOrderByWithRelationInput | PlannedAbsenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PlannedAbsences.
+     */
+    cursor?: PlannedAbsenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlannedAbsences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlannedAbsences.
+     */
+    skip?: number
+    distinct?: PlannedAbsenceScalarFieldEnum | PlannedAbsenceScalarFieldEnum[]
+  }
+
+  /**
+   * PlannedAbsence create
+   */
+  export type PlannedAbsenceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PlannedAbsence.
+     */
+    data: XOR<PlannedAbsenceCreateInput, PlannedAbsenceUncheckedCreateInput>
+  }
+
+  /**
+   * PlannedAbsence createMany
+   */
+  export type PlannedAbsenceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PlannedAbsences.
+     */
+    data: PlannedAbsenceCreateManyInput | PlannedAbsenceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PlannedAbsence createManyAndReturn
+   */
+  export type PlannedAbsenceCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many PlannedAbsences.
+     */
+    data: PlannedAbsenceCreateManyInput | PlannedAbsenceCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PlannedAbsence update
+   */
+  export type PlannedAbsenceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PlannedAbsence.
+     */
+    data: XOR<PlannedAbsenceUpdateInput, PlannedAbsenceUncheckedUpdateInput>
+    /**
+     * Choose, which PlannedAbsence to update.
+     */
+    where: PlannedAbsenceWhereUniqueInput
+  }
+
+  /**
+   * PlannedAbsence updateMany
+   */
+  export type PlannedAbsenceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PlannedAbsences.
+     */
+    data: XOR<PlannedAbsenceUpdateManyMutationInput, PlannedAbsenceUncheckedUpdateManyInput>
+    /**
+     * Filter which PlannedAbsences to update
+     */
+    where?: PlannedAbsenceWhereInput
+  }
+
+  /**
+   * PlannedAbsence upsert
+   */
+  export type PlannedAbsenceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PlannedAbsence to update in case it exists.
+     */
+    where: PlannedAbsenceWhereUniqueInput
+    /**
+     * In case the PlannedAbsence found by the `where` argument doesn't exist, create a new PlannedAbsence with this data.
+     */
+    create: XOR<PlannedAbsenceCreateInput, PlannedAbsenceUncheckedCreateInput>
+    /**
+     * In case the PlannedAbsence was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PlannedAbsenceUpdateInput, PlannedAbsenceUncheckedUpdateInput>
+  }
+
+  /**
+   * PlannedAbsence delete
+   */
+  export type PlannedAbsenceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
+    /**
+     * Filter which PlannedAbsence to delete.
+     */
+    where: PlannedAbsenceWhereUniqueInput
+  }
+
+  /**
+   * PlannedAbsence deleteMany
+   */
+  export type PlannedAbsenceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PlannedAbsences to delete
+     */
+    where?: PlannedAbsenceWhereInput
+  }
+
+  /**
+   * PlannedAbsence without action
+   */
+  export type PlannedAbsenceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedAbsence
+     */
+    select?: PlannedAbsenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedAbsenceInclude<ExtArgs> | null
   }
 
 
@@ -26939,6 +28015,19 @@ export namespace Prisma {
   export type StudentScalarFieldEnum = (typeof StudentScalarFieldEnum)[keyof typeof StudentScalarFieldEnum]
 
 
+  export const PlannedAbsenceScalarFieldEnum: {
+    id: 'id',
+    studentId: 'studentId',
+    date: 'date',
+    status: 'status',
+    comment: 'comment',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PlannedAbsenceScalarFieldEnum = (typeof PlannedAbsenceScalarFieldEnum)[keyof typeof PlannedAbsenceScalarFieldEnum]
+
+
   export const StudentGroupHistoryScalarFieldEnum: {
     id: 'id',
     studentId: 'studentId',
@@ -28010,6 +29099,7 @@ export namespace Prisma {
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     user?: XOR<UserRelationFilter, UserWhereInput>
     groupHistory?: StudentGroupHistoryListRelationFilter
+    plannedAbsences?: PlannedAbsenceListRelationFilter
   }
 
   export type StudentOrderByWithRelationInput = {
@@ -28038,6 +29128,7 @@ export namespace Prisma {
     teacher?: TeacherOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
     groupHistory?: StudentGroupHistoryOrderByRelationAggregateInput
+    plannedAbsences?: PlannedAbsenceOrderByRelationAggregateInput
   }
 
   export type StudentWhereUniqueInput = Prisma.AtLeast<{
@@ -28069,6 +29160,7 @@ export namespace Prisma {
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     user?: XOR<UserRelationFilter, UserWhereInput>
     groupHistory?: StudentGroupHistoryListRelationFilter
+    plannedAbsences?: PlannedAbsenceListRelationFilter
   }, "id" | "userId" | "leadId">
 
   export type StudentOrderByWithAggregationInput = {
@@ -28117,6 +29209,72 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Student"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Student"> | Date | string
     leadId?: StringNullableWithAggregatesFilter<"Student"> | string | null
+  }
+
+  export type PlannedAbsenceWhereInput = {
+    AND?: PlannedAbsenceWhereInput | PlannedAbsenceWhereInput[]
+    OR?: PlannedAbsenceWhereInput[]
+    NOT?: PlannedAbsenceWhereInput | PlannedAbsenceWhereInput[]
+    id?: StringFilter<"PlannedAbsence"> | string
+    studentId?: StringFilter<"PlannedAbsence"> | string
+    date?: DateTimeFilter<"PlannedAbsence"> | Date | string
+    status?: StringFilter<"PlannedAbsence"> | string
+    comment?: StringFilter<"PlannedAbsence"> | string
+    createdAt?: DateTimeFilter<"PlannedAbsence"> | Date | string
+    updatedAt?: DateTimeFilter<"PlannedAbsence"> | Date | string
+    student?: XOR<StudentRelationFilter, StudentWhereInput>
+  }
+
+  export type PlannedAbsenceOrderByWithRelationInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    date?: SortOrder
+    status?: SortOrder
+    comment?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    student?: StudentOrderByWithRelationInput
+  }
+
+  export type PlannedAbsenceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    studentId_date?: PlannedAbsenceStudentIdDateCompoundUniqueInput
+    AND?: PlannedAbsenceWhereInput | PlannedAbsenceWhereInput[]
+    OR?: PlannedAbsenceWhereInput[]
+    NOT?: PlannedAbsenceWhereInput | PlannedAbsenceWhereInput[]
+    studentId?: StringFilter<"PlannedAbsence"> | string
+    date?: DateTimeFilter<"PlannedAbsence"> | Date | string
+    status?: StringFilter<"PlannedAbsence"> | string
+    comment?: StringFilter<"PlannedAbsence"> | string
+    createdAt?: DateTimeFilter<"PlannedAbsence"> | Date | string
+    updatedAt?: DateTimeFilter<"PlannedAbsence"> | Date | string
+    student?: XOR<StudentRelationFilter, StudentWhereInput>
+  }, "id" | "studentId_date">
+
+  export type PlannedAbsenceOrderByWithAggregationInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    date?: SortOrder
+    status?: SortOrder
+    comment?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PlannedAbsenceCountOrderByAggregateInput
+    _max?: PlannedAbsenceMaxOrderByAggregateInput
+    _min?: PlannedAbsenceMinOrderByAggregateInput
+  }
+
+  export type PlannedAbsenceScalarWhereWithAggregatesInput = {
+    AND?: PlannedAbsenceScalarWhereWithAggregatesInput | PlannedAbsenceScalarWhereWithAggregatesInput[]
+    OR?: PlannedAbsenceScalarWhereWithAggregatesInput[]
+    NOT?: PlannedAbsenceScalarWhereWithAggregatesInput | PlannedAbsenceScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PlannedAbsence"> | string
+    studentId?: StringWithAggregatesFilter<"PlannedAbsence"> | string
+    date?: DateTimeWithAggregatesFilter<"PlannedAbsence"> | Date | string
+    status?: StringWithAggregatesFilter<"PlannedAbsence"> | string
+    comment?: StringWithAggregatesFilter<"PlannedAbsence"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"PlannedAbsence"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PlannedAbsence"> | Date | string
   }
 
   export type StudentGroupHistoryWhereInput = {
@@ -30122,6 +31280,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateInput = {
@@ -30146,6 +31305,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUpdateInput = {
@@ -30170,6 +31330,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateInput = {
@@ -30194,6 +31355,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentCreateManyInput = {
@@ -30250,6 +31412,75 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PlannedAbsenceCreateInput = {
+    id?: string
+    date: Date | string
+    status?: string
+    comment: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    student: StudentCreateNestedOneWithoutPlannedAbsencesInput
+  }
+
+  export type PlannedAbsenceUncheckedCreateInput = {
+    id?: string
+    studentId: string
+    date: Date | string
+    status?: string
+    comment: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlannedAbsenceUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    student?: StudentUpdateOneRequiredWithoutPlannedAbsencesNestedInput
+  }
+
+  export type PlannedAbsenceUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlannedAbsenceCreateManyInput = {
+    id?: string
+    studentId: string
+    date: Date | string
+    status?: string
+    comment: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlannedAbsenceUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlannedAbsenceUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StudentGroupHistoryCreateInput = {
@@ -32537,7 +33768,17 @@ export namespace Prisma {
     isNot?: CrmLeadWhereInput | null
   }
 
+  export type PlannedAbsenceListRelationFilter = {
+    every?: PlannedAbsenceWhereInput
+    some?: PlannedAbsenceWhereInput
+    none?: PlannedAbsenceWhereInput
+  }
+
   export type PaymentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PlannedAbsenceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -32630,6 +33871,41 @@ export namespace Prisma {
   export type StudentRelationFilter = {
     is?: StudentWhereInput
     isNot?: StudentWhereInput
+  }
+
+  export type PlannedAbsenceStudentIdDateCompoundUniqueInput = {
+    studentId: string
+    date: Date | string
+  }
+
+  export type PlannedAbsenceCountOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    date?: SortOrder
+    status?: SortOrder
+    comment?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlannedAbsenceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    date?: SortOrder
+    status?: SortOrder
+    comment?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlannedAbsenceMinOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    date?: SortOrder
+    status?: SortOrder
+    comment?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type GroupRelationFilter = {
@@ -34812,6 +36088,13 @@ export namespace Prisma {
     connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
   }
 
+  export type PlannedAbsenceCreateNestedManyWithoutStudentInput = {
+    create?: XOR<PlannedAbsenceCreateWithoutStudentInput, PlannedAbsenceUncheckedCreateWithoutStudentInput> | PlannedAbsenceCreateWithoutStudentInput[] | PlannedAbsenceUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: PlannedAbsenceCreateOrConnectWithoutStudentInput | PlannedAbsenceCreateOrConnectWithoutStudentInput[]
+    createMany?: PlannedAbsenceCreateManyStudentInputEnvelope
+    connect?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
+  }
+
   export type AttendanceUncheckedCreateNestedManyWithoutStudentInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -34838,6 +36121,13 @@ export namespace Prisma {
     connectOrCreate?: StudentGroupHistoryCreateOrConnectWithoutStudentInput | StudentGroupHistoryCreateOrConnectWithoutStudentInput[]
     createMany?: StudentGroupHistoryCreateManyStudentInputEnvelope
     connect?: StudentGroupHistoryWhereUniqueInput | StudentGroupHistoryWhereUniqueInput[]
+  }
+
+  export type PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput = {
+    create?: XOR<PlannedAbsenceCreateWithoutStudentInput, PlannedAbsenceUncheckedCreateWithoutStudentInput> | PlannedAbsenceCreateWithoutStudentInput[] | PlannedAbsenceUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: PlannedAbsenceCreateOrConnectWithoutStudentInput | PlannedAbsenceCreateOrConnectWithoutStudentInput[]
+    createMany?: PlannedAbsenceCreateManyStudentInputEnvelope
+    connect?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -34942,6 +36232,20 @@ export namespace Prisma {
     deleteMany?: StudentGroupHistoryScalarWhereInput | StudentGroupHistoryScalarWhereInput[]
   }
 
+  export type PlannedAbsenceUpdateManyWithoutStudentNestedInput = {
+    create?: XOR<PlannedAbsenceCreateWithoutStudentInput, PlannedAbsenceUncheckedCreateWithoutStudentInput> | PlannedAbsenceCreateWithoutStudentInput[] | PlannedAbsenceUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: PlannedAbsenceCreateOrConnectWithoutStudentInput | PlannedAbsenceCreateOrConnectWithoutStudentInput[]
+    upsert?: PlannedAbsenceUpsertWithWhereUniqueWithoutStudentInput | PlannedAbsenceUpsertWithWhereUniqueWithoutStudentInput[]
+    createMany?: PlannedAbsenceCreateManyStudentInputEnvelope
+    set?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
+    disconnect?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
+    delete?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
+    connect?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
+    update?: PlannedAbsenceUpdateWithWhereUniqueWithoutStudentInput | PlannedAbsenceUpdateWithWhereUniqueWithoutStudentInput[]
+    updateMany?: PlannedAbsenceUpdateManyWithWhereWithoutStudentInput | PlannedAbsenceUpdateManyWithWhereWithoutStudentInput[]
+    deleteMany?: PlannedAbsenceScalarWhereInput | PlannedAbsenceScalarWhereInput[]
+  }
+
   export type AttendanceUncheckedUpdateManyWithoutStudentNestedInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -34996,6 +36300,34 @@ export namespace Prisma {
     update?: StudentGroupHistoryUpdateWithWhereUniqueWithoutStudentInput | StudentGroupHistoryUpdateWithWhereUniqueWithoutStudentInput[]
     updateMany?: StudentGroupHistoryUpdateManyWithWhereWithoutStudentInput | StudentGroupHistoryUpdateManyWithWhereWithoutStudentInput[]
     deleteMany?: StudentGroupHistoryScalarWhereInput | StudentGroupHistoryScalarWhereInput[]
+  }
+
+  export type PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput = {
+    create?: XOR<PlannedAbsenceCreateWithoutStudentInput, PlannedAbsenceUncheckedCreateWithoutStudentInput> | PlannedAbsenceCreateWithoutStudentInput[] | PlannedAbsenceUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: PlannedAbsenceCreateOrConnectWithoutStudentInput | PlannedAbsenceCreateOrConnectWithoutStudentInput[]
+    upsert?: PlannedAbsenceUpsertWithWhereUniqueWithoutStudentInput | PlannedAbsenceUpsertWithWhereUniqueWithoutStudentInput[]
+    createMany?: PlannedAbsenceCreateManyStudentInputEnvelope
+    set?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
+    disconnect?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
+    delete?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
+    connect?: PlannedAbsenceWhereUniqueInput | PlannedAbsenceWhereUniqueInput[]
+    update?: PlannedAbsenceUpdateWithWhereUniqueWithoutStudentInput | PlannedAbsenceUpdateWithWhereUniqueWithoutStudentInput[]
+    updateMany?: PlannedAbsenceUpdateManyWithWhereWithoutStudentInput | PlannedAbsenceUpdateManyWithWhereWithoutStudentInput[]
+    deleteMany?: PlannedAbsenceScalarWhereInput | PlannedAbsenceScalarWhereInput[]
+  }
+
+  export type StudentCreateNestedOneWithoutPlannedAbsencesInput = {
+    create?: XOR<StudentCreateWithoutPlannedAbsencesInput, StudentUncheckedCreateWithoutPlannedAbsencesInput>
+    connectOrCreate?: StudentCreateOrConnectWithoutPlannedAbsencesInput
+    connect?: StudentWhereUniqueInput
+  }
+
+  export type StudentUpdateOneRequiredWithoutPlannedAbsencesNestedInput = {
+    create?: XOR<StudentCreateWithoutPlannedAbsencesInput, StudentUncheckedCreateWithoutPlannedAbsencesInput>
+    connectOrCreate?: StudentCreateOrConnectWithoutPlannedAbsencesInput
+    upsert?: StudentUpsertWithoutPlannedAbsencesInput
+    connect?: StudentWhereUniqueInput
+    update?: XOR<XOR<StudentUpdateToOneWithWhereWithoutPlannedAbsencesInput, StudentUpdateWithoutPlannedAbsencesInput>, StudentUncheckedUpdateWithoutPlannedAbsencesInput>
   }
 
   export type StudentCreateNestedOneWithoutGroupHistoryInput = {
@@ -36479,6 +37811,7 @@ export namespace Prisma {
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutUserInput = {
@@ -36502,6 +37835,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutUserInput = {
@@ -36798,6 +38132,7 @@ export namespace Prisma {
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutUserInput = {
@@ -36821,6 +38156,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type TeacherUpsertWithoutUserInput = {
@@ -37509,6 +38845,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutGroupInput = {
@@ -37532,6 +38869,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutGroupInput = {
@@ -38113,6 +39451,7 @@ export namespace Prisma {
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutTeacherInput = {
@@ -38136,6 +39475,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutTeacherInput = {
@@ -38743,6 +40083,34 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type PlannedAbsenceCreateWithoutStudentInput = {
+    id?: string
+    date: Date | string
+    status?: string
+    comment: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlannedAbsenceUncheckedCreateWithoutStudentInput = {
+    id?: string
+    date: Date | string
+    status?: string
+    comment: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlannedAbsenceCreateOrConnectWithoutStudentInput = {
+    where: PlannedAbsenceWhereUniqueInput
+    create: XOR<PlannedAbsenceCreateWithoutStudentInput, PlannedAbsenceUncheckedCreateWithoutStudentInput>
+  }
+
+  export type PlannedAbsenceCreateManyStudentInputEnvelope = {
+    data: PlannedAbsenceCreateManyStudentInput | PlannedAbsenceCreateManyStudentInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AttendanceUpsertWithWhereUniqueWithoutStudentInput = {
     where: AttendanceWhereUniqueInput
     update: XOR<AttendanceUpdateWithoutStudentInput, AttendanceUncheckedUpdateWithoutStudentInput>
@@ -39040,6 +40408,147 @@ export namespace Prisma {
     data: XOR<StudentGroupHistoryUpdateManyMutationInput, StudentGroupHistoryUncheckedUpdateManyWithoutStudentInput>
   }
 
+  export type PlannedAbsenceUpsertWithWhereUniqueWithoutStudentInput = {
+    where: PlannedAbsenceWhereUniqueInput
+    update: XOR<PlannedAbsenceUpdateWithoutStudentInput, PlannedAbsenceUncheckedUpdateWithoutStudentInput>
+    create: XOR<PlannedAbsenceCreateWithoutStudentInput, PlannedAbsenceUncheckedCreateWithoutStudentInput>
+  }
+
+  export type PlannedAbsenceUpdateWithWhereUniqueWithoutStudentInput = {
+    where: PlannedAbsenceWhereUniqueInput
+    data: XOR<PlannedAbsenceUpdateWithoutStudentInput, PlannedAbsenceUncheckedUpdateWithoutStudentInput>
+  }
+
+  export type PlannedAbsenceUpdateManyWithWhereWithoutStudentInput = {
+    where: PlannedAbsenceScalarWhereInput
+    data: XOR<PlannedAbsenceUpdateManyMutationInput, PlannedAbsenceUncheckedUpdateManyWithoutStudentInput>
+  }
+
+  export type PlannedAbsenceScalarWhereInput = {
+    AND?: PlannedAbsenceScalarWhereInput | PlannedAbsenceScalarWhereInput[]
+    OR?: PlannedAbsenceScalarWhereInput[]
+    NOT?: PlannedAbsenceScalarWhereInput | PlannedAbsenceScalarWhereInput[]
+    id?: StringFilter<"PlannedAbsence"> | string
+    studentId?: StringFilter<"PlannedAbsence"> | string
+    date?: DateTimeFilter<"PlannedAbsence"> | Date | string
+    status?: StringFilter<"PlannedAbsence"> | string
+    comment?: StringFilter<"PlannedAbsence"> | string
+    createdAt?: DateTimeFilter<"PlannedAbsence"> | Date | string
+    updatedAt?: DateTimeFilter<"PlannedAbsence"> | Date | string
+  }
+
+  export type StudentCreateWithoutPlannedAbsencesInput = {
+    id?: string
+    age?: number | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    parentPassportInfo?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
+    payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+  }
+
+  export type StudentUncheckedCreateWithoutPlannedAbsencesInput = {
+    id?: string
+    userId: string
+    groupId?: string | null
+    teacherId?: string | null
+    age?: number | null
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    parentPassportInfo?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leadId?: string | null
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+  }
+
+  export type StudentCreateOrConnectWithoutPlannedAbsencesInput = {
+    where: StudentWhereUniqueInput
+    create: XOR<StudentCreateWithoutPlannedAbsencesInput, StudentUncheckedCreateWithoutPlannedAbsencesInput>
+  }
+
+  export type StudentUpsertWithoutPlannedAbsencesInput = {
+    update: XOR<StudentUpdateWithoutPlannedAbsencesInput, StudentUncheckedUpdateWithoutPlannedAbsencesInput>
+    create: XOR<StudentCreateWithoutPlannedAbsencesInput, StudentUncheckedCreateWithoutPlannedAbsencesInput>
+    where?: StudentWhereInput
+  }
+
+  export type StudentUpdateToOneWithWhereWithoutPlannedAbsencesInput = {
+    where?: StudentWhereInput
+    data: XOR<StudentUpdateWithoutPlannedAbsencesInput, StudentUncheckedUpdateWithoutPlannedAbsencesInput>
+  }
+
+  export type StudentUpdateWithoutPlannedAbsencesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+  }
+
+  export type StudentUncheckedUpdateWithoutPlannedAbsencesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+  }
+
   export type StudentCreateWithoutGroupHistoryInput = {
     id?: string
     age?: number | null
@@ -39061,6 +40570,7 @@ export namespace Prisma {
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutGroupHistoryInput = {
@@ -39084,6 +40594,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutGroupHistoryInput = {
@@ -39162,6 +40673,7 @@ export namespace Prisma {
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutGroupHistoryInput = {
@@ -39185,6 +40697,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type GroupUpsertWithoutStudentHistoryEntriesInput = {
@@ -39639,6 +41152,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutAttendancesInput = {
@@ -39662,6 +41176,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutAttendancesInput = {
@@ -39819,6 +41334,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutAttendancesInput = {
@@ -39842,6 +41358,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type LessonCreateWithoutFeedbacksInput = {
@@ -39920,6 +41437,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutFeedbacksInput = {
@@ -39943,6 +41461,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutFeedbacksInput = {
@@ -40088,6 +41607,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutFeedbacksInput = {
@@ -40111,6 +41631,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type TeacherUpsertWithoutFeedbacksInput = {
@@ -40185,6 +41706,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutPaymentsInput = {
@@ -40208,6 +41730,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutPaymentsInput = {
@@ -40247,6 +41770,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutPaymentsInput = {
@@ -40270,6 +41794,7 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type TeacherCreateWithoutSalaryRecordsInput = {
@@ -41392,6 +42917,7 @@ export namespace Prisma {
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutLeadInput = {
@@ -41415,6 +42941,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutLeadInput = {
@@ -41762,6 +43289,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutLeadInput = {
@@ -41785,6 +43313,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type CrmLeadCreateWithoutActivitiesInput = {
@@ -42822,6 +44351,7 @@ export namespace Prisma {
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutGroupInput = {
@@ -42845,6 +44375,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateManyWithoutGroupInput = {
@@ -43329,6 +44860,7 @@ export namespace Prisma {
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutTeacherInput = {
@@ -43352,6 +44884,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateManyWithoutTeacherInput = {
@@ -43417,6 +44950,15 @@ export namespace Prisma {
     groupId: string
     joinedAt?: Date | string
     leftAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlannedAbsenceCreateManyStudentInput = {
+    id?: string
+    date: Date | string
+    status?: string
+    comment: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -43561,6 +45103,33 @@ export namespace Prisma {
     groupId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlannedAbsenceUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlannedAbsenceUncheckedUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlannedAbsenceUncheckedUpdateManyWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43894,6 +45463,10 @@ export namespace Prisma {
      * @deprecated Use StudentDefaultArgs instead
      */
     export type StudentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = StudentDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PlannedAbsenceDefaultArgs instead
+     */
+    export type PlannedAbsenceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PlannedAbsenceDefaultArgs<ExtArgs>
     /**
      * @deprecated Use StudentGroupHistoryDefaultArgs instead
      */

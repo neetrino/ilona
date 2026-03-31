@@ -56,6 +56,37 @@ export interface LessonAttendance {
   };
 }
 
+export interface CalendarLesson {
+  id: string;
+  scheduledAt: string;
+  topic?: string | null;
+  group: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface PlannedAbsenceRecord {
+  id: string;
+  date: string;
+  status: string;
+  comment: string;
+}
+
+export interface StaffPlannedAbsenceItem {
+  id: string;
+  date: string;
+  status: string;
+  comment: string;
+  createdAt: string;
+  student: {
+    id: string;
+    name: string;
+    email: string;
+    group?: { id: string; name: string } | null;
+  };
+}
+
 export interface StudentAttendanceHistory {
   attendances: {
     id: string;
@@ -87,6 +118,14 @@ export interface StudentAttendanceHistory {
     absentUnjustified: number;
     attendanceRate: number;
   };
+}
+
+/** Month view: group schedule + attendance rows + planned absences */
+export interface StudentCalendarMonth {
+  lessons: CalendarLesson[];
+  attendances: StudentAttendanceHistory['attendances'];
+  plannedAbsences: PlannedAbsenceRecord[];
+  statistics: StudentAttendanceHistory['statistics'];
 }
 
 export interface MarkAttendanceDto {

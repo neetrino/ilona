@@ -48,9 +48,65 @@ export interface SendMessageResponse {
 }
 
 export interface AdminStudentRecordingFilters {
+  /** @deprecated Prefer groupIds */
   groupId?: string;
+  /** @deprecated Prefer studentIds (user ids) */
   studentUserId?: string;
+  groupIds?: string[];
+  /** Student user ids (message sender ids) */
+  studentIds?: string[];
   search?: string;
+}
+
+function normalizeStringArray(value?: string | string[]): string[] {
+  if (value === undefined || value === null) return [];
+  return (Array.isArray(value) ? value : [value]).filter(
+    (v): v is string => typeof v === 'string' && v.length > 0,
+  );
+}
+
+function adminRecordingMatchesFilters(
+  senderId: string,
+  groupId: string | null,
+  filters: AdminStudentRecordingFilters,
+): boolean {
+  const groupIds = normalizeStringArray(
+    filters.groupIds?.length
+      ? filters.groupIds
+      : filters.groupId
+        ? [filters.groupId]
+        : [],
+  );
+  const studentIds = normalizeStringArray(
+    filters.studentIds?.length
+      ? filters.studentIds
+      : filters.studentUserId
+        ? [filters.studentUserId]
+        : [],
+  );
+
+  const hasGroups = groupIds.length > 0;
+  const hasStudents = studentIds.length > 0;
+
+  if (!hasGroups && !hasStudents) {
+    return true;
+  }
+
+  const matchesGroup = (): boolean =>
+    groupIds.some((gid) => {
+      if (gid === 'ungrouped') return groupId === null;
+      return groupId === gid;
+    });
+
+  const matchesStudent = (): boolean => studentIds.includes(senderId);
+
+  if (hasGroups && hasStudents) {
+    return matchesGroup() || matchesStudent();
+  }
+  if (hasGroups) {
+    return matchesGroup();
+  }
+  return matchesStudent();
 }
 
 /**
@@ -743,12 +799,9 @@ export class MessageService {
           return false;
         }
 
-        if (filters?.studentUserId && message.senderId !== filters.studentUserId) {
-          return false;
-        }
-
         const groupId = message.sender?.student?.group?.id ?? null;
-        if (filters?.groupId && groupId !== filters.groupId) {
+        const senderId = message.senderId ?? '';
+        if (!adminRecordingMatchesFilters(senderId, groupId, filters ?? {})) {
           return false;
         }
 
