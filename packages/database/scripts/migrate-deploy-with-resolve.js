@@ -120,17 +120,6 @@ async function main() {
     }
   }
 
-  // Always resolve these if present (handles Render/build env where getFailedMigrationNames may not find them)
-  const knownFailedToResolve = [
-    '20260305130000_clean_agreed_processing_from_crm_activities',
-    '20260305150000_remove_processing_from_salary_status',
-    '20260304180000_remove_agreed_from_crm_lead_status',
-    '20260226100000_add_payment_student_month_unique',
-  ];
-  for (const name of knownFailedToResolve) {
-    run(`npx prisma migrate resolve --rolled-back "${name}"`, { ignoreError: true });
-  }
-
   let lastResult = null;
   for (let attempt = 0; attempt < MAX_DEPLOY_RESOLVE_RETRIES; attempt++) {
     lastResult = run('npx prisma migrate deploy', { captureOutput: true });

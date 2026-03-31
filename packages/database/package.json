@@ -17,7 +17,7 @@
     "prepare": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate": "prisma migrate deploy",
+    "db:migrate": "node scripts/migrate-deploy-with-resolve.js",
     "db:migrate:resolve-planned-absences-rollback": "prisma migrate resolve --rolled-back 20260331120000_add_planned_absences",
     "db:apply-teacher-approved": "node scripts/apply-teacher-approved-at.js",
     "db:migrate:dev": "prisma migrate dev",
