@@ -142,7 +142,7 @@ export function GroupsTab({
     setSelectedGroupIds(new Set());
     if (selectedCenterId) {
       const next = new URLSearchParams(searchParams.toString());
-      next.set('view', 'board');
+      next.delete('view');
       router.push(`/${locale}/admin/groups/${centerId}?${next.toString()}`);
     } else {
       setBoardTabCenterId(centerId);
@@ -403,7 +403,7 @@ export function GroupsTab({
           aria-label="Breadcrumb"
         >
           <Link
-            href={`/${locale}/admin/groups?view=board`}
+            href={`/${locale}/admin/groups`}
             className="font-medium text-primary hover:text-primary/80 hover:underline"
           >
             Centers
@@ -489,11 +489,10 @@ export function GroupsTab({
           <button
             onClick={() => {
               setViewMode('list');
-              updateViewModeInUrl('list');
               setPage(0);
               setSelectedGroupIds(new Set());
               setBoardTabCenterId(null);
-              updateUrl({ branch: null });
+              updateUrl({ view: 'list', branch: null });
             }}
             className={cn(
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',

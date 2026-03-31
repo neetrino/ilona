@@ -25,7 +25,7 @@ export default function CenterGroupsPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       return modeFromUrl;
     }
-    return 'list';
+    return 'board';
   });
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function CenterGroupsPage() {
 
   const updateViewModeInUrl = useCallback(
     (mode: ViewMode) => {
-      updateUrl({ view: mode !== 'list' ? mode : null });
+      updateUrl({ view: mode !== 'board' ? mode : null });
     },
     [updateUrl]
   );
@@ -62,7 +62,7 @@ export default function CenterGroupsPage() {
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       setViewMode(modeFromUrl);
     } else if (!modeFromUrl) {
-      setViewMode('list');
+      setViewMode('board');
     }
   }, [searchParams]);
 
