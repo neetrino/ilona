@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateChatDto, CreateCustomGroupChatDto, SendMessageDto, UpdateMessageDto } from './dto';
 import { ChatManagementService } from './chat-management.service';
-import { MessageService } from './message.service';
+import { MessageService, type AdminStudentRecordingFilters } from './message.service';
 import { ChatListsService } from './chat-lists.service';
 
 /**
@@ -89,7 +89,7 @@ export class ChatService {
 
   async getAdminStudentRecordings(
     adminId: string,
-    filters?: { groupId?: string; studentUserId?: string; search?: string },
+    filters?: AdminStudentRecordingFilters,
   ) {
     return this.messageService.getAdminStudentRecordings(adminId, filters);
   }

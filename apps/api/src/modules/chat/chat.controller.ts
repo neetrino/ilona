@@ -247,7 +247,8 @@ export class ChatController {
 
   /**
    * Get all student voice recordings for admin (grouped/filtered on UI).
-   * Optional query: groupId, studentUserId, search.
+   * Optional query: groupIds (repeat or array), studentIds (repeat or array),
+   * legacy groupId, studentUserId, search.
    */
   @Get('admin/student-recordings')
   @Roles(UserRole.ADMIN)
@@ -255,11 +256,26 @@ export class ChatController {
     @CurrentUser() user: JwtPayload,
     @Query('groupId') groupId?: string,
     @Query('studentUserId') studentUserId?: string,
+    @Query('groupIds') groupIds?: string | string[],
+    @Query('studentIds') studentIds?: string | string[],
     @Query('search') search?: string,
   ) {
+    const normalizedGroupIds = Array.isArray(groupIds)
+      ? groupIds
+      : groupIds
+        ? [groupIds]
+        : undefined;
+    const normalizedStudentIds = Array.isArray(studentIds)
+      ? studentIds
+      : studentIds
+        ? [studentIds]
+        : undefined;
+
     return this.chatService.getAdminStudentRecordings(user.sub, {
       groupId,
       studentUserId,
+      groupIds: normalizedGroupIds,
+      studentIds: normalizedStudentIds,
       search,
     });
   }

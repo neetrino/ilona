@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
+import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import { fetchStudents } from '@/features/students/api/students.api';
 import {
@@ -30,14 +31,18 @@ function formatSubmittedAt(value: string): string {
 }
 
 const DIRECTORY_PAGE_SIZE = 100;
-const GROUP_STORAGE_KEY = 'admin-recordings:selected-group';
-const STUDENT_STORAGE_KEY = 'admin-recordings:selected-student';
-const NO_GROUP_SELECTED = '';
-const NO_STUDENT_SELECTED = '';
-const ALL_STUDENTS_VALUE = 'all';
+const FILTERS_STORAGE_KEY = 'admin-recordings:filters-v2';
+const LEGACY_GROUP_KEY = 'admin-recordings:selected-group';
+const LEGACY_STUDENT_KEY = 'admin-recordings:selected-student';
+const LEGACY_ALL_STUDENTS = 'all';
 
 function isFullStudent(item: TeacherAssignedItem): item is Student {
   return 'user' in item;
+}
+
+/** Matches group multi-select ids (`ungrouped` for students without a group). */
+function directoryStudentGroupKey(groupId: string | null): string {
+  return groupId === null ? 'ungrouped' : groupId;
 }
 
 async function fetchAllGroups(): Promise<Group[]> {
@@ -69,23 +74,65 @@ async function fetchAllStudentsDirectory(): Promise<Student[]> {
   return students;
 }
 
+function parseStoredFilters(): { groupIds: Set<string>; studentUserIds: Set<string> } {
+  if (typeof window === 'undefined') {
+    return { groupIds: new Set(), studentUserIds: new Set() };
+  }
+
+  try {
+    const raw = localStorage.getItem(FILTERS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { groupIds?: string[]; studentIds?: string[] };
+      return {
+        groupIds: new Set(Array.isArray(parsed.groupIds) ? parsed.groupIds : []),
+        studentUserIds: new Set(Array.isArray(parsed.studentIds) ? parsed.studentIds : []),
+      };
+    }
+  } catch {
+    /* fall through to legacy */
+  }
+
+  const legacyGroup = localStorage.getItem(LEGACY_GROUP_KEY);
+  const legacyStudent = localStorage.getItem(LEGACY_STUDENT_KEY);
+  if (legacyGroup) {
+    const groupIds = new Set([legacyGroup]);
+    const studentUserIds = new Set<string>();
+    if (
+      legacyStudent &&
+      legacyStudent !== LEGACY_ALL_STUDENTS &&
+      legacyStudent !== ''
+    ) {
+      studentUserIds.add(legacyStudent);
+    }
+    return { groupIds, studentUserIds };
+  }
+
+  return { groupIds: new Set(), studentUserIds: new Set() };
+}
+
 export default function AdminRecordingPage() {
   const t = useTranslations('nav');
-  const [selectedGroupId, setSelectedGroupId] = useState<string>(NO_GROUP_SELECTED);
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(NO_STUDENT_SELECTED);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(() => new Set());
+  const [selectedStudentUserIds, setSelectedStudentUserIds] = useState<Set<string>>(() => new Set());
   const [studentSearch, setStudentSearch] = useState('');
   const [isSelectionHydrated, setIsSelectionHydrated] = useState(false);
 
-  const apiFilters = useMemo(() => ({
-    groupId: selectedGroupId || undefined,
-    studentUserId:
-      selectedGroupId && selectedStudentId && selectedStudentId !== ALL_STUDENTS_VALUE
-        ? selectedStudentId
-        : undefined,
-  }), [selectedGroupId, selectedStudentId]);
+  const apiFilters = useMemo(() => {
+    const groupIds = Array.from(selectedGroupIds).sort();
+    const studentIds = Array.from(selectedStudentUserIds).sort();
+    return {
+      ...(groupIds.length ? { groupIds } : {}),
+      ...(studentIds.length ? { studentIds } : {}),
+    };
+  }, [selectedGroupIds, selectedStudentUserIds]);
+
+  const apiFiltersKey = useMemo(
+    () => JSON.stringify({ groupIds: apiFilters.groupIds ?? [], studentIds: apiFilters.studentIds ?? [] }),
+    [apiFilters],
+  );
 
   const { data: recordings = [], isLoading } = useQuery({
-    queryKey: [...chatKeys.all, 'admin', 'student-recordings', apiFilters],
+    queryKey: [...chatKeys.all, 'admin', 'student-recordings', apiFiltersKey],
     queryFn: () => fetchAdminStudentRecordings(apiFilters),
     refetchInterval: 15_000,
     refetchOnWindowFocus: true,
@@ -132,99 +179,114 @@ export default function AdminRecordingPage() {
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [allGroups, studentDirectory]);
 
-  const studentOptions = useMemo(() => {
-    if (!selectedGroupId) return [];
+  const groupMultiOptions = useMemo(
+    () => groupOptions.map((g) => ({ id: g.id, label: g.name })),
+    [groupOptions],
+  );
 
-    const byGroup = studentDirectory.filter((student) => {
-        if (selectedGroupId === 'ungrouped') return student.groupId === null;
-        return student.groupId === selectedGroupId;
-      });
+  /** User ids allowed in the Student dropdown: all students, or only those in selected group(s). */
+  const allowedStudentUserIds = useMemo(() => {
+    if (selectedGroupIds.size === 0) {
+      return new Set(studentDirectory.map((s) => s.userId));
+    }
+    const next = new Set<string>();
+    studentDirectory.forEach((s) => {
+      if (selectedGroupIds.has(directoryStudentGroupKey(s.groupId))) {
+        next.add(s.userId);
+      }
+    });
+    return next;
+  }, [studentDirectory, selectedGroupIds]);
 
-    return byGroup.map((student) => ({
-      userId: student.userId,
-      name: student.fullName,
+  const studentMultiOptions = useMemo(() => {
+    const rows =
+      selectedGroupIds.size === 0
+        ? studentDirectory
+        : studentDirectory.filter((s) =>
+            selectedGroupIds.has(directoryStudentGroupKey(s.groupId)),
+          );
+    return rows.map((s) => ({
+      id: s.userId,
+      label: `${s.fullName} (${s.groupName})`,
     }));
-  }, [studentDirectory, selectedGroupId]);
+  }, [studentDirectory, selectedGroupIds]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const storedGroup = localStorage.getItem(GROUP_STORAGE_KEY);
-    const storedStudent = localStorage.getItem(STUDENT_STORAGE_KEY);
-
-    if (storedGroup) {
-      setSelectedGroupId(storedGroup);
-      setSelectedStudentId(storedStudent || ALL_STUDENTS_VALUE);
-    } else {
-      setSelectedGroupId(NO_GROUP_SELECTED);
-      setSelectedStudentId(NO_STUDENT_SELECTED);
-    }
+    const { groupIds, studentUserIds } = parseStoredFilters();
+    setSelectedGroupIds(groupIds);
+    setSelectedStudentUserIds(studentUserIds);
     setIsSelectionHydrated(true);
   }, []);
 
+  const pruneSelections = useCallback(() => {
+    setSelectedGroupIds((prev) => {
+      const next = new Set<string>();
+      const validIds = new Set(groupOptions.map((g) => g.id));
+      prev.forEach((id) => {
+        if (validIds.has(id)) next.add(id);
+      });
+      return next;
+    });
+    setSelectedStudentUserIds((prev) => {
+      const next = new Set<string>();
+      const valid = new Set(studentDirectory.map((s) => s.userId));
+      prev.forEach((id) => {
+        if (valid.has(id)) next.add(id);
+      });
+      return next;
+    });
+  }, [groupOptions, studentDirectory]);
+
   useEffect(() => {
     if (!isSelectionHydrated || isLoadingDirectory) return;
+    pruneSelections();
+  }, [isSelectionHydrated, isLoadingDirectory, pruneSelections]);
 
-    if (selectedGroupId && !groupOptions.some((group) => group.id === selectedGroupId)) {
-      setSelectedGroupId(NO_GROUP_SELECTED);
-      setSelectedStudentId(NO_STUDENT_SELECTED);
-      return;
-    }
-
-    if (!selectedGroupId) {
-      if (selectedStudentId !== NO_STUDENT_SELECTED) {
-        setSelectedStudentId(NO_STUDENT_SELECTED);
+  /** Drop student selections that are not in the current group-filtered roster (updates when groups change). */
+  useEffect(() => {
+    if (!isSelectionHydrated || isLoadingDirectory) return;
+    setSelectedStudentUserIds((prev) => {
+      const next = new Set<string>();
+      prev.forEach((uid) => {
+        if (allowedStudentUserIds.has(uid)) next.add(uid);
+      });
+      if (next.size === prev.size && [...prev].every((id) => next.has(id))) {
+        return prev;
       }
-      return;
-    }
-
-    if (selectedStudentId === NO_STUDENT_SELECTED) {
-      setSelectedStudentId(ALL_STUDENTS_VALUE);
-      return;
-    }
-
-    if (selectedStudentId !== ALL_STUDENTS_VALUE) {
-      const stillAvailable = studentOptions.some((student) => student.userId === selectedStudentId);
-      if (!stillAvailable) {
-        setSelectedStudentId(ALL_STUDENTS_VALUE);
-      }
-    }
-  }, [isSelectionHydrated, isLoadingDirectory, selectedGroupId, selectedStudentId, groupOptions, studentOptions]);
+      return next;
+    });
+  }, [isSelectionHydrated, isLoadingDirectory, allowedStudentUserIds]);
 
   useEffect(() => {
     if (!isSelectionHydrated || typeof window === 'undefined') return;
 
-    if (!selectedGroupId) {
-      localStorage.removeItem(GROUP_STORAGE_KEY);
-      localStorage.removeItem(STUDENT_STORAGE_KEY);
+    if (selectedGroupIds.size === 0 && selectedStudentUserIds.size === 0) {
+      localStorage.removeItem(FILTERS_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_GROUP_KEY);
+      localStorage.removeItem(LEGACY_STUDENT_KEY);
       return;
     }
 
-    localStorage.setItem(GROUP_STORAGE_KEY, selectedGroupId);
-    if (selectedStudentId && selectedStudentId !== NO_STUDENT_SELECTED) {
-      localStorage.setItem(STUDENT_STORAGE_KEY, selectedStudentId);
-    } else {
-      localStorage.removeItem(STUDENT_STORAGE_KEY);
-    }
-  }, [isSelectionHydrated, selectedGroupId, selectedStudentId]);
-
-  useEffect(() => {
-    if (!selectedGroupId || selectedStudentId === ALL_STUDENTS_VALUE) return;
-    const stillAvailable = studentOptions.some((student) => student.userId === selectedStudentId);
-    if (!stillAvailable) {
-      setSelectedStudentId(ALL_STUDENTS_VALUE);
-    }
-  }, [selectedGroupId, selectedStudentId, studentOptions]);
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        groupIds: Array.from(selectedGroupIds).sort(),
+        studentIds: Array.from(selectedStudentUserIds).sort(),
+      }),
+    );
+    localStorage.removeItem(LEGACY_GROUP_KEY);
+    localStorage.removeItem(LEGACY_STUDENT_KEY);
+  }, [isSelectionHydrated, selectedGroupIds, selectedStudentUserIds]);
 
   const visibleRecordings = useMemo(() => {
-    const byStudent = !selectedGroupId || selectedStudentId === ALL_STUDENTS_VALUE
-      ? recordings
-      : recordings.filter((recording) => recording.student.userId === selectedStudentId);
-
     const query = studentSearch.trim().toLowerCase();
-    if (!query) return byStudent;
+    if (!query) return recordings;
 
-    return byStudent.filter((recording) => getStudentFullName(recording).toLowerCase().includes(query));
-  }, [recordings, selectedGroupId, selectedStudentId, studentSearch]);
+    return recordings.filter((recording) =>
+      getStudentFullName(recording).toLowerCase().includes(query),
+    );
+  }, [recordings, studentSearch]);
 
   const recordingsByStudent = useMemo(() => {
     const map = new Map<string, AdminStudentRecording[]>();
@@ -236,28 +298,47 @@ export default function AdminRecordingPage() {
     return map;
   }, [visibleRecordings]);
 
+  const groupsForSections = useMemo(() => {
+    const wanted = new Set<string>();
+    selectedGroupIds.forEach((id) => wanted.add(id));
+    if (selectedStudentUserIds.size > 0) {
+      studentDirectory
+        .filter((s) => selectedStudentUserIds.has(s.userId))
+        .forEach((s) => wanted.add(directoryStudentGroupKey(s.groupId)));
+    }
+    if (wanted.size === 0) {
+      return groupOptions;
+    }
+    return groupOptions.filter((g) => wanted.has(g.id));
+  }, [groupOptions, studentDirectory, selectedGroupIds, selectedStudentUserIds]);
+
   const visibleGroupSections = useMemo(() => {
-    const groups = !selectedGroupId
-      ? groupOptions
-      : groupOptions.filter((group) => group.id === selectedGroupId);
-
     const searchQuery = studentSearch.trim().toLowerCase();
+    const groupFilterActive = selectedGroupIds.size > 0;
+    const studentFilterActive = selectedStudentUserIds.size > 0;
 
-    return groups.map((group) => {
+    return groupsForSections.map((group) => {
       const students = studentDirectory
         .filter((student) => {
-          const belongsToGroup = group.id === 'ungrouped'
-            ? student.groupId === null
-            : student.groupId === group.id;
+          const belongsToGroup =
+            group.id === 'ungrouped' ? student.groupId === null : student.groupId === group.id;
           if (!belongsToGroup) return false;
-          if (
-            selectedGroupId &&
-            selectedStudentId &&
-            selectedStudentId !== ALL_STUDENTS_VALUE &&
-            student.userId !== selectedStudentId
-          ) return false;
           if (searchQuery && !student.fullName.toLowerCase().includes(searchQuery)) return false;
-          return true;
+
+          const studentGroupKey = directoryStudentGroupKey(student.groupId);
+
+          if (!groupFilterActive && !studentFilterActive) {
+            return true;
+          }
+          if (groupFilterActive && studentFilterActive) {
+            return (
+              selectedGroupIds.has(studentGroupKey) || selectedStudentUserIds.has(student.userId)
+            );
+          }
+          if (groupFilterActive) {
+            return selectedGroupIds.has(studentGroupKey);
+          }
+          return selectedStudentUserIds.has(student.userId);
         })
         .sort((a, b) => a.fullName.localeCompare(b.fullName))
         .map((student) => ({
@@ -273,11 +354,18 @@ export default function AdminRecordingPage() {
         students,
       };
     });
-  }, [groupOptions, studentDirectory, selectedGroupId, selectedStudentId, studentSearch, recordingsByStudent]);
+  }, [
+    groupsForSections,
+    studentDirectory,
+    selectedGroupIds,
+    selectedStudentUserIds,
+    studentSearch,
+    recordingsByStudent,
+  ]);
 
-  const resetFilters = () => {
-    setSelectedGroupId(NO_GROUP_SELECTED);
-    setSelectedStudentId(NO_STUDENT_SELECTED);
+  const clearAllFilters = () => {
+    setSelectedGroupIds(new Set());
+    setSelectedStudentUserIds(new Set());
     setStudentSearch('');
   };
 
@@ -287,45 +375,39 @@ export default function AdminRecordingPage() {
       subtitle="All student voice recordings in one place, grouped by class"
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">Group/Class</label>
-          <select
-            value={selectedGroupId}
-            onChange={(event) => {
-              const nextGroupId = event.target.value;
-              setSelectedGroupId(nextGroupId);
-              setSelectedStudentId(nextGroupId ? ALL_STUDENTS_VALUE : NO_STUDENT_SELECTED);
-            }}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          >
-            <option value="">All groups</option>
-            {groupOptions.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
+        <div className="md:col-span-1">
+          <MultiSelectChipsDropdown
+            label="Group/Class"
+            options={groupMultiOptions}
+            selectedIds={selectedGroupIds}
+            onSelectionChange={setSelectedGroupIds}
+            placeholder="All groups"
+            searchPlaceholder="Search groups…"
+            emptyOptionsHint="No groups"
+            noResultsHint="No groups match"
+            isLoading={isLoadingDirectory}
+          />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">Student</label>
-          <select
-            value={selectedStudentId}
-            onChange={(event) => setSelectedStudentId(event.target.value)}
-            disabled={!selectedGroupId}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
-          >
-            {!selectedGroupId ? (
-              <option value="">Select group first</option>
-            ) : (
-              <option value={ALL_STUDENTS_VALUE}>All students</option>
-            )}
-            {studentOptions.map((student) => (
-              <option key={student.userId} value={student.userId}>
-                {student.name}
-              </option>
-            ))}
-          </select>
+        <div className="md:col-span-1">
+          <MultiSelectChipsDropdown
+            label="Student"
+            options={studentMultiOptions}
+            selectedIds={selectedStudentUserIds}
+            onSelectionChange={setSelectedStudentUserIds}
+            placeholder={
+              selectedGroupIds.size === 0
+                ? 'All students'
+                : 'Students in selected groups'
+            }
+            searchPlaceholder="Search students…"
+            emptyOptionsHint={
+              selectedGroupIds.size === 0 ? 'No students' : 'No students in selected groups'
+            }
+            noResultsHint="No students match"
+            isLoading={isLoadingDirectory}
+            maxChipsHeightClassName="max-h-28"
+          />
         </div>
 
         <div>
@@ -333,7 +415,7 @@ export default function AdminRecordingPage() {
           <input
             value={studentSearch}
             onChange={(event) => setStudentSearch(event.target.value)}
-            placeholder="Type student name..."
+            placeholder="Filter list by name…"
             className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
@@ -341,16 +423,17 @@ export default function AdminRecordingPage() {
         <div className="flex items-end">
           <button
             type="button"
-            onClick={resetFilters}
+            onClick={clearAllFilters}
             className="h-11 w-full md:w-auto px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg border border-slate-200 transition-colors"
           >
-            Reset filters
+            Clear all
           </button>
         </div>
       </div>
 
       <div className="mb-6 text-sm text-slate-500">
-        {visibleRecordings.length} recording{visibleRecordings.length !== 1 ? 's' : ''} found across {visibleGroupSections.length} group{visibleGroupSections.length !== 1 ? 's' : ''}
+        {visibleRecordings.length} recording{visibleRecordings.length !== 1 ? 's' : ''} found across{' '}
+        {visibleGroupSections.length} group{visibleGroupSections.length !== 1 ? 's' : ''}
       </div>
 
       {isLoading || isLoadingDirectory ? (
@@ -383,7 +466,8 @@ export default function AdminRecordingPage() {
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-sm font-medium text-slate-800">{student.fullName}</p>
                         <span className="text-xs text-slate-500">
-                          {student.recordings.length} recording{student.recordings.length !== 1 ? 's' : ''}
+                          {student.recordings.length} recording
+                          {student.recordings.length !== 1 ? 's' : ''}
                         </span>
                       </div>
 
@@ -399,7 +483,9 @@ export default function AdminRecordingPage() {
                               className="grid grid-cols-1 lg:grid-cols-[220px_200px_1fr] gap-3 items-center rounded-lg border border-slate-100 p-3"
                             >
                               <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">Submitted</p>
+                                <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
+                                  Submitted
+                                </p>
                                 <p className="text-sm text-slate-700">{formatSubmittedAt(recording.createdAt)}</p>
                               </div>
                               <div>
