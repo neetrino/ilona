@@ -23,11 +23,12 @@ export const centerKeys = {
 /**
  * Hook to fetch centers list
  */
-export function useCenters(filters?: CenterFilters) {
+export function useCenters(filters?: CenterFilters, enabled = true) {
   return useQuery({
     queryKey: centerKeys.list(filters),
     queryFn: () => fetchCenters(filters),
     staleTime: 30 * 1000,
+    enabled,
   });
 }
 
