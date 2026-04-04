@@ -4,7 +4,8 @@
   "private": true,
   "description": "Next.js Frontend for Ilona English Center",
   "scripts": {
-    "dev": "next dev --turbo -H 0.0.0.0",
+    "dev": "node ./scripts/dev-network-url.cjs",
+    "dev:next": "next dev --turbo -H 0.0.0.0",
     "build": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "next lint",
