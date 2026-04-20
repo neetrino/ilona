@@ -8,6 +8,7 @@ import { useCreateTeacher, type CreateTeacherDto } from '@/features/teachers';
 import { WeeklySchedule } from './WeeklySchedule';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
+import { useCenters } from '@/features/centers';
 
 const createTeacherSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -15,7 +16,15 @@ const createTeacherSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
   phone: z.string().optional(),
-  hourlyRate: z.number().min(0, 'Hourly rate must be positive'),
+  hourlyRate: z.number().min(0, 'Per Lesson Rate must be positive'),
+  videoUrl: z
+    .string()
+    .trim()
+    .max(500, 'Video URL is too long')
+    .url('Enter a valid URL (https://...)')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  centerIds: z.array(z.string()).optional(),
   workingDays: z.array(z.string()).optional(),
   workingHours: z
     .object({
@@ -74,6 +83,8 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const createTeacher = useCreateTeacher();
+  const { data: centersData } = useCenters({ isActive: true, take: 100 });
+  const centers = centersData?.items ?? [];
 
   const {
     register,
@@ -91,12 +102,22 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
       lastName: '',
       phone: '',
       hourlyRate: 0,
+      videoUrl: '',
+      centerIds: [],
       workingDays: [],
       workingHours: undefined,
     },
   });
 
   const workingHours = watch('workingHours');
+  const selectedCenterIds = watch('centerIds') ?? [];
+
+  const toggleCenter = (centerId: string) => {
+    const next = selectedCenterIds.includes(centerId)
+      ? selectedCenterIds.filter((c) => c !== centerId)
+      : [...selectedCenterIds, centerId];
+    setValue('centerIds', next, { shouldDirty: true });
+  };
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -121,6 +142,8 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
         lastName: data.lastName,
         phone: data.phone || undefined,
         hourlyRate: data.hourlyRate,
+        videoUrl: data.videoUrl || undefined,
+        centerIds: data.centerIds && data.centerIds.length > 0 ? data.centerIds : undefined,
         workingDays: workingDays.length > 0 ? workingDays : undefined,
         workingHours: data.workingHours && Object.keys(data.workingHours).length > 0 ? data.workingHours : undefined,
       };
@@ -232,7 +255,7 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="hourlyRate">
-              Hourly Rate (AMD) <span className="text-red-500">*</span>
+              Per Lesson Rate (AMD) <span className="text-red-500">*</span>
             </Label>
             <Input
               id="hourlyRate"
@@ -241,8 +264,52 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
               min="0"
               {...register('hourlyRate', { valueAsNumber: true })}
               error={errors.hourlyRate?.message}
-              placeholder="25.00"
+              placeholder="5000"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="videoUrl">Public video URL</Label>
+            <Input
+              id="videoUrl"
+              type="url"
+              {...register('videoUrl')}
+              error={errors.videoUrl?.message}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <p className="text-xs text-slate-500">
+              Optional. Shown on the teacher&apos;s public profile so students can preview their teaching style.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Centers (branches)</Label>
+            {centers.length === 0 ? (
+              <p className="text-xs text-slate-500">No centers available.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {centers.map((center) => {
+                  const active = selectedCenterIds.includes(center.id);
+                  return (
+                    <button
+                      key={center.id}
+                      type="button"
+                      onClick={() => toggleCenter(center.id)}
+                      className={`rounded-full border px-3 py-1 text-xs transition ${
+                        active
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {center.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <p className="text-xs text-slate-500">
+              Select all branches this teacher belongs to. They will be visible in those centers.
+            </p>
           </div>
 
           <div className="space-y-2">

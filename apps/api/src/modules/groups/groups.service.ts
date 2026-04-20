@@ -371,7 +371,7 @@ export class GroupsService {
         centerId: dto.centerId,
         teacherId: dto.teacherId,
         substituteTeacherId: dto.substituteTeacherId,
-        schedule: dto.schedule ? (dto.schedule as Prisma.InputJsonValue) : undefined,
+        schedule: dto.schedule ? (dto.schedule as unknown as Prisma.InputJsonValue) : undefined,
         isActive: dto.isActive ?? true,
       },
       include: {
@@ -519,7 +519,7 @@ export class GroupsService {
         ? {}
         : scheduleDto === null
           ? { schedule: Prisma.JsonNull }
-          : { schedule: scheduleDto as Prisma.InputJsonValue };
+          : { schedule: scheduleDto as unknown as Prisma.InputJsonValue };
 
     return this.prisma.group.update({
       where: { id },

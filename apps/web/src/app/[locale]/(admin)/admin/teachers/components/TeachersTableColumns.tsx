@@ -131,30 +131,63 @@ export function createTeachersTableColumns({
       },
     },
     {
-      key: 'students',
-      header: t('students'),
+      key: 'groups',
+      header: 'Groups',
       sortable: true,
-      className: '!pl-4 !pr-4 !min-w-[100px] text-center',
+      className: '!pl-4 !pr-4 !min-w-[110px] text-center',
       render: (teacher: Teacher) => {
-        const studentCount = teacher._count?.students || 0;
+        const count = teacher._count?.groups || 0;
         return (
           <div className="flex justify-center">
-            <span className="text-slate-700 font-medium">
-              {studentCount}
+            <span
+              className="inline-flex items-center justify-center rounded-md bg-blue-50 px-2 py-0.5 text-sm font-semibold text-blue-700"
+              title="Click row to view groups"
+            >
+              {count}
             </span>
           </div>
         );
       },
     },
     {
-      key: 'hourlyRate',
-      header: t('rate'),
-      className: '!pl-4 !pr-4 !min-w-[140px]',
+      key: 'subGroups',
+      header: 'Sub-groups',
+      sortable: false,
+      className: '!pl-4 !pr-4 !min-w-[120px] text-center',
       render: (teacher: Teacher) => {
-        const rate = typeof teacher.hourlyRate === 'string' ? parseFloat(teacher.hourlyRate) : Number(teacher.hourlyRate || 0);
+        const count =
+          teacher.substituteForGroupsCount ??
+          teacher._count?.substituteForGroups ??
+          0;
+        return (
+          <div className="flex justify-center">
+            <span
+              className="inline-flex items-center justify-center rounded-md bg-amber-50 px-2 py-0.5 text-sm font-semibold text-amber-700"
+              title="Click row to view substitute groups"
+            >
+              {count}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'lessonRate',
+      header: 'Per Lesson Rate',
+      className: '!pl-4 !pr-4 !min-w-[150px]',
+      render: (teacher: Teacher) => {
+        const lessonRate = teacher.lessonRateAMD;
+        const fallback =
+          typeof teacher.hourlyRate === 'string'
+            ? parseFloat(teacher.hourlyRate)
+            : Number(teacher.hourlyRate || 0);
+        const rate =
+          lessonRate !== undefined && lessonRate !== null
+            ? Number(lessonRate)
+            : fallback;
         return (
           <span className="text-slate-700 font-medium">
-            {formatHourlyRate(rate)}/hr
+            {formatHourlyRate(rate)}/lesson
           </span>
         );
       },

@@ -8,13 +8,22 @@ import { useUpdateTeacher, useTeacher, type UpdateTeacherDto } from '@/features/
 import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from './WeeklySchedule';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
+import { useCenters } from '@/features/centers';
 
 const updateTeacherSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
   phone: z.string().optional(),
   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
-  hourlyRate: z.number().min(0, 'Hourly rate must be positive').optional(),
+  hourlyRate: z.number().min(0, 'Per Lesson Rate must be positive').optional(),
+  videoUrl: z
+    .string()
+    .trim()
+    .max(500, 'Video URL is too long')
+    .url('Enter a valid URL (https://...)')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  centerIds: z.array(z.string()).optional(),
   workingDays: z.array(z.string()).optional(),
   workingHours: z
     .object({
@@ -75,6 +84,8 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const updateTeacher = useUpdateTeacher();
   const { data: teacher, isLoading: isLoadingTeacher } = useTeacher(teacherId, open);
+  const { data: centersData } = useCenters({ isActive: true, take: 100 }, open);
+  const centers = centersData?.items ?? [];
 
   const {
     register,
@@ -90,12 +101,22 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       lastName: '',
       phone: '',
       hourlyRate: 0,
+      videoUrl: '',
+      centerIds: [],
       workingDays: [],
       workingHours: undefined,
     },
   });
 
   const workingHours = watch('workingHours');
+  const selectedCenterIds = watch('centerIds') ?? [];
+
+  const toggleCenter = (centerId: string) => {
+    const next = selectedCenterIds.includes(centerId)
+      ? selectedCenterIds.filter((c) => c !== centerId)
+      : [...selectedCenterIds, centerId];
+    setValue('centerIds', next, { shouldDirty: true });
+  };
 
   // Pre-fill form when teacher data is loaded
   useEffect(() => {
@@ -105,6 +126,9 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       setValue('phone', teacher.user.phone || '');
       setValue('status', teacher.user.status);
       setValue('hourlyRate', teacher.hourlyRate || 0);
+      setValue('videoUrl', teacher.videoUrl ?? '');
+      const linkedCenterIds = teacher.centerLinks?.map((l) => l.center.id) ?? [];
+      setValue('centerIds', linkedCenterIds);
       setValue('workingDays', teacher.workingDays || []);
       
       // Convert old format to new format if needed
@@ -152,6 +176,8 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
         phone: data.phone || undefined,
         status: data.status,
         hourlyRate: data.hourlyRate,
+        videoUrl: data.videoUrl ? data.videoUrl : null,
+        centerIds: data.centerIds ?? [],
         workingDays: workingDays.length > 0 ? workingDays : undefined,
         workingHours: data.workingHours && Object.keys(data.workingHours).length > 0 ? data.workingHours : undefined,
       };
@@ -257,7 +283,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
 
             <div className="space-y-2">
               <Label htmlFor="hourlyRate">
-                Hourly Rate (AMD) <span className="text-red-500">*</span>
+                Per Lesson Rate (AMD) <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="hourlyRate"
@@ -266,8 +292,49 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
                 min="0"
                 {...register('hourlyRate', { valueAsNumber: true })}
                 error={errors.hourlyRate?.message}
-                placeholder="25.00"
+                placeholder="5000"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="videoUrl">Public video URL</Label>
+              <Input
+                id="videoUrl"
+                type="url"
+                {...register('videoUrl')}
+                error={errors.videoUrl?.message}
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+              <p className="text-xs text-slate-500">
+                Optional. Shown on the teacher&apos;s public profile.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Centers (branches)</Label>
+              {centers.length === 0 ? (
+                <p className="text-xs text-slate-500">No centers available.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {centers.map((center) => {
+                    const active = selectedCenterIds.includes(center.id);
+                    return (
+                      <button
+                        key={center.id}
+                        type="button"
+                        onClick={() => toggleCenter(center.id)}
+                        className={`rounded-full border px-3 py-1 text-xs transition ${
+                          active
+                            ? 'border-primary bg-primary text-white'
+                            : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {center.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

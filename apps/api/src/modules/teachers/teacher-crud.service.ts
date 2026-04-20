@@ -128,8 +128,13 @@ export class TeacherCrudService {
             },
           },
         },
+        centerLinks: {
+          select: {
+            center: { select: { id: true, name: true } },
+          },
+        },
         _count: {
-          select: { groups: true, lessons: true },
+          select: { groups: true, lessons: true, substituteForGroups: true },
         },
       },
     });
@@ -258,6 +263,20 @@ export class TeacherCrudService {
       }
     });
 
+    // Layer in explicit center assignments (TeacherCenter), so admins can
+    // assign a teacher to a branch even before any groups exist there.
+    teachers.forEach((teacher) => {
+      const explicit = teacher.centerLinks ?? [];
+      if (explicit.length === 0) return;
+      const existing = teacherCentersMap.get(teacher.id) || [];
+      explicit.forEach((link) => {
+        if (link.center && !existing.find((c) => c.id === link.center.id)) {
+          existing.push({ id: link.center.id, name: link.center.name });
+        }
+      });
+      teacherCentersMap.set(teacher.id, existing);
+    });
+
     // Calculate obligations, deduction, and final cost for each teacher
     // Fetch completed lessons for all teachers to calculate obligations
     const allCompletedLessons = await this.prisma.lesson.findMany({
@@ -357,6 +376,7 @@ export class TeacherCrudService {
         })),
         // Add all unique centers for this teacher (from all groups, not just the first 3)
         centers: teacherCentersMap.get(teacher.id) || [],
+        substituteForGroupsCount: teacher._count.substituteForGroups ?? 0,
         // Add obligation fields
         obligationsDoneCount: obligations.completed,
         obligationsTotal: 4, // Always 4 actions required
@@ -432,8 +452,17 @@ export class TeacherCrudService {
             _count: { select: { students: true } },
           },
         },
+        substituteForGroups: {
+          include: {
+            center: { select: { id: true, name: true } },
+            _count: { select: { students: true } },
+          },
+        },
+        centerLinks: {
+          select: { center: { select: { id: true, name: true } } },
+        },
         _count: {
-          select: { groups: true, lessons: true, feedbacks: true },
+          select: { groups: true, lessons: true, feedbacks: true, substituteForGroups: true },
         },
       },
     });
@@ -514,6 +543,7 @@ export class TeacherCrudService {
           lessonRateAMD: dto.lessonRateAMD ?? undefined,
           workingDays: dto.workingDays ?? ['MON', 'TUE', 'WED', 'THU', 'FRI'],
           workingHours: dto.workingHours ?? undefined,
+          videoUrl: dto.videoUrl ?? undefined,
         },
         include: {
           user: {
@@ -528,6 +558,16 @@ export class TeacherCrudService {
           },
         },
       });
+
+      if (dto.centerIds && dto.centerIds.length > 0) {
+        await tx.teacherCenter.createMany({
+          data: dto.centerIds.map((centerId) => ({
+            teacherId: teacher.id,
+            centerId,
+          })),
+          skipDuplicates: true,
+        });
+      }
 
       return teacher;
     });
@@ -551,6 +591,10 @@ export class TeacherCrudService {
       });
     }
 
+    if (dto.centerIds !== undefined) {
+      await this.syncTeacherCenters(id, dto.centerIds);
+    }
+
     // Update teacher fields
     return this.prisma.teacher.update({
       where: { id },
@@ -561,6 +605,7 @@ export class TeacherCrudService {
         lessonRateAMD: dto.lessonRateAMD,
         workingDays: dto.workingDays,
         workingHours: dto.workingHours,
+        videoUrl: dto.videoUrl,
       },
       include: {
         user: {
@@ -574,6 +619,21 @@ export class TeacherCrudService {
           },
         },
       },
+    });
+  }
+
+  /** Replace the teacher's center assignments with the provided list. */
+  private async syncTeacherCenters(teacherId: string, centerIds: string[]): Promise<void> {
+    const unique = Array.from(new Set(centerIds.filter((c) => !!c)));
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.teacherCenter.deleteMany({ where: { teacherId } });
+      if (unique.length > 0) {
+        await tx.teacherCenter.createMany({
+          data: unique.map((centerId) => ({ teacherId, centerId })),
+          skipDuplicates: true,
+        });
+      }
     });
   }
 

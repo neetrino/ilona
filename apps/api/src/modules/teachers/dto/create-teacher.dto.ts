@@ -4,10 +4,12 @@ import {
   IsOptional,
   IsNumber,
   IsArray,
+  IsUrl,
   Min,
   MaxLength,
   MinLength,
   IsObject,
+  ArrayUnique,
 } from 'class-validator';
 
 export class CreateTeacherDto {
@@ -71,4 +73,21 @@ export class CreateTeacherDto {
     SAT?: Array<{ start: string; end: string }>;
     SUN?: Array<{ start: string; end: string }>;
   };
+
+  /** Optional public video URL (e.g. YouTube intro) shown to students. */
+  @IsString()
+  @IsOptional()
+  @IsUrl({ require_protocol: true })
+  @MaxLength(500)
+  videoUrl?: string;
+
+  /**
+   * Centers (branches) the teacher belongs to. Multi-select. When omitted on
+   * create, the teacher has no center assignment yet and admin can add later.
+   */
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  @ArrayUnique()
+  centerIds?: string[];
 }
