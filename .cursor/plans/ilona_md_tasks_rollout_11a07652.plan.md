@@ -34,10 +34,10 @@ todos:
     status: completed
   - id: phase-10-attendance
     content: Phase 10 — Rename Absence→Attendance, table layout, calendar sync
-    status: in_progress
+    status: completed
   - id: phase-11-finance
     content: Phase 11 — Finance manager access, Deductions column, totals on top
-    status: pending
+    status: in_progress
   - id: phase-12-analytics
     content: Phase 12 — Admin Analytics redesign
     status: pending

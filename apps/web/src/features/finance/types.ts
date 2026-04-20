@@ -168,6 +168,7 @@ export interface ProcessPaymentDto {
 export interface SalaryBreakdownLesson {
   lessonId: string;
   lessonName: string;
+  groupName?: string;
   lessonDate: string;
   obligationCompleted: number;
   obligationTotal: number;

@@ -55,6 +55,32 @@ export class FinanceController {
     return student;
   }
 
+  /**
+   * Block a manager from viewing teachers/lessons that belong to other centers.
+   * Admins bypass this check entirely (no centerId scoping for admin role).
+   */
+  private async assertManagerCanReadTeacher(
+    user: JwtPayload,
+    teacherId: string,
+  ): Promise<void> {
+    const managerCenterId = getManagerCenterIdOrThrow(user);
+    if (!managerCenterId) {
+      return;
+    }
+    const link = await this.prisma.teacherCenter.findFirst({
+      where: { teacherId, centerId: managerCenterId },
+      select: { teacherId: true },
+    });
+    if (link) return;
+    const fallback = await this.prisma.group.findFirst({
+      where: { teacherId, centerId: managerCenterId },
+      select: { id: true },
+    });
+    if (!fallback) {
+      throw new ForbiddenException('You do not have access to this teacher');
+    }
+  }
+
   // ============ TEACHER-SPECIFIC ENDPOINTS ============
 
   @Get('my-salary')
@@ -395,32 +421,38 @@ export class FinanceController {
   // Specific routes must come before generic :id route to avoid route conflicts
   // Most specific routes first (with multiple path segments)
   @Get('salaries/lessons/:lessonId/obligation')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getLessonObligation(@Param('lessonId') lessonId: string) {
     return this.salariesService.getLessonObligation(lessonId);
   }
 
   @Get('salaries/teacher/:teacherId/summary')
-  @Roles(UserRole.ADMIN)
-  async getTeacherSalarySummary(@Param('teacherId') teacherId: string) {
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async getTeacherSalarySummary(
+    @CurrentUser() user: JwtPayload,
+    @Param('teacherId') teacherId: string,
+  ) {
+    await this.assertManagerCanReadTeacher(user, teacherId);
     return this.salariesService.getTeacherSalarySummary(teacherId);
   }
 
   @Get('salaries/:teacherId/breakdown')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getSalaryBreakdown(
+    @CurrentUser() user: JwtPayload,
     @Param('teacherId') teacherId: string,
     @Query('month') month: string,
   ) {
     if (!month) {
       throw new BadRequestException('Month parameter is required (format: YYYY-MM)');
     }
+    await this.assertManagerCanReadTeacher(user, teacherId);
     return this.salariesService.getSalaryBreakdown(teacherId, month);
   }
 
   // Generic routes must come after specific routes
   @Get('salaries/:id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getSalary(@Param('id') id: string): Promise<unknown> {
     return this.salariesService.findById(id);
   }
