@@ -6,6 +6,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLessons, useStartLesson, useCompleteLesson, type Lesson } from '@/features/lessons';
 import { useMyGroups } from '@/features/groups';
 import { PlannedAbsencesStaffBlock } from '@/features/attendance';
+import { NotesBlock } from '@/features/teacher-notes';
 
 export default function TeacherDashboardPage() {
   const { user } = useAuthStore();
@@ -183,6 +184,8 @@ export default function TeacherDashboardPage() {
             change={{ value: vocabularySent < todayLessons.length ? 'Send now' : 'All sent', type: vocabularySent < todayLessons.length ? 'warning' : 'positive' }}
           />
         </div>
+
+        <NotesBlock />
 
         <PlannedAbsencesStaffBlock />
 

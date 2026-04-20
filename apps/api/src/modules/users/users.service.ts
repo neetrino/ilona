@@ -385,7 +385,17 @@ export class UsersService {
     await this.invalidateUserCache(userId);
   }
 
-  async update(userId: string, data: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string; email?: string }) {
+  async update(
+    userId: string,
+    data: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      avatarUrl?: string;
+      email?: string;
+      videoUrl?: string | null;
+    },
+  ) {
     try {
       const normalizedEmail = data.email?.trim().toLowerCase();
       if (normalizedEmail) {
@@ -408,6 +418,13 @@ export class UsersService {
             throw new ConflictException('Email already registered');
           }
         }
+      }
+
+      if (data.videoUrl !== undefined) {
+        await this.prisma.teacher.updateMany({
+          where: { userId },
+          data: { videoUrl: data.videoUrl ?? null },
+        });
       }
 
       const user = await this.prisma.user.update({

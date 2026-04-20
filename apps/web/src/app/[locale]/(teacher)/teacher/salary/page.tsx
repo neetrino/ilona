@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMySalaries, useMySalarySummary, useMyDeductions, useMySalaryBreakdown } from '@/features/finance';
+import { useMyLessons } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
 import { Eye, X } from 'lucide-react';
 import {
@@ -14,6 +15,47 @@ import {
 } from '@/shared/components/ui';
 
 type TabType = 'salaries' | 'deductions';
+type PeriodPreset = 'day' | 'week' | 'month' | 'custom';
+
+function toIsoStartOfDay(date: Date): string {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+function toIsoEndOfDay(date: Date): string {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d.toISOString();
+}
+
+function toInputDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function computeRange(preset: PeriodPreset): { from: Date; to: Date } {
+  const now = new Date();
+  if (preset === 'day') {
+    return { from: now, to: now };
+  }
+  if (preset === 'week') {
+    const monday = new Date(now);
+    const day = (monday.getDay() + 6) % 7;
+    monday.setDate(monday.getDate() - day);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return { from: monday, to: sunday };
+  }
+  if (preset === 'month') {
+    const from = new Date(now.getFullYear(), now.getMonth(), 1);
+    const to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return { from, to };
+  }
+  return { from: now, to: now };
+}
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('hy-AM', {
@@ -77,11 +119,27 @@ export default function TeacherSalaryPage() {
   const t = useTranslations('finance');
   const [activeTab, setActiveTab] = useState<TabType>('salaries');
   const [breakdownMonth, setBreakdownMonth] = useState<string | null>(null);
+  const [preset, setPreset] = useState<PeriodPreset>('month');
+  const initialRange = useMemo(() => computeRange('month'), []);
+  const [customFrom, setCustomFrom] = useState<string>(toInputDate(initialRange.from));
+  const [customTo, setCustomTo] = useState<string>(toInputDate(initialRange.to));
 
-  // Fetch data
-  const { data: salariesData, isLoading: isLoadingSalaries } = useMySalaries(0, 20);
+  const { from, to } = useMemo(() => {
+    if (preset === 'custom') {
+      const fromDate = customFrom ? new Date(customFrom) : new Date();
+      const toDate = customTo ? new Date(customTo) : new Date();
+      return { from: fromDate, to: toDate };
+    }
+    return computeRange(preset);
+  }, [preset, customFrom, customTo]);
+
+  const rangeFromIso = toIsoStartOfDay(from);
+  const rangeToIso = toIsoEndOfDay(to);
+
+  const { data: salariesData, isLoading: isLoadingSalaries } = useMySalaries(0, 50);
   const { data: summary, isLoading: isLoadingSummary } = useMySalarySummary();
-  const { data: deductionsData, isLoading: isLoadingDeductions } = useMyDeductions(0, 50);
+  const { data: deductionsData, isLoading: isLoadingDeductions } = useMyDeductions(0, 200);
+  const { data: periodLessons } = useMyLessons(rangeFromIso, rangeToIso);
   const { data: breakdown, isLoading: isLoadingBreakdown } = useMySalaryBreakdown(
     breakdownMonth,
     !!breakdownMonth
@@ -90,11 +148,102 @@ export default function TeacherSalaryPage() {
   const salaries = salariesData?.items || [];
   const deductions = deductionsData?.items || [];
 
+  const periodLessonsList = periodLessons?.items ?? [];
+  const periodLessonsCount = periodLessonsList.length;
+  const fromTs = new Date(rangeFromIso).getTime();
+  const toTs = new Date(rangeToIso).getTime();
+
+  const periodDeductions = deductions.filter((d) => {
+    const t = new Date(d.createdAt).getTime();
+    return t >= fromTs && t <= toTs;
+  });
+  const periodDeductionsTotal = periodDeductions.reduce(
+    (sum, d) => sum + Number(d.amount),
+    0,
+  );
+
+  const periodSalaries = salaries.filter((s) => {
+    if (s.month == null || s.year == null) return false;
+    const monthStart = new Date(s.year, s.month - 1, 1).getTime();
+    const monthEnd = new Date(s.year, s.month, 0, 23, 59, 59, 999).getTime();
+    return monthEnd >= fromTs && monthStart <= toTs;
+  });
+  const periodPayments = periodSalaries
+    .filter((s) => s.status === 'PAID')
+    .reduce((sum, s) => sum + Number(s.netAmount ?? 0), 0);
+
   return (
     <DashboardLayout
       title={t('salary')}
       subtitle={t('salarySubtitle')}
     >
+      {/* Period Filter */}
+      <div className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4">
+        <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+          {(['day', 'week', 'month', 'custom'] as PeriodPreset[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPreset(p)}
+              className={cn(
+                'rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors',
+                preset === p
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-800',
+              )}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+        {preset === 'custom' && (
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="text-sm text-slate-600">From</label>
+            <input
+              type="date"
+              value={customFrom}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+            />
+            <label className="text-sm text-slate-600">To</label>
+            <input
+              type="date"
+              value={customTo}
+              onChange={(e) => setCustomTo(e.target.value)}
+              className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+            />
+          </div>
+        )}
+        <span className="ml-auto text-xs text-slate-500">
+          {from.toLocaleDateString()} – {to.toLocaleDateString()}
+        </span>
+      </div>
+
+      {/* Period Summary (reflects only selected range) */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-sm text-slate-500">Lessons</p>
+          <p className="text-2xl font-bold text-slate-800">{periodLessonsCount}</p>
+          <p className="mt-1 text-xs text-slate-500">in selected period</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-sm text-slate-500">Deductions</p>
+          <p className="text-2xl font-bold text-red-600">
+            −{formatCurrency(periodDeductionsTotal)}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            {periodDeductions.length} item{periodDeductions.length === 1 ? '' : 's'}
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-sm text-slate-500">Payments</p>
+          <p className="text-2xl font-bold text-green-600">
+            {formatCurrency(periodPayments)}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">paid in period</p>
+        </div>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-xl border border-slate-200">
@@ -163,7 +312,9 @@ export default function TeacherSalaryPage() {
               {isLoadingSummary ? (
                 <div className="h-6 w-16 bg-slate-200 rounded animate-pulse" />
               ) : (
-                <p className="text-lg font-bold text-slate-800">{summary?.lessonsCount ?? 0}</p>
+                <p className="text-lg font-bold text-slate-800">
+                  {summary?.lessonsCount ?? 0}
+                </p>
               )}
             </div>
           </div>
