@@ -166,6 +166,8 @@ exports.Prisma.GroupScalarFieldEnum = {
   maxStudents: 'maxStudents',
   centerId: 'centerId',
   teacherId: 'teacherId',
+  substituteTeacherId: 'substituteTeacherId',
+  schedule: 'schedule',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -178,9 +180,25 @@ exports.Prisma.TeacherScalarFieldEnum = {
   specialization: 'specialization',
   hourlyRate: 'hourlyRate',
   lessonRateAMD: 'lessonRateAMD',
+  videoUrl: 'videoUrl',
   workingDays: 'workingDays',
   workingHours: 'workingHours',
   hireDate: 'hireDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TeacherCenterScalarFieldEnum = {
+  id: 'id',
+  teacherId: 'teacherId',
+  centerId: 'centerId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TeacherNoteScalarFieldEnum = {
+  id: 'id',
+  teacherId: 'teacherId',
+  content: 'content',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -191,6 +209,10 @@ exports.Prisma.StudentScalarFieldEnum = {
   groupId: 'groupId',
   teacherId: 'teacherId',
   age: 'age',
+  dateOfBirth: 'dateOfBirth',
+  firstLessonDate: 'firstLessonDate',
+  status: 'status',
+  riskLabel: 'riskLabel',
   parentName: 'parentName',
   parentPhone: 'parentPhone',
   parentEmail: 'parentEmail',
@@ -384,7 +406,58 @@ exports.Prisma.SystemSettingsScalarFieldEnum = {
   penaltyFeedbackAmd: 'penaltyFeedbackAmd',
   penaltyVoiceAmd: 'penaltyVoiceAmd',
   penaltyTextAmd: 'penaltyTextAmd',
+  penaltyDailyPlanAmd: 'penaltyDailyPlanAmd',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DailyPlanScalarFieldEnum = {
+  id: 'id',
+  lessonId: 'lessonId',
+  teacherId: 'teacherId',
+  groupId: 'groupId',
+  date: 'date',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DailyPlanTopicScalarFieldEnum = {
+  id: 'id',
+  dailyPlanId: 'dailyPlanId',
+  title: 'title',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DailyPlanResourceScalarFieldEnum = {
+  id: 'id',
+  topicId: 'topicId',
+  kind: 'kind',
+  title: 'title',
+  link: 'link',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StudentStreakScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  currentStreak: 'currentStreak',
+  lastAttendanceDate: 'lastAttendanceDate',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RecordingItemScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  studentId: 'studentId',
+  lessonId: 'lessonId',
+  fileUrl: 'fileUrl',
+  fileName: 'fileName',
+  durationSec: 'durationSec',
+  recordedAt: 'recordedAt',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.CrmLeadScalarFieldEnum = {
@@ -398,6 +471,12 @@ exports.Prisma.CrmLeadScalarFieldEnum = {
   lastName: 'lastName',
   phone: 'phone',
   age: 'age',
+  dateOfBirth: 'dateOfBirth',
+  parentName: 'parentName',
+  parentPhone: 'parentPhone',
+  parentPassportInfo: 'parentPassportInfo',
+  firstLessonDate: 'firstLessonDate',
+  comment: 'comment',
   levelId: 'levelId',
   teacherId: 'teacherId',
   groupId: 'groupId',
@@ -480,6 +559,21 @@ exports.UserStatus = exports.$Enums.UserStatus = {
   SUSPENDED: 'SUSPENDED'
 };
 
+exports.StudentStatus = exports.$Enums.StudentStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  UNGROUPED: 'UNGROUPED',
+  NEW: 'NEW',
+  RISK: 'RISK',
+  HIGH_RISK: 'HIGH_RISK'
+};
+
+exports.RiskLabel = exports.$Enums.RiskLabel = {
+  NONE: 'NONE',
+  RISK: 'RISK',
+  HIGH_RISK: 'HIGH_RISK'
+};
+
 exports.LessonStatus = exports.$Enums.LessonStatus = {
   SCHEDULED: 'SCHEDULED',
   IN_PROGRESS: 'IN_PROGRESS',
@@ -530,6 +624,13 @@ exports.MessageType = exports.$Enums.MessageType = {
   VOCABULARY: 'VOCABULARY'
 };
 
+exports.DailyPlanResourceKind = exports.$Enums.DailyPlanResourceKind = {
+  READING: 'READING',
+  LISTENING: 'LISTENING',
+  WRITING: 'WRITING',
+  SPEAKING: 'SPEAKING'
+};
+
 exports.CrmLeadStatus = exports.$Enums.CrmLeadStatus = {
   NEW: 'NEW',
   FIRST_LESSON: 'FIRST_LESSON',
@@ -558,6 +659,8 @@ exports.Prisma.ModelName = {
   ManagerProfile: 'ManagerProfile',
   Group: 'Group',
   Teacher: 'Teacher',
+  TeacherCenter: 'TeacherCenter',
+  TeacherNote: 'TeacherNote',
   Student: 'Student',
   PlannedAbsence: 'PlannedAbsence',
   StudentGroupHistory: 'StudentGroupHistory',
@@ -572,6 +675,11 @@ exports.Prisma.ModelName = {
   Message: 'Message',
   Notification: 'Notification',
   SystemSettings: 'SystemSettings',
+  DailyPlan: 'DailyPlan',
+  DailyPlanTopic: 'DailyPlanTopic',
+  DailyPlanResource: 'DailyPlanResource',
+  StudentStreak: 'StudentStreak',
+  RecordingItem: 'RecordingItem',
   CrmLead: 'CrmLead',
   CrmLeadActivity: 'CrmLeadActivity',
   CrmLeadAttachment: 'CrmLeadAttachment',
