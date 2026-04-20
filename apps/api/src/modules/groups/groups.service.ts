@@ -259,13 +259,29 @@ export class GroupsService {
    * This is the canonical method for fetching teacher groups - used by all endpoints
    */
   async findByTeacher(teacherId: string) {
-    // Wrap main query with retry for transient connection errors
+    // Include groups the teacher leads OR substitutes, so downstream
+    // consumers (e.g. teacher schedule grid) see every relevant slot.
     const groups = await this.prisma.prismaWithRetry(
       () =>
         this.prisma.group.findMany({
-          where: { teacherId, isActive: true },
+          where: {
+            isActive: true,
+            OR: [{ teacherId }, { substituteTeacherId: teacherId }],
+          },
           include: {
             center: { select: { id: true, name: true } },
+            teacher: {
+              select: {
+                id: true,
+                user: { select: { id: true, firstName: true, lastName: true, email: true } },
+              },
+            },
+            substituteTeacher: {
+              select: {
+                id: true,
+                user: { select: { id: true, firstName: true, lastName: true, email: true } },
+              },
+            },
             _count: { select: { lessons: true } },
           },
           orderBy: { name: 'asc' },
