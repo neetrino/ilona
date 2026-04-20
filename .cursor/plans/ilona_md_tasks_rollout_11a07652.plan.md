@@ -43,10 +43,10 @@ todos:
     status: completed
   - id: phase-13-settings
     content: "Phase 13 — Settings: Daily Plan penalties, remove timezone"
-    status: in_progress
+    status: completed
   - id: phase-14-admin-dashboard
     content: Phase 14 — Admin Dashboard data blocks
-    status: pending
+    status: in_progress
   - id: phase-15-teacher
     content: "Phase 15 — Teacher Panel: Notes, My Students tabs, Calendar restrictions, Analytics, Salary filters, Settings, Profile video"
     status: pending

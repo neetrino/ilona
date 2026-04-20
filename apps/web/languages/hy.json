@@ -172,7 +172,31 @@
     "staffDescription": "{count} ուսուցիչներ գրանցված են համակարգում: Կառավարեք ուսուցիչներին, դիտեք պրոֆիլները և հետևեք արտադրողականությանը Ուսուցիչներ բաժնից:",
     "manageTeachers": "Կառավարել ուսուցիչներին",
     "alerts": "Ուշադրություն",
-    "recentActivity": "Վերջին գործողություններ"
+    "recentActivity": "Վերջին գործողություններ",
+    "unpaidStudents": "Չվճարող ուսանողներ",
+    "groupsWithCapacity": "Տեղ ունեցող խմբեր",
+    "atRiskStudents": "Ռիսկային ուսանողներ",
+    "revenueLast6Months": "Եկամուտ (վերջին 6 ամիս)",
+    "branchSchedule": "Այսօրվա դասերը",
+    "viewAll": "Տեսնել բոլորը",
+    "viewSchedule": "Բացել ժամանակացույցը",
+    "loading": "Բեռնում…",
+    "noUnpaid": "Բոլոր վճարումները ընթացիկ են:",
+    "noCapacity": "Բոլոր խմբերը լրացված են:",
+    "noAtRisk": "Ներկայումս ռիսկային ուսանող չկա:",
+    "noLessonsToday": "Այսօրվա համար դաս չի պլանավորված:",
+    "noGroup": "Խումբ չկա",
+    "noTeacher": "Ուսուցիչ չկա",
+    "freeSeats": "{count} ազատ",
+    "pendingCount": "{count} սպասվող",
+    "totalExpenses": "Ծախսեր",
+    "profit": "Շահույթ",
+    "latest": "Վերջին",
+    "risk": {
+      "high": "Բարձր",
+      "medium": "Միջին",
+      "low": "Ցածր"
+    }
   },
   "teachers": {
     "title": "Ուսուցիչներ",

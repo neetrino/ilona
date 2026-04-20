@@ -173,7 +173,31 @@
     "staffDescription": "{count} teachers registered in the system. Manage teachers, view profiles, and track performance from the Teachers section.",
     "manageTeachers": "Manage Teachers",
     "alerts": "Alerts",
-    "recentActivity": "Recent Activity"
+    "recentActivity": "Recent Activity",
+    "unpaidStudents": "Unpaid Students",
+    "groupsWithCapacity": "Groups With Capacity",
+    "atRiskStudents": "At-Risk Students",
+    "revenueLast6Months": "Revenue (last 6 months)",
+    "branchSchedule": "Today's Lessons",
+    "viewAll": "View all",
+    "viewSchedule": "View schedule",
+    "loading": "Loading…",
+    "noUnpaid": "All payments are up to date.",
+    "noCapacity": "All groups are full.",
+    "noAtRisk": "No at-risk students right now.",
+    "noLessonsToday": "No lessons scheduled for today.",
+    "noGroup": "No group",
+    "noTeacher": "No teacher",
+    "freeSeats": "{count} free",
+    "pendingCount": "{count} pending",
+    "totalExpenses": "Expenses",
+    "profit": "Profit",
+    "latest": "Latest",
+    "risk": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    }
   },
   "teachers": {
     "title": "Teachers",
