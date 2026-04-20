@@ -165,10 +165,10 @@ export default function StudentDashboardPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard
-            title="Streak"
+            title={t('streak')}
             value={`${stats?.streak?.currentStreak ?? 0}`}
             change={{
-              value: (stats?.streak?.currentStreak ?? 0) > 0 ? 'Consecutive attended lessons' : 'Attend your next lesson',
+              value: (stats?.streak?.currentStreak ?? 0) > 0 ? t('streakActive') : t('streakInactive'),
               type: (stats?.streak?.currentStreak ?? 0) > 0 ? 'positive' : 'neutral',
             }}
           />
@@ -295,32 +295,41 @@ export default function StudentDashboardPage() {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-slate-800 mb-2">
-                  Your Progress{' '}
+                  {t('yourProgress')}{' '}
                   <span className="ml-1 text-xs font-normal text-slate-500">
-                    Overall {stats?.progress?.overall ?? 0}%
+                    {t('overallProgress', { value: stats?.progress?.overall ?? 0 })}
                   </span>
                 </h3>
                 <ProgressFactor
-                  label="Attendance"
+                  label={t('factorAttendance')}
                   rate={stats?.progress?.attendanceRate ?? 0}
-                  detail={`${stats?.attendance?.present ?? 0}/${stats?.attendance?.total ?? 0} lessons`}
+                  detail={t('lessonsRatio', {
+                    present: stats?.attendance?.present ?? 0,
+                    total: stats?.attendance?.total ?? 0,
+                  })}
                   tone="emerald"
                 />
                 <ProgressFactor
-                  label="Recordings"
+                  label={t('factorRecordings')}
                   rate={stats?.progress?.recordingRate ?? 0}
-                  detail={`${stats?.recordings?.submitted ?? 0}/${stats?.recordings?.total ?? 0} submitted`}
+                  detail={t('recordingsRatio', {
+                    submitted: stats?.recordings?.submitted ?? 0,
+                    total: stats?.recordings?.total ?? 0,
+                  })}
                   tone="sky"
                 />
                 <ProgressFactor
-                  label="Payments"
+                  label={t('factorPayments')}
                   rate={stats?.progress?.paymentRate ?? 0}
-                  detail={`${stats?.payments?.paid ?? 0} paid / ${((stats?.payments?.pending ?? 0) + (stats?.payments?.overdue ?? 0))} due`}
+                  detail={t('paymentsRatio', {
+                    paid: stats?.payments?.paid ?? 0,
+                    due: (stats?.payments?.pending ?? 0) + (stats?.payments?.overdue ?? 0),
+                  })}
                   tone="amber"
                 />
                 {stats?.attendance?.unjustifiedAbsences && stats.attendance.unjustifiedAbsences > 0 ? (
                   <p className="mt-3 text-xs text-red-600">
-                    {stats.attendance.unjustifiedAbsences} unexcused absences
+                    {t('unexcusedAbsencesShort', { count: stats.attendance.unjustifiedAbsences })}
                   </p>
                 ) : null}
               </div>

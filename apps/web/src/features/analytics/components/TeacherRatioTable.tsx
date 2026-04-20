@@ -48,8 +48,8 @@ export function TeacherRatioTable({
   trailingHeader = 'Completed Lessons',
 }: TeacherRatioTableProps) {
   const sorted = [...teachers].sort((a, b) => {
-    const av = (a[metric] ?? 0) as number;
-    const bv = (b[metric] ?? 0) as number;
+    const av = a[metric] ?? 0;
+    const bv = b[metric] ?? 0;
     return bv - av;
   });
 
@@ -85,7 +85,7 @@ export function TeacherRatioTable({
               </tr>
             ) : (
               sorted.map((teacher) => {
-                const value = (teacher[metric] ?? 0) as number;
+                const value = teacher[metric] ?? 0;
                 return (
                   <tr key={teacher.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3">

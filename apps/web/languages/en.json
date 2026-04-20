@@ -31,7 +31,9 @@
     "description": "Description",
     "notes": "Notes",
     "minutes": "minutes",
-    "noLessons": "No lessons"
+    "noLessons": "No lessons",
+    "group": "Group",
+    "action": "Action"
   },
   "home": {
     "title": "Ilona English Center",
@@ -197,7 +199,21 @@
       "high": "High",
       "medium": "Medium",
       "low": "Low"
-    }
+    },
+    "streak": "Streak",
+    "streakActive": "Consecutive attended lessons",
+    "streakInactive": "Attend your next lesson",
+    "lastAttendance": "Last: {date}",
+    "noAttendanceYet": "No attendance yet",
+    "yourProgress": "Your Progress",
+    "overallProgress": "Overall {value}%",
+    "factorAttendance": "Attendance",
+    "factorRecordings": "Recordings",
+    "factorPayments": "Payments",
+    "lessonsRatio": "{present}/{total} lessons",
+    "recordingsRatio": "{submitted}/{total} submitted",
+    "paymentsRatio": "{paid} paid / {due} due",
+    "unexcusedAbsencesShort": "{count} unexcused absences"
   },
   "teachers": {
     "title": "Teachers",
@@ -626,6 +642,9 @@
     "profileUpdatedSuccess": "Profile updated successfully!",
     "passwordsDoNotMatch": "Passwords do not match",
     "passwordChangedSuccess": "Password changed successfully!",
+    "introVideoUrl": "Intro Video URL",
+    "introVideoUrlPlaceholder": "https://youtu.be/...",
+    "introVideoUrlHint": "Public intro video shown on your teacher card.",
     "teaching": "Teaching",
     "teachingPreferences": "Teaching Preferences",
     "defaultLessonDuration": "Default Lesson Duration",

@@ -257,17 +257,17 @@ export default function TeacherProfilePage() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Intro Video URL
+              {t('introVideoUrl')}
             </label>
             <input
               type="url"
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
-              placeholder="https://youtu.be/..."
+              placeholder={t('introVideoUrlPlaceholder')}
               className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
             <p className="mt-1 text-xs text-slate-500">
-              Public intro video shown on your teacher card.
+              {t('introVideoUrlHint')}
             </p>
           </div>
 

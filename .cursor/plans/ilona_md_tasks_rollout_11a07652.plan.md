@@ -46,13 +46,13 @@ todos:
     status: completed
   - id: phase-14-admin-dashboard
     content: Phase 14 — Admin Dashboard data blocks
-    status: in_progress
+    status: completed
   - id: phase-15-teacher
     content: "Phase 15 — Teacher Panel: Notes, My Students tabs, Calendar restrictions, Analytics, Salary filters, Settings, Profile video"
-    status: pending
+    status: completed
   - id: phase-16-student
     content: "Phase 16 — Student Panel: Chat history, multi-factor progress, Payments table, Calendar visuals, Streak"
-    status: pending
+    status: completed
 isProject: false
 ---
 
