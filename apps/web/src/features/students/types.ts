@@ -188,11 +188,28 @@ export interface StudentStatistics {
     unjustifiedAbsences: number;
     rate: number;
   };
+  recordings: {
+    total: number;
+    submitted: number;
+    rate: number;
+  };
   payments: {
     pending: number;
     overdue: number;
+    paid: number;
+    rate: number;
   };
   feedbacks: number;
+  streak: {
+    currentStreak: number;
+    lastAttendanceDate: string | null;
+  };
+  progress: {
+    attendanceRate: number;
+    recordingRate: number;
+    paymentRate: number;
+    overall: number;
+  };
 }
 
 export interface StudentDashboard {

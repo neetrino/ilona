@@ -237,39 +237,40 @@ export function StudentAbsenceCalendar({
       'p-3 sm:p-4 border-2 rounded-lg text-center transition-all min-h-[88px] sm:min-h-[100px] flex flex-col items-center justify-center gap-1';
 
     if (!hasClass) {
-      return cn(base, 'border-transparent bg-slate-50/40 opacity-45 cursor-default');
+      return cn(base, 'border-transparent bg-slate-50/40 opacity-40 cursor-default');
     }
-
-    const ring = 'ring-2 ring-offset-0 ring-green-300/90';
 
     switch (kind) {
       case 'futurePlanned':
         return cn(
           base,
-          ring,
-          'border-amber-300 bg-amber-50 cursor-pointer hover:bg-amber-100/80'
+          'border-amber-400 bg-amber-50 cursor-pointer hover:bg-amber-100/80',
         );
       case 'futureOpen':
-        return cn(base, ring, 'border-green-200 bg-white cursor-pointer hover:bg-green-50/60');
+        // Green border for scheduled (future) class days.
+        return cn(
+          base,
+          'border-green-500 bg-white cursor-pointer hover:bg-green-50/60',
+        );
       case 'pastPresent':
         return cn(
           base,
-          ring,
-          'border-emerald-300 bg-emerald-50 cursor-pointer hover:bg-emerald-100/70'
+          'border-emerald-500 bg-emerald-50 cursor-pointer hover:bg-emerald-100/70',
         );
       case 'pastAbsent':
-        return cn(base, ring, 'border-red-300 bg-red-50 cursor-pointer hover:bg-red-100/70');
+        return cn(
+          base,
+          'border-red-500 bg-red-50 cursor-pointer hover:bg-red-100/70',
+        );
       case 'pastMixed':
         return cn(
           base,
-          ring,
-          'border-orange-300 bg-orange-50 cursor-pointer hover:bg-orange-100/70'
+          'border-orange-400 bg-orange-50 cursor-pointer hover:bg-orange-100/70',
         );
       case 'pastUnmarked':
         return cn(
           base,
-          ring,
-          'border-slate-300 bg-slate-100 cursor-pointer hover:bg-slate-200/60'
+          'border-slate-300 bg-slate-100 cursor-pointer hover:bg-slate-200/60',
         );
       default:
         return cn(base, 'cursor-default');
@@ -380,7 +381,7 @@ export function StudentAbsenceCalendar({
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-600">
         <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full border-2 border-green-300 ring-2 ring-green-300/80 shrink-0" />
+          <span className="h-3 w-3 rounded-sm border-2 border-green-500 shrink-0" />
           <span>{t('legendClassDay')}</span>
         </div>
         <div className="flex items-center gap-2">

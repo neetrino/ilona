@@ -7,6 +7,43 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMyDashboard, type StudentUpcomingLesson } from '@/features/students';
 import { formatCurrency } from '@/shared/lib/utils';
 
+type ProgressTone = 'emerald' | 'sky' | 'amber';
+
+function ProgressFactor({
+  label,
+  rate,
+  detail,
+  tone,
+}: {
+  label: string;
+  rate: number;
+  detail: string;
+  tone: ProgressTone;
+}) {
+  const toneBar: Record<ProgressTone, string> = {
+    emerald: 'bg-emerald-500',
+    sky: 'bg-sky-500',
+    amber: 'bg-amber-500',
+  };
+  const clamped = Math.max(0, Math.min(100, Math.round(rate)));
+  return (
+    <div className="mt-3">
+      <div className="flex items-center justify-between text-xs text-slate-600">
+        <span className="font-medium text-slate-700">{label}</span>
+        <span>
+          {clamped}% · <span className="text-slate-500">{detail}</span>
+        </span>
+      </div>
+      <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div
+          className={`h-full rounded-full ${toneBar[tone]}`}
+          style={{ width: `${clamped}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function StudentDashboardPage() {
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
@@ -127,32 +164,35 @@ export default function StudentDashboardPage() {
       <div className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <StatCard 
-            title={t('attendanceRate')} 
-            value={`${attendanceRate}%`} 
-            change={{ 
-              value: attendanceRate >= 90 ? t('excellent') : attendanceRate >= 75 ? t('good') : t('needsImprovement'), 
-              type: attendanceRate >= 90 ? 'positive' : attendanceRate >= 75 ? 'neutral' : 'warning' 
+          <StatCard
+            title="Streak"
+            value={`${stats?.streak?.currentStreak ?? 0}`}
+            change={{
+              value: (stats?.streak?.currentStreak ?? 0) > 0 ? 'Consecutive attended lessons' : 'Attend your next lesson',
+              type: (stats?.streak?.currentStreak ?? 0) > 0 ? 'positive' : 'neutral',
             }}
           />
-          <StatCard 
-            title={t('totalLessons')} 
+          <StatCard
+            title={t('attendanceRate')}
+            value={`${attendanceRate}%`}
+            change={{
+              value: attendanceRate >= 90 ? t('excellent') : attendanceRate >= 75 ? t('good') : t('needsImprovement'),
+              type: attendanceRate >= 90 ? 'positive' : attendanceRate >= 75 ? 'neutral' : 'warning'
+            }}
+          />
+          <StatCard
+            title={t('totalLessons')}
             value={totalLessons}
             change={{ value: t('attendedCount', { count: stats?.attendance?.present || 0 }), type: 'positive' }}
           />
-          <StatCard 
-            title={t('upcoming')} 
-            value={upcomingLessons.length}
-            change={{ value: t('lessonsScheduled'), type: 'neutral' }}
-          />
-          <StatCard 
-            title={t('nextPayment')} 
-            value={nextPayment ? formatCurrency(Number(nextPayment.amount)) : t('none')} 
-            change={{ 
-              value: nextPayment 
+          <StatCard
+            title={t('nextPayment')}
+            value={nextPayment ? formatCurrency(Number(nextPayment.amount)) : t('none')}
+            change={{
+              value: nextPayment
                 ? t('dueDate', { date: new Date(nextPayment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) })
-                : t('allPaid'), 
-              type: nextPayment?.status === 'OVERDUE' ? 'warning' : 'neutral' 
+                : t('allPaid'),
+              type: nextPayment?.status === 'OVERDUE' ? 'warning' : 'neutral'
             }}
           />
         </div>
@@ -254,19 +294,35 @@ export default function StudentDashboardPage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 mb-2">Your Progress</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  Attendance: <span className="font-medium text-slate-700">{stats?.attendance?.present || 0}/{stats?.attendance?.total || 0}</span> lessons
-                  {stats?.attendance?.unjustifiedAbsences && stats.attendance.unjustifiedAbsences > 0 && (
-                    <> • <span className="text-red-600">{stats.attendance.unjustifiedAbsences} unexcused absences</span></>
-                  )}
-                </p>
-                <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90">
-                  View Full Progress
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </button>
+                <h3 className="font-semibold text-slate-800 mb-2">
+                  Your Progress{' '}
+                  <span className="ml-1 text-xs font-normal text-slate-500">
+                    Overall {stats?.progress?.overall ?? 0}%
+                  </span>
+                </h3>
+                <ProgressFactor
+                  label="Attendance"
+                  rate={stats?.progress?.attendanceRate ?? 0}
+                  detail={`${stats?.attendance?.present ?? 0}/${stats?.attendance?.total ?? 0} lessons`}
+                  tone="emerald"
+                />
+                <ProgressFactor
+                  label="Recordings"
+                  rate={stats?.progress?.recordingRate ?? 0}
+                  detail={`${stats?.recordings?.submitted ?? 0}/${stats?.recordings?.total ?? 0} submitted`}
+                  tone="sky"
+                />
+                <ProgressFactor
+                  label="Payments"
+                  rate={stats?.progress?.paymentRate ?? 0}
+                  detail={`${stats?.payments?.paid ?? 0} paid / ${((stats?.payments?.pending ?? 0) + (stats?.payments?.overdue ?? 0))} due`}
+                  tone="amber"
+                />
+                {stats?.attendance?.unjustifiedAbsences && stats.attendance.unjustifiedAbsences > 0 ? (
+                  <p className="mt-3 text-xs text-red-600">
+                    {stats.attendance.unjustifiedAbsences} unexcused absences
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>
