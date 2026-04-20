@@ -10,13 +10,33 @@ import { useTeachers } from '@/features/teachers';
 import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function computeAgeFromDob(dob: string | undefined): number | undefined {
+  if (!dob || !ISO_DATE_RE.test(dob)) return undefined;
+  const birth = new Date(`${dob}T00:00:00Z`);
+  if (Number.isNaN(birth.getTime())) return undefined;
+  const now = new Date();
+  let age = now.getUTCFullYear() - birth.getUTCFullYear();
+  const m = now.getUTCMonth() - birth.getUTCMonth();
+  if (m < 0 || (m === 0 && now.getUTCDate() < birth.getUTCDate())) age -= 1;
+  return age >= 0 && age <= 120 ? age : undefined;
+}
+
 const createStudentSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters').max(50, 'Password must be at most 50 characters'),
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
   phone: z.string().optional(),
-  age: z.number().int('Age must be a whole number').min(1, 'Age must be at least 1').max(120, 'Age must be reasonable'),
+  dateOfBirth: z
+    .string()
+    .regex(ISO_DATE_RE, 'Use YYYY-MM-DD format')
+    .refine((v) => computeAgeFromDob(v) !== undefined, 'Invalid date of birth'),
+  firstLessonDate: z
+    .union([z.string().regex(ISO_DATE_RE, 'Use YYYY-MM-DD format'), z.literal('')])
+    .optional(),
+  age: z.number().int().min(1).max(120).optional(),
   groupId: z.string().optional(),
   teacherId: z.string().optional(),
   parentName: z.string().max(100, 'Parent name must be at most 100 characters').optional(),
@@ -27,8 +47,8 @@ const createStudentSchema = z.object({
   notes: z.string().max(500, 'Notes must be at most 500 characters').optional(),
   receiveReports: z.boolean().optional(),
 }).superRefine((data, ctx) => {
-  // If age is under 18, parent fields are required
-  if (data.age !== undefined && data.age < 18) {
+  const computedAge = computeAgeFromDob(data.dateOfBirth);
+  if (computedAge !== undefined && computedAge < 18) {
     if (!data.parentName || data.parentName.trim() === '') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -98,6 +118,8 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       firstName: '',
       lastName: '',
       phone: '',
+      dateOfBirth: '',
+      firstLessonDate: '',
       age: undefined as number | undefined,
       groupId: '',
       teacherId: '',
@@ -120,9 +142,13 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     if (!watchedTeacherId) setValue('groupId', '');
   }, [watchedTeacherId, setValue]);
 
-  // Watch age value to conditionally show parent section
-  const age = watch('age');
-  const showParentSection = age !== undefined && age < 18;
+  // Derive age from DOB so the user only enters birth date once.
+  const dob = watch('dateOfBirth');
+  const computedAge = useMemo(() => computeAgeFromDob(dob), [dob]);
+  useEffect(() => {
+    if (computedAge !== undefined) setValue('age', computedAge, { shouldValidate: false });
+  }, [computedAge, setValue]);
+  const showParentSection = computedAge !== undefined && computedAge < 18;
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -133,15 +159,15 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     }
   }, [open, reset]);
 
-  // Clear parent fields when age becomes 18 or older
+  // Clear parent fields when computed age is 18 or older.
   useEffect(() => {
-    if (age !== undefined && age >= 18) {
+    if (computedAge !== undefined && computedAge >= 18) {
       setValue('parentName', '');
       setValue('parentPhone', '');
       setValue('parentEmail', '');
       setValue('parentPassportInfo', '');
     }
-  }, [age, setValue]);
+  }, [computedAge, setValue]);
 
   const onSubmit = async (data: CreateStudentFormData) => {
     setErrorMessage(null);
@@ -153,7 +179,9 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone || undefined,
-        age: data.age,
+        dateOfBirth: data.dateOfBirth,
+        firstLessonDate: data.firstLessonDate || undefined,
+        age: computedAge ?? data.age,
         groupId: data.groupId || undefined,
         teacherId: data.teacherId || undefined,
         parentName: data.parentName || undefined,
@@ -270,19 +298,31 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="age">
-              Age <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="age"
-              type="number"
-              min="1"
-              max="120"
-              {...register('age', { valueAsNumber: true })}
-              error={errors.age?.message}
-              placeholder="Enter student's age"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="dateOfBirth">
+                Date of Birth <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="dateOfBirth"
+                type="date"
+                {...register('dateOfBirth')}
+                error={errors.dateOfBirth?.message}
+              />
+              {computedAge !== undefined && (
+                <p className="text-xs text-slate-500">Age: {computedAge}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="firstLessonDate">First Lesson Date</Label>
+              <Input
+                id="firstLessonDate"
+                type="date"
+                {...register('firstLessonDate')}
+                error={errors.firstLessonDate?.message}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

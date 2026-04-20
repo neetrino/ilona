@@ -9,7 +9,8 @@ import {
   useDeleteStudentsBulk,
   useUpdateStudent,
   getItemId,
-  type Student 
+  type Student,
+  type StudentLifecycleStatus,
 } from '@/features/students';
 import { useTeachers } from '@/features/teachers';
 import { useGroups } from '@/features/groups';
@@ -69,6 +70,8 @@ export function useStudentsPage() {
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
   const [selectedCenterIds, setSelectedCenterIds] = useState<Set<string>>(new Set());
   const [selectedStatusIds, setSelectedStatusIds] = useState<Set<string>>(new Set());
+  const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(new Set());
+  const [selectedLifecycleIds, setSelectedLifecycleIds] = useState<Set<string>>(new Set());
   
   // Month/year filter for attendance - default to current month
   const now = new Date();
@@ -149,6 +152,17 @@ export function useStudentsPage() {
     selectedStatusIds.size > 0 ? Array.from(selectedStatusIds) as ('ACTIVE' | 'INACTIVE' | 'SUSPENDED')[] : undefined,
     [selectedStatusIds]
   );
+  const groupIdsArray = useMemo(
+    () => (selectedGroupIds.size > 0 ? Array.from(selectedGroupIds) : undefined),
+    [selectedGroupIds],
+  );
+  const lifecycleStatusesArray = useMemo(
+    () =>
+      selectedLifecycleIds.size > 0
+        ? (Array.from(selectedLifecycleIds) as StudentLifecycleStatus[])
+        : undefined,
+    [selectedLifecycleIds],
+  );
 
   // Fetch students - for board view, fetch max allowed (100); for list view, use pagination
   const shouldFetchAll = viewMode === 'board';
@@ -163,6 +177,8 @@ export function useStudentsPage() {
     teacherIds: teacherIdsArray,
     centerIds: centerIdsArray,
     statusIds: statusIdsArray,
+    groupIds: groupIdsArray,
+    lifecycleStatuses: lifecycleStatusesArray,
     sortBy: sortBy,
     sortOrder: sortOrder,
     month: selectedMonth,
@@ -472,6 +488,30 @@ export function useStudentsPage() {
     { id: 'SUSPENDED', label: tStatus('suspended') },
   ], [tStatus]);
 
+  // Lifecycle filter options derived from the persisted Student.status enum.
+  // Distinct from User.status: covers NEW intake, UNGROUPED, and risk states.
+  const lifecycleFilterOptions = useMemo(
+    () => [
+      { id: 'NEW', label: 'New' },
+      { id: 'UNGROUPED', label: 'Ungrouped' },
+      { id: 'RISK', label: 'Risk' },
+      { id: 'HIGH_RISK', label: 'High risk' },
+    ],
+    [],
+  );
+
+  // Group filter options (scoped by manager center if applicable).
+  const groupFilterOptions = useMemo(() => {
+    const all = groupsData?.items ?? [];
+    const scoped = managerCenterId
+      ? all.filter((g) => g.centerId === managerCenterId)
+      : all;
+    return scoped.map((g) => ({
+      id: g.id,
+      label: `${g.name}${g.level ? ` (${g.level})` : ''}`,
+    }));
+  }, [groupsData?.items, managerCenterId]);
+
   // Reset page when filters change
   const handleFilterChange = () => {
     setPage(0);
@@ -511,6 +551,8 @@ export function useStudentsPage() {
     selectedTeacherIds,
     selectedCenterIds,
     selectedStatusIds,
+    selectedGroupIds,
+    selectedLifecycleIds,
     selectedMonth,
     selectedYear,
     isAddStudentOpen,
@@ -539,6 +581,8 @@ export function useStudentsPage() {
     teacherFilterOptions,
     centerFilterOptions,
     statusFilterOptions,
+    groupFilterOptions,
+    lifecycleFilterOptions,
     
     // Stats
     activeStudents,
@@ -569,6 +613,8 @@ export function useStudentsPage() {
     setSelectedTeacherIds,
     setSelectedCenterIds,
     setSelectedStatusIds,
+    setSelectedGroupIds,
+    setSelectedLifecycleIds,
     setSelectedMonth,
     setSelectedYear,
     handleFilterChange,

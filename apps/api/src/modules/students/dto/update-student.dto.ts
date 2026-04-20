@@ -39,6 +39,16 @@ export class UpdateStudentDto {
   @Max(120)
   age?: number;
 
+  /** Date of birth (ISO date YYYY-MM-DD). Derives `age` automatically when present. */
+  @IsOptional()
+  @IsDateString()
+  dateOfBirth?: string | null;
+
+  /** Optional planned date of the student's first lesson. */
+  @IsOptional()
+  @IsDateString()
+  firstLessonDate?: string | null;
+
   @IsEnum(UserStatus)
   @IsOptional()
   status?: UserStatus;

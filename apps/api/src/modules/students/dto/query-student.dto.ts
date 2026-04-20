@@ -47,6 +47,21 @@ export class QueryStudentDto {
   @IsString({ each: true })
   statusIds?: string[];
 
+  /**
+   * Lifecycle status filter for the persisted Student.status enum
+   * (ACTIVE, INACTIVE, UNGROUPED, NEW, RISK, HIGH_RISK).
+   * Distinct from the User.status filter above.
+   */
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => {
+    if (!value) return undefined;
+    if (Array.isArray(value)) return value as string[];
+    return [value] as string[];
+  })
+  @IsArray()
+  @IsString({ each: true })
+  lifecycleStatuses?: string[];
+
   @IsOptional()
   @IsString()
   teacherId?: string;

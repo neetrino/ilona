@@ -24,6 +24,7 @@ interface StudentsListProps {
   onDelete: (student: Student) => void;
   onDeactivate: (student: Student) => void;
   onShowFeedback: (student: Student) => void;
+  onView: (student: Student) => void;
   onTeacherChange: (studentId: string, teacherId: string | null) => Promise<void>;
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
@@ -59,6 +60,7 @@ export function StudentsList({
   onDelete,
   onDeactivate,
   onShowFeedback,
+  onView,
   onTeacherChange,
   onGroupChange,
   onCenterChange,
@@ -87,6 +89,7 @@ export function StudentsList({
     onDelete,
     onDeactivate,
     onShowFeedback,
+    onView,
     onTeacherChange,
     onGroupChange,
     onCenterChange,

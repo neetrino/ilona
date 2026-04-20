@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsNumber,
   IsInt,
+  IsISO8601,
   Min,
   Max,
   MaxLength,
@@ -37,9 +38,25 @@ export class CreateStudentDto {
   phone?: string;
 
   @IsInt()
+  @IsOptional()
   @Min(1)
   @Max(120)
-  age!: number;
+  age?: number;
+
+  /**
+   * Date of birth (ISO date YYYY-MM-DD). When provided, age is derived
+   * automatically and kept in sync.
+   */
+  @IsISO8601()
+  @IsOptional()
+  dateOfBirth?: string;
+
+  /**
+   * Optional planned date of the student's first lesson.
+   */
+  @IsISO8601()
+  @IsOptional()
+  firstLessonDate?: string;
 
   // Student fields
   @IsString()

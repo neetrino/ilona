@@ -36,6 +36,9 @@ export async function fetchStudents(filters?: StudentFilters): Promise<StudentsR
   if (filters?.centerIds && filters.centerIds.length > 0) {
     filters.centerIds.forEach(id => params.append('centerIds', id));
   }
+  if (filters?.lifecycleStatuses && filters.lifecycleStatuses.length > 0) {
+    filters.lifecycleStatuses.forEach((s) => params.append('lifecycleStatuses', s));
+  }
   if (filters?.sortBy) params.append('sortBy', filters.sortBy);
   if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
   if (filters?.month !== undefined) params.append('month', String(filters.month));
