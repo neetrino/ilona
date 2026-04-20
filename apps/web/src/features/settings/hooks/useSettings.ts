@@ -242,6 +242,7 @@ export function useUpdatePenalties() {
       penaltyFeedbackAmd: number;
       penaltyVoiceAmd: number;
       penaltyTextAmd: number;
+      penaltyDailyPlanAmd: number;
     }) => updatePenalties(data),
     onSuccess: () => {
       // Invalidate penalties query

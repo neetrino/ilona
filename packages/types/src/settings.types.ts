@@ -32,6 +32,7 @@ export interface PenaltyAmounts {
   penaltyFeedbackAmd: number;
   penaltyVoiceAmd: number;
   penaltyTextAmd: number;
+  penaltyDailyPlanAmd: number;
 }
 
 /**
@@ -79,6 +80,7 @@ export interface SystemSettingsWithPenalties {
   penaltyFeedbackAmd: number;
   penaltyVoiceAmd: number;
   penaltyTextAmd: number;
+  penaltyDailyPlanAmd: number;
   updatedAt: Date;
 }
 

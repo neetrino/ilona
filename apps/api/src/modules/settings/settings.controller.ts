@@ -338,6 +338,7 @@ export class SettingsController {
       penaltyFeedbackAmd: number;
       penaltyVoiceAmd: number;
       penaltyTextAmd: number;
+      penaltyDailyPlanAmd: number;
     },
   ) {
     try {

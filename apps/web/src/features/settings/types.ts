@@ -35,7 +35,6 @@ export interface NotificationSettings {
 export interface AppSettings {
   language: 'en' | 'hy';
   theme: 'light' | 'dark' | 'system';
-  timezone: string;
 }
 
 export interface ManagerAccount {

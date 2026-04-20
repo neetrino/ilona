@@ -38,14 +38,6 @@ export function SystemTab() {
             <label className="block text-sm font-medium text-slate-700 mb-3">{t('language')}</label>
             <LanguageSwitcher />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-3">{t('timezone')}</label>
-            <select className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-              <option value="Asia/Yerevan">Asia/Yerevan (UTC+4)</option>
-              <option value="UTC">UTC</option>
-            </select>
-          </div>
         </div>
       </div>
 

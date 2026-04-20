@@ -42,6 +42,7 @@ async function main() {
       penaltyFeedbackAmd: 1000,
       penaltyVoiceAmd: 1000,
       penaltyTextAmd: 1000,
+      penaltyDailyPlanAmd: 1000,
     },
   });
 

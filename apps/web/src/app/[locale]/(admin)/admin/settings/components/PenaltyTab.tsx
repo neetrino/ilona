@@ -16,6 +16,7 @@ export function PenaltyTab() {
   const [penaltyFeedbackAmd, setPenaltyFeedbackAmd] = useState(1000);
   const [penaltyVoiceAmd, setPenaltyVoiceAmd] = useState(1000);
   const [penaltyTextAmd, setPenaltyTextAmd] = useState(1000);
+  const [penaltyDailyPlanAmd, setPenaltyDailyPlanAmd] = useState(1000);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,14 +27,16 @@ export function PenaltyTab() {
       setPenaltyFeedbackAmd(penalties.penaltyFeedbackAmd);
       setPenaltyVoiceAmd(penalties.penaltyVoiceAmd);
       setPenaltyTextAmd(penalties.penaltyTextAmd);
+      setPenaltyDailyPlanAmd(penalties.penaltyDailyPlanAmd ?? 1000);
     }
   }, [penalties]);
 
-  const isValid = 
+  const isValid =
     penaltyAbsenceAmd >= 0 &&
     penaltyFeedbackAmd >= 0 &&
     penaltyVoiceAmd >= 0 &&
-    penaltyTextAmd >= 0;
+    penaltyTextAmd >= 0 &&
+    penaltyDailyPlanAmd >= 0;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +54,7 @@ export function PenaltyTab() {
         penaltyFeedbackAmd,
         penaltyVoiceAmd,
         penaltyTextAmd,
+        penaltyDailyPlanAmd,
       });
       // Success toast will be handled by the mutation
     } catch (err) {
@@ -160,6 +164,25 @@ export function PenaltyTab() {
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">AMD</span>
             </div>
+          </div>
+
+          {/* Daily Plan Penalty */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              {t('penaltyDailyPlanAmd')}
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={penaltyDailyPlanAmd}
+                onChange={(e) => handleInputChange(setPenaltyDailyPlanAmd, e.target.value)}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">AMD</span>
+            </div>
+            <p className="mt-1 text-xs text-slate-500">{t('penaltyDailyPlanAmdHint')}</p>
           </div>
 
           {error && (

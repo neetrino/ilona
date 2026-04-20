@@ -40,10 +40,10 @@ todos:
     status: completed
   - id: phase-12-analytics
     content: Phase 12 — Admin Analytics redesign
-    status: in_progress
+    status: completed
   - id: phase-13-settings
     content: "Phase 13 — Settings: Daily Plan penalties, remove timezone"
-    status: pending
+    status: in_progress
   - id: phase-14-admin-dashboard
     content: Phase 14 — Admin Dashboard data blocks
     status: pending
