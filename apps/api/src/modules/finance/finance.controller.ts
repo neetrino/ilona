@@ -28,6 +28,7 @@ import {
 import { CreateDeductionDto } from './dto/create-deduction.dto';
 import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
 @Controller('finance')
 export class FinanceController {
@@ -225,26 +226,30 @@ export class FinanceController {
   // ============ DASHBOARD ============
 
   @Get('dashboard')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getDashboard(
+    @CurrentUser() user: JwtPayload,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
     return this.financeService.getDashboard(
       dateFrom ? new Date(dateFrom) : undefined,
       dateTo ? new Date(dateTo) : undefined,
+      getManagerCenterIdOrThrow(user),
     );
   }
 
   @Get('report/monthly')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getMonthlyReport(
+    @CurrentUser() user: JwtPayload,
     @Query('year') year: string,
     @Query('month') month: string,
   ): Promise<unknown> {
     return this.financeService.getMonthlyReport(
       parseInt(year, 10),
       parseInt(month, 10),
+      getManagerCenterIdOrThrow(user),
     );
   }
 
@@ -257,8 +262,11 @@ export class FinanceController {
   // ============ PAYMENTS ============
 
   @Get('payments')
-  @Roles(UserRole.ADMIN)
-  async getPayments(@Query() query: QueryPaymentDto): Promise<unknown> {
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async getPayments(
+    @CurrentUser() user: JwtPayload,
+    @Query() query: QueryPaymentDto,
+  ): Promise<unknown> {
     await this.paymentsService.ensureCurrentMonthPaymentsForActiveStudents();
 
     return this.paymentsService.findAll({
@@ -269,6 +277,7 @@ export class FinanceController {
       dateFrom: query.dateFrom ? new Date(query.dateFrom) : undefined,
       dateTo: query.dateTo ? new Date(query.dateTo) : undefined,
       q: query.q?.trim() || undefined,
+      centerId: getManagerCenterIdOrThrow(user),
     });
   }
 
@@ -324,22 +333,25 @@ export class FinanceController {
   }
 
   @Get('payments/stats/revenue')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getRevenueStats(
+    @CurrentUser() user: JwtPayload,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
     return this.paymentsService.getRevenueStats(
       dateFrom ? new Date(dateFrom) : undefined,
       dateTo ? new Date(dateTo) : undefined,
+      getManagerCenterIdOrThrow(user),
     );
   }
 
   // ============ SALARIES ============
 
   @Get('salaries')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getSalaries(
+    @CurrentUser() user: JwtPayload,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
     @Query('teacherId') teacherId?: string,
@@ -352,6 +364,7 @@ export class FinanceController {
       teacherId,
       status: status as SalaryStatus | undefined,
       q: q?.trim() || undefined,
+      centerId: getManagerCenterIdOrThrow(user),
     });
   }
 
@@ -451,8 +464,9 @@ export class FinanceController {
   // ============ DEDUCTIONS ============
 
   @Get('deductions')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getDeductions(
+    @CurrentUser() user: JwtPayload,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
     @Query('teacherId') teacherId?: string,
@@ -463,6 +477,7 @@ export class FinanceController {
       take: take ? parseInt(take, 10) : undefined,
       teacherId,
       reason: reason as DeductionReason | undefined,
+      centerId: getManagerCenterIdOrThrow(user),
     });
   }
 
@@ -485,8 +500,9 @@ export class FinanceController {
   }
 
   @Get('deductions/stats')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getDeductionStats(
+    @CurrentUser() user: JwtPayload,
     @Query('teacherId') teacherId?: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
@@ -495,6 +511,7 @@ export class FinanceController {
       teacherId,
       dateFrom ? new Date(dateFrom) : undefined,
       dateTo ? new Date(dateTo) : undefined,
+      getManagerCenterIdOrThrow(user),
     );
   }
 }

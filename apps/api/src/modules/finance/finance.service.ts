@@ -14,12 +14,12 @@ export class FinanceService {
   /**
    * Get overall financial dashboard
    */
-  async getDashboard(dateFrom?: Date, dateTo?: Date) {
+  async getDashboard(dateFrom?: Date, dateTo?: Date, centerId?: string) {
     const [revenue, expenses, pendingPayments, pendingSalaries] = await Promise.all([
-      this.paymentsService.getRevenueStats(dateFrom, dateTo),
-      this.getExpensesStats(dateFrom, dateTo),
-      this.getPendingPaymentsCount(),
-      this.getPendingSalariesCount(),
+      this.paymentsService.getRevenueStats(dateFrom, dateTo, centerId),
+      this.getExpensesStats(dateFrom, dateTo, centerId),
+      this.getPendingPaymentsCount(centerId),
+      this.getPendingSalariesCount(centerId),
     ]);
 
     return {
@@ -34,7 +34,7 @@ export class FinanceService {
   /**
    * Get expenses statistics (salaries + other)
    */
-  private async getExpensesStats(dateFrom?: Date, dateTo?: Date) {
+  private async getExpensesStats(dateFrom?: Date, dateTo?: Date, centerId?: string) {
     const where = dateFrom || dateTo
       ? {
           paidAt: {
@@ -48,6 +48,7 @@ export class FinanceService {
       where: {
         ...where,
         status: 'PAID',
+        ...(centerId ? { teacher: { centerLinks: { some: { centerId } } } } : {}),
       },
       _sum: { netAmount: true },
       _count: true,
@@ -62,10 +63,11 @@ export class FinanceService {
   /**
    * Get pending payments count
    */
-  private async getPendingPaymentsCount() {
+  private async getPendingPaymentsCount(centerId?: string) {
+    const scope = centerId ? { student: { group: { centerId } } } : {};
     const [pending, overdue] = await Promise.all([
-      this.prisma.payment.count({ where: { status: 'PENDING' } }),
-      this.prisma.payment.count({ where: { status: 'OVERDUE' } }),
+      this.prisma.payment.count({ where: { status: 'PENDING', ...scope } }),
+      this.prisma.payment.count({ where: { status: 'OVERDUE', ...scope } }),
     ]);
 
     return { pending, overdue, total: pending + overdue };
@@ -74,22 +76,29 @@ export class FinanceService {
   /**
    * Get pending salaries count
    */
-  private async getPendingSalariesCount() {
-    return this.prisma.salaryRecord.count({ where: { status: 'PENDING' } });
+  private async getPendingSalariesCount(centerId?: string) {
+    return this.prisma.salaryRecord.count({
+      where: {
+        status: 'PENDING',
+        ...(centerId ? { teacher: { centerLinks: { some: { centerId } } } } : {}),
+      },
+    });
   }
 
   /**
    * Get monthly financial report
    */
-  async getMonthlyReport(year: number, month: number): Promise<unknown> {
+  async getMonthlyReport(year: number, month: number, centerId?: string): Promise<unknown> {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
+    const teacherScope = centerId ? { centerLinks: { some: { centerId } } } : undefined;
 
     const [payments, salaries, deductions] = await Promise.all([
       this.prisma.payment.findMany({
         where: {
           paidAt: { gte: startDate, lte: endDate },
           status: 'PAID',
+          ...(centerId ? { student: { group: { centerId } } } : {}),
         },
         include: {
           student: {
@@ -102,6 +111,7 @@ export class FinanceService {
       this.prisma.salaryRecord.findMany({
         where: {
           month: { gte: startDate, lte: endDate },
+          ...(teacherScope ? { teacher: teacherScope } : {}),
         },
         include: {
           teacher: {
@@ -114,6 +124,7 @@ export class FinanceService {
       this.prisma.deduction.findMany({
         where: {
           appliedAt: { gte: startDate, lte: endDate },
+          ...(teacherScope ? { teacher: teacherScope } : {}),
         },
         include: {
           teacher: {

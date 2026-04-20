@@ -97,8 +97,9 @@ export class PaymentsService {
     dateFrom?: Date;
     dateTo?: Date;
     q?: string;
+    centerId?: string;
   }) {
-    const { skip = 0, take = 50, studentId, status, dateFrom, dateTo, q } = params || {};
+    const { skip = 0, take = 50, studentId, status, dateFrom, dateTo, q, centerId } = params || {};
 
     const where: Prisma.PaymentWhereInput = {};
 
@@ -111,10 +112,14 @@ export class PaymentsService {
       };
     }
 
-    // Search by student name or email (case-insensitive)
+    const studentFilters: Prisma.StudentWhereInput[] = [];
+    if (centerId) {
+      studentFilters.push({ group: { centerId } });
+    }
+
     const searchTerm = typeof q === 'string' ? q.trim() : '';
     if (searchTerm.length > 0) {
-      where.student = {
+      studentFilters.push({
         OR: [
           {
             user: {
@@ -131,7 +136,11 @@ export class PaymentsService {
             },
           },
         ],
-      };
+      });
+    }
+
+    if (studentFilters.length > 0) {
+      where.student = studentFilters.length === 1 ? studentFilters[0] : { AND: studentFilters };
     }
 
     const studentInclude: Prisma.StudentInclude = {
@@ -783,7 +792,7 @@ export class PaymentsService {
   /**
    * Get revenue statistics
    */
-  async getRevenueStats(dateFrom?: Date, dateTo?: Date) {
+  async getRevenueStats(dateFrom?: Date, dateTo?: Date, centerId?: string) {
     const where: Prisma.PaymentWhereInput = {
       status: PaymentStatus.PAID,
       ...(dateFrom || dateTo
@@ -794,6 +803,7 @@ export class PaymentsService {
             },
           }
         : {}),
+      ...(centerId ? { student: { group: { centerId } } } : {}),
     };
 
     const stats = await this.db.payment.aggregate({

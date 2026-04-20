@@ -42,8 +42,9 @@ export class DeductionsService {
     reason?: DeductionReason;
     dateFrom?: Date;
     dateTo?: Date;
+    centerId?: string;
   }) {
-    const { skip = 0, take = 50, teacherId, reason, dateFrom, dateTo } = params || {};
+    const { skip = 0, take = 50, teacherId, reason, dateFrom, dateTo, centerId } = params || {};
 
     const where: Prisma.DeductionWhereInput = {};
 
@@ -54,6 +55,9 @@ export class DeductionsService {
         ...(dateFrom && { gte: dateFrom }),
         ...(dateTo && { lte: dateTo }),
       };
+    }
+    if (centerId) {
+      where.teacher = { centerLinks: { some: { centerId } } };
     }
 
     const [items, total] = await Promise.all([
@@ -220,7 +224,7 @@ export class DeductionsService {
   /**
    * Get deduction statistics
    */
-  async getStatistics(teacherId?: string, dateFrom?: Date, dateTo?: Date) {
+  async getStatistics(teacherId?: string, dateFrom?: Date, dateTo?: Date, centerId?: string) {
     const where: Prisma.DeductionWhereInput = {
       ...(teacherId && { teacherId }),
       ...(dateFrom || dateTo
@@ -231,6 +235,7 @@ export class DeductionsService {
             },
           }
         : {}),
+      ...(centerId ? { teacher: { centerLinks: { some: { centerId } } } } : {}),
     };
 
     const [total, byReason] = await Promise.all([
