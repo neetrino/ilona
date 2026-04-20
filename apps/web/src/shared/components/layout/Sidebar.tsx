@@ -173,7 +173,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('myFeedbacks'), href: '/student/my-feedbacks', icon: icons.feedbacks },
         { label: t('payments'), href: '/student/payments', icon: icons.payments },
         { label: t('analytics'), href: '/student/analytics', icon: icons.analytics },
-        { label: t('absence'), href: '/student/absence', icon: icons.absence },
+        { label: t('attendance'), href: '/student/attendance', icon: icons.absence },
         { label: t('settings'), href: '/student/settings', icon: icons.settings },
       ];
     default:

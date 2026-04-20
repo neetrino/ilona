@@ -31,7 +31,7 @@ export function LessonDetailTabs({ activeTab: initialTab, onTabChange, children 
   };
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'absence', label: 'Absence' },
+    { id: 'absence', label: 'Attendance' },
     { id: 'feedback', label: 'Feedbacks' },
     { id: 'voice', label: 'Voice' },
     { id: 'text', label: 'Text' },
