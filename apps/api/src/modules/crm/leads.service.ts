@@ -81,6 +81,12 @@ export class LeadsService {
         lastName: dto.lastName,
         phone: dto.phone,
         age: dto.age,
+        dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+        parentName: dto.parentName,
+        parentPhone: dto.parentPhone,
+        parentPassportInfo: dto.parentPassportInfo,
+        firstLessonDate: dto.firstLessonDate ? new Date(dto.firstLessonDate) : undefined,
+        comment: dto.comment,
         levelId: dto.levelId,
         teacherId: dto.teacherId,
         groupId: dto.groupId,
@@ -102,11 +108,12 @@ export class LeadsService {
     file: Express.Multer.File,
     createdByUserId: string,
     user?: JwtPayload,
+    requestedCenterId?: string,
   ) {
     if (!file?.buffer?.length) {
       throw new BadRequestException('No audio file provided');
     }
-    const centerId = this.ensureManagerCenterInput(undefined, user);
+    const centerId = this.ensureManagerCenterInput(requestedCenterId, user);
     const lead = await this.prisma.crmLead.create({
       data: {
         status: 'NEW',
@@ -264,6 +271,12 @@ export class LeadsService {
         lastName: dto.lastName,
         phone: dto.phone,
         age: dto.age,
+        dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+        parentName: dto.parentName,
+        parentPhone: dto.parentPhone,
+        parentPassportInfo: dto.parentPassportInfo,
+        firstLessonDate: dto.firstLessonDate ? new Date(dto.firstLessonDate) : undefined,
+        comment: dto.comment,
         levelId: dto.levelId,
         teacherId: dto.teacherId,
         groupId: dto.groupId,

@@ -75,6 +75,12 @@ export function EditLeadModal({
       lastName: lead.lastName ?? '',
       phone: (lead.phone ?? '').replace(/\D/g, ''),
       age: lead.age ?? undefined,
+      dateOfBirth: lead.dateOfBirth ? lead.dateOfBirth.slice(0, 10) : undefined,
+      firstLessonDate: lead.firstLessonDate ? lead.firstLessonDate.slice(0, 10) : undefined,
+      comment: lead.comment ?? '',
+      parentName: lead.parentName ?? '',
+      parentPhone: (lead.parentPhone ?? '').replace(/\D/g, ''),
+      parentPassportInfo: lead.parentPassportInfo ?? '',
       levelId: lead.levelId ?? undefined,
       teacherId: lead.teacherId ?? undefined,
       groupId: lead.groupId ?? undefined,
@@ -189,6 +195,30 @@ export function EditLeadModal({
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Date of birth</label>
+                <input
+                  type="date"
+                  value={form.dateOfBirth ?? ''}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, dateOfBirth: e.target.value || undefined }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">First lesson date</label>
+                <input
+                  type="date"
+                  value={form.firstLessonDate ?? ''}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, firstLessonDate: e.target.value || undefined }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Level</label>
                 <select
                   value={form.levelId ?? ''}
@@ -259,6 +289,53 @@ export function EditLeadModal({
                   </option>
                 ))}
               </select>
+            </div>
+            {typeof form.age === 'number' && form.age > 0 && form.age < 18 && (
+              <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Parent details (under 18)
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent name</label>
+                  <input
+                    type="text"
+                    value={form.parentName ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent phone</label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    value={form.parentPhone != null && form.parentPhone !== '' ? `+${form.parentPhone}` : '+'}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent passport details</label>
+                  <input
+                    type="text"
+                    value={form.parentPassportInfo ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Comment</label>
+              <textarea
+                rows={3}
+                value={form.comment ?? ''}
+                onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
+                placeholder="Internal notes about this lead"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>

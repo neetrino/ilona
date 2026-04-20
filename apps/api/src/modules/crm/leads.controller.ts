@@ -56,6 +56,7 @@ export class LeadsController {
       type: 'object',
       properties: {
         file: { type: 'string', format: 'binary' },
+        centerId: { type: 'string' },
       },
     },
   })
@@ -75,11 +76,12 @@ export class LeadsController {
     )
     file: Express.Multer.File | undefined,
     @CurrentUser() user: JwtPayload,
+    @Body('centerId') centerId?: string,
   ) {
     if (!file?.buffer?.length) {
       throw new BadRequestException('No audio file provided. Please record and send a voice message.');
     }
-    return this.leadsService.createLeadFromVoice(file, user.sub, user);
+    return this.leadsService.createLeadFromVoice(file, user.sub, user, centerId);
   }
 
   @Get()

@@ -17,6 +17,10 @@ export interface BoardViewProps {
   changingStatusId?: string | null;
   onAddLead: () => void;
   onRecordingSaved?: () => void;
+  /** Centers shown in the New-column branch dropdown. */
+  newColumnCenters?: Array<{ id: string; name: string }>;
+  newColumnCenterId?: string | null;
+  onNewColumnCenterChange?: (centerId: string | null) => void;
 }
 
 export function BoardView({
@@ -29,6 +33,9 @@ export function BoardView({
   onCardStatusChange,
   changingStatusId,
   onAddLead,
+  newColumnCenters,
+  newColumnCenterId,
+  onNewColumnCenterChange,
 }: BoardViewProps) {
   const statusList = availableStatuses.length > 0 ? availableStatuses : CRM_COLUMN_ORDER;
   const columnOrder = columnStatuses && columnStatuses.length > 0 ? columnStatuses : statusList;
@@ -62,6 +69,9 @@ export function BoardView({
           onCardStatusChange={onCardStatusChange}
           changingStatusId={changingStatusId}
           onAddClick={onAddLead}
+          newColumnCenters={newColumnCenters}
+          newColumnCenterId={newColumnCenterId}
+          onNewColumnCenterChange={onNewColumnCenterChange}
         />
       ))}
     </div>
