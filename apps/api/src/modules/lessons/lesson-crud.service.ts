@@ -424,6 +424,18 @@ export class LessonCrudService {
   async create(dto: CreateLessonDto, currentUserId?: string, userRole?: UserRole) {
     const managerCenterId = await this.getManagerCenterId(currentUserId, userRole);
 
+    // Phase 9: teachers cannot back-date lessons. This blocks artificial
+    // inflation of salary calculations. Admins/managers may still create
+    // past-dated lessons (e.g. data correction, system override).
+    if (userRole === UserRole.TEACHER && dto.scheduledAt) {
+      const scheduled = new Date(dto.scheduledAt);
+      if (!Number.isNaN(scheduled.getTime()) && scheduled.getTime() < Date.now()) {
+        throw new ForbiddenException(
+          'Teachers cannot create lessons in the past. Ask an admin to add it for you.',
+        );
+      }
+    }
+
     // Validate group
     const group = await this.prisma.group.findUnique({
       where: { id: dto.groupId },
@@ -496,6 +508,26 @@ export class LessonCrudService {
 
       if (!isAssignedToLesson && !isAssignedToGroup) {
         throw new ForbiddenException('You can only edit lessons assigned to you or your groups');
+      }
+
+      // Phase 9: teachers cannot move a lesson into the past, nor can
+      // they reschedule a lesson whose original time is already in the
+      // past. Admin overrides bypass this restriction.
+      const originalScheduled = new Date(lesson.scheduledAt).getTime();
+      if (originalScheduled < Date.now()) {
+        const onlyMetadataChange =
+          dto.scheduledAt === undefined && dto.duration === undefined;
+        if (!onlyMetadataChange) {
+          throw new ForbiddenException(
+            'Past lessons are locked for teachers. Only an admin can reschedule them.',
+          );
+        }
+      }
+      if (dto.scheduledAt) {
+        const next = new Date(dto.scheduledAt).getTime();
+        if (!Number.isNaN(next) && next < Date.now()) {
+          throw new ForbiddenException('Teachers cannot move a lesson to a past time.');
+        }
       }
     }
 

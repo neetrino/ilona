@@ -293,6 +293,13 @@ exports.Prisma.FeedbackScalarFieldEnum = {
   rating: 'rating',
   strengths: 'strengths',
   improvements: 'improvements',
+  level: 'level',
+  grammarTopics: 'grammarTopics',
+  skills: 'skills',
+  skillsNote: 'skillsNote',
+  participation: 'participation',
+  progress: 'progress',
+  encouragement: 'encouragement',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -586,6 +593,15 @@ exports.LessonStatus = exports.$Enums.LessonStatus = {
 exports.AbsenceType = exports.$Enums.AbsenceType = {
   JUSTIFIED: 'JUSTIFIED',
   UNJUSTIFIED: 'UNJUSTIFIED'
+};
+
+exports.CefrLevel = exports.$Enums.CefrLevel = {
+  A1: 'A1',
+  A2: 'A2',
+  B1: 'B1',
+  B2: 'B2',
+  C1: 'C1',
+  C2: 'C2'
 };
 
 exports.PaymentStatus = exports.$Enums.PaymentStatus = {

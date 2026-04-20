@@ -228,6 +228,18 @@ export const AbsenceType: {
 export type AbsenceType = (typeof AbsenceType)[keyof typeof AbsenceType]
 
 
+export const CefrLevel: {
+  A1: 'A1',
+  A2: 'A2',
+  B1: 'B1',
+  B2: 'B2',
+  C1: 'C1',
+  C2: 'C2'
+};
+
+export type CefrLevel = (typeof CefrLevel)[keyof typeof CefrLevel]
+
+
 export const PaymentStatus: {
   PENDING: 'PENDING',
   PAID: 'PAID',
@@ -344,6 +356,10 @@ export const LessonStatus: typeof $Enums.LessonStatus
 export type AbsenceType = $Enums.AbsenceType
 
 export const AbsenceType: typeof $Enums.AbsenceType
+
+export type CefrLevel = $Enums.CefrLevel
+
+export const CefrLevel: typeof $Enums.CefrLevel
 
 export type PaymentStatus = $Enums.PaymentStatus
 
@@ -17409,10 +17425,12 @@ export namespace Prisma {
 
   export type FeedbackAvgAggregateOutputType = {
     rating: number | null
+    participation: number | null
   }
 
   export type FeedbackSumAggregateOutputType = {
     rating: number | null
+    participation: number | null
   }
 
   export type FeedbackMinAggregateOutputType = {
@@ -17424,6 +17442,11 @@ export namespace Prisma {
     rating: number | null
     strengths: string | null
     improvements: string | null
+    level: $Enums.CefrLevel | null
+    skillsNote: string | null
+    participation: number | null
+    progress: string | null
+    encouragement: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -17437,6 +17460,11 @@ export namespace Prisma {
     rating: number | null
     strengths: string | null
     improvements: string | null
+    level: $Enums.CefrLevel | null
+    skillsNote: string | null
+    participation: number | null
+    progress: string | null
+    encouragement: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -17450,6 +17478,13 @@ export namespace Prisma {
     rating: number
     strengths: number
     improvements: number
+    level: number
+    grammarTopics: number
+    skills: number
+    skillsNote: number
+    participation: number
+    progress: number
+    encouragement: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -17458,10 +17493,12 @@ export namespace Prisma {
 
   export type FeedbackAvgAggregateInputType = {
     rating?: true
+    participation?: true
   }
 
   export type FeedbackSumAggregateInputType = {
     rating?: true
+    participation?: true
   }
 
   export type FeedbackMinAggregateInputType = {
@@ -17473,6 +17510,11 @@ export namespace Prisma {
     rating?: true
     strengths?: true
     improvements?: true
+    level?: true
+    skillsNote?: true
+    participation?: true
+    progress?: true
+    encouragement?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -17486,6 +17528,11 @@ export namespace Prisma {
     rating?: true
     strengths?: true
     improvements?: true
+    level?: true
+    skillsNote?: true
+    participation?: true
+    progress?: true
+    encouragement?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -17499,6 +17546,13 @@ export namespace Prisma {
     rating?: true
     strengths?: true
     improvements?: true
+    level?: true
+    grammarTopics?: true
+    skills?: true
+    skillsNote?: true
+    participation?: true
+    progress?: true
+    encouragement?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -17599,6 +17653,13 @@ export namespace Prisma {
     rating: number | null
     strengths: string | null
     improvements: string | null
+    level: $Enums.CefrLevel | null
+    grammarTopics: string[]
+    skills: string[]
+    skillsNote: string | null
+    participation: number | null
+    progress: string | null
+    encouragement: string | null
     createdAt: Date
     updatedAt: Date
     _count: FeedbackCountAggregateOutputType | null
@@ -17631,6 +17692,13 @@ export namespace Prisma {
     rating?: boolean
     strengths?: boolean
     improvements?: boolean
+    level?: boolean
+    grammarTopics?: boolean
+    skills?: boolean
+    skillsNote?: boolean
+    participation?: boolean
+    progress?: boolean
+    encouragement?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lesson?: boolean | LessonDefaultArgs<ExtArgs>
@@ -17647,6 +17715,13 @@ export namespace Prisma {
     rating?: boolean
     strengths?: boolean
     improvements?: boolean
+    level?: boolean
+    grammarTopics?: boolean
+    skills?: boolean
+    skillsNote?: boolean
+    participation?: boolean
+    progress?: boolean
+    encouragement?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lesson?: boolean | LessonDefaultArgs<ExtArgs>
@@ -17663,6 +17738,13 @@ export namespace Prisma {
     rating?: boolean
     strengths?: boolean
     improvements?: boolean
+    level?: boolean
+    grammarTopics?: boolean
+    skills?: boolean
+    skillsNote?: boolean
+    participation?: boolean
+    progress?: boolean
+    encouragement?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -17694,6 +17776,13 @@ export namespace Prisma {
       rating: number | null
       strengths: string | null
       improvements: string | null
+      level: $Enums.CefrLevel | null
+      grammarTopics: string[]
+      skills: string[]
+      skillsNote: string | null
+      participation: number | null
+      progress: string | null
+      encouragement: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["feedback"]>
@@ -18100,6 +18189,13 @@ export namespace Prisma {
     readonly rating: FieldRef<"Feedback", 'Int'>
     readonly strengths: FieldRef<"Feedback", 'String'>
     readonly improvements: FieldRef<"Feedback", 'String'>
+    readonly level: FieldRef<"Feedback", 'CefrLevel'>
+    readonly grammarTopics: FieldRef<"Feedback", 'String[]'>
+    readonly skills: FieldRef<"Feedback", 'String[]'>
+    readonly skillsNote: FieldRef<"Feedback", 'String'>
+    readonly participation: FieldRef<"Feedback", 'Int'>
+    readonly progress: FieldRef<"Feedback", 'String'>
+    readonly encouragement: FieldRef<"Feedback", 'String'>
     readonly createdAt: FieldRef<"Feedback", 'DateTime'>
     readonly updatedAt: FieldRef<"Feedback", 'DateTime'>
   }
@@ -36220,6 +36316,13 @@ export namespace Prisma {
     rating: 'rating',
     strengths: 'strengths',
     improvements: 'improvements',
+    level: 'level',
+    grammarTopics: 'grammarTopics',
+    skills: 'skills',
+    skillsNote: 'skillsNote',
+    participation: 'participation',
+    progress: 'progress',
+    encouragement: 'encouragement',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -36699,6 +36802,20 @@ export namespace Prisma {
    * Reference to a field of type 'AbsenceType[]'
    */
   export type ListEnumAbsenceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AbsenceType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'CefrLevel'
+   */
+  export type EnumCefrLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CefrLevel'>
+    
+
+
+  /**
+   * Reference to a field of type 'CefrLevel[]'
+   */
+  export type ListEnumCefrLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CefrLevel[]'>
     
 
 
@@ -38011,6 +38128,13 @@ export namespace Prisma {
     rating?: IntNullableFilter<"Feedback"> | number | null
     strengths?: StringNullableFilter<"Feedback"> | string | null
     improvements?: StringNullableFilter<"Feedback"> | string | null
+    level?: EnumCefrLevelNullableFilter<"Feedback"> | $Enums.CefrLevel | null
+    grammarTopics?: StringNullableListFilter<"Feedback">
+    skills?: StringNullableListFilter<"Feedback">
+    skillsNote?: StringNullableFilter<"Feedback"> | string | null
+    participation?: IntNullableFilter<"Feedback"> | number | null
+    progress?: StringNullableFilter<"Feedback"> | string | null
+    encouragement?: StringNullableFilter<"Feedback"> | string | null
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
     updatedAt?: DateTimeFilter<"Feedback"> | Date | string
     lesson?: XOR<LessonRelationFilter, LessonWhereInput>
@@ -38027,6 +38151,13 @@ export namespace Prisma {
     rating?: SortOrderInput | SortOrder
     strengths?: SortOrderInput | SortOrder
     improvements?: SortOrderInput | SortOrder
+    level?: SortOrderInput | SortOrder
+    grammarTopics?: SortOrder
+    skills?: SortOrder
+    skillsNote?: SortOrderInput | SortOrder
+    participation?: SortOrderInput | SortOrder
+    progress?: SortOrderInput | SortOrder
+    encouragement?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lesson?: LessonOrderByWithRelationInput
@@ -38047,6 +38178,13 @@ export namespace Prisma {
     rating?: IntNullableFilter<"Feedback"> | number | null
     strengths?: StringNullableFilter<"Feedback"> | string | null
     improvements?: StringNullableFilter<"Feedback"> | string | null
+    level?: EnumCefrLevelNullableFilter<"Feedback"> | $Enums.CefrLevel | null
+    grammarTopics?: StringNullableListFilter<"Feedback">
+    skills?: StringNullableListFilter<"Feedback">
+    skillsNote?: StringNullableFilter<"Feedback"> | string | null
+    participation?: IntNullableFilter<"Feedback"> | number | null
+    progress?: StringNullableFilter<"Feedback"> | string | null
+    encouragement?: StringNullableFilter<"Feedback"> | string | null
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
     updatedAt?: DateTimeFilter<"Feedback"> | Date | string
     lesson?: XOR<LessonRelationFilter, LessonWhereInput>
@@ -38063,6 +38201,13 @@ export namespace Prisma {
     rating?: SortOrderInput | SortOrder
     strengths?: SortOrderInput | SortOrder
     improvements?: SortOrderInput | SortOrder
+    level?: SortOrderInput | SortOrder
+    grammarTopics?: SortOrder
+    skills?: SortOrder
+    skillsNote?: SortOrderInput | SortOrder
+    participation?: SortOrderInput | SortOrder
+    progress?: SortOrderInput | SortOrder
+    encouragement?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: FeedbackCountOrderByAggregateInput
@@ -38084,6 +38229,13 @@ export namespace Prisma {
     rating?: IntNullableWithAggregatesFilter<"Feedback"> | number | null
     strengths?: StringNullableWithAggregatesFilter<"Feedback"> | string | null
     improvements?: StringNullableWithAggregatesFilter<"Feedback"> | string | null
+    level?: EnumCefrLevelNullableWithAggregatesFilter<"Feedback"> | $Enums.CefrLevel | null
+    grammarTopics?: StringNullableListFilter<"Feedback">
+    skills?: StringNullableListFilter<"Feedback">
+    skillsNote?: StringNullableWithAggregatesFilter<"Feedback"> | string | null
+    participation?: IntNullableWithAggregatesFilter<"Feedback"> | number | null
+    progress?: StringNullableWithAggregatesFilter<"Feedback"> | string | null
+    encouragement?: StringNullableWithAggregatesFilter<"Feedback"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Feedback"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Feedback"> | Date | string
   }
@@ -40818,6 +40970,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lesson: LessonCreateNestedOneWithoutFeedbacksInput
@@ -40834,6 +40993,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40844,6 +41010,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lesson?: LessonUpdateOneRequiredWithoutFeedbacksNestedInput
@@ -40860,6 +41033,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40873,6 +41053,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40883,6 +41070,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40896,6 +41090,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43666,6 +43867,13 @@ export namespace Prisma {
     _max?: NestedEnumAbsenceTypeNullableFilter<$PrismaModel>
   }
 
+  export type EnumCefrLevelNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.CefrLevel | EnumCefrLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.CefrLevel[] | ListEnumCefrLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.CefrLevel[] | ListEnumCefrLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumCefrLevelNullableFilter<$PrismaModel> | $Enums.CefrLevel | null
+  }
+
   export type FeedbackLessonIdStudentIdCompoundUniqueInput = {
     lessonId: string
     studentId: string
@@ -43680,12 +43888,20 @@ export namespace Prisma {
     rating?: SortOrder
     strengths?: SortOrder
     improvements?: SortOrder
+    level?: SortOrder
+    grammarTopics?: SortOrder
+    skills?: SortOrder
+    skillsNote?: SortOrder
+    participation?: SortOrder
+    progress?: SortOrder
+    encouragement?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type FeedbackAvgOrderByAggregateInput = {
     rating?: SortOrder
+    participation?: SortOrder
   }
 
   export type FeedbackMaxOrderByAggregateInput = {
@@ -43697,6 +43913,11 @@ export namespace Prisma {
     rating?: SortOrder
     strengths?: SortOrder
     improvements?: SortOrder
+    level?: SortOrder
+    skillsNote?: SortOrder
+    participation?: SortOrder
+    progress?: SortOrder
+    encouragement?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43710,12 +43931,28 @@ export namespace Prisma {
     rating?: SortOrder
     strengths?: SortOrder
     improvements?: SortOrder
+    level?: SortOrder
+    skillsNote?: SortOrder
+    participation?: SortOrder
+    progress?: SortOrder
+    encouragement?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type FeedbackSumOrderByAggregateInput = {
     rating?: SortOrder
+    participation?: SortOrder
+  }
+
+  export type EnumCefrLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CefrLevel | EnumCefrLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.CefrLevel[] | ListEnumCefrLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.CefrLevel[] | ListEnumCefrLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumCefrLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.CefrLevel | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumCefrLevelNullableFilter<$PrismaModel>
+    _max?: NestedEnumCefrLevelNullableFilter<$PrismaModel>
   }
 
   export type EnumPaymentStatusFilter<$PrismaModel = never> = {
@@ -46829,6 +47066,14 @@ export namespace Prisma {
     update?: XOR<XOR<StudentUpdateToOneWithWhereWithoutAttendancesInput, StudentUpdateWithoutAttendancesInput>, StudentUncheckedUpdateWithoutAttendancesInput>
   }
 
+  export type FeedbackCreategrammarTopicsInput = {
+    set: string[]
+  }
+
+  export type FeedbackCreateskillsInput = {
+    set: string[]
+  }
+
   export type LessonCreateNestedOneWithoutFeedbacksInput = {
     create?: XOR<LessonCreateWithoutFeedbacksInput, LessonUncheckedCreateWithoutFeedbacksInput>
     connectOrCreate?: LessonCreateOrConnectWithoutFeedbacksInput
@@ -46845,6 +47090,20 @@ export namespace Prisma {
     create?: XOR<TeacherCreateWithoutFeedbacksInput, TeacherUncheckedCreateWithoutFeedbacksInput>
     connectOrCreate?: TeacherCreateOrConnectWithoutFeedbacksInput
     connect?: TeacherWhereUniqueInput
+  }
+
+  export type NullableEnumCefrLevelFieldUpdateOperationsInput = {
+    set?: $Enums.CefrLevel | null
+  }
+
+  export type FeedbackUpdategrammarTopicsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type FeedbackUpdateskillsInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type LessonUpdateOneRequiredWithoutFeedbacksNestedInput = {
@@ -47936,6 +48195,23 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedEnumAbsenceTypeNullableFilter<$PrismaModel>
     _max?: NestedEnumAbsenceTypeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumCefrLevelNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.CefrLevel | EnumCefrLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.CefrLevel[] | ListEnumCefrLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.CefrLevel[] | ListEnumCefrLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumCefrLevelNullableFilter<$PrismaModel> | $Enums.CefrLevel | null
+  }
+
+  export type NestedEnumCefrLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CefrLevel | EnumCefrLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.CefrLevel[] | ListEnumCefrLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.CefrLevel[] | ListEnumCefrLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumCefrLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.CefrLevel | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumCefrLevelNullableFilter<$PrismaModel>
+    _max?: NestedEnumCefrLevelNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumPaymentStatusFilter<$PrismaModel = never> = {
@@ -50292,6 +50568,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lesson: LessonCreateNestedOneWithoutFeedbacksInput
@@ -50306,6 +50589,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -50798,6 +51088,13 @@ export namespace Prisma {
     rating?: IntNullableFilter<"Feedback"> | number | null
     strengths?: StringNullableFilter<"Feedback"> | string | null
     improvements?: StringNullableFilter<"Feedback"> | string | null
+    level?: EnumCefrLevelNullableFilter<"Feedback"> | $Enums.CefrLevel | null
+    grammarTopics?: StringNullableListFilter<"Feedback">
+    skills?: StringNullableListFilter<"Feedback">
+    skillsNote?: StringNullableFilter<"Feedback"> | string | null
+    participation?: IntNullableFilter<"Feedback"> | number | null
+    progress?: StringNullableFilter<"Feedback"> | string | null
+    encouragement?: StringNullableFilter<"Feedback"> | string | null
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
     updatedAt?: DateTimeFilter<"Feedback"> | Date | string
   }
@@ -51368,6 +51665,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lesson: LessonCreateNestedOneWithoutFeedbacksInput
@@ -51382,6 +51686,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -52572,6 +52883,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     student: StudentCreateNestedOneWithoutFeedbacksInput
@@ -52586,6 +52904,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -57972,6 +58297,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -58215,6 +58547,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lesson?: LessonUpdateOneRequiredWithoutFeedbacksNestedInput
@@ -58229,6 +58568,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58241,6 +58587,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58647,6 +59000,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -58737,6 +59097,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lesson?: LessonUpdateOneRequiredWithoutFeedbacksNestedInput
@@ -58751,6 +59118,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58763,6 +59137,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58919,6 +59300,13 @@ export namespace Prisma {
     rating?: number | null
     strengths?: string | null
     improvements?: string | null
+    level?: $Enums.CefrLevel | null
+    grammarTopics?: FeedbackCreategrammarTopicsInput | string[]
+    skills?: FeedbackCreateskillsInput | string[]
+    skillsNote?: string | null
+    participation?: number | null
+    progress?: string | null
+    encouragement?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -58976,6 +59364,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     student?: StudentUpdateOneRequiredWithoutFeedbacksNestedInput
@@ -58990,6 +59385,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -59002,6 +59404,13 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null
     strengths?: NullableStringFieldUpdateOperationsInput | string | null
     improvements?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumCefrLevelFieldUpdateOperationsInput | $Enums.CefrLevel | null
+    grammarTopics?: FeedbackUpdategrammarTopicsInput | string[]
+    skills?: FeedbackUpdateskillsInput | string[]
+    skillsNote?: NullableStringFieldUpdateOperationsInput | string | null
+    participation?: NullableIntFieldUpdateOperationsInput | number | null
+    progress?: NullableStringFieldUpdateOperationsInput | string | null
+    encouragement?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

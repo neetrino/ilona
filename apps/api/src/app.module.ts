@@ -34,6 +34,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { CrmModule } from './modules/crm/crm.module';
+import { DailyPlanModule } from './modules/daily-plan/daily-plan.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -86,6 +87,7 @@ import { AppController } from './app.controller';
     FeedbackModule,
     SettingsModule,
     CrmModule,
+    DailyPlanModule,
   ],
   providers: [
     // Correlation ID and request logging
