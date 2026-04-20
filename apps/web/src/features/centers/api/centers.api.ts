@@ -3,6 +3,7 @@ import type {
   Center,
   CentersResponse,
   CenterFilters,
+  CenterDetails,
   CreateCenterDto,
   UpdateCenterDto,
 } from '../types';
@@ -59,6 +60,11 @@ export async function deleteCenter(id: string): Promise<{ success: boolean }> {
  */
 export async function toggleCenterActive(id: string): Promise<Center> {
   return api.patch<Center>(`${CENTERS_ENDPOINT}/${id}/toggle-active`, {});
+}
+
+/** Aggregated detail payload for the center popup (teachers, students, groups, schedule). */
+export async function fetchCenterDetails(id: string): Promise<CenterDetails> {
+  return api.get<CenterDetails>(`${CENTERS_ENDPOINT}/${id}/details`);
 }
 
 

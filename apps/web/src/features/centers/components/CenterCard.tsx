@@ -8,14 +8,34 @@ interface CenterCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onToggleActive: () => void;
+  /** Optional handler for opening the detailed view popup. */
+  onOpenDetails?: () => void;
 }
 
-export function CenterCard({ center, onEdit, onDelete, onToggleActive }: CenterCardProps) {
+export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDetails }: CenterCardProps) {
   const primaryColor = center.colorHex || '#253046';
   const titleColor = getContrastColor(primaryColor) === 'white' ? 'text-white' : 'text-slate-900';
 
+  const handleCardActivate = () => {
+    if (onOpenDetails) onOpenDetails();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!onOpenDetails) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onOpenDetails();
+    }
+  };
+
   return (
-    <div className="group relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+    <div
+      role={onOpenDetails ? 'button' : undefined}
+      tabIndex={onOpenDetails ? 0 : undefined}
+      onClick={onOpenDetails ? handleCardActivate : undefined}
+      onKeyDown={onOpenDetails ? handleKeyDown : undefined}
+      className={`group relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${onOpenDetails ? 'cursor-pointer' : ''}`}
+    >
       <div
         className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-15 blur-2xl transition-opacity duration-300 group-hover:opacity-25"
         style={{ backgroundColor: primaryColor }}
@@ -61,6 +81,7 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive }: CenterC
             </div>
           </div>
 
+          <div onClick={(e) => e.stopPropagation()}>
           <ActionButtons
             onEdit={onEdit}
             onDelete={onDelete}
@@ -78,6 +99,7 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive }: CenterC
               disable: center.isActive ? 'Deactivate center' : 'Activate center',
             }}
           />
+          </div>
         </div>
 
         {center.address && (
