@@ -19,6 +19,8 @@ export type {
   Group,
   GroupsResponse,
   GroupFilters,
+  GroupScheduleEntry,
+  GroupTeacherRef,
   CreateGroupDto,
   UpdateGroupDto,
   GroupStudentItem,
@@ -30,5 +32,6 @@ export { CreateGroupForm } from './components/CreateGroupForm';
 export { EditGroupForm } from './components/EditGroupForm';
 export { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
 export { GroupCard } from './components/GroupCard';
+export { GroupScheduleEditor } from './components/GroupScheduleEditor';
 export { getGroupOccupancyMeta } from './occupancy';
 export type { GroupOccupancyMeta, GroupOccupancyStatus } from './occupancy';

@@ -1,7 +1,19 @@
 import Image from 'next/image';
+import { Clock, UserPlus } from 'lucide-react';
 import { Badge, ActionButtons } from '@/shared/components/ui';
-import type { Group } from '../types';
+import type { Group, GroupScheduleEntry } from '../types';
 import { getGroupOccupancyMeta } from '../occupancy';
+
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function formatScheduleSummary(entries: GroupScheduleEntry[] | null | undefined): string | null {
+  if (!entries || entries.length === 0) return null;
+  return entries
+    .slice()
+    .sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime))
+    .map((e) => `${DAY_LABELS[e.dayOfWeek] ?? '?'} ${e.startTime}–${e.endTime}`)
+    .join(' · ');
+}
 
 interface GroupCardProps {
   group: Group;
@@ -22,6 +34,10 @@ export function GroupCard({
   const teacherName = group.teacher
     ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`
     : null;
+  const substituteName = group.substituteTeacher
+    ? `${group.substituteTeacher.user.firstName} ${group.substituteTeacher.user.lastName}`
+    : null;
+  const scheduleSummary = formatScheduleSummary(group.schedule ?? null);
   const studentCount = group._count?.students || 0;
   const occupancy = getGroupOccupancyMeta(studentCount);
   const dotColorClass =
@@ -76,6 +92,26 @@ export function GroupCard({
             }}
           />
         </div>
+        {(substituteName || scheduleSummary) && (
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+            {substituteName && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-800"
+                title={`Substitute teacher: ${substituteName}`}
+              >
+                <UserPlus className="h-3 w-3" /> Sub: <span className="font-medium">{substituteName}</span>
+              </span>
+            )}
+            {scheduleSummary && (
+              <span
+                className="inline-flex items-center gap-1 truncate text-slate-600"
+                title={scheduleSummary}
+              >
+                <Clock className="h-3 w-3 text-slate-400" /> {scheduleSummary}
+              </span>
+            )}
+          </div>
+        )}
         {group.description && (
           <p className="text-xs text-slate-500 line-clamp-2 mt-1" title={group.description}>
             {group.description}

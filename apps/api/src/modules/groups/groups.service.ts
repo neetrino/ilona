@@ -75,23 +75,26 @@ export class GroupsService {
     if (isActive !== undefined) where.isActive = isActive;
     if (level) where.level = level;
 
+    const teacherInclude = {
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    } as const;
+
     const listInclude = {
       center: {
         select: { id: true, name: true },
       },
-      teacher: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              avatarUrl: true,
-            },
-          },
-        },
-      },
+      teacher: teacherInclude,
+      substituteTeacher: teacherInclude,
       _count: {
         select: { students: true, lessons: true },
       },
@@ -185,24 +188,27 @@ export class GroupsService {
   async findById(id: string, currentUser?: JwtPayload) {
     await this.assertManagerGroupAccess(id, currentUser);
 
+    const detailTeacherInclude = {
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    } as const;
+
     const group = await this.prisma.group.findUnique({
       where: { id },
       include: {
         center: true,
-        teacher: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                phone: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        },
+        teacher: detailTeacherInclude,
+        substituteTeacher: detailTeacherInclude,
         students: {
           include: {
             user: {
@@ -339,6 +345,22 @@ export class GroupsService {
       }
     }
 
+    if (dto.substituteTeacherId) {
+      if (dto.substituteTeacherId === dto.teacherId) {
+        throw new BadRequestException(
+          'Substitute teacher cannot be the same as the main teacher',
+        );
+      }
+      const substitute = await this.prisma.teacher.findUnique({
+        where: { id: dto.substituteTeacherId },
+      });
+      if (!substitute) {
+        throw new BadRequestException(
+          `Substitute teacher with ID ${dto.substituteTeacherId} not found`,
+        );
+      }
+    }
+
     // Create group
     const group = await this.prisma.group.create({
       data: {
@@ -348,11 +370,20 @@ export class GroupsService {
         maxStudents: FIXED_GROUP_MAX_STUDENTS,
         centerId: dto.centerId,
         teacherId: dto.teacherId,
+        substituteTeacherId: dto.substituteTeacherId,
+        schedule: dto.schedule ? (dto.schedule as Prisma.InputJsonValue) : undefined,
         isActive: dto.isActive ?? true,
       },
       include: {
         center: { select: { id: true, name: true } },
         teacher: {
+          include: {
+            user: {
+              select: { id: true, firstName: true, lastName: true, email: true },
+            },
+          },
+        },
+        substituteTeacher: {
           include: {
             user: {
               select: { id: true, firstName: true, lastName: true, email: true },
@@ -462,15 +493,54 @@ export class GroupsService {
       }
     }
 
+    if (dto.substituteTeacherId !== undefined) {
+      const nextSub = dto.substituteTeacherId || null;
+      const nextMain = dto.teacherId !== undefined ? (dto.teacherId || null) : currentGroup.teacherId;
+      if (nextSub && nextSub === nextMain) {
+        throw new BadRequestException(
+          'Substitute teacher cannot be the same as the main teacher',
+        );
+      }
+      if (nextSub) {
+        const substitute = await this.prisma.teacher.findUnique({
+          where: { id: nextSub },
+        });
+        if (!substitute) {
+          throw new BadRequestException(
+            `Substitute teacher with ID ${nextSub} not found`,
+          );
+        }
+      }
+    }
+
+    const { schedule: scheduleDto, substituteTeacherId, ...rest } = dto;
+    const scheduleData =
+      scheduleDto === undefined
+        ? {}
+        : scheduleDto === null
+          ? { schedule: Prisma.JsonNull }
+          : { schedule: scheduleDto as Prisma.InputJsonValue };
+
     return this.prisma.group.update({
       where: { id },
       data: {
-        ...dto,
+        ...rest,
+        ...(substituteTeacherId !== undefined
+          ? { substituteTeacherId: substituteTeacherId || null }
+          : {}),
+        ...scheduleData,
         maxStudents: FIXED_GROUP_MAX_STUDENTS,
       },
       include: {
         center: { select: { id: true, name: true } },
         teacher: {
+          include: {
+            user: {
+              select: { id: true, firstName: true, lastName: true, email: true },
+            },
+          },
+        },
+        substituteTeacher: {
           include: {
             user: {
               select: { id: true, firstName: true, lastName: true, email: true },

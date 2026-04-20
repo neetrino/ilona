@@ -5,10 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateGroup, useGroup, type UpdateGroupDto } from '@/features/groups';
+import type { GroupScheduleEntry } from '../types';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
+import { GroupScheduleEditor } from './GroupScheduleEditor';
 
 const updateGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters').optional(),
@@ -16,6 +18,7 @@ const updateGroupSchema = z.object({
   description: z.string().max(500, 'Description must be at most 500 characters').optional().or(z.literal('')),
   centerId: z.string().min(1, 'Center is required').optional().or(z.literal('')),
   teacherId: z.string().optional().or(z.literal('')),
+  substituteTeacherId: z.string().optional().or(z.literal('')),
   isActive: z.boolean().optional(),
 });
 
@@ -30,6 +33,7 @@ interface EditGroupFormProps {
 export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
   const updateGroup = useUpdateGroup();
   const { data: group, isLoading } = useGroup(groupId, open);
 
@@ -48,6 +52,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<UpdateGroupFormData>({
     resolver: zodResolver(updateGroupSchema),
     defaultValues: {
@@ -56,9 +61,11 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       description: '',
       centerId: '',
       teacherId: '',
+      substituteTeacherId: '',
       isActive: true,
     },
   });
+  const watchedTeacherId = watch('teacherId');
 
   // Update form when group data loads
   useEffect(() => {
@@ -69,8 +76,10 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         description: group.description || '',
         centerId: group.centerId,
         teacherId: group.teacherId || '',
+        substituteTeacherId: group.substituteTeacherId || '',
         isActive: group.isActive,
       });
+      setSchedule(group.schedule ?? []);
     }
   }, [group, reset]);
 
@@ -86,6 +95,15 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     setErrorMessage(null);
     
     try {
+      if (
+        data.substituteTeacherId &&
+        data.teacherId &&
+        data.substituteTeacherId === data.teacherId
+      ) {
+        setErrorMessage('Substitute teacher cannot be the same as the main teacher');
+        return;
+      }
+
       const payload: UpdateGroupDto = {
         name: data.name,
         level: data.level || undefined,
@@ -93,6 +111,8 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         // Only include centerId if it's not empty (centerId is required in DB, so we must provide it if changing)
         centerId: data.centerId && data.centerId.trim() !== '' ? data.centerId : undefined,
         teacherId: data.teacherId || undefined,
+        substituteTeacherId: data.substituteTeacherId ? data.substituteTeacherId : null,
+        schedule: schedule.length > 0 ? schedule : null,
         isActive: data.isActive,
       };
 
@@ -216,7 +236,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="teacherId">Teacher (Optional)</Label>
+            <Label htmlFor="teacherId">Main Teacher (Optional)</Label>
             <select
               id="teacherId"
               {...register('teacherId')}
@@ -235,6 +255,36 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             {errors.teacherId && (
               <p className="text-sm text-red-600">{errors.teacherId.message}</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="substituteTeacherId">Substitute Teacher (Optional)</Label>
+            <select
+              id="substituteTeacherId"
+              {...register('substituteTeacherId')}
+              disabled={isSubmitting || isLoadingTeachers}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
+                errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
+              } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+            >
+              <option value="">No substitute</option>
+              {teachers
+                .filter((t) => t.id !== watchedTeacherId)
+                .map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.user.firstName} {teacher.user.lastName}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Working hours (Schedule)</Label>
+            <GroupScheduleEditor
+              value={schedule}
+              onChange={setSchedule}
+              disabled={isSubmitting}
+            />
           </div>
 
           <div className="flex items-center gap-2">
