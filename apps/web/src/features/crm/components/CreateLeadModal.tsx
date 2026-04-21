@@ -21,6 +21,9 @@ export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalPro
   const [form, setForm] = useState<CreateLeadDto>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const age = typeof form.age === 'number' ? form.age : null;
+  const isUnder18 = age !== null && age > 0 && age < 18;
+  const isAdult = age !== null && age >= 18;
 
   const { data: centers = [] } = useQuery({
     queryKey: ['centers'],
@@ -107,7 +110,15 @@ export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalPro
                 type="number"
                 min={0}
                 value={form.age ?? ''}
-                onChange={(e) => setForm((f) => ({ ...f, age: e.target.value ? Number(e.target.value) : undefined }))}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    age: e.target.value ? Number(e.target.value) : undefined,
+                    ...(e.target.value && Number(e.target.value) >= 18
+                      ? { parentName: undefined, parentPhone: undefined }
+                      : {}),
+                  }))
+                }
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               />
             </div>
@@ -138,6 +149,49 @@ export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalPro
               ))}
             </select>
           </div>
+          {(isUnder18 || isAdult) && (
+            <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {isUnder18 ? 'Parent details (under 18)' : 'Student details (18+)'}
+              </p>
+              {isUnder18 && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Parent name</label>
+                    <input
+                      type="text"
+                      value={form.parentName ?? ''}
+                      onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Parent phone number</label>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      value={form.parentPhone != null && form.parentPhone !== '' ? `+${form.parentPhone}` : '+'}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
+                      }
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                </>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  {isUnder18 ? 'Parent passport details' : 'Student passport details'}
+                </label>
+                <input
+                  type="text"
+                  value={form.parentPassportInfo ?? ''}
+                  onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Teacher</label>
             <select
