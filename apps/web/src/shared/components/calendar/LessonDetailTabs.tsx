@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/shared/lib/utils';
 
-type Tab = 'absence' | 'feedback' | 'voice' | 'text';
+type Tab = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
 
 interface LessonDetailTabsProps {
   activeTab?: Tab;
@@ -13,6 +13,7 @@ interface LessonDetailTabsProps {
     feedback?: React.ReactNode;
     voice?: React.ReactNode;
     text?: React.ReactNode;
+    dailyPlan?: React.ReactNode;
   };
 }
 
@@ -35,6 +36,7 @@ export function LessonDetailTabs({ activeTab: initialTab, onTabChange, children 
     { id: 'feedback', label: 'Feedbacks' },
     { id: 'voice', label: 'Voice' },
     { id: 'text', label: 'Text' },
+    { id: 'dailyPlan', label: 'Daily Plan' },
   ];
 
   return (
@@ -66,6 +68,7 @@ export function LessonDetailTabs({ activeTab: initialTab, onTabChange, children 
         {activeTab === 'feedback' && children.feedback}
         {activeTab === 'voice' && children.voice}
         {activeTab === 'text' && children.text}
+        {activeTab === 'dailyPlan' && children.dailyPlan}
       </div>
     </div>
   );
