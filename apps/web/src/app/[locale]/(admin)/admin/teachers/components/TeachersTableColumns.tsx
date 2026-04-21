@@ -5,7 +5,7 @@ import { ActionButtons } from '@/shared/components/ui';
 import { SelectAllCheckbox } from './SelectAllCheckbox';
 import { cn } from '@/shared/lib/utils';
 import type { Teacher } from '@/features/teachers';
-import { getTeacherCenters, formatHourlyRate } from '../utils';
+import { getTeacherCenters, formatLessonRate } from '../utils';
 import type { useTranslations } from 'next-intl';
 
 interface TeachersTableColumnsProps {
@@ -17,9 +17,11 @@ interface TeachersTableColumnsProps {
   selectedTeacherIds: Set<string>;
   onSelectAll: () => void;
   onToggleSelect: (teacherId: string) => void;
+  onView: (teacher: Teacher) => void;
   onEdit: (teacher: Teacher) => void;
   onDelete: (teacher: Teacher) => void;
   onDeactivate: (teacher: Teacher) => void;
+  onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
   isDeleting: boolean;
   isUpdating: boolean;
   isLoading: boolean;
@@ -34,9 +36,11 @@ export function createTeachersTableColumns({
   selectedTeacherIds,
   onSelectAll,
   onToggleSelect,
+  onView,
   onEdit,
   onDelete,
   onDeactivate,
+  onOpenGroupsModal,
   isDeleting,
   isUpdating,
   isLoading,
@@ -107,7 +111,7 @@ export function createTeachersTableColumns({
         const centers = getTeacherCenters(teacher);
         
         return (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             {centers.length > 0 ? (
               <>
                 {centers.slice(0, 2).map((center) => (
@@ -122,6 +126,17 @@ export function createTeachersTableColumns({
                     </Badge>
                   </div>
                 )}
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onEdit(teacher);
+                  }}
+                  className="rounded-md border border-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                  title="Change assigned branches"
+                >
+                  Change
+                </button>
               </>
             ) : (
               <span className="text-slate-400 text-sm">{t('noBranches')}</span>
@@ -139,12 +154,17 @@ export function createTeachersTableColumns({
         const count = teacher._count?.groups || 0;
         return (
           <div className="flex justify-center">
-            <span
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenGroupsModal(teacher, 'groups');
+              }}
               className="inline-flex items-center justify-center rounded-md bg-blue-50 px-2 py-0.5 text-sm font-semibold text-blue-700"
-              title="Click row to view groups"
+              title="View all groups"
             >
               {count}
-            </span>
+            </button>
           </div>
         );
       },
@@ -161,12 +181,17 @@ export function createTeachersTableColumns({
           0;
         return (
           <div className="flex justify-center">
-            <span
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenGroupsModal(teacher, 'subgroups');
+              }}
               className="inline-flex items-center justify-center rounded-md bg-amber-50 px-2 py-0.5 text-sm font-semibold text-amber-700"
-              title="Click row to view substitute groups"
+              title="View all substitute groups"
             >
               {count}
-            </span>
+            </button>
           </div>
         );
       },
@@ -187,7 +212,7 @@ export function createTeachersTableColumns({
             : fallback;
         return (
           <span className="text-slate-700 font-medium">
-            {formatHourlyRate(rate)}/lesson
+            {formatLessonRate(rate)}
           </span>
         );
       },
@@ -202,17 +227,20 @@ export function createTeachersTableColumns({
         return (
           <div onClick={(e) => e.stopPropagation()}>
             <ActionButtons
+              onView={() => onView(teacher)}
               onEdit={() => onEdit(teacher)}
               onDisable={() => onDeactivate(teacher)}
               onDelete={() => onDelete(teacher)}
               isActive={isActive}
               disabled={isUpdating || isDeleting}
               ariaLabels={{
+                view: 'View teacher details',
                 edit: tCommon('edit'),
                 disable: isActive ? t('deactivate') : t('activate'),
                 delete: tCommon('delete'),
               }}
               titles={{
+                view: 'View teacher details',
                 edit: tCommon('edit'),
                 disable: isActive ? t('deactivate') : t('activate'),
                 delete: tCommon('delete'),

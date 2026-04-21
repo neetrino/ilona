@@ -8,6 +8,7 @@ import { AbsenceTab } from '@/shared/components/calendar/AbsenceTab';
 import { FeedbacksTab } from '@/shared/components/calendar/FeedbacksTab';
 import { VoiceTab } from '@/shared/components/calendar/VoiceTab';
 import { TextTab } from '@/shared/components/calendar/TextTab';
+import { DailyPlanTab } from '@/shared/components/calendar/DailyPlanTab';
 import { useLesson } from '@/features/lessons';
 import { Button } from '@/shared/components/ui/button';
 
@@ -15,10 +16,10 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
   const resolvedParams = use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get('tab') as 'absence' | 'feedback' | 'voice' | 'text' | null;
+  const tabParam = searchParams.get('tab') as 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan' | null;
   
   const { data: lesson, isLoading } = useLesson(resolvedParams.lessonId);
-  const [activeTab, setActiveTab] = useState<'absence' | 'feedback' | 'voice' | 'text'>(
+  const [activeTab, setActiveTab] = useState<'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan'>(
     tabParam || 'absence'
   );
 
@@ -63,6 +64,7 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
             feedback: <FeedbacksTab lessonId={resolvedParams.lessonId} />,
             voice: <VoiceTab lessonId={resolvedParams.lessonId} />,
             text: <TextTab lessonId={resolvedParams.lessonId} />,
+            dailyPlan: <DailyPlanTab lessonId={resolvedParams.lessonId} />,
           }}
         </LessonDetailTabs>
       </div>

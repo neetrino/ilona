@@ -6,13 +6,12 @@ import { getGroupOccupancyMeta } from '../occupancy';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function formatScheduleSummary(entries: GroupScheduleEntry[] | null | undefined): string | null {
+function formatScheduleSummary(entries: GroupScheduleEntry[] | null | undefined): string[] | null {
   if (!entries || entries.length === 0) return null;
   return entries
     .slice()
     .sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime))
-    .map((e) => `${DAY_LABELS[e.dayOfWeek] ?? '?'} ${e.startTime}–${e.endTime}`)
-    .join(' · ');
+    .map((e) => `${DAY_LABELS[e.dayOfWeek] ?? '?'} ${e.startTime}–${e.endTime}`);
 }
 
 interface GroupCardProps {
@@ -38,6 +37,11 @@ export function GroupCard({
     ? `${group.substituteTeacher.user.firstName} ${group.substituteTeacher.user.lastName}`
     : null;
   const scheduleSummary = formatScheduleSummary(group.schedule ?? null);
+  const visibleScheduleEntries = scheduleSummary?.slice(0, 2) ?? [];
+  const hiddenScheduleEntriesCount =
+    scheduleSummary && scheduleSummary.length > visibleScheduleEntries.length
+      ? scheduleSummary.length - visibleScheduleEntries.length
+      : 0;
   const studentCount = group._count?.students || 0;
   const occupancy = getGroupOccupancyMeta(studentCount);
   const dotColorClass =
@@ -103,12 +107,19 @@ export function GroupCard({
               </span>
             )}
             {scheduleSummary && (
-              <span
-                className="inline-flex items-center gap-1 truncate text-slate-600"
-                title={scheduleSummary}
-              >
-                <Clock className="h-3 w-3 text-slate-400" /> {scheduleSummary}
-              </span>
+              <div className="inline-flex items-start gap-1 text-slate-600">
+                <Clock className="mt-0.5 h-3 w-3 shrink-0 text-slate-400" />
+                <div className="space-y-0.5">
+                  {visibleScheduleEntries.map((slot) => (
+                    <p key={slot} className="leading-snug">
+                      {slot}
+                    </p>
+                  ))}
+                  {hiddenScheduleEntriesCount > 0 && (
+                    <p className="text-slate-500">+{hiddenScheduleEntriesCount} more</p>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         )}

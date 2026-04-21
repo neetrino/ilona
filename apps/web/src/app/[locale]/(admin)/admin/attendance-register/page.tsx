@@ -13,6 +13,7 @@ import { MonthViewCalendar } from './components/MonthViewCalendar';
 import { DayView } from './components/DayView';
 import { WeekView } from './components/WeekView';
 import { MonthView } from './components/MonthView';
+import { UnifiedWeekTable } from './components/UnifiedWeekTable';
 
 export default function AdminAttendanceRegisterPage() {
   const t = useTranslations('attendance');
@@ -186,26 +187,35 @@ export default function AdminAttendanceRegisterPage() {
         {nav.selectedGroupIds.length > 0 &&
           data.students.length > 0 &&
           nav.viewMode === 'week' && (
-            <WeekView
-              group={selectedGroup}
-              groups={data.groups}
-              selectedGroupIds={nav.selectedGroupIds}
-              currentDate={nav.currentDate}
-              students={data.filteredStudents}
-              filteredLessons={data.filteredLessons}
-              attendanceData={data.attendanceData}
-              attendanceQueries={data.attendanceQueries}
-              isLoadingLessons={data.isLoadingLessons}
-              isLoadingStudents={data.isLoadingStudents}
-              isLoadingAttendance={data.isLoadingAttendance}
-              savingLessons={data.savingLessons}
-              hasUnsavedChanges={data.hasUnsavedChanges}
-              weekDates={weekDates}
-              onDaySave={data.handleDaySave}
-              onSaveSuccess={handleSaveSuccess}
-              onSaveError={handleSaveError}
-              onUnsavedChangesChange={data.setHasUnsavedChanges}
-            />
+            <div className="space-y-4">
+              <WeekView
+                group={selectedGroup}
+                groups={data.groups}
+                selectedGroupIds={nav.selectedGroupIds}
+                currentDate={nav.currentDate}
+                students={data.filteredStudents}
+                filteredLessons={data.filteredLessons}
+                attendanceData={data.attendanceData}
+                attendanceQueries={data.attendanceQueries}
+                isLoadingLessons={data.isLoadingLessons}
+                isLoadingStudents={data.isLoadingStudents}
+                isLoadingAttendance={data.isLoadingAttendance}
+                savingLessons={data.savingLessons}
+                hasUnsavedChanges={data.hasUnsavedChanges}
+                weekDates={weekDates}
+                onDaySave={data.handleDaySave}
+                onSaveSuccess={handleSaveSuccess}
+                onSaveError={handleSaveError}
+                onUnsavedChangesChange={data.setHasUnsavedChanges}
+              />
+              <UnifiedWeekTable
+                students={data.filteredStudents}
+                groups={data.groups}
+                lessons={data.filteredLessons}
+                attendanceData={data.attendanceData}
+                weekDates={weekDates}
+              />
+            </div>
           )}
 
         {/* Month View - Selected Day Grid */}

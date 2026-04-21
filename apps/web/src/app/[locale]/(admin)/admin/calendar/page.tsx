@@ -23,6 +23,33 @@ function getWeekDates(date: Date): Date[] {
   return dates;
 }
 
+function getMonthDates(date: Date): (Date | null)[][] {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const firstWeekday = (firstDay.getDay() + 6) % 7;
+  const totalDays = lastDay.getDate();
+
+  const weeks: (Date | null)[][] = [];
+  let day = 1;
+
+  while (day <= totalDays) {
+    const week: (Date | null)[] = [];
+    for (let i = 0; i < 7; i += 1) {
+      if ((weeks.length === 0 && i < firstWeekday) || day > totalDays) {
+        week.push(null);
+      } else {
+        week.push(new Date(year, month, day));
+        day += 1;
+      }
+    }
+    weeks.push(week);
+  }
+
+  return weeks;
+}
+
 // Helper to format time
 function formatTime(dateStr: string): string {
   const date = new Date(dateStr);
@@ -49,9 +76,9 @@ export default function CalendarPage() {
   const searchParams = useSearchParams();
   
   // Initialize view mode from URL query params, with fallback to 'list'
-  const [viewMode, setViewMode] = useState<'week' | 'list'>(() => {
+  const [viewMode, setViewMode] = useState<'week' | 'month' | 'list'>(() => {
     const viewFromUrl = searchParams.get('view');
-    if (viewFromUrl === 'week' || viewFromUrl === 'list') {
+    if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
       return viewFromUrl;
     }
     return 'list'; // Default to list view
@@ -96,7 +123,7 @@ export default function CalendarPage() {
   }, [teachersData]);
   
   // Update URL when view mode changes
-  const updateViewModeInUrl = (mode: 'week' | 'list') => {
+  const updateViewModeInUrl = (mode: 'week' | 'month' | 'list') => {
     // Update state immediately for responsive UI
     setViewMode(mode);
     
@@ -115,7 +142,7 @@ export default function CalendarPage() {
   // Sync view mode from URL (for browser back/forward navigation)
   useEffect(() => {
     const viewFromUrl = searchParams.get('view');
-    if (viewFromUrl === 'week' || viewFromUrl === 'list') {
+    if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
       setViewMode(viewFromUrl);
     } else if (!viewFromUrl) {
       setViewMode('list');
@@ -159,7 +186,18 @@ export default function CalendarPage() {
   };
   
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
-  const dateFrom = formatDate(weekDates[0]);
+  const monthDates = useMemo(() => getMonthDates(currentDate), [currentDate]);
+  const { rangeFrom, rangeTo } = useMemo(() => {
+    if (viewMode === 'month') {
+      const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+      return { rangeFrom: formatDate(start), rangeTo: formatDate(end) };
+    }
+    return {
+      rangeFrom: formatDate(weekDates[0]),
+      rangeTo: formatDate(new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000)),
+    };
+  }, [currentDate, viewMode, weekDates]);
 
   // Fetch lessons for the week. Poll every 60s only when tab is visible (no background spam).
   const {
@@ -168,8 +206,8 @@ export default function CalendarPage() {
     refetch: _refetch,
   } = useLessons(
     {
-      dateFrom,
-      dateTo: formatDate(new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000)),
+      dateFrom: rangeFrom,
+      dateTo: rangeTo,
       take: 100,
       sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
       sortOrder: sortOrder,
@@ -245,8 +283,9 @@ export default function CalendarPage() {
     return date.toDateString() === today.toDateString();
   };
 
-  // Week header
+  // Week/month header
   const weekHeader = `${weekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  const monthHeader = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   // Handle filter changes and update URL - memoized to prevent infinite loops
   const handleSearchChange = useCallback((value: string) => {
@@ -329,7 +368,9 @@ export default function CalendarPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h2 className="text-lg font-semibold text-slate-800">{weekHeader}</h2>
+            <h2 className="text-lg font-semibold text-slate-800">
+              {viewMode === 'month' ? monthHeader : weekHeader}
+            </h2>
             <button
               onClick={goToNextWeek}
               className="p-2 rounded-lg hover:bg-slate-100"
@@ -366,6 +407,16 @@ export default function CalendarPage() {
               }`}
             >
               Week
+            </button>
+            <button
+              onClick={() => updateViewModeInUrl('month')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
+                viewMode === 'month'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Month
             </button>
             <Button 
               onClick={() => setIsAddLessonOpen(true)}
@@ -465,6 +516,49 @@ export default function CalendarPage() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {viewMode === 'month' && (
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="grid grid-cols-7 border-b border-slate-200">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                <div key={day} className="p-2 text-center text-sm font-medium text-slate-600 bg-slate-50">
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="divide-y divide-slate-200">
+              {monthDates.map((week, weekIndex) => (
+                <div key={weekIndex} className="grid grid-cols-7 divide-x divide-slate-200">
+                  {week.map((date, dayIndex) => {
+                    if (!date) return <div key={dayIndex} className="min-h-[120px] bg-slate-50" />;
+                    const dateKey = formatDate(date);
+                    const dayLessons = lessonsByDate[dateKey] || [];
+                    return (
+                      <div key={dayIndex} className="min-h-[120px] p-2">
+                        <p className="mb-1 text-sm font-medium text-slate-700">{date.getDate()}</p>
+                        <div className="space-y-1">
+                          {dayLessons.slice(0, 2).map((lesson) => (
+                            <button
+                              key={lesson.id}
+                              type="button"
+                              onClick={() => router.push(`/admin/calendar/${lesson.id}`)}
+                              className="w-full rounded border border-blue-100 bg-blue-50 px-2 py-1 text-left text-xs text-slate-700 hover:bg-blue-100"
+                            >
+                              {formatTime(lesson.scheduledAt)} · {lesson.group?.name || 'Unknown'}
+                            </button>
+                          ))}
+                          {dayLessons.length > 2 && (
+                            <p className="text-xs text-slate-500">+{dayLessons.length - 2} more</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           </div>
         )}

@@ -16,9 +16,11 @@ interface TeachersListProps {
   selectedTeacherIds: Set<string>;
   onSelectAll: () => void;
   onToggleSelect: (teacherId: string) => void;
+  onView: (teacher: Teacher) => void;
   onEdit: (teacher: Teacher) => void;
   onDelete: (teacher: Teacher) => void;
   onDeactivate: (teacher: Teacher) => void;
+  onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
   isLoading: boolean;
   isDeleting: boolean;
   isUpdating: boolean;
@@ -39,9 +41,11 @@ export function TeachersList({
   selectedTeacherIds,
   onSelectAll,
   onToggleSelect,
+  onView,
   onEdit,
   onDelete,
   onDeactivate,
+  onOpenGroupsModal,
   isLoading,
   isDeleting,
   isUpdating,
@@ -59,9 +63,11 @@ export function TeachersList({
     selectedTeacherIds,
     onSelectAll,
     onToggleSelect,
+    onView,
     onEdit,
     onDelete,
     onDeactivate,
+    onOpenGroupsModal,
     isDeleting: isDeleting || isUpdating,
     isUpdating,
     isLoading,

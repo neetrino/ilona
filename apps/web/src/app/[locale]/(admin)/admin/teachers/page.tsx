@@ -2,20 +2,27 @@
 
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
+import { useState } from 'react';
 import { 
   AddTeacherForm, 
   EditTeacherForm,
   DeleteConfirmationDialog,
   TeacherDetailsModal,
 } from '@/features/teachers';
+import type { Teacher } from '@/features/teachers';
 import { TeachersFilters } from './components/TeachersFilters';
 import { TeachersList } from './components/TeachersList';
 import { TeachersBoard } from './components/TeachersBoard';
 import { TeachersInfoCards } from './components/TeachersInfoCards';
 import { TeachersMessages } from './components/TeachersMessages';
+import { TeacherGroupsModal } from './components/TeacherGroupsModal';
 import { useTeachersPage } from './hooks/useTeachersPage';
 
 export default function TeachersPage() {
+  const [groupsModalTeacher, setGroupsModalTeacher] = useState<Teacher | null>(null);
+  const [groupsModalTab, setGroupsModalTab] = useState<'groups' | 'subgroups'>('groups');
+  const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false);
+
   const {
     // Translations
     t,
@@ -161,9 +168,15 @@ export default function TeachersPage() {
             selectedTeacherIds={selectedTeacherIds}
             onSelectAll={handleSelectAll}
             onToggleSelect={handleToggleSelect}
+            onView={handleRowClick}
             onEdit={handleEditClick}
             onDelete={handleDeleteClick}
             onDeactivate={handleDeactivateClick}
+            onOpenGroupsModal={(teacher, tab) => {
+              setGroupsModalTeacher(teacher);
+              setGroupsModalTab(tab);
+              setIsGroupsModalOpen(true);
+            }}
             isLoading={isLoading}
             isDeleting={deleteTeachers.isPending || deleteTeacher.isPending}
             isUpdating={updateTeacher.isPending}
@@ -264,6 +277,17 @@ export default function TeachersPage() {
         teacherId={selectedTeacherIdForDetails}
         open={isDetailsDrawerOpen}
         onClose={handleDetailsDrawerClose}
+      />
+      <TeacherGroupsModal
+        teacher={groupsModalTeacher}
+        initialTab={groupsModalTab}
+        open={isGroupsModalOpen}
+        onOpenChange={(open) => {
+          setIsGroupsModalOpen(open);
+          if (!open) {
+            setGroupsModalTeacher(null);
+          }
+        }}
       />
     </DashboardLayout>
   );

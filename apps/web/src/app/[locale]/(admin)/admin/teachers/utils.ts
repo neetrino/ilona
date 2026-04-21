@@ -91,3 +91,13 @@ export function formatHourlyRate(rate: number | string | null | undefined): stri
   }).format(numericRate);
 }
 
+/** Format lesson rate as `12,000 ֏` (dram sign after number). */
+export function formatLessonRate(rate: number | string | null | undefined): string {
+  const numericRate = typeof rate === 'string' ? parseFloat(rate) : Number(rate || 0);
+  const formattedNumber = new Intl.NumberFormat('hy-AM', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Number.isNaN(numericRate) ? 0 : numericRate);
+  return `${formattedNumber} ֏`;
+}
+
