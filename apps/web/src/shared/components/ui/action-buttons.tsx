@@ -1,10 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 export interface ActionButtonsProps {
+  /**
+   * Callback when view button is clicked
+   */
+  onView?: () => void;
+
   /**
    * Callback when edit button is clicked
    */
@@ -59,6 +64,7 @@ export interface ActionButtonsProps {
    * Aria labels for accessibility
    */
   ariaLabels?: {
+    view?: string;
     edit?: string;
     disable?: string;
     delete?: string;
@@ -68,6 +74,7 @@ export interface ActionButtonsProps {
    * Tooltip titles
    */
   titles?: {
+    view?: string;
     edit?: string;
     disable?: string;
     delete?: string;
@@ -80,6 +87,7 @@ export interface ActionButtonsProps {
  * Uses monochromatic dark grey icons on white background with clean minimalist styling.
  */
 export function ActionButtons({
+  onView,
   onEdit,
   onDisable,
   onDelete,
@@ -109,6 +117,26 @@ export function ActionButtons({
       className={cn('flex items-center justify-start', gap, className)}
       onClick={(e) => e.stopPropagation()}
     >
+      {/* View Button - Optional first */}
+      {onView && (
+        <button
+          type="button"
+          aria-label={ariaLabels?.view || 'View'}
+          title={titles?.view || 'View'}
+          onClick={(e) => handleClick(e, onView)}
+          disabled={disabled}
+          className={cn(
+            padding,
+            'text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-150 ease-out',
+            'disabled:opacity-50 disabled:cursor-not-allowed',
+            'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
+            'active:scale-95'
+          )}
+        >
+          <Eye className={iconSize} aria-hidden="true" />
+        </button>
+      )}
+
       {/* Edit Button - Always first */}
       {onEdit && (
         <button
