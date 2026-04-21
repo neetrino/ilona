@@ -25,6 +25,20 @@ interface StudentItem {
 }
 
 const MAX_FEEDBACK_LENGTH = 5000;
+const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1'] as const;
+const GRAMMAR_OPTIONS = ['Tenses', 'Articles', 'Prepositions', 'Conditionals', 'Modal verbs'] as const;
+
+interface StructuredFeedbackFields {
+  level: string;
+  grammar: string[];
+  speaking: boolean;
+  writing: boolean;
+  skillsComment: string;
+  comment: string;
+  participationEnabled: boolean;
+  progress: string;
+  encouragement: string;
+}
 
 export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
   const t = useTranslations('courses');
@@ -55,6 +69,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
   }, [feedbacksData]);
 
   const [feedbacks, setFeedbacks] = useState<Record<string, { content: string; rating?: number }>>({});
+  const [structuredFeedbacks, setStructuredFeedbacks] = useState<Record<string, StructuredFeedbackFields>>({});
   const [saveStatus, setSaveStatus] = useState<Record<string, { success: boolean; error: string | null }>>({});
 
   // Create stable keys for comparison to prevent infinite loops
@@ -118,6 +133,25 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       });
       
       setFeedbacks(initial);
+      setStructuredFeedbacks((prev) => {
+        const next = { ...prev };
+        currentStudents.forEach((student) => {
+          if (!next[student.id]) {
+            next[student.id] = {
+              level: '',
+              grammar: [],
+              speaking: false,
+              writing: false,
+              skillsComment: '',
+              comment: '',
+              participationEnabled: false,
+              progress: '',
+              encouragement: '',
+            };
+          }
+        });
+        return next;
+      });
       lastProcessedRef.current = { studentsKey, feedbacksKey };
     }
   }, [studentsKey, feedbacksKey]);
@@ -159,6 +193,14 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     if (!lesson) return;
 
     const feedback = feedbacks[studentId];
+    const structured = structuredFeedbacks[studentId];
+    if (!structured?.level || structured.grammar.length === 0) {
+      setSaveStatus((prev) => ({
+        ...prev,
+        [studentId]: { success: false, error: 'Level and Grammar are required.' },
+      }));
+      return;
+    }
     if (!feedback || !feedback.content.trim()) {
       setSaveStatus((prev) => ({
         ...prev,
@@ -172,11 +214,23 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       [studentId]: { success: false, error: null },
     }));
 
+    const structuredContent = [
+      `Level: ${structured.level}`,
+      `Grammar: ${structured.grammar.join(', ')}`,
+      `Skills: ${[structured.speaking ? 'speaking' : '', structured.writing ? 'writing' : ''].filter(Boolean).join(', ') || 'none'}${structured.skillsComment ? ` (${structured.skillsComment})` : ''}`,
+      `Comment: ${structured.comment || '-'}`,
+      `Participation: ${structured.participationEnabled ? feedback.rating ?? '-' : 'off'}`,
+      `Progress: ${structured.progress || '-'}`,
+      `Encouragement: ${structured.encouragement || '-'}`,
+      '',
+      `Feedback: ${feedback.content}`,
+    ].join('\n');
+
     try {
       await createOrUpdateFeedback.mutateAsync({
         lessonId: lesson.id,
         studentId,
-        content: feedback.content,
+        content: structuredContent,
         ...(feedback.rating != null && feedback.rating >= 1 && feedback.rating <= 5 && { rating: feedback.rating }),
       });
 
@@ -242,6 +296,17 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
           const charCount = feedback.content.length;
           const isNearLimit = charCount > MAX_FEEDBACK_LENGTH * 0.9;
           const isAtLimit = charCount >= MAX_FEEDBACK_LENGTH;
+          const structured = structuredFeedbacks[student.id] ?? {
+            level: '',
+            grammar: [],
+            speaking: false,
+            writing: false,
+            skillsComment: '',
+            comment: '',
+            participationEnabled: false,
+            progress: '',
+            encouragement: '',
+          };
 
           return (
             <div
@@ -278,6 +343,138 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
               </div>
 
               {/* Star Rating */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Level *
+                  </label>
+                  <select
+                    value={structured.level}
+                    onChange={(event) =>
+                      setStructuredFeedbacks((prev) => ({
+                        ...prev,
+                        [student.id]: { ...structured, level: event.target.value },
+                      }))
+                    }
+                    className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
+                  >
+                    <option value="">Select level</option>
+                    {LEVEL_OPTIONS.map((level) => (
+                      <option key={level} value={level}>
+                        {level}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Grammar * (multi-select)
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {GRAMMAR_OPTIONS.map((option) => {
+                      const selected = structured.grammar.includes(option);
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() =>
+                            setStructuredFeedbacks((prev) => ({
+                              ...prev,
+                              [student.id]: {
+                                ...structured,
+                                grammar: selected
+                                  ? structured.grammar.filter((item) => item !== option)
+                                  : [...structured.grammar, option],
+                              },
+                            }))
+                          }
+                          className={`rounded-md border px-2 py-1 text-xs ${selected ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white text-slate-600'}`}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Skills</label>
+                  <div className="flex gap-4 text-sm text-slate-700">
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={structured.speaking}
+                        onChange={(event) =>
+                          setStructuredFeedbacks((prev) => ({
+                            ...prev,
+                            [student.id]: { ...structured, speaking: event.target.checked },
+                          }))
+                        }
+                      />
+                      speaking
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={structured.writing}
+                        onChange={(event) =>
+                          setStructuredFeedbacks((prev) => ({
+                            ...prev,
+                            [student.id]: { ...structured, writing: event.target.checked },
+                          }))
+                        }
+                      />
+                      writing
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    value={structured.skillsComment}
+                    onChange={(event) =>
+                      setStructuredFeedbacks((prev) => ({
+                        ...prev,
+                        [student.id]: { ...structured, skillsComment: event.target.value },
+                      }))
+                    }
+                    placeholder="Skills comment (optional)"
+                    className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Comment</label>
+                  <input
+                    type="text"
+                    value={structured.comment}
+                    onChange={(event) =>
+                      setStructuredFeedbacks((prev) => ({
+                        ...prev,
+                        [student.id]: { ...structured, comment: event.target.value },
+                      }))
+                    }
+                    placeholder="Optional comment"
+                    className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={structured.participationEnabled}
+                    onChange={(event) =>
+                      setStructuredFeedbacks((prev) => ({
+                        ...prev,
+                        [student.id]: { ...structured, participationEnabled: event.target.checked },
+                      }))
+                    }
+                  />
+                  Participation (enable rating)
+                </label>
+              </div>
+
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-slate-700">
                   {t('rateClass') ?? 'Rate this class'}
@@ -286,7 +483,40 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                   value={feedback.rating ?? 0}
                   onChange={(rating) => handleRatingChange(student.id, rating)}
                   size="md"
+                  disabled={!structured.participationEnabled}
+                  className={!structured.participationEnabled ? 'opacity-50' : ''}
                 />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Progress</label>
+                  <textarea
+                    rows={3}
+                    value={structured.progress}
+                    onChange={(event) =>
+                      setStructuredFeedbacks((prev) => ({
+                        ...prev,
+                        [student.id]: { ...structured, progress: event.target.value },
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Encouragement</label>
+                  <textarea
+                    rows={3}
+                    value={structured.encouragement}
+                    onChange={(event) =>
+                      setStructuredFeedbacks((prev) => ({
+                        ...prev,
+                        [student.id]: { ...structured, encouragement: event.target.value },
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
               </div>
 
               {/* Feedback TextArea */}
