@@ -18,15 +18,13 @@ function toMondayIndex(jsDay: number): number {
   return (jsDay + 6) % 7;
 }
 
-/** Round any HH:mm to the nearest 30-minute slot label. */
-function snapToSlot(time: string): string {
+/** Keep exact HH:mm format to avoid shifted lessons in the grid. */
+function normalizeSlot(time: string): string {
   const [hStr, mStr] = time.split(':');
   const h = Number(hStr);
   const m = Number(mStr);
   if (Number.isNaN(h) || Number.isNaN(m)) return time;
-  const snappedM = m < 15 ? 0 : m < 45 ? 30 : 0;
-  const snappedH = m >= 45 ? (h + 1) % 24 : h;
-  return `${String(snappedH).padStart(2, '0')}:${String(snappedM).padStart(2, '0')}`;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 interface ScheduleCellEntry {
@@ -57,7 +55,7 @@ export function ScheduleGrid({ groups, isLoading, fixedSlots }: ScheduleGridProp
       for (const entry of schedule) {
         const dayIdx = toMondayIndex(entry.dayOfWeek);
         if (dayIdx < 0 || dayIdx > 6) continue;
-        const slot = snapToSlot(entry.startTime);
+        const slot = normalizeSlot(entry.startTime);
         slotSet.add(slot);
         const key = `${dayIdx}|${slot}`;
         const list = buckets.get(key) ?? [];
