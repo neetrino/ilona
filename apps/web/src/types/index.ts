@@ -15,6 +15,10 @@ export interface User {
   lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
+  teacher?: {
+    id: string;
+    videoUrl?: string | null;
+  } | null;
 }
 
 export interface AuthTokens {

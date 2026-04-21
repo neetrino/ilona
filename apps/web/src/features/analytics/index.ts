@@ -18,3 +18,7 @@ export type {
   AttendanceOverview,
   LessonsOverview,
 } from './api/analytics.api';
+
+// Components
+export { TeacherRatioTable } from './components/TeacherRatioTable';
+export type { TeacherRatioMetric } from './components/TeacherRatioTable';

@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
-import { AddCourseForm } from '@/features/lessons/components/AddCourseForm';
-import { EditLessonForm } from '@/features/lessons/components/EditLessonForm';
 import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/BulkDeleteConfirmationDialog';
 import { CompleteLessonDialog } from '@/features/lessons/components/CompleteLessonDialog';
 import { useTranslations } from 'next-intl';
@@ -21,27 +19,11 @@ import { CalendarMessages } from './components/CalendarMessages';
 
 export default function TeacherCalendarPage() {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const params = useParams();
+  const locale = params.locale as string;
   const t = useTranslations('calendar');
   const tCommon = useTranslations('common');
 
-  // Add course dialog: persist in URL so it survives refresh
-  const isAddCourseOpen = searchParams.get('addCourse') === '1';
-  const setAddCourseOpen = useCallback(
-    (open: boolean) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (open) {
-        params.set('addCourse', '1');
-      } else {
-        params.delete('addCourse');
-      }
-      const q = params.toString();
-      router.push(q ? `${pathname}?${q}` : pathname);
-    },
-    [pathname, searchParams, router]
-  );
-  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('scheduledAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
@@ -120,7 +102,6 @@ export default function TeacherCalendarPage() {
         <CalendarControls
           viewMode={viewMode}
           onViewModeChange={updateViewModeInUrl}
-          onAddCourse={viewMode === 'list' ? () => setAddCourseOpen(true) : undefined}
           t={t}
         />
       </div>
@@ -134,10 +115,9 @@ export default function TeacherCalendarPage() {
           <LessonListTable
             lessons={lessons}
             isLoading={isLoading}
-            onEdit={(lessonId) => setEditingLessonId(lessonId)}
             onComplete={handleCompleteClick}
             onObligationClick={(lessonId, obligation) => {
-              router.push(`/teacher/calendar/${lessonId}?tab=${obligation}`);
+              router.push(`/${locale}/teacher/calendar/${lessonId}?tab=${obligation}`);
             }}
             onBulkDelete={handleBulkDeleteClick}
             hideTeacherColumn={true}
@@ -145,17 +125,6 @@ export default function TeacherCalendarPage() {
             sortOrder={sortOrder}
             onSort={handleSort}
           />
-          {editingLessonId && (
-            <EditLessonForm
-              open={!!editingLessonId}
-              onOpenChange={(open) => {
-                if (!open) {
-                  setEditingLessonId(null);
-                }
-              }}
-              lessonId={editingLessonId}
-            />
-          )}
           <BulkDeleteConfirmationDialog
             open={isBulkDeleteDialogOpen}
             onOpenChange={handleBulkDeleteDialogClose}
@@ -172,6 +141,9 @@ export default function TeacherCalendarPage() {
               weekDates={weekDates}
               lessonsByDate={lessonsByDate}
               onComplete={handleCompleteClick}
+              onLessonClick={(lessonId) =>
+                router.push(`/${locale}/teacher/calendar/${lessonId}`)
+              }
               isLoading={isLoading}
               t={tCommon}
             />
@@ -180,18 +152,15 @@ export default function TeacherCalendarPage() {
               monthDates={monthDates}
               lessonsByDate={lessonsByDate}
               onComplete={handleCompleteClick}
+              onLessonClick={(lessonId) =>
+                router.push(`/${locale}/teacher/calendar/${lessonId}`)
+              }
               isLoading={isLoading}
               t={tCommon}
             />
           )}
         </div>
       )}
-
-      {/* Add Course: always mounted so URL addCourse=1 works after refresh */}
-      <AddCourseForm
-        open={isAddCourseOpen}
-        onOpenChange={setAddCourseOpen}
-      />
 
       {/* Complete Lesson Dialog */}
       <CompleteLessonDialog

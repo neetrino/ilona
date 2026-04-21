@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
-import { Prisma, UserRole, UserStatus } from '@ilona/database';
+import { Prisma, UserRole, UserStatus, RiskLabel, StudentStatus } from '@ilona/database';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { JwtPayload } from '../../common/types/auth.types';
@@ -16,6 +16,16 @@ import {
   FIXED_GROUP_MAX_STUDENTS,
   GROUP_CAPACITY_EXCEEDED_MESSAGE,
 } from '../groups/group.constants';
+
+/** Compute integer age (in completed years) from a date of birth. */
+function computeAgeFromDob(dob: Date, asOf: Date = new Date()): number {
+  let age = asOf.getFullYear() - dob.getFullYear();
+  const monthDiff = asOf.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && asOf.getDate() < dob.getDate())) {
+    age -= 1;
+  }
+  return age;
+}
 
 @Injectable()
 export class StudentCrudService {
@@ -93,6 +103,8 @@ export class StudentCrudService {
     teacherIds?: string[];
     centerId?: string;
     centerIds?: string[];
+    /** Filter by persisted Student.status (lifecycle) values. */
+    lifecycleStatuses?: StudentStatus[];
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     month?: number;
@@ -100,7 +112,7 @@ export class StudentCrudService {
     currentUserId?: string;
     userRole?: UserRole;
   }) {
-    const { skip = 0, take = 50, search, groupId, groupIds, status, statusIds, teacherId, teacherIds, centerId, centerIds, sortBy, sortOrder = 'asc', currentUserId, userRole } = params || {};
+    const { skip = 0, take = 50, search, groupId, groupIds, status, statusIds, teacherId, teacherIds, centerId, centerIds, lifecycleStatuses, sortBy, sortOrder = 'asc', currentUserId, userRole } = params || {};
 
     const where: Prisma.StudentWhereInput = {};
     const userWhere: Prisma.UserWhereInput = {};
@@ -180,6 +192,11 @@ export class StudentCrudService {
       where.group = { centerId: { in: centerIds } };
     } else if (centerId) {
       where.group = { centerId };
+    }
+
+    // Filter by persisted lifecycle status (NEW, UNGROUPED, RISK, HIGH_RISK, etc.).
+    if (lifecycleStatuses && lifecycleStatuses.length > 0) {
+      where.status = { in: lifecycleStatuses };
     }
 
     // Build orderBy based on sortBy parameter
@@ -296,6 +313,8 @@ export class StudentCrudService {
     // Note: If attendance is not marked for a session, it's not counted as absence (only explicitly marked absences count)
     
     const attendanceDataMap = new Map<string, { totalClasses: number; absences: number }>();
+    const justifiedAbsencesMap = new Map<string, number>();
+    const unjustifiedAbsencesMap = new Map<string, number>();
 
     if (studentIds.length > 0) {
       // Get all groups for these students
@@ -337,9 +356,10 @@ export class StudentCrudService {
         });
       }
 
-      // Fetch absences for all students in a single aggregation query
+      // Fetch absences for all students grouped by absenceType so we can
+      // distinguish excused vs unexcused absences for risk-label logic.
       const absencesResults = await this.prisma.attendance.groupBy({
-        by: ['studentId'],
+        by: ['studentId', 'absenceType'],
         where: {
           studentId: { in: studentIds },
           isPresent: false,
@@ -353,10 +373,22 @@ export class StudentCrudService {
         _count: true,
       });
 
-      // Build absences map
+      // Build absences maps (total + by type)
       const absencesMap = new Map<string, number>();
       absencesResults.forEach((result) => {
-        absencesMap.set(result.studentId, result._count);
+        const prev = absencesMap.get(result.studentId) ?? 0;
+        absencesMap.set(result.studentId, prev + result._count);
+        if (result.absenceType === 'UNJUSTIFIED') {
+          unjustifiedAbsencesMap.set(
+            result.studentId,
+            (unjustifiedAbsencesMap.get(result.studentId) ?? 0) + result._count,
+          );
+        } else if (result.absenceType === 'JUSTIFIED') {
+          justifiedAbsencesMap.set(
+            result.studentId,
+            (justifiedAbsencesMap.get(result.studentId) ?? 0) + result._count,
+          );
+        }
       });
 
       // Combine data for each student
@@ -368,15 +400,33 @@ export class StudentCrudService {
       });
     }
 
-    // Add attendance data to each student item
-    let itemsWithAttendance = sortedItems.map(student => {
-      const attendance = attendanceDataMap.get(student.id) || { totalClasses: 0, absences: 0 };
+    // Add attendance data to each student item, plus a derived risk label
+    // computed from absence breakdown (per ilona.md):
+    //   > 1 unjustified absence → HIGH_RISK
+    //   > 1 justified absence   → RISK
+    //   otherwise               → NONE
+    let itemsWithAttendance = sortedItems.map((student) => {
+      const attendance = attendanceDataMap.get(student.id) || {
+        totalClasses: 0,
+        absences: 0,
+      };
+      const justified = justifiedAbsencesMap.get(student.id) ?? 0;
+      const unjustified = unjustifiedAbsencesMap.get(student.id) ?? 0;
+      const derivedRisk: RiskLabel =
+        unjustified > 1
+          ? RiskLabel.HIGH_RISK
+          : justified > 1
+            ? RiskLabel.RISK
+            : RiskLabel.NONE;
       return {
         ...student,
         attendanceSummary: {
           totalClasses: attendance.totalClasses,
           absences: attendance.absences,
+          justifiedAbsences: justified,
+          unjustifiedAbsences: unjustified,
         },
+        derivedRiskLabel: derivedRisk,
       };
     });
 
@@ -610,7 +660,9 @@ export class StudentCrudService {
 
     const managerCenterId = getManagerCenterIdOrThrow(user);
 
-    // Validate group if provided
+    // Validate group if provided. When a group is selected we also auto-assign
+    // its main teacher to the student (mirrors the behavior in update()).
+    let resolvedTeacherId: string | undefined = dto.teacherId;
     if (dto.groupId) {
       const group = await this.prisma.group.findUnique({
         where: { id: dto.groupId },
@@ -628,12 +680,17 @@ export class StudentCrudService {
       if (group._count.students >= FIXED_GROUP_MAX_STUDENTS) {
         throw new BadRequestException(GROUP_CAPACITY_EXCEEDED_MESSAGE);
       }
+
+      // If no teacher was explicitly provided, inherit from the group.
+      if (!resolvedTeacherId && group.teacherId) {
+        resolvedTeacherId = group.teacherId;
+      }
     }
 
-    // Validate teacher if provided
-    if (dto.teacherId) {
+    // Validate teacher if provided (use resolved id which may have come from group)
+    if (resolvedTeacherId) {
       const teacher = await this.prisma.teacher.findUnique({
-        where: { id: dto.teacherId },
+        where: { id: resolvedTeacherId },
         include: {
           groups: {
             select: {
@@ -644,7 +701,7 @@ export class StudentCrudService {
       });
 
       if (!teacher) {
-        throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
+        throw new BadRequestException(`Teacher with ID ${resolvedTeacherId} not found`);
       }
 
       if (managerCenterId) {
@@ -653,6 +710,14 @@ export class StudentCrudService {
           throw new ForbiddenException('You can only assign teachers from your center');
         }
       }
+    }
+
+    // Derive age from DOB when DOB is provided so the two stay in sync.
+    const dobDate = dto.dateOfBirth ? new Date(dto.dateOfBirth) : null;
+    const ageFromDob = dobDate ? computeAgeFromDob(dobDate) : undefined;
+    const finalAge = ageFromDob ?? dto.age;
+    if (finalAge === undefined) {
+      throw new BadRequestException('Either age or dateOfBirth is required');
     }
 
     // Hash password
@@ -677,15 +742,17 @@ export class StudentCrudService {
       const studentCreateData: Prisma.StudentUncheckedCreateInput = {
         userId: user.id,
         groupId: dto.groupId,
-        teacherId: dto.teacherId,
+        teacherId: resolvedTeacherId,
         parentName: dto.parentName,
         parentPhone: dto.parentPhone,
         parentEmail: dto.parentEmail,
         monthlyFee: dto.monthlyFee,
         notes: dto.notes,
         receiveReports: dto.receiveReports ?? true,
+        dateOfBirth: dobDate ?? undefined,
+        firstLessonDate: dto.firstLessonDate ? new Date(dto.firstLessonDate) : undefined,
       };
-      (studentCreateData as Record<string, unknown>).age = dto.age;
+      (studentCreateData as Record<string, unknown>).age = finalAge;
       (studentCreateData as Record<string, unknown>).parentPassportInfo = dto.parentPassportInfo;
 
       const student = await tx.student.create({
@@ -764,7 +831,13 @@ export class StudentCrudService {
       });
     }
 
-    // Update student fields
+    // Update student fields. When dateOfBirth is supplied we recompute age so
+    // the two values do not drift; passing null clears the DOB.
+    const dobInput = dto.dateOfBirth;
+    const newDob: Date | null | undefined =
+      dobInput === undefined ? undefined : dobInput === null ? null : new Date(dobInput);
+    const ageFromDob = newDob ? computeAgeFromDob(newDob) : undefined;
+
     const updateData: {
       age?: number;
       parentName?: string;
@@ -777,8 +850,10 @@ export class StudentCrudService {
       groupId?: string | null;
       teacherId?: string | null;
       registerDate?: Date | null;
+      dateOfBirth?: Date | null;
+      firstLessonDate?: Date | null;
     } = {
-      age: dto.age,
+      age: ageFromDob ?? dto.age,
       parentName: dto.parentName,
       parentPhone: dto.parentPhone,
       parentEmail: dto.parentEmail,
@@ -787,6 +862,13 @@ export class StudentCrudService {
       notes: dto.notes,
       receiveReports: dto.receiveReports,
     };
+
+    if (newDob !== undefined) {
+      updateData.dateOfBirth = newDob;
+    }
+    if (dto.firstLessonDate !== undefined) {
+      updateData.firstLessonDate = dto.firstLessonDate ? new Date(dto.firstLessonDate) : null;
+    }
 
     // When groupId is set, sync teacherId from the group so Teacher → My Students shows the student immediately
     if (dto.groupId !== undefined) {

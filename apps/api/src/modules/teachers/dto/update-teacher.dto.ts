@@ -8,6 +8,9 @@ import {
   MaxLength,
   MinLength,
   IsObject,
+  IsUrl,
+  ArrayUnique,
+  ValidateIf,
 } from 'class-validator';
 import { UserStatus } from '@ilona/database';
 
@@ -71,5 +74,26 @@ export class UpdateTeacherDto {
     SAT?: Array<{ start: string; end: string }>;
     SUN?: Array<{ start: string; end: string }>;
   };
+
+  /**
+   * Public video URL (e.g. YouTube/Vimeo) shown on the teacher's public profile.
+   * Pass null to clear the existing value.
+   */
+  @ValidateIf((_, value) => value !== null && value !== undefined && value !== '')
+  @IsString()
+  @IsUrl({ require_protocol: true })
+  @MaxLength(500)
+  @IsOptional()
+  videoUrl?: string | null;
+
+  /**
+   * Replace the teacher's center assignments with this list.
+   * Pass `[]` to remove all explicit assignments.
+   */
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  @ArrayUnique()
+  centerIds?: string[];
 }
 

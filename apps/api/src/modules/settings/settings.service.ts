@@ -31,6 +31,7 @@ type SystemSettingsWithOptionalPenalties = SystemSettings & {
   penaltyFeedbackAmd?: Prisma.Decimal | number;
   penaltyVoiceAmd?: Prisma.Decimal | number;
   penaltyTextAmd?: Prisma.Decimal | number;
+  penaltyDailyPlanAmd?: Prisma.Decimal | number;
 };
 
 @Injectable()
@@ -76,6 +77,7 @@ export class SettingsService {
                 penaltyFeedbackAmd: 1000,
                 penaltyVoiceAmd: 1000,
                 penaltyTextAmd: 1000,
+                penaltyDailyPlanAmd: 1000,
               } as unknown as SystemSettingsCreateData,
             });
           } catch (penaltyError: unknown) {
@@ -427,12 +429,14 @@ export class SettingsService {
       const penaltyFeedbackAmd = convertToNumber(settingsWithPenalties.penaltyFeedbackAmd);
       const penaltyVoiceAmd = convertToNumber(settingsWithPenalties.penaltyVoiceAmd);
       const penaltyTextAmd = convertToNumber(settingsWithPenalties.penaltyTextAmd);
-      
+      const penaltyDailyPlanAmd = convertToNumber(settingsWithPenalties.penaltyDailyPlanAmd);
+
       return {
         penaltyAbsenceAmd,
         penaltyFeedbackAmd,
         penaltyVoiceAmd,
         penaltyTextAmd,
+        penaltyDailyPlanAmd,
       };
     } catch (error) {
       this.logger.error(
@@ -447,6 +451,7 @@ export class SettingsService {
         penaltyFeedbackAmd: 1000,
         penaltyVoiceAmd: 1000,
         penaltyTextAmd: 1000,
+        penaltyDailyPlanAmd: 1000,
       };
     }
   }
@@ -460,6 +465,7 @@ export class SettingsService {
     penaltyFeedbackAmd: number;
     penaltyVoiceAmd: number;
     penaltyTextAmd: number;
+    penaltyDailyPlanAmd: number;
   }) {
     try {
       // Validate each penalty is >= 0
@@ -468,6 +474,7 @@ export class SettingsService {
         { name: 'penaltyFeedbackAmd', value: data.penaltyFeedbackAmd },
         { name: 'penaltyVoiceAmd', value: data.penaltyVoiceAmd },
         { name: 'penaltyTextAmd', value: data.penaltyTextAmd },
+        { name: 'penaltyDailyPlanAmd', value: data.penaltyDailyPlanAmd },
       ];
 
       for (const penalty of penalties) {
@@ -494,6 +501,7 @@ export class SettingsService {
             penaltyFeedbackAmd: data.penaltyFeedbackAmd,
             penaltyVoiceAmd: data.penaltyVoiceAmd,
             penaltyTextAmd: data.penaltyTextAmd,
+            penaltyDailyPlanAmd: data.penaltyDailyPlanAmd,
           } as unknown as SystemSettingsCreateData,
         });
       } else {
@@ -507,6 +515,7 @@ export class SettingsService {
               penaltyFeedbackAmd: data.penaltyFeedbackAmd,
               penaltyVoiceAmd: data.penaltyVoiceAmd,
               penaltyTextAmd: data.penaltyTextAmd,
+              penaltyDailyPlanAmd: data.penaltyDailyPlanAmd,
             } as unknown as SystemSettingsUpdateData,
           });
         });
@@ -530,12 +539,14 @@ export class SettingsService {
       const penaltyFeedbackAmd = convertToNumber(settingsWithPenalties.penaltyFeedbackAmd);
       const penaltyVoiceAmd = convertToNumber(settingsWithPenalties.penaltyVoiceAmd);
       const penaltyTextAmd = convertToNumber(settingsWithPenalties.penaltyTextAmd);
-      
+      const penaltyDailyPlanAmd = convertToNumber(settingsWithPenalties.penaltyDailyPlanAmd);
+
       return {
-        penaltyAbsenceAmd: convertToNumber(penaltyAbsenceAmd),
-        penaltyFeedbackAmd: convertToNumber(penaltyFeedbackAmd),
-        penaltyVoiceAmd: convertToNumber(penaltyVoiceAmd),
-        penaltyTextAmd: convertToNumber(penaltyTextAmd),
+        penaltyAbsenceAmd,
+        penaltyFeedbackAmd,
+        penaltyVoiceAmd,
+        penaltyTextAmd,
+        penaltyDailyPlanAmd,
       };
     } catch (error) {
       if (error instanceof BadRequestException) {

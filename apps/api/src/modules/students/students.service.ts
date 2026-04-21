@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
-import { UserRole, UserStatus } from '@ilona/database';
+import { UserRole, UserStatus, StudentStatus } from '@ilona/database';
 import { StudentCrudService } from './student-crud.service';
 import { StudentQueryService } from './student-query.service';
 import { StudentStatisticsService } from './student-statistics.service';
@@ -33,6 +33,7 @@ export class StudentsService {
     teacherIds?: string[];
     centerId?: string;
     centerIds?: string[];
+    lifecycleStatuses?: StudentStatus[];
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     month?: number;

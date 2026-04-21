@@ -13,6 +13,10 @@ interface StudentsFiltersProps {
   onTeacherChange: (ids: Set<string>) => void;
   selectedCenterIds: Set<string>;
   onCenterChange: (ids: Set<string>) => void;
+  selectedGroupIds: Set<string>;
+  onGroupChange: (ids: Set<string>) => void;
+  selectedLifecycleIds: Set<string>;
+  onLifecycleChange: (ids: Set<string>) => void;
   selectedMonth: number;
   onMonthChange: (month: number) => void;
   selectedYear: number;
@@ -25,6 +29,8 @@ interface StudentsFiltersProps {
   statusFilterOptions: Array<{ id: string; label: string }>;
   teacherFilterOptions: Array<{ id: string; label: string }>;
   centerFilterOptions: Array<{ id: string; label: string }>;
+  groupFilterOptions: Array<{ id: string; label: string }>;
+  lifecycleFilterOptions: Array<{ id: string; label: string }>;
   isLoadingTeachers: boolean;
   isLoadingCenters: boolean;
   isDeleting: boolean;
@@ -41,6 +47,10 @@ export function StudentsFilters({
   onTeacherChange,
   selectedCenterIds,
   onCenterChange,
+  selectedGroupIds,
+  onGroupChange,
+  selectedLifecycleIds,
+  onLifecycleChange,
   selectedMonth,
   onMonthChange,
   selectedYear,
@@ -53,6 +63,8 @@ export function StudentsFilters({
   statusFilterOptions,
   teacherFilterOptions,
   centerFilterOptions,
+  groupFilterOptions,
+  lifecycleFilterOptions,
   isLoadingTeachers,
   isLoadingCenters,
   isDeleting,
@@ -123,13 +135,20 @@ export function StudentsFilters({
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-end">
         <FilterDropdown
           label="Status"
           options={statusFilterOptions}
           selectedIds={selectedStatusIds}
           onSelectionChange={onStatusChange}
           placeholder="All Statuses"
+        />
+        <FilterDropdown
+          label="Lifecycle"
+          options={lifecycleFilterOptions}
+          selectedIds={selectedLifecycleIds}
+          onSelectionChange={onLifecycleChange}
+          placeholder="All"
         />
         <FilterDropdown
           label="Teacher"
@@ -146,6 +165,13 @@ export function StudentsFilters({
           onSelectionChange={onCenterChange}
           placeholder="All Centers"
           isLoading={isLoadingCenters}
+        />
+        <FilterDropdown
+          label="Group"
+          options={groupFilterOptions}
+          selectedIds={selectedGroupIds}
+          onSelectionChange={onGroupChange}
+          placeholder="All Groups"
         />
         {/* Month Filter */}
         <div className="relative">

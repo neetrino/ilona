@@ -5,10 +5,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@ilona/database';
+import { StudentStreakService } from './student-streak.service';
 
 @Injectable()
 export class StudentStatisticsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly streakService: StudentStreakService,
+  ) {}
 
   async getStatistics(id: string, currentUserId?: string, userRole?: UserRole) {
     const student = await this.prisma.student.findUnique({
@@ -62,10 +66,31 @@ export class StudentStatisticsService {
       where: { studentId: id, status: 'OVERDUE' },
     });
 
+    const paidPayments = await this.prisma.payment.count({
+      where: { studentId: id, status: 'PAID' },
+    });
+
     // Get feedbacks count
     const feedbacksCount = await this.prisma.feedback.count({
       where: { studentId: id },
     });
+
+    // Get recording completion stats (per lesson assigned to student's group)
+    const recordingStats = await this.getRecordingStats(id);
+
+    // Get streak (consecutive completed-lesson attendances).
+    const streak = await this.streakService.getStreak(id);
+
+    const attendanceRate = totalAttendances > 0
+      ? Math.round((presentCount / totalAttendances) * 100)
+      : 0;
+    const totalPayments = pendingPayments + overduePayments + paidPayments;
+    const paymentRate = totalPayments > 0
+      ? Math.round((paidPayments / totalPayments) * 100)
+      : 100;
+    const overall = Math.round(
+      (attendanceRate + recordingStats.rate + paymentRate) / 3,
+    );
 
     return {
       attendance: {
@@ -73,13 +98,67 @@ export class StudentStatisticsService {
         present: presentCount,
         absent: totalAttendances - presentCount,
         unjustifiedAbsences,
-        rate: totalAttendances > 0 ? Math.round((presentCount / totalAttendances) * 100) : 0,
+        rate: attendanceRate,
       },
+      recordings: recordingStats,
       payments: {
         pending: pendingPayments,
         overdue: overduePayments,
+        paid: paidPayments,
+        rate: paymentRate,
       },
       feedbacks: feedbacksCount,
+      streak: {
+        currentStreak: streak.currentStreak,
+        lastAttendanceDate: streak.lastAttendanceDate
+          ? streak.lastAttendanceDate.toISOString()
+          : null,
+      },
+      progress: {
+        attendanceRate,
+        recordingRate: recordingStats.rate,
+        paymentRate,
+        overall,
+      },
+    };
+  }
+
+  /**
+   * Returns recording completion statistics for the student.
+   * Denominator = completed lessons the student should have attended.
+   * Numerator = distinct completed lessons for which the student uploaded a recording.
+   */
+  private async getRecordingStats(
+    studentId: string,
+  ): Promise<{ total: number; submitted: number; rate: number }> {
+    const student = await this.prisma.student.findUnique({
+      where: { id: studentId },
+      select: { groupId: true },
+    });
+
+    if (!student?.groupId) {
+      return { total: 0, submitted: 0, rate: 0 };
+    }
+
+    const totalLessons = await this.prisma.lesson.count({
+      where: { groupId: student.groupId, status: 'COMPLETED' },
+    });
+
+    if (totalLessons === 0) {
+      return { total: 0, submitted: 0, rate: 0 };
+    }
+
+    const submittedLessons = await this.prisma.recordingItem.findMany({
+      where: { studentId, lessonId: { not: null } },
+      select: { lessonId: true },
+      distinct: ['lessonId'],
+    });
+
+    const submitted = submittedLessons.length;
+    return {
+      total: totalLessons,
+      submitted,
+      rate: Math.round((submitted / totalLessons) * 100),
     };
   }
 

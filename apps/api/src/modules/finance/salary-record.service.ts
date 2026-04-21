@@ -55,13 +55,17 @@ export class SalaryRecordService {
     dateFrom?: Date;
     dateTo?: Date;
     q?: string;
+    centerId?: string;
   }) {
-    const { skip = 0, take = 50, teacherId, status, dateFrom, dateTo, q } = params || {};
+    const { skip = 0, take = 50, teacherId, status, dateFrom, dateTo, q, centerId } = params || {};
 
     // Start from Teachers table to include ALL teachers
     const teacherWhere: Prisma.TeacherWhereInput = {};
     if (teacherId) {
       teacherWhere.id = teacherId;
+    }
+    if (centerId) {
+      teacherWhere.centerLinks = { some: { centerId } };
     }
     // Filter by user status (only active teachers) and optional search by name/email
     const searchTerm = typeof q === 'string' ? q.trim() : '';

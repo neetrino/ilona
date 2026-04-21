@@ -147,7 +147,7 @@ export function LoginForm() {
           <p className="text-xs text-muted-foreground text-center mb-4 font-medium">
             {t('demoAccounts')}
           </p>
-          <div className="grid grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <button
               type="button"
               onClick={() => { setEmail('admin@ilona.edu'); setPassword('admin123'); }}
@@ -163,6 +163,14 @@ export function LoginForm() {
               aria-label={`${tRoles('teacher')} demo account`}
             >
               👩‍🏫 {tRoles('teacher')}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('manager@ilona.edu'); setPassword('manager123'); }}
+              className="p-3 rounded-lg bg-muted hover:bg-muted/80 transition-all duration-200 text-xs font-medium text-foreground hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
+              aria-label={`${tRoles('manager')} demo account`}
+            >
+              🧑‍💼 {tRoles('manager')}
             </button>
             <button
               type="button"

@@ -41,9 +41,14 @@ export async function createLead(data: CreateLeadDto): Promise<CrmLead> {
 }
 
 /** Create a new lead from a voice recording (audio file). Lead appears in NEW column. */
-export async function createLeadFromVoice(file: File | Blob, fileName: string): Promise<CrmLead> {
+export async function createLeadFromVoice(
+  file: File | Blob,
+  fileName: string,
+  centerId?: string,
+): Promise<CrmLead> {
   const form = new FormData();
   form.append('file', file, fileName);
+  if (centerId) form.append('centerId', centerId);
   return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/voice`, form);
 }
 
@@ -55,9 +60,27 @@ function sanitizeUpdateLeadPayload(data: UpdateLeadDto): Record<string, unknown>
     const v = data[key];
     if (v !== undefined && v !== null && v !== '') out[key] = v;
   }
-  const strFields = ['firstName', 'lastName', 'phone', 'levelId', 'source', 'notes', 'transferComment', 'archivedReason'] as const;
+  const strFields = [
+    'firstName',
+    'lastName',
+    'phone',
+    'levelId',
+    'source',
+    'notes',
+    'transferComment',
+    'archivedReason',
+    'parentName',
+    'parentPhone',
+    'parentPassportInfo',
+    'comment',
+  ] as const;
   for (const key of strFields) {
     if (data[key] !== undefined) out[key] = data[key];
+  }
+  const dateFields = ['dateOfBirth', 'firstLessonDate'] as const;
+  for (const key of dateFields) {
+    const v = data[key];
+    if (v !== undefined && v !== null && v !== '') out[key] = v;
   }
   if (data.age !== undefined && data.age !== null) {
     const n = typeof data.age === 'number' ? data.age : Number(data.age);

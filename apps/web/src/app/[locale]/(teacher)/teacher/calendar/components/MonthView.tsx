@@ -8,6 +8,7 @@ interface MonthViewProps {
   monthDates: (Date | null)[][];
   lessonsByDate: Record<string, Lesson[]>;
   onComplete?: (lessonId: string) => void;
+  onLessonClick?: (lessonId: string) => void;
   isLoading?: boolean;
   t?: (key: string) => string;
 }
@@ -16,6 +17,7 @@ export function MonthView({
   monthDates, 
   lessonsByDate, 
   onComplete,
+  onLessonClick,
   isLoading,
   t 
 }: MonthViewProps) {
@@ -60,7 +62,12 @@ export function MonthView({
                     {date.getDate()}
                   </p>
                   {dayLessons.slice(0, 2).map((lesson) => (
-                    <LessonBlock key={lesson.id} lesson={lesson} onComplete={onComplete} />
+                    <LessonBlock
+                      key={lesson.id}
+                      lesson={lesson}
+                      onComplete={onComplete}
+                      onClick={onLessonClick}
+                    />
                   ))}
                   {dayLessons.length > 2 && (
                     <p className="text-xs text-slate-500">+{dayLessons.length - 2} more</p>

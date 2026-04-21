@@ -338,6 +338,42 @@ export function getSalaryColumns({
       ),
     },
     {
+      key: 'lessons',
+      header: 'Lessons',
+      className: 'text-right',
+      render: (salary: SalaryRecord) => (
+        <span className="text-slate-700">{salary.lessonsCount ?? 0}</span>
+      ),
+    },
+    {
+      key: 'deductions',
+      header: 'Deductions',
+      className: 'text-right',
+      render: (salary: SalaryRecord) => {
+        const amount =
+          typeof salary.totalDeductions === 'string'
+            ? parseFloat(salary.totalDeductions)
+            : Number(salary.totalDeductions ?? 0);
+        return (
+          <span
+            className={
+              amount > 0
+                ? 'font-medium text-red-600'
+                : 'text-slate-500'
+            }
+          >
+            {amount > 0 ? '−' : ''}
+            {new Intl.NumberFormat('hy-AM', {
+              style: 'currency',
+              currency: 'AMD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(amount)}
+          </span>
+        );
+      },
+    },
+    {
       key: 'salary',
       header: 'Salary',
       className: 'text-right',

@@ -177,40 +177,25 @@ export async function updateActionPercents(data: {
 /**
  * Get penalty amounts (Admin only)
  */
-export async function fetchPenalties(): Promise<{
+export interface PenaltyAmountsPayload {
   penaltyAbsenceAmd: number;
   penaltyFeedbackAmd: number;
   penaltyVoiceAmd: number;
   penaltyTextAmd: number;
-}> {
-  return api.get<{
-    penaltyAbsenceAmd: number;
-    penaltyFeedbackAmd: number;
-    penaltyVoiceAmd: number;
-    penaltyTextAmd: number;
-  }>('/settings/penalties');
+  penaltyDailyPlanAmd: number;
+}
+
+export async function fetchPenalties(): Promise<PenaltyAmountsPayload> {
+  return api.get<PenaltyAmountsPayload>('/settings/penalties');
 }
 
 /**
  * Update penalty amounts (Admin only)
  */
-export async function updatePenalties(data: {
-  penaltyAbsenceAmd: number;
-  penaltyFeedbackAmd: number;
-  penaltyVoiceAmd: number;
-  penaltyTextAmd: number;
-}): Promise<{
-  penaltyAbsenceAmd: number;
-  penaltyFeedbackAmd: number;
-  penaltyVoiceAmd: number;
-  penaltyTextAmd: number;
-}> {
-  return api.put<{
-    penaltyAbsenceAmd: number;
-    penaltyFeedbackAmd: number;
-    penaltyVoiceAmd: number;
-    penaltyTextAmd: number;
-  }>('/settings/penalties', data);
+export async function updatePenalties(
+  data: PenaltyAmountsPayload,
+): Promise<PenaltyAmountsPayload> {
+  return api.put<PenaltyAmountsPayload>('/settings/penalties', data);
 }
 
 /**

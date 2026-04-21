@@ -35,5 +35,7 @@ export type {
   StudentUpcomingLesson,
   StudentFeedback,
   StudentPayment,
+  StudentLifecycleStatus,
+  StudentRiskLabel,
 } from './types';
 export { isOnboardingItem, getItemId } from './types';

@@ -71,6 +71,7 @@ export function useUpdateProfile() {
           firstName: updatedProfile.firstName || user.firstName,
           lastName: updatedProfile.lastName || user.lastName,
           phone: updatedProfile.phone || user.phone,
+          teacher: updatedProfile.teacher ?? user.teacher ?? null,
         });
       }
     },
@@ -242,6 +243,7 @@ export function useUpdatePenalties() {
       penaltyFeedbackAmd: number;
       penaltyVoiceAmd: number;
       penaltyTextAmd: number;
+      penaltyDailyPlanAmd: number;
     }) => updatePenalties(data),
     onSuccess: () => {
       // Invalidate penalties query

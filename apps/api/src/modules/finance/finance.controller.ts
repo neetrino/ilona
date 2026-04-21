@@ -28,6 +28,7 @@ import {
 import { CreateDeductionDto } from './dto/create-deduction.dto';
 import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
 @Controller('finance')
 export class FinanceController {
@@ -52,6 +53,32 @@ export class FinanceController {
       throw new NotFoundException('Student profile not found');
     }
     return student;
+  }
+
+  /**
+   * Block a manager from viewing teachers/lessons that belong to other centers.
+   * Admins bypass this check entirely (no centerId scoping for admin role).
+   */
+  private async assertManagerCanReadTeacher(
+    user: JwtPayload,
+    teacherId: string,
+  ): Promise<void> {
+    const managerCenterId = getManagerCenterIdOrThrow(user);
+    if (!managerCenterId) {
+      return;
+    }
+    const link = await this.prisma.teacherCenter.findFirst({
+      where: { teacherId, centerId: managerCenterId },
+      select: { teacherId: true },
+    });
+    if (link) return;
+    const fallback = await this.prisma.group.findFirst({
+      where: { teacherId, centerId: managerCenterId },
+      select: { id: true },
+    });
+    if (!fallback) {
+      throw new ForbiddenException('You do not have access to this teacher');
+    }
   }
 
   // ============ TEACHER-SPECIFIC ENDPOINTS ============
@@ -225,26 +252,30 @@ export class FinanceController {
   // ============ DASHBOARD ============
 
   @Get('dashboard')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getDashboard(
+    @CurrentUser() user: JwtPayload,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
     return this.financeService.getDashboard(
       dateFrom ? new Date(dateFrom) : undefined,
       dateTo ? new Date(dateTo) : undefined,
+      getManagerCenterIdOrThrow(user),
     );
   }
 
   @Get('report/monthly')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getMonthlyReport(
+    @CurrentUser() user: JwtPayload,
     @Query('year') year: string,
     @Query('month') month: string,
   ): Promise<unknown> {
     return this.financeService.getMonthlyReport(
       parseInt(year, 10),
       parseInt(month, 10),
+      getManagerCenterIdOrThrow(user),
     );
   }
 
@@ -257,8 +288,11 @@ export class FinanceController {
   // ============ PAYMENTS ============
 
   @Get('payments')
-  @Roles(UserRole.ADMIN)
-  async getPayments(@Query() query: QueryPaymentDto): Promise<unknown> {
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async getPayments(
+    @CurrentUser() user: JwtPayload,
+    @Query() query: QueryPaymentDto,
+  ): Promise<unknown> {
     await this.paymentsService.ensureCurrentMonthPaymentsForActiveStudents();
 
     return this.paymentsService.findAll({
@@ -269,6 +303,7 @@ export class FinanceController {
       dateFrom: query.dateFrom ? new Date(query.dateFrom) : undefined,
       dateTo: query.dateTo ? new Date(query.dateTo) : undefined,
       q: query.q?.trim() || undefined,
+      centerId: getManagerCenterIdOrThrow(user),
     });
   }
 
@@ -324,22 +359,25 @@ export class FinanceController {
   }
 
   @Get('payments/stats/revenue')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getRevenueStats(
+    @CurrentUser() user: JwtPayload,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
     return this.paymentsService.getRevenueStats(
       dateFrom ? new Date(dateFrom) : undefined,
       dateTo ? new Date(dateTo) : undefined,
+      getManagerCenterIdOrThrow(user),
     );
   }
 
   // ============ SALARIES ============
 
   @Get('salaries')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getSalaries(
+    @CurrentUser() user: JwtPayload,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
     @Query('teacherId') teacherId?: string,
@@ -352,6 +390,7 @@ export class FinanceController {
       teacherId,
       status: status as SalaryStatus | undefined,
       q: q?.trim() || undefined,
+      centerId: getManagerCenterIdOrThrow(user),
     });
   }
 
@@ -382,32 +421,38 @@ export class FinanceController {
   // Specific routes must come before generic :id route to avoid route conflicts
   // Most specific routes first (with multiple path segments)
   @Get('salaries/lessons/:lessonId/obligation')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getLessonObligation(@Param('lessonId') lessonId: string) {
     return this.salariesService.getLessonObligation(lessonId);
   }
 
   @Get('salaries/teacher/:teacherId/summary')
-  @Roles(UserRole.ADMIN)
-  async getTeacherSalarySummary(@Param('teacherId') teacherId: string) {
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async getTeacherSalarySummary(
+    @CurrentUser() user: JwtPayload,
+    @Param('teacherId') teacherId: string,
+  ) {
+    await this.assertManagerCanReadTeacher(user, teacherId);
     return this.salariesService.getTeacherSalarySummary(teacherId);
   }
 
   @Get('salaries/:teacherId/breakdown')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getSalaryBreakdown(
+    @CurrentUser() user: JwtPayload,
     @Param('teacherId') teacherId: string,
     @Query('month') month: string,
   ) {
     if (!month) {
       throw new BadRequestException('Month parameter is required (format: YYYY-MM)');
     }
+    await this.assertManagerCanReadTeacher(user, teacherId);
     return this.salariesService.getSalaryBreakdown(teacherId, month);
   }
 
   // Generic routes must come after specific routes
   @Get('salaries/:id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getSalary(@Param('id') id: string): Promise<unknown> {
     return this.salariesService.findById(id);
   }
@@ -451,8 +496,9 @@ export class FinanceController {
   // ============ DEDUCTIONS ============
 
   @Get('deductions')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getDeductions(
+    @CurrentUser() user: JwtPayload,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
     @Query('teacherId') teacherId?: string,
@@ -463,6 +509,7 @@ export class FinanceController {
       take: take ? parseInt(take, 10) : undefined,
       teacherId,
       reason: reason as DeductionReason | undefined,
+      centerId: getManagerCenterIdOrThrow(user),
     });
   }
 
@@ -485,8 +532,9 @@ export class FinanceController {
   }
 
   @Get('deductions/stats')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getDeductionStats(
+    @CurrentUser() user: JwtPayload,
     @Query('teacherId') teacherId?: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
@@ -495,6 +543,7 @@ export class FinanceController {
       teacherId,
       dateFrom ? new Date(dateFrom) : undefined,
       dateTo ? new Date(dateTo) : undefined,
+      getManagerCenterIdOrThrow(user),
     );
   }
 }

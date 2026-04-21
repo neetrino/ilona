@@ -8,6 +8,7 @@ interface WeekViewProps {
   weekDates: Date[];
   lessonsByDate: Record<string, Lesson[]>;
   onComplete?: (lessonId: string) => void;
+  onLessonClick?: (lessonId: string) => void;
   isLoading?: boolean;
   t?: (key: string) => string;
 }
@@ -16,6 +17,7 @@ export function WeekView({
   weekDates, 
   lessonsByDate, 
   onComplete,
+  onLessonClick,
   isLoading,
   t 
 }: WeekViewProps) {
@@ -52,7 +54,12 @@ export function WeekView({
               {dayLessons
                 .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
                 .map((lesson) => (
-                  <LessonBlock key={lesson.id} lesson={lesson} onComplete={onComplete} />
+                  <LessonBlock
+                    key={lesson.id}
+                    lesson={lesson}
+                    onComplete={onComplete}
+                    onClick={onLessonClick}
+                  />
                 ))}
               {dayLessons.length === 0 && (
                 <p className="text-xs text-slate-400 text-center py-4">

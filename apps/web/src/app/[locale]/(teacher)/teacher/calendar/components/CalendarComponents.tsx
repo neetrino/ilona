@@ -15,10 +15,12 @@ export function StatusDot({ status }: { status: string }) {
 
 export function LessonBlock({ 
   lesson, 
-  onComplete 
+  onComplete,
+  onClick,
 }: { 
   lesson: Lesson;
   onComplete?: (lessonId: string) => void;
+  onClick?: (lessonId: string) => void;
 }) {
   const time = new Date(lesson.scheduledAt).toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -29,8 +31,23 @@ export function LessonBlock({
   const isCompleted = lesson.status === 'COMPLETED';
 
   return (
-    <div className={cn(
+    <div
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick ? () => onClick(lesson.id) : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick(lesson.id);
+              }
+            }
+          : undefined
+      }
+      className={cn(
       'p-2 rounded-lg text-xs mb-1 transition-colors group',
+      onClick && 'cursor-pointer',
       isCompleted ? 'bg-green-100 hover:bg-green-200' :
       lesson.status === 'IN_PROGRESS' ? 'bg-yellow-100 hover:bg-yellow-200' :
       lesson.status === 'CANCELLED' ? 'bg-red-100 hover:bg-red-200' :

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle } from 'lucide-react';
+import { Eye, MessageCircle } from 'lucide-react';
 import { ActionButtons, Avatar } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
@@ -173,6 +173,7 @@ interface StudentsTableColumnsProps {
   onDelete: (student: Student) => void;
   onDeactivate: (student: Student) => void;
   onShowFeedback: (student: Student) => void;
+  onView: (student: Student) => void;
   onTeacherChange: (studentId: string, teacherId: string | null) => Promise<void>;
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
@@ -197,6 +198,7 @@ export function createStudentsTableColumns({
   onDelete,
   onDeactivate,
   onShowFeedback,
+  onView,
   onTeacherChange,
   onGroupChange,
   onCenterChange,
@@ -246,18 +248,39 @@ export function createStudentsTableColumns({
         const phone = isOnboardingItem(row) ? (row.phone ?? 'No phone') : (row.user?.phone ?? 'No phone');
         const fullName = `${firstName} ${lastName}`.trim() || '?';
         const avatarUrl = isOnboardingItem(row) ? undefined : row.user?.avatarUrl;
+        // Lifecycle/risk badges – computed from persisted status + server-derived risk.
+        const lifecycle = !isOnboardingItem(row) ? row.status : undefined;
+        const derivedRisk =
+          !isOnboardingItem(row) ? (row.derivedRiskLabel ?? row.riskLabel) : undefined;
+        const showNewBadge = lifecycle === 'NEW';
+        const riskBadge =
+          derivedRisk === 'HIGH_RISK'
+            ? { label: 'High risk', className: 'bg-red-100 text-red-700 border-red-200' }
+            : derivedRisk === 'RISK'
+              ? { label: 'Risk', className: 'bg-amber-100 text-amber-700 border-amber-200' }
+              : null;
         return (
           <div className="flex items-center gap-3">
-            <Avatar
-              src={avatarUrl}
-              name={fullName}
-              size="md"
-            />
-            <div>
-              <p className="font-semibold text-slate-800">
+            <Avatar src={avatarUrl} name={fullName} size="md" />
+            <div className="min-w-0">
+              <p className="font-semibold text-slate-800 truncate">
                 {firstName} {lastName}
               </p>
-              <p className="text-sm text-slate-500">{phone}</p>
+              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                {showNewBadge && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200">
+                    New
+                  </span>
+                )}
+                {riskBadge && (
+                  <span
+                    className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border ${riskBadge.className}`}
+                  >
+                    {riskBadge.label}
+                  </span>
+                )}
+                <span className="text-sm text-slate-500">{phone}</span>
+              </div>
             </div>
           </div>
         );
@@ -408,6 +431,19 @@ export function createStudentsTableColumns({
             className="flex items-center justify-start gap-1"
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              type="button"
+              aria-label="View profile"
+              title="View profile"
+              className={btnClass}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onView(student);
+              }}
+            >
+              <Eye className="w-4 h-4" aria-hidden="true" />
+            </button>
             <button
               type="button"
               aria-label="Message"

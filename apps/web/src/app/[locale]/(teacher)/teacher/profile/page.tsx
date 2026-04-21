@@ -26,6 +26,7 @@ export default function TeacherProfilePage() {
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [bio, setBio] = useState('');
+  const [videoUrl, setVideoUrl] = useState(user?.teacher?.videoUrl || '');
 
   // Update form state when user changes
   useEffect(() => {
@@ -33,6 +34,7 @@ export default function TeacherProfilePage() {
       setFirstName(user.firstName || '');
       setLastName(user.lastName || '');
       setPhone(user.phone || '');
+      setVideoUrl(user.teacher?.videoUrl || '');
     }
   }, [user]);
 
@@ -43,10 +45,12 @@ export default function TeacherProfilePage() {
     setUploadSuccess(null);
 
     try {
+      const trimmedVideoUrl = videoUrl.trim();
       await updateProfileMutation.mutateAsync({
         firstName,
         lastName,
         phone: phone || undefined,
+        videoUrl: trimmedVideoUrl ? trimmedVideoUrl : null,
       });
       setUploadSuccess(t('profileUpdatedSuccess') ?? 'Profile updated successfully!');
     } catch (error) {
@@ -249,6 +253,22 @@ export default function TeacherProfilePage() {
               placeholder="+380 XX XXX XXXX"
               className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              {t('introVideoUrl')}
+            </label>
+            <input
+              type="url"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder={t('introVideoUrlPlaceholder')}
+              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              {t('introVideoUrlHint')}
+            </p>
           </div>
 
           <div>

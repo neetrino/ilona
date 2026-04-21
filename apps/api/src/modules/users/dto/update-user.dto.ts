@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MaxLength, MinLength, IsEmail } from 'class-validator';
+import { IsString, IsOptional, MaxLength, MinLength, IsEmail, IsUrl, ValidateIf } from 'class-validator';
 
 export class UpdateUserDto {
   @IsString()
@@ -26,4 +26,11 @@ export class UpdateUserDto {
   @IsOptional()
   @MaxLength(20 * 1024 * 1024) // 20MB for base64 images (supports up to ~15MB original images)
   avatarUrl?: string;
+
+  // Teacher-only field; ignored for non-teacher users.
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== '')
+  @IsUrl({ require_protocol: true })
+  @MaxLength(500)
+  videoUrl?: string | null;
 }

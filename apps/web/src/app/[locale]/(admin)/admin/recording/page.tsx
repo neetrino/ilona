@@ -17,10 +17,13 @@ import type { Group } from '@/features/groups/types';
 import type { Student, TeacherAssignedItem } from '@/features/students/types';
 
 function getStudentFullName(recording: AdminStudentRecording): string {
-  return `${recording.student.firstName} ${recording.student.lastName}`.trim() || recording.student.userId;
+  return (
+    `${recording.student.firstName} ${recording.student.lastName}`.trim() ||
+    recording.student.userId
+  );
 }
 
-function formatSubmittedAt(value: string): string {
+function formatDateTime(value: string): string {
   return new Date(value).toLocaleString(undefined, {
     year: 'numeric',
     month: 'short',
@@ -30,17 +33,20 @@ function formatSubmittedAt(value: string): string {
   });
 }
 
+function formatIsoDay(value: string): string {
+  return new Date(value).toISOString().slice(0, 10);
+}
+
 const DIRECTORY_PAGE_SIZE = 100;
-const FILTERS_STORAGE_KEY = 'admin-recordings:filters-v2';
+const FILTERS_STORAGE_KEY = 'admin-recordings:filters-v3';
+const LEGACY_FILTERS_KEY = 'admin-recordings:filters-v2';
 const LEGACY_GROUP_KEY = 'admin-recordings:selected-group';
 const LEGACY_STUDENT_KEY = 'admin-recordings:selected-student';
-const LEGACY_ALL_STUDENTS = 'all';
 
 function isFullStudent(item: TeacherAssignedItem): item is Student {
   return 'user' in item;
 }
 
-/** Matches group multi-select ids (`ungrouped` for students without a group). */
 function directoryStudentGroupKey(groupId: string | null): string {
   return groupId === null ? 'ungrouped' : groupId;
 }
@@ -48,21 +54,18 @@ function directoryStudentGroupKey(groupId: string | null): string {
 async function fetchAllGroups(): Promise<Group[]> {
   const groups: Group[] = [];
   let skip = 0;
-
   for (;;) {
     const page = await fetchGroups({ skip, take: DIRECTORY_PAGE_SIZE });
     groups.push(...page.items);
     skip += page.items.length;
     if (skip >= page.total || page.items.length === 0) break;
   }
-
   return groups;
 }
 
 async function fetchAllStudentsDirectory(): Promise<Student[]> {
   const students: Student[] = [];
   let skip = 0;
-
   for (;;) {
     const page = await fetchStudents({ skip, take: DIRECTORY_PAGE_SIZE });
     const fullStudents = page.items.filter(isFullStudent);
@@ -70,52 +73,147 @@ async function fetchAllStudentsDirectory(): Promise<Student[]> {
     skip += page.items.length;
     if (skip >= page.total || page.items.length === 0) break;
   }
-
   return students;
 }
 
-function parseStoredFilters(): { groupIds: Set<string>; studentUserIds: Set<string> } {
-  if (typeof window === 'undefined') {
-    return { groupIds: new Set(), studentUserIds: new Set() };
-  }
+interface StoredFilters {
+  groupIds: Set<string>;
+  studentUserIds: Set<string>;
+  search: string;
+  dateFrom: string;
+  dateTo: string;
+}
+
+function parseStoredFilters(): StoredFilters {
+  const empty: StoredFilters = {
+    groupIds: new Set(),
+    studentUserIds: new Set(),
+    search: '',
+    dateFrom: '',
+    dateTo: '',
+  };
+  if (typeof window === 'undefined') return empty;
 
   try {
     const raw = localStorage.getItem(FILTERS_STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as { groupIds?: string[]; studentIds?: string[] };
+      const parsed = JSON.parse(raw) as {
+        groupIds?: string[];
+        studentIds?: string[];
+        search?: string;
+        dateFrom?: string;
+        dateTo?: string;
+      };
       return {
         groupIds: new Set(Array.isArray(parsed.groupIds) ? parsed.groupIds : []),
-        studentUserIds: new Set(Array.isArray(parsed.studentIds) ? parsed.studentIds : []),
+        studentUserIds: new Set(
+          Array.isArray(parsed.studentIds) ? parsed.studentIds : [],
+        ),
+        search: typeof parsed.search === 'string' ? parsed.search : '',
+        dateFrom: typeof parsed.dateFrom === 'string' ? parsed.dateFrom : '',
+        dateTo: typeof parsed.dateTo === 'string' ? parsed.dateTo : '',
       };
     }
   } catch {
     /* fall through to legacy */
   }
 
+  // Legacy fallbacks
+  try {
+    const legacyV2 = localStorage.getItem(LEGACY_FILTERS_KEY);
+    if (legacyV2) {
+      const parsed = JSON.parse(legacyV2) as {
+        groupIds?: string[];
+        studentIds?: string[];
+      };
+      return {
+        ...empty,
+        groupIds: new Set(Array.isArray(parsed.groupIds) ? parsed.groupIds : []),
+        studentUserIds: new Set(
+          Array.isArray(parsed.studentIds) ? parsed.studentIds : [],
+        ),
+      };
+    }
+  } catch {
+    /* ignore */
+  }
+
   const legacyGroup = localStorage.getItem(LEGACY_GROUP_KEY);
   const legacyStudent = localStorage.getItem(LEGACY_STUDENT_KEY);
   if (legacyGroup) {
-    const groupIds = new Set([legacyGroup]);
-    const studentUserIds = new Set<string>();
-    if (
-      legacyStudent &&
-      legacyStudent !== LEGACY_ALL_STUDENTS &&
-      legacyStudent !== ''
-    ) {
-      studentUserIds.add(legacyStudent);
-    }
-    return { groupIds, studentUserIds };
+    return {
+      ...empty,
+      groupIds: new Set([legacyGroup]),
+      studentUserIds:
+        legacyStudent && legacyStudent !== 'all' && legacyStudent !== ''
+          ? new Set([legacyStudent])
+          : new Set(),
+    };
   }
 
-  return { groupIds: new Set(), studentUserIds: new Set() };
+  return empty;
 }
 
 export default function AdminRecordingPage() {
   const t = useTranslations('nav');
-  const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(() => new Set());
-  const [selectedStudentUserIds, setSelectedStudentUserIds] = useState<Set<string>>(() => new Set());
-  const [studentSearch, setStudentSearch] = useState('');
-  const [isSelectionHydrated, setIsSelectionHydrated] = useState(false);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [selectedStudentUserIds, setSelectedStudentUserIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [search, setSearch] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [selectedRecordingIds, setSelectedRecordingIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Hydrate filters from localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = parseStoredFilters();
+    setSelectedGroupIds(stored.groupIds);
+    setSelectedStudentUserIds(stored.studentUserIds);
+    setSearch(stored.search);
+    setDateFrom(stored.dateFrom);
+    setDateTo(stored.dateTo);
+    setIsHydrated(true);
+  }, []);
+
+  // Persist filters
+  useEffect(() => {
+    if (!isHydrated || typeof window === 'undefined') return;
+    const noFilters =
+      selectedGroupIds.size === 0 &&
+      selectedStudentUserIds.size === 0 &&
+      !search &&
+      !dateFrom &&
+      !dateTo;
+    if (noFilters) {
+      localStorage.removeItem(FILTERS_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        groupIds: Array.from(selectedGroupIds).sort(),
+        studentIds: Array.from(selectedStudentUserIds).sort(),
+        search,
+        dateFrom,
+        dateTo,
+      }),
+    );
+  }, [
+    isHydrated,
+    selectedGroupIds,
+    selectedStudentUserIds,
+    search,
+    dateFrom,
+    dateTo,
+  ]);
 
   const apiFilters = useMemo(() => {
     const groupIds = Array.from(selectedGroupIds).sort();
@@ -123,11 +221,17 @@ export default function AdminRecordingPage() {
     return {
       ...(groupIds.length ? { groupIds } : {}),
       ...(studentIds.length ? { studentIds } : {}),
+      ...(search.trim() ? { search: search.trim() } : {}),
     };
-  }, [selectedGroupIds, selectedStudentUserIds]);
+  }, [selectedGroupIds, selectedStudentUserIds, search]);
 
   const apiFiltersKey = useMemo(
-    () => JSON.stringify({ groupIds: apiFilters.groupIds ?? [], studentIds: apiFilters.studentIds ?? [] }),
+    () =>
+      JSON.stringify({
+        groupIds: apiFilters.groupIds ?? [],
+        studentIds: apiFilters.studentIds ?? [],
+        search: apiFilters.search ?? '',
+      }),
     [apiFilters],
   );
 
@@ -152,30 +256,29 @@ export default function AdminRecordingPage() {
 
   const isLoadingDirectory = isLoadingGroups || isLoadingStudents;
 
-  const studentDirectory = useMemo(() => {
-    return allStudents
-      .map((student) => ({
-        studentId: student.id,
-        userId: student.userId,
-        fullName: `${student.user.firstName} ${student.user.lastName}`.trim() || student.userId,
-        groupId: student.group?.id ?? null,
-        groupName: student.group?.name ?? 'Ungrouped',
-      }))
-      .sort((a, b) => a.fullName.localeCompare(b.fullName));
-  }, [allStudents]);
+  const studentDirectory = useMemo(
+    () =>
+      allStudents
+        .map((student) => ({
+          studentId: student.id,
+          userId: student.userId,
+          fullName:
+            `${student.user.firstName} ${student.user.lastName}`.trim() ||
+            student.userId,
+          groupId: student.group?.id ?? null,
+          groupName: student.group?.name ?? 'Ungrouped',
+        }))
+        .sort((a, b) => a.fullName.localeCompare(b.fullName)),
+    [allStudents],
+  );
 
   const groupOptions = useMemo(() => {
     const map = new Map<string, { id: string; name: string }>();
-
     allGroups.forEach((group) => {
       map.set(group.id, { id: group.id, name: group.name });
     });
-
-    const hasUngrouped = studentDirectory.some((student) => student.groupId === null);
-    if (hasUngrouped) {
-      map.set('ungrouped', { id: 'ungrouped', name: 'Ungrouped' });
-    }
-
+    const hasUngrouped = studentDirectory.some((s) => s.groupId === null);
+    if (hasUngrouped) map.set('ungrouped', { id: 'ungrouped', name: 'Ungrouped' });
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [allGroups, studentDirectory]);
 
@@ -184,7 +287,6 @@ export default function AdminRecordingPage() {
     [groupOptions],
   );
 
-  /** User ids allowed in the Student dropdown: all students, or only those in selected group(s). */
   const allowedStudentUserIds = useMemo(() => {
     if (selectedGroupIds.size === 0) {
       return new Set(studentDirectory.map((s) => s.userId));
@@ -211,26 +313,19 @@ export default function AdminRecordingPage() {
     }));
   }, [studentDirectory, selectedGroupIds]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const { groupIds, studentUserIds } = parseStoredFilters();
-    setSelectedGroupIds(groupIds);
-    setSelectedStudentUserIds(studentUserIds);
-    setIsSelectionHydrated(true);
-  }, []);
-
+  // Prune stale selections when directory loads
   const pruneSelections = useCallback(() => {
     setSelectedGroupIds((prev) => {
-      const next = new Set<string>();
       const validIds = new Set(groupOptions.map((g) => g.id));
+      const next = new Set<string>();
       prev.forEach((id) => {
         if (validIds.has(id)) next.add(id);
       });
       return next;
     });
     setSelectedStudentUserIds((prev) => {
-      const next = new Set<string>();
       const valid = new Set(studentDirectory.map((s) => s.userId));
+      const next = new Set<string>();
       prev.forEach((id) => {
         if (valid.has(id)) next.add(id);
       });
@@ -239,13 +334,13 @@ export default function AdminRecordingPage() {
   }, [groupOptions, studentDirectory]);
 
   useEffect(() => {
-    if (!isSelectionHydrated || isLoadingDirectory) return;
+    if (!isHydrated || isLoadingDirectory) return;
     pruneSelections();
-  }, [isSelectionHydrated, isLoadingDirectory, pruneSelections]);
+  }, [isHydrated, isLoadingDirectory, pruneSelections]);
 
-  /** Drop student selections that are not in the current group-filtered roster (updates when groups change). */
+  // Drop student selections that aren't in current group filter
   useEffect(() => {
-    if (!isSelectionHydrated || isLoadingDirectory) return;
+    if (!isHydrated || isLoadingDirectory) return;
     setSelectedStudentUserIds((prev) => {
       const next = new Set<string>();
       prev.forEach((uid) => {
@@ -256,128 +351,87 @@ export default function AdminRecordingPage() {
       }
       return next;
     });
-  }, [isSelectionHydrated, isLoadingDirectory, allowedStudentUserIds]);
-
-  useEffect(() => {
-    if (!isSelectionHydrated || typeof window === 'undefined') return;
-
-    if (selectedGroupIds.size === 0 && selectedStudentUserIds.size === 0) {
-      localStorage.removeItem(FILTERS_STORAGE_KEY);
-      localStorage.removeItem(LEGACY_GROUP_KEY);
-      localStorage.removeItem(LEGACY_STUDENT_KEY);
-      return;
-    }
-
-    localStorage.setItem(
-      FILTERS_STORAGE_KEY,
-      JSON.stringify({
-        groupIds: Array.from(selectedGroupIds).sort(),
-        studentIds: Array.from(selectedStudentUserIds).sort(),
-      }),
-    );
-    localStorage.removeItem(LEGACY_GROUP_KEY);
-    localStorage.removeItem(LEGACY_STUDENT_KEY);
-  }, [isSelectionHydrated, selectedGroupIds, selectedStudentUserIds]);
+  }, [isHydrated, isLoadingDirectory, allowedStudentUserIds]);
 
   const visibleRecordings = useMemo(() => {
-    const query = studentSearch.trim().toLowerCase();
-    if (!query) return recordings;
+    const query = search.trim().toLowerCase();
+    const fromTs = dateFrom ? new Date(`${dateFrom}T00:00:00`).getTime() : null;
+    const toTs = dateTo ? new Date(`${dateTo}T23:59:59.999`).getTime() : null;
 
-    return recordings.filter((recording) =>
-      getStudentFullName(recording).toLowerCase().includes(query),
-    );
-  }, [recordings, studentSearch]);
+    return recordings
+      .filter((r) => {
+        const ts = new Date(r.createdAt).getTime();
+        if (fromTs !== null && ts < fromTs) return false;
+        if (toTs !== null && ts > toTs) return false;
+        if (!query) return true;
+        const haystack = [
+          getStudentFullName(r),
+          r.group.name,
+          r.fileName ?? '',
+        ]
+          .join(' ')
+          .toLowerCase();
+        return haystack.includes(query);
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+  }, [recordings, search, dateFrom, dateTo]);
 
-  const recordingsByStudent = useMemo(() => {
-    const map = new Map<string, AdminStudentRecording[]>();
-    visibleRecordings.forEach((recording) => {
-      const current = map.get(recording.student.userId) ?? [];
-      current.push(recording);
-      map.set(recording.student.userId, current);
+  // Reconcile selected ids with visible rows
+  useEffect(() => {
+    setSelectedRecordingIds((prev) => {
+      if (prev.size === 0) return prev;
+      const visibleIds = new Set(visibleRecordings.map((r) => r.id));
+      const next = new Set<string>();
+      prev.forEach((id) => {
+        if (visibleIds.has(id)) next.add(id);
+      });
+      if (next.size === prev.size) return prev;
+      return next;
     });
-    return map;
   }, [visibleRecordings]);
 
-  const groupsForSections = useMemo(() => {
-    const wanted = new Set<string>();
-    selectedGroupIds.forEach((id) => wanted.add(id));
-    if (selectedStudentUserIds.size > 0) {
-      studentDirectory
-        .filter((s) => selectedStudentUserIds.has(s.userId))
-        .forEach((s) => wanted.add(directoryStudentGroupKey(s.groupId)));
+  const allVisibleSelected =
+    visibleRecordings.length > 0 &&
+    visibleRecordings.every((r) => selectedRecordingIds.has(r.id));
+
+  const toggleAll = () => {
+    if (allVisibleSelected) {
+      setSelectedRecordingIds(new Set());
+    } else {
+      setSelectedRecordingIds(new Set(visibleRecordings.map((r) => r.id)));
     }
-    if (wanted.size === 0) {
-      return groupOptions;
-    }
-    return groupOptions.filter((g) => wanted.has(g.id));
-  }, [groupOptions, studentDirectory, selectedGroupIds, selectedStudentUserIds]);
+  };
 
-  const visibleGroupSections = useMemo(() => {
-    const searchQuery = studentSearch.trim().toLowerCase();
-    const groupFilterActive = selectedGroupIds.size > 0;
-    const studentFilterActive = selectedStudentUserIds.size > 0;
-
-    return groupsForSections.map((group) => {
-      const students = studentDirectory
-        .filter((student) => {
-          const belongsToGroup =
-            group.id === 'ungrouped' ? student.groupId === null : student.groupId === group.id;
-          if (!belongsToGroup) return false;
-          if (searchQuery && !student.fullName.toLowerCase().includes(searchQuery)) return false;
-
-          const studentGroupKey = directoryStudentGroupKey(student.groupId);
-
-          if (!groupFilterActive && !studentFilterActive) {
-            return true;
-          }
-          if (groupFilterActive && studentFilterActive) {
-            return (
-              selectedGroupIds.has(studentGroupKey) || selectedStudentUserIds.has(student.userId)
-            );
-          }
-          if (groupFilterActive) {
-            return selectedGroupIds.has(studentGroupKey);
-          }
-          return selectedStudentUserIds.has(student.userId);
-        })
-        .sort((a, b) => a.fullName.localeCompare(b.fullName))
-        .map((student) => ({
-          ...student,
-          recordings: (recordingsByStudent.get(student.userId) ?? [])
-            .slice()
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-        }));
-
-      return {
-        id: group.id,
-        name: group.name,
-        students,
-      };
+  const toggleOne = (id: string) => {
+    setSelectedRecordingIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
-  }, [
-    groupsForSections,
-    studentDirectory,
-    selectedGroupIds,
-    selectedStudentUserIds,
-    studentSearch,
-    recordingsByStudent,
-  ]);
+  };
 
   const clearAllFilters = () => {
     setSelectedGroupIds(new Set());
     setSelectedStudentUserIds(new Set());
-    setStudentSearch('');
+    setSearch('');
+    setDateFrom('');
+    setDateTo('');
   };
 
   return (
     <DashboardLayout
       title={t('recordings')}
-      subtitle="All student voice recordings in one place, grouped by class"
+      subtitle="All student voice recordings in a single searchable table"
     >
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="md:col-span-1">
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+        <div className="md:col-span-2">
           <MultiSelectChipsDropdown
-            label="Group/Class"
+            label="Group"
             options={groupMultiOptions}
             selectedIds={selectedGroupIds}
             onSelectionChange={setSelectedGroupIds}
@@ -389,7 +443,7 @@ export default function AdminRecordingPage() {
           />
         </div>
 
-        <div className="md:col-span-1">
+        <div className="md:col-span-2">
           <MultiSelectChipsDropdown
             label="Student"
             options={studentMultiOptions}
@@ -402,7 +456,9 @@ export default function AdminRecordingPage() {
             }
             searchPlaceholder="Search students…"
             emptyOptionsHint={
-              selectedGroupIds.size === 0 ? 'No students' : 'No students in selected groups'
+              selectedGroupIds.size === 0
+                ? 'No students'
+                : 'No students in selected groups'
             }
             noResultsHint="No students match"
             isLoading={isLoadingDirectory}
@@ -411,106 +467,214 @@ export default function AdminRecordingPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">Search student</label>
+          <label
+            htmlFor="rec-date-from"
+            className="block text-sm font-medium text-slate-600 mb-1.5"
+          >
+            From
+          </label>
           <input
-            value={studentSearch}
-            onChange={(event) => setStudentSearch(event.target.value)}
-            placeholder="Filter list by name…"
+            id="rec-date-from"
+            type="date"
+            value={dateFrom}
+            max={dateTo || undefined}
+            onChange={(e) => setDateFrom(e.target.value)}
             className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
 
-        <div className="flex items-end">
-          <button
-            type="button"
-            onClick={clearAllFilters}
-            className="h-11 w-full md:w-auto px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg border border-slate-200 transition-colors"
+        <div>
+          <label
+            htmlFor="rec-date-to"
+            className="block text-sm font-medium text-slate-600 mb-1.5"
           >
-            Clear all
-          </button>
+            To
+          </label>
+          <input
+            id="rec-date-to"
+            type="date"
+            value={dateTo}
+            min={dateFrom || undefined}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          />
         </div>
       </div>
 
-      <div className="mb-6 text-sm text-slate-500">
-        {visibleRecordings.length} recording{visibleRecordings.length !== 1 ? 's' : ''} found across{' '}
-        {visibleGroupSections.length} group{visibleGroupSections.length !== 1 ? 's' : ''}
+      <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6">
+        <div className="flex-1">
+          <label
+            htmlFor="rec-search"
+            className="block text-sm font-medium text-slate-600 mb-1.5"
+          >
+            Search
+          </label>
+          <input
+            id="rec-search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Student, group, or file name…"
+            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={clearAllFilters}
+          className="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg border border-slate-200 transition-colors"
+        >
+          Clear all
+        </button>
       </div>
 
-      {isLoading || isLoadingDirectory ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="h-24 bg-white border border-slate-200 rounded-xl animate-pulse" />
-          ))}
-        </div>
-      ) : visibleGroupSections.length === 0 ? (
-        <div className="py-10 text-center border border-slate-200 rounded-xl bg-white text-slate-500">
-          No groups found for selected filters.
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {visibleGroupSections.map((group) => (
-            <section key={group.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-                <h3 className="text-base font-semibold text-slate-800">{group.name}</h3>
-                <span className="text-xs font-medium text-slate-500">
-                  {group.students.length} student{group.students.length !== 1 ? 's' : ''}
-                </span>
-              </div>
+      <div className="mb-3 text-sm text-slate-500">
+        {visibleRecordings.length} recording
+        {visibleRecordings.length !== 1 ? 's' : ''} found
+        {selectedRecordingIds.size > 0 && (
+          <span className="ml-3 text-slate-700 font-medium">
+            ({selectedRecordingIds.size} selected)
+          </span>
+        )}
+      </div>
 
-              {group.students.length === 0 ? (
-                <div className="px-4 py-5 text-sm text-slate-500">No students in this group.</div>
+      {/* Table */}
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="w-12 px-4 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all visible recordings"
+                    className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                    checked={allVisibleSelected}
+                    onChange={toggleAll}
+                    disabled={visibleRecordings.length === 0}
+                  />
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Group
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Student
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Date &amp; Time
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Recording
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {isLoading || isLoadingDirectory ? (
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={`skeleton-${idx}`}>
+                    <td className="px-4 py-4">
+                      <div className="h-4 w-4 bg-slate-100 animate-pulse rounded" />
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="h-4 w-24 bg-slate-100 animate-pulse rounded" />
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="h-4 w-32 bg-slate-100 animate-pulse rounded" />
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="h-4 w-28 bg-slate-100 animate-pulse rounded" />
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="h-8 w-48 bg-slate-100 animate-pulse rounded" />
+                    </td>
+                  </tr>
+                ))
+              ) : visibleRecordings.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-10 text-center text-sm text-slate-500"
+                  >
+                    No recordings found for the selected filters.
+                  </td>
+                </tr>
               ) : (
-                <div className="divide-y divide-slate-100">
-                  {group.students.map((student) => (
-                    <div key={student.userId} className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="text-sm font-medium text-slate-800">{student.fullName}</p>
-                        <span className="text-xs text-slate-500">
-                          {student.recordings.length} recording
-                          {student.recordings.length !== 1 ? 's' : ''}
+                visibleRecordings.map((recording) => {
+                  const isActive = activeRecordingId === recording.id;
+                  return (
+                    <tr
+                      key={recording.id}
+                      className="hover:bg-slate-50/60 transition-colors"
+                    >
+                      <td className="px-4 py-3 align-middle">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select recording ${recording.id}`}
+                          className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                          checked={selectedRecordingIds.has(recording.id)}
+                          onChange={() => toggleOne(recording.id)}
+                        />
+                      </td>
+                      <td className="px-4 py-3 align-middle">
+                        <span className="text-sm text-slate-700">
+                          {recording.group.name}
                         </span>
-                      </div>
-
-                      {student.recordings.length === 0 ? (
-                        <div className="text-sm text-slate-500 border border-dashed border-slate-200 rounded-lg px-3 py-2">
-                          No recordings yet.
+                      </td>
+                      <td className="px-4 py-3 align-middle">
+                        <span className="text-sm font-medium text-slate-800">
+                          {getStudentFullName(recording)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 align-middle whitespace-nowrap">
+                        <div className="text-sm text-slate-700">
+                          {formatDateTime(recording.createdAt)}
                         </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {student.recordings.map((recording) => (
-                            <div
-                              key={recording.id}
-                              className="grid grid-cols-1 lg:grid-cols-[220px_200px_1fr] gap-3 items-center rounded-lg border border-slate-100 p-3"
+                        <div className="text-xs text-slate-400">
+                          {formatIsoDay(recording.createdAt)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 align-middle">
+                        {isActive ? (
+                          <VoiceMessagePlayer
+                            fileUrl={recording.fileUrl}
+                            duration={recording.duration}
+                            fileName={recording.fileName}
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setActiveRecordingId(recording.id)}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary border border-primary/20 hover:bg-primary/5 rounded-lg transition-colors"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
                             >
-                              <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
-                                  Submitted
-                                </p>
-                                <p className="text-sm text-slate-700">{formatSubmittedAt(recording.createdAt)}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">Group</p>
-                                <p className="text-sm text-slate-700">{group.name}</p>
-                              </div>
-                              <div>
-                                <VoiceMessagePlayer
-                                  fileUrl={recording.fileUrl}
-                                  duration={recording.duration}
-                                  fileName={recording.fileName}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            Play
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
-            </section>
-          ))}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </DashboardLayout>
   );
 }

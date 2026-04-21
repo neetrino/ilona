@@ -31,6 +31,7 @@ export class SalariesService {
     dateFrom?: Date;
     dateTo?: Date;
     q?: string;
+    centerId?: string;
   }): Promise<unknown> {
     return this.recordService.findAll(params);
   }

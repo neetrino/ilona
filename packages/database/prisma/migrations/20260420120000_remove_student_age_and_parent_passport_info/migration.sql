@@ -1,0 +1,11 @@
+-- INTENTIONALLY NO-OP.
+--
+-- Originally this migration was scoped to drop legacy columns
+-- (`students.age`, `students.parentPassportInfo`, `crm_leads.age`,
+-- `crm_leads.parentPassportInfo`). Per the project decision to preserve all
+-- existing data (see `ilona.md` rollout plan, "preserve_data"), those columns
+-- are kept in place and their values remain available to the application.
+--
+-- The empty SQL ensures Prisma's migration history stays linear without
+-- mutating production data. A future cleanup migration may remove the columns
+-- once the data has been verifiably backfilled and is no longer needed.

@@ -1,11 +1,25 @@
 import type { User, UserStatus } from '@/types';
 
+export type StudentLifecycleStatus =
+  | 'ACTIVE'
+  | 'INACTIVE'
+  | 'UNGROUPED'
+  | 'NEW'
+  | 'RISK'
+  | 'HIGH_RISK';
+
+export type StudentRiskLabel = 'NONE' | 'RISK' | 'HIGH_RISK';
+
 export interface Student {
   id: string;
   userId: string;
   groupId?: string | null;
   teacherId?: string | null;
   age?: number | null;
+  /** ISO-8601 date string. */
+  dateOfBirth?: string | null;
+  /** ISO-8601 date string. */
+  firstLessonDate?: string | null;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
@@ -13,6 +27,12 @@ export interface Student {
   monthlyFee: number;
   notes?: string;
   receiveReports: boolean;
+  /** Persisted lifecycle status (separate from User.status). */
+  status?: StudentLifecycleStatus;
+  /** Persisted risk label. */
+  riskLabel?: StudentRiskLabel;
+  /** Server-derived risk label for the requested period (overrides persisted one in UI). */
+  derivedRiskLabel?: StudentRiskLabel;
   user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'phone' | 'avatarUrl' | 'status' | 'lastLoginAt' | 'createdAt'>;
   group?: StudentGroup | null;
   teacher?: {
@@ -28,6 +48,8 @@ export interface Student {
   attendanceSummary?: {
     totalClasses: number;
     absences: number;
+    justifiedAbsences?: number;
+    unjustifiedAbsences?: number;
   };
   /** Date when student joined a group (manual, Admin-only). ISO date string. */
   registerDate?: string | null;
@@ -105,6 +127,8 @@ export interface StudentFilters {
   teacherIds?: string[];
   centerId?: string;
   centerIds?: string[];
+  /** Persisted Student.status filter (NEW, UNGROUPED, RISK, HIGH_RISK, etc.). */
+  lifecycleStatuses?: StudentLifecycleStatus[];
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   month?: number; // 1-12 (January-December)
@@ -117,7 +141,11 @@ export interface CreateStudentDto {
   firstName: string;
   lastName: string;
   phone?: string;
-  age: number;
+  age?: number;
+  /** ISO date string (YYYY-MM-DD). Either age or dateOfBirth must be provided. */
+  dateOfBirth?: string;
+  /** ISO date string (YYYY-MM-DD). First lesson date for the student. */
+  firstLessonDate?: string;
   groupId?: string;
   teacherId?: string;
   parentName?: string;
@@ -134,6 +162,10 @@ export interface UpdateStudentDto {
   lastName?: string;
   phone?: string;
   age?: number;
+  /** ISO date string (YYYY-MM-DD) or null to clear. */
+  dateOfBirth?: string | null;
+  /** ISO date string (YYYY-MM-DD) or null to clear. */
+  firstLessonDate?: string | null;
   status?: UserStatus;
   groupId?: string | null;
   teacherId?: string | null;
@@ -156,11 +188,28 @@ export interface StudentStatistics {
     unjustifiedAbsences: number;
     rate: number;
   };
+  recordings: {
+    total: number;
+    submitted: number;
+    rate: number;
+  };
   payments: {
     pending: number;
     overdue: number;
+    paid: number;
+    rate: number;
   };
   feedbacks: number;
+  streak: {
+    currentStreak: number;
+    lastAttendanceDate: string | null;
+  };
+  progress: {
+    attendanceRate: number;
+    recordingRate: number;
+    paymentRate: number;
+    overall: number;
+  };
 }
 
 export interface StudentDashboard {

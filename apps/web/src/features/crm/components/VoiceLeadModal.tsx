@@ -9,9 +9,11 @@ interface VoiceLeadModalProps {
   open: boolean;
   onClose: () => void;
   onCreated: (lead: CrmLead) => void;
+  /** Optional pre-selected center for the new lead (used by managers / branch dropdown). */
+  centerId?: string | null;
 }
 
-export function VoiceLeadModal({ open, onClose, onCreated }: VoiceLeadModalProps) {
+export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLeadModalProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -83,7 +85,7 @@ export function VoiceLeadModal({ open, onClose, onCreated }: VoiceLeadModalProps
       const fileName = `voice-lead-${Date.now()}.${ext}`;
       // Use File so multipart upload sends a proper filename and type (some servers expect it)
       const file = new File([blob], fileName, { type: mimeType });
-      const createdLead = await createLeadFromVoice(file, fileName);
+      const createdLead = await createLeadFromVoice(file, fileName, centerId ?? undefined);
       chunksRef.current = [];
       setHasRecording(false);
       if (previewUrl) {
@@ -97,7 +99,7 @@ export function VoiceLeadModal({ open, onClose, onCreated }: VoiceLeadModalProps
     } finally {
       setIsSaving(false);
     }
-  }, [onCreated, onClose, previewUrl]);
+  }, [onCreated, onClose, previewUrl, centerId]);
 
   const handleCancel = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {

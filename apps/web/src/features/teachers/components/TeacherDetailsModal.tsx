@@ -65,17 +65,28 @@ export function TeacherDetailsModal({
   const isActive = teacher?.user?.status === 'ACTIVE';
   const phone = teacher?.user?.phone || t('noPhoneNumber');
   const email = teacher?.user?.email || '';
-  const hourlyRate = typeof teacher?.hourlyRate === 'string'
+  const lessonRateRaw = teacher?.lessonRateAMD;
+  const hourlyRateFallback = typeof teacher?.hourlyRate === 'string'
     ? parseFloat(teacher.hourlyRate)
     : Number(teacher?.hourlyRate || 0);
+  const lessonRate =
+    lessonRateRaw !== undefined && lessonRateRaw !== null
+      ? Number(lessonRateRaw)
+      : hourlyRateFallback;
   const groups = teacher?.groups || [];
-  const centers = teacher?.centers ||
+  const substituteGroups = teacher?.substituteForGroups || [];
+  const explicitCenters = teacher?.centerLinks?.map((l) => l.center) ?? [];
+  const groupCenters = Array.from(
+    new Map(
+      groups
+        .filter((group) => group.center)
+        .map((group) => [group.center!.id, group.center!])
+    ).values()
+  );
+  const centers =
+    teacher?.centers ??
     Array.from(
-      new Map(
-        groups
-          .filter((group) => group.center)
-          .map((group) => [group.center!.id, group.center!])
-      ).values()
+      new Map([...explicitCenters, ...groupCenters].map((c) => [c.id, c])).values()
     );
 
   const avatarUrl = teacher?.user?.avatarUrl;
@@ -206,16 +217,31 @@ export function TeacherDetailsModal({
                     <p className="text-slate-800 mt-1">{phone}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-slate-600">{t('rate')}</label>
+                    <label className="text-sm font-medium text-slate-600">Per Lesson Rate</label>
                     <p className="text-slate-800 mt-1">
                       {new Intl.NumberFormat('hy-AM', {
                         style: 'currency',
                         currency: 'AMD',
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 0,
-                      }).format(hourlyRate)}/hr
+                      }).format(lessonRate)}/lesson
                     </p>
                   </div>
+                  {teacher.videoUrl && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-600">Video</label>
+                      <p className="text-slate-800 mt-1">
+                        <a
+                          href={teacher.videoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline break-all"
+                        >
+                          {teacher.videoUrl}
+                        </a>
+                      </p>
+                    </div>
+                  )}
                   {teacher.bio && (
                     <div>
                       <label className="text-sm font-medium text-slate-600">{t('bio')}</label>
@@ -254,6 +280,12 @@ export function TeacherDetailsModal({
                       <p className="text-sm text-slate-600 mb-1">{t('totalGroups')}</p>
                       <p className="text-2xl font-bold text-slate-800">{teacher._count.groups || 0}</p>
                     </div>
+                    <div className="bg-amber-50 rounded-lg p-4">
+                      <p className="text-sm text-amber-700 mb-1">Sub-groups</p>
+                      <p className="text-2xl font-bold text-amber-800">
+                        {teacher.substituteForGroupsCount ?? teacher._count.substituteForGroups ?? 0}
+                      </p>
+                    </div>
                     <div className="bg-slate-50 rounded-lg p-4">
                       <p className="text-sm text-slate-600 mb-1">{t('totalLessons')}</p>
                       <p className="text-2xl font-bold text-slate-800">{teacher._count.lessons || 0}</p>
@@ -263,6 +295,48 @@ export function TeacherDetailsModal({
                       <p className="text-2xl font-bold text-slate-800">{teacher._count.students || 0}</p>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Groups list */}
+              {groups.length > 0 && (
+                <div className="space-y-2 pt-4 border-t border-slate-200">
+                  <h4 className="font-semibold text-slate-800">Groups ({groups.length})</h4>
+                  <ul className="space-y-1">
+                    {groups.map((g) => (
+                      <li
+                        key={g.id}
+                        className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm"
+                      >
+                        <span className="font-medium text-slate-800">{g.name}</span>
+                        {g.center && (
+                          <span className="text-xs text-slate-500">{g.center.name}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Substitute groups list */}
+              {substituteGroups.length > 0 && (
+                <div className="space-y-2 pt-4 border-t border-slate-200">
+                  <h4 className="font-semibold text-amber-800">
+                    Sub-groups ({substituteGroups.length})
+                  </h4>
+                  <ul className="space-y-1">
+                    {substituteGroups.map((g) => (
+                      <li
+                        key={g.id}
+                        className="flex items-center justify-between rounded-md border border-amber-200 bg-amber-50/50 px-3 py-2 text-sm"
+                      >
+                        <span className="font-medium text-slate-800">{g.name}</span>
+                        {g.center && (
+                          <span className="text-xs text-slate-500">{g.center.name}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </>

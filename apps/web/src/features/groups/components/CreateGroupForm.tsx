@@ -5,16 +5,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useCreateGroup, type CreateGroupDto } from '@/features/groups';
+import type { GroupScheduleEntry } from '../types';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
+import { GroupScheduleEditor } from './GroupScheduleEditor';
 
 const createGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters'),
   level: z.string().max(50, 'Level must be at most 50 characters').optional().or(z.literal('')),
   centerId: z.string().min(1, 'Please select a center'),
   teacherId: z.string().optional().or(z.literal('')),
+  substituteTeacherId: z.string().optional().or(z.literal('')),
   isActive: z.boolean().optional(),
 });
 
@@ -29,6 +32,7 @@ interface CreateGroupFormProps {
 export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateGroupFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
   const createGroup = useCreateGroup();
 
   // Fetch centers and teachers for dropdowns
@@ -55,9 +59,11 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       level: '',
       centerId: defaultCenterId || '',
       teacherId: '',
+      substituteTeacherId: '',
       isActive: true,
     },
   });
+  const watchedTeacherId = watch('teacherId');
 
   // Watch centerId to update when defaultCenterId changes
   const centerId = watch('centerId');
@@ -77,8 +83,10 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         level: '',
         centerId: defaultCenterId || '',
         teacherId: '',
+        substituteTeacherId: '',
         isActive: true,
       });
+      setSchedule([]);
       setErrorMessage(null);
       setSuccessMessage(null);
     }
@@ -88,11 +96,22 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
     setErrorMessage(null);
     
     try {
+      if (
+        data.substituteTeacherId &&
+        data.teacherId &&
+        data.substituteTeacherId === data.teacherId
+      ) {
+        setErrorMessage('Substitute teacher cannot be the same as the main teacher');
+        return;
+      }
+
       const payload: CreateGroupDto = {
         name: data.name,
         level: data.level || undefined,
         centerId: data.centerId,
         teacherId: data.teacherId || undefined,
+        substituteTeacherId: data.substituteTeacherId || undefined,
+        schedule: schedule.length > 0 ? schedule : undefined,
         isActive: data.isActive ?? true,
       };
 
@@ -108,8 +127,10 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         level: '',
         centerId: defaultCenterId || '',
         teacherId: '',
+        substituteTeacherId: '',
         isActive: true,
       });
+      setSchedule([]);
       setTimeout(() => {
         onOpenChange(false);
         setSuccessMessage(null);
@@ -199,7 +220,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="teacherId">Teacher (Optional)</Label>
+            <Label htmlFor="teacherId">Main Teacher (Optional)</Label>
             <select
               id="teacherId"
               {...register('teacherId')}
@@ -221,6 +242,36 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
             {isLoadingTeachers && (
               <p className="text-sm text-slate-500">Loading teachers...</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="substituteTeacherId">Substitute Teacher (Optional)</Label>
+            <select
+              id="substituteTeacherId"
+              {...register('substituteTeacherId')}
+              disabled={isSubmitting || isLoadingTeachers}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm ${
+                errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
+              } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+            >
+              <option value="">No substitute</option>
+              {teachers
+                .filter((t) => t.id !== watchedTeacherId)
+                .map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.user.firstName} {teacher.user.lastName}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Working hours (Schedule)</Label>
+            <GroupScheduleEditor
+              value={schedule}
+              onChange={setSchedule}
+              disabled={isSubmitting}
+            />
           </div>
 
           <div className="flex items-center gap-2">

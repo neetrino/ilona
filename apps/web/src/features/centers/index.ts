@@ -15,6 +15,10 @@ export type {
   CenterWithCount,
   CentersResponse,
   CenterFilters,
+  CenterDetails,
+  CenterDetailGroup,
+  CenterDetailStudent,
+  CenterDetailTeacher,
   CreateCenterDto,
   UpdateCenterDto,
 } from './types';
@@ -23,6 +27,7 @@ export type {
 export { CreateCenterForm } from './components/CreateCenterForm';
 export { EditCenterForm } from './components/EditCenterForm';
 export { CenterCard } from './components/CenterCard';
+export { CenterDetailsModal } from './components/CenterDetailsModal';
 export { DeactivateCenterDialog } from './components/DeactivateCenterDialog';
 
 

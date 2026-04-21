@@ -17,14 +17,8 @@ export default function TeacherStudentProfilePage() {
 
   const { data: student, isLoading, error, refetch } = useStudent(studentId);
 
-  // Check if error is 403 (Forbidden)
   const isForbidden = error instanceof ApiError && error.statusCode === 403;
   const isNotFound = error instanceof ApiError && error.statusCode === 404;
-
-  const formatPhone = (phone: string | null | undefined) => {
-    if (!phone) return null;
-    return phone.startsWith('+') ? phone : `+${phone}`;
-  };
 
   // Build back URL preserving search/filter state
   const getBackUrl = () => {
@@ -167,16 +161,7 @@ export default function TeacherStudentProfilePage() {
                   {student.user?.status || 'UNKNOWN'}
                 </Badge>
               </div>
-              <p className="text-slate-500 mb-4">{student.user?.email || ''}</p>
               <div className="flex flex-wrap gap-4 text-sm">
-                {student.user?.phone && (
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    {formatPhone(student.user.phone)}
-                  </div>
-                )}
                 {student.user?.lastLoginAt && (
                   <div className="flex items-center gap-2 text-slate-600">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,36 +175,27 @@ export default function TeacherStudentProfilePage() {
           </div>
         </div>
 
-        {/* Details Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Personal Information */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Personal Information</h3>
+        {/* Learning info (sensitive personal data hidden for teachers) */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 className="mb-4 text-lg font-semibold text-slate-800">Basic Info</h3>
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-slate-500">First Name</label>
-                <p className="text-slate-800 mt-1">{firstName}</p>
+                <p className="mt-1 text-slate-800">{firstName}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-500">Last Name</label>
-                <p className="text-slate-800 mt-1">{lastName}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-500">Email</label>
-                <p className="text-slate-800 mt-1">{student.user?.email || 'N/A'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-500">Phone</label>
-                <p className="text-slate-800 mt-1">{formatPhone(student.user?.phone) ?? 'N/A'}</p>
+                <p className="mt-1 text-slate-800">{lastName}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-500">Member Since</label>
-                <p className="text-slate-800 mt-1">
-                  {student.user?.createdAt 
+                <p className="mt-1 text-slate-800">
+                  {student.user?.createdAt
                     ? new Date(student.user.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
-                        day: 'numeric'
+                        day: 'numeric',
                       })
                     : 'N/A'}
                 </p>
@@ -227,13 +203,12 @@ export default function TeacherStudentProfilePage() {
             </div>
           </div>
 
-          {/* Group & Parent Information */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Group & Parent Information</h3>
+          <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 className="mb-4 text-lg font-semibold text-slate-800">Learning</h3>
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-slate-500">Group</label>
-                <div className="text-slate-800 mt-1">
+                <div className="mt-1 text-slate-800">
                   {student.group ? (
                     <div className="flex items-center gap-2">
                       <Badge variant="info">{student.group.name}</Badge>
@@ -249,33 +224,15 @@ export default function TeacherStudentProfilePage() {
               {student.group?.center && (
                 <div>
                   <label className="text-sm font-medium text-slate-500">Center</label>
-                  <p className="text-slate-800 mt-1">{student.group.center.name}</p>
+                  <p className="mt-1 text-slate-800">{student.group.center.name}</p>
                 </div>
               )}
               {student.teacher && (
                 <div>
                   <label className="text-sm font-medium text-slate-500">Teacher</label>
-                  <p className="text-slate-800 mt-1">
+                  <p className="mt-1 text-slate-800">
                     {student.teacher.user.firstName} {student.teacher.user.lastName}
                   </p>
-                </div>
-              )}
-              {student.parentName && (
-                <div>
-                  <label className="text-sm font-medium text-slate-500">Parent Name</label>
-                  <p className="text-slate-800 mt-1">{student.parentName}</p>
-                </div>
-              )}
-              {student.parentPhone && (
-                <div>
-                  <label className="text-sm font-medium text-slate-500">Parent Phone</label>
-                  <p className="text-slate-800 mt-1">{formatPhone(student.parentPhone)}</p>
-                </div>
-              )}
-              {student.parentEmail && (
-                <div>
-                  <label className="text-sm font-medium text-slate-500">Parent Email</label>
-                  <p className="text-slate-800 mt-1">{student.parentEmail}</p>
                 </div>
               )}
             </div>

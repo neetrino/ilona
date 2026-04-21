@@ -21,6 +21,10 @@ export interface TeacherPerformance {
   completedLessons: number;
   completionRate: number;
   vocabularySentRate: number;
+  feedbacksRate?: number;
+  voiceRate?: number;
+  textRate?: number;
+  absenceMarkedRate?: number;
   groupsCount: number;
   deductionsCount: number;
   deductionsAmount: number;

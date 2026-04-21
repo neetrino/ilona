@@ -1,3 +1,28 @@
+export interface GroupTeacherRef {
+  id: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatarUrl?: string;
+  };
+}
+
+/**
+ * Free-form schedule payload stored as JSON in the DB.
+ * Each entry represents one weekly recurring class slot.
+ */
+export interface GroupScheduleEntry {
+  /** 0 = Sunday, 1 = Monday, …, 6 = Saturday. */
+  dayOfWeek: number;
+  /** Start time in 24h "HH:mm" format, local to the center timezone. */
+  startTime: string;
+  /** End time in 24h "HH:mm" format. */
+  endTime: string;
+  notes?: string;
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -7,20 +32,14 @@ export interface Group {
   isActive: boolean;
   centerId: string;
   teacherId?: string | null;
+  substituteTeacherId?: string | null;
+  schedule?: GroupScheduleEntry[] | null;
   center: {
     id: string;
     name: string;
   };
-  teacher?: {
-    id: string;
-    user: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-      avatarUrl?: string;
-    };
-  } | null;
+  teacher?: GroupTeacherRef | null;
+  substituteTeacher?: GroupTeacherRef | null;
   _count?: {
     students: number;
     lessons: number;
@@ -63,6 +82,8 @@ export interface CreateGroupDto {
   description?: string;
   centerId: string;
   teacherId?: string;
+  substituteTeacherId?: string;
+  schedule?: GroupScheduleEntry[];
   isActive?: boolean;
 }
 
@@ -72,6 +93,8 @@ export interface UpdateGroupDto {
   description?: string;
   centerId?: string;
   teacherId?: string;
+  substituteTeacherId?: string | null;
+  schedule?: GroupScheduleEntry[] | null;
   isActive?: boolean;
 }
 

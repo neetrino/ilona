@@ -79,6 +79,10 @@ export class AnalyticsService {
         const completedLessons = lessons.filter((l) => l.status === 'COMPLETED').length;
         const totalLessons = lessons.length;
         const vocabularySent = lessons.filter((l) => l.vocabularySent).length;
+        const feedbacksDone = lessons.filter((l) => l.feedbacksCompleted).length;
+        const voiceSent = lessons.filter((l) => l.voiceSent).length;
+        const textSent = lessons.filter((l) => l.textSent).length;
+        const absenceMarkedCount = lessons.filter((l) => l.absenceMarked).length;
 
         // Deductions in period
         const deductions = await this.prisma.deduction.aggregate({
@@ -108,6 +112,13 @@ export class AnalyticsService {
           completedLessons,
           completionRate: totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0,
           vocabularySentRate: completedLessons > 0 ? Math.round((vocabularySent / completedLessons) * 100) : 0,
+          feedbacksRate: completedLessons > 0 ? Math.round((feedbacksDone / completedLessons) * 100) : 0,
+          voiceRate: completedLessons > 0 ? Math.round((voiceSent / completedLessons) * 100) : 0,
+          textRate: completedLessons > 0 ? Math.round((textSent / completedLessons) * 100) : 0,
+          absenceMarkedRate:
+            completedLessons > 0
+              ? Math.round((absenceMarkedCount / completedLessons) * 100)
+              : 0,
           groupsCount: teacher._count.groups,
           deductionsCount: deductions._count,
           deductionsAmount: Number(deductions._sum.amount) || 0,
@@ -116,7 +127,6 @@ export class AnalyticsService {
       })
     );
 
-    // Sort by completion rate
     return performance.sort((a, b) => b.completionRate - a.completionRate);
   }
 

@@ -6,6 +6,7 @@ import {
   CreateCenterForm,
   EditCenterForm,
   CenterCard,
+  CenterDetailsModal,
   DeactivateCenterDialog,
   type CenterWithCount,
 } from '@/features/centers';
@@ -48,6 +49,7 @@ export function CentersTab({
   } = useCentersManagement('board', centerSearchQuery, centerPage);
   const [deactivateCenter, setDeactivateCenter] = React.useState<CenterWithCount | null>(null);
   const [deactivateError, setDeactivateError] = React.useState<string | null>(null);
+  const [detailsCenterId, setDetailsCenterId] = React.useState<string | null>(null);
 
   // Ref to track if we're intentionally closing to prevent effect from reopening
   const isClosingRef = useRef(false);
@@ -178,6 +180,7 @@ export function CentersTab({
                 onEdit={() => handleEditCenterIdChange(center.id)}
                 onDelete={() => handleDeleteCenterClick(center.id)}
                 onToggleActive={() => handleCenterActivationAction(center)}
+                onOpenDetails={() => setDetailsCenterId(center.id)}
               />
             ))}
           </div>
@@ -208,6 +211,11 @@ export function CentersTab({
         isLoading={deleteCenter.isPending}
         error={deleteCenterError || undefined}
         itemType="center"
+      />
+      <CenterDetailsModal
+        centerId={detailsCenterId}
+        open={!!detailsCenterId}
+        onClose={() => setDetailsCenterId(null)}
       />
       <DeactivateCenterDialog
         open={!!deactivateCenter}

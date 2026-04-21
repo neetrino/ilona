@@ -8,6 +8,10 @@ export interface UserProfile {
   role: string;
   status: string;
   createdAt: string;
+  teacher?: {
+    id: string;
+    videoUrl?: string | null;
+  } | null;
 }
 
 export interface UpdateProfileDto {
@@ -16,6 +20,7 @@ export interface UpdateProfileDto {
   phone?: string;
   avatarUrl?: string | null;
   email?: string;
+  videoUrl?: string | null;
 }
 
 export interface ChangePasswordDto {
@@ -35,7 +40,6 @@ export interface NotificationSettings {
 export interface AppSettings {
   language: 'en' | 'hy';
   theme: 'light' | 'dark' | 'system';
-  timezone: string;
 }
 
 export interface ManagerAccount {

@@ -12,7 +12,7 @@ import {
 import { StudentsService } from './students.service';
 import { CreateStudentDto, UpdateStudentDto, QueryStudentDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole, UserStatus } from '@ilona/database';
+import { UserRole, UserStatus, StudentStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 
@@ -43,6 +43,7 @@ export class StudentsController {
       teacherIds,
       centerId: managerCenterId ?? query.centerId,
       centerIds: managerCenterId ? [managerCenterId] : centerIds,
+      lifecycleStatuses: query.lifecycleStatuses as StudentStatus[] | undefined,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
       month: query.month,

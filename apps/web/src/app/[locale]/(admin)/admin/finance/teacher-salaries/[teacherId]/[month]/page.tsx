@@ -248,11 +248,13 @@ export default function SalaryBreakdownPage() {
     },
     {
       key: 'lessonName',
-      header: 'Lesson Name',
+      header: 'Group Name',
       className: 'text-left',
       sortable: true,
       render: (lesson: SalaryBreakdownLesson) => (
-        <span className="font-medium text-slate-800">{lesson.lessonName}</span>
+        <span className="font-medium text-slate-800">
+          {lesson.groupName || lesson.lessonName}
+        </span>
       ),
     },
     {
@@ -332,6 +334,45 @@ export default function SalaryBreakdownPage() {
           <ArrowLeft className="w-4 h-4" />
           Back to Finance
         </Button>
+
+        {/* Top Summary */}
+        {!isLoading && !error && breakdown && sortedLessons.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                Total Lessons
+              </p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">
+                {sortedLessons.length}
+              </p>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                Earnings
+              </p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">
+                {formatCurrency(totalSalary)}
+              </p>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                Deductions
+              </p>
+              <p className="mt-1 text-2xl font-bold text-red-600">
+                {totalDeduction > 0 ? '−' : ''}
+                {formatCurrency(totalDeduction)}
+              </p>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                Net Total
+              </p>
+              <p className="mt-1 text-2xl font-bold text-emerald-700">
+                {formatCurrency(totalNet)}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Action Bar */}
         {selectedLessonIds.size > 0 && (

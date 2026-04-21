@@ -10,6 +10,8 @@ import { cn } from '@/shared/lib/utils';
 import type { Payment } from '@/features/finance/api/student-finance.api';
 
 type FilterStatus = 'all' | 'PENDING' | 'PAID' | 'OVERDUE';
+type SortKey = 'month' | 'amount' | 'status' | 'dueDate';
+type SortDir = 'asc' | 'desc';
 
 /** Ensure exactly one payment per calendar month for deterministic display (backend already groups; this is a safeguard). */
 function onePaymentPerMonth(items: Payment[]): Payment[] {
@@ -19,9 +21,36 @@ function onePaymentPerMonth(items: Payment[]): Payment[] {
     const key = `${d.getFullYear()}-${d.getMonth()}`;
     if (!byMonth.has(key)) byMonth.set(key, p);
   }
-  return Array.from(byMonth.values()).sort(
-    (a, b) => (b.month ? new Date(b.month).getTime() : new Date(b.dueDate).getTime()) - (a.month ? new Date(a.month).getTime() : new Date(a.dueDate).getTime())
-  );
+  return Array.from(byMonth.values());
+}
+
+const STATUS_ORDER: Record<string, number> = {
+  OVERDUE: 0,
+  PENDING: 1,
+  PAID: 2,
+  CANCELLED: 3,
+};
+
+function sortPayments(items: Payment[], key: SortKey, dir: SortDir): Payment[] {
+  const factor = dir === 'asc' ? 1 : -1;
+  const getMonthTs = (p: Payment) =>
+    p.month ? new Date(p.month).getTime() : new Date(p.dueDate).getTime();
+  const getDueTs = (p: Payment) => new Date(p.dueDate).getTime();
+
+  const compare = (a: Payment, b: Payment): number => {
+    switch (key) {
+      case 'amount':
+        return (Number(a.amount) - Number(b.amount)) * factor;
+      case 'status':
+        return ((STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99)) * factor;
+      case 'dueDate':
+        return (getDueTs(a) - getDueTs(b)) * factor;
+      case 'month':
+      default:
+        return (getMonthTs(a) - getMonthTs(b)) * factor;
+    }
+  };
+  return [...items].sort(compare);
 }
 
 function formatCurrency(amount: number): string {
@@ -58,6 +87,8 @@ export default function StudentPaymentsPage() {
   const t = useTranslations('finance');
   const tCommon = useTranslations('common');
   const [filter, setFilter] = useState<FilterStatus>('all');
+  const [sortKey, setSortKey] = useState<SortKey>('month');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [processModal, setProcessModal] = useState<Payment | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'idram'>('card');
   const [confirmStep, setConfirmStep] = useState(false);
@@ -73,10 +104,24 @@ export default function StudentPaymentsPage() {
   const showPaymentsReady = !isLoadingPayments && !isFetchingPayments;
   const processPaymentMutation = useProcessMyPayment();
 
-  const payments = useMemo(
-    () => onePaymentPerMonth(paymentsData?.items ?? []),
-    [paymentsData?.items]
-  );
+  const payments = useMemo(() => {
+    const deduped = onePaymentPerMonth(paymentsData?.items ?? []);
+    return sortPayments(deduped, sortKey, sortDir);
+  }, [paymentsData?.items, sortKey, sortDir]);
+
+  const handleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+    setSortKey(key);
+    setSortDir(key === 'month' || key === 'dueDate' ? 'desc' : 'asc');
+  };
+
+  const sortIndicator = (key: SortKey): string => {
+    if (key !== sortKey) return '';
+    return sortDir === 'asc' ? ' ▲' : ' ▼';
+  };
 
   const openPayModal = (payment: Payment) => {
     setProcessModal(payment);
@@ -219,106 +264,127 @@ export default function StudentPaymentsPage() {
           </div>
         </div>
 
-        {/* List */}
-        <div className="divide-y divide-slate-100">
-          {!showPaymentsReady ? (
-            <div className="p-4 space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse flex items-center justify-between">
-                  <div>
-                    <div className="h-4 bg-slate-200 rounded w-32 mb-2" />
-                    <div className="h-3 bg-slate-200 rounded w-24" />
-                  </div>
-                  <div className="h-6 bg-slate-200 rounded w-24" />
+        {/* Table */}
+        {!showPaymentsReady ? (
+          <div className="p-4 space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse flex items-center justify-between">
+                <div>
+                  <div className="h-4 bg-slate-200 rounded w-32 mb-2" />
+                  <div className="h-3 bg-slate-200 rounded w-24" />
                 </div>
-              ))}
-            </div>
-          ) : payments.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
+                <div className="h-6 bg-slate-200 rounded w-24" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-1">{t('noPaymentsFound')}</h3>
-              <p className="text-sm text-slate-500">
-                {filter === 'all' ? t('paymentHistoryEmpty') : t('noStatusPayments', { status: filter.toLowerCase() })}
-              </p>
+            ))}
+          </div>
+        ) : payments.length === 0 ? (
+          <div className="p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
             </div>
-          ) : (
-            payments.map((payment) => {
-              const monthDate = payment.month ? new Date(payment.month) : new Date(payment.dueDate);
-              const unpaid = payment.status === 'PENDING' || payment.status === 'OVERDUE';
-              const canPay = payment.canPay === true;
-              const groupName = payment.student?.group?.name;
-              const description = payment.notes || payment.description;
-              const windowReason = payment.paymentWindowReason;
-              const monthLabel = monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            <h3 className="text-lg font-semibold text-slate-800 mb-1">{t('noPaymentsFound')}</h3>
+            <p className="text-sm text-slate-500">
+              {filter === 'all' ? t('paymentHistoryEmpty') : t('noStatusPayments', { status: filter.toLowerCase() })}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">
+                    <button type="button" onClick={() => handleSort('month')} className="hover:text-slate-700">
+                      {t('month') ?? 'Month'}{sortIndicator('month')}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 font-medium">{tCommon('group') ?? 'Group'}</th>
+                  <th className="px-4 py-3 font-medium">
+                    <button type="button" onClick={() => handleSort('amount')} className="hover:text-slate-700">
+                      {t('amount') ?? 'Amount'}{sortIndicator('amount')}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    <button type="button" onClick={() => handleSort('status')} className="hover:text-slate-700">
+                      {t('status') ?? 'Status'}{sortIndicator('status')}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    <button type="button" onClick={() => handleSort('dueDate')} className="hover:text-slate-700">
+                      {t('dueDate') ?? 'Due / Paid'}{sortIndicator('dueDate')}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 font-medium text-right">{tCommon('action') ?? 'Action'}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {payments.map((payment) => {
+                  const monthDate = payment.month ? new Date(payment.month) : new Date(payment.dueDate);
+                  const unpaid = payment.status === 'PENDING' || payment.status === 'OVERDUE';
+                  const canPay = payment.canPay === true;
+                  const groupName = payment.student?.group?.name;
+                  const description = payment.notes || payment.description;
+                  const windowReason = payment.paymentWindowReason;
+                  const monthLabel = monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                  const dateLabel = payment.status === 'PAID' && payment.paidAt
+                    ? `${t('paidOn')} ${new Date(payment.paidAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                    : new Date(payment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-              return (
-                <div key={payment.id} className="p-4 hover:bg-slate-50 transition-colors">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <p className="font-semibold text-slate-800">
-                          {monthLabel}
-                        </p>
-                        <StatusBadge status={payment.status} t={t} />
-                        {groupName && (
-                          <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                            {groupName}
-                          </span>
+                  return (
+                    <tr key={payment.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-3 align-top">
+                        <p className="font-semibold text-slate-800">{monthLabel}</p>
+                        {description && (
+                          <p className="mt-0.5 text-xs text-slate-400">{description}</p>
                         )}
-                      </div>
-                      <p className="text-sm text-slate-500">
-                        {payment.status === 'PAID' && payment.paidAt
-                          ? `${t('paidOn')} ${new Date(payment.paidAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                          : unpaid
-                            ? `${monthLabel} — ${t('paymentOnlyInMonth')}`
-                            : null}
-                      </p>
-                      {unpaid && !canPay && windowReason === 'past' && (
-                        <p className="text-xs text-amber-700 mt-1" role="status">
-                          {t('paymentPeriodEnded')}
-                        </p>
-                      )}
-                      {unpaid && !canPay && windowReason === 'future' && (
-                        <p className="text-xs text-slate-500 mt-1" role="status">
-                          {t('paymentNotYetAvailable', { month: monthLabel })}
-                        </p>
-                      )}
-                      {description && (
-                        <p className="text-xs text-slate-400 mt-1">{description}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <p className={cn(
-                        'text-lg font-bold',
+                      </td>
+                      <td className="px-4 py-3 align-top text-slate-600">{groupName ?? '—'}</td>
+                      <td className={cn(
+                        'px-4 py-3 align-top font-semibold',
                         payment.status === 'PAID' ? 'text-green-600' :
-                        payment.status === 'OVERDUE' ? 'text-red-600' : 'text-slate-800'
+                        payment.status === 'OVERDUE' ? 'text-red-600' : 'text-slate-800',
                       )}>
                         {formatCurrency(Number(payment.amount))}
-                      </p>
-                      {unpaid ? (
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => canPay && openPayModal(payment)}
-                          disabled={!canPay || processPaymentMutation.isPending}
-                          title={!canPay && windowReason === 'past' ? t('paymentPeriodEnded') : !canPay && windowReason === 'future' ? t('paymentNotYetAvailable', { month: monthLabel }) : undefined}
-                        >
-                          {t('pay')}
-                        </Button>
-                      ) : (
-                        <span className="text-sm text-green-600 font-medium">{t('paid')}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                      </td>
+                      <td className="px-4 py-3 align-top">
+                        <StatusBadge status={payment.status} t={t} />
+                      </td>
+                      <td className="px-4 py-3 align-top text-slate-500">
+                        {dateLabel}
+                        {unpaid && !canPay && windowReason === 'past' && (
+                          <p className="text-xs text-amber-700 mt-1" role="status">
+                            {t('paymentPeriodEnded')}
+                          </p>
+                        )}
+                        {unpaid && !canPay && windowReason === 'future' && (
+                          <p className="text-xs text-slate-500 mt-1" role="status">
+                            {t('paymentNotYetAvailable', { month: monthLabel })}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 align-top text-right">
+                        {unpaid ? (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => canPay && openPayModal(payment)}
+                            disabled={!canPay || processPaymentMutation.isPending}
+                            title={!canPay && windowReason === 'past' ? t('paymentPeriodEnded') : !canPay && windowReason === 'future' ? t('paymentNotYetAvailable', { month: monthLabel }) : undefined}
+                          >
+                            {t('pay')}
+                          </Button>
+                        ) : (
+                          <span className="text-sm text-green-600 font-medium">{t('paid')}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Pay – method picker + confirm dialog */}

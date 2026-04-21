@@ -1,6 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import type { Student } from '@/features/students';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { formatCurrency } from '@/shared/lib/utils';
 import { 
@@ -18,6 +19,8 @@ import { useStudentsPage } from './hooks/useStudentsPage';
 
 export default function StudentsPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string | undefined) ?? 'en';
   const {
     // Data
     students,
@@ -41,6 +44,8 @@ export default function StudentsPage() {
     selectedTeacherIds,
     selectedCenterIds,
     selectedStatusIds,
+    selectedGroupIds,
+    selectedLifecycleIds,
     selectedMonth,
     selectedYear,
     isAddStudentOpen,
@@ -69,6 +74,8 @@ export default function StudentsPage() {
     teacherFilterOptions,
     centerFilterOptions,
     statusFilterOptions,
+    groupFilterOptions,
+    lifecycleFilterOptions,
     
     // Stats
     activeStudents,
@@ -98,6 +105,8 @@ export default function StudentsPage() {
     setSelectedTeacherIds,
     setSelectedCenterIds,
     setSelectedStatusIds,
+    setSelectedGroupIds,
+    setSelectedLifecycleIds,
     setSelectedMonth,
     setSelectedYear,
     handleFilterChange,
@@ -146,6 +155,20 @@ export default function StudentsPage() {
     handleFilterChange();
   };
 
+  const handleGroupFilterChange = (ids: Set<string>) => {
+    setSelectedGroupIds(ids);
+    handleFilterChange();
+  };
+
+  const handleLifecycleFilterChange = (ids: Set<string>) => {
+    setSelectedLifecycleIds(ids);
+    handleFilterChange();
+  };
+
+  const handleView = (student: Student) => {
+    router.push(`/${locale}/admin/students/${student.id}`);
+  };
+
   const handleMonthChange = (month: number) => {
     setSelectedMonth(month);
     handleFilterChange();
@@ -181,6 +204,10 @@ export default function StudentsPage() {
           onTeacherChange={handleTeacherFilterChange}
           selectedCenterIds={selectedCenterIds}
           onCenterChange={handleCenterFilterChange}
+          selectedGroupIds={selectedGroupIds}
+          onGroupChange={handleGroupFilterChange}
+          selectedLifecycleIds={selectedLifecycleIds}
+          onLifecycleChange={handleLifecycleFilterChange}
           selectedMonth={selectedMonth}
           onMonthChange={handleMonthChange}
           selectedYear={selectedYear}
@@ -193,6 +220,8 @@ export default function StudentsPage() {
           statusFilterOptions={statusFilterOptions}
           teacherFilterOptions={teacherFilterOptions}
           centerFilterOptions={centerFilterOptions}
+          groupFilterOptions={groupFilterOptions}
+          lifecycleFilterOptions={lifecycleFilterOptions}
           isLoadingTeachers={!teachersData}
           isLoadingCenters={!centersData}
           isDeleting={deleteStudent.isPending || isLoading}
@@ -221,6 +250,7 @@ export default function StudentsPage() {
             onDelete={handleDeleteClick}
             onDeactivate={handleDeactivateClick}
             onShowFeedback={handleShowFeedback}
+            onView={handleView}
             onTeacherChange={handleTeacherChange}
             onGroupChange={handleGroupChange}
             onCenterChange={handleCenterChange}

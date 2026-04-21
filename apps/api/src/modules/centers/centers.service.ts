@@ -227,6 +227,93 @@ export class CentersService {
     });
   }
 
+  /**
+   * Aggregated payload for the center details popup (Teachers/Students/Groups/Schedule tabs).
+   * Returns the center plus its teachers (via TeacherCenter), groups, and students-by-group.
+   */
+  async getDetails(id: string) {
+    const center = await this.prisma.center.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        email: true,
+        description: true,
+        colorHex: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!center) {
+      throw new NotFoundException(`Center with ID ${id} not found`);
+    }
+
+    const userSelect = {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      avatarUrl: true,
+    } as const;
+
+    const [teacherLinks, groups] = await Promise.all([
+      this.prisma.teacherCenter.findMany({
+        where: { centerId: id },
+        include: {
+          teacher: {
+            include: {
+              user: { select: userSelect },
+              _count: { select: { groups: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.group.findMany({
+        where: { centerId: id },
+        orderBy: { name: 'asc' },
+        include: {
+          teacher: { include: { user: { select: userSelect } } },
+          substituteTeacher: { include: { user: { select: userSelect } } },
+          students: {
+            include: { user: { select: userSelect } },
+          },
+          _count: { select: { students: true, lessons: true } },
+        },
+      }),
+    ]);
+
+    const teachers = teacherLinks.map((l) => l.teacher);
+    const students = groups.flatMap((g) =>
+      g.students.map((s) => ({ ...s, groupId: g.id, groupName: g.name })),
+    );
+    const schedule = groups
+      .filter((g) => g.schedule != null)
+      .map((g) => ({
+        groupId: g.id,
+        groupName: g.name,
+        schedule: g.schedule,
+      }));
+
+    return {
+      center,
+      teachers,
+      groups,
+      students,
+      schedule,
+      counts: {
+        teachers: teachers.length,
+        groups: groups.length,
+        students: students.length,
+      },
+    };
+  }
+
   async getStatistics(id: string) {
     await this.findById(id);
 

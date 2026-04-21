@@ -11,11 +11,30 @@ import { useState, useEffect, useMemo } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
 
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function computeAgeFromDob(dob: string | undefined): number | undefined {
+  if (!dob || !ISO_DATE_RE.test(dob)) return undefined;
+  const birth = new Date(`${dob}T00:00:00Z`);
+  if (Number.isNaN(birth.getTime())) return undefined;
+  const now = new Date();
+  let age = now.getUTCFullYear() - birth.getUTCFullYear();
+  const m = now.getUTCMonth() - birth.getUTCMonth();
+  if (m < 0 || (m === 0 && now.getUTCDate() < birth.getUTCDate())) age -= 1;
+  return age >= 0 && age <= 120 ? age : undefined;
+}
+
 const updateStudentSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
   phone: z.string().max(50, 'Phone must be at most 50 characters').optional().or(z.literal('')),
   age: z.number().int('Age must be a whole number').min(1, 'Age must be at least 1').max(120, 'Age must be reasonable').optional(),
+  dateOfBirth: z
+    .union([z.string().regex(ISO_DATE_RE, 'Use YYYY-MM-DD format'), z.literal('')])
+    .optional(),
+  firstLessonDate: z
+    .union([z.string().regex(ISO_DATE_RE, 'Use YYYY-MM-DD format'), z.literal('')])
+    .optional(),
   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
   groupId: z.string().optional().or(z.literal('')),
   teacherId: z.string().optional().or(z.literal('')),
@@ -57,6 +76,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       lastName: '',
       phone: '',
       age: undefined,
+      dateOfBirth: '',
+      firstLessonDate: '',
       status: 'ACTIVE' as UserStatus,
       groupId: '',
       teacherId: '',
@@ -72,8 +93,17 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   });
 
   const watchedTeacherId = watch('teacherId') || '';
+  const watchedDob = watch('dateOfBirth');
   const watchedAge = watch('age');
-  const showParentSection = watchedAge !== undefined && watchedAge < 18;
+  const computedAge = useMemo(() => computeAgeFromDob(watchedDob), [watchedDob]);
+  // Keep age field in sync with DOB, while still allowing legacy age-only records.
+  useEffect(() => {
+    if (computedAge !== undefined && computedAge !== watchedAge) {
+      setValue('age', computedAge, { shouldDirty: true, shouldValidate: false });
+    }
+  }, [computedAge, watchedAge, setValue]);
+  const effectiveAge = computedAge ?? watchedAge;
+  const showParentSection = effectiveAge !== undefined && effectiveAge < 18;
 
   // Fetch teachers and all active groups.
   // Do not auto-filter groups by teacher in edit mode, otherwise unchanged group can be reset.
@@ -89,6 +119,14 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       setValue('lastName', student.user?.lastName || '');
       setValue('phone', student.user?.phone || '');
       setValue('age', student.age ?? undefined);
+      setValue(
+        'dateOfBirth',
+        student.dateOfBirth ? new Date(student.dateOfBirth).toISOString().split('T')[0] : '',
+      );
+      setValue(
+        'firstLessonDate',
+        student.firstLessonDate ? new Date(student.firstLessonDate).toISOString().split('T')[0] : '',
+      );
       setValue('status', student.user?.status || 'ACTIVE');
       setValue('teacherId', student.teacherId || '');
       setValue('groupId', student.groupId || '');
@@ -124,6 +162,14 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       if (dirtyFields.lastName) payload.lastName = data.lastName;
       if (dirtyFields.phone) payload.phone = data.phone || undefined;
       if (dirtyFields.age) payload.age = data.age;
+      if (dirtyFields.dateOfBirth) {
+        payload.dateOfBirth = data.dateOfBirth?.trim() ? data.dateOfBirth.trim() : null;
+      }
+      if (dirtyFields.firstLessonDate) {
+        payload.firstLessonDate = data.firstLessonDate?.trim()
+          ? data.firstLessonDate.trim()
+          : null;
+      }
       if (dirtyFields.status) payload.status = data.status;
       if (dirtyFields.groupId) payload.groupId = data.groupId?.trim() ? data.groupId.trim() : null;
       if (dirtyFields.teacherId) payload.teacherId = data.teacherId?.trim() ? data.teacherId.trim() : null;
@@ -225,17 +271,29 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="age">Age</Label>
-              <Input
-                id="age"
-                type="number"
-                min="1"
-                max="120"
-                {...register('age', { valueAsNumber: true })}
-                error={errors.age?.message}
-                placeholder="Enter student's age"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  {...register('dateOfBirth')}
+                  error={errors.dateOfBirth?.message}
+                />
+                {effectiveAge !== undefined && (
+                  <p className="text-xs text-slate-500">Age: {effectiveAge}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="firstLessonDate">First Lesson Date</Label>
+                <Input
+                  id="firstLessonDate"
+                  type="date"
+                  {...register('firstLessonDate')}
+                  error={errors.firstLessonDate?.message}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">

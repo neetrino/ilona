@@ -235,13 +235,14 @@ export class SalaryBreakdownService {
       // Deduction = penalty deduction + other deductions
       const deduction = penaltyDeduction + otherDeductionForLesson;
 
-      // Lesson name: use topic if available, otherwise use group name + date
       const lessonName = lessonData.topic || lessonData.group?.name || 'Untitled Lesson';
+      const groupName = lessonData.group?.name || lessonName;
 
       return {
         lessonId: lessonData.id,
         lessonName,
-        lessonDate: lessonData.scheduledAt.toISOString(), // Use scheduledAt instead of completedAt, ensure ISO string format
+        groupName,
+        lessonDate: lessonData.scheduledAt.toISOString(),
         obligationCompleted: completedCount,
         obligationTotal: totalActions,
         salary: baseSalary,

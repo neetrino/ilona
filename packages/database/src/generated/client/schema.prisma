@@ -51,6 +51,7 @@ model Center {
   crmLeads        CrmLead[]
   groups          Group[]
   managerProfiles ManagerProfile[]
+  teacherCenters  TeacherCenter[]
 
   @@map("centers")
 }
@@ -75,6 +76,8 @@ model Group {
   maxStudents           Int                   @default(8)
   centerId              String
   teacherId             String?
+  substituteTeacherId   String?
+  schedule              Json?
   isActive              Boolean               @default(true)
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
@@ -82,37 +85,72 @@ model Group {
   crmLeads              CrmLead[]
   center                Center                @relation(fields: [centerId], references: [id], onDelete: Cascade)
   teacher               Teacher?              @relation(fields: [teacherId], references: [id])
+  substituteTeacher     Teacher?              @relation("GroupSubstitute", fields: [substituteTeacherId], references: [id])
   lessons               Lesson[]
   students              Student[]
   studentHistoryEntries StudentGroupHistory[]
+  dailyPlans            DailyPlan[]
+  recordingItems        RecordingItem[]
 
   @@index([centerId])
   @@index([teacherId])
+  @@index([substituteTeacherId])
   @@map("groups")
 }
 
 model Teacher {
-  id             String         @id @default(cuid())
-  userId         String         @unique
-  bio            String?
-  specialization String?
-  hourlyRate     Decimal        @db.Decimal(10, 2)
-  lessonRateAMD  Decimal?       @db.Decimal(10, 2)
-  workingDays    String[]
-  workingHours   Json?
-  hireDate       DateTime       @default(now())
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  crmLeads       CrmLead[]
-  deductions     Deduction[]
-  feedbacks      Feedback[]
-  groups         Group[]
-  lessons        Lesson[]
-  salaryRecords  SalaryRecord[]
-  students       Student[]
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String          @id @default(cuid())
+  userId              String          @unique
+  bio                 String?
+  specialization      String?
+  hourlyRate          Decimal         @db.Decimal(10, 2)
+  lessonRateAMD       Decimal?        @db.Decimal(10, 2)
+  videoUrl            String?
+  workingDays         String[]
+  workingHours        Json?
+  hireDate            DateTime        @default(now())
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  crmLeads            CrmLead[]
+  deductions          Deduction[]
+  feedbacks           Feedback[]
+  groups              Group[]
+  substituteForGroups Group[]         @relation("GroupSubstitute")
+  lessons             Lesson[]
+  salaryRecords       SalaryRecord[]
+  students            Student[]
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  centerLinks         TeacherCenter[]
+  notes               TeacherNote[]
+  dailyPlans          DailyPlan[]
 
   @@map("teachers")
+}
+
+model TeacherCenter {
+  id        String   @id @default(cuid())
+  teacherId String
+  centerId  String
+  createdAt DateTime @default(now())
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  center    Center   @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, centerId])
+  @@index([teacherId])
+  @@index([centerId])
+  @@map("teacher_centers")
+}
+
+model TeacherNote {
+  id        String   @id @default(cuid())
+  teacherId String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId])
+  @@map("teacher_notes")
 }
 
 model Student {
@@ -121,6 +159,10 @@ model Student {
   groupId            String?
   teacherId          String?
   age                Int?
+  dateOfBirth        DateTime?
+  firstLessonDate    DateTime?
+  status             StudentStatus         @default(ACTIVE)
+  riskLabel          RiskLabel             @default(NONE)
   parentName         String?
   parentPhone        String?
   parentEmail        String?
@@ -142,10 +184,14 @@ model Student {
   user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   groupHistory       StudentGroupHistory[]
   plannedAbsences    PlannedAbsence[]
+  recordingItems     RecordingItem[]
+  streak             StudentStreak?
 
   @@index([groupId])
   @@index([teacherId])
   @@index([leadId])
+  @@index([status])
+  @@index([riskLabel])
   @@map("students")
 }
 
@@ -184,31 +230,33 @@ model StudentGroupHistory {
 }
 
 model Lesson {
-  id                 String       @id @default(cuid())
+  id                 String          @id @default(cuid())
   groupId            String
   teacherId          String
   scheduledAt        DateTime
-  duration           Int          @default(60)
+  duration           Int             @default(60)
   topic              String?
   description        String?
-  status             LessonStatus @default(SCHEDULED)
-  vocabularySent     Boolean      @default(false)
+  status             LessonStatus    @default(SCHEDULED)
+  vocabularySent     Boolean         @default(false)
   vocabularySentAt   DateTime?
-  feedbacksCompleted Boolean      @default(false)
-  absenceMarked      Boolean      @default(false)
+  feedbacksCompleted Boolean         @default(false)
+  absenceMarked      Boolean         @default(false)
   absenceMarkedAt    DateTime?
-  voiceSent          Boolean      @default(false)
+  voiceSent          Boolean         @default(false)
   voiceSentAt        DateTime?
-  textSent           Boolean      @default(false)
+  textSent           Boolean         @default(false)
   textSentAt         DateTime?
   completedAt        DateTime?
   notes              String?
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
   attendances        Attendance[]
   feedbacks          Feedback[]
-  group              Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  teacher            Teacher      @relation(fields: [teacherId], references: [id])
+  group              Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teacher            Teacher         @relation(fields: [teacherId], references: [id])
+  dailyPlan          DailyPlan?
+  recordingItems     RecordingItem[]
 
   @@index([groupId])
   @@index([teacherId])
@@ -242,19 +290,28 @@ model Attendance {
 }
 
 model Feedback {
-  id           String   @id @default(cuid())
-  lessonId     String
-  studentId    String
-  teacherId    String
-  content      String
-  rating       Int?
-  strengths    String?
-  improvements String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  lesson       Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  teacher      Teacher  @relation(fields: [teacherId], references: [id])
+  id            String     @id @default(cuid())
+  lessonId      String
+  studentId     String
+  teacherId     String
+  content       String
+  rating        Int?
+  strengths     String?
+  improvements  String?
+  // Phase 9 — structured feedback form fields. Existing free-form
+  // `content` is kept for backward compatibility with historic entries.
+  level         CefrLevel?
+  grammarTopics String[]   @default([])
+  skills        String[]   @default([])
+  skillsNote    String?
+  participation Int? // 1..5 rating; null = not rated
+  progress      String?
+  encouragement String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  lesson        Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student       Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher       Teacher    @relation(fields: [teacherId], references: [id])
 
   @@unique([lessonId, studentId])
   @@index([teacherId])
@@ -413,40 +470,128 @@ model SystemSettings {
   penaltyFeedbackAmd       Decimal  @default(1000) @db.Decimal(10, 2)
   penaltyVoiceAmd          Decimal  @default(1000) @db.Decimal(10, 2)
   penaltyTextAmd           Decimal  @default(1000) @db.Decimal(10, 2)
+  penaltyDailyPlanAmd      Decimal  @default(1000) @db.Decimal(10, 2)
   updatedAt                DateTime @updatedAt
 
   @@map("system_settings")
 }
 
+model DailyPlan {
+  id        String           @id @default(cuid())
+  lessonId  String?          @unique
+  teacherId String
+  groupId   String?
+  date      DateTime
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  topics    DailyPlanTopic[]
+  lesson    Lesson?          @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  teacher   Teacher          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  group     Group?           @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([teacherId])
+  @@index([groupId])
+  @@index([date])
+  @@map("daily_plans")
+}
+
+model DailyPlanTopic {
+  id          String              @id @default(cuid())
+  dailyPlanId String
+  title       String
+  order       Int                 @default(0)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  dailyPlan   DailyPlan           @relation(fields: [dailyPlanId], references: [id], onDelete: Cascade)
+  resources   DailyPlanResource[]
+
+  @@index([dailyPlanId])
+  @@map("daily_plan_topics")
+}
+
+model DailyPlanResource {
+  id          String                @id @default(cuid())
+  topicId     String
+  kind        DailyPlanResourceKind
+  title       String
+  link        String?
+  description String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  topic       DailyPlanTopic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+  @@index([kind])
+  @@map("daily_plan_resources")
+}
+
+model StudentStreak {
+  id                 String    @id @default(cuid())
+  studentId          String    @unique
+  currentStreak      Int       @default(0)
+  lastAttendanceDate DateTime?
+  updatedAt          DateTime  @updatedAt
+  student            Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("student_streaks")
+}
+
+model RecordingItem {
+  id          String   @id @default(cuid())
+  groupId     String
+  studentId   String
+  lessonId    String?
+  fileUrl     String
+  fileName    String?
+  durationSec Int?
+  recordedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson      Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  @@index([groupId])
+  @@index([studentId])
+  @@index([lessonId])
+  @@index([recordedAt])
+  @@map("recording_items")
+}
+
 model CrmLead {
-  id                String              @id @default(cuid())
-  status            CrmLeadStatus       @default(NEW)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  createdByUserId   String
-  assignedManagerId String?
-  firstName         String?
-  lastName          String?
-  phone             String?
-  age               Int?
-  levelId           String?
-  teacherId         String?
-  groupId           String?
-  centerId          String?
-  transferFlag      Boolean             @default(false)
-  transferComment   String?
-  archivedReason    String?
-  source            String?
-  notes             String?
-  teacherApprovedAt DateTime?
-  activities        CrmLeadActivity[]
-  attachments       CrmLeadAttachment[]
-  assignedManager   User?               @relation("LeadAssignedManager", fields: [assignedManagerId], references: [id])
-  center            Center?             @relation(fields: [centerId], references: [id])
-  createdByUser     User                @relation("LeadCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  group             Group?              @relation(fields: [groupId], references: [id])
-  teacher           Teacher?            @relation(fields: [teacherId], references: [id])
-  student           Student?
+  id                 String              @id @default(cuid())
+  status             CrmLeadStatus       @default(NEW)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdByUserId    String
+  assignedManagerId  String?
+  firstName          String?
+  lastName           String?
+  phone              String?
+  age                Int?
+  dateOfBirth        DateTime?
+  parentName         String?
+  parentPhone        String?
+  parentPassportInfo String?
+  firstLessonDate    DateTime?
+  comment            String?
+  levelId            String?
+  teacherId          String?
+  groupId            String?
+  centerId           String?
+  transferFlag       Boolean             @default(false)
+  transferComment    String?
+  archivedReason     String?
+  source             String?
+  notes              String?
+  teacherApprovedAt  DateTime?
+  activities         CrmLeadActivity[]
+  attachments        CrmLeadAttachment[]
+  assignedManager    User?               @relation("LeadAssignedManager", fields: [assignedManagerId], references: [id])
+  center             Center?             @relation(fields: [centerId], references: [id])
+  createdByUser      User                @relation("LeadCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  group              Group?              @relation(fields: [groupId], references: [id])
+  teacher            Teacher?            @relation(fields: [teacherId], references: [id])
+  student            Student?
 
   @@index([status])
   @@index([phone])
@@ -589,4 +734,35 @@ enum MessageType {
   FILE
   SYSTEM
   VOCABULARY
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  UNGROUPED
+  NEW
+  RISK
+  HIGH_RISK
+}
+
+enum RiskLabel {
+  NONE
+  RISK
+  HIGH_RISK
+}
+
+enum DailyPlanResourceKind {
+  READING
+  LISTENING
+  WRITING
+  SPEAKING
+}
+
+enum CefrLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
 }

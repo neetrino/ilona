@@ -17,17 +17,24 @@ export interface Teacher {
     SAT?: Array<{ start: string; end: string }>;
     SUN?: Array<{ start: string; end: string }>;
   } | null;
+  videoUrl?: string | null;
   user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'phone' | 'avatarUrl' | 'status' | 'lastLoginAt' | 'createdAt'>;
   groups?: TeacherGroup[];
+  substituteForGroups?: TeacherGroup[];
   centers?: Array<{
     id: string;
     name: string;
+  }>;
+  centerLinks?: Array<{
+    center: { id: string; name: string };
   }>;
   _count: {
     groups: number;
     lessons: number;
     students: number;
+    substituteForGroups?: number;
   };
+  substituteForGroupsCount?: number;
   obligationsDoneCount?: number;
   obligationsTotal?: number;
   deductionAmount?: number;
@@ -84,6 +91,8 @@ export interface CreateTeacherDto {
     SAT?: Array<{ start: string; end: string }>;
     SUN?: Array<{ start: string; end: string }>;
   };
+  videoUrl?: string;
+  centerIds?: string[];
 }
 
 export interface UpdateTeacherDto {
@@ -103,6 +112,8 @@ export interface UpdateTeacherDto {
     SAT?: Array<{ start: string; end: string }>;
     SUN?: Array<{ start: string; end: string }>;
   };
+  videoUrl?: string | null;
+  centerIds?: string[];
 }
 
 export interface TeacherStatistics {

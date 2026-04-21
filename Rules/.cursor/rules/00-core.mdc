@@ -1,287 +1,105 @@
 ---
-description: Главные правила AI-разработки. ЧИТАЕТСЯ ВСЕГДА при любом взаимодействии.
+description: Core project rules for AI. Always applied. Domain rules load by globs. CONTEXT/token economy lives in User Rules only — do not duplicate here.
 globs: ["**/*"]
 alwaysApply: true
 ---
 
-# ГЛАВНЫЕ ПРАВИЛА AI-РАЗРАБОТКИ
+# Core
 
-> **Приоритет:** Этот файл имеет ВЫСШИЙ приоритет. Все остальные правила дополняют его, но не противоречат.
+Other `.mdc` files apply by **globs** and task. If a rule seems missing, check the file type matches that rule’s globs.
 
----
+## Project size
 
-## 🎯 РОЛЬ И ПОВЕДЕНИЕ AI
+If not decided: read [`99-project-size.mdc`](99-project-size.mdc), propose A/B/C with rationale, get confirmation, then replace the line below with e.g. `Size: B — medium, layout: feature-based`.
 
-### Твоя роль
-Ты — **Senior Software Architect и Developer** с 15+ лет опыта. Ты пишешь код и принимаешь решения на уровне опытного специалиста.
+`Size: NOT SET — follow 99-project-size.mdc`
 
-### Принципы работы
-1. **Качество превыше скорости** — лучше сделать правильно, чем быстро
-2. **Явное лучше неявного** — все решения документируются
-3. **Простота важнее сложности** — не усложняй без необходимости
-4. **Консистентность** — единый стиль во всём проекте
+## Start of work
 
----
+1. Confirm project size (above).
+2. Ensure `docs/TECH_CARD.md` exists (copy from `docs/reference/templates/TECH_CARD_TEMPLATE.md` if needed), fill per template; wait for confirmation on stack choices.
+3. Read `docs/01-ARCHITECTURE.md`, `docs/TECH_CARD.md`, `README.md` (create from templates if missing).
+4. Propose architecture/folder layout if greenfield; wait for approval before large refactors.
 
-## 📐 РАЗМЕР ПРОЕКТА
+## Each task
 
-> 🔴 **РАЗМЕР НЕ ОПРЕДЕЛЁН** — прочитай `99-project-size.mdc`, определи размер, предложи с обоснованием, получи подтверждение, затем ЗАМЕНИ эту строку на: `✅ **РАЗМЕР: [A/B/C]** — [малый/средний/крупный], структура: [простая/feature-based/monorepo]`
+Understand the ask → inspect existing code → propose for large/risky changes → implement after agreement → keep docs in sync when behavior changes.
 
-<!-- 
-ПОСЛЕ ОПРЕДЕЛЕНИЯ РАЗМЕРА замени блок выше на один из вариантов:
+## Never
 
-✅ **РАЗМЕР: A** — малый, структура: простая (src/app, components, lib)
-✅ **РАЗМЕР: B** — средний, структура: feature-based (src/features/*, src/shared/*)  
-✅ **РАЗМЕР: C** — крупный, структура: monorepo (apps/*, packages/*)
--->
+- **TS:** `any` (unless documented exception).
+- **UI:** inline styles (use CSS/Tailwind classes only).
+- **Magic numbers** — use named constants.
+- **Duplication** — DRY.
+- **Size:** functions > 50 lines; files > 300 lines; nesting > 3 levels (use early returns).
+- **Prod:** `console.log` — use logger.
+- **Dead:** commented-out code — remove.
+- **Secrets** in code/commits — env only.
+- **SQL:** no string-concatenated user input; parameterized / prepared only.
+- **eval** and similar — never.
+- **CORS/CSRF off** without explicit approval.
+- **Architecture / deps / public API** changes without agreement or strong rationale.
+- **Remove tests** or **ignore lint** to “pass” CI.
 
----
+## Always
 
-## 📚 ОБЯЗАТЕЛЬНЫЙ WORKFLOW
+- TypeScript **strict**; explicit types at boundaries.
+- **Named exports** (no default exports).
+- **Validate** external input at boundaries.
+- **Handle errors** with logging; no silent swallow in production paths.
+- **JSDoc** on exported public APIs where non-obvious.
 
-### При начале работы над проектом
+## Structure
 
-```
-1. ПРОВЕРЬ размер проекта (секция выше)
-   └─> Если "НЕ ОПРЕДЕЛЁН" → читай 99-project-size.mdc, определи, обнови эту секцию
-   └─> Если размер указан → работай согласно ему
+- One file, one responsibility.
+- Group by **feature**, not by file type only.
+- Shared UI/utils in `shared` / `common`.
+- Constants in dedicated files.
 
-2. ИЗУЧИ документацию:
-   └─> docs/01-ARCHITECTURE.md
-   └─> README.md
+## Decisions
 
-3. ПРЕДЛОЖИ архитектуру (если ещё не создана):
-   └─> Структура папок (согласно размеру!)
-   └─> Выбор технологий
-   └─> Дождись подтверждения!
+**Hard (apply without asking):** security baseline (argon2 for passwords, validate input, helmet/CORS where applicable), TS strict, named exports, error handling, `pnpm` + Prisma per TECH_CARD.
 
-4. СОЗДАЙ документ архитектуры после согласования
-```
+**Adaptive (ask before picking values):** timeouts, pool limits, rate limits, cache TTL — explain options and tradeoffs; never silently use a generic default like `statement_timeout=30s` without team alignment.
 
-### При каждой задаче
+**Autonomous:** naming, internal file layout, small refactors (&lt;50 lines), obvious bugfixes, formatting.
 
-```
-1. ПОЙМИ задачу полностью
-2. ПРОВЕРЬ существующий код и архитектуру
-3. ПРЕДЛОЖИ решение (для крупных изменений)
-4. РЕАЛИЗУЙ после согласования
-5. ПРОВЕРЬ качество кода
-6. ОБНОВИ документацию (если нужно)
-```
+**Requires approval:** architecture, stack/libraries, folder layout, DB schema, removing/renaming public API, business-logic changes.
 
----
+**Proposal format:** context → options with pros/cons → recommendation → wait for confirmation.
 
-## 🚫 КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО
+## Secrets and credentials
 
-### 🔴 Размер проекта
-- ❌ **Начинать работу без определённого размера проекта** — сначала определи размер (A/B/C), получи подтверждение, обнови секцию "РАЗМЕР ПРОЕКТА" выше
+Do not invent accounts or keys. Ask the developer when `DATABASE_URL`, OAuth, R2, deploy keys, etc. are needed. Do not commit code with `YOUR_API_KEY_HERE` placeholders and continue — stop and request credentials.
 
-### Код и архитектура
-- ❌ **any** в TypeScript — НИКОГДА
-- ❌ **inline styles** — только CSS/Tailwind классы
-- ❌ **magic numbers** — только именованные константы
-- ❌ **дублирование кода** — DRY принцип
-- ❌ **функции > 50 строк** — разбивай на меньшие
-- ❌ **файлы > 300 строк** — разбивай на модули
-- ❌ **вложенность > 3 уровней** — используй early returns
-- ❌ **console.log в production** — только logger
-- ❌ **закомментированный код** — удаляй
+## Human checklists
 
-### Безопасность
-- ❌ **секреты в коде** — только через env переменные
-- ❌ **SQL без параметризации** — только prepared statements
-- ❌ **eval() и подобные** — никогда
-- ❌ **отключение CORS/CSRF** — без явного согласования
+Full DoD/PR/release checklists: [`docs/reference/Check/Quality/project-quality-checklist.md`](docs/reference/Check/Quality/project-quality-checklist.md) (not loaded as Cursor rules — open when needed).
 
-### Процесс
-- ❌ **изменение архитектуры без согласования**
-- ❌ **добавление зависимостей без обоснования**
-- ❌ **удаление тестов**
-- ❌ **игнорирование ошибок линтера**
+## Rules index (by domain)
 
----
+| Area | File |
+|------|------|
+| Architecture | `01-architecture.mdc` |
+| TypeScript | `03-typescript.mdc` |
+| React / Next | `04-react-nextjs.mdc` |
+| NestJS | `05-backend-nestjs.mdc` |
+| Database | `06-database.mdc` |
+| API | `07-api-design.mdc` |
+| Security | `08-security.mdc` |
+| Figma | `09-figma-design.mdc` |
+| Testing | `10-testing.mdc` |
+| Docs | `11-documentation.mdc` |
+| Errors | `12-error-handling.mdc` |
+| Git | `13-git-workflow.mdc` |
+| Ops + reliability | `14-ops.mdc` |
+| Performance | `15-performance.mdc` |
+| State | `16-state-management.mdc` |
+| CI/CD | `17-cicd.mdc` |
+| i18n | `20-i18n.mdc` |
+| Onboarding | `21-project-onboarding.mdc` |
+| Project size | `99-project-size.mdc` |
 
-## ✅ ОБЯЗАТЕЛЬНО ВСЕГДА
-
-### Код
-- ✅ **TypeScript strict mode** — все типы явные
-- ✅ **Именованные экспорты** — не default export
-- ✅ **Валидация входных данных** — на всех границах
-- ✅ **Обработка ошибок** — try/catch с логированием
-- ✅ **Понятные имена** — переменные описывают суть
-
-### Структура
-- ✅ **Один файл — одна ответственность**
-- ✅ **Группировка по фичам** — не по типам файлов
-- ✅ **Переиспользуемые компоненты** — в shared/common
-- ✅ **Константы в отдельных файлах**
-
-### Документация
-- ✅ **JSDoc для публичных функций**
-- ✅ **README для каждого модуля** (в средних/крупных проектах)
-- ✅ **Комментарии для сложной логики**
-
----
-
-## 🔄 ПРИНЯТИЕ РЕШЕНИЙ
-
-### Автономные решения (делай сам)
-- Выбор имён переменных/функций
-- Структура внутри файла
-- Мелкий рефакторинг (< 50 строк)
-- Исправление очевидных багов
-- Добавление типов TypeScript
-- Форматирование кода
-
-### Требуют согласования (предложи варианты)
-- Архитектура проекта/модуля
-- Выбор библиотек и фреймворков
-- Изменение структуры папок
-- Изменение схемы БД
-- Удаление/переименование публичных API
-- Изменения в бизнес-логике
-
-### Формат предложения
-```markdown
-## Предложение: [краткое описание]
-
-**Контекст:** Что нужно сделать и почему
-
-**Варианты:**
-1. [Вариант A] — [плюсы] / [минусы]
-2. [Вариант B] — [плюсы] / [минусы]
-
-**Рекомендация:** Вариант [X], потому что [причина]
-
-Жду подтверждения для продолжения.
-```
-
----
-
-## ⚠️ ОБРАБОТКА КОНФЛИКТОВ
-
-### Правила не покрывают ситуацию
-1. Прими решение по аналогии с существующими правилами
-2. Для важных случаев — предложи варианты
-3. Спроси: "Хотите добавить это в правила?"
-
-### Конфликт ТЗ и правил
-1. ОСТАНОВИСЬ
-2. Опиши конфликт
-3. Предложи решения
-4. Дождись ответа
-5. Документируй исключение
-
-### Нужна новая технология
-1. Обоснуй необходимость
-2. Предложи конкретную библиотеку/инструмент
-3. Опиши влияние на проект
-4. После одобрения — добавь в TECH_STACK.md с датой и причиной
-
----
-
-## 📁 СТРУКТУРА ДОКУМЕНТОВ ПРОЕКТА
-
-### Обязательная папка docs/ в каждом проекте
-
-```
-docs/
-├── 01-ARCHITECTURE.md      # Архитектура (главный документ)
-├── 02-TECH_STACK.md        # Стек технологий
-├── 03-STRUCTURE.md         # Структура файлов
-├── 04-API.md               # API документация
-├── 05-DATABASE.md          # Схема БД
-├── PROGRESS.md             # Прогресс разработки
-├── DECISIONS.md            # Принятые решения
-└── archive/                # Устаревшие документы
-    └── ...
-```
-
-### Нумерация файлов
-- **01-09** — Главные документы (архитектура, стек)
-- **10-49** — Технические документы (API, DB, etc.)
-- **50-89** — Гайды и инструкции
-- **90-99** — Временные/черновики
-
----
-
-## 🎨 СТАНДАРТЫ ИМЕНОВАНИЯ
-
-### Файлы
-| Тип | Формат | Пример |
-|-----|--------|--------|
-| Компоненты React | PascalCase | `ProductCard.tsx` |
-| Хуки | camelCase с use | `useProducts.ts` |
-| Утилиты | camelCase | `formatPrice.ts` |
-| Типы | camelCase.types | `product.types.ts` |
-| Константы | camelCase.constants | `api.constants.ts` |
-| Тесты | *.test.ts | `ProductCard.test.tsx` |
-
-### Код
-| Тип | Формат | Пример |
-|-----|--------|--------|
-| Переменные | camelCase | `userName` |
-| Функции | camelCase | `getProducts` |
-| Классы | PascalCase | `ProductService` |
-| Константы | UPPER_SNAKE | `API_BASE_URL` |
-| Типы/Интерфейсы | PascalCase | `ProductData` |
-| Enum значения | UPPER_SNAKE | `OrderStatus.PENDING` |
-
----
-
-## 📊 МЕТРИКИ КАЧЕСТВА
-
-### Код должен соответствовать
-- [ ] TypeScript: 0 ошибок
-- [ ] ESLint: 0 warnings
-- [ ] Функции: ≤ 50 строк
-- [ ] Файлы: ≤ 300 строк
-- [ ] Вложенность: ≤ 3 уровня
-- [ ] Покрытие тестами: ≥ 70% (бизнес-логика)
-
----
-
-## 🔗 СВЯЗАННЫЕ ПРАВИЛА
-
-В зависимости от контекста, применяй дополнительные правила:
-
-### Архитектура и код
-- `01-architecture.mdc` — структура проекта
-- `02-coding-standards.mdc` — стандарты кода
-- `03-typescript.mdc` — TypeScript специфика
-
-### Frontend
-- `04-react-nextjs.mdc` — React и Next.js
-- `09-figma-design.mdc` — дизайн и Figma
-- `16-state-management.mdc` — управление состоянием
-- `20-i18n.mdc` — интернационализация (i18n)
-
-### Backend
-- `05-backend-nestjs.mdc` — NestJS и backend
-- `06-database.mdc` — работа с БД
-- `07-api-design.mdc` — дизайн API
-
-### Качество и процессы
-- `08-security.mdc` — безопасность
-- `10-testing.mdc` — тестирование
-- `11-documentation.mdc` — документация
-- `12-error-handling.mdc` — обработка ошибок
-- `19-checklists.mdc` — чеклисты (DoD, PR, Release)
-
-### DevOps и надёжность
-- `13-git-workflow.mdc` — Git процессы
-- `14-observability.mdc` — логи и мониторинг
-- `15-performance.mdc` — производительность
-- `17-cicd.mdc` — CI/CD пайплайны
-- `18-reliability.mdc` — надёжность
-
-### Размер проекта
-- `99-project-size.mdc` — определение размера проекта
-
-### Запуск проекта
-- `21-project-onboarding.mdc` — **пошаговый план создания нового проекта**
-
----
-
-**Версия:** 2.1
-**Дата:** 2025-01-31
+Platform how-tos: `docs/reference/platforms/`.
+
+**Version:** 3.0 · **Date:** 2026-04-02

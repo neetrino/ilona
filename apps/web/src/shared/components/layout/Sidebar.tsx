@@ -148,6 +148,8 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('groups'), href: '/admin/groups', icon: icons.groups },
         { label: t('teachers'), href: '/admin/teachers', icon: icons.teachers },
         { label: t('students'), href: '/admin/students', icon: icons.students },
+        { label: t('schedule'), href: '/admin/schedule', icon: icons.schedule },
+        { label: t('finance'), href: '/admin/finance', icon: icons.finance },
         { label: t('calendar'), href: '/admin/calendar', icon: icons.calendar },
         { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
         { label: t('settings'), href: '/admin/settings', icon: icons.settings },
@@ -156,6 +158,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
       return [
         { label: t('dashboard'), href: '/teacher/dashboard', icon: icons.dashboard },
         { label: t('myStudents'), href: '/teacher/students', icon: icons.students },
+        { label: t('schedule'), href: '/teacher/schedule', icon: icons.schedule },
         { label: t('calendar'), href: '/teacher/calendar', icon: icons.calendar },
         { label: t('dailyPlan'), href: '/teacher/daily-plan', icon: icons.dailyPlan },
         { label: t('recordings'), href: '/teacher/recordings', icon: icons.recordings },
@@ -171,7 +174,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('myFeedbacks'), href: '/student/my-feedbacks', icon: icons.feedbacks },
         { label: t('payments'), href: '/student/payments', icon: icons.payments },
         { label: t('analytics'), href: '/student/analytics', icon: icons.analytics },
-        { label: t('absence'), href: '/student/absence', icon: icons.absence },
+        { label: t('attendance'), href: '/student/attendance', icon: icons.absence },
         { label: t('settings'), href: '/student/settings', icon: icons.settings },
       ];
     default:

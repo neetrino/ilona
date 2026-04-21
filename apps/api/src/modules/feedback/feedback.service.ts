@@ -11,6 +11,34 @@ import { CreateFeedbackDto, UpdateFeedbackDto } from './dto';
 import { UserRole, Prisma } from '@ilona/database';
 import { SalariesService } from '../finance/salaries.service';
 
+/**
+ * Build the structured-feedback Prisma payload from a DTO. We only set
+ * the field when it was explicitly included so that partial updates do
+ * not wipe previously saved values.
+ */
+function buildStructuredFields(
+  dto: Pick<
+    UpdateFeedbackDto,
+    | 'level'
+    | 'grammarTopics'
+    | 'skills'
+    | 'skillsNote'
+    | 'participation'
+    | 'progress'
+    | 'encouragement'
+  >,
+): Prisma.FeedbackUpdateInput {
+  const payload: Prisma.FeedbackUpdateInput = {};
+  if (dto.level !== undefined) payload.level = dto.level ?? null;
+  if (dto.grammarTopics !== undefined) payload.grammarTopics = dto.grammarTopics;
+  if (dto.skills !== undefined) payload.skills = dto.skills;
+  if (dto.skillsNote !== undefined) payload.skillsNote = dto.skillsNote ?? null;
+  if (dto.participation !== undefined) payload.participation = dto.participation ?? null;
+  if (dto.progress !== undefined) payload.progress = dto.progress ?? null;
+  if (dto.encouragement !== undefined) payload.encouragement = dto.encouragement ?? null;
+  return payload;
+}
+
 @Injectable()
 export class FeedbackService {
   constructor(
@@ -250,10 +278,11 @@ export class FeedbackService {
       const updatedFeedback = await this.prisma.feedback.update({
         where: { id: existingFeedback.id },
         data: {
-          content: dto.content,
+          ...(dto.content !== undefined ? { content: dto.content } : {}),
           rating: dto.rating,
           strengths: dto.strengths,
           improvements: dto.improvements,
+          ...buildStructuredFields(dto),
         },
       });
 
@@ -311,10 +340,21 @@ export class FeedbackService {
         lessonId: dto.lessonId,
         studentId: dto.studentId,
         teacherId: teacher.id,
-        content: dto.content,
+        content: dto.content ?? '',
         rating: dto.rating,
         strengths: dto.strengths,
         improvements: dto.improvements,
+        ...(dto.level ? { level: dto.level } : {}),
+        ...(dto.grammarTopics ? { grammarTopics: dto.grammarTopics } : {}),
+        ...(dto.skills ? { skills: dto.skills } : {}),
+        ...(dto.skillsNote !== undefined ? { skillsNote: dto.skillsNote } : {}),
+        ...(dto.participation !== undefined
+          ? { participation: dto.participation }
+          : {}),
+        ...(dto.progress !== undefined ? { progress: dto.progress } : {}),
+        ...(dto.encouragement !== undefined
+          ? { encouragement: dto.encouragement }
+          : {}),
       },
     });
 
@@ -395,10 +435,11 @@ export class FeedbackService {
     return this.prisma.feedback.update({
       where: { id },
       data: {
-        content: dto.content,
+        ...(dto.content !== undefined ? { content: dto.content } : {}),
         rating: dto.rating,
         strengths: dto.strengths,
         improvements: dto.improvements,
+        ...buildStructuredFields(dto),
       },
     });
   }

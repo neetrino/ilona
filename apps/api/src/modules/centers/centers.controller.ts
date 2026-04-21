@@ -35,6 +35,13 @@ export class CentersController {
     return this.centersService.getStatistics(id);
   }
 
+  /** Detailed view payload for the admin center popup (Teachers/Students/Groups/Schedule tabs). */
+  @Get(':id/details')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async getDetails(@Param('id') id: string) {
+    return this.centersService.getDetails(id);
+  }
+
   @Get(':id')
   async findById(@Param('id') id: string): Promise<unknown> {
     return this.centersService.findById(id);

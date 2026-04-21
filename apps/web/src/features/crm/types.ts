@@ -57,6 +57,12 @@ export interface CrmLead {
   lastName: string | null;
   phone: string | null;
   age: number | null;
+  dateOfBirth: string | null;
+  parentName: string | null;
+  parentPhone: string | null;
+  parentPassportInfo: string | null;
+  firstLessonDate: string | null;
+  comment: string | null;
   levelId: string | null;
   teacherId: string | null;
   groupId: string | null;
@@ -130,6 +136,14 @@ export interface CreateLeadDto {
   lastName?: string;
   phone?: string;
   age?: number;
+  /** ISO-8601 date string. */
+  dateOfBirth?: string;
+  parentName?: string;
+  parentPhone?: string;
+  parentPassportInfo?: string;
+  /** ISO-8601 date string. */
+  firstLessonDate?: string;
+  comment?: string;
   levelId?: string;
   teacherId?: string;
   groupId?: string;
