@@ -400,13 +400,13 @@ export function createStudentsTableColumns({
         }
         if (!attendance) {
           return (
-            <span className="text-slate-600 pl-4" onClick={(e) => e.stopPropagation()}>0/0</span>
+            <span className="text-slate-600 pl-4" onClick={(e) => e.stopPropagation()}>0</span>
           );
         }
-        const { totalClasses, absences } = attendance;
+        const { absences } = attendance;
         return (
           <span className="text-slate-700 font-medium pl-4" onClick={(e) => e.stopPropagation()}>
-            {totalClasses}/{absences}
+            {absences}
           </span>
         );
       },

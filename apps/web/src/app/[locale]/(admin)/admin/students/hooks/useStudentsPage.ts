@@ -9,6 +9,7 @@ import {
   useDeleteStudentsBulk,
   useUpdateStudent,
   getItemId,
+  isOnboardingItem,
   type Student,
   type StudentLifecycleStatus,
 } from '@/features/students';
@@ -190,7 +191,15 @@ export function useStudentsPage() {
   const deleteStudentsBulk = useDeleteStudentsBulk();
   const updateStudent = useUpdateStudent();
 
-  const students = useMemo(() => studentsData?.items || [], [studentsData?.items]);
+  const students = useMemo(() => {
+    const items = studentsData?.items || [];
+    return [...items].sort((a, b) => {
+      const aIsNew = !isOnboardingItem(a) && a.status === 'NEW';
+      const bIsNew = !isOnboardingItem(b) && b.status === 'NEW';
+      if (aIsNew === bIsNew) return 0;
+      return aIsNew ? -1 : 1;
+    });
+  }, [studentsData?.items]);
   const totalStudents = studentsData?.total || 0;
   const totalPages = studentsData?.totalPages || 1;
   const allCenters = useMemo(() => {
