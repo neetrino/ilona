@@ -29,6 +29,9 @@ const KIND_LABEL: Record<DailyPlanResourceKind, string> = {
 interface DailyPlanEditorProps {
   mode: 'create' | 'edit';
   plan?: DailyPlan;
+  initialGroupId?: string;
+  initialLessonId?: string;
+  readOnly?: boolean;
   onClose: () => void;
   onSaved: () => void;
 }
@@ -90,6 +93,9 @@ function toDrafts(plan?: DailyPlan): {
 export function DailyPlanEditor({
   mode,
   plan,
+  initialGroupId,
+  initialLessonId,
+  readOnly = false,
   onClose,
   onSaved,
 }: DailyPlanEditorProps) {
@@ -101,13 +107,15 @@ export function DailyPlanEditor({
   const create = useCreateDailyPlan();
   const update = useUpdateDailyPlan();
   const { data: myGroups = [], isLoading: isLoadingGroups } = useMyGroups();
+  const isGroupLocked = Boolean(initialLessonId);
 
   useEffect(() => {
     const draft = toDrafts(plan);
+    const resolvedGroupId = plan ? draft.groupId : (initialGroupId ?? draft.groupId);
     setDate(draft.date);
-    setGroupId(draft.groupId);
+    setGroupId(resolvedGroupId);
     setTopics(draft.topics);
-  }, [plan]);
+  }, [plan, initialGroupId]);
 
   const updateTopic = (idx: number, patch: Partial<DraftTopic>) => {
     setTopics((prev) =>
@@ -167,6 +175,7 @@ export function DailyPlanEditor({
       if (mode === 'create') {
         await create.mutateAsync({
           date,
+          lessonId: initialLessonId,
           groupId,
           topics: cleanTopics,
         });
@@ -184,6 +193,10 @@ export function DailyPlanEditor({
   };
 
   const isSaving = create.isPending || update.isPending;
+  const selectedGroupName =
+    myGroups.find((group) => group.id === groupId)?.name ??
+    plan?.group?.name ??
+    'Selected group';
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 overflow-y-auto">
@@ -215,6 +228,7 @@ export function DailyPlanEditor({
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              disabled={readOnly}
               className="h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
@@ -225,20 +239,29 @@ export function DailyPlanEditor({
             >
               Group
             </label>
-            <select
-              id="dp-group"
-              value={groupId}
-              onChange={(e) => setGroupId(e.target.value)}
-              disabled={isLoadingGroups}
-              className="h-10 min-w-64 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-60"
-            >
-              <option value="">Select group</option>
-              {myGroups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name}
-                </option>
-              ))}
-            </select>
+            {isGroupLocked ? (
+              <div
+                id="dp-group"
+                className="h-10 min-w-64 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 flex items-center"
+              >
+                {selectedGroupName}
+              </div>
+            ) : (
+              <select
+                id="dp-group"
+                value={groupId}
+                onChange={(e) => setGroupId(e.target.value)}
+                disabled={isLoadingGroups || readOnly}
+                className="h-10 min-w-64 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-60"
+              >
+                <option value="">Select group</option>
+                {myGroups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -254,10 +277,11 @@ export function DailyPlanEditor({
                     onChange={(e) =>
                       updateTopic(idx, { title: e.target.value })
                     }
+                    disabled={readOnly}
                     placeholder={`Topic ${idx + 1} title`}
                     className="flex-1 h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
-                  {topics.length > 1 && (
+                  {!readOnly && topics.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeTopic(idx)}
@@ -285,6 +309,7 @@ export function DailyPlanEditor({
                             title: e.target.value,
                           })
                         }
+                        disabled={readOnly}
                         placeholder="Title"
                         className="w-full h-9 px-2 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       />
@@ -296,6 +321,7 @@ export function DailyPlanEditor({
                             link: e.target.value,
                           })
                         }
+                        disabled={readOnly}
                         placeholder="https://… (optional)"
                         className="w-full h-9 px-2 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       />
@@ -306,6 +332,7 @@ export function DailyPlanEditor({
                             description: e.target.value,
                           })
                         }
+                        disabled={readOnly}
                         placeholder="Description (optional)"
                         rows={2}
                         className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
@@ -316,13 +343,15 @@ export function DailyPlanEditor({
               </div>
             ))}
 
-            <button
-              type="button"
-              onClick={addTopic}
-              className="w-full h-11 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50"
-            >
-              + Add another topic
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                onClick={addTopic}
+                className="w-full h-11 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50"
+              >
+                + Add another topic
+              </button>
+            )}
           </div>
 
           {error && (
@@ -340,14 +369,16 @@ export function DailyPlanEditor({
           >
             Cancel
           </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving}
-            className="h-10 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:opacity-60"
-          >
-            {isSaving ? 'Saving…' : 'Save'}
-          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="h-10 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:opacity-60"
+            >
+              {isSaving ? 'Saving…' : 'Save'}
+            </button>
+          )}
         </footer>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Pencil } from 'lucide-react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useDailyPlans, useDeleteDailyPlan } from '@/features/daily-plan';
 import type {
@@ -33,6 +34,7 @@ export default function TeacherDailyPlanPage() {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
   const [creating, setCreating] = useState(false);
+  const [viewing, setViewing] = useState<DailyPlan | null>(null);
 
   const filters = useMemo(
     () => ({ search: search.trim() || undefined, take: 100 }),
@@ -91,7 +93,16 @@ export default function TeacherDailyPlanPage() {
           {items.map((plan) => (
             <article
               key={plan.id}
-              className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3"
+              className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/40 transition-colors"
+              onClick={() => setViewing(plan)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  setViewing(plan);
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <header className="flex items-start justify-between gap-3">
                 <div>
@@ -115,14 +126,20 @@ export default function TeacherDailyPlanPage() {
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
-                    onClick={() => setEditing(plan)}
-                    className="text-xs text-primary hover:underline"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setEditing(plan);
+                    }}
+                    className="mt-4 text-xs text-primary hover:underline"
+                    aria-label="Edit daily plan"
+                    title="Edit"
                   >
-                    Edit
+                    <Pencil className="h-6 w-6" />
                   </button>
                   <button
                     type="button"
-                    onClick={async () => {
+                    onClick={async (event) => {
+                      event.stopPropagation();
                       if (
                         confirm('Delete this daily plan? This cannot be undone.')
                       ) {
@@ -196,6 +213,18 @@ export default function TeacherDailyPlanPage() {
             setCreating(false);
             setEditing(null);
             refetch();
+          }}
+        />
+      )}
+
+      {viewing && (
+        <DailyPlanEditor
+          mode="edit"
+          plan={viewing}
+          readOnly
+          onClose={() => setViewing(null)}
+          onSaved={() => {
+            setViewing(null);
           }}
         />
       )}

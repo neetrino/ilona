@@ -36,8 +36,16 @@ export class GroupsController {
   }
 
   @Get('my-groups')
-  @Roles(UserRole.TEACHER)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN)
   async getMyGroups(@CurrentUser() user: JwtPayload) {
+    if (user.role === UserRole.ADMIN) {
+      const { items } = await this.groupsService.findAll({
+        isActive: true,
+        currentUser: user,
+      });
+      return items;
+    }
+
     // Use canonical method to get teacher groups by userId
     // This ensures consistency with chat service and other endpoints
     return this.groupsService.findByTeacherUserId(user.sub);

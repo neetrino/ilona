@@ -64,7 +64,12 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
             feedback: <FeedbacksTab lessonId={resolvedParams.lessonId} />,
             voice: <VoiceTab lessonId={resolvedParams.lessonId} />,
             text: <TextTab lessonId={resolvedParams.lessonId} />,
-            dailyPlan: <DailyPlanTab lessonId={resolvedParams.lessonId} />,
+            dailyPlan: (
+              <DailyPlanTab
+                lessonId={resolvedParams.lessonId}
+                groupId={lesson.groupId}
+              />
+            ),
           }}
         </LessonDetailTabs>
       </div>

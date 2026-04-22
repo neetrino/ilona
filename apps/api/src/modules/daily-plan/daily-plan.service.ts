@@ -154,13 +154,17 @@ export class DailyPlanService {
     return plan;
   }
 
-  async create(dto: CreateDailyPlanDto, userId: string) {
+  async create(dto: CreateDailyPlanDto, userId: string, userRole: UserRole) {
     if (!dto.topics?.length) {
       throw new BadRequestException('At least one topic is required');
     }
 
-    const teacherId = await this.resolveTeacherId(userId);
+    const teacherId =
+      userRole === UserRole.TEACHER
+        ? await this.resolveTeacherId(userId)
+        : null;
 
+    let resolvedTeacherId: string | null = teacherId;
     let lessonGroupId: string | null = null;
     let resolvedDate: Date | null = null;
 
@@ -172,11 +176,12 @@ export class DailyPlanService {
       if (!lesson) {
         throw new BadRequestException(`Lesson ${dto.lessonId} not found`);
       }
-      if (lesson.teacherId !== teacherId) {
+      if (teacherId && lesson.teacherId !== teacherId) {
         throw new ForbiddenException(
           'You can only create plans for your own lessons',
         );
       }
+      resolvedTeacherId = lesson.teacherId;
       lessonGroupId = lesson.groupId;
       resolvedDate = lesson.scheduledAt;
 
@@ -190,11 +195,29 @@ export class DailyPlanService {
       }
     }
 
+    if (!resolvedTeacherId && dto.groupId) {
+      const group = await this.prisma.group.findUnique({
+        where: { id: dto.groupId },
+        select: { teacherId: true },
+      });
+      if (!group) {
+        throw new BadRequestException(`Group ${dto.groupId} not found`);
+      }
+      if (!group.teacherId) {
+        throw new BadRequestException('Selected group has no assigned teacher');
+      }
+      resolvedTeacherId = group.teacherId;
+    }
+
+    if (!resolvedTeacherId) {
+      throw new BadRequestException('Teacher could not be resolved for this daily plan');
+    }
+
     const date = resolvedDate ?? (dto.date ? new Date(dto.date) : new Date());
 
     return this.prisma.dailyPlan.create({
       data: {
-        teacherId,
+        teacherId: resolvedTeacherId,
         lessonId: dto.lessonId ?? null,
         groupId: dto.groupId ?? lessonGroupId ?? null,
         date,
