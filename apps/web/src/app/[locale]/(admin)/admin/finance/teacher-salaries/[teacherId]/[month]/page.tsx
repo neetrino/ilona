@@ -11,6 +11,7 @@ import { Trash2, ArrowLeft } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ObligationDetailsModal } from '@/features/finance/components/ObligationDetailsModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
+import { formatCurrency } from '@/shared/lib/utils';
 
 function SelectAllCheckbox({
   checked,
@@ -69,15 +70,6 @@ export default function SalaryBreakdownPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [selectedLessonIdForObligation, setSelectedLessonIdForObligation] = useState<string | null>(null);
   const [isObligationModalOpen, setIsObligationModalOpen] = useState(false);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('hy-AM', {
-      style: 'currency',
-      currency: 'AMD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) {

@@ -8,6 +8,7 @@ import type { SalaryBreakdownLesson } from '../types';
 import { Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ObligationDetailsModal } from './ObligationDetailsModal';
+import { formatCurrency } from '@/shared/lib/utils';
 
 interface SalaryBreakdownModalProps {
   teacherId: string | null;
@@ -94,15 +95,6 @@ export function SalaryBreakdownModal({
   }, [open, onClose]);
 
   if (!open || !teacherId) return null;
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('hy-AM', {
-      style: 'currency',
-      currency: 'AMD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) {

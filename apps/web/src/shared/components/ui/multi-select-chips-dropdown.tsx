@@ -24,6 +24,10 @@ interface MultiSelectChipsDropdownProps {
   className?: string;
   /** Max height for the chip area in the trigger (many selections) */
   maxChipsHeightClassName?: string;
+  /** Hide selected chips in closed trigger and show summary instead */
+  showSelectedChipsOnlyWhenOpen?: boolean;
+  /** Never show selected option labels in the trigger area */
+  hideSelectedLabelsInTrigger?: boolean;
 }
 
 export function MultiSelectChipsDropdown({
@@ -39,6 +43,8 @@ export function MultiSelectChipsDropdown({
   disabled = false,
   className,
   maxChipsHeightClassName = 'max-h-24',
+  showSelectedChipsOnlyWhenOpen = false,
+  hideSelectedLabelsInTrigger = false,
 }: MultiSelectChipsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -116,6 +122,10 @@ export function MultiSelectChipsDropdown({
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [selectedIds, optionById]);
 
+  const shouldShowChipsInTrigger =
+    !hideSelectedLabelsInTrigger &&
+    (!showSelectedChipsOnlyWhenOpen || isOpen);
+
   return (
     <div className={cn('relative', className)} ref={dropdownRef}>
       {label && (
@@ -153,6 +163,10 @@ export function MultiSelectChipsDropdown({
               <span className="text-sm text-slate-400 px-1 py-0.5">Loading…</span>
             ) : selectedChips.length === 0 ? (
               <span className="text-sm text-slate-400 px-1 py-1">{placeholder}</span>
+            ) : !shouldShowChipsInTrigger ? (
+              <span className="text-sm text-slate-500 px-1 py-1">
+                {selectedChips.length} selected
+              </span>
             ) : (
               selectedChips.map((opt) => (
                 <span

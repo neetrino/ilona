@@ -8,3 +8,4 @@ export { EditLeadModal } from './EditLeadModal';
 export { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
 export { ListTable } from './ListTable';
 export { CRMFilters } from './CRMFilters';
+export { CrmBranchSelector } from './CrmBranchSelector';

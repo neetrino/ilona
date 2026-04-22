@@ -1,6 +1,7 @@
 'use client';
 
 import { Input } from '@/shared/components/ui';
+import { formatCurrency } from '@/shared/lib/utils';
 import type { Teacher } from '@/features/teachers';
 import type { UseFormRegister } from 'react-hook-form';
 import type { UpdateTeacherFormData } from '../schemas';
@@ -62,12 +63,7 @@ export function TeacherStats({
           </div>
         ) : (
           <p className="text-3xl font-bold text-slate-800">
-            {new Intl.NumberFormat('hy-AM', {
-              style: 'currency',
-              currency: 'AMD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(hourlyRate)}/hr
+            {formatCurrency(hourlyRate)}/hr
           </p>
         )}
       </div>

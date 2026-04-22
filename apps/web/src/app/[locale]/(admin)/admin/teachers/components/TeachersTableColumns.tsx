@@ -1,7 +1,8 @@
 'use client';
 
-import { Avatar, Badge } from '@/shared/components/ui';
+import { Avatar } from '@/shared/components/ui';
 import { ActionButtons } from '@/shared/components/ui';
+import { InlineSelect } from '@/features/students';
 import { SelectAllCheckbox } from './SelectAllCheckbox';
 import { cn } from '@/shared/lib/utils';
 import type { Teacher } from '@/features/teachers';
@@ -21,7 +22,9 @@ interface TeachersTableColumnsProps {
   onEdit: (teacher: Teacher) => void;
   onDelete: (teacher: Teacher) => void;
   onDeactivate: (teacher: Teacher) => void;
+  onCenterChange: (teacherId: string, centerId: string | null) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
+  centerOptions: Array<{ id: string; label: string }>;
   isDeleting: boolean;
   isUpdating: boolean;
   isLoading: boolean;
@@ -40,7 +43,9 @@ export function createTeachersTableColumns({
   onEdit,
   onDelete,
   onDeactivate,
+  onCenterChange,
   onOpenGroupsModal,
+  centerOptions,
   isDeleting,
   isUpdating,
   isLoading,
@@ -73,7 +78,7 @@ export function createTeachersTableColumns({
       key: 'teacher',
       header: t('title'),
       sortable: true,
-      className: '!pl-4 !pr-4 !min-w-[280px]',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
@@ -106,41 +111,24 @@ export function createTeachersTableColumns({
     {
       key: 'center',
       header: t('center'),
-      className: '!pl-4 !pr-4 !min-w-[180px]',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
       render: (teacher: Teacher) => {
         const centers = getTeacherCenters(teacher);
-        
+        const currentCenterId = centers[0]?.id || null;
+
         return (
           <div className="flex flex-wrap items-center gap-1.5">
-            {centers.length > 0 ? (
-              <>
-                {centers.slice(0, 2).map((center) => (
-                  <Badge key={center.id} variant="default">
-                    {center.name}
-                  </Badge>
-                ))}
-                {centers.length > 2 && (
-                  <div title={centers.slice(2).map(c => c.name).join(', ')}>
-                    <Badge variant="default">
-                      +{centers.length - 2}
-                    </Badge>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onEdit(teacher);
-                  }}
-                  className="rounded-md border border-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-                  title="Change assigned branches"
-                >
-                  Change
-                </button>
-              </>
-            ) : (
-              <span className="text-slate-400 text-sm">{t('noBranches')}</span>
-            )}
+            <div className="min-w-[150px]" onClick={(event) => event.stopPropagation()}>
+              <InlineSelect
+                value={currentCenterId}
+                options={centerOptions}
+                onChange={async (centerId) => {
+                  await onCenterChange(teacher.id, centerId);
+                }}
+                placeholder={t('noBranches')}
+                disabled={isUpdating || isDeleting || isLoading}
+              />
+            </div>
           </div>
         );
       },
@@ -149,7 +137,7 @@ export function createTeachersTableColumns({
       key: 'groups',
       header: 'Groups',
       sortable: true,
-      className: '!pl-4 !pr-4 !min-w-[110px] text-center',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
       render: (teacher: Teacher) => {
         const count = teacher._count?.groups || 0;
         return (
@@ -173,7 +161,7 @@ export function createTeachersTableColumns({
       key: 'subGroups',
       header: 'Sub-groups',
       sortable: false,
-      className: '!pl-4 !pr-4 !min-w-[120px] text-center',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
       render: (teacher: Teacher) => {
         const count =
           teacher.substituteForGroupsCount ??
@@ -199,7 +187,7 @@ export function createTeachersTableColumns({
     {
       key: 'lessonRate',
       header: 'Per Lesson Rate',
-      className: '!pl-4 !pr-4 !min-w-[150px]',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
       render: (teacher: Teacher) => {
         const lessonRate = teacher.lessonRateAMD;
         const fallback =
@@ -211,21 +199,23 @@ export function createTeachersTableColumns({
             ? Number(lessonRate)
             : fallback;
         return (
-          <span className="text-slate-700 font-medium">
-            {formatLessonRate(rate)}
-          </span>
+          <div className="flex w-full items-center justify-center">
+            <span className="text-slate-700 font-medium text-center">
+              {formatLessonRate(rate)}
+            </span>
+          </div>
         );
       },
     },
     {
       key: 'actions',
       header: t('actions'),
-      className: '!pl-4 !pr-7 !w-[140px] !min-w-[140px] !max-w-[140px]',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
       render: (teacher: Teacher) => {
         const isActive = teacher.user?.status === 'ACTIVE';
         
         return (
-          <div onClick={(e) => e.stopPropagation()}>
+          <div className="w-full" onClick={(e) => e.stopPropagation()}>
             <ActionButtons
               onView={() => onView(teacher)}
               onEdit={() => onEdit(teacher)}
@@ -245,6 +235,7 @@ export function createTeachersTableColumns({
                 disable: isActive ? t('deactivate') : t('activate'),
                 delete: tCommon('delete'),
               }}
+              className="whitespace-nowrap"
             />
           </div>
         );

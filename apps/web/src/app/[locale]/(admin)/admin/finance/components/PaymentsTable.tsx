@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useMemo, useState, useCallback } from 'react';
 import { InlineSelect } from '@/features/students/components/InlineSelect';
+import { formatCurrency } from '@/shared/lib/utils';
 import type { Payment, PaymentStatus } from '@/features/finance';
 
 interface PaymentsTableProps {
@@ -287,12 +288,7 @@ export function PaymentsTable({
                               {dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </td>
                             <td className="py-2 pr-3 font-semibold text-slate-800">
-                              {new Intl.NumberFormat('hy-AM', {
-                                style: 'currency',
-                                currency: 'AMD',
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                              }).format(amount)}
+                              {formatCurrency(amount)}
                             </td>
                             <td className="py-2 pr-3">
                               {isPending && updatePaymentMethod ? (

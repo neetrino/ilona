@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard } from '@/shared/components/ui';
 import {
@@ -13,13 +14,21 @@ import {
 } from '@/features/dashboard';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PlannedAbsencesStaffBlock } from '@/features/attendance';
+import { fetchCenter } from '@/features/centers/api/centers.api';
 
 export default function AdminDashboardPage() {
   const t = useTranslations('dashboard');
+  const tNav = useTranslations('nav');
   const { user } = useAuthStore();
   const isManager = user?.role === 'MANAGER';
   const managerCenterId =
     user?.role === 'MANAGER' ? user.managerCenterId ?? undefined : undefined;
+  const { data: managerCenter } = useQuery({
+    queryKey: ['center', managerCenterId],
+    queryFn: () => fetchCenter(managerCenterId!),
+    enabled: isManager && !!managerCenterId,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: stats, error: statsError } = useAdminDashboardStats({
     includeFinance: !isManager,
@@ -29,8 +38,12 @@ export default function AdminDashboardPage() {
     console.error('Dashboard error:', statsError);
   }
 
+  const subtitle = isManager
+    ? `${t('overview')} ${tNav('center')}: ${managerCenter?.name ?? '—'}`
+    : t('overview');
+
   return (
-    <DashboardLayout title={t('title')} subtitle={t('overview')}>
+    <DashboardLayout title={t('title')} subtitle={subtitle}>
       <div className="space-y-6">
         <div
           className={`grid grid-cols-1 gap-6 ${

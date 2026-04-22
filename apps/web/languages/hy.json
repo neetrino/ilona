@@ -545,7 +545,11 @@
     "practiceSpeakingDaily": "Պարապեք անգլերեն խոսել ամեն օր",
     "askQuestionsInChat": "Մի հապաղեք հարցեր տալ զրույցում",
     "attendanceWarning": "Հաճախելիության նախազգուշացում",
-    "unjustifiedAbsencesWarning": "Դուք ունեք {count} անհիմն բացակայություն: Խնդրում ենք կապվել ձեր ուսուցչի կամ ադմինիստրատորի հետ, եթե օգնության կարիք ունեք:"
+    "unjustifiedAbsencesWarning": "Դուք ունեք {count} անհիմն բացակայություն: Խնդրում ենք կապվել ձեր ուսուցչի կամ ադմինիստրատորի հետ, եթե օգնության կարիք ունեք:",
+    "attendancePatternsTab": "Հաճախելիություն",
+    "feedbackTrendsTab": "Հետադարձ կապ",
+    "studentPerformanceTab": "Արտադրողականություն",
+    "revenueTab": "Եկամուտ"
   },
   "settings": {
     "title": "Կարգավորումներ",

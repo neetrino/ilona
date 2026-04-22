@@ -184,47 +184,6 @@ export class SalaryGenerationService {
     const totalDeductions = totalPenaltyDeduction + totalOtherDeduction; // Penalty deductions + other deductions
     const netAmount = Math.max(0, totalPayable - totalOtherDeduction); // Net = payable - other deductions (penalties already applied)
 
-    // Check if record already exists for this month
-    // Use exact month match to leverage the unique constraint [teacherId, month]
-    const existing = await this.prisma.salaryRecord.findFirst({
-      where: {
-        teacherId,
-        month: startOfMonth,
-      },
-    });
-
-    if (existing) {
-      // Update existing record instead of throwing error to allow recalculation
-      const obligationsInfo = {
-        completed: totalObligationsCompleted,
-        required: totalObligationsRequired,
-        missing: totalObligationsRequired - totalObligationsCompleted,
-        completionRate: totalObligationsRequired > 0 
-          ? totalObligationsCompleted / totalObligationsRequired 
-          : 0,
-      };
-
-      return this.prisma.salaryRecord.update({
-        where: { id: existing.id },
-        data: {
-          lessonsCount,
-          grossAmount,
-          totalDeductions,
-          netAmount,
-          notes: JSON.stringify(obligationsInfo),
-        },
-        include: {
-          teacher: {
-            include: {
-              user: {
-                select: { firstName: true, lastName: true, email: true },
-              },
-            },
-          },
-        },
-      });
-    }
-
     // Store obligations info in notes as JSON
     const obligationsInfo = {
       completed: totalObligationsCompleted,
@@ -235,8 +194,14 @@ export class SalaryGenerationService {
         : 0,
     };
 
-    return this.prisma.salaryRecord.create({
-      data: {
+    return this.prisma.salaryRecord.upsert({
+      where: {
+        teacherId_month: {
+          teacherId,
+          month: startOfMonth,
+        },
+      },
+      create: {
         teacherId,
         month: startOfMonth,
         lessonsCount,
@@ -244,6 +209,13 @@ export class SalaryGenerationService {
         totalDeductions,
         netAmount,
         status: SalaryStatus.PENDING,
+        notes: JSON.stringify(obligationsInfo),
+      },
+      update: {
+        lessonsCount,
+        grossAmount,
+        totalDeductions,
+        netAmount,
         notes: JSON.stringify(obligationsInfo),
       },
       include: {

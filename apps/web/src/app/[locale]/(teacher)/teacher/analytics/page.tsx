@@ -9,18 +9,9 @@ import {
   useMySalarySummary,
   useMyDeductions,
 } from '@/features/finance';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatCurrency } from '@/shared/lib/utils';
 
 type TabId = 'attendance' | 'feedback' | 'performance' | 'revenue';
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('hy-AM', {
-    style: 'currency',
-    currency: 'AMD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 function StatCard({
   label,

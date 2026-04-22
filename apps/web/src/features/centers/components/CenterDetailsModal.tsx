@@ -18,6 +18,8 @@ import { Avatar } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { fetchCenterDetails } from '../api/centers.api';
 import type { CenterDetails, CenterDetailTeacher } from '../types';
+import { ScheduleGrid } from '@/features/schedule/ScheduleGrid';
+import type { Group, GroupScheduleEntry } from '@/features/groups/types';
 
 interface CenterDetailsModalProps {
   centerId: string | null;
@@ -42,6 +44,93 @@ function userName(u: { firstName: string | null; lastName: string | null } | nul
 
 function teacherName(t: CenterDetailTeacher | null): string {
   return userName(t?.user ?? null);
+}
+
+function isScheduleEntry(value: unknown): value is GroupScheduleEntry {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<GroupScheduleEntry>;
+  return (
+    typeof candidate.dayOfWeek === 'number' &&
+    typeof candidate.startTime === 'string' &&
+    typeof candidate.endTime === 'string'
+  );
+}
+
+function parseScheduleEntries(rawSchedule: unknown): GroupScheduleEntry[] {
+  if (Array.isArray(rawSchedule)) {
+    return rawSchedule.filter(isScheduleEntry);
+  }
+  if (typeof rawSchedule === 'string') {
+    try {
+      const parsed = JSON.parse(rawSchedule) as unknown;
+      return Array.isArray(parsed) ? parsed.filter(isScheduleEntry) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function normalizeSchedule(rawSchedule: unknown): GroupScheduleEntry[] {
+  const entries = parseScheduleEntries(rawSchedule);
+  if (entries.length === 0) return [];
+
+  return entries
+    .map((entry) => {
+      if (entry.dayOfWeek >= 1 && entry.dayOfWeek <= 7) {
+        return { ...entry, dayOfWeek: entry.dayOfWeek % 7 };
+      }
+      return entry;
+    })
+    .sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime))
+    .filter(
+      (entry, index, arr) =>
+        index === 0 ||
+        entry.dayOfWeek !== arr[index - 1]?.dayOfWeek ||
+        entry.startTime !== arr[index - 1]?.startTime ||
+        entry.endTime !== arr[index - 1]?.endTime,
+    );
+}
+
+function mapTeacherToGroupTeacher(teacher: CenterDetailTeacher | null): Group['teacher'] {
+  if (!teacher?.user?.id || !teacher.user.firstName || !teacher.user.lastName || !teacher.user.email) {
+    return null;
+  }
+
+  return {
+    id: teacher.id,
+    user: {
+      id: teacher.user.id,
+      firstName: teacher.user.firstName,
+      lastName: teacher.user.lastName,
+      email: teacher.user.email,
+      avatarUrl: teacher.user.avatarUrl ?? undefined,
+    },
+  };
+}
+
+function mapCenterGroupToScheduleGroup(data: CenterDetails, group: CenterDetails['groups'][number]): Group {
+  return {
+    id: group.id,
+    name: group.name,
+    maxStudents: group._count?.students ?? group.students.length,
+    isActive: true,
+    centerId: data.center.id,
+    schedule: normalizeSchedule(group.schedule),
+    center: { id: data.center.id, name: data.center.name },
+    teacher: mapTeacherToGroupTeacher(group.teacher),
+    substituteTeacher: mapTeacherToGroupTeacher(group.substituteTeacher),
+    _count: { students: group._count?.students ?? group.students.length, lessons: group._count?.lessons ?? 0 },
+    students: group.students.map((s) => ({
+      id: s.id,
+      user: {
+        firstName: s.user?.firstName ?? '—',
+        lastName: s.user?.lastName ?? '',
+      },
+    })),
+    createdAt: data.center.createdAt,
+    updatedAt: data.center.updatedAt,
+  };
 }
 
 export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsModalProps) {
@@ -286,24 +375,17 @@ function GroupsTab({ data }: { data: CenterDetails }) {
 }
 
 function ScheduleTab({ data }: { data: CenterDetails }) {
-  const groupsWithSchedule = data.schedule;
-  if (groupsWithSchedule.length === 0) {
+  const scheduleGroups = data.groups
+    .map((group) => mapCenterGroupToScheduleGroup(data, group))
+    .filter((group) => (group.schedule?.length ?? 0) > 0);
+
+  if (scheduleGroups.length === 0) {
     return (
       <EmptyState message="No schedules configured. Group schedules will appear here once added." />
     );
   }
-  return (
-    <ul className="space-y-2">
-      {groupsWithSchedule.map((row) => (
-        <li key={row.groupId} className="rounded-lg border border-slate-200 bg-white p-3">
-          <p className="text-sm font-semibold text-slate-900">{row.groupName}</p>
-          <pre className="mt-1 overflow-x-auto rounded bg-slate-50 p-2 text-xs text-slate-700">
-            {JSON.stringify(row.schedule, null, 2)}
-          </pre>
-        </li>
-      ))}
-    </ul>
-  );
+
+  return <ScheduleGrid groups={scheduleGroups} fitToContainer />;
 }
 
 function InfoTab({ data }: { data: CenterDetails }) {

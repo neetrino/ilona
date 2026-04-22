@@ -3,6 +3,7 @@
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { Column } from './Column';
+import type { CrmBranchOption } from './CrmBranchSelector';
 
 export interface BoardViewProps {
   leads: CrmLead[];
@@ -14,13 +15,12 @@ export interface BoardViewProps {
   onCardClick: (lead: CrmLead) => void;
   onCardEdit?: (lead: CrmLead) => void;
   onCardStatusChange?: (leadId: string, status: CrmLeadStatus) => void;
+  onCardBranchChange?: (leadId: string, centerId: string | null) => void;
   changingStatusId?: string | null;
+  changingBranchId?: string | null;
   onAddLead: () => void;
   onRecordingSaved?: () => void;
-  /** Centers shown in the New-column branch dropdown. */
-  newColumnCenters?: Array<{ id: string; name: string }>;
-  newColumnCenterId?: string | null;
-  onNewColumnCenterChange?: (centerId: string | null) => void;
+  branchOptions?: CrmBranchOption[];
 }
 
 export function BoardView({
@@ -31,11 +31,11 @@ export function BoardView({
   onCardClick,
   onCardEdit,
   onCardStatusChange,
+  onCardBranchChange,
   changingStatusId,
+  changingBranchId,
   onAddLead,
-  newColumnCenters,
-  newColumnCenterId,
-  onNewColumnCenterChange,
+  branchOptions,
 }: BoardViewProps) {
   const statusList = availableStatuses.length > 0 ? availableStatuses : CRM_COLUMN_ORDER;
   const columnOrder = columnStatuses && columnStatuses.length > 0 ? columnStatuses : statusList;
@@ -67,11 +67,11 @@ export function BoardView({
           onCardClick={onCardClick}
           onCardEdit={onCardEdit}
           onCardStatusChange={onCardStatusChange}
+          onCardBranchChange={onCardBranchChange}
           changingStatusId={changingStatusId}
+          changingBranchId={changingBranchId}
           onAddClick={onAddLead}
-          newColumnCenters={newColumnCenters}
-          newColumnCenterId={newColumnCenterId}
-          onNewColumnCenterChange={onNewColumnCenterChange}
+          branchOptions={branchOptions}
         />
       ))}
     </div>

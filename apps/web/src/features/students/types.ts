@@ -33,6 +33,12 @@ export interface Student {
   riskLabel?: StudentRiskLabel;
   /** Server-derived risk label for the requested period (overrides persisted one in UI). */
   derivedRiskLabel?: StudentRiskLabel;
+  /** Source CRM lead id when student was created from CRM flow. */
+  leadId?: string | null;
+  /** Server-computed flag for newly paid students coming from CRM (30-day window). */
+  isRecentlyPaidFromCrm?: boolean;
+  /** ISO datetime when temporary NEW badge expires. */
+  newBadgeExpiresAt?: string;
   user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'phone' | 'avatarUrl' | 'status' | 'lastLoginAt' | 'createdAt'>;
   group?: StudentGroup | null;
   teacher?: {

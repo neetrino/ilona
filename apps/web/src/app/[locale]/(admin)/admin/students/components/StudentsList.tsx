@@ -2,7 +2,7 @@
 
 import { DataTable } from '@/shared/components/ui';
 import { createStudentsTableColumns } from './StudentsTableColumns';
-import { getItemId, type TeacherAssignedItem, type Student } from '@/features/students';
+import { getItemId, isOnboardingItem, type TeacherAssignedItem, type Student } from '@/features/students';
 import type { Group } from '@/features/groups';
 
 interface StudentsListProps {
@@ -89,7 +89,6 @@ export function StudentsList({
     onDelete,
     onDeactivate,
     onShowFeedback,
-    onView,
     onTeacherChange,
     onGroupChange,
     onCenterChange,
@@ -109,11 +108,18 @@ export function StudentsList({
         columns={studentColumns}
         data={students}
         keyExtractor={(student) => getItemId(student)}
+        onRowClick={(student) => {
+          if (isOnboardingItem(student)) return;
+          onView(student);
+        }}
         isLoading={isLoading}
         emptyMessage={searchQuery ? "No students match your search" : "No students found"}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSort={onSort}
+        compact
+        disableHorizontalScroll
+        tableClassName="table-fixed"
       />
 
       {/* Pagination */}

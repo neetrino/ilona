@@ -2,9 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { cn } from '@/shared/lib/utils';
+import Image from 'next/image';
+import { cn, formatCurrency } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
+import {
+  Building2,
+  CircleDollarSign,
+  FileText,
+  GraduationCap,
+  Link as LinkIcon,
+  Mail,
+  Phone,
+  Sparkles,
+  Users,
+} from 'lucide-react';
 
 interface TeacherDetailsModalProps {
   teacherId: string | null;
@@ -133,7 +145,16 @@ export function TeacherDetailsModal({
       >
         {/* Header — same structure as CRM VoiceLeadDetailModal */}
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-slate-900">{t('teacherDetails')}</h2>
+          <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <Image
+              src="/teachers-logo.png"
+              alt=""
+              className="w-5 h-5 object-contain flex-shrink-0"
+              width={20}
+              height={20}
+            />
+            {t('teacherDetails')}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -204,7 +225,12 @@ export function TeacherDetailsModal({
                       <Badge variant="success">{tStatus('active')}</Badge>
                     )}
                   </div>
-                  {email && <p className="text-slate-500 text-sm">{email}</p>}
+                  {email && (
+                    <div className="mt-1 flex items-center gap-2 text-slate-500 text-sm">
+                      <Mail className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                      <p className="truncate">{email}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -213,23 +239,27 @@ export function TeacherDetailsModal({
                 <h4 className="font-semibold text-slate-800">{t('basicInformation')}</h4>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-slate-600">{t('phoneNumber')}</label>
+                    <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                      {t('phoneNumber')}
+                    </label>
                     <p className="text-slate-800 mt-1">{phone}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Per Lesson Rate</label>
+                    <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                      <CircleDollarSign className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                      Per Lesson Rate
+                    </label>
                     <p className="text-slate-800 mt-1">
-                      {new Intl.NumberFormat('hy-AM', {
-                        style: 'currency',
-                        currency: 'AMD',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0,
-                      }).format(lessonRate)}/lesson
+                      {formatCurrency(lessonRate)}/lesson
                     </p>
                   </div>
                   {teacher.videoUrl && (
                     <div>
-                      <label className="text-sm font-medium text-slate-600">Video</label>
+                      <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                        <LinkIcon className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                        Video
+                      </label>
                       <p className="text-slate-800 mt-1">
                         <a
                           href={teacher.videoUrl}
@@ -244,13 +274,19 @@ export function TeacherDetailsModal({
                   )}
                   {teacher.bio && (
                     <div>
-                      <label className="text-sm font-medium text-slate-600">{t('bio')}</label>
+                      <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                        {t('bio')}
+                      </label>
                       <p className="text-slate-800 mt-1">{teacher.bio}</p>
                     </div>
                   )}
                   {teacher.specialization && (
                     <div>
-                      <label className="text-sm font-medium text-slate-600">{t('specialization')}</label>
+                      <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                        {t('specialization')}
+                      </label>
                       <p className="text-slate-800 mt-1">{teacher.specialization}</p>
                     </div>
                   )}
@@ -260,7 +296,10 @@ export function TeacherDetailsModal({
               {/* Centers/Branches */}
               {centers.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-slate-800">{t('centers')}</h4>
+                  <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                    {t('centers')}
+                  </h4>
                   <div className="flex flex-wrap gap-2">
                     {centers.map((center) => (
                       <Badge key={center.id} variant="default">
@@ -274,7 +313,10 @@ export function TeacherDetailsModal({
               {/* Statistics */}
               {teacher._count && (
                 <div className="space-y-3 pt-4 border-t border-slate-200">
-                  <h4 className="font-semibold text-slate-800">{t('statistics')}</h4>
+                  <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                    {t('statistics')}
+                  </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-50 rounded-lg p-4">
                       <p className="text-sm text-slate-600 mb-1">{t('totalGroups')}</p>
@@ -301,7 +343,10 @@ export function TeacherDetailsModal({
               {/* Groups list */}
               {groups.length > 0 && (
                 <div className="space-y-2 pt-4 border-t border-slate-200">
-                  <h4 className="font-semibold text-slate-800">Groups ({groups.length})</h4>
+                  <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <Users className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                    Groups ({groups.length})
+                  </h4>
                   <ul className="space-y-1">
                     {groups.map((g) => (
                       <li
@@ -321,7 +366,8 @@ export function TeacherDetailsModal({
               {/* Substitute groups list */}
               {substituteGroups.length > 0 && (
                 <div className="space-y-2 pt-4 border-t border-slate-200">
-                  <h4 className="font-semibold text-amber-800">
+                  <h4 className="font-semibold text-amber-800 flex items-center gap-2">
+                    <Users className="h-4 w-4 text-amber-700" aria-hidden="true" />
                     Sub-groups ({substituteGroups.length})
                   </h4>
                   <ul className="space-y-1">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatCurrency } from '@/shared/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui';
 import { useSalary } from '../hooks/useFinance';
 
@@ -38,15 +38,6 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
   }, [open, onClose]);
 
   if (!open || !salaryId) return null;
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('hy-AM', {
-      style: 'currency',
-      currency: 'AMD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const formatMonth = (month: number | Date | string, year?: number) => {
     let date: Date;

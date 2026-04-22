@@ -546,7 +546,11 @@
     "practiceSpeakingDaily": "Practice speaking English daily",
     "askQuestionsInChat": "Don't hesitate to ask questions in chat",
     "attendanceWarning": "Attendance Warning",
-    "unjustifiedAbsencesWarning": "You have {count} unjustified absences. Please contact your teacher or admin if you need help."
+    "unjustifiedAbsencesWarning": "You have {count} unjustified absences. Please contact your teacher or admin if you need help.",
+    "attendancePatternsTab": "Attendance",
+    "feedbackTrendsTab": "Feedback",
+    "studentPerformanceTab": "Performance",
+    "revenueTab": "Revenue"
   },
   "settings": {
     "title": "Settings",

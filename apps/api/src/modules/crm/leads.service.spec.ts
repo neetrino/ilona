@@ -6,7 +6,12 @@ import { StorageService } from '../storage/storage.service';
 
 describe('LeadsService', () => {
   let service: LeadsService;
-  let prisma: { crmLead: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> }; crmLeadActivity: { create: ReturnType<typeof vi.fn> }; $transaction: ReturnType<typeof vi.fn> };
+  let prisma: {
+    crmLead: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
+    managerProfile: { findUnique: ReturnType<typeof vi.fn> };
+    crmLeadActivity: { create: ReturnType<typeof vi.fn> };
+    $transaction: ReturnType<typeof vi.fn>;
+  };
   let storage: { getPresignedUploadUrl: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
@@ -14,6 +19,9 @@ describe('LeadsService', () => {
       crmLead: {
         findUnique: vi.fn(),
         update: vi.fn(),
+      },
+      managerProfile: {
+        findUnique: vi.fn(),
       },
       crmLeadActivity: { create: vi.fn() },
       $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
@@ -84,6 +92,48 @@ describe('LeadsService', () => {
     });
     it('returns empty for PAID', () => {
       expect(service.getAllowedTransitions('PAID')).toEqual([]);
+    });
+  });
+
+  describe('changeBranch', () => {
+    it('updates centerId and assignedManagerId by manager profile', async () => {
+      prisma.crmLead.findUnique.mockResolvedValue({
+        id: 'lead-1',
+        status: 'NEW',
+        centerId: null,
+        createdByUser: {},
+        assignedManager: null,
+        teacher: null,
+        group: null,
+        center: null,
+        attachments: [],
+        activities: [],
+        student: null,
+      });
+      prisma.managerProfile.findUnique.mockResolvedValue({ userId: 'manager-1' });
+      prisma.crmLead.update.mockResolvedValue({
+        id: 'lead-1',
+        centerId: 'center-1',
+        assignedManagerId: 'manager-1',
+      });
+
+      const result = await service.changeBranch(
+        'lead-1',
+        { centerId: 'center-1' },
+        'user-1',
+        { role: 'ADMIN' } as never,
+      );
+
+      expect(prisma.managerProfile.findUnique).toHaveBeenCalledWith({
+        where: { centerId: 'center-1' },
+        select: { userId: true },
+      });
+      expect(prisma.crmLead.update).toHaveBeenCalled();
+      expect(result).toEqual({
+        id: 'lead-1',
+        centerId: 'center-1',
+        assignedManagerId: 'manager-1',
+      });
     });
   });
 });

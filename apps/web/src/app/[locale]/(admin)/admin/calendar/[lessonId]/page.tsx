@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonDetailTabs } from '@/shared/components/calendar/LessonDetailTabs';
 import { AbsenceTab } from '@/shared/components/calendar/AbsenceTab';
@@ -15,11 +15,13 @@ import { Button } from '@/shared/components/ui/button';
 export default function AdminLessonDetailPage({ params }: { params: Promise<{ lessonId: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get('tab') as 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan' | null;
+  type LessonTab = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
+  const tabParam = searchParams.get('tab') as LessonTab | null;
   
   const { data: lesson, isLoading } = useLesson(resolvedParams.lessonId);
-  const [activeTab, setActiveTab] = useState<'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan'>(
+  const [activeTab, setActiveTab] = useState<LessonTab>(
     tabParam || 'absence'
   );
 
@@ -28,6 +30,14 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
       setActiveTab(tabParam);
     }
   }, [tabParam]);
+
+  const handleTabChange = (tab: LessonTab) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   if (isLoading) {
     return (
@@ -57,14 +67,19 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
       <div className="bg-white rounded-xl border border-slate-200 h-[calc(100vh-200px)] flex flex-col">
         <LessonDetailTabs
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
         >
           {{
             absence: <AbsenceTab lessonId={resolvedParams.lessonId} />,
             feedback: <FeedbacksTab lessonId={resolvedParams.lessonId} />,
             voice: <VoiceTab lessonId={resolvedParams.lessonId} />,
             text: <TextTab lessonId={resolvedParams.lessonId} />,
-            dailyPlan: <DailyPlanTab lessonId={resolvedParams.lessonId} />,
+            dailyPlan: (
+              <DailyPlanTab
+                lessonId={resolvedParams.lessonId}
+                groupId={lesson.groupId}
+              />
+            ),
           }}
         </LessonDetailTabs>
       </div>

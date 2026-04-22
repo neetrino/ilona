@@ -39,15 +39,15 @@ export function useCalendarData({
   
   const dateTo = useMemo(() => {
     if (viewMode === 'week') {
-      return weekDates[6];
+      return new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000);
     } else if (viewMode === 'list') {
       // Show 3 months forward from today
       const today = new Date();
       today.setMonth(today.getMonth() + 3);
-      today.setDate(0); // Last day of the month
+      today.setDate(1); // First day of the month
       return today;
     } else {
-      return new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+      return new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     }
   }, [viewMode, weekDates, currentDate]);
 

@@ -32,16 +32,15 @@ export function formatTime(date: Date | string, locale: string = 'en'): string {
 }
 
 /**
- * Format currency (AMD only)
+ * Format currency as Armenian dram symbol (`12,000 ֏`)
  */
-export function formatCurrency(amount: number, _currency: string = 'AMD'): string {
-  // Always use AMD, ignore currency parameter
-  return new Intl.NumberFormat('hy-AM', {
-    style: 'currency',
-    currency: 'AMD',
+export function formatCurrency(amount: number): string {
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
+  const formattedNumber = new Intl.NumberFormat('hy-AM', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(safeAmount);
+  return `${formattedNumber} ֏`;
 }
 
 /**

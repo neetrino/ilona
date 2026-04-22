@@ -93,6 +93,7 @@ export default function TeachersPage() {
     handleBulkDeleteClick,
     handleBulkDeleteConfirm,
     handleDeactivateClick,
+    handleCenterChange,
     handleRowClick,
     handleDetailsDrawerClose,
     setIsAddTeacherOpen,
@@ -172,6 +173,7 @@ export default function TeachersPage() {
             onEdit={handleEditClick}
             onDelete={handleDeleteClick}
             onDeactivate={handleDeactivateClick}
+            onCenterChange={handleCenterChange}
             onOpenGroupsModal={(teacher, tab) => {
               setGroupsModalTeacher(teacher);
               setGroupsModalTab(tab);
@@ -181,6 +183,10 @@ export default function TeachersPage() {
             isDeleting={deleteTeachers.isPending || deleteTeacher.isPending}
             isUpdating={updateTeacher.isPending}
             searchQuery={searchQuery}
+            centerOptions={(centersData?.items || []).map((center) => ({
+              id: center.id,
+              label: center.name,
+            }))}
             t={t}
             tCommon={tCommon}
             tStatus={tStatus}

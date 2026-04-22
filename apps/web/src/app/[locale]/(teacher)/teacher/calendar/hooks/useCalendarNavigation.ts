@@ -49,7 +49,7 @@ export function useCalendarNavigation() {
   
   const navigate = (direction: number) => {
     const newDate = new Date(currentDate);
-    if (viewMode === 'week') {
+    if (viewMode === 'week' || viewMode === 'month') {
       newDate.setDate(newDate.getDate() + direction * 7);
     } else {
       newDate.setMonth(newDate.getMonth() + direction);

@@ -23,6 +23,30 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 type ViewMode = 'list' | 'board';
 
 const PAGE_SIZE = 10;
+const NEW_STUDENT_BADGE_DAYS = 30;
+
+function isWithinNewStudentWindow(student: Student): boolean {
+  if (student.isRecentlyPaidFromCrm !== undefined) {
+    return student.isRecentlyPaidFromCrm;
+  }
+
+  if (!student.leadId) {
+    return false;
+  }
+
+  const activationDateRaw = student.enrolledAt ?? student.createdAt;
+  if (!activationDateRaw) {
+    return false;
+  }
+  const activationDate = new Date(activationDateRaw);
+  if (Number.isNaN(activationDate.getTime())) {
+    return false;
+  }
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - NEW_STUDENT_BADGE_DAYS);
+  return activationDate >= cutoff;
+}
 
 export function useStudentsPage() {
   const router = useRouter();
@@ -194,8 +218,8 @@ export function useStudentsPage() {
   const students = useMemo(() => {
     const items = studentsData?.items || [];
     return [...items].sort((a, b) => {
-      const aIsNew = !isOnboardingItem(a) && a.status === 'NEW';
-      const bIsNew = !isOnboardingItem(b) && b.status === 'NEW';
+      const aIsNew = !isOnboardingItem(a) && isWithinNewStudentWindow(a);
+      const bIsNew = !isOnboardingItem(b) && isWithinNewStudentWindow(b);
       if (aIsNew === bIsNew) return 0;
       return aIsNew ? -1 : 1;
     });
@@ -504,7 +528,7 @@ export function useStudentsPage() {
       { id: 'NEW', label: 'New' },
       { id: 'UNGROUPED', label: 'Ungrouped' },
       { id: 'RISK', label: 'Risk' },
-      { id: 'HIGH_RISK', label: 'High risk' },
+      { id: 'HIGH_RISK', label: 'High Risk' },
     ],
     [],
   );

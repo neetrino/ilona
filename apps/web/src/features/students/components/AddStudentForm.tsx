@@ -377,7 +377,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="monthlyFee">
-              Monthly Fee (AMD) <span className="text-red-500">*</span>
+              Monthly Fee (֏) <span className="text-red-500">*</span>
             </Label>
             <Input
               id="monthlyFee"

@@ -27,6 +27,7 @@ import {
   UpdateLeadDto,
   QueryLeadDto,
   ChangeStatusDto,
+  ChangeBranchDto,
   AddCommentDto,
   ConfirmRecordingDto,
 } from './dto';
@@ -150,6 +151,17 @@ export class LeadsController {
     return this.leadsService.changeStatus(id, dto, user.sub, {
       user,
     });
+  }
+
+  @Post(':id/branch')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Change lead branch and auto-route manager assignment' })
+  changeBranch(
+    @Param('id') id: string,
+    @Body() dto: ChangeBranchDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<unknown> {
+    return this.leadsService.changeBranch(id, dto, user.sub, user);
   }
 
   @Get(':id/activities')
