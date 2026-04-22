@@ -37,6 +37,8 @@ interface ScheduleGridProps {
   isLoading?: boolean;
   /** When provided, restrict the time-axis to this fixed list (e.g. business hours). */
   fixedSlots?: string[];
+  /** Fit full weekly grid into container width without horizontal scroll. */
+  fitToContainer?: boolean;
 }
 
 /**
@@ -44,7 +46,12 @@ interface ScheduleGridProps {
  * `Group.schedule` JSON. Each cell shows the group name plus its
  * assigned (and substitute) teacher.
  */
-export function ScheduleGrid({ groups, isLoading, fixedSlots }: ScheduleGridProps) {
+export function ScheduleGrid({
+  groups,
+  isLoading,
+  fixedSlots,
+  fitToContainer = false,
+}: ScheduleGridProps) {
   const { slots, cells } = useMemo(() => {
     const buckets = new Map<string, ScheduleCellEntry[]>();
     const slotSet = new Set<string>();
@@ -94,17 +101,19 @@ export function ScheduleGrid({ groups, isLoading, fixedSlots }: ScheduleGridProp
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div className={fitToContainer ? 'px-1 pb-1' : 'overflow-x-auto'}>
+        <table className={`w-full border-collapse ${fitToContainer ? 'table-fixed' : ''}`}>
           <thead>
             <tr>
-              <th className="sticky left-0 z-10 bg-slate-50 border-b border-r border-slate-200 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 w-24">
+              <th
+                className={`sticky left-0 z-10 bg-slate-50 border-b border-r border-slate-200 text-left font-semibold uppercase tracking-wide text-slate-500 ${fitToContainer ? 'w-16 px-2 py-2 text-[10px]' : 'w-24 px-3 py-2 text-xs'}`}
+              >
                 Time
               </th>
               {DAY_LABELS.map((day) => (
                 <th
                   key={day}
-                  className="bg-slate-50 border-b border-slate-200 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  className={`bg-slate-50 border-b border-slate-200 text-left font-semibold uppercase tracking-wide text-slate-500 ${fitToContainer ? 'px-2 py-2 text-[10px]' : 'px-3 py-2 text-xs'}`}
                 >
                   {day}
                 </th>
@@ -114,26 +123,30 @@ export function ScheduleGrid({ groups, isLoading, fixedSlots }: ScheduleGridProp
           <tbody>
             {slots.map((slot) => (
               <tr key={slot} className="align-top">
-                <td className="sticky left-0 z-10 bg-white border-b border-r border-slate-100 px-3 py-3 text-sm font-medium text-slate-600">
+                <td
+                  className={`sticky left-0 z-10 bg-white border-b border-r border-slate-100 font-medium text-slate-600 ${fitToContainer ? 'px-2 py-2 text-xs' : 'px-3 py-3 text-sm'}`}
+                >
                   {slot}
                 </td>
                 {DAY_LABELS.map((_, dayIdx) => {
                   const key = `${dayIdx}|${slot}`;
                   const items = cells.get(key) ?? [];
+                  const isLastDayColumn = dayIdx === DAY_LABELS.length - 1;
                   return (
                     <td
                       key={key}
-                      className="border-b border-slate-100 align-top px-2 py-2 min-w-[160px]"
+                      className={`border-b border-slate-100 align-top ${isLastDayColumn ? '' : 'border-r border-slate-100'} ${fitToContainer ? 'px-1.5 py-1.5' : 'px-2 py-2 min-w-[160px]'}`}
                     >
                       {items.length === 0 ? (
-                        <div className="h-12" aria-hidden />
+                        <div className={fitToContainer ? 'h-10' : 'h-12'} aria-hidden />
                       ) : (
-                        <div className="space-y-1.5">
+                        <div className={fitToContainer ? 'space-y-1' : 'space-y-1.5'}>
                           {items.map(({ group, entry }) => (
                             <ScheduleCard
                               key={`${group.id}-${entry.startTime}`}
                               group={group}
                               entry={entry}
+                              compact={fitToContainer}
                             />
                           ))}
                         </div>
@@ -153,9 +166,10 @@ export function ScheduleGrid({ groups, isLoading, fixedSlots }: ScheduleGridProp
 interface ScheduleCardProps {
   group: Group;
   entry: GroupScheduleEntry;
+  compact?: boolean;
 }
 
-function ScheduleCard({ group, entry }: ScheduleCardProps) {
+function ScheduleCard({ group, entry, compact = false }: ScheduleCardProps) {
   const teacherName = group.teacher
     ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`.trim()
     : 'No teacher';
@@ -164,7 +178,9 @@ function ScheduleCard({ group, entry }: ScheduleCardProps) {
     : null;
 
   return (
-    <div className="rounded-md border border-primary/15 bg-primary/5 px-2 py-1.5 text-xs leading-tight">
+    <div
+      className={`rounded-md border border-primary/15 bg-primary/5 leading-tight ${compact ? 'px-1.5 py-1 text-[10px]' : 'px-2 py-1.5 text-xs'}`}
+    >
       <div className="font-semibold text-slate-800 truncate" title={group.name}>
         {group.name}
         {group.level ? (

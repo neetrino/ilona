@@ -4,14 +4,14 @@ import { Badge, ActionButtons } from '@/shared/components/ui';
 import type { Group, GroupScheduleEntry } from '../types';
 import { getGroupOccupancyMeta } from '../occupancy';
 
-const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 function formatScheduleSummary(entries: GroupScheduleEntry[] | null | undefined): string[] | null {
   if (!entries || entries.length === 0) return null;
   return entries
     .slice()
     .sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime))
-    .map((e) => `${DAY_LABELS[e.dayOfWeek] ?? '?'} ${e.startTime}–${e.endTime}`);
+    .map((e) => `${DAY_LABELS[e.dayOfWeek] ?? 'Unknown day'}: ${e.startTime} - ${e.endTime}`);
 }
 
 interface GroupCardProps {
