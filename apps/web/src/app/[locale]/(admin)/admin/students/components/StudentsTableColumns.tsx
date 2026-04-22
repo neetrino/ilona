@@ -11,6 +11,32 @@ import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
 import type { Group } from '@/features/groups';
 
+const NEW_STUDENT_BADGE_DAYS = 30;
+
+function isNewPaidStudent(student: Student): boolean {
+  if (student.isRecentlyPaidFromCrm !== undefined) {
+    return student.isRecentlyPaidFromCrm;
+  }
+
+  if (!student.leadId) {
+    return false;
+  }
+
+  const activationDateRaw = student.enrolledAt ?? student.createdAt;
+  if (!activationDateRaw) {
+    return false;
+  }
+
+  const activationDate = new Date(activationDateRaw);
+  if (Number.isNaN(activationDate.getTime())) {
+    return false;
+  }
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - NEW_STUDENT_BADGE_DAYS);
+  return activationDate >= cutoff;
+}
+
 /** Format for display (DD/MM/YYYY) */
 function formatRegisterDate(value: string | null | undefined): string {
   if (!value) return '';
@@ -247,10 +273,9 @@ export function createStudentsTableColumns({
         const fullName = `${firstName} ${lastName}`.trim() || '?';
         const avatarUrl = isOnboardingItem(row) ? undefined : row.user?.avatarUrl;
         // Lifecycle/risk badges – computed from persisted status + server-derived risk.
-        const lifecycle = !isOnboardingItem(row) ? row.status : undefined;
         const derivedRisk =
           !isOnboardingItem(row) ? (row.derivedRiskLabel ?? row.riskLabel) : undefined;
-        const showNewBadge = lifecycle === 'NEW';
+        const showNewBadge = !isOnboardingItem(row) ? isNewPaidStudent(row) : false;
         const riskBadge =
           derivedRisk === 'HIGH_RISK'
             ? { label: 'High risk', className: 'bg-red-100 text-red-700 border-red-200' }
@@ -259,17 +284,19 @@ export function createStudentsTableColumns({
               : null;
         return (
           <div className="flex items-start gap-2">
-            <Avatar src={avatarUrl} name={fullName} size="md" />
+            <div className="relative shrink-0">
+              <Avatar src={avatarUrl} name={fullName} size="md" />
+              {showNewBadge && (
+                <span className="absolute -left-3 top-[14%] -translate-y-1/2 -rotate-12 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-[0.08em] bg-emerald-500 text-white shadow-sm pointer-events-none">
+                  NEW
+                </span>
+              )}
+            </div>
             <div className="min-w-0">
               <p className="font-semibold text-slate-800 leading-tight break-words">
                 {firstName} {lastName}
               </p>
               <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                {showNewBadge && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200">
-                    New
-                  </span>
-                )}
                 {riskBadge && (
                   <span
                     className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border ${riskBadge.className}`}

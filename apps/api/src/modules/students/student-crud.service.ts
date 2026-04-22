@@ -17,6 +17,8 @@ import {
   GROUP_CAPACITY_EXCEEDED_MESSAGE,
 } from '../groups/group.constants';
 
+const NEW_PAID_STUDENT_LABEL_DAYS = 30;
+
 /** Compute integer age (in completed years) from a date of birth. */
 function computeAgeFromDob(dob: Date, asOf: Date = new Date()): number {
   let age = asOf.getFullYear() - dob.getFullYear();
@@ -405,6 +407,11 @@ export class StudentCrudService {
     //   > 1 unjustified absence → HIGH_RISK
     //   > 1 justified absence   → RISK
     //   otherwise               → NONE
+    const recentPaidCutoffDate = new Date();
+    recentPaidCutoffDate.setDate(
+      recentPaidCutoffDate.getDate() - NEW_PAID_STUDENT_LABEL_DAYS,
+    );
+
     let itemsWithAttendance = sortedItems.map((student) => {
       const attendance = attendanceDataMap.get(student.id) || {
         totalClasses: 0,
@@ -418,6 +425,13 @@ export class StudentCrudService {
           : justified > 1
             ? RiskLabel.RISK
             : RiskLabel.NONE;
+      const activationDate = student.enrolledAt ?? student.createdAt;
+      const newBadgeExpiresAt = new Date(activationDate);
+      newBadgeExpiresAt.setDate(
+        newBadgeExpiresAt.getDate() + NEW_PAID_STUDENT_LABEL_DAYS,
+      );
+      const isRecentlyPaidFromCrm =
+        Boolean(student.leadId) && activationDate >= recentPaidCutoffDate;
       return {
         ...student,
         attendanceSummary: {
@@ -427,6 +441,8 @@ export class StudentCrudService {
           unjustifiedAbsences: unjustified,
         },
         derivedRiskLabel: derivedRisk,
+        isRecentlyPaidFromCrm,
+        newBadgeExpiresAt,
       };
     });
 
