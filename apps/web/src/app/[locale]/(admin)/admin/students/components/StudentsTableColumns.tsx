@@ -13,6 +13,24 @@ import type { Group } from '@/features/groups';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
 
+function getRiskBadge(
+  derivedRisk: Student['derivedRiskLabel'] | Student['riskLabel'] | undefined,
+): { label: string; className: string } | null {
+  if (derivedRisk === 'HIGH_RISK') {
+    return {
+      label: 'High Risk',
+      className: 'bg-rose-900 text-rose-50 border-rose-900/90',
+    };
+  }
+  if (derivedRisk === 'RISK') {
+    return {
+      label: 'Risk',
+      className: 'bg-amber-100 text-amber-800 border-amber-200',
+    };
+  }
+  return null;
+}
+
 function isNewPaidStudent(student: Student): boolean {
   if (student.isRecentlyPaidFromCrm !== undefined) {
     return student.isRecentlyPaidFromCrm;
@@ -276,12 +294,7 @@ export function createStudentsTableColumns({
         const derivedRisk =
           !isOnboardingItem(row) ? (row.derivedRiskLabel ?? row.riskLabel) : undefined;
         const showNewBadge = !isOnboardingItem(row) ? isNewPaidStudent(row) : false;
-        const riskBadge =
-          derivedRisk === 'HIGH_RISK'
-            ? { label: 'High risk', className: 'bg-red-100 text-red-700 border-red-200' }
-            : derivedRisk === 'RISK'
-              ? { label: 'Risk', className: 'bg-amber-100 text-amber-700 border-amber-200' }
-              : null;
+        const riskBadge = getRiskBadge(derivedRisk);
         return (
           <div className="flex items-start gap-2">
             <div className="relative shrink-0">
@@ -426,25 +439,10 @@ export function createStudentsTableColumns({
             </div>
           );
         }
-        const attendance = row.attendanceSummary;
-        if (!row.groupId) {
-          return (
-            <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-              <span className="text-slate-400">—</span>
-            </div>
-          );
-        }
-        if (!attendance) {
-          return (
-            <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-              <span className="text-slate-600">0</span>
-            </div>
-          );
-        }
-        const { absences } = attendance;
+        const absencesThisMonth = row.attendanceSummary?.absences ?? 0;
         return (
           <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-            <span className="text-slate-700 font-medium">{absences}</span>
+            <span className="text-slate-700 font-medium">{absencesThisMonth}</span>
           </div>
         );
       },

@@ -528,7 +528,7 @@ export function useStudentsPage() {
       { id: 'NEW', label: 'New' },
       { id: 'UNGROUPED', label: 'Ungrouped' },
       { id: 'RISK', label: 'Risk' },
-      { id: 'HIGH_RISK', label: 'High risk' },
+      { id: 'HIGH_RISK', label: 'High Risk' },
     ],
     [],
   );

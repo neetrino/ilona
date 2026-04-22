@@ -6,6 +6,24 @@ import type { Student } from '@/features/students';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
 
+function getRiskBadge(
+  derivedRisk: Student['derivedRiskLabel'] | Student['riskLabel'] | undefined,
+): { label: string; className: string } | null {
+  if (derivedRisk === 'HIGH_RISK') {
+    return {
+      label: 'High Risk',
+      className: 'bg-rose-900 text-rose-50 border-rose-900/90',
+    };
+  }
+  if (derivedRisk === 'RISK') {
+    return {
+      label: 'Risk',
+      className: 'bg-amber-100 text-amber-800 border-amber-200',
+    };
+  }
+  return null;
+}
+
 function isNewPaidStudent(student: Student): boolean {
   if (student.isRecentlyPaidFromCrm !== undefined) {
     return student.isRecentlyPaidFromCrm;
@@ -49,6 +67,7 @@ export function StudentCard({ student, onEdit, onDelete, onDeactivate }: Student
   const attendance = student.attendanceSummary;
   const isActive = student.user?.status === 'ACTIVE';
   const showNewBadge = isNewPaidStudent(student);
+  const riskBadge = getRiskBadge(student.derivedRiskLabel ?? student.riskLabel);
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
@@ -71,6 +90,13 @@ export function StudentCard({ student, onEdit, onDelete, onDeactivate }: Student
             <h4 className="font-semibold text-slate-800 text-sm leading-tight truncate">
               {fullName}
             </h4>
+            {riskBadge && (
+              <span
+                className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border ${riskBadge.className}`}
+              >
+                {riskBadge.label}
+              </span>
+            )}
           </div>
           <ActionButtons
             onEdit={onEdit}
