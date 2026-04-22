@@ -10,6 +10,7 @@ import {
   CreateLeadDto,
   UpdateLeadDto,
   ChangeStatusDto,
+  ChangeBranchDto,
   TeacherTransferDto,
   AddCommentDto,
   ConfirmRecordingDto,
@@ -381,6 +382,58 @@ export class LeadsService {
     });
 
     return updated;
+  }
+
+  async changeBranch(
+    id: string,
+    dto: ChangeBranchDto,
+    actorUserId: string,
+    user?: JwtPayload,
+  ) {
+    if (user?.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only ADMIN can change lead branch');
+    }
+
+    const lead = await this.findById(id, actorUserId, user);
+    const nextCenterId = dto.centerId ?? null;
+    const previousCenterId = lead.centerId ?? null;
+
+    const managerProfile = nextCenterId
+      ? await this.prisma.managerProfile.findUnique({
+          where: { centerId: nextCenterId },
+          select: { userId: true },
+        })
+      : null;
+    const nextAssignedManagerId = managerProfile?.userId ?? null;
+
+    const updatedLead = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.crmLead.update({
+        where: { id },
+        data: {
+          centerId: nextCenterId,
+          assignedManagerId: nextAssignedManagerId,
+        },
+        include: this.leadInclude(),
+      });
+
+      await tx.crmLeadActivity.create({
+        data: {
+          leadId: id,
+          actorUserId,
+          type: 'FIELD_UPDATE',
+          payload: {
+            field: 'centerId',
+            fromCenterId: previousCenterId,
+            toCenterId: nextCenterId,
+            assignedManagerId: nextAssignedManagerId,
+          },
+        },
+      });
+
+      return updated;
+    });
+
+    return updatedLead;
   }
 
   /** Idempotent: create Student from lead when status becomes PAID; link student.leadId */

@@ -7,6 +7,7 @@ import type {
   CreateLeadDto,
   UpdateLeadDto,
   ChangeStatusDto,
+  ChangeBranchDto,
   CrmLeadActivity,
   CrmLeadStatus,
 } from '../types';
@@ -104,6 +105,13 @@ export async function changeLeadStatus(
   data: ChangeStatusDto
 ): Promise<CrmLead> {
   return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}/status`, data);
+}
+
+export async function changeLeadBranch(
+  id: string,
+  data: ChangeBranchDto
+): Promise<CrmLead> {
+  return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}/branch`, data);
 }
 
 export async function fetchLeadActivities(leadId: string): Promise<CrmLeadActivity[]> {

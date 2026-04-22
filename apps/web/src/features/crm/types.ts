@@ -163,3 +163,7 @@ export interface ChangeStatusDto {
   status: CrmLeadStatus;
   archivedReason?: string;
 }
+
+export interface ChangeBranchDto {
+  centerId?: string;
+}

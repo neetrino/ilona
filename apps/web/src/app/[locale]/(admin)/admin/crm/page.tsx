@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { fetchLeads, changeLeadStatus, fetchCrmStatuses } from '@/features/crm/api/crm.api';
+import { fetchLeads, changeLeadStatus, changeLeadBranch, fetchCrmStatuses } from '@/features/crm/api/crm.api';
 import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
@@ -22,6 +22,7 @@ import {
 } from '@/features/crm/components';
 import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 const DEFAULT_FILTERS: CrmLeadFilters = {
   skip: 0,
@@ -89,6 +90,8 @@ function sortLeadsByFilters(leads: CrmLead[], filters: CrmLeadFilters): CrmLead[
 
 export default function AdminCrmPage() {
   const t = useTranslations('nav');
+  const userRole = useAuthStore((state) => state.user?.role);
+  const isAdmin = userRole === 'ADMIN';
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
@@ -98,7 +101,7 @@ export default function AdminCrmPage() {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
-  const [newColumnCenterId, setNewColumnCenterId] = useState<string | null>(null);
+  const [newColumnCenterId] = useState<string | null>(null);
   const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
   const [statusError, setStatusError] = useState<string | null>(null);
 
@@ -164,6 +167,42 @@ export default function AdminCrmPage() {
     },
   });
   const changingStatusId = statusMutation.isPending ? statusMutation.variables?.leadId ?? null : null;
+  const branchMutation = useMutation({
+    mutationFn: ({ leadId, centerId }: { leadId: string; centerId: string | null }) =>
+      changeLeadBranch(leadId, centerId ? { centerId } : {}),
+    onMutate: async ({ leadId, centerId }) => {
+      setStatusError(null);
+      await queryClient.cancelQueries({ queryKey: ['crm-leads', filters] });
+      const previous = queryClient.getQueryData<CrmLeadsResponse>(['crm-leads', filters]);
+      if (previous?.items) {
+        const centerById = new Map(centers.map((c) => [c.id, c]));
+        const updatedItems = previous.items.map((lead) => {
+          if (lead.id !== leadId) return lead;
+          const nextCenter = centerId ? centerById.get(centerId) : null;
+          return {
+            ...lead,
+            centerId,
+            center: nextCenter ? { id: nextCenter.id, name: nextCenter.name } : null,
+          };
+        });
+        queryClient.setQueryData<CrmLeadsResponse>(['crm-leads', filters], {
+          ...previous,
+          items: updatedItems,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['crm-leads', filters], context.previous);
+      }
+      setStatusError('Failed to update branch. Please try again.');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+    },
+  });
+  const changingBranchId = branchMutation.isPending ? branchMutation.variables?.leadId ?? null : null;
 
   const { data: statuses = CRM_COLUMN_ORDER } = useQuery({
     queryKey: ['crm-statuses'],
@@ -239,6 +278,10 @@ export default function AdminCrmPage() {
   };
   const handleCardStatusChange = (leadId: string, status: CrmLeadStatus) => {
     statusMutation.mutate({ leadId, status });
+  };
+  const handleCardBranchChange = (leadId: string, centerId: string | null) => {
+    if (!isAdmin) return;
+    branchMutation.mutate({ leadId, centerId });
   };
   const handleAddLead = () => setVoiceModalOpen(true);
 
@@ -356,12 +399,12 @@ export default function AdminCrmPage() {
             onCardClick={handleCardClick}
             onCardEdit={handleCardEdit}
             onCardStatusChange={handleCardStatusChange}
+            onCardBranchChange={isAdmin ? handleCardBranchChange : undefined}
             changingStatusId={changingStatusId}
+            changingBranchId={isAdmin ? changingBranchId : null}
             onAddLead={handleAddLead}
             onRecordingSaved={() => refetch()}
-            newColumnCenters={centers.map((c) => ({ id: c.id, name: c.name }))}
-            newColumnCenterId={newColumnCenterId}
-            onNewColumnCenterChange={setNewColumnCenterId}
+            branchOptions={isAdmin ? centers.map((c) => ({ id: c.id, name: c.name })) : undefined}
           />
         ) : (
           <ListTable

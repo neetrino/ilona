@@ -5,14 +5,18 @@ import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { Pencil } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { CrmStatusSelector } from './CrmStatusSelector';
+import { CrmBranchSelector, type CrmBranchOption } from './CrmBranchSelector';
 
 interface LeadCardProps {
   lead: CrmLead;
   availableStatuses?: CrmLeadStatus[];
+  branchOptions?: CrmBranchOption[];
   onClick: () => void;
   onEditClick?: (e: React.MouseEvent) => void;
   onStatusChange?: (leadId: string, status: CrmLeadStatus) => void;
+  onBranchChange?: (leadId: string, centerId: string | null) => void;
   isChangingStatus?: boolean;
+  isChangingBranch?: boolean;
   className?: string;
 }
 
@@ -25,7 +29,18 @@ function formatRecordingTime(isoDate: string): string {
   });
 }
 
-export function LeadCard({ lead, availableStatuses = CRM_COLUMN_ORDER, onClick, onEditClick, onStatusChange, isChangingStatus, className }: LeadCardProps) {
+export function LeadCard({
+  lead,
+  availableStatuses = CRM_COLUMN_ORDER,
+  branchOptions = [],
+  onClick,
+  onEditClick,
+  onStatusChange,
+  onBranchChange,
+  isChangingStatus,
+  isChangingBranch,
+  className,
+}: LeadCardProps) {
   const voiceAttachment = lead.attachments?.find((a) => a.type === 'VOICE_RECORDING');
   const name = [lead.firstName, lead.lastName].filter(Boolean).join(' ') || (voiceAttachment ? 'Voice note' : 'No name');
   const createdAt = lead.createdAt
@@ -39,6 +54,9 @@ export function LeadCard({ lead, availableStatuses = CRM_COLUMN_ORDER, onClick, 
 
   const handleStatusChange = (status: CrmLeadStatus) => {
     if (status !== lead.status) onStatusChange?.(lead.id, status);
+  };
+  const handleBranchChange = (centerId: string | null) => {
+    if ((lead.centerId ?? null) !== centerId) onBranchChange?.(lead.id, centerId);
   };
 
   return (
@@ -107,18 +125,30 @@ export function LeadCard({ lead, availableStatuses = CRM_COLUMN_ORDER, onClick, 
         ) : null}
       </div>
 
-      {/* Bottom section: status change control */}
-      {onStatusChange && (
+      {/* Bottom section: status + branch controls */}
+      {(onStatusChange || onBranchChange) && (
         <div
           className="relative mt-3 pt-3 border-t border-slate-100"
           onClick={(e) => e.stopPropagation()}
         >
-          <CrmStatusSelector
-            value={lead.status}
-            options={availableStatuses}
-            onChange={handleStatusChange}
-            disabled={isChangingStatus}
-          />
+          {onStatusChange && (
+            <CrmStatusSelector
+              value={lead.status}
+              options={availableStatuses}
+              onChange={handleStatusChange}
+              disabled={isChangingStatus}
+            />
+          )}
+          {onBranchChange && (
+            <div className="mt-2">
+              <CrmBranchSelector
+                value={lead.centerId}
+                options={branchOptions}
+                onChange={handleBranchChange}
+                disabled={isChangingBranch}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
