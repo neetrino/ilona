@@ -6,6 +6,7 @@ import { SelectAllCheckbox } from '../components/SelectAllCheckbox';
 import type { Payment, SalaryRecord, PaymentStatus, SalaryStatus } from '@/features/finance';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { formatCurrency } from '@/shared/lib/utils';
 
 // Format month from salary record (month field is a number)
 function formatMonthFromSalary(salary: SalaryRecord) {
@@ -172,12 +173,7 @@ export function getPaymentColumns({
         const amount = typeof payment.amount === 'string' ? parseFloat(payment.amount) : Number(payment.amount);
         return (
           <span className="font-semibold text-slate-800">
-            {new Intl.NumberFormat('hy-AM', {
-              style: 'currency',
-              currency: 'AMD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(amount)}
+            {formatCurrency(amount)}
           </span>
         );
       },
@@ -363,12 +359,7 @@ export function getSalaryColumns({
             }
           >
             {amount > 0 ? '−' : ''}
-            {new Intl.NumberFormat('hy-AM', {
-              style: 'currency',
-              currency: 'AMD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(amount)}
+            {formatCurrency(amount)}
           </span>
         );
       },
@@ -381,12 +372,7 @@ export function getSalaryColumns({
         const amount = typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
         return (
           <span className="font-semibold text-slate-800">
-            {new Intl.NumberFormat('hy-AM', {
-              style: 'currency',
-              currency: 'AMD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(amount)}
+            {formatCurrency(amount)}
           </span>
         );
       },

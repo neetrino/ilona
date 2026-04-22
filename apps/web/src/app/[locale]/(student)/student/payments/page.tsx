@@ -6,7 +6,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog';
 import { Button, Label } from '@/shared/components/ui';
 import { useMyPayments, useMyPaymentsSummary, useProcessMyPayment } from '@/features/finance';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatCurrency } from '@/shared/lib/utils';
 import type { Payment } from '@/features/finance/api/student-finance.api';
 
 type FilterStatus = 'all' | 'PENDING' | 'PAID' | 'OVERDUE';
@@ -51,15 +51,6 @@ function sortPayments(items: Payment[], key: SortKey, dir: SortDir): Payment[] {
     }
   };
   return [...items].sort(compare);
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('hy-AM', {
-    style: 'currency',
-    currency: 'AMD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function StatusBadge({ status, t }: { status: string; t: (key: string) => string }) {

@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { usePayments } from '@/features/finance';
+import { formatCurrency } from '@/shared/lib/utils';
 import type { Payment } from '@/features/finance/types';
 
 interface AggregatedDebt {
@@ -75,11 +76,7 @@ export function UnpaidStudentsBlock() {
               </div>
               <div className="text-right">
                 <p className="text-sm font-semibold text-red-600">
-                  {new Intl.NumberFormat('hy-AM', {
-                    style: 'currency',
-                    currency: 'AMD',
-                    maximumFractionDigits: 0,
-                  }).format(row.totalAmount)}
+                  {formatCurrency(row.totalAmount)}
                 </p>
                 <p className="text-xs text-slate-500">
                   {row.overdueCount > 0

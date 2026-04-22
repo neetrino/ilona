@@ -11,7 +11,7 @@ import {
   TeacherRatioTable,
   type StudentRisk,
 } from '@/features/analytics';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatCurrency } from '@/shared/lib/utils';
 
 type TabType =
   | 'attendance'
@@ -19,15 +19,6 @@ type TabType =
   | 'recordings'
   | 'feedback'
   | 'risk';
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('hy-AM', {
-    style: 'currency',
-    currency: 'AMD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 function RiskBadge({ level }: { level: 'LOW' | 'MEDIUM' | 'HIGH' }) {
   const styles = {

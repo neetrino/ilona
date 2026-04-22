@@ -108,7 +108,7 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange(setPenaltyAbsenceAmd, e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">AMD</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
             </div>
           </div>
 
@@ -126,7 +126,7 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange(setPenaltyFeedbackAmd, e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">AMD</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
             </div>
           </div>
 
@@ -144,7 +144,7 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange(setPenaltyVoiceAmd, e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">AMD</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
             </div>
           </div>
 
@@ -162,7 +162,7 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange(setPenaltyTextAmd, e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">AMD</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
             </div>
           </div>
 
@@ -180,7 +180,7 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange(setPenaltyDailyPlanAmd, e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">AMD</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
             </div>
             <p className="mt-1 text-xs text-slate-500">{t('penaltyDailyPlanAmdHint')}</p>
           </div>

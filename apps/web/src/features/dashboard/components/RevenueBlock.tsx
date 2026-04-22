@@ -5,14 +5,7 @@ import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRevenueAnalytics } from '@/features/analytics/hooks/useAnalytics';
-
-function formatAmd(value: number): string {
-  return new Intl.NumberFormat('hy-AM', {
-    style: 'currency',
-    currency: 'AMD',
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+import { formatCurrency } from '@/shared/lib/utils';
 
 export function RevenueBlock() {
   const t = useTranslations('dashboard');
@@ -43,18 +36,18 @@ export function RevenueBlock() {
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="rounded-xl bg-emerald-50 p-4">
             <p className="text-xs font-medium text-emerald-700">{t('totalIncome')}</p>
-            <p className="mt-1 text-lg font-semibold text-emerald-800">{formatAmd(totals.income)}</p>
+            <p className="mt-1 text-lg font-semibold text-emerald-800">{formatCurrency(totals.income)}</p>
           </div>
           <div className="rounded-xl bg-rose-50 p-4">
             <p className="text-xs font-medium text-rose-700">{t('totalExpenses')}</p>
-            <p className="mt-1 text-lg font-semibold text-rose-800">{formatAmd(totals.expenses)}</p>
+            <p className="mt-1 text-lg font-semibold text-rose-800">{formatCurrency(totals.expenses)}</p>
           </div>
           <div className="rounded-xl bg-slate-50 p-4">
             <p className="text-xs font-medium text-slate-600">{t('profit')}</p>
-            <p className="mt-1 text-lg font-semibold text-slate-800">{formatAmd(totals.profit)}</p>
+            <p className="mt-1 text-lg font-semibold text-slate-800">{formatCurrency(totals.profit)}</p>
             {totals.latest && (
               <p className="mt-1 text-xs text-slate-500">
-                {t('latest')}: {totals.latest.monthName} · {formatAmd(totals.latest.profit)}
+                {t('latest')}: {totals.latest.monthName} · {formatCurrency(totals.latest.profit)}
               </p>
             )}
           </div>

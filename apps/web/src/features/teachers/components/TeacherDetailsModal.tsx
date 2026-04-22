@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatCurrency } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
 
@@ -219,12 +219,7 @@ export function TeacherDetailsModal({
                   <div>
                     <label className="text-sm font-medium text-slate-600">Per Lesson Rate</label>
                     <p className="text-slate-800 mt-1">
-                      {new Intl.NumberFormat('hy-AM', {
-                        style: 'currency',
-                        currency: 'AMD',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0,
-                      }).format(lessonRate)}/lesson
+                      {formatCurrency(lessonRate)}/lesson
                     </p>
                   </div>
                   {teacher.videoUrl && (

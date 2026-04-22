@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMySalaries, useMySalarySummary, useMyDeductions, useMySalaryBreakdown } from '@/features/finance';
 import { useMyLessons } from '@/features/lessons';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatCurrency } from '@/shared/lib/utils';
 import { Eye, X } from 'lucide-react';
 import {
   Dialog,
@@ -55,15 +55,6 @@ function computeRange(preset: PeriodPreset): { from: Date; to: Date } {
     return { from, to };
   }
   return { from: now, to: now };
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('hy-AM', {
-    style: 'currency',
-    currency: 'AMD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function getMonthString(salary: { month: number; year: number }): string {
