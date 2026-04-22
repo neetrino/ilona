@@ -47,7 +47,8 @@ export function DataTable<T>({
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <table className="w-full table-fixed">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-max table-auto">
         <thead>
           <tr className="border-b border-slate-100">
             {columns.map((column) => {
@@ -146,7 +147,8 @@ export function DataTable<T>({
             ))
           )}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 }

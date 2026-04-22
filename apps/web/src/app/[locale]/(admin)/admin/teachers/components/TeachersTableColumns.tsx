@@ -78,7 +78,7 @@ export function createTeachersTableColumns({
       key: 'teacher',
       header: t('title'),
       sortable: true,
-      className: '!pl-4 !pr-4 !min-w-[280px]',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
@@ -111,7 +111,7 @@ export function createTeachersTableColumns({
     {
       key: 'center',
       header: t('center'),
-      className: '!pl-4 !pr-4 !min-w-[180px]',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
       render: (teacher: Teacher) => {
         const centers = getTeacherCenters(teacher);
         const currentCenterId = centers[0]?.id || null;
@@ -137,7 +137,7 @@ export function createTeachersTableColumns({
       key: 'groups',
       header: 'Groups',
       sortable: true,
-      className: '!pl-4 !pr-4 !min-w-[110px] text-center',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
       render: (teacher: Teacher) => {
         const count = teacher._count?.groups || 0;
         return (
@@ -161,7 +161,7 @@ export function createTeachersTableColumns({
       key: 'subGroups',
       header: 'Sub-groups',
       sortable: false,
-      className: '!pl-4 !pr-4 !min-w-[120px] text-center',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
       render: (teacher: Teacher) => {
         const count =
           teacher.substituteForGroupsCount ??
@@ -187,7 +187,7 @@ export function createTeachersTableColumns({
     {
       key: 'lessonRate',
       header: 'Per Lesson Rate',
-      className: '!pl-4 !pr-4 !min-w-[150px]',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
       render: (teacher: Teacher) => {
         const lessonRate = teacher.lessonRateAMD;
         const fallback =
@@ -199,21 +199,23 @@ export function createTeachersTableColumns({
             ? Number(lessonRate)
             : fallback;
         return (
-          <span className="text-slate-700 font-medium">
-            {formatLessonRate(rate)}
-          </span>
+          <div className="flex w-full items-center justify-center">
+            <span className="text-slate-700 font-medium text-center">
+              {formatLessonRate(rate)}
+            </span>
+          </div>
         );
       },
     },
     {
       key: 'actions',
       header: t('actions'),
-      className: '!pl-4 !pr-7 !w-[140px] !min-w-[140px] !max-w-[140px]',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
       render: (teacher: Teacher) => {
         const isActive = teacher.user?.status === 'ACTIVE';
         
         return (
-          <div onClick={(e) => e.stopPropagation()}>
+          <div className="w-full" onClick={(e) => e.stopPropagation()}>
             <ActionButtons
               onView={() => onView(teacher)}
               onEdit={() => onEdit(teacher)}
@@ -233,6 +235,7 @@ export function createTeachersTableColumns({
                 disable: isActive ? t('deactivate') : t('activate'),
                 delete: tCommon('delete'),
               }}
+              className="whitespace-nowrap"
             />
           </div>
         );
