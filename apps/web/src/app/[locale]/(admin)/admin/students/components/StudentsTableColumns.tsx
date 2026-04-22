@@ -14,7 +14,7 @@ import type { Group } from '@/features/groups';
 const NEW_STUDENT_BADGE_DAYS = 30;
 
 function getRiskBadge(
-  derivedRisk: Student['derivedRiskLabel'] | Student['riskLabel'] | undefined,
+  derivedRisk: Student['derivedRiskLabel'] | undefined,
 ): { label: string; className: string } | null {
   if (derivedRisk === 'HIGH_RISK') {
     return {
