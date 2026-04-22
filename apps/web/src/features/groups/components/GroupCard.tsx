@@ -37,11 +37,6 @@ export function GroupCard({
     ? `${group.substituteTeacher.user.firstName} ${group.substituteTeacher.user.lastName}`
     : null;
   const scheduleSummary = formatScheduleSummary(group.schedule ?? null);
-  const visibleScheduleEntries = scheduleSummary?.slice(0, 2) ?? [];
-  const hiddenScheduleEntriesCount =
-    scheduleSummary && scheduleSummary.length > visibleScheduleEntries.length
-      ? scheduleSummary.length - visibleScheduleEntries.length
-      : 0;
   const studentCount = group._count?.students || 0;
   const occupancy = getGroupOccupancyMeta(studentCount);
   const dotColorClass =
@@ -97,27 +92,28 @@ export function GroupCard({
           />
         </div>
         {(substituteName || scheduleSummary) && (
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+          <div className="mt-2 flex flex-col items-start gap-1.5 text-xs text-slate-600">
             {substituteName && (
               <span
-                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-800"
+                className="inline-flex max-w-full items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-800"
                 title={`Substitute teacher: ${substituteName}`}
               >
                 <UserPlus className="h-3 w-3" /> Sub: <span className="font-medium">{substituteName}</span>
               </span>
             )}
             {scheduleSummary && (
-              <div className="inline-flex items-start gap-1 text-slate-600">
+              <div className="flex w-full min-w-0 items-start gap-1 text-slate-600">
                 <Clock className="mt-0.5 h-3 w-3 shrink-0 text-slate-400" />
-                <div className="space-y-0.5">
-                  {visibleScheduleEntries.map((slot) => (
-                    <p key={slot} className="leading-snug">
+                <div className="flex min-w-0 flex-wrap gap-1.5">
+                  {scheduleSummary.map((slot) => (
+                    <span
+                      key={slot}
+                      className="inline-flex max-w-full items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 leading-snug text-slate-700 break-words"
+                      title={slot}
+                    >
                       {slot}
-                    </p>
+                    </span>
                   ))}
-                  {hiddenScheduleEntriesCount > 0 && (
-                    <p className="text-slate-500">+{hiddenScheduleEntriesCount} more</p>
-                  )}
                 </div>
               </div>
             )}
