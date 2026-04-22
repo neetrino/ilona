@@ -513,6 +513,8 @@ export default function AdminRecordingPage() {
             options={studentMultiOptions}
             selectedIds={selectedStudentUserIds}
             onSelectionChange={setSelectedStudentUserIds}
+            showSelectedChipsOnlyWhenOpen
+            hideSelectedLabelsInTrigger
             placeholder={
               selectedGroupIds.size === 0
                 ? 'All students'
