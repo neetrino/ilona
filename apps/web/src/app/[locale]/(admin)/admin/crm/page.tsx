@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -90,8 +90,15 @@ function sortLeadsByFilters(leads: CrmLead[], filters: CrmLeadFilters): CrmLead[
 
 export default function AdminCrmPage() {
   const t = useTranslations('nav');
-  const userRole = useAuthStore((state) => state.user?.role);
+  const user = useAuthStore((state) => state.user);
+  const userRole = user?.role;
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasAccessToken = useAuthStore((state) => Boolean(state.tokens?.accessToken));
   const isAdmin = userRole === 'ADMIN';
+  const managerCenterId = userRole === 'MANAGER' ? user?.managerCenterId ?? undefined : undefined;
+  const isAuthReady = isHydrated && isAuthenticated && hasAccessToken && !!user?.id;
+  const authScopeKey = `${userRole ?? 'UNKNOWN'}:${user?.id ?? 'anonymous'}:${managerCenterId ?? 'all-centers'}`;
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
@@ -122,9 +129,17 @@ export default function AdminCrmPage() {
   }, [searchParams]);
 
   const queryClient = useQueryClient();
+  const scopedFilters = useMemo<CrmLeadFilters>(() => filters, [filters]);
+
+  useEffect(() => {
+    if (!isAuthReady) return;
+    queryClient.removeQueries({ queryKey: ['crm-leads'] });
+  }, [authScopeKey, isAuthReady, queryClient]);
+
   const { data: leadsData, isLoading, refetch } = useQuery({
-    queryKey: ['crm-leads', filters],
-    queryFn: () => fetchLeads(filters),
+    queryKey: ['crm-leads', authScopeKey, scopedFilters],
+    queryFn: () => fetchLeads(scopedFilters),
+    enabled: isAuthReady,
   });
 
   const statusMutation = useMutation({
@@ -132,8 +147,8 @@ export default function AdminCrmPage() {
       changeLeadStatus(leadId, { status }),
     onMutate: async ({ leadId, status }) => {
       setStatusError(null);
-      await queryClient.cancelQueries({ queryKey: ['crm-leads', filters] });
-      const previous = queryClient.getQueryData<CrmLeadsResponse>(['crm-leads', filters]);
+      await queryClient.cancelQueries({ queryKey: ['crm-leads', authScopeKey, scopedFilters] });
+      const previous = queryClient.getQueryData<CrmLeadsResponse>(['crm-leads', authScopeKey, scopedFilters]);
       if (previous?.items) {
         const lead = previous.items.find((l) => l.id === leadId);
         const fromStatus = lead?.status;
@@ -148,7 +163,7 @@ export default function AdminCrmPage() {
         }
         const updatedLead = lead ? { ...lead, status } : null;
         const restItems = previous.items.filter((l) => l.id !== leadId);
-        queryClient.setQueryData<CrmLeadsResponse>(['crm-leads', filters], {
+        queryClient.setQueryData<CrmLeadsResponse>(['crm-leads', authScopeKey, scopedFilters], {
           ...previous,
           items: updatedLead ? [updatedLead, ...restItems] : previous.items,
           countsByStatus: counts,
@@ -158,7 +173,7 @@ export default function AdminCrmPage() {
     },
     onError: (_err, _variables, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['crm-leads', filters], context.previous);
+        queryClient.setQueryData(['crm-leads', authScopeKey, scopedFilters], context.previous);
       }
       setStatusError('Failed to update status. Please try again.');
     },
@@ -172,8 +187,8 @@ export default function AdminCrmPage() {
       changeLeadBranch(leadId, centerId ? { centerId } : {}),
     onMutate: async ({ leadId, centerId }) => {
       setStatusError(null);
-      await queryClient.cancelQueries({ queryKey: ['crm-leads', filters] });
-      const previous = queryClient.getQueryData<CrmLeadsResponse>(['crm-leads', filters]);
+      await queryClient.cancelQueries({ queryKey: ['crm-leads', authScopeKey, scopedFilters] });
+      const previous = queryClient.getQueryData<CrmLeadsResponse>(['crm-leads', authScopeKey, scopedFilters]);
       if (previous?.items) {
         const centerById = new Map(centers.map((c) => [c.id, c]));
         const updatedItems = previous.items.map((lead) => {
@@ -185,7 +200,7 @@ export default function AdminCrmPage() {
             center: nextCenter ? { id: nextCenter.id, name: nextCenter.name } : null,
           };
         });
-        queryClient.setQueryData<CrmLeadsResponse>(['crm-leads', filters], {
+        queryClient.setQueryData<CrmLeadsResponse>(['crm-leads', authScopeKey, scopedFilters], {
           ...previous,
           items: updatedItems,
         });
@@ -194,7 +209,7 @@ export default function AdminCrmPage() {
     },
     onError: (_err, _variables, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['crm-leads', filters], context.previous);
+        queryClient.setQueryData(['crm-leads', authScopeKey, scopedFilters], context.previous);
       }
       setStatusError('Failed to update branch. Please try again.');
     },
@@ -217,16 +232,23 @@ export default function AdminCrmPage() {
     : adminVisibleStatuses.filter((s) => s !== 'ARCHIVE');
 
   const { data: centersData } = useQuery({
-    queryKey: ['centers'],
+    queryKey: ['centers', authScopeKey],
     queryFn: () => fetchCenters({ take: 100 }),
+    enabled: isAuthReady,
   });
   const { data: teachersData } = useQuery({
-    queryKey: ['teachers'],
+    queryKey: ['teachers', authScopeKey, managerCenterId ?? 'all-centers'],
     queryFn: () => fetchTeachers({ take: 200 }),
+    enabled: isAuthReady,
   });
   const { data: groupsData } = useQuery({
-    queryKey: ['groups'],
-    queryFn: () => fetchGroups({ take: 500 }),
+    queryKey: ['groups', authScopeKey, managerCenterId ?? 'all-centers'],
+    queryFn: () =>
+      fetchGroups({
+        take: 500,
+        centerId: managerCenterId,
+      }),
+    enabled: isAuthReady,
   });
 
   const leads = leadsData?.items ?? [];
