@@ -16,13 +16,6 @@ import { chatKeys } from '@/features/chat/hooks/useChat';
 import type { Group } from '@/features/groups/types';
 import type { Student, TeacherAssignedItem } from '@/features/students/types';
 
-function getStudentFullName(recording: AdminStudentRecording): string {
-  return (
-    `${recording.student.firstName} ${recording.student.lastName}`.trim() ||
-    recording.student.userId
-  );
-}
-
 function formatDateTime(value: string): string {
   return new Date(value).toLocaleString(undefined, {
     year: 'numeric',
@@ -82,6 +75,14 @@ interface StoredFilters {
   search: string;
   dateFrom: string;
   dateTo: string;
+}
+
+interface StudentRecordingRow {
+  studentUserId: string;
+  studentFullName: string;
+  groupId: string | null;
+  groupName: string;
+  recording: AdminStudentRecording | null;
 }
 
 function parseStoredFilters(): StoredFilters {
@@ -217,6 +218,9 @@ export default function AdminRecordingPage() {
 
   const apiFilters = useMemo(() => {
     const groupIds = Array.from(selectedGroupIds).sort();
+    if (groupIds.length === 0) {
+      return {};
+    }
     const studentIds = Array.from(selectedStudentUserIds).sort();
     return {
       ...(groupIds.length ? { groupIds } : {}),
@@ -235,9 +239,12 @@ export default function AdminRecordingPage() {
     [apiFilters],
   );
 
+  const hasGroupSelection = selectedGroupIds.size > 0;
+
   const { data: recordings = [], isLoading } = useQuery({
     queryKey: [...chatKeys.all, 'admin', 'student-recordings', apiFiltersKey],
     queryFn: () => fetchAdminStudentRecordings(apiFilters),
+    enabled: hasGroupSelection,
     refetchInterval: 15_000,
     refetchOnWindowFocus: true,
   });
@@ -354,36 +361,83 @@ export default function AdminRecordingPage() {
   }, [isHydrated, isLoadingDirectory, allowedStudentUserIds]);
 
   const visibleRecordings = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    if (!hasGroupSelection) return [];
+
+    const studentRows = studentDirectory.filter((student) =>
+      selectedGroupIds.has(directoryStudentGroupKey(student.groupId)),
+    );
+    const selectedStudentFilter =
+      selectedStudentUserIds.size > 0 ? selectedStudentUserIds : null;
     const fromTs = dateFrom ? new Date(`${dateFrom}T00:00:00`).getTime() : null;
     const toTs = dateTo ? new Date(`${dateTo}T23:59:59.999`).getTime() : null;
+    const recordingsByStudent = new Map<string, AdminStudentRecording>();
 
-    return recordings
-      .filter((r) => {
-        const ts = new Date(r.createdAt).getTime();
-        if (fromTs !== null && ts < fromTs) return false;
-        if (toTs !== null && ts > toTs) return false;
+    recordings.forEach((recording) => {
+      const ts = new Date(recording.createdAt).getTime();
+      if (fromTs !== null && ts < fromTs) return;
+      if (toTs !== null && ts > toTs) return;
+
+      const existing = recordingsByStudent.get(recording.student.userId);
+      if (!existing) {
+        recordingsByStudent.set(recording.student.userId, recording);
+        return;
+      }
+
+      const existingTs = new Date(existing.createdAt).getTime();
+      if (ts > existingTs) {
+        recordingsByStudent.set(recording.student.userId, recording);
+      }
+    });
+
+    const query = search.trim().toLowerCase();
+    return studentRows
+      .filter((student) => {
+        if (
+          selectedStudentFilter &&
+          !selectedStudentFilter.has(student.userId)
+        ) {
+          return false;
+        }
+
+        const recording = recordingsByStudent.get(student.userId) ?? null;
         if (!query) return true;
+
         const haystack = [
-          getStudentFullName(r),
-          r.group.name,
-          r.fileName ?? '',
-        ]
-          .join(' ')
-          .toLowerCase();
-        return haystack.includes(query);
+          student.fullName,
+          student.groupName,
+          recording?.fileName ?? '',
+        ].join(' ');
+
+        return haystack.toLowerCase().includes(query);
       })
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-  }, [recordings, search, dateFrom, dateTo]);
+      .map<StudentRecordingRow>((student) => ({
+        studentUserId: student.userId,
+        studentFullName: student.fullName,
+        groupId: student.groupId,
+        groupName: student.groupName,
+        recording: recordingsByStudent.get(student.userId) ?? null,
+      }))
+      .sort((a, b) => a.studentFullName.localeCompare(b.studentFullName));
+  }, [
+    hasGroupSelection,
+    studentDirectory,
+    selectedGroupIds,
+    selectedStudentUserIds,
+    recordings,
+    search,
+    dateFrom,
+    dateTo,
+  ]);
 
   // Reconcile selected ids with visible rows
   useEffect(() => {
     setSelectedRecordingIds((prev) => {
       if (prev.size === 0) return prev;
-      const visibleIds = new Set(visibleRecordings.map((r) => r.id));
+      const visibleIds = new Set(
+        visibleRecordings
+          .map((row) => row.recording?.id)
+          .filter((id): id is string => Boolean(id)),
+      );
       const next = new Set<string>();
       prev.forEach((id) => {
         if (visibleIds.has(id)) next.add(id);
@@ -394,14 +448,24 @@ export default function AdminRecordingPage() {
   }, [visibleRecordings]);
 
   const allVisibleSelected =
-    visibleRecordings.length > 0 &&
-    visibleRecordings.every((r) => selectedRecordingIds.has(r.id));
+    visibleRecordings.some((row) => row.recording !== null) &&
+    visibleRecordings
+      .filter((row) => row.recording !== null)
+      .every((row) =>
+        row.recording ? selectedRecordingIds.has(row.recording.id) : false,
+      );
 
   const toggleAll = () => {
     if (allVisibleSelected) {
       setSelectedRecordingIds(new Set());
     } else {
-      setSelectedRecordingIds(new Set(visibleRecordings.map((r) => r.id)));
+      setSelectedRecordingIds(
+        new Set(
+          visibleRecordings
+            .map((row) => row.recording?.id)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      );
     }
   };
 
@@ -527,8 +591,8 @@ export default function AdminRecordingPage() {
       </div>
 
       <div className="mb-3 text-sm text-slate-500">
-        {visibleRecordings.length} recording
-        {visibleRecordings.length !== 1 ? 's' : ''} found
+        {visibleRecordings.length} student
+        {visibleRecordings.length !== 1 ? 's' : ''} shown
         {selectedRecordingIds.size > 0 && (
           <span className="ml-3 text-slate-700 font-medium">
             ({selectedRecordingIds.size} selected)
@@ -549,7 +613,10 @@ export default function AdminRecordingPage() {
                     className="w-4 h-4 rounded border-slate-300 cursor-pointer"
                     checked={allVisibleSelected}
                     onChange={toggleAll}
-                    disabled={visibleRecordings.length === 0}
+                    disabled={
+                      visibleRecordings.length === 0 ||
+                      visibleRecordings.every((row) => row.recording === null)
+                    }
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -593,46 +660,67 @@ export default function AdminRecordingPage() {
                     colSpan={5}
                     className="px-4 py-10 text-center text-sm text-slate-500"
                   >
-                    No recordings found for the selected filters.
+                    {hasGroupSelection
+                      ? 'No students found for the selected filters.'
+                      : 'Select a group to view students and recordings.'}
                   </td>
                 </tr>
               ) : (
-                visibleRecordings.map((recording) => {
-                  const isActive = activeRecordingId === recording.id;
+                visibleRecordings.map((row) => {
+                  const recording = row.recording;
+                  const recordingId = recording?.id ?? null;
+                  const isActive =
+                    recordingId !== null && activeRecordingId === recordingId;
                   return (
                     <tr
-                      key={recording.id}
+                      key={row.studentUserId}
                       className="hover:bg-slate-50/60 transition-colors"
                     >
                       <td className="px-4 py-3 align-middle">
                         <input
                           type="checkbox"
-                          aria-label={`Select recording ${recording.id}`}
+                          aria-label={`Select recording for ${row.studentFullName}`}
                           className="w-4 h-4 rounded border-slate-300 cursor-pointer"
-                          checked={selectedRecordingIds.has(recording.id)}
-                          onChange={() => toggleOne(recording.id)}
+                          checked={
+                            recordingId !== null &&
+                            selectedRecordingIds.has(recordingId)
+                          }
+                          disabled={recordingId === null}
+                          onChange={() => {
+                            if (recordingId) toggleOne(recordingId);
+                          }}
                         />
                       </td>
                       <td className="px-4 py-3 align-middle">
                         <span className="text-sm text-slate-700">
-                          {recording.group.name}
+                          {row.groupName}
                         </span>
                       </td>
                       <td className="px-4 py-3 align-middle">
                         <span className="text-sm font-medium text-slate-800">
-                          {getStudentFullName(recording)}
+                          {row.studentFullName}
                         </span>
                       </td>
                       <td className="px-4 py-3 align-middle whitespace-nowrap">
-                        <div className="text-sm text-slate-700">
-                          {formatDateTime(recording.createdAt)}
-                        </div>
-                        <div className="text-xs text-slate-400">
-                          {formatIsoDay(recording.createdAt)}
-                        </div>
+                        {recording ? (
+                          <>
+                            <div className="text-sm text-slate-700">
+                              {formatDateTime(recording.createdAt)}
+                            </div>
+                            <div className="text-xs text-slate-400">
+                              {formatIsoDay(recording.createdAt)}
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-sm text-slate-400">-</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 align-middle">
-                        {isActive ? (
+                        {!recording ? (
+                          <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
+                            No voice recorded
+                          </span>
+                        ) : isActive ? (
                           <VoiceMessagePlayer
                             fileUrl={recording.fileUrl}
                             duration={recording.duration}
