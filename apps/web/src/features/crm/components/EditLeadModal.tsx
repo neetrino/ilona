@@ -47,7 +47,9 @@ export function EditLeadModal({
   availableStatuses = CRM_COLUMN_ORDER,
 }: EditLeadModalProps) {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<UpdateLeadDto & { status?: CrmLeadStatus; archivedReason?: string }>({});
+  const [form, setForm] = useState<
+    UpdateLeadDto & { status?: CrmLeadStatus; archivedReason?: string; parentSurname?: string }
+  >({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -112,7 +114,12 @@ export function EditLeadModal({
     setError(null);
     setSaving(true);
     try {
-      const { status: formStatus, archivedReason: formArchivedReason, ...updatePayload } = form;
+      const {
+        status: formStatus,
+        archivedReason: formArchivedReason,
+        parentSurname: _parentSurname,
+        ...updatePayload
+      } = form;
       await updateLead(leadId, updatePayload);
       if (formStatus && formStatus !== lead.status) {
         await changeLeadStatus(leadId, {
@@ -303,6 +310,17 @@ export function EditLeadModal({
                     type="text"
                     value={form.parentName ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
+                    placeholder="John"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent surname</label>
+                  <input
+                    type="text"
+                    value={form.parentSurname ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, parentSurname: e.target.value }))}
+                    placeholder="Smith"
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
@@ -311,10 +329,11 @@ export function EditLeadModal({
                   <input
                     type="tel"
                     inputMode="numeric"
-                    value={form.parentPhone != null && form.parentPhone !== '' ? `+${form.parentPhone}` : '+'}
+                    value={form.parentPhone != null && form.parentPhone !== '' ? `+${form.parentPhone}` : ''}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
                     }
+                    placeholder="+374XXXXXXXX"
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
@@ -324,6 +343,7 @@ export function EditLeadModal({
                     type="text"
                     value={form.parentPassportInfo ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
+                    placeholder="XX0000000"
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
