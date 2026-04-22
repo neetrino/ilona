@@ -22,6 +22,10 @@ interface DataTableProps<T> {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onSort?: (key: string) => void;
+  tableClassName?: string;
+  containerClassName?: string;
+  compact?: boolean;
+  disableHorizontalScroll?: boolean;
 }
 
 export function DataTable<T>({
@@ -34,6 +38,10 @@ export function DataTable<T>({
   sortBy,
   sortOrder,
   onSort,
+  tableClassName,
+  containerClassName,
+  compact = false,
+  disableHorizontalScroll = false,
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
@@ -47,8 +55,8 @@ export function DataTable<T>({
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-max table-auto">
+      <div className={cn('w-full', disableHorizontalScroll ? 'overflow-x-hidden' : 'overflow-x-auto', containerClassName)}>
+        <table className={cn('w-full table-auto', !disableHorizontalScroll && 'min-w-max', tableClassName)}>
         <thead>
           <tr className="border-b border-slate-100">
             {columns.map((column) => {
@@ -71,7 +79,7 @@ export function DataTable<T>({
                 <th
                   key={column.key}
                   className={cn(
-                    'px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider',
+                    compact ? 'px-3 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider' : 'px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider',
                     column.className, // Apply column className to header for width/padding consistency
                     headerAlignment // Apply alignment last to ensure it takes precedence
                   )}
@@ -137,7 +145,7 @@ export function DataTable<T>({
                 )}
               >
                 {columns.map((column) => (
-                  <td key={column.key} className={cn('px-6 py-4', column.className)}>
+                  <td key={column.key} className={cn(compact ? 'px-3 py-3' : 'px-6 py-4', column.className)}>
                     {column.render
                       ? column.render(item, index)
                       : (item as Record<string, unknown>)[column.key] as React.ReactNode}

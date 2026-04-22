@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Eye, MessageCircle } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { ActionButtons, Avatar } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
@@ -122,7 +122,7 @@ function RegisterDateCell({
 
   if (editing && !disabled) {
     return (
-      <div className="min-w-[120px]" onClick={(e) => e.stopPropagation()}>
+      <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
           type="text"
@@ -144,7 +144,7 @@ function RegisterDateCell({
   const displayText = formatRegisterDate(value) || '—';
   return (
     <div
-      className="min-w-[100px] pl-4"
+      className="min-w-0"
       onClick={(e) => e.stopPropagation()}
     >
       <button
@@ -173,7 +173,6 @@ interface StudentsTableColumnsProps {
   onDelete: (student: Student) => void;
   onDeactivate: (student: Student) => void;
   onShowFeedback: (student: Student) => void;
-  onView: (student: Student) => void;
   onTeacherChange: (studentId: string, teacherId: string | null) => Promise<void>;
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
@@ -198,7 +197,6 @@ export function createStudentsTableColumns({
   onDelete,
   onDeactivate,
   onShowFeedback,
-  onView,
   onTeacherChange,
   onGroupChange,
   onCenterChange,
@@ -235,13 +233,13 @@ export function createStudentsTableColumns({
           />
         );
       },
-      className: '!pl-4 !pr-2 w-12',
+      className: '!pl-2 !pr-1 !w-[36px] !min-w-[36px]',
     },
     {
       key: 'student',
       header: 'STUDENT',
       sortable: true,
-      className: '!pl-0 !pr-4',
+      className: '!pl-0 !pr-2 !w-[21%] align-top',
       render: (row: TeacherAssignedItem) => {
         const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
@@ -260,10 +258,10 @@ export function createStudentsTableColumns({
               ? { label: 'Risk', className: 'bg-amber-100 text-amber-700 border-amber-200' }
               : null;
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-2">
             <Avatar src={avatarUrl} name={fullName} size="md" />
             <div className="min-w-0">
-              <p className="font-semibold text-slate-800 truncate">
+              <p className="font-semibold text-slate-800 leading-tight break-words">
                 {firstName} {lastName}
               </p>
               <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
@@ -289,10 +287,11 @@ export function createStudentsTableColumns({
     {
       key: 'teacher',
       header: 'TEACHER',
+      className: '!w-[14%] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
         return (
-          <div className="min-w-[150px]" onClick={(e) => e.stopPropagation()}>
+          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
               value={row.teacherId || null}
               options={teacherOptions}
@@ -309,6 +308,7 @@ export function createStudentsTableColumns({
     {
       key: 'group',
       header: 'GROUP',
+      className: '!w-[14%] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
         const teacherId = row.teacherId || null;
@@ -318,7 +318,7 @@ export function createStudentsTableColumns({
               .map((g) => ({ id: g.id, label: `${g.name}${g.level ? ` (${g.level})` : ''}` }))
           : [];
         return (
-          <div className="min-w-[150px]" onClick={(e) => e.stopPropagation()}>
+          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
               value={row.groupId || null}
               options={groupOptionsForTeacher}
@@ -335,11 +335,12 @@ export function createStudentsTableColumns({
     {
       key: 'center',
       header: 'CENTER',
+      className: '!w-[14%] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
         const currentCenterId = row.group?.center?.id || null;
         return (
-          <div className="min-w-[150px]" onClick={(e) => e.stopPropagation()}>
+          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
               value={currentCenterId}
               options={centerOptions}
@@ -357,7 +358,7 @@ export function createStudentsTableColumns({
       key: 'register',
       header: 'REGISTER',
       sortable: true,
-      className: 'text-left',
+      className: 'text-left !w-[11%] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
         return (
@@ -374,14 +375,14 @@ export function createStudentsTableColumns({
       key: 'monthlyFee',
       header: 'MONTHLY FEE',
       sortable: true,
-      className: 'text-left',
+      className: 'text-center !w-[10%] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
         const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
         return (
-          <span className="text-slate-700 font-medium" onClick={(e) => e.stopPropagation()}>
-            {formatCurrency(fee)}
-          </span>
+          <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
+            <span className="text-slate-700 font-medium whitespace-nowrap">{formatCurrency(fee)}</span>
+          </div>
         );
       },
     },
@@ -389,32 +390,42 @@ export function createStudentsTableColumns({
       key: 'absence',
       header: 'ABSENCE',
       sortable: true,
-      className: 'text-left',
+      className: 'text-center !w-[7%] align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400 pl-4" onClick={(e) => e.stopPropagation()}>—</span>;
+        if (isOnboardingItem(row)) {
+          return (
+            <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
+              <span className="text-slate-400">—</span>
+            </div>
+          );
+        }
         const attendance = row.attendanceSummary;
         if (!row.groupId) {
           return (
-            <span className="text-slate-400 pl-4" onClick={(e) => e.stopPropagation()}>—</span>
+            <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
+              <span className="text-slate-400">—</span>
+            </div>
           );
         }
         if (!attendance) {
           return (
-            <span className="text-slate-600 pl-4" onClick={(e) => e.stopPropagation()}>0</span>
+            <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
+              <span className="text-slate-600">0</span>
+            </div>
           );
         }
         const { absences } = attendance;
         return (
-          <span className="text-slate-700 font-medium pl-4" onClick={(e) => e.stopPropagation()}>
-            {absences}
-          </span>
+          <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
+            <span className="text-slate-700 font-medium">{absences}</span>
+          </div>
         );
       },
     },
     {
       key: 'actions',
       header: 'ACTIONS',
-      className: '!w-[180px] !min-w-[180px] !max-w-[180px] !px-3 !py-4 text-left',
+      className: '!w-[160px] !min-w-[160px] !max-w-[160px] !px-2 !py-3 text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
@@ -428,22 +439,9 @@ export function createStudentsTableColumns({
 
         return (
           <div
-            className="flex items-center justify-start gap-1"
+            className="w-full flex items-center justify-center gap-0.5"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              aria-label="View profile"
-              title="View profile"
-              className={btnClass}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                onView(student);
-              }}
-            >
-              <Eye className="w-4 h-4" aria-hidden="true" />
-            </button>
             <button
               type="button"
               aria-label="Message"
