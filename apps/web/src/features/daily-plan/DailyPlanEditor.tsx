@@ -5,6 +5,7 @@ import {
   useCreateDailyPlan,
   useUpdateDailyPlan,
 } from './hooks';
+import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import type {
   DailyPlan,
   DailyPlanResourceKind,
@@ -56,15 +57,21 @@ function emptyTopic(): DraftTopic {
   };
 }
 
-function toDrafts(plan?: DailyPlan): { date: string; topics: DraftTopic[] } {
+function toDrafts(plan?: DailyPlan): {
+  date: string;
+  groupId: string;
+  topics: DraftTopic[];
+} {
   if (!plan) {
     return {
       date: new Date().toISOString().slice(0, 10),
+      groupId: '',
       topics: [emptyTopic()],
     };
   }
   return {
     date: plan.date.slice(0, 10),
+    groupId: plan.groupId ?? '',
     topics: plan.topics.map((t) => ({
       title: t.title,
       resources: RESOURCE_KINDS.map((kind) => {
@@ -87,15 +94,18 @@ export function DailyPlanEditor({
   onSaved,
 }: DailyPlanEditorProps) {
   const [date, setDate] = useState('');
+  const [groupId, setGroupId] = useState('');
   const [topics, setTopics] = useState<DraftTopic[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const create = useCreateDailyPlan();
   const update = useUpdateDailyPlan();
+  const { data: myGroups = [], isLoading: isLoadingGroups } = useMyGroups();
 
   useEffect(() => {
     const draft = toDrafts(plan);
     setDate(draft.date);
+    setGroupId(draft.groupId);
     setTopics(draft.topics);
   }, [plan]);
 
@@ -148,17 +158,22 @@ export function DailyPlanEditor({
       setError('Add at least one topic with a title.');
       return;
     }
+    if (!groupId) {
+      setError('Select a group for this daily plan.');
+      return;
+    }
 
     try {
       if (mode === 'create') {
         await create.mutateAsync({
           date,
+          groupId,
           topics: cleanTopics,
         });
       } else if (plan) {
         await update.mutateAsync({
           id: plan.id,
-          input: { date, topics: cleanTopics },
+          input: { date, groupId, topics: cleanTopics },
         });
       }
       onSaved();
@@ -202,6 +217,28 @@ export function DailyPlanEditor({
               onChange={(e) => setDate(e.target.value)}
               className="h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
+          </div>
+          <div>
+            <label
+              htmlFor="dp-group"
+              className="block text-sm font-medium text-slate-600 mb-1.5"
+            >
+              Group
+            </label>
+            <select
+              id="dp-group"
+              value={groupId}
+              onChange={(e) => setGroupId(e.target.value)}
+              disabled={isLoadingGroups}
+              className="h-10 min-w-64 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-60"
+            >
+              <option value="">Select group</option>
+              {myGroups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-4">

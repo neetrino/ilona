@@ -17,7 +17,13 @@ import { PaymentsService } from './payments.service';
 import { SalariesService } from './salaries.service';
 import { DeductionsService } from './deductions.service';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { UserRole, PaymentStatus, SalaryStatus, DeductionReason } from '@ilona/database';
+import {
+  UserRole,
+  PaymentStatus,
+  SalaryStatus,
+  DeductionReason,
+  LessonStatus,
+} from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import {
   CreatePaymentDto,
@@ -39,6 +45,48 @@ export class FinanceController {
     private readonly deductionsService: DeductionsService,
     private readonly prisma: PrismaService,
   ) {}
+
+  private async ensureTeacherSalaryRecords(teacherId: string): Promise<void> {
+    const [lessons, deductions] = await Promise.all([
+      this.prisma.lesson.findMany({
+        where: {
+          teacherId,
+          status: { not: LessonStatus.CANCELLED },
+        },
+        select: { scheduledAt: true },
+        orderBy: { scheduledAt: 'desc' },
+        take: 500,
+      }),
+      this.prisma.deduction.findMany({
+        where: { teacherId },
+        select: { appliedAt: true },
+        orderBy: { appliedAt: 'desc' },
+        take: 500,
+      }),
+    ]);
+
+    const monthKeys = new Set<string>();
+    lessons.forEach((lesson) => {
+      const d = lesson.scheduledAt;
+      monthKeys.add(`${d.getFullYear()}-${d.getMonth()}`);
+    });
+    deductions.forEach((deduction) => {
+      const d = deduction.appliedAt;
+      monthKeys.add(`${d.getFullYear()}-${d.getMonth()}`);
+    });
+
+    await Promise.all(
+      Array.from(monthKeys).map((key) => {
+        const [yearStr, monthStr] = key.split('-');
+        const year = parseInt(yearStr, 10);
+        const month = parseInt(monthStr, 10);
+        return this.salariesService.generateSalaryRecord(
+          teacherId,
+          new Date(year, month, 1),
+        );
+      }),
+    );
+  }
 
   /**
    * Resolve current student from JWT. Student identity is NEVER taken from client (query/body/params).
@@ -99,6 +147,8 @@ export class FinanceController {
       return { items: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
     }
 
+    await this.ensureTeacherSalaryRecords(teacher.id);
+
     return this.salariesService.findAllRecordsByTeacher(teacher.id, {
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
@@ -122,6 +172,8 @@ export class FinanceController {
         averagePerLesson: 0,
       };
     }
+
+    await this.ensureTeacherSalaryRecords(teacher.id);
 
     const [list, summary] = await Promise.all([
       this.salariesService.findAllRecordsByTeacher(teacher.id, { take: 500 }),
@@ -160,6 +212,16 @@ export class FinanceController {
 
     if (!month) {
       throw new BadRequestException('Month parameter is required (format: YYYY-MM)');
+    }
+
+    const [yearStr, monthStr] = month.split('-');
+    const year = parseInt(yearStr, 10);
+    const monthIndex = parseInt(monthStr, 10) - 1;
+    if (!Number.isNaN(year) && !Number.isNaN(monthIndex)) {
+      await this.salariesService.generateSalaryRecord(
+        teacher.id,
+        new Date(year, monthIndex, 1),
+      );
     }
 
     return this.salariesService.getSalaryBreakdown(teacher.id, month);

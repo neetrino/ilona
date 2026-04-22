@@ -1,6 +1,7 @@
 import { cn } from '@/shared/lib/utils';
 import type { Lesson } from '@/features/lessons';
 import { LessonBlock } from './CalendarComponents';
+import { formatDate } from '../utils/calendar-utils';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -46,7 +47,7 @@ export function MonthView({
                 return <div key={dayIndex} className="min-h-[100px] bg-slate-50" />;
               }
               
-              const dateKey = date.toISOString().split('T')[0];
+              const dateKey = formatDate(date);
               const dayLessons = lessonsByDate[dateKey] || [];
               const isToday = date.toDateString() === new Date().toDateString();
 
