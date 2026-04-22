@@ -20,11 +20,13 @@ interface TeachersListProps {
   onEdit: (teacher: Teacher) => void;
   onDelete: (teacher: Teacher) => void;
   onDeactivate: (teacher: Teacher) => void;
+  onCenterChange: (teacherId: string, centerId: string | null) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
   isLoading: boolean;
   isDeleting: boolean;
   isUpdating: boolean;
   searchQuery: string;
+  centerOptions: Array<{ id: string; label: string }>;
   t: ReturnType<typeof useTranslations<'teachers'>>;
   tCommon: ReturnType<typeof useTranslations<'common'>>;
   tStatus: ReturnType<typeof useTranslations<'status'>>;
@@ -45,11 +47,13 @@ export function TeachersList({
   onEdit,
   onDelete,
   onDeactivate,
+  onCenterChange,
   onOpenGroupsModal,
   isLoading,
   isDeleting,
   isUpdating,
   searchQuery,
+  centerOptions,
   t,
   tCommon,
   tStatus,
@@ -67,10 +71,12 @@ export function TeachersList({
     onEdit,
     onDelete,
     onDeactivate,
+    onCenterChange,
     onOpenGroupsModal,
     isDeleting: isDeleting || isUpdating,
     isUpdating,
     isLoading,
+    centerOptions,
   });
 
   return (

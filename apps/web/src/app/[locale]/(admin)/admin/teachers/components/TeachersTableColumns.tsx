@@ -1,7 +1,8 @@
 'use client';
 
-import { Avatar, Badge } from '@/shared/components/ui';
+import { Avatar } from '@/shared/components/ui';
 import { ActionButtons } from '@/shared/components/ui';
+import { InlineSelect } from '@/features/students';
 import { SelectAllCheckbox } from './SelectAllCheckbox';
 import { cn } from '@/shared/lib/utils';
 import type { Teacher } from '@/features/teachers';
@@ -21,7 +22,9 @@ interface TeachersTableColumnsProps {
   onEdit: (teacher: Teacher) => void;
   onDelete: (teacher: Teacher) => void;
   onDeactivate: (teacher: Teacher) => void;
+  onCenterChange: (teacherId: string, centerId: string | null) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
+  centerOptions: Array<{ id: string; label: string }>;
   isDeleting: boolean;
   isUpdating: boolean;
   isLoading: boolean;
@@ -40,7 +43,9 @@ export function createTeachersTableColumns({
   onEdit,
   onDelete,
   onDeactivate,
+  onCenterChange,
   onOpenGroupsModal,
+  centerOptions,
   isDeleting,
   isUpdating,
   isLoading,
@@ -109,38 +114,21 @@ export function createTeachersTableColumns({
       className: '!pl-4 !pr-4 !min-w-[180px]',
       render: (teacher: Teacher) => {
         const centers = getTeacherCenters(teacher);
-        
+        const currentCenterId = centers[0]?.id || null;
+
         return (
           <div className="flex flex-wrap items-center gap-1.5">
-            {centers.length > 0 ? (
-              <>
-                {centers.slice(0, 2).map((center) => (
-                  <Badge key={center.id} variant="default">
-                    {center.name}
-                  </Badge>
-                ))}
-                {centers.length > 2 && (
-                  <div title={centers.slice(2).map(c => c.name).join(', ')}>
-                    <Badge variant="default">
-                      +{centers.length - 2}
-                    </Badge>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onEdit(teacher);
-                  }}
-                  className="rounded-md border border-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-                  title="Change assigned branches"
-                >
-                  Change
-                </button>
-              </>
-            ) : (
-              <span className="text-slate-400 text-sm">{t('noBranches')}</span>
-            )}
+            <div className="min-w-[150px]" onClick={(event) => event.stopPropagation()}>
+              <InlineSelect
+                value={currentCenterId}
+                options={centerOptions}
+                onChange={async (centerId) => {
+                  await onCenterChange(teacher.id, centerId);
+                }}
+                placeholder={t('noBranches')}
+                disabled={isUpdating || isDeleting || isLoading}
+              />
+            </div>
           </div>
         );
       },

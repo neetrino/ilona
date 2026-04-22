@@ -356,6 +356,15 @@ export function useTeachersPage() {
     }
   };
 
+  const handleCenterChange = async (teacherId: string, centerId: string | null) => {
+    await updateTeacher.mutateAsync({
+      id: teacherId,
+      data: {
+        centerIds: centerId ? [centerId] : [],
+      },
+    });
+  };
+
   const handleRowClick = (teacher: Teacher) => {
     setSelectedTeacherIdForDetails(teacher.id);
     setIsDetailsDrawerOpen(true);
@@ -449,6 +458,7 @@ export function useTeachersPage() {
     handleBulkDeleteClick,
     handleBulkDeleteConfirm,
     handleDeactivateClick,
+    handleCenterChange,
     handleRowClick,
     handleDetailsDrawerClose,
     setIsAddTeacherOpen,
