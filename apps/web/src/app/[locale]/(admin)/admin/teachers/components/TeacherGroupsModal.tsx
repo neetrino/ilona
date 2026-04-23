@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui';
-import type { Teacher } from '@/features/teachers';
+import { useTeacher, type Teacher } from '@/features/teachers';
 
 interface TeacherGroupsModalProps {
   open: boolean;
@@ -30,13 +30,19 @@ export function TeacherGroupsModal({
   teacher,
   initialTab,
 }: TeacherGroupsModalProps) {
+  const teacherId = teacher?.id ?? '';
+  const { data: teacherDetails, isLoading, isError } = useTeacher(teacherId, open && !!teacherId);
   if (!teacher) return null;
 
-  const mainGroups = (teacher.groups ?? []).map((group) => group.name);
-  const substituteGroups = (teacher.substituteForGroups ?? []).map((group) => group.name);
-  const firstName = teacher.user?.firstName ?? '';
-  const lastName = teacher.user?.lastName ?? '';
+  const groupsSource = teacherDetails ?? teacher;
+  const mainGroups = (groupsSource.groups ?? []).map((group) => group.name);
+  const substituteGroups = (groupsSource.substituteForGroups ?? []).map((group) => group.name);
+  const firstName = groupsSource.user?.firstName ?? '';
+  const lastName = groupsSource.user?.lastName ?? '';
   const activeTab = initialTab === 'subgroups' ? 'Sub-groups' : 'Groups';
+
+  const showLoading = open && isLoading && !teacherDetails;
+  const showError = open && isError && !teacherDetails;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -47,6 +53,13 @@ export function TeacherGroupsModal({
             Quick list of assigned groups and substitute groups.
           </DialogDescription>
         </DialogHeader>
+        {showLoading ? (
+          <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-500">Loading groups...</p>
+        ) : showError ? (
+          <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            Could not load latest groups. Showing available data.
+          </p>
+        ) : null}
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <p className="text-sm font-semibold text-slate-700">Groups</p>
