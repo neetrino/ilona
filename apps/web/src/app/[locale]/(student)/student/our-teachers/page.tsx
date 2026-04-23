@@ -7,7 +7,8 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { TeacherDetailsModal, type Teacher } from '@/features/teachers';
 import { Avatar } from '@/shared/components/ui';
-import { Sparkles } from 'lucide-react';
+import { formatExperienceLabel, getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
+import { Award, Sparkles } from 'lucide-react';
 
 const PAGE_SIZE = 100;
 
@@ -41,6 +42,7 @@ function TeacherCard({
   onOpenDetails: (teacherId: string) => void;
 }) {
   const fullName = getTeacherName(teacher);
+  const experienceLabel = formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate));
 
   return (
     <article
@@ -66,6 +68,10 @@ function TeacherCard({
 
       <div className="min-w-0 text-center">
         <h3 className="truncate text-xl font-semibold text-slate-900">{fullName}</h3>
+        <p className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 sm:text-sm">
+          <Award className="h-3.5 w-3.5 shrink-0 text-slate-500 sm:h-4 sm:w-4" aria-hidden="true" />
+          <span className="truncate">{experienceLabel}</span>
+        </p>
       </div>
     </article>
   );
