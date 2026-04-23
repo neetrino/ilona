@@ -1,6 +1,5 @@
 'use client';
-
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -20,27 +19,6 @@ const MONTH_OPTIONS = [
 
 function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
-}
-
-interface Recording {
-  id: string;
-  lessonId: string;
-  url: string;
-  duration: number;
-  createdAt: string;
-  lesson: {
-    topic?: string;
-    scheduledAt: string;
-    group: {
-      name: string;
-    };
-    teacher: {
-      user: {
-        firstName: string;
-        lastName: string;
-      };
-    };
-  };
 }
 
 function formatDuration(seconds: number): string {
@@ -63,75 +41,67 @@ function formatVoiceTimestamp(createdAt: string): string {
   });
 }
 
-function VoiceToTeacherCard({ recording }: { recording: VoiceToTeacherRecording }) {
+function VoiceToTeacherRow({
+  recording,
+  isActive,
+  onPlay,
+}: {
+  recording: VoiceToTeacherRecording;
+  isActive: boolean;
+  onPlay: (id: string) => void;
+}) {
   const teacherName = recording.teacher
     ? `${recording.teacher.firstName} ${recording.teacher.lastName}`
     : 'Teacher';
 
   return (
-    <div className="bg-white rounded-xl border border-amber-200 overflow-hidden hover:shadow-md transition-shadow min-w-[320px]">
-      <div className="p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-amber-600 font-medium">Voice to teacher</span>
-          <span className="text-xs text-slate-400" title={recording.createdAt}>
-            {formatVoiceTimestamp(recording.createdAt)}
-          </span>
-        </div>
-        <p className="text-sm text-slate-600 mb-3">{teacherName}</p>
-        <div className="flex items-center gap-2">
+    <tr className="hover:bg-slate-50/60 transition-colors">
+      <td className="px-4 py-3 align-middle">
+        <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
+          Voice to teacher
+        </span>
+      </td>
+      <td className="px-4 py-3 align-middle whitespace-nowrap">
+        <div className="text-sm text-slate-700">{formatVoiceTimestamp(recording.createdAt)}</div>
+      </td>
+      <td className="px-4 py-3 align-middle">
+        <span className="text-sm font-medium text-slate-800">{teacherName}</span>
+      </td>
+      <td className="px-4 py-3 align-middle">
+        <span className="text-sm text-slate-600">{formatDuration(recording.duration)}</span>
+      </td>
+      <td className="px-4 py-3 align-middle">
+        {isActive ? (
           <VoiceMessagePlayer
             fileUrl={recording.fileUrl}
             duration={recording.duration}
             fileName={recording.fileName}
           />
-          <span className="text-xs text-slate-400">
-            {formatDuration(recording.duration)}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RecordingCard({ recording }: { recording: Recording }) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const date = new Date(recording.lesson.scheduledAt);
-
-  return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
-      {/* Thumbnail */}
-      <div className="relative aspect-video bg-slate-800">
-        <div className="absolute inset-0 flex items-center justify-center">
+        ) : (
           <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="w-16 h-16 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-colors"
+            type="button"
+            onClick={() => onPlay(recording.id)}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary border border-primary/20 hover:bg-primary/5 rounded-lg transition-colors"
           >
-            <svg className="w-8 h-8 text-blue-600 ml-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
+            Play
           </button>
-        </div>
-        <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/70 rounded text-white text-xs">
-          {formatDuration(recording.duration)}
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-4">
-        <h3 className="font-semibold text-slate-800 mb-1 line-clamp-1">
-          {recording.lesson.topic || 'Lesson Recording'}
-        </h3>
-        <p className="text-sm text-slate-500 mb-2">{recording.lesson.group.name}</p>
-        <div className="flex items-center justify-between text-xs text-slate-400">
-          <span>
-            {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-          </span>
-          <span>
-            {recording.lesson.teacher.user.firstName} {recording.lesson.teacher.user.lastName}
-          </span>
-        </div>
-      </div>
-    </div>
+        )}
+      </td>
+    </tr>
   );
 }
 
@@ -139,7 +109,7 @@ export default function StudentRecordingsPage() {
   const t = useTranslations('nav');
   const now = useMemo(() => new Date(), []);
   const currentYear = now.getFullYear();
-
+  const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
   const [filterYear, setFilterYear] = useState<number | ''>(() => new Date().getFullYear());
   const [filterMonth, setFilterMonth] = useState<number | ''>('');
   const [filterDay, setFilterDay] = useState<number | ''>('');
@@ -157,9 +127,10 @@ export default function StudentRecordingsPage() {
     queryFn: () => fetchStudentVoiceToTeacherRecordings(apiFilters),
   });
 
-  const yearOptions = useMemo(() => {
-    return Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
-  }, [currentYear]);
+  const yearOptions = useMemo(
+    () => Array.from({ length: 5 }, (_, i) => currentYear - 2 + i),
+    [currentYear],
+  );
 
   const dayOptions = useMemo(() => {
     if (filterYear === '' || filterMonth === '') return [];
@@ -175,19 +146,11 @@ export default function StudentRecordingsPage() {
     setFilterDay('');
   };
 
-  // In real app, would fetch from API
-  const recordings: Recording[] = [];
-  const isLoading = false;
-
   const selectClass =
     'w-full h-12 px-4 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none text-slate-700';
 
   return (
-    <DashboardLayout
-      title={t('recordings')}
-      subtitle={t('recordingsSubtitle')}
-    >
-      {/* Date filters – match reference: Year, Month, Day in a row with labels above */}
+    <DashboardLayout title={t('recordings')} subtitle={t('recordingsSubtitle')}>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-6">
         <div>
           <label className="block text-sm font-medium text-slate-600 mb-1.5">Year</label>
@@ -256,75 +219,79 @@ export default function StudentRecordingsPage() {
         )}
       </div>
 
-      <div className="mb-6">
-        <p className="text-sm text-slate-500">
-          {voiceToTeacherRecordings.length} recording{voiceToTeacherRecordings.length !== 1 ? 's' : ''} available
-        </p>
+      <div className="mb-3 text-sm text-slate-500">
+        {voiceToTeacherRecordings.length} recording
+        {voiceToTeacherRecordings.length !== 1 ? 's' : ''} available
       </div>
 
-      {/* Voice messages to teacher (Student Recordings section) */}
-      <section className="mb-8">
-        <h3 className="text-lg font-semibold text-slate-800 mb-3">Voice messages to teacher</h3>
+      <section className="mb-4">
+        <h3 className="text-lg font-semibold text-slate-800 mb-2">Voice messages to teacher</h3>
         <p className="text-sm text-slate-500 mb-4">
-          Voice messages you sent to your teacher appear here with the date and time they were sent.
+          Voice messages you sent to your teacher appear here with date and playback controls.
         </p>
-        {isLoadingVoiceToTeacher ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2].map((i) => (
-              <div key={i} className="bg-white rounded-xl border border-slate-200 animate-pulse p-4 h-28" />
-            ))}
-          </div>
-        ) : voiceToTeacherRecordings.length === 0 ? (
-          <div className="py-8 bg-amber-50/50 border border-amber-200 rounded-xl text-center">
-            {hasDateFilter ? (
-              <>
-                <p className="text-sm text-slate-600">No recordings found for selected date.</p>
-                <button
-                  type="button"
-                  onClick={handleResetFilters}
-                  className="mt-3 text-sm font-medium text-amber-700 hover:text-amber-800 underline"
-                >
-                  Clear filters and show all
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="text-sm text-slate-600">No voice messages to teacher yet.</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Use &quot;Send Voice to Teacher&quot; in Chat to record and send a voice message to your teacher.
-                </p>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {voiceToTeacherRecordings.map((rec) => (
-              <VoiceToTeacherCard key={rec.id} recording={rec} />
-            ))}
-          </div>
-        )}
       </section>
 
-      {/* Recordings Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-slate-200 overflow-hidden animate-pulse">
-              <div className="aspect-video bg-slate-200" />
-              <div className="p-4 space-y-2">
-                <div className="h-4 bg-slate-200 rounded w-3/4" />
-                <div className="h-3 bg-slate-200 rounded w-1/2" />
-              </div>
-            </div>
-          ))}
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Date &amp; Time</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Teacher</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Duration</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Recording</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {isLoadingVoiceToTeacher ? (
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <tr key={`skeleton-${idx}`}>
+                    <td className="px-4 py-4"><div className="h-6 w-24 bg-slate-100 animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-36 bg-slate-100 animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-28 bg-slate-100 animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-16 bg-slate-100 animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-8 w-28 bg-slate-100 animate-pulse rounded" /></td>
+                  </tr>
+                ))
+              ) : voiceToTeacherRecordings.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-10 text-center">
+                    {hasDateFilter ? (
+                      <>
+                        <p className="text-sm text-slate-600">No recordings found for selected date.</p>
+                        <button
+                          type="button"
+                          onClick={handleResetFilters}
+                          className="mt-3 text-sm font-medium text-amber-700 hover:text-amber-800 underline"
+                        >
+                          Clear filters and show all
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-slate-600">No voice messages to teacher yet.</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Use &quot;Send Voice to Teacher&quot; in Chat to record and send a voice message.
+                        </p>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ) : (
+                voiceToTeacherRecordings.map((recording) => (
+                  <VoiceToTeacherRow
+                    key={recording.id}
+                    recording={recording}
+                    isActive={activeRecordingId === recording.id}
+                    onPlay={setActiveRecordingId}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      ) : recordings.length === 0 ? null : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recordings.map((recording) => (
-            <RecordingCard key={recording.id} recording={recording} />
-          ))}
-        </div>
-      )}
+      </div>
     </DashboardLayout>
   );
 }

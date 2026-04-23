@@ -8,9 +8,9 @@ export interface StudentStreakSummary {
 }
 
 /**
- * Tracks a student's consecutive-present streak across completed lessons.
- * A "streak" counts the number of most-recent completed lessons where the
- * student was marked present, uninterrupted by absence or unmarked entries.
+ * Tracks a student's consecutive-present streak across scheduled class days.
+ * A "streak" counts recent days where all completed lessons for that day
+ * were attended.
  */
 @Injectable()
 export class StudentStreakService {
@@ -30,15 +30,28 @@ export class StudentStreakService {
       orderBy: { lesson: { scheduledAt: 'desc' } },
     });
 
+    const groupedByDay = new Map<string, typeof attendances>();
+    for (const entry of attendances) {
+      const scheduledAt = entry.lesson?.scheduledAt;
+      if (!scheduledAt) continue;
+      const dayKey = scheduledAt.toISOString().slice(0, 10);
+      const dayRows = groupedByDay.get(dayKey);
+      if (dayRows) {
+        dayRows.push(entry);
+      } else {
+        groupedByDay.set(dayKey, [entry]);
+      }
+    }
+
     let currentStreak = 0;
     let lastAttendanceDate: Date | null = null;
-    for (const entry of attendances) {
-      if (!entry.isPresent) {
-        break;
-      }
+    for (const dayRows of groupedByDay.values()) {
+      const dayIsFullyPresent = dayRows.every((entry) => entry.isPresent);
+      if (!dayIsFullyPresent) break;
+
       currentStreak += 1;
-      if (!lastAttendanceDate && entry.lesson?.scheduledAt) {
-        lastAttendanceDate = entry.lesson.scheduledAt;
+      if (!lastAttendanceDate) {
+        lastAttendanceDate = dayRows[0]?.lesson?.scheduledAt ?? null;
       }
     }
 

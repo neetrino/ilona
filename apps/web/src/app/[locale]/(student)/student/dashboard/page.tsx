@@ -6,6 +6,7 @@ import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMyDashboard, type StudentUpcomingLesson } from '@/features/students';
 import { formatCurrency } from '@/shared/lib/utils';
+import { NotesBlock } from '@/features/teacher-notes';
 
 type ProgressTone = 'emerald' | 'sky' | 'amber';
 
@@ -62,6 +63,7 @@ export default function StudentDashboardPage() {
   const totalLessons = stats?.attendance?.total || 0;
   const pendingPaymentAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
   const nextPayment = pendingPayments[0];
+  const streakCount = stats?.streak?.currentStreak ?? 0;
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -162,6 +164,34 @@ export default function StudentDashboardPage() {
       subtitle={t('welcomeStudent', { name: user?.firstName || tCommon('student') })}
     >
       <div className="space-y-6">
+        <div className="flex items-center justify-end">
+          <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2">
+            <svg
+              className="h-5 w-5 text-orange-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 3c.7 2.4 0 4.1-1.3 5.5-1.1 1.2-1.7 2.6-1.7 4.2 0 2.3 1.8 4.3 4 4.3s4-2 4-4.3c0-1.7-.7-3.2-2-4.5-.7-.7-1.2-1.7-1.4-2.9-.8.8-1.7 1.6-2.6 2.2.2-1 .4-2.6-.1-4.5-.9.8-2 .8-2.9 0Z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 16c.6.9 1.3 1.3 2 1.3s1.4-.4 2-1.3"
+              />
+            </svg>
+            <span className="text-sm font-semibold text-orange-700">
+              {t('streak')}: {streakCount}
+            </span>
+          </div>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard
@@ -196,6 +226,8 @@ export default function StudentDashboardPage() {
             }}
           />
         </div>
+
+        <NotesBlock />
 
         {/* Group Info */}
         {student?.group && (
