@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { cn, formatCurrency } from '@/shared/lib/utils';
@@ -22,6 +22,69 @@ interface TeacherDetailsModalProps {
   teacherId: string | null;
   open: boolean;
   onClose: () => void;
+}
+
+interface EmbeddedVideoData {
+  embedUrl: string;
+  platform: 'youtube' | 'vimeo';
+}
+
+const YOUTUBE_HOSTS = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be']);
+const VIMEO_HOSTS = new Set(['vimeo.com', 'www.vimeo.com', 'player.vimeo.com']);
+
+function getYouTubeVideoId(url: URL): string | null {
+  if (url.hostname === 'youtu.be') {
+    const shortId = url.pathname.split('/').filter(Boolean)[0];
+    return shortId || null;
+  }
+
+  const queryId = url.searchParams.get('v');
+  if (queryId) return queryId;
+
+  const pathParts = url.pathname.split('/').filter(Boolean);
+  if (pathParts[0] === 'shorts' && pathParts[1]) return pathParts[1];
+  if (pathParts[0] === 'embed' && pathParts[1]) return pathParts[1];
+
+  return null;
+}
+
+function getVimeoVideoId(url: URL): string | null {
+  const segments = url.pathname.split('/').filter(Boolean);
+  const candidate = segments[segments.length - 1];
+  if (!candidate) return null;
+
+  return /^\d+$/.test(candidate) ? candidate : null;
+}
+
+function getEmbeddedVideoData(videoUrl: string): EmbeddedVideoData | null {
+  try {
+    const parsed = new URL(videoUrl);
+    if (!['https:', 'http:'].includes(parsed.protocol)) {
+      return null;
+    }
+
+    if (YOUTUBE_HOSTS.has(parsed.hostname)) {
+      const videoId = getYouTubeVideoId(parsed);
+      if (!videoId) return null;
+      return {
+        embedUrl: `https://www.youtube.com/embed/${videoId}`,
+        platform: 'youtube',
+      };
+    }
+
+    if (VIMEO_HOSTS.has(parsed.hostname)) {
+      const videoId = getVimeoVideoId(parsed);
+      if (!videoId) return null;
+      return {
+        embedUrl: `https://player.vimeo.com/video/${videoId}`,
+        platform: 'vimeo',
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -102,6 +165,10 @@ export function TeacherDetailsModal({
     );
 
   const avatarUrl = teacher?.user?.avatarUrl;
+  const embeddedVideo = useMemo(() => {
+    if (!teacher?.videoUrl) return null;
+    return getEmbeddedVideoData(teacher.videoUrl);
+  }, [teacher?.videoUrl]);
 
   return (
     <>
@@ -260,16 +327,24 @@ export function TeacherDetailsModal({
                         <LinkIcon className="h-4 w-4 text-slate-400" aria-hidden="true" />
                         Video
                       </label>
-                      <p className="text-slate-800 mt-1">
-                        <a
-                          href={teacher.videoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary underline break-all"
-                        >
-                          {teacher.videoUrl}
-                        </a>
-                      </p>
+                      <div className="mt-2">
+                        {embeddedVideo ? (
+                          <div className="w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                            <iframe
+                              src={embeddedVideo.embedUrl}
+                              title={`${fullName} ${embeddedVideo.platform} video`}
+                              className="h-56 w-full sm:h-64"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                              loading="lazy"
+                              referrerPolicy="strict-origin-when-cross-origin"
+                              sandbox="allow-same-origin allow-scripts allow-presentation allow-popups"
+                            />
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-500 italic">Video cannot be displayed</p>
+                        )}
+                      </div>
                     </div>
                   )}
                   {teacher.bio && (
