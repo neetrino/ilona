@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { X } from 'lucide-react';
 import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
 import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
@@ -151,7 +152,18 @@ export function EditLeadModal({
       <div className="flex min-h-full items-center justify-center">
         <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)]">
           <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
-          <h2 className="text-lg font-semibold text-slate-900">Edit Lead</h2>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-lg font-semibold text-slate-900">Edit Lead</h2>
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 active:bg-slate-200"
+                aria-label="Close edit lead modal"
+                title="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         {isLoading ? (
           <div className="p-8 text-center text-slate-500">Loading…</div>
@@ -431,14 +443,7 @@ export function EditLeadModal({
               </section>
             </div>
             <div className="border-t border-slate-200 px-4 py-3 sm:px-6">
-              <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Cancel
-              </button>
+              <div className="flex justify-center gap-2">
               <button
                 type="submit"
                 disabled={saving}
