@@ -537,42 +537,57 @@ export function GroupsTab({
 
       {/* Board: branch tabs + groups directly underneath */}
       {viewMode === 'board' && (
-        <div className="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-3 pt-3">
+        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
+          <div className="border-b border-slate-200 bg-gradient-to-b from-slate-50/70 to-white px-3 pt-3">
             {isLoadingBranchTabs ? (
               <div className="py-4 text-sm text-slate-500">Loading branches...</div>
             ) : allCenters.length === 0 ? (
               <div className="py-4 text-sm text-slate-500">No branches found. Create a center first.</div>
             ) : (
-              <nav
-                className="flex flex-wrap gap-x-10 gap-y-2"
-                role="tablist"
-                aria-label="Branches"
-              >
-                {centersForBranchTabs.map((center) => {
-                  const count = center._count?.groups ?? 0;
-                  const isActive = activeBranchTabId === center.id;
-                  return (
-                    <button
-                      type="button"
-                      key={center.id}
-                      role="tab"
-                      aria-selected={isActive}
-                      id={`branch-tab-${center.id}`}
-                      onClick={() => handleBranchTabClick(center.id)}
-                      className={cn(
-                        'relative rounded-t-md px-1 pb-3 text-sm font-medium border-b-[3px] -mb-px transition-colors',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-                        isActive
-                          ? 'border-primary bg-primary/5 text-primary font-semibold'
-                          : 'border-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-700'
-                      )}
-                    >
-                      {center.name} ({count})
-                    </button>
-                  );
-                })}
-              </nav>
+              <div className="overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <nav
+                  className="flex min-w-max items-center gap-2.5"
+                  role="tablist"
+                  aria-label="Branches"
+                >
+                  {centersForBranchTabs.map((center) => {
+                    const count = center._count?.groups ?? 0;
+                    const isActive = activeBranchTabId === center.id;
+                    return (
+                      <button
+                        type="button"
+                        key={center.id}
+                        role="tab"
+                        aria-selected={isActive}
+                        id={`branch-tab-${center.id}`}
+                        onClick={() => handleBranchTabClick(center.id)}
+                        className={cn(
+                          'group inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm transition-all duration-200',
+                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
+                          'active:scale-[0.985]',
+                          isActive
+                            ? 'border-primary/30 bg-primary/[0.12] text-primary shadow-[0_4px_14px_rgba(59,130,246,0.18)]'
+                            : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-px hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 hover:shadow-sm'
+                        )}
+                      >
+                        <span className="max-w-[12rem] truncate font-semibold tracking-[0.01em] sm:max-w-[14rem]">
+                          {center.name}
+                        </span>
+                        <span
+                          className={cn(
+                            'inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
+                            isActive
+                              ? 'bg-white/80 text-primary shadow-sm'
+                              : 'bg-slate-100 text-slate-600 group-hover:bg-slate-200 group-hover:text-slate-700'
+                          )}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
             )}
             {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
               <p className="py-4 text-sm text-slate-500">No branches match your search.</p>
