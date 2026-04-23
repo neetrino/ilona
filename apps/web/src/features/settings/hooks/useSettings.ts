@@ -72,13 +72,7 @@ export function useUpdateProfile() {
           lastName: updatedProfile.lastName || user.lastName,
           phone: updatedProfile.phone || user.phone,
           avatarUrl: updatedProfile.avatarUrl ?? user.avatarUrl,
-          teacher:
-            updatedProfile.teacher || user.teacher
-              ? {
-                  ...(user.teacher ?? {}),
-                  ...(updatedProfile.teacher ?? {}),
-                }
-              : null,
+          teacher: updatedProfile.teacher ?? user.teacher ?? null,
         });
       }
     },
