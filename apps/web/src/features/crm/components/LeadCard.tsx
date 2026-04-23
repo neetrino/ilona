@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   Clock3,
   GraduationCap,
-  Mic,
   Phone,
   Pencil,
   User,
@@ -98,7 +97,6 @@ export function LeadCard({
       )}
       {/* Top section: name + edit */}
       <p className="flex items-center gap-1.5 font-medium text-slate-900 truncate pr-8">
-        {voiceAttachment && <Mic className="h-3.5 w-3.5 text-slate-400 shrink-0" />}
         <span className="truncate">{name}</span>
       </p>
 
