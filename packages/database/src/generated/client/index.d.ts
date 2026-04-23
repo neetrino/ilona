@@ -134,11 +134,6 @@ export type DailyPlanTopic = $Result.DefaultSelection<Prisma.$DailyPlanTopicPayl
  */
 export type DailyPlanResource = $Result.DefaultSelection<Prisma.$DailyPlanResourcePayload>
 /**
- * Model StudentStreak
- * 
- */
-export type StudentStreak = $Result.DefaultSelection<Prisma.$StudentStreakPayload>
-/**
  * Model RecordingItem
  * 
  */
@@ -761,16 +756,6 @@ export class PrismaClient<
   get dailyPlanResource(): Prisma.DailyPlanResourceDelegate<ExtArgs>;
 
   /**
-   * `prisma.studentStreak`: Exposes CRUD operations for the **StudentStreak** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more StudentStreaks
-    * const studentStreaks = await prisma.studentStreak.findMany()
-    * ```
-    */
-  get studentStreak(): Prisma.StudentStreakDelegate<ExtArgs>;
-
-  /**
    * `prisma.recordingItem`: Exposes CRUD operations for the **RecordingItem** model.
     * Example usage:
     * ```ts
@@ -1284,7 +1269,6 @@ export namespace Prisma {
     DailyPlan: 'DailyPlan',
     DailyPlanTopic: 'DailyPlanTopic',
     DailyPlanResource: 'DailyPlanResource',
-    StudentStreak: 'StudentStreak',
     RecordingItem: 'RecordingItem',
     CrmLead: 'CrmLead',
     CrmLeadActivity: 'CrmLeadActivity',
@@ -1305,7 +1289,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "teacherCenter" | "teacherNote" | "student" | "plannedAbsence" | "studentGroupHistory" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "dailyPlan" | "dailyPlanTopic" | "dailyPlanResource" | "studentStreak" | "recordingItem" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
+      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "teacherCenter" | "teacherNote" | "student" | "plannedAbsence" | "studentGroupHistory" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "dailyPlan" | "dailyPlanTopic" | "dailyPlanResource" | "recordingItem" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2986,76 +2970,6 @@ export namespace Prisma {
           count: {
             args: Prisma.DailyPlanResourceCountArgs<ExtArgs>
             result: $Utils.Optional<DailyPlanResourceCountAggregateOutputType> | number
-          }
-        }
-      }
-      StudentStreak: {
-        payload: Prisma.$StudentStreakPayload<ExtArgs>
-        fields: Prisma.StudentStreakFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.StudentStreakFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.StudentStreakFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload>
-          }
-          findFirst: {
-            args: Prisma.StudentStreakFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.StudentStreakFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload>
-          }
-          findMany: {
-            args: Prisma.StudentStreakFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload>[]
-          }
-          create: {
-            args: Prisma.StudentStreakCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload>
-          }
-          createMany: {
-            args: Prisma.StudentStreakCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.StudentStreakCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload>[]
-          }
-          delete: {
-            args: Prisma.StudentStreakDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload>
-          }
-          update: {
-            args: Prisma.StudentStreakUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload>
-          }
-          deleteMany: {
-            args: Prisma.StudentStreakDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.StudentStreakUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.StudentStreakUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentStreakPayload>
-          }
-          aggregate: {
-            args: Prisma.StudentStreakAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateStudentStreak>
-          }
-          groupBy: {
-            args: Prisma.StudentStreakGroupByArgs<ExtArgs>
-            result: $Utils.Optional<StudentStreakGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.StudentStreakCountArgs<ExtArgs>
-            result: $Utils.Optional<StudentStreakCountAggregateOutputType> | number
           }
         }
       }
@@ -12162,7 +12076,6 @@ export namespace Prisma {
     groupHistory?: boolean | Student$groupHistoryArgs<ExtArgs>
     plannedAbsences?: boolean | Student$plannedAbsencesArgs<ExtArgs>
     recordingItems?: boolean | Student$recordingItemsArgs<ExtArgs>
-    streak?: boolean | Student$streakArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["student"]>
 
@@ -12229,7 +12142,6 @@ export namespace Prisma {
     groupHistory?: boolean | Student$groupHistoryArgs<ExtArgs>
     plannedAbsences?: boolean | Student$plannedAbsencesArgs<ExtArgs>
     recordingItems?: boolean | Student$recordingItemsArgs<ExtArgs>
-    streak?: boolean | Student$streakArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type StudentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12252,7 +12164,6 @@ export namespace Prisma {
       groupHistory: Prisma.$StudentGroupHistoryPayload<ExtArgs>[]
       plannedAbsences: Prisma.$PlannedAbsencePayload<ExtArgs>[]
       recordingItems: Prisma.$RecordingItemPayload<ExtArgs>[]
-      streak: Prisma.$StudentStreakPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -12650,7 +12561,6 @@ export namespace Prisma {
     groupHistory<T extends Student$groupHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Student$groupHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentGroupHistoryPayload<ExtArgs>, T, "findMany"> | Null>
     plannedAbsences<T extends Student$plannedAbsencesArgs<ExtArgs> = {}>(args?: Subset<T, Student$plannedAbsencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "findMany"> | Null>
     recordingItems<T extends Student$recordingItemsArgs<ExtArgs> = {}>(args?: Subset<T, Student$recordingItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecordingItemPayload<ExtArgs>, T, "findMany"> | Null>
-    streak<T extends Student$streakArgs<ExtArgs> = {}>(args?: Subset<T, Student$streakArgs<ExtArgs>>): Prisma__StudentStreakClient<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -13181,21 +13091,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: RecordingItemScalarFieldEnum | RecordingItemScalarFieldEnum[]
-  }
-
-  /**
-   * Student.streak
-   */
-  export type Student$streakArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    where?: StudentStreakWhereInput
   }
 
   /**
@@ -29853,973 +29748,6 @@ export namespace Prisma {
 
 
   /**
-   * Model StudentStreak
-   */
-
-  export type AggregateStudentStreak = {
-    _count: StudentStreakCountAggregateOutputType | null
-    _avg: StudentStreakAvgAggregateOutputType | null
-    _sum: StudentStreakSumAggregateOutputType | null
-    _min: StudentStreakMinAggregateOutputType | null
-    _max: StudentStreakMaxAggregateOutputType | null
-  }
-
-  export type StudentStreakAvgAggregateOutputType = {
-    currentStreak: number | null
-  }
-
-  export type StudentStreakSumAggregateOutputType = {
-    currentStreak: number | null
-  }
-
-  export type StudentStreakMinAggregateOutputType = {
-    id: string | null
-    studentId: string | null
-    currentStreak: number | null
-    lastAttendanceDate: Date | null
-    updatedAt: Date | null
-  }
-
-  export type StudentStreakMaxAggregateOutputType = {
-    id: string | null
-    studentId: string | null
-    currentStreak: number | null
-    lastAttendanceDate: Date | null
-    updatedAt: Date | null
-  }
-
-  export type StudentStreakCountAggregateOutputType = {
-    id: number
-    studentId: number
-    currentStreak: number
-    lastAttendanceDate: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type StudentStreakAvgAggregateInputType = {
-    currentStreak?: true
-  }
-
-  export type StudentStreakSumAggregateInputType = {
-    currentStreak?: true
-  }
-
-  export type StudentStreakMinAggregateInputType = {
-    id?: true
-    studentId?: true
-    currentStreak?: true
-    lastAttendanceDate?: true
-    updatedAt?: true
-  }
-
-  export type StudentStreakMaxAggregateInputType = {
-    id?: true
-    studentId?: true
-    currentStreak?: true
-    lastAttendanceDate?: true
-    updatedAt?: true
-  }
-
-  export type StudentStreakCountAggregateInputType = {
-    id?: true
-    studentId?: true
-    currentStreak?: true
-    lastAttendanceDate?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type StudentStreakAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which StudentStreak to aggregate.
-     */
-    where?: StudentStreakWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of StudentStreaks to fetch.
-     */
-    orderBy?: StudentStreakOrderByWithRelationInput | StudentStreakOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: StudentStreakWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` StudentStreaks from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` StudentStreaks.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned StudentStreaks
-    **/
-    _count?: true | StudentStreakCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: StudentStreakAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: StudentStreakSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: StudentStreakMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: StudentStreakMaxAggregateInputType
-  }
-
-  export type GetStudentStreakAggregateType<T extends StudentStreakAggregateArgs> = {
-        [P in keyof T & keyof AggregateStudentStreak]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateStudentStreak[P]>
-      : GetScalarType<T[P], AggregateStudentStreak[P]>
-  }
-
-
-
-
-  export type StudentStreakGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: StudentStreakWhereInput
-    orderBy?: StudentStreakOrderByWithAggregationInput | StudentStreakOrderByWithAggregationInput[]
-    by: StudentStreakScalarFieldEnum[] | StudentStreakScalarFieldEnum
-    having?: StudentStreakScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: StudentStreakCountAggregateInputType | true
-    _avg?: StudentStreakAvgAggregateInputType
-    _sum?: StudentStreakSumAggregateInputType
-    _min?: StudentStreakMinAggregateInputType
-    _max?: StudentStreakMaxAggregateInputType
-  }
-
-  export type StudentStreakGroupByOutputType = {
-    id: string
-    studentId: string
-    currentStreak: number
-    lastAttendanceDate: Date | null
-    updatedAt: Date
-    _count: StudentStreakCountAggregateOutputType | null
-    _avg: StudentStreakAvgAggregateOutputType | null
-    _sum: StudentStreakSumAggregateOutputType | null
-    _min: StudentStreakMinAggregateOutputType | null
-    _max: StudentStreakMaxAggregateOutputType | null
-  }
-
-  type GetStudentStreakGroupByPayload<T extends StudentStreakGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<StudentStreakGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof StudentStreakGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], StudentStreakGroupByOutputType[P]>
-            : GetScalarType<T[P], StudentStreakGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type StudentStreakSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    studentId?: boolean
-    currentStreak?: boolean
-    lastAttendanceDate?: boolean
-    updatedAt?: boolean
-    student?: boolean | StudentDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["studentStreak"]>
-
-  export type StudentStreakSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    studentId?: boolean
-    currentStreak?: boolean
-    lastAttendanceDate?: boolean
-    updatedAt?: boolean
-    student?: boolean | StudentDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["studentStreak"]>
-
-  export type StudentStreakSelectScalar = {
-    id?: boolean
-    studentId?: boolean
-    currentStreak?: boolean
-    lastAttendanceDate?: boolean
-    updatedAt?: boolean
-  }
-
-  export type StudentStreakInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    student?: boolean | StudentDefaultArgs<ExtArgs>
-  }
-  export type StudentStreakIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    student?: boolean | StudentDefaultArgs<ExtArgs>
-  }
-
-  export type $StudentStreakPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "StudentStreak"
-    objects: {
-      student: Prisma.$StudentPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      studentId: string
-      currentStreak: number
-      lastAttendanceDate: Date | null
-      updatedAt: Date
-    }, ExtArgs["result"]["studentStreak"]>
-    composites: {}
-  }
-
-  type StudentStreakGetPayload<S extends boolean | null | undefined | StudentStreakDefaultArgs> = $Result.GetResult<Prisma.$StudentStreakPayload, S>
-
-  type StudentStreakCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<StudentStreakFindManyArgs, 'select' | 'include' | 'distinct'> & {
-      select?: StudentStreakCountAggregateInputType | true
-    }
-
-  export interface StudentStreakDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['StudentStreak'], meta: { name: 'StudentStreak' } }
-    /**
-     * Find zero or one StudentStreak that matches the filter.
-     * @param {StudentStreakFindUniqueArgs} args - Arguments to find a StudentStreak
-     * @example
-     * // Get one StudentStreak
-     * const studentStreak = await prisma.studentStreak.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends StudentStreakFindUniqueArgs>(args: SelectSubset<T, StudentStreakFindUniqueArgs<ExtArgs>>): Prisma__StudentStreakClient<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
-
-    /**
-     * Find one StudentStreak that matches the filter or throw an error with `error.code='P2025'` 
-     * if no matches were found.
-     * @param {StudentStreakFindUniqueOrThrowArgs} args - Arguments to find a StudentStreak
-     * @example
-     * // Get one StudentStreak
-     * const studentStreak = await prisma.studentStreak.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends StudentStreakFindUniqueOrThrowArgs>(args: SelectSubset<T, StudentStreakFindUniqueOrThrowArgs<ExtArgs>>): Prisma__StudentStreakClient<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
-
-    /**
-     * Find the first StudentStreak that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {StudentStreakFindFirstArgs} args - Arguments to find a StudentStreak
-     * @example
-     * // Get one StudentStreak
-     * const studentStreak = await prisma.studentStreak.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends StudentStreakFindFirstArgs>(args?: SelectSubset<T, StudentStreakFindFirstArgs<ExtArgs>>): Prisma__StudentStreakClient<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
-
-    /**
-     * Find the first StudentStreak that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {StudentStreakFindFirstOrThrowArgs} args - Arguments to find a StudentStreak
-     * @example
-     * // Get one StudentStreak
-     * const studentStreak = await prisma.studentStreak.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends StudentStreakFindFirstOrThrowArgs>(args?: SelectSubset<T, StudentStreakFindFirstOrThrowArgs<ExtArgs>>): Prisma__StudentStreakClient<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
-
-    /**
-     * Find zero or more StudentStreaks that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {StudentStreakFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all StudentStreaks
-     * const studentStreaks = await prisma.studentStreak.findMany()
-     * 
-     * // Get first 10 StudentStreaks
-     * const studentStreaks = await prisma.studentStreak.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const studentStreakWithIdOnly = await prisma.studentStreak.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends StudentStreakFindManyArgs>(args?: SelectSubset<T, StudentStreakFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "findMany">>
-
-    /**
-     * Create a StudentStreak.
-     * @param {StudentStreakCreateArgs} args - Arguments to create a StudentStreak.
-     * @example
-     * // Create one StudentStreak
-     * const StudentStreak = await prisma.studentStreak.create({
-     *   data: {
-     *     // ... data to create a StudentStreak
-     *   }
-     * })
-     * 
-     */
-    create<T extends StudentStreakCreateArgs>(args: SelectSubset<T, StudentStreakCreateArgs<ExtArgs>>): Prisma__StudentStreakClient<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "create">, never, ExtArgs>
-
-    /**
-     * Create many StudentStreaks.
-     * @param {StudentStreakCreateManyArgs} args - Arguments to create many StudentStreaks.
-     * @example
-     * // Create many StudentStreaks
-     * const studentStreak = await prisma.studentStreak.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends StudentStreakCreateManyArgs>(args?: SelectSubset<T, StudentStreakCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many StudentStreaks and returns the data saved in the database.
-     * @param {StudentStreakCreateManyAndReturnArgs} args - Arguments to create many StudentStreaks.
-     * @example
-     * // Create many StudentStreaks
-     * const studentStreak = await prisma.studentStreak.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many StudentStreaks and only return the `id`
-     * const studentStreakWithIdOnly = await prisma.studentStreak.createManyAndReturn({ 
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends StudentStreakCreateManyAndReturnArgs>(args?: SelectSubset<T, StudentStreakCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "createManyAndReturn">>
-
-    /**
-     * Delete a StudentStreak.
-     * @param {StudentStreakDeleteArgs} args - Arguments to delete one StudentStreak.
-     * @example
-     * // Delete one StudentStreak
-     * const StudentStreak = await prisma.studentStreak.delete({
-     *   where: {
-     *     // ... filter to delete one StudentStreak
-     *   }
-     * })
-     * 
-     */
-    delete<T extends StudentStreakDeleteArgs>(args: SelectSubset<T, StudentStreakDeleteArgs<ExtArgs>>): Prisma__StudentStreakClient<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "delete">, never, ExtArgs>
-
-    /**
-     * Update one StudentStreak.
-     * @param {StudentStreakUpdateArgs} args - Arguments to update one StudentStreak.
-     * @example
-     * // Update one StudentStreak
-     * const studentStreak = await prisma.studentStreak.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends StudentStreakUpdateArgs>(args: SelectSubset<T, StudentStreakUpdateArgs<ExtArgs>>): Prisma__StudentStreakClient<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "update">, never, ExtArgs>
-
-    /**
-     * Delete zero or more StudentStreaks.
-     * @param {StudentStreakDeleteManyArgs} args - Arguments to filter StudentStreaks to delete.
-     * @example
-     * // Delete a few StudentStreaks
-     * const { count } = await prisma.studentStreak.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends StudentStreakDeleteManyArgs>(args?: SelectSubset<T, StudentStreakDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more StudentStreaks.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {StudentStreakUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many StudentStreaks
-     * const studentStreak = await prisma.studentStreak.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends StudentStreakUpdateManyArgs>(args: SelectSubset<T, StudentStreakUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one StudentStreak.
-     * @param {StudentStreakUpsertArgs} args - Arguments to update or create a StudentStreak.
-     * @example
-     * // Update or create a StudentStreak
-     * const studentStreak = await prisma.studentStreak.upsert({
-     *   create: {
-     *     // ... data to create a StudentStreak
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the StudentStreak we want to update
-     *   }
-     * })
-     */
-    upsert<T extends StudentStreakUpsertArgs>(args: SelectSubset<T, StudentStreakUpsertArgs<ExtArgs>>): Prisma__StudentStreakClient<$Result.GetResult<Prisma.$StudentStreakPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
-
-
-    /**
-     * Count the number of StudentStreaks.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {StudentStreakCountArgs} args - Arguments to filter StudentStreaks to count.
-     * @example
-     * // Count the number of StudentStreaks
-     * const count = await prisma.studentStreak.count({
-     *   where: {
-     *     // ... the filter for the StudentStreaks we want to count
-     *   }
-     * })
-    **/
-    count<T extends StudentStreakCountArgs>(
-      args?: Subset<T, StudentStreakCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], StudentStreakCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a StudentStreak.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {StudentStreakAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends StudentStreakAggregateArgs>(args: Subset<T, StudentStreakAggregateArgs>): Prisma.PrismaPromise<GetStudentStreakAggregateType<T>>
-
-    /**
-     * Group by StudentStreak.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {StudentStreakGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends StudentStreakGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: StudentStreakGroupByArgs['orderBy'] }
-        : { orderBy?: StudentStreakGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, StudentStreakGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetStudentStreakGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the StudentStreak model
-   */
-  readonly fields: StudentStreakFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for StudentStreak.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__StudentStreakClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    student<T extends StudentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, StudentDefaultArgs<ExtArgs>>): Prisma__StudentClient<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the StudentStreak model
-   */ 
-  interface StudentStreakFieldRefs {
-    readonly id: FieldRef<"StudentStreak", 'String'>
-    readonly studentId: FieldRef<"StudentStreak", 'String'>
-    readonly currentStreak: FieldRef<"StudentStreak", 'Int'>
-    readonly lastAttendanceDate: FieldRef<"StudentStreak", 'DateTime'>
-    readonly updatedAt: FieldRef<"StudentStreak", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * StudentStreak findUnique
-   */
-  export type StudentStreakFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    /**
-     * Filter, which StudentStreak to fetch.
-     */
-    where: StudentStreakWhereUniqueInput
-  }
-
-  /**
-   * StudentStreak findUniqueOrThrow
-   */
-  export type StudentStreakFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    /**
-     * Filter, which StudentStreak to fetch.
-     */
-    where: StudentStreakWhereUniqueInput
-  }
-
-  /**
-   * StudentStreak findFirst
-   */
-  export type StudentStreakFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    /**
-     * Filter, which StudentStreak to fetch.
-     */
-    where?: StudentStreakWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of StudentStreaks to fetch.
-     */
-    orderBy?: StudentStreakOrderByWithRelationInput | StudentStreakOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for StudentStreaks.
-     */
-    cursor?: StudentStreakWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` StudentStreaks from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` StudentStreaks.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of StudentStreaks.
-     */
-    distinct?: StudentStreakScalarFieldEnum | StudentStreakScalarFieldEnum[]
-  }
-
-  /**
-   * StudentStreak findFirstOrThrow
-   */
-  export type StudentStreakFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    /**
-     * Filter, which StudentStreak to fetch.
-     */
-    where?: StudentStreakWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of StudentStreaks to fetch.
-     */
-    orderBy?: StudentStreakOrderByWithRelationInput | StudentStreakOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for StudentStreaks.
-     */
-    cursor?: StudentStreakWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` StudentStreaks from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` StudentStreaks.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of StudentStreaks.
-     */
-    distinct?: StudentStreakScalarFieldEnum | StudentStreakScalarFieldEnum[]
-  }
-
-  /**
-   * StudentStreak findMany
-   */
-  export type StudentStreakFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    /**
-     * Filter, which StudentStreaks to fetch.
-     */
-    where?: StudentStreakWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of StudentStreaks to fetch.
-     */
-    orderBy?: StudentStreakOrderByWithRelationInput | StudentStreakOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing StudentStreaks.
-     */
-    cursor?: StudentStreakWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` StudentStreaks from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` StudentStreaks.
-     */
-    skip?: number
-    distinct?: StudentStreakScalarFieldEnum | StudentStreakScalarFieldEnum[]
-  }
-
-  /**
-   * StudentStreak create
-   */
-  export type StudentStreakCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    /**
-     * The data needed to create a StudentStreak.
-     */
-    data: XOR<StudentStreakCreateInput, StudentStreakUncheckedCreateInput>
-  }
-
-  /**
-   * StudentStreak createMany
-   */
-  export type StudentStreakCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many StudentStreaks.
-     */
-    data: StudentStreakCreateManyInput | StudentStreakCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * StudentStreak createManyAndReturn
-   */
-  export type StudentStreakCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * The data used to create many StudentStreaks.
-     */
-    data: StudentStreakCreateManyInput | StudentStreakCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * StudentStreak update
-   */
-  export type StudentStreakUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    /**
-     * The data needed to update a StudentStreak.
-     */
-    data: XOR<StudentStreakUpdateInput, StudentStreakUncheckedUpdateInput>
-    /**
-     * Choose, which StudentStreak to update.
-     */
-    where: StudentStreakWhereUniqueInput
-  }
-
-  /**
-   * StudentStreak updateMany
-   */
-  export type StudentStreakUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update StudentStreaks.
-     */
-    data: XOR<StudentStreakUpdateManyMutationInput, StudentStreakUncheckedUpdateManyInput>
-    /**
-     * Filter which StudentStreaks to update
-     */
-    where?: StudentStreakWhereInput
-  }
-
-  /**
-   * StudentStreak upsert
-   */
-  export type StudentStreakUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    /**
-     * The filter to search for the StudentStreak to update in case it exists.
-     */
-    where: StudentStreakWhereUniqueInput
-    /**
-     * In case the StudentStreak found by the `where` argument doesn't exist, create a new StudentStreak with this data.
-     */
-    create: XOR<StudentStreakCreateInput, StudentStreakUncheckedCreateInput>
-    /**
-     * In case the StudentStreak was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<StudentStreakUpdateInput, StudentStreakUncheckedUpdateInput>
-  }
-
-  /**
-   * StudentStreak delete
-   */
-  export type StudentStreakDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-    /**
-     * Filter which StudentStreak to delete.
-     */
-    where: StudentStreakWhereUniqueInput
-  }
-
-  /**
-   * StudentStreak deleteMany
-   */
-  export type StudentStreakDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which StudentStreaks to delete
-     */
-    where?: StudentStreakWhereInput
-  }
-
-  /**
-   * StudentStreak without action
-   */
-  export type StudentStreakDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentStreak
-     */
-    select?: StudentStreakSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: StudentStreakInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model RecordingItem
    */
 
@@ -36506,17 +35434,6 @@ export namespace Prisma {
   export type DailyPlanResourceScalarFieldEnum = (typeof DailyPlanResourceScalarFieldEnum)[keyof typeof DailyPlanResourceScalarFieldEnum]
 
 
-  export const StudentStreakScalarFieldEnum: {
-    id: 'id',
-    studentId: 'studentId',
-    currentStreak: 'currentStreak',
-    lastAttendanceDate: 'lastAttendanceDate',
-    updatedAt: 'updatedAt'
-  };
-
-  export type StudentStreakScalarFieldEnum = (typeof StudentStreakScalarFieldEnum)[keyof typeof StudentStreakScalarFieldEnum]
-
-
   export const RecordingItemScalarFieldEnum: {
     id: 'id',
     groupId: 'groupId',
@@ -37611,7 +36528,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryListRelationFilter
     plannedAbsences?: PlannedAbsenceListRelationFilter
     recordingItems?: RecordingItemListRelationFilter
-    streak?: XOR<StudentStreakNullableRelationFilter, StudentStreakWhereInput> | null
   }
 
   export type StudentOrderByWithRelationInput = {
@@ -37646,7 +36562,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryOrderByRelationAggregateInput
     plannedAbsences?: PlannedAbsenceOrderByRelationAggregateInput
     recordingItems?: RecordingItemOrderByRelationAggregateInput
-    streak?: StudentStreakOrderByWithRelationInput
   }
 
   export type StudentWhereUniqueInput = Prisma.AtLeast<{
@@ -37684,7 +36599,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryListRelationFilter
     plannedAbsences?: PlannedAbsenceListRelationFilter
     recordingItems?: RecordingItemListRelationFilter
-    streak?: XOR<StudentStreakNullableRelationFilter, StudentStreakWhereInput> | null
   }, "id" | "userId" | "leadId">
 
   export type StudentOrderByWithAggregationInput = {
@@ -39156,63 +38070,6 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"DailyPlanResource"> | Date | string
   }
 
-  export type StudentStreakWhereInput = {
-    AND?: StudentStreakWhereInput | StudentStreakWhereInput[]
-    OR?: StudentStreakWhereInput[]
-    NOT?: StudentStreakWhereInput | StudentStreakWhereInput[]
-    id?: StringFilter<"StudentStreak"> | string
-    studentId?: StringFilter<"StudentStreak"> | string
-    currentStreak?: IntFilter<"StudentStreak"> | number
-    lastAttendanceDate?: DateTimeNullableFilter<"StudentStreak"> | Date | string | null
-    updatedAt?: DateTimeFilter<"StudentStreak"> | Date | string
-    student?: XOR<StudentRelationFilter, StudentWhereInput>
-  }
-
-  export type StudentStreakOrderByWithRelationInput = {
-    id?: SortOrder
-    studentId?: SortOrder
-    currentStreak?: SortOrder
-    lastAttendanceDate?: SortOrderInput | SortOrder
-    updatedAt?: SortOrder
-    student?: StudentOrderByWithRelationInput
-  }
-
-  export type StudentStreakWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    studentId?: string
-    AND?: StudentStreakWhereInput | StudentStreakWhereInput[]
-    OR?: StudentStreakWhereInput[]
-    NOT?: StudentStreakWhereInput | StudentStreakWhereInput[]
-    currentStreak?: IntFilter<"StudentStreak"> | number
-    lastAttendanceDate?: DateTimeNullableFilter<"StudentStreak"> | Date | string | null
-    updatedAt?: DateTimeFilter<"StudentStreak"> | Date | string
-    student?: XOR<StudentRelationFilter, StudentWhereInput>
-  }, "id" | "studentId">
-
-  export type StudentStreakOrderByWithAggregationInput = {
-    id?: SortOrder
-    studentId?: SortOrder
-    currentStreak?: SortOrder
-    lastAttendanceDate?: SortOrderInput | SortOrder
-    updatedAt?: SortOrder
-    _count?: StudentStreakCountOrderByAggregateInput
-    _avg?: StudentStreakAvgOrderByAggregateInput
-    _max?: StudentStreakMaxOrderByAggregateInput
-    _min?: StudentStreakMinOrderByAggregateInput
-    _sum?: StudentStreakSumOrderByAggregateInput
-  }
-
-  export type StudentStreakScalarWhereWithAggregatesInput = {
-    AND?: StudentStreakScalarWhereWithAggregatesInput | StudentStreakScalarWhereWithAggregatesInput[]
-    OR?: StudentStreakScalarWhereWithAggregatesInput[]
-    NOT?: StudentStreakScalarWhereWithAggregatesInput | StudentStreakScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"StudentStreak"> | string
-    studentId?: StringWithAggregatesFilter<"StudentStreak"> | string
-    currentStreak?: IntWithAggregatesFilter<"StudentStreak"> | number
-    lastAttendanceDate?: DateTimeNullableWithAggregatesFilter<"StudentStreak"> | Date | string | null
-    updatedAt?: DateTimeWithAggregatesFilter<"StudentStreak"> | Date | string
-  }
-
   export type RecordingItemWhereInput = {
     AND?: RecordingItemWhereInput | RecordingItemWhereInput[]
     OR?: RecordingItemWhereInput[]
@@ -40393,7 +39250,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateInput = {
@@ -40424,7 +39280,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUpdateInput = {
@@ -40455,7 +39310,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateInput = {
@@ -40486,7 +39340,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentCreateManyInput = {
@@ -42104,61 +40957,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type StudentStreakCreateInput = {
-    id?: string
-    currentStreak?: number
-    lastAttendanceDate?: Date | string | null
-    updatedAt?: Date | string
-    student: StudentCreateNestedOneWithoutStreakInput
-  }
-
-  export type StudentStreakUncheckedCreateInput = {
-    id?: string
-    studentId: string
-    currentStreak?: number
-    lastAttendanceDate?: Date | string | null
-    updatedAt?: Date | string
-  }
-
-  export type StudentStreakUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    currentStreak?: IntFieldUpdateOperationsInput | number
-    lastAttendanceDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    student?: StudentUpdateOneRequiredWithoutStreakNestedInput
-  }
-
-  export type StudentStreakUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    studentId?: StringFieldUpdateOperationsInput | string
-    currentStreak?: IntFieldUpdateOperationsInput | number
-    lastAttendanceDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type StudentStreakCreateManyInput = {
-    id?: string
-    studentId: string
-    currentStreak?: number
-    lastAttendanceDate?: Date | string | null
-    updatedAt?: Date | string
-  }
-
-  export type StudentStreakUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    currentStreak?: IntFieldUpdateOperationsInput | number
-    lastAttendanceDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type StudentStreakUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    studentId?: StringFieldUpdateOperationsInput | string
-    currentStreak?: IntFieldUpdateOperationsInput | number
-    lastAttendanceDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type RecordingItemCreateInput = {
     id?: string
     fileUrl: string
@@ -43488,11 +42286,6 @@ export namespace Prisma {
     none?: PlannedAbsenceWhereInput
   }
 
-  export type StudentStreakNullableRelationFilter = {
-    is?: StudentStreakWhereInput | null
-    isNot?: StudentStreakWhereInput | null
-  }
-
   export type PaymentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -44619,38 +43412,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumDailyPlanResourceKindFilter<$PrismaModel>
     _max?: NestedEnumDailyPlanResourceKindFilter<$PrismaModel>
-  }
-
-  export type StudentStreakCountOrderByAggregateInput = {
-    id?: SortOrder
-    studentId?: SortOrder
-    currentStreak?: SortOrder
-    lastAttendanceDate?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type StudentStreakAvgOrderByAggregateInput = {
-    currentStreak?: SortOrder
-  }
-
-  export type StudentStreakMaxOrderByAggregateInput = {
-    id?: SortOrder
-    studentId?: SortOrder
-    currentStreak?: SortOrder
-    lastAttendanceDate?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type StudentStreakMinOrderByAggregateInput = {
-    id?: SortOrder
-    studentId?: SortOrder
-    currentStreak?: SortOrder
-    lastAttendanceDate?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type StudentStreakSumOrderByAggregateInput = {
-    currentStreak?: SortOrder
   }
 
   export type RecordingItemCountOrderByAggregateInput = {
@@ -46490,12 +45251,6 @@ export namespace Prisma {
     connect?: RecordingItemWhereUniqueInput | RecordingItemWhereUniqueInput[]
   }
 
-  export type StudentStreakCreateNestedOneWithoutStudentInput = {
-    create?: XOR<StudentStreakCreateWithoutStudentInput, StudentStreakUncheckedCreateWithoutStudentInput>
-    connectOrCreate?: StudentStreakCreateOrConnectWithoutStudentInput
-    connect?: StudentStreakWhereUniqueInput
-  }
-
   export type AttendanceUncheckedCreateNestedManyWithoutStudentInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -46536,12 +45291,6 @@ export namespace Prisma {
     connectOrCreate?: RecordingItemCreateOrConnectWithoutStudentInput | RecordingItemCreateOrConnectWithoutStudentInput[]
     createMany?: RecordingItemCreateManyStudentInputEnvelope
     connect?: RecordingItemWhereUniqueInput | RecordingItemWhereUniqueInput[]
-  }
-
-  export type StudentStreakUncheckedCreateNestedOneWithoutStudentInput = {
-    create?: XOR<StudentStreakCreateWithoutStudentInput, StudentStreakUncheckedCreateWithoutStudentInput>
-    connectOrCreate?: StudentStreakCreateOrConnectWithoutStudentInput
-    connect?: StudentStreakWhereUniqueInput
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -46682,16 +45431,6 @@ export namespace Prisma {
     deleteMany?: RecordingItemScalarWhereInput | RecordingItemScalarWhereInput[]
   }
 
-  export type StudentStreakUpdateOneWithoutStudentNestedInput = {
-    create?: XOR<StudentStreakCreateWithoutStudentInput, StudentStreakUncheckedCreateWithoutStudentInput>
-    connectOrCreate?: StudentStreakCreateOrConnectWithoutStudentInput
-    upsert?: StudentStreakUpsertWithoutStudentInput
-    disconnect?: StudentStreakWhereInput | boolean
-    delete?: StudentStreakWhereInput | boolean
-    connect?: StudentStreakWhereUniqueInput
-    update?: XOR<XOR<StudentStreakUpdateToOneWithWhereWithoutStudentInput, StudentStreakUpdateWithoutStudentInput>, StudentStreakUncheckedUpdateWithoutStudentInput>
-  }
-
   export type AttendanceUncheckedUpdateManyWithoutStudentNestedInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -46774,16 +45513,6 @@ export namespace Prisma {
     update?: RecordingItemUpdateWithWhereUniqueWithoutStudentInput | RecordingItemUpdateWithWhereUniqueWithoutStudentInput[]
     updateMany?: RecordingItemUpdateManyWithWhereWithoutStudentInput | RecordingItemUpdateManyWithWhereWithoutStudentInput[]
     deleteMany?: RecordingItemScalarWhereInput | RecordingItemScalarWhereInput[]
-  }
-
-  export type StudentStreakUncheckedUpdateOneWithoutStudentNestedInput = {
-    create?: XOR<StudentStreakCreateWithoutStudentInput, StudentStreakUncheckedCreateWithoutStudentInput>
-    connectOrCreate?: StudentStreakCreateOrConnectWithoutStudentInput
-    upsert?: StudentStreakUpsertWithoutStudentInput
-    disconnect?: StudentStreakWhereInput | boolean
-    delete?: StudentStreakWhereInput | boolean
-    connect?: StudentStreakWhereUniqueInput
-    update?: XOR<XOR<StudentStreakUpdateToOneWithWhereWithoutStudentInput, StudentStreakUpdateWithoutStudentInput>, StudentStreakUncheckedUpdateWithoutStudentInput>
   }
 
   export type StudentCreateNestedOneWithoutPlannedAbsencesInput = {
@@ -47524,20 +46253,6 @@ export namespace Prisma {
     upsert?: DailyPlanTopicUpsertWithoutResourcesInput
     connect?: DailyPlanTopicWhereUniqueInput
     update?: XOR<XOR<DailyPlanTopicUpdateToOneWithWhereWithoutResourcesInput, DailyPlanTopicUpdateWithoutResourcesInput>, DailyPlanTopicUncheckedUpdateWithoutResourcesInput>
-  }
-
-  export type StudentCreateNestedOneWithoutStreakInput = {
-    create?: XOR<StudentCreateWithoutStreakInput, StudentUncheckedCreateWithoutStreakInput>
-    connectOrCreate?: StudentCreateOrConnectWithoutStreakInput
-    connect?: StudentWhereUniqueInput
-  }
-
-  export type StudentUpdateOneRequiredWithoutStreakNestedInput = {
-    create?: XOR<StudentCreateWithoutStreakInput, StudentUncheckedCreateWithoutStreakInput>
-    connectOrCreate?: StudentCreateOrConnectWithoutStreakInput
-    upsert?: StudentUpsertWithoutStreakInput
-    connect?: StudentWhereUniqueInput
-    update?: XOR<XOR<StudentUpdateToOneWithWhereWithoutStreakInput, StudentUpdateWithoutStreakInput>, StudentUncheckedUpdateWithoutStreakInput>
   }
 
   export type GroupCreateNestedOneWithoutRecordingItemsInput = {
@@ -48695,7 +47410,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutUserInput = {
@@ -48725,7 +47439,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutUserInput = {
@@ -49044,7 +47757,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutUserInput = {
@@ -49074,7 +47786,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type TeacherUpsertWithoutUserInput = {
@@ -49936,7 +48647,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutGroupInput = {
@@ -49966,7 +48676,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutGroupInput = {
@@ -50843,7 +49552,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutTeacherInput = {
@@ -50873,7 +49581,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutTeacherInput = {
@@ -52055,25 +50762,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type StudentStreakCreateWithoutStudentInput = {
-    id?: string
-    currentStreak?: number
-    lastAttendanceDate?: Date | string | null
-    updatedAt?: Date | string
-  }
-
-  export type StudentStreakUncheckedCreateWithoutStudentInput = {
-    id?: string
-    currentStreak?: number
-    lastAttendanceDate?: Date | string | null
-    updatedAt?: Date | string
-  }
-
-  export type StudentStreakCreateOrConnectWithoutStudentInput = {
-    where: StudentStreakWhereUniqueInput
-    create: XOR<StudentStreakCreateWithoutStudentInput, StudentStreakUncheckedCreateWithoutStudentInput>
-  }
-
   export type AttendanceUpsertWithWhereUniqueWithoutStudentInput = {
     where: AttendanceWhereUniqueInput
     update: XOR<AttendanceUpdateWithoutStudentInput, AttendanceUncheckedUpdateWithoutStudentInput>
@@ -52446,31 +51134,6 @@ export namespace Prisma {
     data: XOR<RecordingItemUpdateManyMutationInput, RecordingItemUncheckedUpdateManyWithoutStudentInput>
   }
 
-  export type StudentStreakUpsertWithoutStudentInput = {
-    update: XOR<StudentStreakUpdateWithoutStudentInput, StudentStreakUncheckedUpdateWithoutStudentInput>
-    create: XOR<StudentStreakCreateWithoutStudentInput, StudentStreakUncheckedCreateWithoutStudentInput>
-    where?: StudentStreakWhereInput
-  }
-
-  export type StudentStreakUpdateToOneWithWhereWithoutStudentInput = {
-    where?: StudentStreakWhereInput
-    data: XOR<StudentStreakUpdateWithoutStudentInput, StudentStreakUncheckedUpdateWithoutStudentInput>
-  }
-
-  export type StudentStreakUpdateWithoutStudentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    currentStreak?: IntFieldUpdateOperationsInput | number
-    lastAttendanceDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type StudentStreakUncheckedUpdateWithoutStudentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    currentStreak?: IntFieldUpdateOperationsInput | number
-    lastAttendanceDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type StudentCreateWithoutPlannedAbsencesInput = {
     id?: string
     age?: number | null
@@ -52498,7 +51161,6 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutPlannedAbsencesInput = {
@@ -52528,7 +51190,6 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutPlannedAbsencesInput = {
@@ -52574,7 +51235,6 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutPlannedAbsencesInput = {
@@ -52604,7 +51264,6 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentCreateWithoutGroupHistoryInput = {
@@ -52634,7 +51293,6 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutGroupHistoryInput = {
@@ -52664,7 +51322,6 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutGroupHistoryInput = {
@@ -52757,7 +51414,6 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutGroupHistoryInput = {
@@ -52787,7 +51443,6 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type GroupUpsertWithoutStudentHistoryEntriesInput = {
@@ -53414,7 +52069,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutAttendancesInput = {
@@ -53444,7 +52098,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutAttendancesInput = {
@@ -53612,7 +52265,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutAttendancesInput = {
@@ -53642,7 +52294,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type LessonCreateWithoutFeedbacksInput = {
@@ -53731,7 +52382,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutFeedbacksInput = {
@@ -53761,7 +52411,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutFeedbacksInput = {
@@ -53927,7 +52576,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutFeedbacksInput = {
@@ -53957,7 +52605,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type TeacherUpsertWithoutFeedbacksInput = {
@@ -54048,7 +52695,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutPaymentsInput = {
@@ -54078,7 +52724,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutPaymentsInput = {
@@ -54124,7 +52769,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutPaymentsInput = {
@@ -54154,7 +52798,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type TeacherCreateWithoutSalaryRecordsInput = {
@@ -55601,142 +54244,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type StudentCreateWithoutStreakInput = {
-    id?: string
-    age?: number | null
-    dateOfBirth?: Date | string | null
-    firstLessonDate?: Date | string | null
-    status?: $Enums.StudentStatus
-    riskLabel?: $Enums.RiskLabel
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    parentPassportInfo?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
-    notes?: string | null
-    receiveReports?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    attendances?: AttendanceCreateNestedManyWithoutStudentInput
-    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
-    payments?: PaymentCreateNestedManyWithoutStudentInput
-    group?: GroupCreateNestedOneWithoutStudentsInput
-    lead?: CrmLeadCreateNestedOneWithoutStudentInput
-    teacher?: TeacherCreateNestedOneWithoutStudentsInput
-    user: UserCreateNestedOneWithoutStudentInput
-    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
-    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
-    recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-  }
-
-  export type StudentUncheckedCreateWithoutStreakInput = {
-    id?: string
-    userId: string
-    groupId?: string | null
-    teacherId?: string | null
-    age?: number | null
-    dateOfBirth?: Date | string | null
-    firstLessonDate?: Date | string | null
-    status?: $Enums.StudentStatus
-    riskLabel?: $Enums.RiskLabel
-    parentName?: string | null
-    parentPhone?: string | null
-    parentEmail?: string | null
-    parentPassportInfo?: string | null
-    monthlyFee: Decimal | DecimalJsLike | number | string
-    enrolledAt?: Date | string
-    registerDate?: Date | string | null
-    notes?: string | null
-    receiveReports?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    leadId?: string | null
-    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
-    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
-    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
-    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
-    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
-    recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-  }
-
-  export type StudentCreateOrConnectWithoutStreakInput = {
-    where: StudentWhereUniqueInput
-    create: XOR<StudentCreateWithoutStreakInput, StudentUncheckedCreateWithoutStreakInput>
-  }
-
-  export type StudentUpsertWithoutStreakInput = {
-    update: XOR<StudentUpdateWithoutStreakInput, StudentUncheckedUpdateWithoutStreakInput>
-    create: XOR<StudentCreateWithoutStreakInput, StudentUncheckedCreateWithoutStreakInput>
-    where?: StudentWhereInput
-  }
-
-  export type StudentUpdateToOneWithWhereWithoutStreakInput = {
-    where?: StudentWhereInput
-    data: XOR<StudentUpdateWithoutStreakInput, StudentUncheckedUpdateWithoutStreakInput>
-  }
-
-  export type StudentUpdateWithoutStreakInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: EnumStudentStatusFieldUpdateOperationsInput | $Enums.StudentStatus
-    riskLabel?: EnumRiskLabelFieldUpdateOperationsInput | $Enums.RiskLabel
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
-    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
-    payments?: PaymentUpdateManyWithoutStudentNestedInput
-    group?: GroupUpdateOneWithoutStudentsNestedInput
-    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
-    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
-    user?: UserUpdateOneRequiredWithoutStudentNestedInput
-    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
-    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
-    recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-  }
-
-  export type StudentUncheckedUpdateWithoutStreakInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
-    age?: NullableIntFieldUpdateOperationsInput | number | null
-    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: EnumStudentStatusFieldUpdateOperationsInput | $Enums.StudentStatus
-    riskLabel?: EnumRiskLabelFieldUpdateOperationsInput | $Enums.RiskLabel
-    parentName?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
-    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
-    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    receiveReports?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leadId?: NullableStringFieldUpdateOperationsInput | string | null
-    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
-    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
-    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
-    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
-    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
-    recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-  }
-
   export type GroupCreateWithoutRecordingItemsInput = {
     id?: string
     name: string
@@ -55811,7 +54318,6 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutRecordingItemsInput = {
@@ -55841,7 +54347,6 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutRecordingItemsInput = {
@@ -55999,7 +54504,6 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutRecordingItemsInput = {
@@ -56029,7 +54533,6 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type LessonUpsertWithoutRecordingItemsInput = {
@@ -56419,7 +54922,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakCreateNestedOneWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutLeadInput = {
@@ -56449,7 +54951,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
-    streak?: StudentStreakUncheckedCreateNestedOneWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutLeadInput = {
@@ -56823,7 +55324,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutLeadInput = {
@@ -56853,7 +55353,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type CrmLeadCreateWithoutActivitiesInput = {
@@ -58105,7 +56604,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutGroupInput = {
@@ -58135,7 +56633,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateManyWithoutGroupInput = {
@@ -58856,7 +57353,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutTeacherInput = {
@@ -58886,7 +57382,6 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
-    streak?: StudentStreakUncheckedUpdateOneWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateManyWithoutTeacherInput = {
@@ -59835,10 +58330,6 @@ export namespace Prisma {
      * @deprecated Use DailyPlanResourceDefaultArgs instead
      */
     export type DailyPlanResourceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DailyPlanResourceDefaultArgs<ExtArgs>
-    /**
-     * @deprecated Use StudentStreakDefaultArgs instead
-     */
-    export type StudentStreakArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = StudentStreakDefaultArgs<ExtArgs>
     /**
      * @deprecated Use RecordingItemDefaultArgs instead
      */

@@ -185,7 +185,6 @@ model Student {
   groupHistory    StudentGroupHistory[]
   plannedAbsences PlannedAbsence[]
   recordingItems  RecordingItem[]
-  streak          StudentStreak?
 
   @@index([groupId])
   @@index([teacherId])
@@ -523,17 +522,6 @@ model DailyPlanResource {
   @@index([topicId])
   @@index([kind])
   @@map("daily_plan_resources")
-}
-
-model StudentStreak {
-  id                 String    @id @default(cuid())
-  studentId          String    @unique
-  currentStreak      Int       @default(0)
-  lastAttendanceDate DateTime?
-  updatedAt          DateTime  @updatedAt
-  student            Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@map("student_streaks")
 }
 
 model RecordingItem {

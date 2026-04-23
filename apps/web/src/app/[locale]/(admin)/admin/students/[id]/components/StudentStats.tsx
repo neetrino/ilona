@@ -1,6 +1,5 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { Input } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { StudentStatistics } from '@/features/students';
@@ -24,27 +23,8 @@ export function StudentStats({
   errors,
   register,
 }: StudentStatsProps) {
-  const t = useTranslations('dashboard');
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      {statistics && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-slate-500">{t('streak')}</span>
-            <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.24 17 7.2c.5 1.1.524 2.618-.024 3.8 1.34.357 2.436 1.45 2.824 3 .6 2.4-.6 4.8-2.143 6.6-1.25.75-3.136 1.56-4.978 1.06 1.2-2 1.2-4.8-.478-7.4-1-1.6-2-2.4-2-2.4 1 2.5.8 4.4-.6 5.8-.8.8-2 1-3 1" />
-            </svg>
-          </div>
-          <p className="text-3xl font-bold text-slate-800">{statistics.streak.currentStreak}</p>
-          <p className="text-xs text-slate-500 mt-1">
-            {statistics.streak.lastAttendanceDate
-              ? t('lastAttendance', {
-                  date: new Date(statistics.streak.lastAttendanceDate).toLocaleDateString(),
-                })
-              : t('noAttendanceYet')}
-          </p>
-        </div>
-      )}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-slate-500">Monthly Fee</span>

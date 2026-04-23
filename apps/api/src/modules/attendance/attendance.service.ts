@@ -11,7 +11,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MarkAttendanceDto, BulkAttendanceDto } from './dto';
 import { Prisma, AbsenceType, UserRole, LessonStatus } from '@ilona/database';
 import { SalariesService } from '../finance/salaries.service';
-import { StudentStreakService } from '../students/student-streak.service';
 
 @Injectable()
 export class AttendanceService {
@@ -26,7 +25,6 @@ export class AttendanceService {
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => SalariesService))
     private readonly salariesService: SalariesService,
-    private readonly streakService: StudentStreakService,
   ) {}
 
   private async getManagerCenterId(userId?: string, userRole?: UserRole): Promise<string | null> {
@@ -398,13 +396,6 @@ export class AttendanceService {
     // Check if student has too many unjustified absences (for notifications)
     if (!isPresent && absenceType === 'UNJUSTIFIED') {
       await this.checkAbsenceThreshold(studentId);
-    }
-
-    // Refresh streak so it reflects the latest attendance event.
-    try {
-      await this.streakService.recomputeStreak(studentId);
-    } catch (err) {
-      this.logger.warn(`Streak recompute failed for student ${studentId}: ${String(err)}`);
     }
 
     // Check if all students have attendance marked, then mark absence as complete

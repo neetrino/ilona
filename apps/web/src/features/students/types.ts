@@ -206,10 +206,6 @@ export interface StudentStatistics {
     rate: number;
   };
   feedbacks: number;
-  streak: {
-    currentStreak: number;
-    lastAttendanceDate: string | null;
-  };
   progress: {
     attendanceRate: number;
     recordingRate: number;

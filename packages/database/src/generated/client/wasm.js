@@ -447,14 +447,6 @@ exports.Prisma.DailyPlanResourceScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.StudentStreakScalarFieldEnum = {
-  id: 'id',
-  studentId: 'studentId',
-  currentStreak: 'currentStreak',
-  lastAttendanceDate: 'lastAttendanceDate',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.RecordingItemScalarFieldEnum = {
   id: 'id',
   groupId: 'groupId',
@@ -694,7 +686,6 @@ exports.Prisma.ModelName = {
   DailyPlan: 'DailyPlan',
   DailyPlanTopic: 'DailyPlanTopic',
   DailyPlanResource: 'DailyPlanResource',
-  StudentStreak: 'StudentStreak',
   RecordingItem: 'RecordingItem',
   CrmLead: 'CrmLead',
   CrmLeadActivity: 'CrmLeadActivity',

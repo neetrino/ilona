@@ -201,11 +201,6 @@
       "medium": "Medium",
       "low": "Low"
     },
-    "streak": "Streak",
-    "streakActive": "Consecutive attended lessons",
-    "streakInactive": "Attend your next lesson",
-    "lastAttendance": "Last: {date}",
-    "noAttendanceYet": "No attendance yet",
     "yourProgress": "Your Progress",
     "overallProgress": "Overall {value}%",
     "factorAttendance": "Attendance",
