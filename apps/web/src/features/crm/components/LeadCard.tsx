@@ -2,7 +2,19 @@
 
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
-import { Pencil } from 'lucide-react';
+import {
+  ArrowRightLeft,
+  Building2,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  GraduationCap,
+  Mic,
+  Phone,
+  Pencil,
+  User,
+  Users,
+} from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { CrmBranchSelector, type CrmBranchOption } from './CrmBranchSelector';
@@ -85,41 +97,61 @@ export function LeadCard({
         </button>
       )}
       {/* Top section: name + edit */}
-      <p className="font-medium text-slate-900 truncate pr-8">{name}</p>
+      <p className="flex items-center gap-1.5 font-medium text-slate-900 truncate pr-8">
+        {voiceAttachment && <Mic className="h-3.5 w-3.5 text-slate-400 shrink-0" />}
+        <span className="truncate">{name}</span>
+      </p>
 
       {/* Middle section: lead info */}
-      <p className="text-xs text-slate-400 mt-1">{createdAt}</p>
-      {recordingTime && <p className="text-xs text-slate-500">{recordingTime}</p>}
+      <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
+        <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+        <span>{createdAt}</span>
+      </p>
+      {recordingTime && (
+        <p className="flex items-center gap-1.5 text-xs text-slate-500">
+          <Clock3 className="h-3.5 w-3.5 shrink-0" />
+          <span>{recordingTime}</span>
+        </p>
+      )}
       {lead.phone && (
-        <p className="text-sm text-slate-500 truncate mt-0.5">{lead.phone}</p>
+        <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500 truncate">
+          <Phone className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{lead.phone}</span>
+        </p>
       )}
       <div className="flex flex-wrap gap-1 mt-2">
         {lead.center?.name && (
           <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+            <Building2 className="mr-1 h-3 w-3" />
             {lead.center.name}
           </span>
         )}
         {lead.teacher?.user && (
           <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+            <User className="mr-1 h-3 w-3" />
             {lead.teacher.user.firstName} {lead.teacher.user.lastName}
           </span>
         )}
         {lead.group?.name && (
           <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+            <Users className="mr-1 h-3 w-3" />
             {lead.group.name}
           </span>
         )}
         {lead.levelId && (
           <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+            <GraduationCap className="mr-1 h-3 w-3" />
             {lead.levelId}
           </span>
         )}
         {lead.teacherApprovedAt ? (
           <span className="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
+            <CheckCircle2 className="mr-1 h-3 w-3" />
             Approved
           </span>
         ) : lead.transferFlag ? (
           <span className="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+            <ArrowRightLeft className="mr-1 h-3 w-3" />
             TRANSFER
           </span>
         ) : null}

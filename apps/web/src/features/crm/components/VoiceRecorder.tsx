@@ -1,8 +1,17 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { getPresignedRecordingUrl, confirmRecording, getRecordingPlayUrl } from '@/features/crm/api/crm.api';
 import { cn } from '@/shared/lib/utils';
+import {
+  createAudioRecorder,
+  getAudioExtension,
+  normalizeMimeType,
+  normalizeVoiceRecorderError,
+  requestMicrophoneStream,
+  selectSupportedAudioMimeType,
+  stopStreamTracks,
+} from '@/features/crm/utils/voiceRecording';
 
 interface VoiceRecorderProps {
   leadId: string;
@@ -24,25 +33,52 @@ export function VoiceRecorder({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      stopStreamTracks(streamRef.current);
+      streamRef.current = null;
+    };
+  }, []);
 
   const startRecording = useCallback(async () => {
     setError(null);
+    if (isRecording || isUploading) {
+      return;
+    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
-      const recorder = new MediaRecorder(stream);
+      const stream = await requestMicrophoneStream();
+      streamRef.current = stream;
+      const preferredMimeType = selectSupportedAudioMimeType();
+      const recorder = createAudioRecorder(stream, preferredMimeType);
       chunksRef.current = [];
+
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
+
+      recorder.onerror = (event) => {
+        console.error('[CRM Voice] MediaRecorder error:', event);
+        const normalizedError = normalizeVoiceRecorderError(event);
+        setError(normalizedError.message);
+      };
+
       recorder.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop());
+        stopStreamTracks(streamRef.current);
+        streamRef.current = null;
+
         if (chunksRef.current.length === 0) return;
+
         setIsUploading(true);
         try {
+          const mimeType = normalizeMimeType(recorder.mimeType || preferredMimeType, 'audio/webm');
           const blob = new Blob(chunksRef.current, { type: mimeType });
-          const ext = mimeType === 'audio/webm' ? 'webm' : 'm4a';
+          const ext = getAudioExtension(mimeType);
           const fileName = `recording-${Date.now()}.${ext}`;
           const { key, uploadUrl } = await getPresignedRecordingUrl(
             leadId,
@@ -58,26 +94,33 @@ export function VoiceRecorder({
           await confirmRecording(leadId, key, mimeType, blob.size);
           onRecordingSaved?.();
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'Upload failed');
+          console.error('[CRM Voice] Upload failed:', err);
+          const normalizedError = normalizeVoiceRecorderError(err);
+          setError(normalizedError.message);
         } finally {
           setIsUploading(false);
         }
       };
+
       recorder.start(1000);
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Microphone access denied');
+      console.error('[CRM Voice] Failed to start recording:', err);
+      const normalizedError = normalizeVoiceRecorderError(err);
+      setError(normalizedError.message);
+      stopStreamTracks(streamRef.current);
+      streamRef.current = null;
     }
-  }, [leadId, onRecordingSaved]);
+  }, [isRecording, isUploading, leadId, onRecordingSaved]);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current = null;
-      setIsRecording(false);
     }
-  }, [isRecording]);
+    setIsRecording(false);
+  }, []);
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
