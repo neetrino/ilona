@@ -128,6 +128,7 @@
     "payments": "Payments",
     "recordings": "Recordings",
     "myFeedbacks": "My Feedbacks",
+    "ourTeachers": "Our Teachers",
     "recordingsSubtitle": "Watch recordings of your past lessons to review material.",
     "searchRecordings": "Search recordings...",
     "absence": "Absence",
@@ -273,7 +274,15 @@
     "totalGroups": "Total Groups",
     "totalStudents": "Total Students",
     "teacherNotFound": "Teacher not found",
-    "viewFullPhoto": "View full-size photo"
+    "viewFullPhoto": "View full-size photo",
+    "studentSubtitle": "Meet all teachers in our center.",
+    "allTeachersCount": "{count} teachers in total",
+    "details": "Details",
+    "noCenter": "Center not specified",
+    "noBio": "No description yet.",
+    "viewDetails": "View details",
+    "hideDetails": "Hide details",
+    "failedToLoad": "Failed to load teachers."
   },
   "students": {
     "title": "Students",

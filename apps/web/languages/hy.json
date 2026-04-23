@@ -127,6 +127,7 @@
     "payments": "Վճարումներ",
     "recordings": "Ձայնագրություններ",
     "myFeedbacks": "My Feedbacks",
+    "ourTeachers": "Մեր ուսուցիչները",
     "recordingsSubtitle": "Դիտեք ձեր անցած դասերի ձայնագրությունները նյութը վերանայելու համար:",
     "searchRecordings": "Որոնել ձայնագրություններ...",
     "absence": "Բացակայություն",
@@ -272,7 +273,15 @@
     "totalGroups": "Ընդամենը խմբեր",
     "totalStudents": "Ընդամենը աշակերտներ",
     "teacherNotFound": "Ուսուցիչը չի գտնվել",
-    "viewFullPhoto": "Դիտել լրիվ չափի նկար"
+    "viewFullPhoto": "Դիտել լրիվ չափի նկար",
+    "studentSubtitle": "Ծանոթացեք մեր կենտրոնի բոլոր ուսուցիչների հետ:",
+    "allTeachersCount": "Ընդամենը {count} ուսուցիչ",
+    "details": "Մանրամասներ",
+    "noCenter": "Կենտրոնը նշված չէ",
+    "noBio": "Նկարագրություն դեռ չկա:",
+    "viewDetails": "Դիտել մանրամասները",
+    "hideDetails": "Թաքցնել մանրամասները",
+    "failedToLoad": "Չհաջողվեց բեռնել ուսուցիչներին:"
   },
   "students": {
     "title": "Աշակերտներ",
