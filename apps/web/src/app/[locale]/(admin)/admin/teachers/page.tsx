@@ -13,7 +13,6 @@ import type { Teacher } from '@/features/teachers';
 import { TeachersFilters } from './components/TeachersFilters';
 import { TeachersList } from './components/TeachersList';
 import { TeachersBoard } from './components/TeachersBoard';
-import { TeachersInfoCards } from './components/TeachersInfoCards';
 import { TeachersMessages } from './components/TeachersMessages';
 import { TeacherGroupsModal } from './components/TeacherGroupsModal';
 import { useTeachersPage } from './hooks/useTeachersPage';
@@ -28,7 +27,6 @@ export default function TeachersPage() {
     t,
     tCommon,
     tStatus,
-    locale,
     
     // State
     searchQuery,
@@ -54,9 +52,7 @@ export default function TeachersPage() {
     totalTeachers,
     totalPages,
     teachersByCenter,
-    filteredTeachers,
     centersData,
-    totalLessons,
     
     // Loading states
     isLoading,
@@ -204,13 +200,6 @@ export default function TeachersPage() {
           />
         )}
 
-        {/* Info Cards */}
-        <TeachersInfoCards
-          filteredTeachers={filteredTeachers}
-          totalLessons={totalLessons}
-          locale={locale}
-          t={t}
-        />
       </div>
 
       {/* Success/Error Messages */}
