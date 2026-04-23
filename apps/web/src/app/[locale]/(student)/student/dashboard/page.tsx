@@ -61,6 +61,7 @@ export default function StudentDashboardPage() {
   // Calculate stats
   const attendanceRate = stats?.attendance?.rate || 0;
   const totalLessons = stats?.attendance?.total || 0;
+  const currentStreak = stats?.attendance?.currentStreak || 0;
   const pendingPaymentAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
   const nextPayment = pendingPayments[0];
 
@@ -191,6 +192,15 @@ export default function StudentDashboardPage() {
         </div>
 
         <StudentNotesBlock />
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4">
+          <div className="flex items-center gap-2">
+            <svg className="h-5 w-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c0 3.5-2 5.5-2 8a4 4 0 008 0c0-2.5-2-4.5-2-8M8 14a4 4 0 108 0" />
+            </svg>
+            <p className="text-sm font-semibold text-orange-700">{t('streak')}</p>
+            <span className="text-sm font-bold text-orange-900">{currentStreak}</span>
+          </div>
+        </div>
 
         {/* Group Info */}
         {student?.group && (

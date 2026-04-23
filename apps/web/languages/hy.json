@@ -143,6 +143,8 @@
     "myLearning": "Իմ ուսուցում",
     "welcomeStudent": "Բարի վերադարձ, {name}! Հետևեք ձեր առաջընթացին և առաջիկա դասերին:",
     "attendanceRate": "Հաճախելիության տոկոս",
+    "streak": "Շարք",
+    "streakDays": "{count} անընդմեջ ներկայություն",
     "excellent": "Գերազանց",
     "good": "Լավ",
     "needsImprovement": "Պահանջում է բարելավում",

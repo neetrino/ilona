@@ -208,6 +208,7 @@ exports.Prisma.StudentScalarFieldEnum = {
   userId: 'userId',
   groupId: 'groupId',
   teacherId: 'teacherId',
+  currentStreak: 'currentStreak',
   age: 'age',
   dateOfBirth: 'dateOfBirth',
   firstLessonDate: 'firstLessonDate',
@@ -225,6 +226,14 @@ exports.Prisma.StudentScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   leadId: 'leadId'
+};
+
+exports.Prisma.StudentNoteScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PlannedAbsenceScalarFieldEnum = {
@@ -670,6 +679,7 @@ exports.Prisma.ModelName = {
   TeacherCenter: 'TeacherCenter',
   TeacherNote: 'TeacherNote',
   Student: 'Student',
+  StudentNote: 'StudentNote',
   PlannedAbsence: 'PlannedAbsence',
   StudentGroupHistory: 'StudentGroupHistory',
   Lesson: 'Lesson',

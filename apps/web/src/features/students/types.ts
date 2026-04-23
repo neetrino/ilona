@@ -192,6 +192,7 @@ export interface StudentStatistics {
     present: number;
     absent: number;
     unjustifiedAbsences: number;
+    currentStreak: number;
     rate: number;
   };
   recordings: {

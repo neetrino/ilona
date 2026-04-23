@@ -36,6 +36,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { CrmModule } from './modules/crm/crm.module';
 import { DailyPlanModule } from './modules/daily-plan/daily-plan.module';
 import { TeacherNotesModule } from './modules/teacher-notes/teacher-notes.module';
+import { StudentNotesModule } from './modules/student-notes/student-notes.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -90,6 +91,7 @@ import { AppController } from './app.controller';
     CrmModule,
     DailyPlanModule,
     TeacherNotesModule,
+    StudentNotesModule,
   ],
   providers: [
     // Correlation ID and request logging

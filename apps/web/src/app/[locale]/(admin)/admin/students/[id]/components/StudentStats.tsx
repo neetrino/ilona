@@ -24,7 +24,7 @@ export function StudentStats({
   register,
 }: StudentStatsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-slate-500">Monthly Fee</span>
@@ -76,6 +76,18 @@ export function StudentStats({
                 {statistics.payments.overdue} overdue
               </p>
             )}
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-slate-500">Current Streak</span>
+              <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c0 3.5-2 5.5-2 8a4 4 0 008 0c0-2.5-2-4.5-2-8M8 14a4 4 0 108 0" />
+              </svg>
+            </div>
+            <p className="text-3xl font-bold text-slate-800">{statistics.attendance.currentStreak}</p>
+            <p className="text-xs text-slate-500 mt-1">
+              consecutive present lessons
+            </p>
           </div>
         </>
       )}

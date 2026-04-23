@@ -144,6 +144,8 @@
     "myLearning": "My Learning",
     "welcomeStudent": "Welcome back, {name}! Track your progress and upcoming lessons.",
     "attendanceRate": "Attendance Rate",
+    "streak": "Streak",
+    "streakDays": "{count} consecutive present",
     "excellent": "Excellent",
     "good": "Good",
     "needsImprovement": "Needs improvement",

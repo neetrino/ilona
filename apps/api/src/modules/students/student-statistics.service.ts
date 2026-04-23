@@ -15,6 +15,7 @@ export class StudentStatisticsService {
       where: { id },
       select: {
         id: true,
+        currentStreak: true,
         group: {
           select: { centerId: true },
         },
@@ -91,6 +92,7 @@ export class StudentStatisticsService {
         present: presentCount,
         absent: totalAttendances - presentCount,
         unjustifiedAbsences,
+        currentStreak: student.currentStreak,
         rate: attendanceRate,
       },
       recordings: recordingStats,

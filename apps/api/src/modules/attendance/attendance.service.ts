@@ -44,6 +44,25 @@ export class AttendanceService {
     return managerCenterId;
   }
 
+  private async updateStudentStreakOnAttendanceChange(
+    tx: Prisma.TransactionClient,
+    studentId: string,
+    nextIsPresent: boolean,
+  ): Promise<void> {
+    if (!nextIsPresent) {
+      await tx.student.update({
+        where: { id: studentId },
+        data: { currentStreak: 0 },
+      });
+      return;
+    }
+
+    await tx.student.update({
+      where: { id: studentId },
+      data: { currentStreak: { increment: 1 } },
+    });
+  }
+
   async getByLesson(lessonId: string, userId?: string, userRole?: UserRole) {
     const managerCenterId = await this.getManagerCenterId(userId, userRole);
     const lesson = await this.prisma.lesson.findUnique({
@@ -359,38 +378,85 @@ export class AttendanceService {
       throw new BadRequestException('Justification comment is required when marking justified absence');
     }
 
-    // Upsert attendance
-    const attendance = await this.prisma.attendance.upsert({
-      where: {
-        lessonId_studentId: { lessonId, studentId },
-      },
-      update: {
-        isPresent,
-        absenceType: isPresent ? null : absenceType,
-        note: isPresent ? null : note ?? null,
-        markedById: userId ?? null,
-        markedAt: new Date(),
-      },
-      create: {
-        lessonId,
-        studentId,
-        isPresent,
-        absenceType: isPresent ? null : absenceType,
-        note: isPresent ? null : note ?? null,
-        markedById: userId ?? null,
-      },
-      include: {
-        markedBy: {
-          select: { id: true, firstName: true, lastName: true, role: true },
+    const {
+      attendance,
+      lessonCompletedForAbsence,
+      lessonScheduledAt,
+      lessonTeacherId,
+    } = await this.prisma.$transaction(async (tx) => {
+      const attendanceRecord = await tx.attendance.upsert({
+        where: {
+          lessonId_studentId: { lessonId, studentId },
         },
-        student: {
-          include: {
-            user: {
-              select: { id: true, firstName: true, lastName: true },
+        update: {
+          isPresent,
+          absenceType: isPresent ? null : absenceType,
+          note: isPresent ? null : note ?? null,
+          markedById: userId ?? null,
+          markedAt: new Date(),
+        },
+        create: {
+          lessonId,
+          studentId,
+          isPresent,
+          absenceType: isPresent ? null : absenceType,
+          note: isPresent ? null : note ?? null,
+          markedById: userId ?? null,
+        },
+        include: {
+          markedBy: {
+            select: { id: true, firstName: true, lastName: true, role: true },
+          },
+          student: {
+            include: {
+              user: {
+                select: { id: true, firstName: true, lastName: true },
+              },
             },
           },
         },
-      },
+      });
+
+      await this.updateStudentStreakOnAttendanceChange(
+        tx,
+        studentId,
+        isPresent,
+      );
+
+      const lessonWithAttendances = await tx.lesson.findUnique({
+        where: { id: lessonId },
+        include: {
+          group: {
+            include: {
+              students: true,
+            },
+          },
+          attendances: true,
+        },
+      });
+
+      let lessonCompletedForAbsence = false;
+      if (lessonWithAttendances) {
+        const studentCount = lessonWithAttendances.group.students.length;
+        const attendanceCount = lessonWithAttendances.attendances.length;
+        if (studentCount > 0 && attendanceCount >= studentCount && !lessonWithAttendances.absenceMarked) {
+          await tx.lesson.update({
+            where: { id: lessonId },
+            data: {
+              absenceMarked: true,
+              absenceMarkedAt: new Date(),
+            },
+          });
+          lessonCompletedForAbsence = true;
+        }
+      }
+
+      return {
+        attendance: attendanceRecord,
+        lessonCompletedForAbsence,
+        lessonScheduledAt: lessonWithAttendances?.scheduledAt ?? null,
+        lessonTeacherId: lessonWithAttendances?.teacherId ?? null,
+      };
     });
 
     // Check if student has too many unjustified absences (for notifications)
@@ -398,42 +464,13 @@ export class AttendanceService {
       await this.checkAbsenceThreshold(studentId);
     }
 
-    // Check if all students have attendance marked, then mark absence as complete
-    const lessonWithAttendances = await this.prisma.lesson.findUnique({
-      where: { id: lessonId },
-      include: {
-        group: {
-          include: {
-            students: true,
-          },
-        },
-        attendances: true,
-      },
-    });
-
-    if (lessonWithAttendances) {
-      const studentCount = lessonWithAttendances.group.students.length;
-      const attendanceCount = lessonWithAttendances.attendances.length;
-      
-      // If all students have attendance marked, update lesson.absenceMarked
-      if (studentCount > 0 && attendanceCount >= studentCount && !lessonWithAttendances.absenceMarked) {
-        await this.prisma.lesson.update({
-          where: { id: lessonId },
-          data: {
-            absenceMarked: true,
-            absenceMarkedAt: new Date(),
-          },
-        });
-
-        // Trigger salary recalculation for the lesson's month
-        if (lessonWithAttendances.scheduledAt) {
-          const lessonMonth = new Date(lessonWithAttendances.scheduledAt);
-          await this.salariesService.recalculateSalaryForMonth(
-            lessonWithAttendances.teacherId,
-            lessonMonth,
-          );
-        }
-      }
+    // Trigger salary recalculation for the lesson's month when attendance becomes complete.
+    if (lessonCompletedForAbsence && lessonScheduledAt && lessonTeacherId) {
+      const lessonMonth = new Date(lessonScheduledAt);
+      await this.salariesService.recalculateSalaryForMonth(
+        lessonTeacherId,
+        lessonMonth,
+      );
     }
 
     return attendance;
@@ -485,7 +522,7 @@ export class AttendanceService {
           isPresent: item.isPresent,
           absenceType: item.absenceType,
           note: item.note,
-        }),
+        }, userId, userRole),
       ),
     );
 
