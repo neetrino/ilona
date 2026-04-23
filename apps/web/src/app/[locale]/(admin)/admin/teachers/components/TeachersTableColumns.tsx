@@ -217,20 +217,17 @@ export function createTeachersTableColumns({
         return (
           <div className="w-full" onClick={(e) => e.stopPropagation()}>
             <ActionButtons
-              onView={() => onView(teacher)}
               onEdit={() => onEdit(teacher)}
               onDisable={() => onDeactivate(teacher)}
               onDelete={() => onDelete(teacher)}
               isActive={isActive}
               disabled={isUpdating || isDeleting}
               ariaLabels={{
-                view: 'View teacher details',
                 edit: tCommon('edit'),
                 disable: isActive ? t('deactivate') : t('activate'),
                 delete: tCommon('delete'),
               }}
               titles={{
-                view: 'View teacher details',
                 edit: tCommon('edit'),
                 disable: isActive ? t('deactivate') : t('activate'),
                 delete: tCommon('delete'),
