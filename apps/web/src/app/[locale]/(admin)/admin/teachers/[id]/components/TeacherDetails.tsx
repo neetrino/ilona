@@ -40,29 +40,31 @@ export function TeacherDetails({
         <h3 className="text-lg font-semibold text-slate-800 mb-4">Personal Information</h3>
         <div className="space-y-4">
           {isEditMode ? (
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                type="tel"
-                {...register('phone')}
-                error={errors?.phone?.message}
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="experienceYears">Experience (years)</Label>
-              <Input
-                id="experienceYears"
-                type="number"
-                min="0"
-                max="80"
-                step="1"
-                {...register('experienceYears', { valueAsNumber: true })}
-                error={errors?.experienceYears?.message}
-                placeholder="5"
-              />
-            </div>
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  {...register('phone')}
+                  error={errors?.phone?.message}
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="experienceYears">Experience (years)</Label>
+                <Input
+                  id="experienceYears"
+                  type="number"
+                  min="0"
+                  max="80"
+                  step="1"
+                  {...register('experienceYears', { valueAsNumber: true })}
+                  error={errors?.experienceYears?.message}
+                  placeholder="5"
+                />
+              </div>
+            </>
           ) : (
             <>
               <div>

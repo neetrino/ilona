@@ -39,7 +39,7 @@ export function createTeachersTableColumns({
   selectedTeacherIds,
   onSelectAll,
   onToggleSelect,
-  onView,
+  onView: _onView,
   onEdit,
   onDelete,
   onDeactivate,
