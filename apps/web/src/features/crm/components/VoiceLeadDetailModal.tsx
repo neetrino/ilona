@@ -147,7 +147,7 @@ export function VoiceLeadDetailModal({
     if (!leadId) return;
     setPhoneError(null);
     setSaveError(null);
-    const phone = (form.phone ?? '').trim();
+    const phone = typeof form.phone === 'string' ? form.phone.trim() : form.phone == null ? '' : String(form.phone).trim();
     if (phone && !isValidPhone(phone)) {
       setPhoneError(t('invalidPhone'));
       return;

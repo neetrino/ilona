@@ -4,6 +4,15 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { createLeadFromVoice } from '@/features/crm/api/crm.api';
 import type { CrmLead } from '@/features/crm/types';
 import { cn } from '@/shared/lib/utils';
+import {
+  createAudioRecorder,
+  getAudioExtension,
+  normalizeMimeType,
+  normalizeVoiceRecorderError,
+  requestMicrophoneStream,
+  selectSupportedAudioMimeType,
+  stopStreamTracks,
+} from '@/features/crm/utils/voiceRecording';
 
 interface VoiceLeadModalProps {
   open: boolean;
@@ -20,12 +29,18 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const mimeTypeRef = useRef<string>('audio/webm');
 
   // Revoke blob URL on cleanup to avoid memory leaks
   useEffect(() => {
     return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      stopStreamTracks(streamRef.current);
+      streamRef.current = null;
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
@@ -38,16 +53,26 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
     }
     setHasRecording(false);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
-      mimeTypeRef.current = mimeType;
-      const recorder = new MediaRecorder(stream);
+      const stream = await requestMicrophoneStream();
+      streamRef.current = stream;
+      const preferredMimeType = selectSupportedAudioMimeType();
+      const recorder = createAudioRecorder(stream, preferredMimeType);
+      mimeTypeRef.current = normalizeMimeType(recorder.mimeType || preferredMimeType, 'audio/webm');
       chunksRef.current = [];
+
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
+
+      recorder.onerror = (event) => {
+        console.error('[CRM Voice Lead] MediaRecorder error:', event);
+        const normalizedError = normalizeVoiceRecorderError(event);
+        setError(normalizedError.message);
+      };
+
       recorder.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
+        stopStreamTracks(streamRef.current);
+        streamRef.current = null;
         if (chunksRef.current.length > 0) {
           const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
           const url = URL.createObjectURL(blob);
@@ -59,7 +84,11 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Microphone access denied');
+      console.error('[CRM Voice Lead] Failed to start recording:', err);
+      const normalizedError = normalizeVoiceRecorderError(err);
+      setError(normalizedError.message);
+      stopStreamTracks(streamRef.current);
+      streamRef.current = null;
     }
   }, [previewUrl]);
 
@@ -81,7 +110,7 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
     try {
       const mimeType = mimeTypeRef.current;
       const blob = new Blob(chunksRef.current, { type: mimeType });
-      const ext = mimeType.split(';')[0].trim() === 'audio/webm' ? 'webm' : 'm4a';
+      const ext = getAudioExtension(mimeType);
       const fileName = `voice-lead-${Date.now()}.${ext}`;
       // Use File so multipart upload sends a proper filename and type (some servers expect it)
       const file = new File([blob], fileName, { type: mimeType });
@@ -106,6 +135,8 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current = null;
     }
+    stopStreamTracks(streamRef.current);
+    streamRef.current = null;
     chunksRef.current = [];
     setIsRecording(false);
     setHasRecording(false);

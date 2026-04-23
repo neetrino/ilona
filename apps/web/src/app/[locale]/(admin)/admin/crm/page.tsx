@@ -35,8 +35,11 @@ const VOICE_LEAD_PARAM = 'voiceLead';
 const ARCHIVE_PARAM = 'archive';
 const EDIT_LEAD_PARAM = 'editLead';
 
-function normalize(value?: string | null): string {
-  return (value ?? '').trim().toLowerCase();
+function normalize(value?: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return String(value).trim().toLowerCase();
 }
 
 function containsNormalized(haystack?: string | null, needle?: string): boolean {
