@@ -7,6 +7,7 @@ import { useLocale } from 'next-intl';
 import { List, LayoutGrid } from 'lucide-react';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
+import { getContrastColor, lightenColor } from '@/shared/lib/utils';
 import {
   GroupCard,
   CreateGroupForm,
@@ -553,6 +554,11 @@ export function GroupsTab({
                   {centersForBranchTabs.map((center) => {
                     const count = center._count?.groups ?? 0;
                     const isActive = activeBranchTabId === center.id;
+                    const primaryColor = center.colorHex || '#253046';
+                    const softColor = lightenColor(primaryColor, 0.65);
+                    const chipColor = lightenColor(primaryColor, 0.45);
+                    const softBorderColor = lightenColor(primaryColor, 0.35);
+                    const activeTextColor = getContrastColor(primaryColor) === 'white' ? '#ffffff' : '#0f172a';
                     return (
                       <button
                         type="button"
@@ -566,9 +572,22 @@ export function GroupsTab({
                           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
                           'active:scale-[0.985]',
                           isActive
-                            ? 'border-primary/30 bg-primary/[0.12] text-primary shadow-[0_4px_14px_rgba(59,130,246,0.18)]'
+                            ? 'shadow-[0_4px_14px_rgba(15,23,42,0.14)]'
                             : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-px hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 hover:shadow-sm'
                         )}
+                        style={
+                          isActive
+                            ? {
+                                backgroundColor: primaryColor,
+                                color: activeTextColor,
+                                borderColor: primaryColor,
+                              }
+                            : {
+                                backgroundColor: softColor,
+                                color: '#334155',
+                                borderColor: softBorderColor,
+                              }
+                        }
                       >
                         <span className="max-w-[12rem] truncate font-semibold tracking-[0.01em] sm:max-w-[14rem]">
                           {center.name}
@@ -577,9 +596,20 @@ export function GroupsTab({
                           className={cn(
                             'inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
                             isActive
-                              ? 'bg-white/80 text-primary shadow-sm'
-                              : 'bg-slate-100 text-slate-600 group-hover:bg-slate-200 group-hover:text-slate-700'
+                              ? 'shadow-sm'
+                              : 'group-hover:bg-slate-200 group-hover:text-slate-700'
                           )}
+                          style={
+                            isActive
+                              ? {
+                                  backgroundColor: lightenColor(primaryColor, 0.22),
+                                  color: activeTextColor,
+                                }
+                              : {
+                                  backgroundColor: chipColor,
+                                  color: '#1e293b',
+                                }
+                          }
                         >
                           {count}
                         </span>
