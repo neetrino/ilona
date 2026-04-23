@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MaxLength, MinLength, IsEmail, IsUrl, ValidateIf } from 'class-validator';
+import { IsString, IsOptional, MaxLength, MinLength, IsEmail, IsUrl, ValidateIf, IsInt, Min, Max } from 'class-validator';
 
 export class UpdateUserDto {
   @IsString()
@@ -33,4 +33,17 @@ export class UpdateUserDto {
   @IsUrl({ require_protocol: true })
   @MaxLength(500)
   videoUrl?: string | null;
+
+  // Teacher-only field; ignored for non-teacher users.
+  @IsString()
+  @IsOptional()
+  @MaxLength(1000)
+  bio?: string | null;
+
+  // Teacher-only field; ignored for non-teacher users.
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  @Max(80)
+  experienceYears?: number;
 }

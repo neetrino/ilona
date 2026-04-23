@@ -14,6 +14,7 @@ import { TeacherStats } from './components/TeacherStats';
 import { TeacherDetails } from './components/TeacherDetails';
 import { updateTeacherSchema, type UpdateTeacherFormData } from './schemas';
 import type { UserStatus } from '@/types';
+import { getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
 
 export default function TeacherProfilePage() {
   const t = useTranslations('teachers');
@@ -45,6 +46,7 @@ export default function TeacherProfilePage() {
       phone: '',
       status: 'ACTIVE' as UserStatus,
       hourlyRate: 0,
+      experienceYears: 0,
       workingDays: [],
       workingHours: undefined,
     },
@@ -81,6 +83,7 @@ export default function TeacherProfilePage() {
         phone: teacher.user?.phone || '',
         status: teacher.user?.status || 'ACTIVE',
         hourlyRate,
+        experienceYears: getExperienceYearsFromHireDate(teacher.hireDate),
         workingDays: teacher.workingDays || [],
         workingHours: workingHoursValue,
       });
@@ -152,6 +155,7 @@ export default function TeacherProfilePage() {
         phone: data.phone || undefined,
         status: data.status,
         hourlyRate: data.hourlyRate,
+        experienceYears: data.experienceYears,
         workingDays: workingDays.length > 0 ? workingDays : undefined,
         workingHours: data.workingHours && Object.keys(data.workingHours).length > 0 ? data.workingHours : undefined,
       };

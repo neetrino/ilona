@@ -394,6 +394,8 @@ export class UsersService {
       avatarUrl?: string;
       email?: string;
       videoUrl?: string | null;
+      bio?: string | null;
+      experienceYears?: number;
     },
   ) {
     try {
@@ -424,6 +426,22 @@ export class UsersService {
         await this.prisma.teacher.updateMany({
           where: { userId },
           data: { videoUrl: data.videoUrl ?? null },
+        });
+      }
+
+      if (data.bio !== undefined) {
+        await this.prisma.teacher.updateMany({
+          where: { userId },
+          data: { bio: data.bio ?? null },
+        });
+      }
+
+      if (data.experienceYears !== undefined) {
+        const currentYear = new Date().getFullYear();
+        const startYear = currentYear - data.experienceYears;
+        await this.prisma.teacher.updateMany({
+          where: { userId },
+          data: { hireDate: new Date(startYear, 0, 1) },
         });
       }
 

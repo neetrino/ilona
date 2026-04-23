@@ -3,6 +3,7 @@
 import { Badge, Input, Label } from '@/shared/components/ui';
 import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
 import type { Teacher } from '@/features/teachers';
+import { getExperienceYearsFromHireDate, formatExperienceLabel } from '@/features/teachers/utils/experience';
 import { DAYS_OF_WEEK } from '../schemas';
 import type { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import type { UpdateTeacherFormData } from '../schemas';
@@ -14,6 +15,7 @@ interface TeacherDetailsProps {
   lastName: string;
   errors?: {
     phone?: { message?: string };
+    experienceYears?: { message?: string };
     workingHours?: { message?: string };
   };
   register: UseFormRegister<UpdateTeacherFormData>;
@@ -48,6 +50,19 @@ export function TeacherDetails({
                 placeholder="+1 (555) 123-4567"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="experienceYears">Experience (years)</Label>
+              <Input
+                id="experienceYears"
+                type="number"
+                min="0"
+                max="80"
+                step="1"
+                {...register('experienceYears', { valueAsNumber: true })}
+                error={errors?.experienceYears?.message}
+                placeholder="5"
+              />
+            </div>
           ) : (
             <>
               <div>
@@ -65,6 +80,10 @@ export function TeacherDetails({
               <div>
                 <label className="text-sm font-medium text-slate-500">Phone</label>
                 <p className="text-slate-800 mt-1">{teacher.user?.phone || 'N/A'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-500">Experience</label>
+                <p className="text-slate-800 mt-1">{formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}</p>
               </div>
             </>
           )}

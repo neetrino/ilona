@@ -18,6 +18,8 @@ export interface User {
   teacher?: {
     id: string;
     videoUrl?: string | null;
+    bio?: string | null;
+    hireDate?: string;
   } | null;
 }
 

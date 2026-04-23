@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
+import { getExperienceYearsFromHireDate, formatExperienceLabel } from '../utils/experience';
 import {
   Building2,
   CircleDollarSign,
@@ -319,6 +320,15 @@ export function TeacherDetailsModal({
                     </label>
                     <p className="text-slate-800 text-sm sm:text-base">
                       {formatCurrency(lessonRate)}/lesson
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+                    <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                      Experience
+                    </label>
+                    <p className="text-slate-800 text-sm sm:text-base">
+                      {formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}
                     </p>
                   </div>
                   {teacher.videoUrl && (

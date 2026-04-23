@@ -11,6 +11,8 @@ export interface UserProfile {
   teacher?: {
     id: string;
     videoUrl?: string | null;
+    bio?: string | null;
+    hireDate?: string;
   } | null;
 }
 
@@ -21,6 +23,8 @@ export interface UpdateProfileDto {
   avatarUrl?: string | null;
   email?: string;
   videoUrl?: string | null;
+  bio?: string | null;
+  experienceYears?: number;
 }
 
 export interface ChangePasswordDto {

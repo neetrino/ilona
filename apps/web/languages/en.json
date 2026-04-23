@@ -658,6 +658,7 @@
     "introVideoUrl": "Intro Video URL",
     "introVideoUrlPlaceholder": "https://youtu.be/...",
     "introVideoUrlHint": "Public intro video shown on your teacher card.",
+    "experience": "Experience (years)",
     "teaching": "Teaching",
     "teachingPreferences": "Teaching Preferences",
     "defaultLessonDuration": "Default Lesson Duration",

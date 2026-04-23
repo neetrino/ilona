@@ -2,9 +2,11 @@ import {
   IsString,
   IsOptional,
   IsNumber,
+  IsInt,
   IsArray,
   IsEnum,
   Min,
+  Max,
   MaxLength,
   MinLength,
   IsObject,
@@ -57,6 +59,12 @@ export class UpdateTeacherDto {
   @IsOptional()
   @Min(0)
   lessonRateAMD?: number; // Fixed price per lesson (primary field for salary calculation)
+
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  @Max(80)
+  experienceYears?: number;
 
   @IsArray()
   @IsOptional()
