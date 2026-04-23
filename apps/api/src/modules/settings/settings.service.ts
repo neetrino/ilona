@@ -74,7 +74,7 @@ export class SettingsService {
                 voicePercent: 25,
                 textPercent: 25,
                 penaltyAbsenceAmd: 1000,
-                penaltyFeedbackAmd: 1000,
+                penaltyFeedbackAmd: 500,
                 penaltyVoiceAmd: 1000,
                 penaltyTextAmd: 1000,
                 penaltyDailyPlanAmd: 1000,
@@ -411,25 +411,25 @@ export class SettingsService {
       const settings = await this.getSystemSettings();
       
       // Convert Decimal to number (Prisma Decimal has toNumber() method)
-      const convertToNumber = (value: ConvertibleToNumber): number => {
-        if (value == null) return 1000;
+      const convertToNumber = (value: ConvertibleToNumber, fallbackValue: number): number => {
+        if (value == null) return fallbackValue;
         if (typeof value === 'number') return value;
         if (value instanceof Prisma.Decimal) {
           return value.toNumber();
         }
         // Fallback for other types
         const num = Number(value);
-        return isNaN(num) ? 1000 : num;
+        return isNaN(num) ? fallbackValue : num;
       };
       
       // Access the fields directly from the Prisma result
       // Use optional chaining and type assertion to handle missing fields gracefully
       const settingsWithPenalties = settings as SystemSettingsWithOptionalPenalties;
-      const penaltyAbsenceAmd = convertToNumber(settingsWithPenalties.penaltyAbsenceAmd);
-      const penaltyFeedbackAmd = convertToNumber(settingsWithPenalties.penaltyFeedbackAmd);
-      const penaltyVoiceAmd = convertToNumber(settingsWithPenalties.penaltyVoiceAmd);
-      const penaltyTextAmd = convertToNumber(settingsWithPenalties.penaltyTextAmd);
-      const penaltyDailyPlanAmd = convertToNumber(settingsWithPenalties.penaltyDailyPlanAmd);
+      const penaltyAbsenceAmd = convertToNumber(settingsWithPenalties.penaltyAbsenceAmd, 1000);
+      const penaltyFeedbackAmd = convertToNumber(settingsWithPenalties.penaltyFeedbackAmd, 500);
+      const penaltyVoiceAmd = convertToNumber(settingsWithPenalties.penaltyVoiceAmd, 1000);
+      const penaltyTextAmd = convertToNumber(settingsWithPenalties.penaltyTextAmd, 1000);
+      const penaltyDailyPlanAmd = convertToNumber(settingsWithPenalties.penaltyDailyPlanAmd, 1000);
 
       return {
         penaltyAbsenceAmd,
@@ -448,7 +448,7 @@ export class SettingsService {
       this.logger.warn('Returning default penalty amounts due to error');
       return {
         penaltyAbsenceAmd: 1000,
-        penaltyFeedbackAmd: 1000,
+        penaltyFeedbackAmd: 500,
         penaltyVoiceAmd: 1000,
         penaltyTextAmd: 1000,
         penaltyDailyPlanAmd: 1000,

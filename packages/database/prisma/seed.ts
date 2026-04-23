@@ -39,7 +39,7 @@ async function main() {
       voicePercent: 25,
       textPercent: 25,
       penaltyAbsenceAmd: 1000,
-      penaltyFeedbackAmd: 1000,
+      penaltyFeedbackAmd: 500,
       penaltyVoiceAmd: 1000,
       penaltyTextAmd: 1000,
       penaltyDailyPlanAmd: 1000,
