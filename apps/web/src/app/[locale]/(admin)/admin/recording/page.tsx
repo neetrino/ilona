@@ -499,11 +499,14 @@ export default function AdminRecordingPage() {
             options={groupMultiOptions}
             selectedIds={selectedGroupIds}
             onSelectionChange={setSelectedGroupIds}
+            showSelectedChipsOnlyWhenOpen
+            hideSelectedLabelsInTrigger
             placeholder="All groups"
             searchPlaceholder="Search groups…"
             emptyOptionsHint="No groups"
             noResultsHint="No groups match"
             isLoading={isLoadingDirectory}
+            maxChipsHeightClassName="max-h-28"
           />
         </div>
 
