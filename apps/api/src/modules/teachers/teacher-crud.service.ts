@@ -13,10 +13,18 @@ import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util
 
 // Constant for deduction amount per missing action (in AMD)
 const DEDUCTION_PER_MISSING_ACTION = 1500;
+const EXPERIENCE_YEAR_START_MONTH = 0;
+const EXPERIENCE_YEAR_START_DAY = 1;
 
 @Injectable()
 export class TeacherCrudService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private getHireDateFromExperienceYears(experienceYears: number): Date {
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - experienceYears;
+    return new Date(startYear, EXPERIENCE_YEAR_START_MONTH, EXPERIENCE_YEAR_START_DAY);
+  }
 
   private async assertManagerTeacherAccess(teacherId: string, currentUser?: JwtPayload) {
     const managerCenterId = getManagerCenterIdOrThrow(currentUser);
@@ -603,6 +611,10 @@ export class TeacherCrudService {
         specialization: dto.specialization,
         hourlyRate: dto.hourlyRate,
         lessonRateAMD: dto.lessonRateAMD,
+        hireDate:
+          dto.experienceYears !== undefined
+            ? this.getHireDateFromExperienceYears(dto.experienceYears)
+            : undefined,
         workingDays: dto.workingDays,
         workingHours: dto.workingHours,
         videoUrl: dto.videoUrl,

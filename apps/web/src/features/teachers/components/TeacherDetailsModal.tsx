@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
+import { getExperienceYearsFromHireDate, formatExperienceLabel } from '../utils/experience';
 import {
   Building2,
   CircleDollarSign,
@@ -22,6 +23,69 @@ interface TeacherDetailsModalProps {
   teacherId: string | null;
   open: boolean;
   onClose: () => void;
+}
+
+interface EmbeddedVideoData {
+  embedUrl: string;
+  platform: 'youtube' | 'vimeo';
+}
+
+const YOUTUBE_HOSTS = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be']);
+const VIMEO_HOSTS = new Set(['vimeo.com', 'www.vimeo.com', 'player.vimeo.com']);
+
+function getYouTubeVideoId(url: URL): string | null {
+  if (url.hostname === 'youtu.be') {
+    const shortId = url.pathname.split('/').filter(Boolean)[0];
+    return shortId || null;
+  }
+
+  const queryId = url.searchParams.get('v');
+  if (queryId) return queryId;
+
+  const pathParts = url.pathname.split('/').filter(Boolean);
+  if (pathParts[0] === 'shorts' && pathParts[1]) return pathParts[1];
+  if (pathParts[0] === 'embed' && pathParts[1]) return pathParts[1];
+
+  return null;
+}
+
+function getVimeoVideoId(url: URL): string | null {
+  const segments = url.pathname.split('/').filter(Boolean);
+  const candidate = segments[segments.length - 1];
+  if (!candidate) return null;
+
+  return /^\d+$/.test(candidate) ? candidate : null;
+}
+
+function getEmbeddedVideoData(videoUrl: string): EmbeddedVideoData | null {
+  try {
+    const parsed = new URL(videoUrl);
+    if (!['https:', 'http:'].includes(parsed.protocol)) {
+      return null;
+    }
+
+    if (YOUTUBE_HOSTS.has(parsed.hostname)) {
+      const videoId = getYouTubeVideoId(parsed);
+      if (!videoId) return null;
+      return {
+        embedUrl: `https://www.youtube.com/embed/${videoId}`,
+        platform: 'youtube',
+      };
+    }
+
+    if (VIMEO_HOSTS.has(parsed.hostname)) {
+      const videoId = getVimeoVideoId(parsed);
+      if (!videoId) return null;
+      return {
+        embedUrl: `https://player.vimeo.com/video/${videoId}`,
+        platform: 'vimeo',
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -69,8 +133,6 @@ export function TeacherDetailsModal({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [open, onClose, photoPreviewOpen]);
 
-  if (!open) return null;
-
   const firstName = teacher?.user?.firstName || '';
   const lastName = teacher?.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim() || 'Unknown';
@@ -102,6 +164,12 @@ export function TeacherDetailsModal({
     );
 
   const avatarUrl = teacher?.user?.avatarUrl;
+  const embeddedVideo = useMemo(() => {
+    if (!teacher?.videoUrl) return null;
+    return getEmbeddedVideoData(teacher.videoUrl);
+  }, [teacher?.videoUrl]);
+
+  if (!open) return null;
 
   return (
     <>
@@ -133,19 +201,19 @@ export function TeacherDetailsModal({
       )}
 
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-5"
         onClick={(e) => e.target === e.currentTarget && onClose()}
         role="dialog"
         aria-modal="true"
         aria-label="Teacher details"
       >
       <div
-        className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-white shadow-xl"
+        className="w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header — same structure as CRM VoiceLeadDetailModal */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-7 sm:py-5 flex-shrink-0">
+          <h2 className="text-lg sm:text-xl font-semibold text-slate-900 flex items-center gap-2">
             <Image
               src="/teachers-logo.png"
               alt=""
@@ -166,7 +234,7 @@ export function TeacherDetailsModal({
         </div>
 
         {/* Body — same spacing as CRM modal */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-5 sm:p-7 space-y-8">
           {!teacherId ? (
             <p className="text-slate-500">No teacher selected.</p>
           ) : isLoading ? (
@@ -195,7 +263,7 @@ export function TeacherDetailsModal({
           ) : (
             <>
               {/* Teacher Header — large square profile photo with optional click-to-preview */}
-              <div className="flex items-start gap-5 pb-4 border-b border-slate-200">
+              <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 pb-6 border-b border-slate-200">
                 <button
                   type="button"
                   onClick={() => teacher.user?.avatarUrl && setPhotoPreviewOpen(true)}
@@ -209,13 +277,13 @@ export function TeacherDetailsModal({
                     src={teacher.user?.avatarUrl}
                     name={fullName}
                     size="xl"
-                    className="w-56 h-56 sm:w-64 sm:h-64 rounded-xl"
+                    className="w-40 h-40 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-xl"
                     alt={fullName}
                   />
                 </button>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h3 className={cn('text-xl font-bold', isActive ? 'text-slate-800' : 'text-slate-500')}>
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <h3 className={cn('text-2xl font-bold leading-tight', isActive ? 'text-slate-800' : 'text-slate-500')}>
                       {fullName}
                     </h3>
                     {!isActive && (
@@ -235,59 +303,76 @@ export function TeacherDetailsModal({
               </div>
 
               {/* Basic Information */}
-              <div className="space-y-4">
-                <h4 className="font-semibold text-slate-800">{t('basicInformation')}</h4>
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
+              <div className="space-y-5">
+                <h4 className="font-semibold text-slate-800 text-base sm:text-lg">{t('basicInformation')}</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
                     <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                       <Phone className="h-4 w-4 text-slate-400" aria-hidden="true" />
                       {t('phoneNumber')}
                     </label>
-                    <p className="text-slate-800 mt-1">{phone}</p>
+                    <p className="text-slate-800 text-sm sm:text-base break-words">{phone}</p>
                   </div>
-                  <div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
                     <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                       <CircleDollarSign className="h-4 w-4 text-slate-400" aria-hidden="true" />
                       Per Lesson Rate
                     </label>
-                    <p className="text-slate-800 mt-1">
+                    <p className="text-slate-800 text-sm sm:text-base">
                       {formatCurrency(lessonRate)}/lesson
                     </p>
                   </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+                    <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                      Experience
+                    </label>
+                    <p className="text-slate-800 text-sm sm:text-base">
+                      {formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}
+                    </p>
+                  </div>
                   {teacher.videoUrl && (
-                    <div>
+                    <div className="sm:col-span-2 rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-2">
                       <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                         <LinkIcon className="h-4 w-4 text-slate-400" aria-hidden="true" />
                         Video
                       </label>
-                      <p className="text-slate-800 mt-1">
-                        <a
-                          href={teacher.videoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary underline break-all"
-                        >
-                          {teacher.videoUrl}
-                        </a>
-                      </p>
+                      <div>
+                        {embeddedVideo ? (
+                          <div className="w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                            <iframe
+                              src={embeddedVideo.embedUrl}
+                              title={`${fullName} ${embeddedVideo.platform} video`}
+                              className="h-52 w-full sm:h-64 lg:h-72"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                              loading="lazy"
+                              referrerPolicy="strict-origin-when-cross-origin"
+                              sandbox="allow-same-origin allow-scripts allow-presentation allow-popups"
+                            />
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-500 italic">Video cannot be displayed</p>
+                        )}
+                      </div>
                     </div>
                   )}
                   {teacher.bio && (
-                    <div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
                       <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                         <FileText className="h-4 w-4 text-slate-400" aria-hidden="true" />
                         {t('bio')}
                       </label>
-                      <p className="text-slate-800 mt-1">{teacher.bio}</p>
+                      <p className="text-slate-800 text-sm sm:text-base whitespace-pre-wrap break-words">{teacher.bio}</p>
                     </div>
                   )}
                   {teacher.specialization && (
-                    <div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
                       <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-slate-400" aria-hidden="true" />
                         {t('specialization')}
                       </label>
-                      <p className="text-slate-800 mt-1">{teacher.specialization}</p>
+                      <p className="text-slate-800 text-sm sm:text-base break-words">{teacher.specialization}</p>
                     </div>
                   )}
                 </div>
@@ -295,7 +380,7 @@ export function TeacherDetailsModal({
 
               {/* Centers/Branches */}
               {centers.length > 0 && (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <h4 className="font-semibold text-slate-800 flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-slate-500" aria-hidden="true" />
                     {t('centers')}
@@ -312,12 +397,12 @@ export function TeacherDetailsModal({
 
               {/* Statistics */}
               {teacher._count && (
-                <div className="space-y-3 pt-4 border-t border-slate-200">
+                <div className="space-y-4 pt-6 border-t border-slate-200">
                   <h4 className="font-semibold text-slate-800 flex items-center gap-2">
                     <GraduationCap className="h-4 w-4 text-slate-500" aria-hidden="true" />
                     {t('statistics')}
                   </h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-slate-50 rounded-lg p-4">
                       <p className="text-sm text-slate-600 mb-1">{t('totalGroups')}</p>
                       <p className="text-2xl font-bold text-slate-800">{teacher._count.groups || 0}</p>
@@ -342,12 +427,12 @@ export function TeacherDetailsModal({
 
               {/* Groups list */}
               {groups.length > 0 && (
-                <div className="space-y-2 pt-4 border-t border-slate-200">
+                <div className="space-y-3 pt-6 border-t border-slate-200">
                   <h4 className="font-semibold text-slate-800 flex items-center gap-2">
                     <Users className="h-4 w-4 text-slate-500" aria-hidden="true" />
                     Groups ({groups.length})
                   </h4>
-                  <ul className="space-y-1">
+                  <ul className="space-y-2">
                     {groups.map((g) => (
                       <li
                         key={g.id}
@@ -365,12 +450,12 @@ export function TeacherDetailsModal({
 
               {/* Substitute groups list */}
               {substituteGroups.length > 0 && (
-                <div className="space-y-2 pt-4 border-t border-slate-200">
+                <div className="space-y-3 pt-6 border-t border-slate-200">
                   <h4 className="font-semibold text-amber-800 flex items-center gap-2">
                     <Users className="h-4 w-4 text-amber-700" aria-hidden="true" />
                     Sub-groups ({substituteGroups.length})
                   </h4>
-                  <ul className="space-y-1">
+                  <ul className="space-y-2">
                     {substituteGroups.map((g) => (
                       <li
                         key={g.id}

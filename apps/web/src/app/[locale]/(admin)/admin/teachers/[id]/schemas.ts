@@ -6,6 +6,7 @@ export const updateTeacherSchema = z.object({
   phone: z.string().max(50, 'Phone must be at most 50 characters').optional().or(z.literal('')),
   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
   hourlyRate: z.number().min(0, 'Hourly rate must be positive'),
+  experienceYears: z.number().int().min(0, 'Experience must be positive').max(80, 'Experience is too large').optional(),
   workingDays: z.array(z.string()).optional(),
   workingHours: z
     .object({

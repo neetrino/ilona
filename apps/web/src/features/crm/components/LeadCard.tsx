@@ -9,9 +9,7 @@ import {
   CheckCircle2,
   Clock3,
   GraduationCap,
-  Mic,
   Phone,
-  Pencil,
   User,
   Users,
 } from 'lucide-react';
@@ -24,7 +22,6 @@ interface LeadCardProps {
   availableStatuses?: CrmLeadStatus[];
   branchOptions?: CrmBranchOption[];
   onClick: () => void;
-  onEditClick?: (e: React.MouseEvent) => void;
   onStatusChange?: (leadId: string, status: CrmLeadStatus) => void;
   onBranchChange?: (leadId: string, centerId: string | null) => void;
   isChangingStatus?: boolean;
@@ -46,7 +43,6 @@ export function LeadCard({
   availableStatuses = CRM_COLUMN_ORDER,
   branchOptions = [],
   onClick,
-  onEditClick,
   onStatusChange,
   onBranchChange,
   isChangingStatus,
@@ -82,23 +78,8 @@ export function LeadCard({
         className
       )}
     >
-      {onEditClick && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditClick(e);
-          }}
-          className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-          title="Edit lead"
-          aria-label="Edit lead"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
-      )}
-      {/* Top section: name + edit */}
-      <p className="flex items-center gap-1.5 font-medium text-slate-900 truncate pr-8">
-        {voiceAttachment && <Mic className="h-3.5 w-3.5 text-slate-400 shrink-0" />}
+      {/* Top section: name */}
+      <p className="flex items-center gap-1.5 font-medium text-slate-900 truncate">
         <span className="truncate">{name}</span>
       </p>
 

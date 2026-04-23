@@ -12,7 +12,6 @@ interface ColumnProps {
   count: number;
   availableStatuses?: CrmLeadStatus[];
   onCardClick: (lead: CrmLead) => void;
-  onCardEdit?: (lead: CrmLead) => void;
   onCardStatusChange?: (leadId: string, status: CrmLeadStatus) => void;
   onCardBranchChange?: (leadId: string, centerId: string | null) => void;
   changingStatusId?: string | null;
@@ -28,7 +27,6 @@ export function Column({
   count,
   availableStatuses,
   onCardClick,
-  onCardEdit,
   onCardStatusChange,
   onCardBranchChange,
   changingStatusId,
@@ -71,7 +69,6 @@ export function Column({
               availableStatuses={availableStatuses}
               branchOptions={branchOptions}
               onClick={() => onCardClick(lead)}
-              onEditClick={onCardEdit ? () => onCardEdit(lead) : undefined}
               onStatusChange={onCardStatusChange}
               onBranchChange={onCardBranchChange}
               isChangingStatus={changingStatusId === lead.id}

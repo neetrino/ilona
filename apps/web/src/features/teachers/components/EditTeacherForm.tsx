@@ -9,6 +9,7 @@ import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from './Wee
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCenters } from '@/features/centers';
+import { getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
 
 const updateTeacherSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
@@ -16,6 +17,7 @@ const updateTeacherSchema = z.object({
   phone: z.string().optional(),
   status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
   hourlyRate: z.number().min(0, 'Per Lesson Rate must be positive').optional(),
+  experienceYears: z.number().int().min(0, 'Experience must be positive').max(80, 'Experience is too large').optional(),
   videoUrl: z
     .string()
     .trim()
@@ -101,6 +103,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       lastName: '',
       phone: '',
       hourlyRate: 0,
+      experienceYears: 0,
       videoUrl: '',
       centerIds: [],
       workingDays: [],
@@ -126,6 +129,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       setValue('phone', teacher.user.phone || '');
       setValue('status', teacher.user.status);
       setValue('hourlyRate', teacher.hourlyRate || 0);
+      setValue('experienceYears', getExperienceYearsFromHireDate(teacher.hireDate));
       setValue('videoUrl', teacher.videoUrl ?? '');
       const linkedCenterIds = teacher.centerLinks?.map((l) => l.center.id) ?? [];
       setValue('centerIds', linkedCenterIds);
@@ -176,6 +180,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
         phone: data.phone || undefined,
         status: data.status,
         hourlyRate: data.hourlyRate,
+        experienceYears: data.experienceYears,
         videoUrl: data.videoUrl ? data.videoUrl : null,
         centerIds: data.centerIds ?? [],
         workingDays: workingDays.length > 0 ? workingDays : undefined,
@@ -293,6 +298,20 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
                 {...register('hourlyRate', { valueAsNumber: true })}
                 error={errors.hourlyRate?.message}
                 placeholder="5000"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="experienceYears">Experience (years)</Label>
+              <Input
+                id="experienceYears"
+                type="number"
+                min="0"
+                max="80"
+                step="1"
+                {...register('experienceYears', { valueAsNumber: true })}
+                error={errors.experienceYears?.message}
+                placeholder="5"
               />
             </div>
 

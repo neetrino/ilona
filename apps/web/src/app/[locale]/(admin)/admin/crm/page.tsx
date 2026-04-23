@@ -16,7 +16,6 @@ import {
   ListTable,
   LeadDrawer,
   VoiceLeadModal,
-  VoiceLeadDetailModal,
   EditLeadModal,
   CRMFilters,
 } from '@/features/crm/components';
@@ -31,7 +30,6 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
   sortOrder: 'desc',
 };
 
-const VOICE_LEAD_PARAM = 'voiceLead';
 const ARCHIVE_PARAM = 'archive';
 const EDIT_LEAD_PARAM = 'editLead';
 
@@ -109,17 +107,10 @@ export default function AdminCrmPage() {
     () => searchParams.get(ARCHIVE_PARAM) === '1'
   );
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-  const [voiceLeadId, setVoiceLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [newColumnCenterId] = useState<string | null>(null);
   const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
   const [statusError, setStatusError] = useState<string | null>(null);
-
-  // Restore voice lead popup from URL after refresh
-  useEffect(() => {
-    const id = searchParams.get(VOICE_LEAD_PARAM);
-    if (id) setVoiceLeadId(id);
-  }, [searchParams]);
 
   // Restore Archive column visibility from URL after refresh
   useEffect(() => {
@@ -260,22 +251,8 @@ export default function AdminCrmPage() {
   const teachers = teachersData?.items ?? [];
   const groups = groupsData?.items ?? [];
 
-  const openVoiceLead = (id: string) => {
-    setVoiceLeadId(id);
-    setSelectedLeadId(null);
-    const url = new URL(window.location.href);
-    url.searchParams.set(VOICE_LEAD_PARAM, id);
-    window.history.replaceState(null, '', url.pathname + url.search);
-  };
-
-  const closeVoiceLead = () => {
-    setVoiceLeadId(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete(VOICE_LEAD_PARAM);
-    window.history.replaceState(null, '', url.pathname + (url.search || ''));
-  };
-
   const openEditLead = (id: string) => {
+    setSelectedLeadId(null);
     setEditLeadId(id);
     const url = new URL(window.location.href);
     url.searchParams.set(EDIT_LEAD_PARAM, id);
@@ -292,14 +269,10 @@ export default function AdminCrmPage() {
   const handleCardClick = (lead: CrmLead) => {
     const isVoiceLead = lead.attachments?.some((a) => a.type === 'VOICE_RECORDING');
     if (isVoiceLead) {
-      openVoiceLead(lead.id);
+      openEditLead(lead.id);
     } else {
       setSelectedLeadId(lead.id);
-      setVoiceLeadId(null);
     }
-  };
-  const handleCardEdit = (lead: CrmLead) => {
-    openEditLead(lead.id);
   };
   const handleCardStatusChange = (leadId: string, status: CrmLeadStatus) => {
     statusMutation.mutate({ leadId, status });
@@ -422,7 +395,6 @@ export default function AdminCrmPage() {
             columnStatuses={boardColumnStatuses}
             availableStatuses={adminVisibleStatuses}
             onCardClick={handleCardClick}
-            onCardEdit={handleCardEdit}
             onCardStatusChange={handleCardStatusChange}
             onCardBranchChange={isAdmin ? handleCardBranchChange : undefined}
             changingStatusId={changingStatusId}
@@ -465,15 +437,6 @@ export default function AdminCrmPage() {
         leadId={selectedLeadId}
         onClose={() => setSelectedLeadId(null)}
         onUpdated={() => refetch()}
-      />
-      <VoiceLeadDetailModal
-        leadId={voiceLeadId}
-        open={!!voiceLeadId}
-        onClose={closeVoiceLead}
-        onUpdated={() => refetch()}
-        centers={centers}
-        teachers={teachers}
-        groups={groups}
       />
       <EditLeadModal
         open={!!editLeadId}

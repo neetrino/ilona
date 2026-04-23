@@ -13,7 +13,6 @@ export interface BoardViewProps {
   /** All statuses available for card dropdown (e.g. move to Archive). Defaults to CRM_COLUMN_ORDER. */
   availableStatuses?: CrmLeadStatus[];
   onCardClick: (lead: CrmLead) => void;
-  onCardEdit?: (lead: CrmLead) => void;
   onCardStatusChange?: (leadId: string, status: CrmLeadStatus) => void;
   onCardBranchChange?: (leadId: string, centerId: string | null) => void;
   changingStatusId?: string | null;
@@ -29,7 +28,6 @@ export function BoardView({
   columnStatuses,
   availableStatuses = CRM_COLUMN_ORDER,
   onCardClick,
-  onCardEdit,
   onCardStatusChange,
   onCardBranchChange,
   changingStatusId,
@@ -65,7 +63,6 @@ export function BoardView({
           count={countsByStatus[status] ?? 0}
           availableStatuses={statusList}
           onCardClick={onCardClick}
-          onCardEdit={onCardEdit}
           onCardStatusChange={onCardStatusChange}
           onCardBranchChange={onCardBranchChange}
           changingStatusId={changingStatusId}

@@ -7,6 +7,7 @@ import { Button, Badge } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useUploadAvatar, useDeleteAvatar, useUpdateProfile } from '@/features/settings/hooks/useSettings';
 import Image from 'next/image';
+import { getExperienceYearsFromHireDate, formatExperienceLabel } from '@/features/teachers/utils/experience';
 
 export default function TeacherProfilePage() {
   const { user, setUser } = useAuthStore();
@@ -25,8 +26,11 @@ export default function TeacherProfilePage() {
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [bio, setBio] = useState('');
+  const [bio, setBio] = useState(user?.teacher?.bio || '');
   const [videoUrl, setVideoUrl] = useState(user?.teacher?.videoUrl || '');
+  const [experienceYears, setExperienceYears] = useState(
+    getExperienceYearsFromHireDate(user?.teacher?.hireDate)
+  );
 
   // Update form state when user changes
   useEffect(() => {
@@ -35,6 +39,8 @@ export default function TeacherProfilePage() {
       setLastName(user.lastName || '');
       setPhone(user.phone || '');
       setVideoUrl(user.teacher?.videoUrl || '');
+      setBio(user.teacher?.bio || '');
+      setExperienceYears(getExperienceYearsFromHireDate(user.teacher?.hireDate));
     }
   }, [user]);
 
@@ -51,6 +57,8 @@ export default function TeacherProfilePage() {
         lastName,
         phone: phone || undefined,
         videoUrl: trimmedVideoUrl ? trimmedVideoUrl : null,
+        bio: bio.trim() ? bio.trim() : null,
+        experienceYears,
       });
       setUploadSuccess(t('profileUpdatedSuccess') ?? 'Profile updated successfully!');
     } catch (error) {
@@ -268,6 +276,25 @@ export default function TeacherProfilePage() {
             />
             <p className="mt-1 text-xs text-slate-500">
               {t('introVideoUrlHint')}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              {t('experience')}
+            </label>
+            <input
+              type="number"
+              min={0}
+              max={80}
+              step={1}
+              value={experienceYears}
+              onChange={(e) => setExperienceYears(Math.max(0, Math.trunc(Number(e.target.value || 0))))}
+              placeholder="5"
+              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              {formatExperienceLabel(experienceYears)}
             </p>
           </div>
 
