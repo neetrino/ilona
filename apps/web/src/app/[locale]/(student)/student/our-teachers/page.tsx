@@ -7,6 +7,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { TeacherDetailsModal, type Teacher } from '@/features/teachers';
 import { Avatar } from '@/shared/components/ui';
+import { Sparkles } from 'lucide-react';
 
 const PAGE_SIZE = 100;
 
@@ -32,17 +33,6 @@ function getTeacherName(teacher: Teacher): string {
   return `${teacher.user.firstName} ${teacher.user.lastName}`.trim();
 }
 
-function getTeacherCenter(teacher: Teacher): string | null {
-  const directCenter = teacher.centers?.[0]?.name;
-  if (directCenter) return directCenter;
-
-  const linkedCenter = teacher.centerLinks?.[0]?.center.name;
-  if (linkedCenter) return linkedCenter;
-
-  const groupCenter = teacher.groups?.find((group) => group.center)?.center?.name;
-  return groupCenter ?? null;
-}
-
 function TeacherCard({
   teacher,
   onOpenDetails,
@@ -50,10 +40,7 @@ function TeacherCard({
   teacher: Teacher;
   onOpenDetails: (teacherId: string) => void;
 }) {
-  const t = useTranslations('teachers');
   const fullName = getTeacherName(teacher);
-  const center = getTeacherCenter(teacher);
-  const bio = teacher.bio?.trim() || teacher.specialization?.trim() || t('noBio');
 
   return (
     <article
@@ -66,23 +53,20 @@ function TeacherCard({
           onOpenDetails(teacher.id);
         }
       }}
-      className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+      className="group cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
     >
-      <div className="flex items-start gap-4">
+      <div className="relative mb-4 flex w-full justify-center">
         <Avatar
           src={teacher.user.avatarUrl}
           name={fullName}
-          size="lg"
-          className="ring-2 ring-slate-100"
+          size="xl"
+          className="z-10 h-72 w-full rounded-2xl border border-slate-100 bg-slate-50 object-contain ring-2 ring-white shadow-md transition-transform duration-300 group-hover:scale-[1.01] md:h-80"
         />
-
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold text-slate-900">{fullName}</h3>
-          <p className="mt-1 text-sm text-slate-500">{center ?? t('noCenter')}</p>
-        </div>
       </div>
 
-      <p className="mt-4 line-clamp-2 text-sm text-slate-600">{bio}</p>
+      <div className="min-w-0 text-center">
+        <h3 className="truncate text-xl font-semibold text-slate-900">{fullName}</h3>
+      </div>
     </article>
   );
 }
@@ -101,7 +85,8 @@ export default function StudentOurTeachersPage() {
   return (
     <DashboardLayout title={tNav('ourTeachers')} subtitle={tTeachers('studentSubtitle')}>
       <div className="space-y-5">
-        <div className="text-sm text-slate-500">
+        <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm text-amber-800">
+          <Sparkles className="h-4 w-4 text-amber-600" aria-hidden="true" />
           {tTeachers('allTeachersCount', { count: teachers.length })}
         </div>
 
@@ -124,7 +109,7 @@ export default function StudentOurTeachersPage() {
         )}
 
         {!isLoading && !error && teachers.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {teachers.map((teacher) => (
               <TeacherCard
                 key={teacher.id}

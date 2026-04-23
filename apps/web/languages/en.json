@@ -276,7 +276,7 @@
     "teacherNotFound": "Teacher not found",
     "viewFullPhoto": "View full-size photo",
     "studentSubtitle": "Meet all teachers in our center.",
-    "allTeachersCount": "{count} teachers in total",
+    "allTeachersCount": "Meet our amazing team of {count} dedicated teachers.",
     "details": "Details",
     "noCenter": "Center not specified",
     "noBio": "No description yet.",
