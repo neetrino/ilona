@@ -192,6 +192,7 @@ export interface StudentStatistics {
     present: number;
     absent: number;
     unjustifiedAbsences: number;
+    currentStreak: number;
     rate: number;
   };
   recordings: {
@@ -206,10 +207,6 @@ export interface StudentStatistics {
     rate: number;
   };
   feedbacks: number;
-  streak: {
-    currentStreak: number;
-    lastAttendanceDate: string | null;
-  };
   progress: {
     attendanceRate: number;
     recordingRate: number;

@@ -3,7 +3,7 @@ name: ilona md tasks rollout
 overview: "Phase-based rollout of all `ilona.md` tasks across Admin / Teacher / Student panels. Foundation-first: one DB schema phase (data-preserving migrations), then domain phases that ship DB+API+UI together. Each phase ends with a commit + push to `dev`."
 todos:
   - id: phase-0-db
-    content: Phase 0 — DB schema + data-preserving migrations (Group sub teacher, Teacher↔Center, Student DOB/status, DailyPlan, TeacherNote, StudentStreak, Recording, Settings)
+    content: Phase 0 — DB schema + data-preserving migrations (Group sub teacher, Teacher↔Center, Student DOB/status, DailyPlan, TeacherNote, Recording, Settings)
     status: completed
   - id: phase-1-manager
     content: Phase 1 — Manager role + branch-scoped guards across modules
@@ -51,7 +51,7 @@ todos:
     content: "Phase 15 — Teacher Panel: Notes, My Students tabs, Calendar restrictions, Analytics, Salary filters, Settings, Profile video"
     status: completed
   - id: phase-16-student
-    content: "Phase 16 — Student Panel: Chat history, multi-factor progress, Payments table, Calendar visuals, Streak"
+    content: "Phase 16 — Student Panel: Chat history, multi-factor progress, Payments table, Calendar visuals"
     status: completed
 isProject: false
 ---
@@ -78,7 +78,7 @@ Touches `[packages/database/prisma/schema.prisma](packages/database/prisma/schem
 - `Teacher`: many-to-many `centers` via new `TeacherCenter` join table; `videoUrl String?`. Backfill `centers` from existing `groups[].centerId`.
 - `Student`: `dateOfBirth DateTime?` (backfill from `age` where present), `firstLessonDate DateTime?`, `status StudentStatus` enum, `riskLevel` (computed value cached).
 - `CrmLead`: `comment String?`, `firstLessonDate DateTime?`, `parentName/parentPhone/parentPassportInfo` (re-add conditional fields - already partially removed in latest migration).
-- New models: `TeacherNote`, `DailyPlan`, `DailyPlanTopic`, `DailyPlanResource` (kind: READING|LISTENING|WRITING|SPEAKING), `StudentStreak`, `RecordingItem` (lesson-scoped, replacing CRM-only recordings for the new module).
+- New models: `TeacherNote`, `DailyPlan`, `DailyPlanTopic`, `DailyPlanResource` (kind: READING|LISTENING|WRITING|SPEAKING), `RecordingItem` (lesson-scoped, replacing CRM-only recordings for the new module).
 - Enums: `StudentStatus { ACTIVE INACTIVE UNGROUPED NEW RISK HIGH_RISK }`, `DailyPlanResourceKind`.
 - `SystemSettings`: `dailyPlanPenaltyAmd Decimal`. Drop timezone field if present.
 
@@ -162,10 +162,10 @@ Touches `[packages/database/prisma/schema.prisma](packages/database/prisma/schem
 - Progress: multi-factor (attendance + recording + payment) calculation in `[apps/api/src/modules/students](apps/api/src/modules/students)`.
 - Payments: table/column layout with sort.
 - Calendar visuals: green border for scheduled, faded for non-class, attended vs absent colors after the fact.
-- Streak: `StudentStreak` updates on attendance changes; recompute job on edits; visible to student/teacher/admin.
+- Attendance progress: derived from attendance, recording, and payment metrics in student-facing and staff-facing dashboards.
 
 ## Notes / Risks
 
-- Phases 9 and 16 are the largest (Daily Plan + Calendar locks; Streak + visual calendar). I'll surface concrete sub-task lists when those phases start.
+- Phases 9 and 16 are the largest (Daily Plan + Calendar locks; visual calendar). I'll surface concrete sub-task lists when those phases start.
 - I will pause and confirm before any drop-column migrations (e.g. dropping `Student.age`, `Teacher.hourlyRate`, old `riskLevel` shapes) until backfill is verified in Phase 6 / Phase 5 respectively.
 - For each phase, before commit: `pnpm typecheck`, `pnpm lint`, and `pnpm db:generate` if schema changed.

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS "student_streaks";
+ALTER TABLE "students" ADD COLUMN IF NOT EXISTS "currentStreak" INTEGER NOT NULL DEFAULT 0;

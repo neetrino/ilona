@@ -3,8 +3,11 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SalariesService } from '../finance/salaries.service';
 import {
   CreateDailyPlanDto,
   UpdateDailyPlanDto,
@@ -68,7 +71,26 @@ function normalizeTopics(topics: DailyPlanTopicInputDto[]): {
 
 @Injectable()
 export class DailyPlanService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => SalariesService))
+    private readonly salariesService: SalariesService,
+  ) {}
+
+  private async triggerSalaryRecalculationForPlan(plan: {
+    lessonId: string | null;
+    teacherId: string;
+    date: Date;
+  }) {
+    if (!plan.lessonId) {
+      return;
+    }
+    await this.salariesService
+      .recalculateSalaryForMonth(plan.teacherId, plan.date)
+      .catch(() => {
+        // Daily plan updates should not fail because salary recalculation failed.
+      });
+  }
 
   private async resolveTeacherId(userId: string): Promise<string> {
     const teacher = await this.prisma.teacher.findUnique({
@@ -215,7 +237,7 @@ export class DailyPlanService {
 
     const date = resolvedDate ?? (dto.date ? new Date(dto.date) : new Date());
 
-    return this.prisma.dailyPlan.create({
+    const created = await this.prisma.dailyPlan.create({
       data: {
         teacherId: resolvedTeacherId,
         lessonId: dto.lessonId ?? null,
@@ -225,6 +247,9 @@ export class DailyPlanService {
       },
       include: dailyPlanInclude,
     });
+
+    await this.triggerSalaryRecalculationForPlan(created);
+    return created;
   }
 
   async update(
@@ -287,8 +312,9 @@ export class DailyPlanService {
   }
 
   async remove(id: string, userId: string, userRole: UserRole) {
-    await this.findById(id, userId, userRole);
+    const existing = await this.findById(id, userId, userRole);
     await this.prisma.dailyPlan.delete({ where: { id } });
+    await this.triggerSalaryRecalculationForPlan(existing);
     return { ok: true } as const;
   }
 }

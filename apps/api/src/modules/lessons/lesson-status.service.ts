@@ -98,6 +98,9 @@ export class LessonStatusService {
             feedbacks: true,
           },
         },
+        dailyPlan: {
+          select: { id: true },
+        },
       },
     });
 

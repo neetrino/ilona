@@ -264,29 +264,6 @@ DO $$ BEGIN
 END $$;
 
 -- -----------------------------------------------------------------------------
--- STUDENT STREAK
--- -----------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS "student_streaks" (
-  "id"                 TEXT NOT NULL,
-  "studentId"          TEXT NOT NULL,
-  "currentStreak"      INTEGER NOT NULL DEFAULT 0,
-  "lastAttendanceDate" TIMESTAMP(3),
-  "updatedAt"          TIMESTAMP(3) NOT NULL,
-  CONSTRAINT "student_streaks_pkey" PRIMARY KEY ("id")
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS "student_streaks_studentId_key" ON "student_streaks"("studentId");
-
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'student_streaks_studentId_fkey') THEN
-    ALTER TABLE "student_streaks"
-      ADD CONSTRAINT "student_streaks_studentId_fkey"
-      FOREIGN KEY ("studentId") REFERENCES "students"("id")
-      ON DELETE CASCADE ON UPDATE CASCADE;
-  END IF;
-END $$;
-
--- -----------------------------------------------------------------------------
 -- RECORDING ITEMS
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS "recording_items" (

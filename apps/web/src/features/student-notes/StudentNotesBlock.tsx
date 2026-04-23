@@ -1,37 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useState } from 'react';
+import {
+  useCreateStudentNote,
+  useDeleteStudentNote,
+  useMyStudentNotes,
+} from './hooks';
 import type { StudentNote } from './types';
 
 const ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-2', 'rotate-2', 'rotate-0'];
 
 function getRotation(index: number): string {
   return ROTATIONS[index % ROTATIONS.length] ?? 'rotate-0';
-}
-
-function buildStorageKey(userId: string): string {
-  return `student-notes:${userId}`;
-}
-
-function readStoredNotes(storageKey: string): StudentNote[] {
-  const raw = window.localStorage.getItem(storageKey);
-  if (!raw) return [];
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item): item is StudentNote => {
-      return (
-        typeof item === 'object' &&
-        item !== null &&
-        typeof item.id === 'string' &&
-        typeof item.content === 'string' &&
-        typeof item.createdAt === 'string'
-      );
-    });
-  } catch {
-    return [];
-  }
 }
 
 function NoteCard({
@@ -63,35 +43,21 @@ function NoteCard({
 }
 
 export function StudentNotesBlock() {
-  const { user } = useAuthStore();
-  const storageKey = useMemo(() => buildStorageKey(user?.id ?? 'guest'), [user?.id]);
   const [draft, setDraft] = useState('');
-  const [notes, setNotes] = useState<StudentNote[]>([]);
+  const { data: notes = [], isLoading } = useMyStudentNotes();
+  const createNote = useCreateStudentNote();
+  const removeNote = useDeleteStudentNote();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    setNotes(readStoredNotes(storageKey));
-  }, [storageKey]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(storageKey, JSON.stringify(notes));
-  }, [notes, storageKey]);
-
-  const addNote = () => {
+  const addNote = async () => {
     const value = draft.trim();
-    if (!value) return;
-    const nextNote: StudentNote = {
-      id: crypto.randomUUID(),
-      content: value,
-      createdAt: new Date().toISOString(),
-    };
-    setNotes((prev) => [nextNote, ...prev]);
+    if (!value || createNote.isPending) return;
+    await createNote.mutateAsync(value);
     setDraft('');
   };
 
-  const deleteNote = (id: string) => {
-    setNotes((prev) => prev.filter((note) => note.id !== id));
+  const deleteNote = async (id: string) => {
+    if (removeNote.isPending) return;
+    await removeNote.mutateAsync(id);
   };
 
   return (
@@ -117,12 +83,15 @@ export function StudentNotesBlock() {
         <button
           type="button"
           onClick={addNote}
-          disabled={!draft.trim()}
+          disabled={!draft.trim() || createNote.isPending}
           className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 disabled:opacity-50"
         >
-          Add
+          {createNote.isPending ? 'Saving...' : 'Add'}
         </button>
       </div>
+      {isLoading ? (
+        <p className="text-sm text-slate-500">Loading notes...</p>
+      ) : null}
       {notes.length === 0 ? (
         <p className="text-sm text-slate-500">No notes yet. Add one above to keep it on your dashboard.</p>
       ) : (

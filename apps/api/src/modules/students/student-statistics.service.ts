@@ -5,20 +5,17 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@ilona/database';
-import { StudentStreakService } from './student-streak.service';
 
 @Injectable()
 export class StudentStatisticsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly streakService: StudentStreakService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getStatistics(id: string, currentUserId?: string, userRole?: UserRole) {
     const student = await this.prisma.student.findUnique({
       where: { id },
       select: {
         id: true,
+        currentStreak: true,
         group: {
           select: { centerId: true },
         },
@@ -78,9 +75,6 @@ export class StudentStatisticsService {
     // Get recording completion stats (per lesson assigned to student's group)
     const recordingStats = await this.getRecordingStats(id);
 
-    // Get streak (consecutive completed-lesson attendances).
-    const streak = await this.streakService.getStreak(id);
-
     const attendanceRate = totalAttendances > 0
       ? Math.round((presentCount / totalAttendances) * 100)
       : 0;
@@ -98,6 +92,7 @@ export class StudentStatisticsService {
         present: presentCount,
         absent: totalAttendances - presentCount,
         unjustifiedAbsences,
+        currentStreak: student.currentStreak,
         rate: attendanceRate,
       },
       recordings: recordingStats,
@@ -108,12 +103,6 @@ export class StudentStatisticsService {
         rate: paymentRate,
       },
       feedbacks: feedbacksCount,
-      streak: {
-        currentStreak: streak.currentStreak,
-        lastAttendanceDate: streak.lastAttendanceDate
-          ? streak.lastAttendanceDate.toISOString()
-          : null,
-      },
       progress: {
         attendanceRate,
         recordingRate: recordingStats.rate,

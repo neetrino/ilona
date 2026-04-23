@@ -9,6 +9,7 @@ export interface LessonForEnrichment {
   feedbacksCompleted: boolean;
   voiceSent: boolean;
   textSent: boolean;
+  dailyPlan: { id: string } | null;
   status: LessonStatus;
   completedAt?: Date | null;
 }
@@ -47,8 +48,15 @@ export class LessonEnrichmentService {
     feedbacksCompleted: boolean;
     voiceSent: boolean;
     textSent: boolean;
+      dailyPlan: { id: string } | null;
   }): boolean {
-    return lesson.absenceMarked && lesson.feedbacksCompleted && lesson.voiceSent && lesson.textSent;
+    return (
+      lesson.absenceMarked &&
+      lesson.feedbacksCompleted &&
+      lesson.voiceSent &&
+      lesson.textSent &&
+      Boolean(lesson.dailyPlan)
+    );
   }
 
   /**
@@ -63,6 +71,7 @@ export class LessonEnrichmentService {
       feedbacksCompleted: boolean;
       voiceSent: boolean;
       textSent: boolean;
+      dailyPlan: { id: string } | null;
     },
   ): 'DONE' | 'IN_PROCESS' | null {
     const isPast = this.isLessonPast(lesson.scheduledAt, lesson.duration);
@@ -119,12 +128,14 @@ export class LessonEnrichmentService {
       feedbacksCompleted: lesson.feedbacksCompleted,
       voiceSent: lesson.voiceSent,
       textSent: lesson.textSent,
+      dailyPlan: lesson.dailyPlan,
     });
 
     return {
       ...lesson,
       isLockedForTeacher: this.isLockedForTeacher(lesson.scheduledAt),
       completionStatus,
+      dailyPlanCompleted: Boolean(lesson.dailyPlan),
       isAbsenceLocked: this.isActionLocked(
         lesson.absenceMarked,
         lesson.status,
@@ -145,6 +156,12 @@ export class LessonEnrichmentService {
       ),
       isTextLocked: this.isActionLocked(
         lesson.textSent,
+        lesson.status,
+        lesson.completedAt ?? null,
+        lesson.scheduledAt,
+      ),
+      isDailyPlanLocked: this.isActionLocked(
+        Boolean(lesson.dailyPlan),
         lesson.status,
         lesson.completedAt ?? null,
         lesson.scheduledAt,

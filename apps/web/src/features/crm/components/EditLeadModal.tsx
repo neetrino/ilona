@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
@@ -61,6 +62,7 @@ export function EditLeadModal({
   >({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ['crm-lead', leadId],
@@ -121,6 +123,11 @@ export function EditLeadModal({
     }
   }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
 
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadId || !lead) return;
@@ -154,13 +161,15 @@ export function EditLeadModal({
 
   if (!open) return null;
 
-  return (
+  if (!isMounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-2 sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
       onMouseDown={onOverlayMouseDown}
       onClick={onOverlayClick}
     >
-      <div className="flex min-h-full items-center justify-center">
+      <div className="flex min-h-full items-center justify-center w-full">
         <div
           ref={modalContainerRef}
           className="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)]"
@@ -299,6 +308,56 @@ export function EditLeadModal({
                 </div>
               </div>
             </section>
+            {typeof form.age === 'number' && form.age > 0 && form.age < 18 && (
+              <section className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Parent details (under 18)
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent name</label>
+                  <input
+                    type="text"
+                    value={form.parentName ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
+                    placeholder="John"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent surname</label>
+                  <input
+                    type="text"
+                    value={form.parentSurname ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, parentSurname: e.target.value }))}
+                    placeholder="Smith"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent phone</label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    value={form.parentPhone != null && form.parentPhone !== '' ? `+${form.parentPhone}` : ''}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
+                    }
+                    placeholder="+374XXXXXXXX"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent passport details</label>
+                  <input
+                    type="text"
+                    value={form.parentPassportInfo ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
+                    placeholder="XX0000000"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+              </section>
+            )}
             <section className="space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Academic Info</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -373,56 +432,6 @@ export function EditLeadModal({
                 </div>
               </div>
             </section>
-            {typeof form.age === 'number' && form.age > 0 && form.age < 18 && (
-              <section className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Parent details (under 18)
-                </p>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent name</label>
-                  <input
-                    type="text"
-                    value={form.parentName ?? ''}
-                    onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
-                    placeholder="John"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent surname</label>
-                  <input
-                    type="text"
-                    value={form.parentSurname ?? ''}
-                    onChange={(e) => setForm((f) => ({ ...f, parentSurname: e.target.value }))}
-                    placeholder="Smith"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent phone</label>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    value={form.parentPhone != null && form.parentPhone !== '' ? `+${form.parentPhone}` : ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
-                    }
-                    placeholder="+374XXXXXXXX"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent passport details</label>
-                  <input
-                    type="text"
-                    value={form.parentPassportInfo ?? ''}
-                    onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
-                    placeholder="XX0000000"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  />
-                </div>
-              </section>
-            )}
             </div>
             <div className="border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-2px_8px_rgba(15,23,42,0.06)] backdrop-blur sm:px-6">
               <section className="space-y-2">
@@ -473,6 +482,7 @@ export function EditLeadModal({
         )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -6,41 +6,80 @@ import { Button } from '@/shared/components/ui';
 import { usePenalties, useUpdatePenalties } from '@/features/settings/hooks/useSettings';
 import { getErrorMessage } from '@/shared/lib/api';
 
+type PenaltyFormValues = {
+  penaltyAbsenceAmd: string;
+  penaltyFeedbackAmd: string;
+  penaltyVoiceAmd: string;
+  penaltyTextAmd: string;
+  penaltyDailyPlanAmd: string;
+};
+
+function parseNonNegativeNumber(value: string): number | null {
+  const normalizedValue = value.trim();
+  if (!normalizedValue) return null;
+
+  const parsedValue = Number(normalizedValue);
+  if (Number.isNaN(parsedValue) || parsedValue < 0) return null;
+
+  return parsedValue;
+}
+
 export function PenaltyTab() {
   const t = useTranslations('settings');
   const tCommon = useTranslations('common');
   const { data: penalties, isLoading } = usePenalties();
   const updatePenalties = useUpdatePenalties();
   
-  const [penaltyAbsenceAmd, setPenaltyAbsenceAmd] = useState(1000);
-  const [penaltyFeedbackAmd, setPenaltyFeedbackAmd] = useState(1000);
-  const [penaltyVoiceAmd, setPenaltyVoiceAmd] = useState(1000);
-  const [penaltyTextAmd, setPenaltyTextAmd] = useState(1000);
-  const [penaltyDailyPlanAmd, setPenaltyDailyPlanAmd] = useState(1000);
+  const [formValues, setFormValues] = useState<PenaltyFormValues>({
+    penaltyAbsenceAmd: '1000',
+    penaltyFeedbackAmd: '500',
+    penaltyVoiceAmd: '1000',
+    penaltyTextAmd: '1000',
+    penaltyDailyPlanAmd: '1000',
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Initialize from API data
   useEffect(() => {
     if (penalties) {
-      setPenaltyAbsenceAmd(penalties.penaltyAbsenceAmd);
-      setPenaltyFeedbackAmd(penalties.penaltyFeedbackAmd);
-      setPenaltyVoiceAmd(penalties.penaltyVoiceAmd);
-      setPenaltyTextAmd(penalties.penaltyTextAmd);
-      setPenaltyDailyPlanAmd(penalties.penaltyDailyPlanAmd ?? 1000);
+      setFormValues({
+        penaltyAbsenceAmd: String(penalties.penaltyAbsenceAmd),
+        penaltyFeedbackAmd: String(penalties.penaltyFeedbackAmd),
+        penaltyVoiceAmd: String(penalties.penaltyVoiceAmd),
+        penaltyTextAmd: String(penalties.penaltyTextAmd),
+        penaltyDailyPlanAmd: String(penalties.penaltyDailyPlanAmd ?? 1000),
+      });
     }
   }, [penalties]);
 
-  const isValid =
-    penaltyAbsenceAmd >= 0 &&
-    penaltyFeedbackAmd >= 0 &&
-    penaltyVoiceAmd >= 0 &&
-    penaltyTextAmd >= 0 &&
-    penaltyDailyPlanAmd >= 0;
+  const parsedPenalties = {
+    penaltyAbsenceAmd: parseNonNegativeNumber(formValues.penaltyAbsenceAmd),
+    penaltyFeedbackAmd: parseNonNegativeNumber(formValues.penaltyFeedbackAmd),
+    penaltyVoiceAmd: parseNonNegativeNumber(formValues.penaltyVoiceAmd),
+    penaltyTextAmd: parseNonNegativeNumber(formValues.penaltyTextAmd),
+    penaltyDailyPlanAmd: parseNonNegativeNumber(formValues.penaltyDailyPlanAmd),
+  };
+
+  const isValid = Object.values(parsedPenalties).every((value) => value !== null);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValid) {
+    const {
+      penaltyAbsenceAmd,
+      penaltyFeedbackAmd,
+      penaltyVoiceAmd,
+      penaltyTextAmd,
+      penaltyDailyPlanAmd,
+    } = parsedPenalties;
+
+    if (
+      penaltyAbsenceAmd === null ||
+      penaltyFeedbackAmd === null ||
+      penaltyVoiceAmd === null ||
+      penaltyTextAmd === null ||
+      penaltyDailyPlanAmd === null
+    ) {
       setError(t('penaltyAmountsMustBeNonNegative'));
       return;
     }
@@ -64,16 +103,11 @@ export function PenaltyTab() {
     }
   };
 
-  const handleInputChange = (
-    setter: (value: number) => void,
-    value: string
-  ) => {
-    const numValue = value === '' ? 0 : parseFloat(value);
-    if (!isNaN(numValue) && numValue >= 0) {
-      setter(numValue);
-    } else if (value === '') {
-      setter(0);
-    }
+  const handleInputChange = (field: keyof PenaltyFormValues, value: string) => {
+    setFormValues((currentValues) => ({
+      ...currentValues,
+      [field]: value,
+    }));
   };
 
   if (isLoading) {
@@ -104,8 +138,8 @@ export function PenaltyTab() {
                 type="number"
                 min="0"
                 step="1"
-                value={penaltyAbsenceAmd}
-                onChange={(e) => handleInputChange(setPenaltyAbsenceAmd, e.target.value)}
+                value={formValues.penaltyAbsenceAmd}
+                onChange={(e) => handleInputChange('penaltyAbsenceAmd', e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
@@ -122,8 +156,8 @@ export function PenaltyTab() {
                 type="number"
                 min="0"
                 step="1"
-                value={penaltyFeedbackAmd}
-                onChange={(e) => handleInputChange(setPenaltyFeedbackAmd, e.target.value)}
+                value={formValues.penaltyFeedbackAmd}
+                onChange={(e) => handleInputChange('penaltyFeedbackAmd', e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
@@ -140,8 +174,8 @@ export function PenaltyTab() {
                 type="number"
                 min="0"
                 step="1"
-                value={penaltyVoiceAmd}
-                onChange={(e) => handleInputChange(setPenaltyVoiceAmd, e.target.value)}
+                value={formValues.penaltyVoiceAmd}
+                onChange={(e) => handleInputChange('penaltyVoiceAmd', e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
@@ -158,8 +192,8 @@ export function PenaltyTab() {
                 type="number"
                 min="0"
                 step="1"
-                value={penaltyTextAmd}
-                onChange={(e) => handleInputChange(setPenaltyTextAmd, e.target.value)}
+                value={formValues.penaltyTextAmd}
+                onChange={(e) => handleInputChange('penaltyTextAmd', e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
@@ -176,8 +210,8 @@ export function PenaltyTab() {
                 type="number"
                 min="0"
                 step="1"
-                value={penaltyDailyPlanAmd}
-                onChange={(e) => handleInputChange(setPenaltyDailyPlanAmd, e.target.value)}
+                value={formValues.penaltyDailyPlanAmd}
+                onChange={(e) => handleInputChange('penaltyDailyPlanAmd', e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>

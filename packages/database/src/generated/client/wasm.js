@@ -208,6 +208,7 @@ exports.Prisma.StudentScalarFieldEnum = {
   userId: 'userId',
   groupId: 'groupId',
   teacherId: 'teacherId',
+  currentStreak: 'currentStreak',
   age: 'age',
   dateOfBirth: 'dateOfBirth',
   firstLessonDate: 'firstLessonDate',
@@ -225,6 +226,14 @@ exports.Prisma.StudentScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   leadId: 'leadId'
+};
+
+exports.Prisma.StudentNoteScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PlannedAbsenceScalarFieldEnum = {
@@ -444,14 +453,6 @@ exports.Prisma.DailyPlanResourceScalarFieldEnum = {
   link: 'link',
   description: 'description',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.StudentStreakScalarFieldEnum = {
-  id: 'id',
-  studentId: 'studentId',
-  currentStreak: 'currentStreak',
-  lastAttendanceDate: 'lastAttendanceDate',
   updatedAt: 'updatedAt'
 };
 
@@ -678,6 +679,7 @@ exports.Prisma.ModelName = {
   TeacherCenter: 'TeacherCenter',
   TeacherNote: 'TeacherNote',
   Student: 'Student',
+  StudentNote: 'StudentNote',
   PlannedAbsence: 'PlannedAbsence',
   StudentGroupHistory: 'StudentGroupHistory',
   Lesson: 'Lesson',
@@ -694,7 +696,6 @@ exports.Prisma.ModelName = {
   DailyPlan: 'DailyPlan',
   DailyPlanTopic: 'DailyPlanTopic',
   DailyPlanResource: 'DailyPlanResource',
-  StudentStreak: 'StudentStreak',
   RecordingItem: 'RecordingItem',
   CrmLead: 'CrmLead',
   CrmLeadActivity: 'CrmLeadActivity',

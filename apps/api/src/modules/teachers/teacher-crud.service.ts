@@ -299,6 +299,9 @@ export class TeacherCrudService {
         feedbacksCompleted: true,
         voiceSent: true,
         textSent: true,
+        dailyPlan: {
+          select: { id: true },
+        },
       },
     });
 
@@ -313,7 +316,7 @@ export class TeacherCrudService {
       const teacherLessons = allCompletedLessons.filter(l => l.teacherId === teacherId);
       
       if (teacherLessons.length === 0) {
-        // No lessons, show 0/4 with 0 deduction
+        // No lessons, show 0/5 with 0 deduction
         teacherObligationsMap.set(teacherId, {
           completed: 0,
           total: 0,
@@ -330,13 +333,14 @@ export class TeacherCrudService {
             lesson.feedbacksCompleted ?? false,
             lesson.voiceSent ?? false,
             lesson.textSent ?? false,
+            Boolean(lesson.dailyPlan),
           ];
           
-          totalRequired += 4;
+          totalRequired += 5;
           totalCompleted += obligations.filter(Boolean).length;
         });
 
-        // Calculate average actions completed per lesson (for display as X/4)
+        // Calculate average actions completed per lesson (for display as X/5)
         const avgCompletedPerLesson = Math.round(totalCompleted / teacherLessons.length);
         
         // Total missing actions across all lessons
@@ -344,8 +348,8 @@ export class TeacherCrudService {
         const deductionAmount = missingCount * DEDUCTION_PER_MISSING_ACTION;
 
         teacherObligationsMap.set(teacherId, {
-          completed: avgCompletedPerLesson, // Average per lesson for X/4 display
-          total: 4, // Always 4 actions required
+          completed: avgCompletedPerLesson, // Average per lesson for X/5 display
+          total: 5, // Always 5 actions required
           deductionAmount,
         });
       }
@@ -387,7 +391,7 @@ export class TeacherCrudService {
         substituteForGroupsCount: teacher._count.substituteForGroups ?? 0,
         // Add obligation fields
         obligationsDoneCount: obligations.completed,
-        obligationsTotal: 4, // Always 4 actions required
+        obligationsTotal: 5, // Always 5 actions required
         deductionAmount: obligations.deductionAmount,
         finalCost,
       };

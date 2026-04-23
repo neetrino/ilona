@@ -22,6 +22,7 @@ export interface ActionWeights {
   feedbacks: number;
   voice: number;
   text: number;
+  dailyPlan: number;
 }
 
 /**
@@ -43,6 +44,7 @@ export interface CompletedActions {
   feedbacks: boolean;
   voice: boolean;
   text: boolean;
+  dailyPlan: boolean;
 }
 
 /**
@@ -93,6 +95,7 @@ export interface LessonActionData {
   feedbacksCompleted: boolean | null;
   voiceSent: boolean | null;
   textSent: boolean | null;
+  dailyPlan: { id: string } | null;
 }
 
 

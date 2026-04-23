@@ -146,6 +146,9 @@ export class SalaryBreakdownService {
         feedbacksCompleted: true,
         voiceSent: true,
         textSent: true,
+        dailyPlan: {
+          select: { id: true },
+        },
         group: {
           select: {
             name: true,
@@ -209,6 +212,7 @@ export class SalaryBreakdownService {
         feedbacks: lessonData.feedbacksCompleted ?? false,
         voice: lessonData.voiceSent ?? false,
         text: lessonData.textSent ?? false,
+        dailyPlan: Boolean(lessonData.dailyPlan),
       };
 
       // Count completed actions for obligations tracking
@@ -217,8 +221,9 @@ export class SalaryBreakdownService {
         completedActions.feedbacks,
         completedActions.voice,
         completedActions.text,
+        completedActions.dailyPlan,
       ].filter(Boolean).length;
-      const totalActions = 4;
+      const totalActions = 5;
 
       // Calculate deduction from penalties for missing actions
       const penaltyDeduction = this.calculationService.calculateDeduction(completedActions, penalties);
@@ -304,7 +309,7 @@ export class SalaryBreakdownService {
 
   /**
    * Get obligation details for a specific lesson
-   * Returns which of the 4 actions (Absence, Feedbacks, Voice, Text) are completed
+   * Returns which of the required actions are completed
    */
   async getLessonObligation(lessonId: string) {
     const lesson = await this.db.lesson.findUnique({
@@ -318,6 +323,9 @@ export class SalaryBreakdownService {
         voiceSentAt: true,
         textSent: true,
         textSentAt: true,
+        dailyPlan: {
+          select: { id: true },
+        },
         updatedAt: true,
       },
     });
@@ -330,12 +338,14 @@ export class SalaryBreakdownService {
     const feedbacksDone = lesson.feedbacksCompleted ?? false;
     const voiceDone = lesson.voiceSent ?? false;
     const textDone = lesson.textSent ?? false;
+    const dailyPlanDone = Boolean(lesson.dailyPlan);
 
     const completedActionsCount = [
       absenceDone,
       feedbacksDone,
       voiceDone,
       textDone,
+      dailyPlanDone,
     ].filter(Boolean).length;
 
     return {
@@ -344,8 +354,9 @@ export class SalaryBreakdownService {
       feedbacksDone,
       voiceDone,
       textDone,
+      dailyPlanDone,
       completedActionsCount,
-      totalActions: 4,
+      totalActions: 5,
       updatedAt: lesson.updatedAt.toISOString(),
     };
   }
