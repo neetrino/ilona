@@ -6,7 +6,7 @@ import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMyDashboard, type StudentUpcomingLesson } from '@/features/students';
 import { formatCurrency } from '@/shared/lib/utils';
-import { NotesBlock } from '@/features/teacher-notes';
+import { StudentNotesBlock } from '@/features/student-notes';
 
 type ProgressTone = 'emerald' | 'sky' | 'amber';
 
@@ -227,7 +227,7 @@ export default function StudentDashboardPage() {
           />
         </div>
 
-        <NotesBlock />
+        <StudentNotesBlock />
 
         {/* Group Info */}
         {student?.group && (
