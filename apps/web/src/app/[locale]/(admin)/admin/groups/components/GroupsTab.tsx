@@ -136,6 +136,32 @@ export function GroupsTab({
     handleBulkDeleteGroupsConfirm,
   } = useGroupsManagement(viewMode, searchQuery, page, selectedCenterId, boardTabCenterId);
 
+  useEffect(() => {
+    if (viewMode !== 'board' || selectedCenterId || isLoadingBranchTabs) {
+      return;
+    }
+
+    if (searchParams.get('branch') || boardTabCenterId) {
+      return;
+    }
+
+    const firstCenterId = allCenters[0]?.id;
+    if (!firstCenterId) {
+      return;
+    }
+
+    setBoardTabCenterId(firstCenterId);
+    updateUrl({ branch: firstCenterId });
+  }, [
+    viewMode,
+    selectedCenterId,
+    isLoadingBranchTabs,
+    searchParams,
+    boardTabCenterId,
+    allCenters,
+    updateUrl,
+  ]);
+
   const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
 
   const handleBranchTabClick = (centerId: string) => {
