@@ -340,6 +340,8 @@ export function useMyDashboard(enabled = true) {
     queryKey: studentKeys.myDashboard(),
     queryFn: () => fetchMyDashboard(),
     enabled,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 

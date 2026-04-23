@@ -8,13 +8,15 @@ import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import Image from 'next/image';
 import { useLogout } from '@/features/auth/hooks/useLogout';
+import { StudentStreakBadge } from './StudentStreakBadge';
 
 interface HeaderProps {
   title: string;
   subtitle?: string;
+  headerContent?: React.ReactNode;
 }
 
-export function Header({ title, subtitle }: HeaderProps) {
+export function Header({ title, subtitle, headerContent }: HeaderProps) {
   const [searchValue, setSearchValue] = useState('');
   const locale = useLocale();
   const router = useRouter();
@@ -74,6 +76,10 @@ export function Header({ title, subtitle }: HeaderProps) {
             className="pl-10 w-64 bg-slate-50 border-slate-200 focus:bg-white"
           />
         </div>
+
+        {user?.role === 'STUDENT' ? <StudentStreakBadge /> : null}
+
+        {headerContent}
 
         {/* Language Switcher */}
         <LanguageSwitcher />
