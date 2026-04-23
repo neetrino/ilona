@@ -24,6 +24,7 @@ export class SalaryCalculationService {
       feedbacks: settings.feedbacksPercent,
       voice: settings.voicePercent,
       text: settings.textPercent,
+      dailyPlan: 0,
     };
   }
 
@@ -62,6 +63,7 @@ export class SalaryCalculationService {
     if (!completedActions.feedbacks) deduction += penalties.penaltyFeedbackAmd;
     if (!completedActions.voice) deduction += penalties.penaltyVoiceAmd;
     if (!completedActions.text) deduction += penalties.penaltyTextAmd;
+    if (!completedActions.dailyPlan) deduction += penalties.penaltyDailyPlanAmd;
     return deduction;
   }
 
@@ -83,7 +85,7 @@ export class SalaryCalculationService {
    * This is the single source of truth for salary calculation
    * Returns: SUM of (baseSalary * earnedPercent / 100) for all lessons in the month
    * Salary is calculated per lesson (fixed price per class), NOT per hour
-   * Salary updates immediately when ANY of the 4 actions is completed, without requiring "Lesson Complete"
+   * Salary updates immediately when any required lesson action is completed, without requiring "Lesson Complete"
    */
   async calculateMonthlySalaryFromLessons(teacherId: string, month: Date): Promise<number> {
     // Get start and end of month
@@ -125,6 +127,9 @@ export class SalaryCalculationService {
         feedbacksCompleted: true,
         voiceSent: true,
         textSent: true,
+        dailyPlan: {
+          select: { id: true },
+        },
       },
     });
 
@@ -166,12 +171,20 @@ export class SalaryCalculationService {
 
       // Calculate completed actions
       // Type assertion needed until Prisma client is regenerated
-      const lessonData = lesson as { id: string; absenceMarked: boolean | null; feedbacksCompleted: boolean | null; voiceSent: boolean | null; textSent: boolean | null };
+      const lessonData = lesson as {
+        id: string;
+        absenceMarked: boolean | null;
+        feedbacksCompleted: boolean | null;
+        voiceSent: boolean | null;
+        textSent: boolean | null;
+        dailyPlan: { id: string } | null;
+      };
       const completedActions = {
         absence: lessonData.absenceMarked ?? false,
         feedbacks: lessonData.feedbacksCompleted ?? false,
         voice: lessonData.voiceSent ?? false,
         text: lessonData.textSent ?? false,
+        dailyPlan: Boolean(lessonData.dailyPlan),
       };
 
       // Calculate payable amount: lessonRate - penalties for missing actions

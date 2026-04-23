@@ -94,6 +94,9 @@ export class SalaryGenerationService {
         absenceMarked: true,
         voiceSent: true,
         textSent: true,
+        dailyPlan: {
+          select: { id: true },
+        },
       },
     });
 
@@ -145,12 +148,20 @@ export class SalaryGenerationService {
 
       // Calculate completed actions
       // Type assertion needed until Prisma client is regenerated
-      const lessonData = lesson as { id: string; absenceMarked: boolean | null; feedbacksCompleted: boolean | null; voiceSent: boolean | null; textSent: boolean | null };
+      const lessonData = lesson as {
+        id: string;
+        absenceMarked: boolean | null;
+        feedbacksCompleted: boolean | null;
+        voiceSent: boolean | null;
+        textSent: boolean | null;
+        dailyPlan: { id: string } | null;
+      };
       const completedActions: CompletedActions = {
         absence: lessonData.absenceMarked ?? false,
         feedbacks: lessonData.feedbacksCompleted ?? false,
         voice: lessonData.voiceSent ?? false,
         text: lessonData.textSent ?? false,
+        dailyPlan: Boolean(lessonData.dailyPlan),
       };
 
       // Count completed actions for obligations tracking
@@ -159,9 +170,10 @@ export class SalaryGenerationService {
         completedActions.feedbacks,
         completedActions.voice,
         completedActions.text,
+        completedActions.dailyPlan,
       ].filter(Boolean).length;
       
-      const totalActions = 4;
+      const totalActions = 5;
       totalObligationsRequired += totalActions;
       totalObligationsCompleted += completedCount;
 

@@ -204,6 +204,9 @@ export class LessonCrudService {
               feedbacks: true,
             },
           },
+          dailyPlan: {
+            select: { id: true },
+          },
         },
       }),
       this.prisma.lesson.count({ where }),
@@ -292,6 +295,9 @@ export class LessonCrudService {
             },
           },
         },
+        dailyPlan: {
+          select: { id: true },
+        },
       },
     });
 
@@ -374,15 +380,19 @@ export class LessonCrudService {
         _count: {
           select: { attendances: true, feedbacks: true },
         },
+        dailyPlan: {
+          select: { id: true },
+        },
       },
     });
 
     // Return in the same format as findAll for consistency
+    const enrichedItems = lessons.map((lesson) => this.enrichmentService.enrichLesson(lesson));
     return {
-      items: lessons,
-      total: lessons.length,
+      items: enrichedItems,
+      total: enrichedItems.length,
       page: 1,
-      pageSize: lessons.length,
+      pageSize: enrichedItems.length,
       totalPages: 1,
     };
   }

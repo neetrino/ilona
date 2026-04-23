@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   useCreateDailyPlan,
   useUpdateDailyPlan,
@@ -46,6 +47,60 @@ interface DraftResource {
 interface DraftTopic {
   title: string;
   resources: DraftResource[];
+}
+
+interface AutoResizeTextareaProps {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  resizeStorageKey: string;
+}
+
+function AutoResizeTextarea({
+  value,
+  onChange,
+  disabled = false,
+  placeholder,
+  resizeStorageKey,
+}: AutoResizeTextareaProps) {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [height, setHeight] = useState<number | null>(null);
+  const storageKey = `daily-plan-description-height:${resizeStorageKey}`;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedHeight = window.sessionStorage.getItem(storageKey);
+    if (!savedHeight) return;
+    const parsedHeight = Number(savedHeight);
+    if (!Number.isNaN(parsedHeight) && parsedHeight > 0) {
+      setHeight(parsedHeight);
+    }
+  }, [storageKey]);
+
+  const persistHeight = () => {
+    const el = textareaRef.current;
+    if (!el || typeof window === 'undefined') return;
+    const currentHeight = Math.round(el.getBoundingClientRect().height);
+    if (currentHeight <= 0) return;
+    setHeight(currentHeight);
+    window.sessionStorage.setItem(storageKey, String(currentHeight));
+  };
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onMouseUp={persistHeight}
+      onTouchEnd={persistHeight}
+      disabled={disabled}
+      placeholder={placeholder}
+      rows={2}
+      style={height ? { height: `${height}px` } : undefined}
+      className="w-full min-h-[56px] px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-y overflow-auto"
+    />
+  );
 }
 
 function emptyTopic(): DraftTopic {
@@ -103,6 +158,7 @@ export function DailyPlanEditor({
   const [groupId, setGroupId] = useState('');
   const [topics, setTopics] = useState<DraftTopic[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   const create = useCreateDailyPlan();
   const update = useUpdateDailyPlan();
@@ -116,6 +172,11 @@ export function DailyPlanEditor({
     setGroupId(resolvedGroupId);
     setTopics(draft.topics);
   }, [plan, initialGroupId]);
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
   const updateTopic = (idx: number, patch: Partial<DraftTopic>) => {
     setTopics((prev) =>
@@ -198,9 +259,8 @@ export function DailyPlanEditor({
     plan?.group?.name ??
     'Selected group';
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+  const modalContent = (
+    <div className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
           <h2 className="text-lg font-semibold text-slate-800">
             {mode === 'create' ? 'New Daily Plan' : 'Edit Daily Plan'}
@@ -334,17 +394,14 @@ export function DailyPlanEditor({
                           placeholder="https://… (optional)"
                           className="w-full h-9 px-2 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
-                        <textarea
+                        <AutoResizeTextarea
                           value={res.description}
-                          onChange={(e) =>
-                            updateResource(idx, res.kind, {
-                              description: e.target.value,
-                            })
+                          onChange={(description) =>
+                            updateResource(idx, res.kind, { description })
                           }
                           disabled={readOnly}
                           placeholder="Description (optional)"
-                          rows={2}
-                          className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                          resizeStorageKey={`${mode}-${plan?.id ?? 'draft'}-${idx}-${res.kind}`}
                         />
                       </div>
                     ))}
@@ -384,7 +441,17 @@ export function DailyPlanEditor({
             </button>
           )}
         </footer>
-      </div>
     </div>
+  );
+
+  if (!isMounted) {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
+      {modalContent}
+    </div>,
+    document.body
   );
 }

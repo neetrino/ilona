@@ -20,6 +20,7 @@ export interface Lesson {
   voiceSentAt?: string;
   textSent?: boolean;
   textSentAt?: string;
+  dailyPlanCompleted?: boolean;
   completedAt?: string;
   // Computed fields from backend
   isLockedForTeacher?: boolean;
@@ -29,6 +30,7 @@ export interface Lesson {
   isFeedbackLocked?: boolean;
   isVoiceLocked?: boolean;
   isTextLocked?: boolean;
+  isDailyPlanLocked?: boolean;
   group: {
     id: string;
     name: string;

@@ -66,12 +66,13 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
   // Get action breakdown from salary details
   const actionBreakdown = (salary as { actionBreakdown?: Record<string, { required?: number; completed?: number }> })?.actionBreakdown || null;
 
-  // Define the 4 required actions
+  // Define the required lesson actions for payout
   const requiredActions = [
     { key: 'absenceMarked', label: 'Absence Marked' },
     { key: 'feedbacksCompleted', label: 'Feedbacks Completed' },
     { key: 'voiceSent', label: 'Voice Sent' },
     { key: 'textSent', label: 'Text Sent' },
+    { key: 'dailyPlan', label: 'Daily Plan' },
   ];
 
   // Calculate completion from action breakdown if available
@@ -153,7 +154,7 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-slate-600">Completion Summary:</span>
                     <span className="font-bold text-lg text-slate-800">
-                      {completedCount}/{totalCount || 4}
+                      {completedCount}/{totalCount || 5}
                     </span>
                   </div>
                 </div>

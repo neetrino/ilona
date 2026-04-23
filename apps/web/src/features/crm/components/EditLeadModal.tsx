@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
@@ -61,6 +62,7 @@ export function EditLeadModal({
   >({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ['crm-lead', leadId],
@@ -121,6 +123,11 @@ export function EditLeadModal({
     }
   }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
 
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadId || !lead) return;
@@ -154,13 +161,15 @@ export function EditLeadModal({
 
   if (!open) return null;
 
-  return (
+  if (!isMounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-2 sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
       onMouseDown={onOverlayMouseDown}
       onClick={onOverlayClick}
     >
-      <div className="flex min-h-full items-center justify-center">
+      <div className="flex min-h-full items-center justify-center w-full">
         <div
           ref={modalContainerRef}
           className="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)]"
@@ -473,6 +482,7 @@ export function EditLeadModal({
         )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

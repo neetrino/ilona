@@ -392,6 +392,9 @@ export class SalaryRecordService {
         feedbacksCompleted: true,
         voiceSent: true,
         textSent: true,
+        dailyPlan: {
+          select: { id: true },
+        },
       },
     });
 
@@ -401,6 +404,7 @@ export class SalaryRecordService {
       feedbacksCompleted: boolean | null;
       voiceSent: boolean | null;
       textSent: boolean | null;
+      dailyPlan: { id: string } | null;
     }>;
     const actionBreakdown = {
       absenceMarked: {
@@ -417,6 +421,10 @@ export class SalaryRecordService {
       },
       textSent: {
         completed: lessonDataList.filter((l) => l.textSent ?? false).length,
+        required: lessons.length,
+      },
+      dailyPlan: {
+        completed: lessonDataList.filter((l) => Boolean(l.dailyPlan)).length,
         required: lessons.length,
       },
     };

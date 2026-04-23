@@ -18,7 +18,10 @@ interface LessonListTableProps {
   onEdit?: (lessonId: string) => void;
   onDelete?: (lessonId: string) => void;
   onComplete?: (lessonId: string) => void;
-  onObligationClick?: (lessonId: string, obligation: 'absence' | 'feedback' | 'voice' | 'text') => void;
+  onObligationClick?: (
+    lessonId: string,
+    obligation: 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan'
+  ) => void;
   hideTeacherColumn?: boolean;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
@@ -326,6 +329,7 @@ export function LessonListTable({
               <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Feedbacks</th>
               <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Voice</th>
               <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Text</th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Daily Plan</th>
               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Actions</th>
             </tr>
           </thead>
@@ -435,6 +439,19 @@ export function LessonListTable({
                         isLocked={lesson.isTextLocked || (lesson.status === 'COMPLETED' && !lesson.textSent)}
                         onClick={() => onObligationClick?.(lesson.id, 'text')}
                         label="Text"
+                      />
+                    </div>
+                  </td>
+                  <td className="px-2 py-3 text-center align-middle">
+                    <div className="flex items-center justify-center">
+                      <StatusIndicator
+                        completed={lesson.dailyPlanCompleted || false}
+                        isLocked={
+                          lesson.isDailyPlanLocked ||
+                          (lesson.status === 'COMPLETED' && !lesson.dailyPlanCompleted)
+                        }
+                        onClick={() => onObligationClick?.(lesson.id, 'dailyPlan')}
+                        label="Daily Plan"
                       />
                     </div>
                   </td>
