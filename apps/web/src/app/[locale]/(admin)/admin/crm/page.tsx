@@ -475,9 +475,6 @@ export default function AdminCrmPage() {
           setPaidRegLeadId(null);
           void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
         }}
-        centers={centers}
-        teachers={teachers}
-        groups={groups}
       />
     </DashboardLayout>
   );

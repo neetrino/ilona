@@ -30,8 +30,8 @@ import {
   ChangeBranchDto,
   AddCommentDto,
   ConfirmRecordingDto,
-  RegisterPaidLeadDto,
 } from './dto';
+import { CreateStudentDto } from '../students/dto/create-student.dto';
 
 const MAX_VOICE_SIZE = 25 * 1024 * 1024; // 25MB
 
@@ -150,7 +150,7 @@ export class LeadsController {
   })
   registerPaid(
     @Param('id') id: string,
-    @Body() dto: RegisterPaidLeadDto,
+    @Body() dto: CreateStudentDto,
     @CurrentUser() user: JwtPayload,
   ): Promise<unknown> {
     return this.leadsService.registerPaidLead(id, dto, user.sub, user);

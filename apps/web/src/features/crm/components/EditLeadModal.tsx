@@ -537,9 +537,6 @@ export function EditLeadModal({
           onSaved();
           onClose();
         }}
-        centers={centers}
-        teachers={teachers}
-        groups={groups}
       />
     </>
   );

@@ -164,24 +164,6 @@ export interface ChangeStatusDto {
   archivedReason?: string;
 }
 
-/** Body for POST /crm/leads/:id/register-paid — completes Paid + student creation. */
-export interface RegisterPaidLeadPayload {
-  firstName: string;
-  lastName: string;
-  phone: string;
-  age: number;
-  levelId: string;
-  teacherId: string;
-  groupId: string;
-  centerId: string;
-  dateOfBirth?: string;
-  firstLessonDate?: string;
-  parentName?: string;
-  parentPhone?: string;
-  parentPassportInfo?: string;
-  comment?: string;
-}
-
 export interface ChangeBranchDto {
   centerId?: string;
 }

@@ -56,6 +56,16 @@ export class StudentsService {
     return this.crudService.create(dto, user);
   }
 
+  /** CRM Paid flow: update lead to PAID and create student with the same payload as Add Student. */
+  async createLinkedToCrmPaidLead(
+    leadId: string,
+    dto: CreateStudentDto,
+    actorUserId: string,
+    user?: JwtPayload,
+  ): Promise<unknown> {
+    return this.crudService.createLinkedToCrmPaidLead(leadId, dto, actorUserId, user);
+  }
+
   async update(id: string, dto: UpdateStudentDto, user?: JwtPayload): Promise<unknown> {
     return this.crudService.update(id, dto, user);
   }

@@ -10,8 +10,8 @@ import type {
   ChangeBranchDto,
   CrmLeadActivity,
   CrmLeadStatus,
-  RegisterPaidLeadPayload,
 } from '../types';
+import type { CreateStudentDto } from '@/features/students/types';
 
 const CRM_LEADS_ENDPOINT = '/crm/leads';
 
@@ -108,36 +108,8 @@ export async function changeLeadStatus(
   return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}/status`, data);
 }
 
-function normalizeRegisterPaidBody(data: RegisterPaidLeadPayload): Record<string, unknown> {
-  const phone = data.phone.replace(/\D/g, '');
-  const out: Record<string, unknown> = {
-    firstName: data.firstName.trim(),
-    lastName: data.lastName.trim(),
-    phone,
-    age: data.age,
-    levelId: data.levelId,
-    teacherId: data.teacherId,
-    groupId: data.groupId,
-    centerId: data.centerId,
-  };
-  if (data.dateOfBirth) out.dateOfBirth = data.dateOfBirth;
-  if (data.firstLessonDate) out.firstLessonDate = data.firstLessonDate;
-  if (data.parentName !== undefined) out.parentName = data.parentName.trim() || undefined;
-  if (data.parentPhone != null && data.parentPhone.trim() !== '') {
-    out.parentPhone = data.parentPhone.replace(/\D/g, '');
-  }
-  if (data.parentPassportInfo !== undefined) {
-    out.parentPassportInfo = data.parentPassportInfo.trim() || undefined;
-  }
-  if (data.comment !== undefined) out.comment = data.comment.trim() || undefined;
-  return out;
-}
-
-export async function registerPaidLead(
-  id: string,
-  data: RegisterPaidLeadPayload
-): Promise<CrmLead> {
-  return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}/register-paid`, normalizeRegisterPaidBody(data));
+export async function registerPaidLead(id: string, data: CreateStudentDto): Promise<CrmLead> {
+  return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}/register-paid`, data);
 }
 
 export async function changeLeadBranch(
