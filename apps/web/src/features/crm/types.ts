@@ -28,6 +28,7 @@ export interface CrmLeadAttachment {
   r2Key: string;
   mimeType: string | null;
   size: number | null;
+  durationSec?: number | null;
   createdAt: string;
 }
 

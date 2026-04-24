@@ -34,6 +34,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { CrmModule } from './modules/crm/crm.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { DailyPlanModule } from './modules/daily-plan/daily-plan.module';
 import { TeacherNotesModule } from './modules/teacher-notes/teacher-notes.module';
 import { StudentNotesModule } from './modules/student-notes/student-notes.module';
@@ -89,6 +90,7 @@ import { AppController } from './app.controller';
     FeedbackModule,
     SettingsModule,
     CrmModule,
+    AdminModule,
     DailyPlanModule,
     TeacherNotesModule,
     StudentNotesModule,
