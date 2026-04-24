@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
@@ -17,6 +17,11 @@ export interface CrmStatusSelectorProps {
   className?: string;
   /** Optional id for the trigger (e.g. for form labels). */
   id?: string;
+  /**
+   * Receives the portaled menu root element while the menu is open (null when closed).
+   * Lets parent modals treat this surface as inside the dialog for outside-click handling.
+   */
+  portaledMenuRef?: RefObject<HTMLDivElement | null>;
 }
 
 /**
@@ -31,11 +36,22 @@ export function CrmStatusSelector({
   disabled = false,
   className,
   id,
+  portaledMenuRef,
 }: CrmStatusSelectorProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<DropdownPosition | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const setMenuElement = useCallback(
+    (node: HTMLDivElement | null) => {
+      menuRef.current = node;
+      if (portaledMenuRef) {
+        portaledMenuRef.current = node;
+      }
+    },
+    [portaledMenuRef],
+  );
 
   useEffect(() => {
     if (!open || !triggerRef.current) {
@@ -114,7 +130,7 @@ export function CrmStatusSelector({
         typeof document !== 'undefined' &&
         createPortal(
           <div
-            ref={menuRef}
+            ref={setMenuElement}
             className="fixed z-[9999] min-w-[140px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
             style={{
               top: `${position.top}px`,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
@@ -52,10 +52,16 @@ export function EditLeadModal({
 }: EditLeadModalProps) {
   const queryClient = useQueryClient();
   const modalContainerRef = useRef<HTMLDivElement>(null);
+  const crmStatusPortaledMenuRef = useRef<HTMLDivElement>(null);
+  const modalAdditionalInsideRefs = useMemo(
+    () => [crmStatusPortaledMenuRef] as const satisfies ReadonlyArray<RefObject<HTMLElement | null>>,
+    [],
+  );
   const { onOverlayMouseDown, onOverlayClick } = useModalClose({
     open,
     onClose,
     containerRef: modalContainerRef,
+    additionalInsideRefs: modalAdditionalInsideRefs,
   });
   const [form, setForm] = useState<
     UpdateLeadDto & { status?: CrmLeadStatus; archivedReason?: string; parentSurname?: string }
@@ -442,6 +448,7 @@ export function EditLeadModal({
                     id="edit-lead-status"
                     value={form.status}
                     options={availableStatuses}
+                    portaledMenuRef={crmStatusPortaledMenuRef}
                     onChange={(status) =>
                       setForm((f) => ({ ...f, status }))
                     }

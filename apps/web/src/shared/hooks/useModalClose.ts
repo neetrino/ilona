@@ -9,6 +9,11 @@ interface UseModalCloseOptions {
   closeOnEscape?: boolean;
   closeOnOutsideClick?: boolean;
   containerRef?: RefObject<HTMLElement | null>;
+  /**
+   * Nodes that are rendered outside `containerRef` (e.g. portaled dropdowns) but should still count as
+   * "inside" the modal for outside-click / pointer-down close behavior.
+   */
+  additionalInsideRefs?: ReadonlyArray<RefObject<HTMLElement | null>>;
 }
 
 interface UseModalCloseResult {
@@ -22,6 +27,7 @@ export function useModalClose({
   closeOnEscape = true,
   closeOnOutsideClick = true,
   containerRef,
+  additionalInsideRefs,
 }: UseModalCloseOptions): UseModalCloseResult {
   const shouldCloseFromOverlayRef = useRef(false);
 
@@ -46,14 +52,15 @@ export function useModalClose({
       if (!container) return;
       const targetNode = event.target as Node | null;
       if (!targetNode) return;
-      if (!container.contains(targetNode)) {
-        onClose();
-      }
+      if (container.contains(targetNode)) return;
+      const insideExtra = additionalInsideRefs?.some((ref) => ref.current?.contains(targetNode));
+      if (insideExtra) return;
+      onClose();
     };
 
     document.addEventListener('pointerdown', handlePointerDown, true);
     return () => document.removeEventListener('pointerdown', handlePointerDown, true);
-  }, [closeOnOutsideClick, containerRef, onClose, open]);
+  }, [additionalInsideRefs, closeOnOutsideClick, containerRef, onClose, open]);
 
   const onOverlayMouseDown = useCallback(
     (event: MouseEvent<HTMLElement>) => {
