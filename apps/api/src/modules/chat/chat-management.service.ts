@@ -9,6 +9,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ChatType, UserRole, type PrismaClient } from '@ilona/database';
 import { CreateChatDto, CreateCustomGroupChatDto } from './dto';
 import { ChatAuthorizationService } from './chat-authorization.service';
+import { ChatManagerScopeService } from './chat-manager-scope.service';
+import { JwtPayload } from '../../common/types/auth.types';
 
 /** Participant shape for type-safe callbacks */
 interface ParticipantUserId {
@@ -36,12 +38,13 @@ export class ChatManagementService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authorizationService: ChatAuthorizationService,
+    private readonly managerScope: ChatManagerScopeService,
   ) {}
 
   /**
    * Get all chats for a user
    */
-  async getUserChats(userId: string): Promise<unknown> {
+  async getUserChats(userId: string, authUser?: JwtPayload): Promise<unknown> {
     try {
       // Ensure connection is active before query
       await this.prisma.ensureConnected();
@@ -185,11 +188,37 @@ export class ChatManagementService {
       });
 
       // Sort by lastMessageAt DESC (newest first)
-      return chatsWithMetadata.sort((a, b) => {
+      const sorted = chatsWithMetadata.sort((a, b) => {
         const aTime = a.lastMessageAt.getTime();
         const bTime = b.lastMessageAt.getTime();
         return bTime - aTime; // DESC order
       });
+
+      const managerCenterId = this.managerScope.managerCenterIdFromJwt(authUser);
+      if (managerCenterId && authUser?.role === UserRole.MANAGER) {
+        const scoped: typeof sorted = [];
+        for (const c of sorted) {
+          const ok = await this.managerScope.isChatInManagerBranch(
+            {
+              id: c.id,
+              type: c.type,
+              groupId: c.groupId,
+              group: c.group
+                ? { center: c.group.center ? { id: c.group.center.id } : null }
+                : null,
+              participants: c.participants.map((p: { userId: string }) => ({ userId: p.userId })),
+            },
+            userId,
+            managerCenterId,
+          );
+          if (ok) {
+            scoped.push(c);
+          }
+        }
+        return scoped;
+      }
+
+      return sorted;
     } catch (error) {
       this.logger.error(`Failed to get user chats for user ${userId}:`, error);
       // Re-throw to let PrismaService middleware handle retry
@@ -204,6 +233,7 @@ export class ChatManagementService {
     chatId: string,
     userId: string,
     userRole?: string,
+    authUser?: JwtPayload,
   ): Promise<{
     id: string;
     type: ChatType;
@@ -278,12 +308,22 @@ export class ChatManagementService {
 
     // Check if user is a participant
     const isParticipant = chat.participants.some(p => p.userId === userId);
-    
-    // Allow admin to access group chats even if not a participant
-    const isAdminAccessingGroup = (userRole === UserRole.ADMIN || userRole === 'ADMIN') && chat.type === ChatType.GROUP;
-    
+
+    const managerCenterId = this.managerScope.managerCenterIdFromJwt(authUser);
+    const isAdminGroupSurface =
+      (userRole === UserRole.ADMIN || userRole === 'ADMIN') && chat.type === ChatType.GROUP;
+    const isManagerClassGroupSurface =
+      (userRole === UserRole.MANAGER || userRole === 'MANAGER') &&
+      chat.type === ChatType.GROUP &&
+      !!chat.groupId &&
+      !!managerCenterId &&
+      chat.group?.center?.id === managerCenterId;
+
+    // Admin: any group surface; Manager: only class-linked group in own center (not ad-hoc custom groups)
+    const canOpenGroupWithoutMembershipYet = isAdminGroupSurface || isManagerClassGroupSurface;
+
     // For teachers, validate assignment for group chats
-    if (!isParticipant && !isAdminAccessingGroup) {
+    if (!isParticipant && !canOpenGroupWithoutMembershipYet) {
       if ((userRole === UserRole.TEACHER || userRole === 'TEACHER') && chat.type === ChatType.GROUP && chat.groupId) {
         // Use centralized authorization check
         const accessCheck = await this.authorizationService.canTeacherAccessGroupChat(userId, chat.groupId);
@@ -293,7 +333,7 @@ export class ChatManagementService {
           await this.authorizationService.ensureTeacherInGroupChat(chat.id, userId);
           
           // Refetch chat with updated participants
-          return this.getChatById(chatId, userId, userRole);
+          return this.getChatById(chatId, userId, userRole, authUser);
         } else {
           // Dev-only logging for 403 debugging
           if (process.env.NODE_ENV !== 'production') {
@@ -341,7 +381,7 @@ export class ChatManagementService {
                 });
                 
                 // Refetch chat with updated participants
-                return this.getChatById(chatId, userId, userRole);
+                return this.getChatById(chatId, userId, userRole, authUser);
               }
               // Already a participant, allow access
               return chat;
@@ -353,9 +393,14 @@ export class ChatManagementService {
       throw new ForbiddenException('You are not a participant of this chat');
     }
 
-    // If admin is accessing a group chat and not a participant, add them
+    // If admin or branch manager is accessing a class group chat and not a participant, add them
     // Only for class/teaching group chats (groupId set). Custom group chats are members-only.
-    if (isAdminAccessingGroup && !isParticipant && chat.groupId) {
+    const canElevateIntoClassGroup =
+      !!chat.groupId &&
+      !isParticipant &&
+      ((userRole === UserRole.ADMIN || userRole === 'ADMIN') || isManagerClassGroupSurface);
+
+    if (canElevateIntoClassGroup) {
       await this.db.chatParticipant.upsert({
         where: {
           chatId_userId: {
@@ -374,12 +419,32 @@ export class ChatManagementService {
       });
 
       // Refetch chat with updated participants
-      return this.getChatById(chatId, userId, userRole);
+      return this.getChatById(chatId, userId, userRole, authUser);
     }
 
     // Custom group chats (groupId=null): members-only, no admin auto-join
     if (chat.type === ChatType.GROUP && !chat.groupId && !isParticipant) {
       throw new ForbiddenException('You are not a participant of this chat');
+    }
+
+    if (
+      (userRole === UserRole.MANAGER || userRole === 'MANAGER') &&
+      managerCenterId &&
+      isParticipant
+    ) {
+      await this.managerScope.assertManagerCanAccessChat(
+        {
+          id: chat.id,
+          type: chat.type,
+          groupId: chat.groupId,
+          group: chat.group
+            ? { center: chat.group.center ? { id: chat.group.center.id } : null }
+            : null,
+          participants: chat.participants.map((p) => ({ userId: p.userId })),
+        },
+        userId,
+        managerCenterId,
+      );
     }
 
     return chat;
@@ -417,8 +482,17 @@ export class ChatManagementService {
 
       // Allow Admin ↔ Teacher and Admin ↔ Student direct messaging (no validation needed)
       const isAdminInvolved = creator.role === UserRole.ADMIN || participant.role === UserRole.ADMIN;
-      
-      if (!isAdminInvolved) {
+
+      let isManagerBranchDm = false;
+      if (creator.role === UserRole.MANAGER) {
+        isManagerBranchDm = await this.managerScope.canManagerDirectMessageUser(creatorId, participantId);
+      }
+      if (participant.role === UserRole.MANAGER) {
+        isManagerBranchDm =
+          isManagerBranchDm || (await this.managerScope.canManagerDirectMessageUser(participantId, creatorId));
+      }
+
+      if (!isAdminInvolved && !isManagerBranchDm) {
         // If student is trying to DM a teacher, validate assignment
         if (creator.role === UserRole.STUDENT && participant.role === UserRole.TEACHER) {
           const canDM = await this.authorizationService.validateStudentTeacherDM(creatorId, participantId);
@@ -549,12 +623,13 @@ export class ChatManagementService {
     groupId: string,
     userId: string,
     userRole?: string,
+    authUser?: JwtPayload,
   ) {
     // This delegates to getGroupChat which already handles:
     // - Authorization checks
     // - Chat creation if missing
     // - Membership upsert
-    return this.getGroupChat(groupId, userId, userRole);
+    return this.getGroupChat(groupId, userId, userRole, authUser);
   }
 
   /**
@@ -564,6 +639,7 @@ export class ChatManagementService {
     groupId: string,
     userId?: string,
     userRole?: string,
+    authUser?: JwtPayload,
   ): Promise<{
     id: string;
     type: ChatType;
@@ -630,7 +706,7 @@ export class ChatManagementService {
       },
     });
 
-    // If chat doesn't exist, create it lazily (Admin only - only Admin can create group chats)
+    // If chat doesn't exist, create it lazily (Admin or branch Manager for that group's center)
     if (!chat) {
       // First, verify the group exists
       const group = await this.db.group.findUnique({
@@ -640,6 +716,7 @@ export class ChatManagementService {
           name: true,
           teacherId: true,
           isActive: true,
+          centerId: true,
         },
       });
 
@@ -651,8 +728,14 @@ export class ChatManagementService {
         throw new BadRequestException('Group is not active');
       }
 
-      // Only Admin can create a new group chat; Teachers/Students get 403
-      if (userRole !== UserRole.ADMIN && userRole !== 'ADMIN') {
+      const managerCenterId = this.managerScope.managerCenterIdFromJwt(authUser);
+      const isAdminCreator = userRole === UserRole.ADMIN || userRole === 'ADMIN';
+      const isManagerOwnCenter =
+        (userRole === UserRole.MANAGER || userRole === 'MANAGER') &&
+        !!managerCenterId &&
+        group.centerId === managerCenterId;
+
+      if (!isAdminCreator && !isManagerOwnCenter) {
         throw new ForbiddenException('Only administrators can create group chats');
       }
 
@@ -755,19 +838,44 @@ export class ChatManagementService {
       }
 
       // Refetch with all participants
-      return this.getGroupChat(groupId, userId, userRole);
+      return this.getGroupChat(groupId, userId, userRole, authUser);
     }
 
     // Check if user is already a participant - if yes, allow access immediately
     if (userId) {
       const isParticipant = chat.participants.some((p: ParticipantUserId) => p.userId === userId);
       if (isParticipant) {
+        const managerCenterForParticipant = this.managerScope.managerCenterIdFromJwt(authUser);
+        if (
+          (userRole === UserRole.MANAGER || userRole === 'MANAGER') &&
+          managerCenterForParticipant
+        ) {
+          await this.managerScope.assertManagerCanAccessChat(
+            {
+              id: chat.id,
+              type: chat.type,
+              groupId: chat.groupId,
+              group: chat.group
+                ? { center: chat.group.center ? { id: chat.group.center.id } : null }
+                : null,
+              participants: chat.participants.map((p) => ({ userId: p.userId })),
+            },
+            userId,
+            managerCenterForParticipant,
+          );
+        }
         return chat;
       }
     }
 
-    // If admin is accessing and not a participant, add them
-    if (userId && userRole === UserRole.ADMIN) {
+    const managerCenterForElevate = this.managerScope.managerCenterIdFromJwt(authUser);
+    const managerCanElevate =
+      (userRole === UserRole.MANAGER || userRole === 'MANAGER') &&
+      !!managerCenterForElevate &&
+      chat.group?.center?.id === managerCenterForElevate;
+
+    // If admin or branch manager is accessing and not a participant, add them
+    if (userId && (userRole === UserRole.ADMIN || managerCanElevate)) {
       await this.db.chatParticipant.upsert({
         where: {
           chatId_userId: {
@@ -786,7 +894,7 @@ export class ChatManagementService {
       });
 
       // Refetch with updated participants
-      return this.getGroupChat(groupId, userId, userRole);
+      return this.getGroupChat(groupId, userId, userRole, authUser);
     }
 
     // For teachers, validate assignment to the group
@@ -799,7 +907,7 @@ export class ChatManagementService {
         await this.authorizationService.ensureTeacherInGroupChat(chat.id, userId);
         
         // Refetch with updated participants
-        return this.getGroupChat(groupId, userId, userRole);
+        return this.getGroupChat(groupId, userId, userRole, authUser);
       } else {
         // Dev-only logging for 403 debugging
         if (process.env.NODE_ENV !== 'production') {
@@ -847,7 +955,7 @@ export class ChatManagementService {
         });
         
         // Refetch with updated participants
-        return this.getGroupChat(groupId, userId, userRole);
+        return this.getGroupChat(groupId, userId, userRole, authUser);
       } else {
         throw new ForbiddenException('You are not assigned to this group');
       }
@@ -862,14 +970,33 @@ export class ChatManagementService {
   }
 
   /**
-   * Add a member to a group chat. Admin only (enforced by controller).
+   * Add a member to a group chat. Admin or branch Manager (enforced by controller).
    * Validates: group exists, chat exists, user exists, user not already a member.
    */
   async addGroupChatMember(
     groupId: string,
     userId: string,
-    _adminId: string,
+    actor: JwtPayload,
   ): Promise<{ chatId: string; participant: { userId: string; joinedAt: Date } }> {
+    const group = await this.db.group.findUnique({
+      where: { id: groupId },
+      select: { centerId: true },
+    });
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+
+    if (actor.role === UserRole.MANAGER) {
+      const centerId = this.managerScope.managerCenterIdFromJwt(actor);
+      if (!centerId || group.centerId !== centerId) {
+        throw new ForbiddenException('You cannot modify chats outside your branch');
+      }
+      const allowed = await this.managerScope.isUserInManagerBranch(userId, centerId);
+      if (!allowed) {
+        throw new ForbiddenException('User is not part of your branch');
+      }
+    }
+
     const chat = await this.db.chat.findUnique({
       where: { groupId },
       select: { id: true },
@@ -921,7 +1048,7 @@ export class ChatManagementService {
   /**
    * List custom group chats (type=GROUP, groupId=null) the user belongs to.
    */
-  async getCustomGroupChats(userId: string): Promise<unknown> {
+  async getCustomGroupChats(userId: string, authUser?: JwtPayload): Promise<unknown> {
     const chats = await this.db.chat.findMany({
       where: {
         type: ChatType.GROUP,
@@ -970,19 +1097,39 @@ export class ChatManagementService {
         },
       },
     });
+
+    const managerCenterId = this.managerScope.managerCenterIdFromJwt(authUser);
+    if (managerCenterId && authUser?.role === UserRole.MANAGER) {
+      const scoped = [];
+      for (const c of chats) {
+        const ok = await this.managerScope.isChatInManagerBranch(
+          {
+            id: c.id,
+            type: c.type,
+            groupId: c.groupId,
+            group: null,
+            participants: c.participants.map((p: { userId: string }) => ({ userId: p.userId })),
+          },
+          userId,
+          managerCenterId,
+        );
+        if (ok) {
+          scoped.push(c);
+        }
+      }
+      return scoped;
+    }
+
     return chats;
   }
 
   /**
-   * Create a custom (standalone) group chat. Admin only. Not linked to class/teaching groups.
+   * Create a custom (standalone) group chat. Admin or branch Manager. Not linked to class/teaching groups.
    */
-  async createCustomGroupChat(
-    adminId: string,
-    dto: CreateCustomGroupChatDto,
-  ) {
+  async createCustomGroupChat(creatorId: string, dto: CreateCustomGroupChatDto, actor: JwtPayload) {
     // Creator is always added as member; ignore if client sent creator in participantIds
-    const participantIds = (dto.participantIds ?? []).filter((id) => id !== adminId);
-    const allUserIds = [adminId, ...participantIds];
+    const participantIds = (dto.participantIds ?? []).filter((id) => id !== creatorId);
+    const allUserIds = [creatorId, ...participantIds];
     const uniqueIds = [...new Set(allUserIds)];
 
     // Validate all users exist and are active
@@ -999,6 +1146,19 @@ export class ChatManagementService {
       }
     }
 
+    if (actor.role === UserRole.MANAGER) {
+      const centerId = this.managerScope.managerCenterIdFromJwt(actor);
+      if (!centerId) {
+        throw new ForbiddenException('Manager account is not assigned to a center');
+      }
+      for (const uid of uniqueIds) {
+        const allowed = await this.managerScope.isUserInManagerBranch(uid, centerId);
+        if (!allowed) {
+          throw new ForbiddenException('All participants must belong to your branch');
+        }
+      }
+    }
+
     const chat = await this.db.chat.create({
       data: {
         type: ChatType.GROUP,
@@ -1007,7 +1167,7 @@ export class ChatManagementService {
         participants: {
           create: uniqueIds.map((userId) => ({
             userId,
-            isAdmin: userId === adminId,
+            isAdmin: userId === creatorId,
           })),
         },
       },
@@ -1032,12 +1192,12 @@ export class ChatManagementService {
   }
 
   /**
-   * Add a member to a custom group chat (groupId=null). Admin only.
+   * Add a member to a custom group chat (groupId=null). Admin or branch Manager.
    */
   async addCustomGroupChatMember(
     chatId: string,
     userId: string,
-    _adminId: string,
+    actor: JwtPayload,
   ): Promise<{ chatId: string; participant: { userId: string; joinedAt: Date } }> {
     const chat = await this.db.chat.findUnique({
       where: { id: chatId },
@@ -1048,6 +1208,30 @@ export class ChatManagementService {
     }
     if (chat.type !== ChatType.GROUP || chat.groupId !== null) {
       throw new BadRequestException('This endpoint is only for custom group chats');
+    }
+
+    if (actor.role === UserRole.MANAGER) {
+      const centerId = this.managerScope.managerCenterIdFromJwt(actor);
+      if (!centerId) {
+        throw new ForbiddenException('Manager account is not assigned to a center');
+      }
+      const full = await this.db.chat.findUnique({
+        where: { id: chatId },
+        include: {
+          participants: { where: { leftAt: null }, select: { userId: true } },
+        },
+      });
+      if (!full) {
+        throw new NotFoundException('Chat not found');
+      }
+      const isMember = full.participants.some((p) => p.userId === actor.sub);
+      if (!isMember) {
+        throw new ForbiddenException('You are not a participant of this chat');
+      }
+      const allowed = await this.managerScope.isUserInManagerBranch(userId, centerId);
+      if (!allowed) {
+        throw new ForbiddenException('User is not part of your branch');
+      }
     }
 
     const user = await this.db.user.findUnique({

@@ -75,7 +75,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.log(`User ${payload.email} connected`);
 
       // Get user's chats and join rooms
-      const chats = (await this.chatService.getUserChats(payload.sub)) as Array<{ id: string }>;
+      const chats = (await this.chatService.getUserChats(payload.sub, payload)) as Array<{ id: string }>;
       chats.forEach((chat: { id: string }) => {
         void client.join(`chat:${chat.id}`);
         
@@ -184,6 +184,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         },
         senderIdFromAuth,
         senderRoleFromAuth,
+        client.user,
       );
 
       // Broadcast to all participants in the chat
@@ -215,6 +216,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         data.messageId,
         { content: data.content },
         client.user.sub,
+        client.user,
       )) as { chatId: string };
 
       // Broadcast to all participants
@@ -246,6 +248,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await this.chatService.deleteMessage(
         data.messageId,
         client.user.sub,
+        client.user,
       );
 
       // Broadcast to all participants
@@ -288,7 +291,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string },
   ) {
     try {
-      await this.chatService.markAsRead(data.chatId, client.user.sub);
+      await this.chatService.markAsRead(data.chatId, client.user.sub, client.user);
       
       // Notify other participants that this user has read messages
       client.to(`chat:${data.chatId}`).emit('chat:read', {
@@ -310,7 +313,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     try {
       // Verify user is participant
-      await this.chatService.getChatById(data.chatId, client.user.sub, client.user.role);
+      await this.chatService.getChatById(data.chatId, client.user.sub, client.user.role, client.user);
       
       void client.join(`chat:${data.chatId}`);
       

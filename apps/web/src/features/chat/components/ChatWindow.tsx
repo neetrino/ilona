@@ -53,7 +53,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   // Check if user is teacher (can send vocabulary)
   const isTeacher = user?.role === 'TEACHER';
   const isGroupChat = chat.type === 'GROUP';
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
   const isStudent = user?.role === 'STUDENT';
 
   // Resolve teacher user id for "Send Voice to Teacher" (Student only): ONLY in direct 1:1 chat with assigned teacher
@@ -505,7 +505,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         {/* Actions */}
         <div className="flex items-center gap-2">
           {/* Add members (Admin only, group chat only) */}
-          {isAdmin && isGroupChat && (
+          {isAdminOrManager && isGroupChat && (
             <button
               onClick={() => setShowAddMembersModal(true)}
               className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors flex items-center gap-1.5"

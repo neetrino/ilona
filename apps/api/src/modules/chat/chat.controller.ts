@@ -15,6 +15,7 @@ import { ChatGateway } from './chat.gateway';
 import { CurrentUser, Roles } from '../../common/decorators';
 import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
+import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 import { CreateChatDto, SendMessageDto, UpdateMessageDto, AddGroupMemberDto, CreateCustomGroupChatDto } from './dto';
 
 @Controller('chat')
@@ -31,19 +32,19 @@ export class ChatController {
    */
   @Get()
   async getMyChats(@CurrentUser() user: JwtPayload): Promise<unknown> {
-    return this.chatService.getUserChats(user.sub);
+    return this.chatService.getUserChats(user.sub, user);
   }
 
   /**
    * Create a custom group chat (standalone, not linked to class groups). Admin only.
    */
   @Post('custom-groups')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async createCustomGroupChat(
     @Body() dto: CreateCustomGroupChatDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.chatService.createCustomGroupChat(user.sub, dto);
+    return this.chatService.createCustomGroupChat(user.sub, dto, user);
   }
 
   /**
@@ -51,20 +52,20 @@ export class ChatController {
    */
   @Get('custom-groups')
   async getCustomGroupChats(@CurrentUser() user: JwtPayload): Promise<unknown> {
-    return this.chatService.getCustomGroupChats(user.sub);
+    return this.chatService.getCustomGroupChats(user.sub, user);
   }
 
   /**
    * Add a member to a custom group chat. Admin only.
    */
   @Post('custom-groups/:chatId/members')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async addCustomGroupChatMember(
     @Param('chatId') chatId: string,
     @Body() dto: AddGroupMemberDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.chatService.addCustomGroupChatMember(chatId, dto.userId, user.sub);
+    return this.chatService.addCustomGroupChatMember(chatId, dto.userId, user);
   }
 
   /**
@@ -75,7 +76,7 @@ export class ChatController {
     @Param('chatId') chatId: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.chatService.getChatById(chatId, user.sub, user.role);
+    return this.chatService.getChatById(chatId, user.sub, user.role, user);
   }
 
   /**
@@ -91,7 +92,7 @@ export class ChatController {
     return this.chatService.getMessages(chatId, user.sub, {
       cursor,
       take: take ? parseInt(take, 10) : undefined,
-    }, user.role);
+    }, user.role, user);
   }
 
   /**
@@ -131,7 +132,7 @@ export class ChatController {
       );
     }
 
-    const message = await this.chatService.sendMessage(dto, senderIdFromAuth, senderRoleFromAuth);
+    const message = await this.chatService.sendMessage(dto, senderIdFromAuth, senderRoleFromAuth, user);
 
     // Broadcast to all chat participants (including sender's other devices) so voice messages appear in real time
     this.chatGateway.broadcastNewMessage(dto.chatId, message);
@@ -148,7 +149,7 @@ export class ChatController {
     @Body() dto: UpdateMessageDto,
     @CurrentUser() user: JwtPayload,
   ): Promise<unknown> {
-    return this.chatService.editMessage(messageId, dto, user.sub);
+    return this.chatService.editMessage(messageId, dto, user.sub, user);
   }
 
   /**
@@ -159,7 +160,7 @@ export class ChatController {
     @Param('messageId') messageId: string,
     @CurrentUser() user: JwtPayload,
   ): Promise<unknown> {
-    return this.chatService.deleteMessage(messageId, user.sub);
+    return this.chatService.deleteMessage(messageId, user.sub, user);
   }
 
   /**
@@ -170,7 +171,7 @@ export class ChatController {
     @Param('chatId') chatId: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.chatService.markAsRead(chatId, user.sub);
+    return this.chatService.markAsRead(chatId, user.sub, user);
   }
 
   /**
@@ -194,55 +195,59 @@ export class ChatController {
     @Param('groupId') groupId: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.chatService.getGroupChat(groupId, user.sub, user.role);
+    return this.chatService.getGroupChat(groupId, user.sub, user.role, user);
   }
 
   /**
    * Get students list for admin chat (Admin only)
    */
   @Get('admin/students')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getAdminStudents(
     @CurrentUser() user: JwtPayload,
     @Query('search') search?: string,
   ) {
-    return this.chatService.getAdminStudents(user.sub, search);
+    const branchCenterId = user.role === UserRole.MANAGER ? getManagerCenterIdOrThrow(user) : undefined;
+    return this.chatService.getAdminStudents(user.sub, search, branchCenterId);
   }
 
   /**
    * Get teachers list for admin chat (Admin only)
    */
   @Get('admin/teachers')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getAdminTeachers(
     @CurrentUser() user: JwtPayload,
     @Query('search') search?: string,
   ) {
-    return this.chatService.getAdminTeachers(user.sub, search);
+    const branchCenterId = user.role === UserRole.MANAGER ? getManagerCenterIdOrThrow(user) : undefined;
+    return this.chatService.getAdminTeachers(user.sub, search, branchCenterId);
   }
 
   /**
    * Get groups list for admin chat (Admin only)
    */
   @Get('admin/groups')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getAdminGroups(
     @CurrentUser() user: JwtPayload,
     @Query('search') search?: string,
   ) {
-    return this.chatService.getAdminGroups(user.sub, search);
+    const branchCenterId = user.role === UserRole.MANAGER ? getManagerCenterIdOrThrow(user) : undefined;
+    return this.chatService.getAdminGroups(user.sub, search, branchCenterId);
   }
 
   /**
    * Get all registered users for admin (e.g. add-member picker). Admin only.
    */
   @Get('admin/users')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getAdminAllUsers(
     @CurrentUser() user: JwtPayload,
     @Query('search') search?: string,
   ) {
-    return this.chatService.getAdminAllUsers(user.sub, search);
+    const branchCenterId = user.role === UserRole.MANAGER ? getManagerCenterIdOrThrow(user) : undefined;
+    return this.chatService.getAdminAllUsers(user.sub, search, branchCenterId);
   }
 
   /**
@@ -251,7 +256,7 @@ export class ChatController {
    * legacy groupId, studentUserId, search.
    */
   @Get('admin/student-recordings')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getAdminStudentRecordings(
     @CurrentUser() user: JwtPayload,
     @Query('groupId') groupId?: string,
@@ -271,13 +276,18 @@ export class ChatController {
         ? [studentIds]
         : undefined;
 
-    return this.chatService.getAdminStudentRecordings(user.sub, {
-      groupId,
-      studentUserId,
-      groupIds: normalizedGroupIds,
-      studentIds: normalizedStudentIds,
-      search,
-    });
+    const branchCenterId = user.role === UserRole.MANAGER ? getManagerCenterIdOrThrow(user) : undefined;
+    return this.chatService.getAdminStudentRecordings(
+      user.sub,
+      {
+        groupId,
+        studentUserId,
+        groupIds: normalizedGroupIds,
+        studentIds: normalizedStudentIds,
+        search,
+      },
+      branchCenterId,
+    );
   }
 
   /**
@@ -303,13 +313,13 @@ export class ChatController {
    * Add a member to a group chat. Admin only.
    */
   @Post('group/:groupId/members')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async addGroupChatMember(
     @Param('groupId') groupId: string,
     @Body() dto: AddGroupMemberDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.chatService.addGroupChatMember(groupId, dto.userId, user.sub);
+    return this.chatService.addGroupChatMember(groupId, dto.userId, user);
   }
 
   /**
