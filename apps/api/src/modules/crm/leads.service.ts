@@ -25,10 +25,21 @@ import { CrmLeadStatus, CrmLeadActivityType, UserRole } from '@ilona/database';
 import type { Prisma } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
+import { parseDurationSecForVoice } from './voice-duration.util';
 import { CreateStudentDto } from '../students/dto/create-student.dto';
 import { StudentsService } from '../students/students.service';
 
 type CrmLeadWhereInput = Prisma.CrmLeadWhereInput;
+
+export type CreateLeadFromVoiceOptions = {
+  centerId?: string;
+  leadSource?: string | null;
+  /** Raw multipart / JSON value; parsed according to durationParsing */
+  durationSecRaw?: unknown;
+  /** loose: invalid values ignored; strict: invalid values throw BadRequestException */
+  durationParsing?: 'loose' | 'strict';
+  requireActiveCenter?: boolean;
+};
 
 @Injectable()
 export class LeadsService {
@@ -135,23 +146,37 @@ export class LeadsService {
     return lead;
   }
 
-  /** Create a NEW lead from a voice recording (uploaded file). Stores audio in crm/recordings. */
+  /**
+   * Create a NEW lead from a voice recording (uploaded file). Stores audio in crm/recordings.
+   * Status and createdAt are always server-controlled. Optional leadSource (e.g. VOICE_APP) is server-set per call site.
+   */
   async createLeadFromVoice(
     file: Express.Multer.File,
     createdByUserId: string,
     user?: JwtPayload,
-    requestedCenterId?: string,
+    options: CreateLeadFromVoiceOptions = {},
   ) {
     this.requireAdminForCrmLeadVoice(user);
     if (!file?.buffer?.length) {
       throw new BadRequestException('No audio file provided');
     }
-    const centerId = this.ensureManagerCenterInput(requestedCenterId, user);
+
+    const trimmedCenterId = options.centerId?.trim();
+    const durationParsing = options.durationParsing ?? 'loose';
+    const durationSec = parseDurationSecForVoice(options.durationSecRaw, durationParsing);
+    const centerId = await this.resolveCenterIdForVoiceLead(options, trimmedCenterId, user);
+
+    const leadSource =
+      options.leadSource !== undefined && options.leadSource !== null && options.leadSource !== ''
+        ? options.leadSource
+        : undefined;
+
     const lead = await this.prisma.crmLead.create({
       data: {
         status: 'NEW',
         createdByUserId,
         centerId,
+        ...(leadSource !== undefined ? { source: leadSource } : {}),
       },
     });
     const uploadResult = await this.storage.upload(
@@ -167,13 +192,40 @@ export class LeadsService {
         r2Key: uploadResult.key,
         mimeType: uploadResult.mimeType,
         size: uploadResult.fileSize,
+        ...(durationSec !== undefined ? { durationSec } : {}),
       },
     });
+    const activitySource =
+      leadSource === 'VOICE_APP' ? 'VOICE_APP' : 'voice_lead';
     await this.logActivity(lead.id, createdByUserId, 'RECORDING_UPLOADED', {
-      source: 'voice_lead',
+      source: activitySource,
       key: uploadResult.key,
     });
     return this.findById(lead.id);
+  }
+
+  private async resolveCenterIdForVoiceLead(
+    options: CreateLeadFromVoiceOptions,
+    trimmedCenterId: string | undefined,
+    user?: JwtPayload,
+  ): Promise<string | undefined> {
+    if (options.requireActiveCenter) {
+      if (!trimmedCenterId) {
+        throw new BadRequestException('centerId is required');
+      }
+      const center = await this.prisma.center.findUnique({
+        where: { id: trimmedCenterId },
+        select: { id: true, isActive: true },
+      });
+      if (!center) {
+        throw new NotFoundException(`Center ${trimmedCenterId} not found`);
+      }
+      if (!center.isActive) {
+        throw new BadRequestException('This center is not active');
+      }
+      return center.id;
+    }
+    return this.ensureManagerCenterInput(trimmedCenterId, user);
   }
 
   async findAll(

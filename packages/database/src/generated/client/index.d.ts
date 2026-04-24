@@ -34250,10 +34250,12 @@ export namespace Prisma {
 
   export type CrmLeadAttachmentAvgAggregateOutputType = {
     size: number | null
+    durationSec: number | null
   }
 
   export type CrmLeadAttachmentSumAggregateOutputType = {
     size: number | null
+    durationSec: number | null
   }
 
   export type CrmLeadAttachmentMinAggregateOutputType = {
@@ -34263,6 +34265,7 @@ export namespace Prisma {
     r2Key: string | null
     mimeType: string | null
     size: number | null
+    durationSec: number | null
     createdAt: Date | null
   }
 
@@ -34273,6 +34276,7 @@ export namespace Prisma {
     r2Key: string | null
     mimeType: string | null
     size: number | null
+    durationSec: number | null
     createdAt: Date | null
   }
 
@@ -34283,6 +34287,7 @@ export namespace Prisma {
     r2Key: number
     mimeType: number
     size: number
+    durationSec: number
     createdAt: number
     _all: number
   }
@@ -34290,10 +34295,12 @@ export namespace Prisma {
 
   export type CrmLeadAttachmentAvgAggregateInputType = {
     size?: true
+    durationSec?: true
   }
 
   export type CrmLeadAttachmentSumAggregateInputType = {
     size?: true
+    durationSec?: true
   }
 
   export type CrmLeadAttachmentMinAggregateInputType = {
@@ -34303,6 +34310,7 @@ export namespace Prisma {
     r2Key?: true
     mimeType?: true
     size?: true
+    durationSec?: true
     createdAt?: true
   }
 
@@ -34313,6 +34321,7 @@ export namespace Prisma {
     r2Key?: true
     mimeType?: true
     size?: true
+    durationSec?: true
     createdAt?: true
   }
 
@@ -34323,6 +34332,7 @@ export namespace Prisma {
     r2Key?: true
     mimeType?: true
     size?: true
+    durationSec?: true
     createdAt?: true
     _all?: true
   }
@@ -34420,6 +34430,7 @@ export namespace Prisma {
     r2Key: string
     mimeType: string | null
     size: number | null
+    durationSec: number | null
     createdAt: Date
     _count: CrmLeadAttachmentCountAggregateOutputType | null
     _avg: CrmLeadAttachmentAvgAggregateOutputType | null
@@ -34449,6 +34460,7 @@ export namespace Prisma {
     r2Key?: boolean
     mimeType?: boolean
     size?: boolean
+    durationSec?: boolean
     createdAt?: boolean
     lead?: boolean | CrmLeadDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["crmLeadAttachment"]>
@@ -34460,6 +34472,7 @@ export namespace Prisma {
     r2Key?: boolean
     mimeType?: boolean
     size?: boolean
+    durationSec?: boolean
     createdAt?: boolean
     lead?: boolean | CrmLeadDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["crmLeadAttachment"]>
@@ -34471,6 +34484,7 @@ export namespace Prisma {
     r2Key?: boolean
     mimeType?: boolean
     size?: boolean
+    durationSec?: boolean
     createdAt?: boolean
   }
 
@@ -34493,6 +34507,7 @@ export namespace Prisma {
       r2Key: string
       mimeType: string | null
       size: number | null
+      durationSec: number | null
       createdAt: Date
     }, ExtArgs["result"]["crmLeadAttachment"]>
     composites: {}
@@ -34894,6 +34909,7 @@ export namespace Prisma {
     readonly r2Key: FieldRef<"CrmLeadAttachment", 'String'>
     readonly mimeType: FieldRef<"CrmLeadAttachment", 'String'>
     readonly size: FieldRef<"CrmLeadAttachment", 'Int'>
+    readonly durationSec: FieldRef<"CrmLeadAttachment", 'Int'>
     readonly createdAt: FieldRef<"CrmLeadAttachment", 'DateTime'>
   }
     
@@ -36647,6 +36663,7 @@ export namespace Prisma {
     r2Key: 'r2Key',
     mimeType: 'mimeType',
     size: 'size',
+    durationSec: 'durationSec',
     createdAt: 'createdAt'
   };
 
@@ -39627,6 +39644,7 @@ export namespace Prisma {
     r2Key?: StringFilter<"CrmLeadAttachment"> | string
     mimeType?: StringNullableFilter<"CrmLeadAttachment"> | string | null
     size?: IntNullableFilter<"CrmLeadAttachment"> | number | null
+    durationSec?: IntNullableFilter<"CrmLeadAttachment"> | number | null
     createdAt?: DateTimeFilter<"CrmLeadAttachment"> | Date | string
     lead?: XOR<CrmLeadRelationFilter, CrmLeadWhereInput>
   }
@@ -39638,6 +39656,7 @@ export namespace Prisma {
     r2Key?: SortOrder
     mimeType?: SortOrderInput | SortOrder
     size?: SortOrderInput | SortOrder
+    durationSec?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     lead?: CrmLeadOrderByWithRelationInput
   }
@@ -39652,6 +39671,7 @@ export namespace Prisma {
     r2Key?: StringFilter<"CrmLeadAttachment"> | string
     mimeType?: StringNullableFilter<"CrmLeadAttachment"> | string | null
     size?: IntNullableFilter<"CrmLeadAttachment"> | number | null
+    durationSec?: IntNullableFilter<"CrmLeadAttachment"> | number | null
     createdAt?: DateTimeFilter<"CrmLeadAttachment"> | Date | string
     lead?: XOR<CrmLeadRelationFilter, CrmLeadWhereInput>
   }, "id">
@@ -39663,6 +39683,7 @@ export namespace Prisma {
     r2Key?: SortOrder
     mimeType?: SortOrderInput | SortOrder
     size?: SortOrderInput | SortOrder
+    durationSec?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: CrmLeadAttachmentCountOrderByAggregateInput
     _avg?: CrmLeadAttachmentAvgOrderByAggregateInput
@@ -39681,6 +39702,7 @@ export namespace Prisma {
     r2Key?: StringWithAggregatesFilter<"CrmLeadAttachment"> | string
     mimeType?: StringNullableWithAggregatesFilter<"CrmLeadAttachment"> | string | null
     size?: IntNullableWithAggregatesFilter<"CrmLeadAttachment"> | number | null
+    durationSec?: IntNullableWithAggregatesFilter<"CrmLeadAttachment"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"CrmLeadAttachment"> | Date | string
   }
 
@@ -42613,6 +42635,7 @@ export namespace Prisma {
     r2Key: string
     mimeType?: string | null
     size?: number | null
+    durationSec?: number | null
     createdAt?: Date | string
     lead: CrmLeadCreateNestedOneWithoutAttachmentsInput
   }
@@ -42624,6 +42647,7 @@ export namespace Prisma {
     r2Key: string
     mimeType?: string | null
     size?: number | null
+    durationSec?: number | null
     createdAt?: Date | string
   }
 
@@ -42633,6 +42657,7 @@ export namespace Prisma {
     r2Key?: StringFieldUpdateOperationsInput | string
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     size?: NullableIntFieldUpdateOperationsInput | number | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lead?: CrmLeadUpdateOneRequiredWithoutAttachmentsNestedInput
   }
@@ -42644,6 +42669,7 @@ export namespace Prisma {
     r2Key?: StringFieldUpdateOperationsInput | string
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     size?: NullableIntFieldUpdateOperationsInput | number | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -42654,6 +42680,7 @@ export namespace Prisma {
     r2Key: string
     mimeType?: string | null
     size?: number | null
+    durationSec?: number | null
     createdAt?: Date | string
   }
 
@@ -42663,6 +42690,7 @@ export namespace Prisma {
     r2Key?: StringFieldUpdateOperationsInput | string
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     size?: NullableIntFieldUpdateOperationsInput | number | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -42673,6 +42701,7 @@ export namespace Prisma {
     r2Key?: StringFieldUpdateOperationsInput | string
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     size?: NullableIntFieldUpdateOperationsInput | number | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -44995,11 +45024,13 @@ export namespace Prisma {
     r2Key?: SortOrder
     mimeType?: SortOrder
     size?: SortOrder
+    durationSec?: SortOrder
     createdAt?: SortOrder
   }
 
   export type CrmLeadAttachmentAvgOrderByAggregateInput = {
     size?: SortOrder
+    durationSec?: SortOrder
   }
 
   export type CrmLeadAttachmentMaxOrderByAggregateInput = {
@@ -45009,6 +45040,7 @@ export namespace Prisma {
     r2Key?: SortOrder
     mimeType?: SortOrder
     size?: SortOrder
+    durationSec?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -45019,11 +45051,13 @@ export namespace Prisma {
     r2Key?: SortOrder
     mimeType?: SortOrder
     size?: SortOrder
+    durationSec?: SortOrder
     createdAt?: SortOrder
   }
 
   export type CrmLeadAttachmentSumOrderByAggregateInput = {
     size?: SortOrder
+    durationSec?: SortOrder
   }
 
   export type EnumCrmLeadAttachmentTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -56564,6 +56598,7 @@ export namespace Prisma {
     r2Key: string
     mimeType?: string | null
     size?: number | null
+    durationSec?: number | null
     createdAt?: Date | string
   }
 
@@ -56573,6 +56608,7 @@ export namespace Prisma {
     r2Key: string
     mimeType?: string | null
     size?: number | null
+    durationSec?: number | null
     createdAt?: Date | string
   }
 
@@ -56952,6 +56988,7 @@ export namespace Prisma {
     r2Key?: StringFilter<"CrmLeadAttachment"> | string
     mimeType?: StringNullableFilter<"CrmLeadAttachment"> | string | null
     size?: IntNullableFilter<"CrmLeadAttachment"> | number | null
+    durationSec?: IntNullableFilter<"CrmLeadAttachment"> | number | null
     createdAt?: DateTimeFilter<"CrmLeadAttachment"> | Date | string
   }
 
@@ -60245,6 +60282,7 @@ export namespace Prisma {
     r2Key: string
     mimeType?: string | null
     size?: number | null
+    durationSec?: number | null
     createdAt?: Date | string
   }
 
@@ -60278,6 +60316,7 @@ export namespace Prisma {
     r2Key?: StringFieldUpdateOperationsInput | string
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     size?: NullableIntFieldUpdateOperationsInput | number | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -60287,6 +60326,7 @@ export namespace Prisma {
     r2Key?: StringFieldUpdateOperationsInput | string
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     size?: NullableIntFieldUpdateOperationsInput | number | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -60296,6 +60336,7 @@ export namespace Prisma {
     r2Key?: StringFieldUpdateOperationsInput | string
     mimeType?: NullableStringFieldUpdateOperationsInput | string | null
     size?: NullableIntFieldUpdateOperationsInput | number | null
+    durationSec?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

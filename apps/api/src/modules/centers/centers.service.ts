@@ -78,6 +78,15 @@ export class CentersService {
     };
   }
 
+  /** Minimal id+name list for admin clients (e.g. voice app); active centers only. */
+  async findActiveIdNameList(): Promise<Array<{ id: string; name: string }>> {
+    return this.prisma.center.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async findById(id: string) {
     try {
       const center = await this.prisma.center.findUnique({

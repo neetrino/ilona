@@ -514,6 +514,7 @@ exports.Prisma.CrmLeadAttachmentScalarFieldEnum = {
   r2Key: 'r2Key',
   mimeType: 'mimeType',
   size: 'size',
+  durationSec: 'durationSec',
   createdAt: 'createdAt'
 };
 

@@ -626,14 +626,15 @@ model CrmLeadActivity {
 }
 
 model CrmLeadAttachment {
-  id        String                @id @default(cuid())
-  leadId    String
-  type      CrmLeadAttachmentType
-  r2Key     String
-  mimeType  String?
-  size      Int?
-  createdAt DateTime              @default(now())
-  lead      CrmLead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  id          String                @id @default(cuid())
+  leadId      String
+  type        CrmLeadAttachmentType
+  r2Key       String
+  mimeType    String?
+  size        Int?
+  durationSec Int?
+  createdAt   DateTime              @default(now())
+  lead        CrmLead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([leadId])
   @@index([type])

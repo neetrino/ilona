@@ -59,6 +59,7 @@ export class LeadsController {
       properties: {
         file: { type: 'string', format: 'binary' },
         centerId: { type: 'string' },
+        durationSec: { type: 'number', description: 'Optional recording duration in seconds' },
       },
     },
   })
@@ -79,11 +80,16 @@ export class LeadsController {
     file: Express.Multer.File | undefined,
     @CurrentUser() user: JwtPayload,
     @Body('centerId') centerId?: string,
+    @Body('durationSec') durationSecRaw?: unknown,
   ) {
     if (!file?.buffer?.length) {
       throw new BadRequestException('No audio file provided. Please record and send a voice message.');
     }
-    return this.leadsService.createLeadFromVoice(file, user.sub, user, centerId);
+    return this.leadsService.createLeadFromVoice(file, user.sub, user, {
+      centerId,
+      durationSecRaw,
+      durationParsing: 'loose',
+    });
   }
 
   @Get()
