@@ -52,6 +52,15 @@ export class LeadsService {
     };
   }
 
+  /** Voice lead creation and CRM lead recording uploads are admin-only (defense in depth with controller @Roles). */
+  private requireAdminForCrmLeadVoice(user?: JwtPayload): void {
+    if (user?.role === UserRole.MANAGER) {
+      throw new ForbiddenException(
+        'Only administrators can create CRM leads from voice or upload voice attachments.',
+      );
+    }
+  }
+
   private ensureManagerCenterInput(centerId: string | undefined, user?: JwtPayload): string | undefined {
     const managerCenterId = getManagerCenterIdOrThrow(user);
     if (!managerCenterId) {
@@ -133,6 +142,7 @@ export class LeadsService {
     user?: JwtPayload,
     requestedCenterId?: string,
   ) {
+    this.requireAdminForCrmLeadVoice(user);
     if (!file?.buffer?.length) {
       throw new BadRequestException('No audio file provided');
     }
@@ -528,6 +538,7 @@ export class LeadsService {
   }
 
   async getPresignedRecordingUrl(leadId: string, fileName: string, mimeType: string, user?: JwtPayload) {
+    this.requireAdminForCrmLeadVoice(user);
     await this.findById(leadId, user?.sub, user);
     const result = await this.storage.getPresignedUploadUrl(
       fileName,
@@ -548,6 +559,7 @@ export class LeadsService {
     actorUserId: string,
     user?: JwtPayload,
   ) {
+    this.requireAdminForCrmLeadVoice(user);
     await this.findById(leadId, actorUserId, user);
     const attachment = await this.prisma.crmLeadAttachment.create({
       data: {

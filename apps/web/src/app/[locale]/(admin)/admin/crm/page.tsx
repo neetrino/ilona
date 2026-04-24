@@ -118,7 +118,6 @@ export default function AdminCrmPage() {
   );
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
-  const [newColumnCenterId] = useState<string | null>(null);
   const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
   const [paidRegLeadId, setPaidRegLeadId] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
@@ -469,7 +468,7 @@ export default function AdminCrmPage() {
             changingStatusId={changingStatusId}
             changingBranchId={isAdmin ? changingBranchId : null}
             onAddLead={handleAddLead}
-            onRecordingSaved={() => refetch()}
+            newLeadAddUsesVoice={isAdmin}
             branchOptions={isAdmin ? centers.map((c) => ({ id: c.id, name: c.name })) : undefined}
             canDeleteLead={isAdmin}
             onLeadDeleteRequest={isAdmin ? handleLeadDeleteRequest : undefined}
@@ -529,7 +528,6 @@ export default function AdminCrmPage() {
         <VoiceLeadModal
           open={voiceModalOpen}
           onClose={() => setVoiceModalOpen(false)}
-          centerId={newColumnCenterId}
           onCreated={(createdLead) => {
             upsertCreatedLeadIntoCaches(createdLead);
             queryClient.invalidateQueries({ queryKey: ['crm-leads'] });

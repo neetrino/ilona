@@ -17,6 +17,8 @@ interface ColumnProps {
   changingStatusId?: string | null;
   changingBranchId?: string | null;
   onAddClick: () => void;
+  /** When true (admin), NEW column shows the voice-lead button; managers get no header action. */
+  newLeadAddUsesVoice?: boolean;
   showVoiceRecorder?: (lead: CrmLead) => React.ReactNode;
   branchOptions?: CrmBranchOption[];
   canDeleteLead?: boolean;
@@ -35,6 +37,7 @@ export function Column({
   changingStatusId,
   changingBranchId,
   onAddClick,
+  newLeadAddUsesVoice = true,
   showVoiceRecorder,
   branchOptions,
   canDeleteLead,
@@ -54,7 +57,7 @@ export function Column({
               {count}
             </span>
           </div>
-          {isNew && (
+          {isNew && newLeadAddUsesVoice && (
             <button
               type="button"
               onClick={onAddClick}

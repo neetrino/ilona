@@ -50,8 +50,8 @@ export class LeadsController {
   }
 
   @Post('voice')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Create a new lead from voice recording' })
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Create a new lead from voice recording (admin only)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -199,8 +199,8 @@ export class LeadsController {
   }
 
   @Post(':id/recordings/presign')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Get presigned URL for voice recording upload' })
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get presigned URL for CRM lead voice upload (admin only)' })
   getPresignedRecordingUrl(
     @Param('id') id: string,
     @Body() body: { fileName: string; mimeType: string },
@@ -215,8 +215,8 @@ export class LeadsController {
   }
 
   @Post(':id/recordings/confirm')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Confirm recording upload and attach to lead' })
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Confirm CRM lead voice upload and attach (admin only)' })
   confirmRecording(
     @Param('id') id: string,
     @Body() dto: ConfirmRecordingDto,

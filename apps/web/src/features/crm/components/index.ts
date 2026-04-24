@@ -4,6 +4,7 @@ export { Column } from './Column';
 export { LeadCard, STATUS_LABELS } from './LeadCard';
 export { LeadDrawer } from './LeadDrawer';
 export { VoiceLeadModal } from './VoiceLeadModal';
+export { CreateLeadModal } from './CreateLeadModal';
 export { VoiceLeadDetailModal } from './VoiceLeadDetailModal';
 export { EditLeadModal } from './EditLeadModal';
 export { PaidRegistrationModal } from './PaidRegistrationModal';
