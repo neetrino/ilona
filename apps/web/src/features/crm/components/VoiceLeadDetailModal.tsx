@@ -9,6 +9,7 @@ import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
 import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -53,6 +54,7 @@ export function VoiceLeadDetailModal({
   teachers: teachersProp,
   groups: groupsProp,
 }: VoiceLeadDetailModalProps) {
+  const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN');
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -263,7 +265,7 @@ export function VoiceLeadDetailModal({
                 )}
               </div>
 
-              {lead.status === 'NEW' && (
+              {isAdmin && lead.status === 'NEW' && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">{t('voiceRecording')}</label>
                   <VoiceRecorder leadId={lead.id} onRecordingSaved={() => { refetch(); onUpdated(); }} />

@@ -34,11 +34,11 @@ export const teacherKeys = {
 /**
  * Hook to fetch teachers list
  */
-export function useTeachers(filters?: TeacherFilters) {
+export function useTeachers(filters?: TeacherFilters, enabled = true) {
   return useQuery({
     queryKey: teacherKeys.list(filters),
     queryFn: () => fetchTeachers(filters),
-    // Data is considered stale after 30 seconds
+    enabled,
     staleTime: 30 * 1000,
   });
 }

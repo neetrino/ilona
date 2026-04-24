@@ -378,11 +378,13 @@ export function createStudentsTableColumns({
       className: '!w-[14%] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
-        const currentCenterId = row.group?.center?.id || null;
+        // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
+        const manualCenterId = row.centerId ?? null;
+        const groupCenterName = row.group?.center?.name;
         return (
-          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="min-w-0 w-full space-y-0.5" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
-              value={currentCenterId}
+              value={manualCenterId}
               options={centerOptions}
               onChange={async (centerId) => {
                 await onCenterChange(row.id, centerId);
@@ -390,6 +392,11 @@ export function createStudentsTableColumns({
               placeholder="Not assigned"
               disabled={isUpdating}
             />
+            {groupCenterName ? (
+              <p className="text-[10px] leading-tight text-slate-500" title="Physical location of the selected group">
+                Group location: {groupCenterName}
+              </p>
+            ) : null}
           </div>
         );
       },

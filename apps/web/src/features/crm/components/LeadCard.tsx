@@ -10,12 +10,14 @@ import {
   Clock3,
   GraduationCap,
   Phone,
+  Trash2,
   User,
   Users,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { CrmBranchSelector, type CrmBranchOption } from './CrmBranchSelector';
+import { LeadCardVoiceInline } from './LeadCardVoiceInline';
 
 interface LeadCardProps {
   lead: CrmLead;
@@ -26,6 +28,10 @@ interface LeadCardProps {
   onBranchChange?: (leadId: string, centerId: string | null) => void;
   isChangingStatus?: boolean;
   isChangingBranch?: boolean;
+  /** Admin-only: show delete control on the card header. */
+  showDelete?: boolean;
+  onDeleteClick?: () => void;
+  deleteDisabled?: boolean;
   className?: string;
 }
 
@@ -47,6 +53,9 @@ export function LeadCard({
   onBranchChange,
   isChangingStatus,
   isChangingBranch,
+  showDelete,
+  onDeleteClick,
+  deleteDisabled,
   className,
 }: LeadCardProps) {
   const voiceAttachment = lead.attachments?.find((a) => a.type === 'VOICE_RECORDING');
@@ -78,10 +87,31 @@ export function LeadCard({
         className
       )}
     >
-      {/* Top section: name */}
-      <p className="flex items-center gap-1.5 font-medium text-slate-900 truncate">
-        <span className="truncate">{name}</span>
-      </p>
+      {/* Top section: name + delete */}
+      <div className="flex items-start justify-between gap-2">
+        <p className="min-w-0 flex-1 font-medium text-slate-900 truncate">{name}</p>
+        {showDelete && onDeleteClick ? (
+          <button
+            type="button"
+            aria-label="Delete lead"
+            title="Delete lead"
+            disabled={deleteDisabled}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!deleteDisabled) onDeleteClick();
+            }}
+            className={cn(
+              'shrink-0 rounded-lg p-1.5 text-slate-900 transition-colors duration-150 ease-out',
+              'hover:bg-slate-50 hover:text-slate-700',
+              'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
+              'active:scale-95',
+              'disabled:pointer-events-none disabled:opacity-50'
+            )}
+          >
+            <Trash2 className="h-4 w-4" aria-hidden />
+          </button>
+        ) : null}
+      </div>
 
       {/* Middle section: lead info */}
       <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
@@ -100,6 +130,14 @@ export function LeadCard({
           <span className="truncate">{lead.phone}</span>
         </p>
       )}
+      {voiceAttachment?.r2Key ? (
+        <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+          <LeadCardVoiceInline
+            r2Key={voiceAttachment.r2Key}
+            mimeType={voiceAttachment.mimeType}
+          />
+        </div>
+      ) : null}
       <div className="flex flex-wrap gap-1 mt-2">
         {lead.center?.name && (
           <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
@@ -149,7 +187,7 @@ export function LeadCard({
               value={lead.status}
               options={availableStatuses}
               onChange={handleStatusChange}
-              disabled={isChangingStatus}
+              disabled={isChangingStatus || lead.status === 'PAID'}
             />
           )}
           {onBranchChange && (

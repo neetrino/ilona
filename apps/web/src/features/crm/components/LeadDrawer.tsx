@@ -8,6 +8,7 @@ import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 interface LeadDrawerProps {
   leadId: string | null;
@@ -18,6 +19,7 @@ interface LeadDrawerProps {
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
+  const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN');
   const [comment, setComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
 
@@ -171,8 +173,8 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
               )}
             </div>
 
-            {/* Voice recording (NEW only) */}
-            {lead.status === 'NEW' && (
+            {/* Voice recording add-on for NEW leads — admin CRM only (managers use text create flow). */}
+            {isAdmin && lead.status === 'NEW' && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Voice recording</label>
                 <VoiceRecorder leadId={lead.id} onRecordingSaved={() => refetch()} />

@@ -14,7 +14,7 @@ export class ChatListsService {
   /**
    * Get students list for admin chat
    */
-  async getAdminStudents(_adminId: string, search?: string) {
+  async getAdminStudents(_adminId: string, search?: string, branchCenterId?: string) {
     const where: Prisma.StudentWhereInput = {
       user: {
         role: 'STUDENT',
@@ -28,6 +28,11 @@ export class ChatListsService {
           ],
         }),
       },
+      ...(branchCenterId
+        ? {
+            OR: [{ group: { centerId: branchCenterId } }, { centerId: branchCenterId }],
+          }
+        : {}),
     };
 
     const students = await this.prisma.student.findMany({
@@ -62,7 +67,7 @@ export class ChatListsService {
   /**
    * Get teachers list for admin chat
    */
-  async getAdminTeachers(_adminId: string, search?: string) {
+  async getAdminTeachers(_adminId: string, search?: string, branchCenterId?: string) {
     const where: Prisma.TeacherWhereInput = {
       user: {
         role: 'TEACHER',
@@ -76,6 +81,14 @@ export class ChatListsService {
           ],
         }),
       },
+      ...(branchCenterId
+        ? {
+            OR: [
+              { centerLinks: { some: { centerId: branchCenterId } } },
+              { groups: { some: { centerId: branchCenterId } } },
+            ],
+          }
+        : {}),
     };
 
     const teachers = await this.prisma.teacher.findMany({
@@ -110,9 +123,10 @@ export class ChatListsService {
   /**
    * Get groups list for admin chat
    */
-  async getAdminGroups(_adminId: string, search?: string) {
+  async getAdminGroups(_adminId: string, search?: string, branchCenterId?: string) {
     const where: Prisma.GroupWhereInput = {
       isActive: true,
+      ...(branchCenterId ? { centerId: branchCenterId } : {}),
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
@@ -148,9 +162,35 @@ export class ChatListsService {
    * Get all registered users for admin (e.g. add-member picker).
    * Returns active users across all roles. Admin-only.
    */
-  async getAdminAllUsers(_adminId: string, search?: string) {
+  async getAdminAllUsers(_adminId: string, search?: string, branchCenterId?: string) {
     const where: Prisma.UserWhereInput = {
       status: 'ACTIVE',
+      ...(branchCenterId
+        ? {
+            role: { in: [UserRole.STUDENT, UserRole.TEACHER, UserRole.MANAGER] },
+            OR: [
+              {
+                role: UserRole.STUDENT,
+                student: {
+                  OR: [{ group: { centerId: branchCenterId } }, { centerId: branchCenterId }],
+                },
+              },
+              {
+                role: UserRole.TEACHER,
+                teacher: {
+                  OR: [
+                    { centerLinks: { some: { centerId: branchCenterId } } },
+                    { groups: { some: { centerId: branchCenterId } } },
+                  ],
+                },
+              },
+              {
+                role: UserRole.MANAGER,
+                managerProfile: { centerId: branchCenterId },
+              },
+            ],
+          }
+        : {}),
       ...(search && search.trim() && {
         OR: [
           { firstName: { contains: search.trim(), mode: 'insensitive' } },

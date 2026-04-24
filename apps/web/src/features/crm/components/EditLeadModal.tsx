@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
@@ -9,7 +9,9 @@ import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { CrmStatusSelector } from './CrmStatusSelector';
+import { PaidRegistrationModal } from './PaidRegistrationModal';
 import { RecordingPlayback } from './VoiceRecorder';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -50,12 +52,26 @@ export function EditLeadModal({
   groups,
   availableStatuses = CRM_COLUMN_ORDER,
 }: EditLeadModalProps) {
+  const user = useAuthStore((s) => s.user);
+  const isManager = user?.role === 'MANAGER';
+  const managerCenterReadonlyLabel = useMemo(() => {
+    if (!isManager || !user?.managerCenterId) return null;
+    const name = centers.find((c) => c.id === user.managerCenterId)?.name;
+    return name ?? 'Your assigned branch';
+  }, [centers, isManager, user?.managerCenterId]);
+
   const queryClient = useQueryClient();
   const modalContainerRef = useRef<HTMLDivElement>(null);
+  const crmStatusPortaledMenuRef = useRef<HTMLDivElement>(null);
+  const modalAdditionalInsideRefs = useMemo(
+    () => [crmStatusPortaledMenuRef] as const satisfies ReadonlyArray<RefObject<HTMLElement | null>>,
+    [],
+  );
   const { onOverlayMouseDown, onOverlayClick } = useModalClose({
     open,
     onClose,
     containerRef: modalContainerRef,
+    additionalInsideRefs: modalAdditionalInsideRefs,
   });
   const [form, setForm] = useState<
     UpdateLeadDto & { status?: CrmLeadStatus; archivedReason?: string; parentSurname?: string }
@@ -63,6 +79,8 @@ export function EditLeadModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [paidRegistrationOpen, setPaidRegistrationOpen] = useState(false);
+  const [paidPrefill, setPaidPrefill] = useState<Partial<UpdateLeadDto> | undefined>(undefined);
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ['crm-lead', leadId],
@@ -128,6 +146,30 @@ export function EditLeadModal({
     return () => setIsMounted(false);
   }, []);
 
+  const handleCrmStatusChange = (status: CrmLeadStatus) => {
+    if (status === 'PAID' && lead && lead.status !== 'PAID') {
+      setPaidPrefill({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        phone: form.phone,
+        age: form.age,
+        dateOfBirth: form.dateOfBirth,
+        firstLessonDate: form.firstLessonDate,
+        parentName: form.parentName,
+        parentPhone: form.parentPhone,
+        parentPassportInfo: form.parentPassportInfo,
+        comment: form.comment,
+        levelId: form.levelId,
+        teacherId: form.teacherId,
+        groupId: form.groupId,
+        ...(isManager ? {} : { centerId: form.centerId }),
+      });
+      setPaidRegistrationOpen(true);
+      return;
+    }
+    setForm((f) => ({ ...f, status }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadId || !lead) return;
@@ -140,6 +182,9 @@ export function EditLeadModal({
         parentSurname: _parentSurname,
         ...updatePayload
       } = form;
+      if (isManager) {
+        delete updatePayload.centerId;
+      }
       await updateLead(leadId, updatePayload);
       if (formStatus && formStatus !== lead.status) {
         await changeLeadStatus(leadId, {
@@ -163,7 +208,7 @@ export function EditLeadModal({
 
   if (!isMounted) return null;
 
-  return createPortal(
+  const editLeadPortal = createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
       onMouseDown={onOverlayMouseDown}
@@ -394,6 +439,9 @@ export function EditLeadModal({
                       </option>
                     ))}
                   </select>
+                  {isManager && teachers.length === 0 ? (
+                    <p className="mt-1 text-xs text-slate-500">No teachers available for your center.</p>
+                  ) : null}
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">Group</label>
@@ -413,23 +461,34 @@ export function EditLeadModal({
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
-                  <select
-                    value={form.centerId ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, centerId: e.target.value || undefined }))
-                    }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">—</option>
-                    {centers.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {isManager ? (
+                  managerCenterReadonlyLabel ? (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
+                      <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                        {managerCenterReadonlyLabel}
+                      </p>
+                    </div>
+                  ) : null
+                ) : (
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
+                    <select
+                      value={form.centerId ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, centerId: e.target.value || undefined }))
+                      }
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">—</option>
+                      {centers.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </section>
             </div>
@@ -442,9 +501,9 @@ export function EditLeadModal({
                     id="edit-lead-status"
                     value={form.status}
                     options={availableStatuses}
-                    onChange={(status) =>
-                      setForm((f) => ({ ...f, status }))
-                    }
+                    portaledMenuRef={crmStatusPortaledMenuRef}
+                    onChange={handleCrmStatusChange}
+                    disabled={lead?.status === 'PAID'}
                   />
                 </div>
                 {form.status === 'ARCHIVE' && (
@@ -484,5 +543,28 @@ export function EditLeadModal({
       </div>
     </div>,
     document.body
+  );
+
+  return (
+    <>
+      {editLeadPortal}
+      <PaidRegistrationModal
+        open={paidRegistrationOpen}
+        leadId={paidRegistrationOpen ? leadId : null}
+        formPrefill={paidPrefill}
+        onClose={() => {
+          setPaidRegistrationOpen(false);
+          setPaidPrefill(undefined);
+        }}
+        onSuccess={() => {
+          setPaidRegistrationOpen(false);
+          setPaidPrefill(undefined);
+          void queryClient.invalidateQueries({ queryKey: ['crm-lead', leadId] });
+          void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+          onSaved();
+          onClose();
+        }}
+      />
+    </>
   );
 }

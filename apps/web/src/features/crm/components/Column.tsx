@@ -17,8 +17,13 @@ interface ColumnProps {
   changingStatusId?: string | null;
   changingBranchId?: string | null;
   onAddClick: () => void;
+  /** When true (admin), NEW column shows the voice-lead button; managers get no header action. */
+  newLeadAddUsesVoice?: boolean;
   showVoiceRecorder?: (lead: CrmLead) => React.ReactNode;
   branchOptions?: CrmBranchOption[];
+  canDeleteLead?: boolean;
+  onLeadDeleteRequest?: (lead: CrmLead) => void;
+  deleteInProgress?: boolean;
 }
 
 export function Column({
@@ -32,8 +37,12 @@ export function Column({
   changingStatusId,
   changingBranchId,
   onAddClick,
+  newLeadAddUsesVoice = true,
   showVoiceRecorder,
   branchOptions,
+  canDeleteLead,
+  onLeadDeleteRequest,
+  deleteInProgress,
 }: ColumnProps) {
   const label = STATUS_LABELS[status];
   const isNew = status === 'NEW';
@@ -48,7 +57,7 @@ export function Column({
               {count}
             </span>
           </div>
-          {isNew && (
+          {isNew && newLeadAddUsesVoice && (
             <button
               type="button"
               onClick={onAddClick}
@@ -73,6 +82,11 @@ export function Column({
               onBranchChange={onCardBranchChange}
               isChangingStatus={changingStatusId === lead.id}
               isChangingBranch={changingBranchId === lead.id}
+              showDelete={canDeleteLead}
+              onDeleteClick={
+                canDeleteLead && onLeadDeleteRequest ? () => onLeadDeleteRequest(lead) : undefined
+              }
+              deleteDisabled={deleteInProgress}
             />
             {showVoiceRecorder && status === 'NEW' && showVoiceRecorder(lead)}
           </div>

@@ -31,6 +31,7 @@ import {
   AddCommentDto,
   ConfirmRecordingDto,
 } from './dto';
+import { CreateStudentDto } from '../students/dto/create-student.dto';
 
 const MAX_VOICE_SIZE = 25 * 1024 * 1024; // 25MB
 
@@ -49,8 +50,8 @@ export class LeadsController {
   }
 
   @Post('voice')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Create a new lead from voice recording' })
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Create a new lead from voice recording (admin only)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -140,6 +141,21 @@ export class LeadsController {
     return this.leadsService.update(id, dto, user.sub, user);
   }
 
+  @Post(':id/register-paid')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({
+    summary: 'Complete Paid registration',
+    description:
+      'Updates lead fields, sets status to Paid, and creates the linked student. Use this instead of POST :id/status for Paid.',
+  })
+  registerPaid(
+    @Param('id') id: string,
+    @Body() dto: CreateStudentDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<unknown> {
+    return this.leadsService.registerPaidLead(id, dto, user.sub, user);
+  }
+
   @Post(':id/status')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({ summary: 'Change lead status (Admin can set any status)' })
@@ -183,8 +199,8 @@ export class LeadsController {
   }
 
   @Post(':id/recordings/presign')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Get presigned URL for voice recording upload' })
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get presigned URL for CRM lead voice upload (admin only)' })
   getPresignedRecordingUrl(
     @Param('id') id: string,
     @Body() body: { fileName: string; mimeType: string },
@@ -199,8 +215,8 @@ export class LeadsController {
   }
 
   @Post(':id/recordings/confirm')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  @ApiOperation({ summary: 'Confirm recording upload and attach to lead' })
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Confirm CRM lead voice upload and attach (admin only)' })
   confirmRecording(
     @Param('id') id: string,
     @Body() dto: ConfirmRecordingDto,
@@ -210,7 +226,7 @@ export class LeadsController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete a lead (and its voice recordings)' })
   delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.leadsService.delete(id, user);

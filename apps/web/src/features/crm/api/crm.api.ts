@@ -11,6 +11,7 @@ import type {
   CrmLeadActivity,
   CrmLeadStatus,
 } from '../types';
+import type { CreateStudentDto } from '@/features/students/types';
 
 const CRM_LEADS_ENDPOINT = '/crm/leads';
 
@@ -105,6 +106,10 @@ export async function changeLeadStatus(
   data: ChangeStatusDto
 ): Promise<CrmLead> {
   return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}/status`, data);
+}
+
+export async function registerPaidLead(id: string, data: CreateStudentDto): Promise<CrmLead> {
+  return api.post<CrmLead>(`${CRM_LEADS_ENDPOINT}/${id}/register-paid`, data);
 }
 
 export async function changeLeadBranch(

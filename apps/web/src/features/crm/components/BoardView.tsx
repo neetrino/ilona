@@ -18,8 +18,12 @@ export interface BoardViewProps {
   changingStatusId?: string | null;
   changingBranchId?: string | null;
   onAddLead: () => void;
-  onRecordingSaved?: () => void;
+  /** When true (admin), NEW column shows the voice-lead button; managers see an empty header slot. */
+  newLeadAddUsesVoice?: boolean;
   branchOptions?: CrmBranchOption[];
+  canDeleteLead?: boolean;
+  onLeadDeleteRequest?: (lead: CrmLead) => void;
+  deleteInProgress?: boolean;
 }
 
 export function BoardView({
@@ -33,7 +37,11 @@ export function BoardView({
   changingStatusId,
   changingBranchId,
   onAddLead,
+  newLeadAddUsesVoice = true,
   branchOptions,
+  canDeleteLead,
+  onLeadDeleteRequest,
+  deleteInProgress,
 }: BoardViewProps) {
   const statusList = availableStatuses.length > 0 ? availableStatuses : CRM_COLUMN_ORDER;
   const columnOrder = columnStatuses && columnStatuses.length > 0 ? columnStatuses : statusList;
@@ -68,7 +76,11 @@ export function BoardView({
           changingStatusId={changingStatusId}
           changingBranchId={changingBranchId}
           onAddClick={onAddLead}
+          newLeadAddUsesVoice={newLeadAddUsesVoice}
           branchOptions={branchOptions}
+          canDeleteLead={canDeleteLead}
+          onLeadDeleteRequest={onLeadDeleteRequest}
+          deleteInProgress={deleteInProgress}
         />
       ))}
     </div>

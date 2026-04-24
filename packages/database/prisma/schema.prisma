@@ -52,6 +52,7 @@ model Center {
   groups          Group[]
   managerProfiles ManagerProfile[]
   teacherCenters  TeacherCenter[]
+  students        Student[]
 
   @@map("centers")
 }
@@ -158,6 +159,8 @@ model Student {
   userId          String         @unique
   groupId         String?
   teacherId       String?
+  // Optional home center (admin); may differ from group.centerId until aligned manually.
+  centerId        String?
   currentStreak   Int            @default(0)
   age             Int?
   dateOfBirth     DateTime?
@@ -180,6 +183,7 @@ model Student {
   feedbacks       Feedback[]
   payments        Payment[]
   group           Group?         @relation(fields: [groupId], references: [id])
+  center          Center?        @relation(fields: [centerId], references: [id], onDelete: SetNull)
   lead            CrmLead?       @relation(fields: [leadId], references: [id])
   teacher         Teacher?       @relation(fields: [teacherId], references: [id])
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -190,6 +194,7 @@ model Student {
 
   @@index([groupId])
   @@index([teacherId])
+  @@index([centerId])
   @@index([leadId])
   @@index([status])
   @@index([riskLabel])

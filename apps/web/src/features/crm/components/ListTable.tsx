@@ -1,15 +1,26 @@
 'use client';
 
 import type { CrmLead } from '@/features/crm/types';
+import { ActionButtons } from '@/shared/components/ui';
 import { STATUS_LABELS } from './LeadCard';
 
 interface ListTableProps {
   leads: CrmLead[];
   onRowClick: (lead: CrmLead) => void;
   isLoading?: boolean;
+  canDeleteLead?: boolean;
+  onLeadDeleteRequest?: (lead: CrmLead) => void;
+  deleteInProgress?: boolean;
 }
 
-export function ListTable({ leads, onRowClick, isLoading }: ListTableProps) {
+export function ListTable({
+  leads,
+  onRowClick,
+  isLoading,
+  canDeleteLead,
+  onLeadDeleteRequest,
+  deleteInProgress,
+}: ListTableProps) {
   if (isLoading) {
     return (
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -25,6 +36,9 @@ export function ListTable({ leads, onRowClick, isLoading }: ListTableProps) {
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Level</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Created</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Updated</th>
+              {canDeleteLead ? (
+                <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
+              ) : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
@@ -39,6 +53,9 @@ export function ListTable({ leads, onRowClick, isLoading }: ListTableProps) {
                 <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-8" /></td>
                 <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20" /></td>
                 <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20" /></td>
+                {canDeleteLead ? (
+                  <td className="px-4 py-3"><div className="ml-auto h-8 w-16 bg-slate-200 rounded" /></td>
+                ) : null}
               </tr>
             ))}
           </tbody>
@@ -61,6 +78,9 @@ export function ListTable({ leads, onRowClick, isLoading }: ListTableProps) {
             <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Level</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Created</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Updated</th>
+            {canDeleteLead ? (
+              <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
+            ) : null}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 bg-white">
@@ -114,6 +134,18 @@ export function ListTable({ leads, onRowClick, isLoading }: ListTableProps) {
                     })
                   : '—'}
               </td>
+              {canDeleteLead && onLeadDeleteRequest ? (
+                <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                  <ActionButtons
+                    className="justify-end"
+                    onDelete={() => onLeadDeleteRequest(lead)}
+                    disabled={deleteInProgress}
+                    deleteDisabled={deleteInProgress}
+                    ariaLabels={{ delete: 'Delete lead' }}
+                    titles={{ delete: 'Delete lead' }}
+                  />
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>

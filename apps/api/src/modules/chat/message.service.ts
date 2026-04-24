@@ -31,6 +31,8 @@ import { StorageService } from '../storage/storage.service';
 import { SalariesService } from '../finance/salaries.service';
 import { ChatManagementService } from './chat-management.service';
 import { ChatAuthorizationService } from './chat-authorization.service';
+import { ChatManagerScopeService } from './chat-manager-scope.service';
+import { JwtPayload } from '../../common/types/auth.types';
 
 /** Message response with optional navigation (e.g. for voice from calendar) */
 export interface SendMessageResponse {
@@ -123,6 +125,7 @@ export class MessageService {
     private readonly salariesService: SalariesService,
     private readonly chatManagementService: ChatManagementService,
     private readonly authorizationService: ChatAuthorizationService,
+    private readonly managerScope: ChatManagerScopeService,
   ) {}
 
   /**
@@ -153,9 +156,10 @@ export class MessageService {
     userId: string,
     params?: { cursor?: string; take?: number },
     userRole?: string,
+    authUser?: JwtPayload,
   ) {
     // Verify user is participant
-    await this.chatManagementService.getChatById(chatId, userId, userRole);
+    await this.chatManagementService.getChatById(chatId, userId, userRole, authUser);
 
     const { cursor, take = 50 } = params || {};
 
@@ -205,7 +209,12 @@ export class MessageService {
    * SECURITY: senderId must ONLY be passed from the controller/gateway (from authenticated
    * user). Never use or trust any senderId from dto - the DTO does not include it by design.
    */
-  async sendMessage(dto: SendMessageDto, senderId: string, senderRole?: string): Promise<SendMessageResponse> {
+  async sendMessage(
+    dto: SendMessageDto,
+    senderId: string,
+    senderRole?: string,
+    authUser?: JwtPayload,
+  ): Promise<SendMessageResponse> {
     // CRITICAL: senderId must come from auth layer only (never from request body)
     if (!senderId || senderId.trim() === '') {
       this.logger.error('[sendMessage] senderId is missing or empty', { dto });
@@ -248,7 +257,12 @@ export class MessageService {
     }
 
     // Verify user is participant (or admin for group chats)
-    const chat = await this.chatManagementService.getChatById(dto.chatId, senderId, senderUser.role);
+    const chat = await this.chatManagementService.getChatById(
+      dto.chatId,
+      senderId,
+      senderUser.role,
+      authUser,
+    );
 
     // Validate VOICE message: require fileUrl and enforce duration/size limits
     const messageType = dto.type || MessageType.TEXT;
@@ -300,8 +314,21 @@ export class MessageService {
 
         // Allow Admin ↔ Teacher and Admin ↔ Student messaging (no validation needed)
         const isAdminInvolved = sender.role === UserRole.ADMIN || otherUser?.role === UserRole.ADMIN;
-        
-        if (!isAdminInvolved) {
+
+        let isManagerBranchDm = false;
+        if (sender.role === UserRole.MANAGER && otherParticipant) {
+          isManagerBranchDm = await this.managerScope.canManagerDirectMessageUser(
+            senderId,
+            otherParticipant.userId,
+          );
+        }
+        if (otherUser?.role === UserRole.MANAGER && otherParticipant) {
+          isManagerBranchDm =
+            isManagerBranchDm ||
+            (await this.managerScope.canManagerDirectMessageUser(otherParticipant.userId, senderId));
+        }
+
+        if (!isAdminInvolved && !isManagerBranchDm) {
           // If student is sending to teacher, validate assignment
           if (sender.role === UserRole.STUDENT && otherUser?.role === UserRole.TEACHER) {
             const canDM = await this.authorizationService.validateStudentTeacherDM(senderId, otherParticipant.userId);
@@ -435,7 +462,12 @@ export class MessageService {
   /**
    * Edit a message
    */
-  async editMessage(messageId: string, dto: UpdateMessageDto, userId: string) {
+  async editMessage(
+    messageId: string,
+    dto: UpdateMessageDto,
+    userId: string,
+    authUser?: JwtPayload,
+  ) {
     const message = await this.prisma.message.findUnique({
       where: { id: messageId },
     });
@@ -443,6 +475,13 @@ export class MessageService {
     if (!message) {
       throw new NotFoundException('Message not found');
     }
+
+    await this.chatManagementService.getChatById(
+      message.chatId,
+      userId,
+      authUser?.role,
+      authUser,
+    );
 
     if (message.senderId !== userId) {
       throw new ForbiddenException('You can only edit your own messages');
@@ -476,7 +515,7 @@ export class MessageService {
    * Delete a message (hard delete - completely remove from database)
    * Also deletes associated file from storage if it exists
    */
-  async deleteMessage(messageId: string, userId: string) {
+  async deleteMessage(messageId: string, userId: string, authUser?: JwtPayload) {
     const message = await this.prisma.message.findUnique({
       where: { id: messageId },
     });
@@ -484,6 +523,13 @@ export class MessageService {
     if (!message) {
       throw new NotFoundException('Message not found');
     }
+
+    await this.chatManagementService.getChatById(
+      message.chatId,
+      userId,
+      authUser?.role,
+      authUser,
+    );
 
     if (message.senderId !== userId) {
       throw new ForbiddenException('You can only delete your own messages');
@@ -593,7 +639,9 @@ export class MessageService {
   /**
    * Mark messages as read
    */
-  async markAsRead(chatId: string, userId: string) {
+  async markAsRead(chatId: string, userId: string, authUser?: JwtPayload) {
+    await this.chatManagementService.getChatById(chatId, userId, authUser?.role, authUser);
+
     await this.prisma.chatParticipant.updateMany({
       where: {
         chatId,
@@ -758,6 +806,7 @@ export class MessageService {
   async getAdminStudentRecordings(
     _adminUserId: string,
     filters?: AdminStudentRecordingFilters,
+    branchCenterId?: string,
   ) {
     const messages = await this.prisma.message.findMany({
       where: {
@@ -765,6 +814,13 @@ export class MessageService {
         fileUrl: { not: null },
         sender: {
           role: UserRole.STUDENT,
+          ...(branchCenterId
+            ? {
+                student: {
+                  OR: [{ group: { centerId: branchCenterId } }, { centerId: branchCenterId }],
+                },
+              }
+            : {}),
         },
       },
       orderBy: { createdAt: 'desc' },

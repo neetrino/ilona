@@ -14,6 +14,15 @@ export {
   studentKeys,
 } from './hooks';
 
+export {
+  createStudentSchema,
+  computeAgeFromDob,
+  ISO_DATE_RE,
+  type CreateStudentFormData,
+} from './student-account-form.schema';
+export { formDataToCreateStudentDto } from './student-account-form.payload';
+export { StudentAccountFormFields } from './components/StudentAccountFormFields';
+
 // Components
 export { AddStudentForm } from './components/AddStudentForm';
 export { EditStudentForm } from './components/EditStudentForm';

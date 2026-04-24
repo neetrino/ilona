@@ -36,11 +36,15 @@ export function FloatingChatWidget() {
       ? `${pathname}?${searchParams.toString()}`
       : pathname;
     const returnTo = encodeURIComponent(currentPath);
-    
+
+    // Admin and Manager share the same /admin/chat shell (not /manager/chat).
+    const roleSegment =
+      user.role === 'ADMIN' || user.role === 'MANAGER' ? 'admin' : user.role.toLowerCase();
+
     // Navigate to chat route with returnTo parameter
     // CRITICAL: Do NOT include conversationId/chatId to prevent auto-selection
     // The chat should open in neutral state, allowing user to manually select a conversation
-    const chatPath = `/${locale}/${user.role.toLowerCase()}/chat?returnTo=${returnTo}`;
+    const chatPath = `/${locale}/${roleSegment}/chat?returnTo=${returnTo}`;
     router.push(chatPath);
   };
 

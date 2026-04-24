@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
-import { Input } from '@/shared/components/ui/input';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import Image from 'next/image';
 import { useLogout } from '@/features/auth/hooks/useLogout';
 import { StudentStreakBadge } from './StudentStreakBadge';
+import { GlobalSearchBar } from '@/features/search/components/GlobalSearchBar';
 
 interface HeaderProps {
   title: string;
@@ -17,11 +16,9 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle, headerContent }: HeaderProps) {
-  const [searchValue, setSearchValue] = useState('');
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const t = useTranslations('common');
   const { user } = useAuthStore();
   const logout = useLogout();
   const tAuth = useTranslations('auth');
@@ -53,29 +50,7 @@ export function Header({ title, subtitle, headerContent }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Search */}
-        <div className="relative">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          <Input
-            type="search"
-            placeholder={t('globalSearch')}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="pl-10 w-64 bg-slate-50 border-slate-200 focus:bg-white"
-          />
-        </div>
+        {user ? <GlobalSearchBar /> : null}
 
         {user?.role === 'STUDENT' ? <StudentStreakBadge /> : null}
 
