@@ -23,6 +23,7 @@ import {
   ListTable,
   LeadDrawer,
   VoiceLeadModal,
+  CreateLeadModal,
   EditLeadModal,
   PaidRegistrationModal,
   CRMFilters,
@@ -118,6 +119,7 @@ export default function AdminCrmPage() {
   );
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const [createLeadModalOpen, setCreateLeadModalOpen] = useState(false);
   const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
   const [paidRegLeadId, setPaidRegLeadId] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
@@ -305,6 +307,10 @@ export default function AdminCrmPage() {
   const leads = leadsData?.items ?? [];
   const countsByStatus = leadsData?.countsByStatus ?? {};
   const centers = centersData?.items ?? [];
+  const managerCenterName =
+    userRole === 'MANAGER' && managerCenterId
+      ? centers.find((c) => c.id === managerCenterId)?.name
+      : undefined;
   const teachers = teachersData?.items ?? [];
   const groups = groupsData?.items ?? [];
 
@@ -342,7 +348,13 @@ export default function AdminCrmPage() {
     if (!isAdmin) return;
     branchMutation.mutate({ leadId, centerId });
   };
-  const handleAddLead = () => setVoiceModalOpen(true);
+  const handleNewLeadFromBoard = () => {
+    if (isAdmin) {
+      setVoiceModalOpen(true);
+    } else {
+      setCreateLeadModalOpen(true);
+    }
+  };
 
   const handleLeadDeleteRequest = (lead: CrmLead) => {
     if (!isAdmin) return;
@@ -467,8 +479,8 @@ export default function AdminCrmPage() {
             onCardBranchChange={isAdmin ? handleCardBranchChange : undefined}
             changingStatusId={changingStatusId}
             changingBranchId={isAdmin ? changingBranchId : null}
-            onAddLead={handleAddLead}
-            newLeadAddUsesVoice={isAdmin}
+            onAddLead={handleNewLeadFromBoard}
+            newLeadAddMode={isAdmin ? 'voice' : 'text'}
             branchOptions={isAdmin ? centers.map((c) => ({ id: c.id, name: c.name })) : undefined}
             canDeleteLead={isAdmin}
             onLeadDeleteRequest={isAdmin ? handleLeadDeleteRequest : undefined}
@@ -525,14 +537,28 @@ export default function AdminCrmPage() {
           groups={groups}
           availableStatuses={adminVisibleStatuses}
         />
-        <VoiceLeadModal
-          open={voiceModalOpen}
-          onClose={() => setVoiceModalOpen(false)}
+        {isAdmin ? (
+          <VoiceLeadModal
+            open={voiceModalOpen}
+            onClose={() => setVoiceModalOpen(false)}
+            onCreated={(createdLead) => {
+              upsertCreatedLeadIntoCaches(createdLead);
+              void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+              setVoiceModalOpen(false);
+            }}
+          />
+        ) : null}
+        <CreateLeadModal
+          open={createLeadModalOpen}
+          onClose={() => setCreateLeadModalOpen(false)}
           onCreated={(createdLead) => {
             upsertCreatedLeadIntoCaches(createdLead);
-            queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
-            setVoiceModalOpen(false);
+            void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+            setCreateLeadModalOpen(false);
           }}
+          defaultCenterId={managerCenterId}
+          defaultCenterName={managerCenterName}
+          groupsQueryCenterId={managerCenterId}
         />
         <PaidRegistrationModal
           open={paidRegLeadId != null}

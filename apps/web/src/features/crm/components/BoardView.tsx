@@ -18,8 +18,8 @@ export interface BoardViewProps {
   changingStatusId?: string | null;
   changingBranchId?: string | null;
   onAddLead: () => void;
-  /** When true (admin), NEW column shows the voice-lead button; managers see an empty header slot. */
-  newLeadAddUsesVoice?: boolean;
+  /** NEW column: `voice` (admin), `text` (manager text lead), or `none`. */
+  newLeadAddMode?: 'voice' | 'text' | 'none';
   branchOptions?: CrmBranchOption[];
   canDeleteLead?: boolean;
   onLeadDeleteRequest?: (lead: CrmLead) => void;
@@ -37,7 +37,7 @@ export function BoardView({
   changingStatusId,
   changingBranchId,
   onAddLead,
-  newLeadAddUsesVoice = true,
+  newLeadAddMode = 'voice',
   branchOptions,
   canDeleteLead,
   onLeadDeleteRequest,
@@ -76,7 +76,7 @@ export function BoardView({
           changingStatusId={changingStatusId}
           changingBranchId={changingBranchId}
           onAddClick={onAddLead}
-          newLeadAddUsesVoice={newLeadAddUsesVoice}
+          newLeadAddMode={newLeadAddMode}
           branchOptions={branchOptions}
           canDeleteLead={canDeleteLead}
           onLeadDeleteRequest={onLeadDeleteRequest}
