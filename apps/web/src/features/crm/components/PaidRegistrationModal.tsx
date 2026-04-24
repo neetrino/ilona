@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { fetchLead, registerPaidLead } from '@/features/crm/api/crm.api';
-import type { CrmLead, UpdateLeadDto } from '@/features/crm/types';
+import type { UpdateLeadDto } from '@/features/crm/types';
 import { leadToCreateStudentFormDefaults } from '@/features/crm/lead-to-student-form-defaults';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
@@ -136,7 +136,7 @@ export function PaidRegistrationModal({
         notes: '',
         receiveReports: true,
       },
-      ...leadToCreateStudentFormDefaults(lead as CrmLead, formPrefill),
+      ...leadToCreateStudentFormDefaults(lead, formPrefill),
     });
   }, [open, lead, leadId, formPrefill, reset]);
 

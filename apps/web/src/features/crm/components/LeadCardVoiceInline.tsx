@@ -190,7 +190,7 @@ export function LeadCardVoiceInline({
             e.stopPropagation();
             const el = audioRef.current;
             const d = el?.duration;
-            if (!el || !Number.isFinite(d) || d <= 0) return;
+            if (!el || typeof d !== 'number' || !Number.isFinite(d) || d <= 0) return;
             if (e.key === 'ArrowLeft') {
               e.preventDefault();
               el.currentTime = Math.max(0, el.currentTime - 5);
