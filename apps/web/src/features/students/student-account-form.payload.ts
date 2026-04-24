@@ -17,6 +17,7 @@ export function formDataToCreateStudentDto(
     age: computedAge ?? data.age,
     groupId: data.groupId || undefined,
     teacherId: data.teacherId || undefined,
+    centerId: data.centerId?.trim() ? data.centerId.trim() : undefined,
     parentName: data.parentName || undefined,
     parentPhone: data.parentPhone || undefined,
     parentEmail: data.parentEmail || undefined,

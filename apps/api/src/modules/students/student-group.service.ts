@@ -40,7 +40,11 @@ export class StudentGroupService {
     const oldGroupId = student.groupId;
     const managerCenterId = getManagerCenterIdOrThrow(user);
 
-    if (managerCenterId && student.group?.centerId !== managerCenterId) {
+    if (
+      managerCenterId &&
+      student.group?.centerId !== managerCenterId &&
+      student.centerId !== managerCenterId
+    ) {
       throw new ForbiddenException('You do not have access to this student');
     }
 

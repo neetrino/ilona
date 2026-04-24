@@ -16,6 +16,7 @@ export class StudentStatisticsService {
       select: {
         id: true,
         currentStreak: true,
+        centerId: true,
         group: {
           select: { centerId: true },
         },
@@ -36,7 +37,9 @@ export class StudentStatisticsService {
         throw new ForbiddenException('Manager account is not assigned to a center');
       }
 
-      if (student.group?.centerId !== managerCenterId) {
+      const inManagerCenter =
+        student.group?.centerId === managerCenterId || student.centerId === managerCenterId;
+      if (!inManagerCenter) {
         throw new ForbiddenException('You do not have access to this student');
       }
     }

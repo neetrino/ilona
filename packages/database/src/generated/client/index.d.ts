@@ -3650,6 +3650,7 @@ export namespace Prisma {
     groups: number
     managerProfiles: number
     teacherCenters: number
+    students: number
   }
 
   export type CenterCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3657,6 +3658,7 @@ export namespace Prisma {
     groups?: boolean | CenterCountOutputTypeCountGroupsArgs
     managerProfiles?: boolean | CenterCountOutputTypeCountManagerProfilesArgs
     teacherCenters?: boolean | CenterCountOutputTypeCountTeacherCentersArgs
+    students?: boolean | CenterCountOutputTypeCountStudentsArgs
   }
 
   // Custom InputTypes
@@ -3696,6 +3698,13 @@ export namespace Prisma {
    */
   export type CenterCountOutputTypeCountTeacherCentersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TeacherCenterWhereInput
+  }
+
+  /**
+   * CenterCountOutputType without action
+   */
+  export type CenterCountOutputTypeCountStudentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StudentWhereInput
   }
 
 
@@ -5593,6 +5602,7 @@ export namespace Prisma {
     groups?: boolean | Center$groupsArgs<ExtArgs>
     managerProfiles?: boolean | Center$managerProfilesArgs<ExtArgs>
     teacherCenters?: boolean | Center$teacherCentersArgs<ExtArgs>
+    students?: boolean | Center$studentsArgs<ExtArgs>
     _count?: boolean | CenterCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["center"]>
 
@@ -5627,6 +5637,7 @@ export namespace Prisma {
     groups?: boolean | Center$groupsArgs<ExtArgs>
     managerProfiles?: boolean | Center$managerProfilesArgs<ExtArgs>
     teacherCenters?: boolean | Center$teacherCentersArgs<ExtArgs>
+    students?: boolean | Center$studentsArgs<ExtArgs>
     _count?: boolean | CenterCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CenterIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -5638,6 +5649,7 @@ export namespace Prisma {
       groups: Prisma.$GroupPayload<ExtArgs>[]
       managerProfiles: Prisma.$ManagerProfilePayload<ExtArgs>[]
       teacherCenters: Prisma.$TeacherCenterPayload<ExtArgs>[]
+      students: Prisma.$StudentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6018,6 +6030,7 @@ export namespace Prisma {
     groups<T extends Center$groupsArgs<ExtArgs> = {}>(args?: Subset<T, Center$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany"> | Null>
     managerProfiles<T extends Center$managerProfilesArgs<ExtArgs> = {}>(args?: Subset<T, Center$managerProfilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findMany"> | Null>
     teacherCenters<T extends Center$teacherCentersArgs<ExtArgs> = {}>(args?: Subset<T, Center$teacherCentersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeacherCenterPayload<ExtArgs>, T, "findMany"> | Null>
+    students<T extends Center$studentsArgs<ExtArgs> = {}>(args?: Subset<T, Center$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6448,6 +6461,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TeacherCenterScalarFieldEnum | TeacherCenterScalarFieldEnum[]
+  }
+
+  /**
+   * Center.students
+   */
+  export type Center$studentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Student
+     */
+    select?: StudentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StudentInclude<ExtArgs> | null
+    where?: StudentWhereInput
+    orderBy?: StudentOrderByWithRelationInput | StudentOrderByWithRelationInput[]
+    cursor?: StudentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: StudentScalarFieldEnum | StudentScalarFieldEnum[]
   }
 
   /**
@@ -11860,6 +11893,7 @@ export namespace Prisma {
     userId: string | null
     groupId: string | null
     teacherId: string | null
+    centerId: string | null
     currentStreak: number | null
     age: number | null
     dateOfBirth: Date | null
@@ -11885,6 +11919,7 @@ export namespace Prisma {
     userId: string | null
     groupId: string | null
     teacherId: string | null
+    centerId: string | null
     currentStreak: number | null
     age: number | null
     dateOfBirth: Date | null
@@ -11910,6 +11945,7 @@ export namespace Prisma {
     userId: number
     groupId: number
     teacherId: number
+    centerId: number
     currentStreak: number
     age: number
     dateOfBirth: number
@@ -11949,6 +11985,7 @@ export namespace Prisma {
     userId?: true
     groupId?: true
     teacherId?: true
+    centerId?: true
     currentStreak?: true
     age?: true
     dateOfBirth?: true
@@ -11974,6 +12011,7 @@ export namespace Prisma {
     userId?: true
     groupId?: true
     teacherId?: true
+    centerId?: true
     currentStreak?: true
     age?: true
     dateOfBirth?: true
@@ -11999,6 +12037,7 @@ export namespace Prisma {
     userId?: true
     groupId?: true
     teacherId?: true
+    centerId?: true
     currentStreak?: true
     age?: true
     dateOfBirth?: true
@@ -12111,6 +12150,7 @@ export namespace Prisma {
     userId: string
     groupId: string | null
     teacherId: string | null
+    centerId: string | null
     currentStreak: number
     age: number | null
     dateOfBirth: Date | null
@@ -12155,6 +12195,7 @@ export namespace Prisma {
     userId?: boolean
     groupId?: boolean
     teacherId?: boolean
+    centerId?: boolean
     currentStreak?: boolean
     age?: boolean
     dateOfBirth?: boolean
@@ -12177,6 +12218,7 @@ export namespace Prisma {
     feedbacks?: boolean | Student$feedbacksArgs<ExtArgs>
     payments?: boolean | Student$paymentsArgs<ExtArgs>
     group?: boolean | Student$groupArgs<ExtArgs>
+    center?: boolean | Student$centerArgs<ExtArgs>
     lead?: boolean | Student$leadArgs<ExtArgs>
     teacher?: boolean | Student$teacherArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -12192,6 +12234,7 @@ export namespace Prisma {
     userId?: boolean
     groupId?: boolean
     teacherId?: boolean
+    centerId?: boolean
     currentStreak?: boolean
     age?: boolean
     dateOfBirth?: boolean
@@ -12211,6 +12254,7 @@ export namespace Prisma {
     updatedAt?: boolean
     leadId?: boolean
     group?: boolean | Student$groupArgs<ExtArgs>
+    center?: boolean | Student$centerArgs<ExtArgs>
     lead?: boolean | Student$leadArgs<ExtArgs>
     teacher?: boolean | Student$teacherArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -12221,6 +12265,7 @@ export namespace Prisma {
     userId?: boolean
     groupId?: boolean
     teacherId?: boolean
+    centerId?: boolean
     currentStreak?: boolean
     age?: boolean
     dateOfBirth?: boolean
@@ -12246,6 +12291,7 @@ export namespace Prisma {
     feedbacks?: boolean | Student$feedbacksArgs<ExtArgs>
     payments?: boolean | Student$paymentsArgs<ExtArgs>
     group?: boolean | Student$groupArgs<ExtArgs>
+    center?: boolean | Student$centerArgs<ExtArgs>
     lead?: boolean | Student$leadArgs<ExtArgs>
     teacher?: boolean | Student$teacherArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -12257,6 +12303,7 @@ export namespace Prisma {
   }
   export type StudentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     group?: boolean | Student$groupArgs<ExtArgs>
+    center?: boolean | Student$centerArgs<ExtArgs>
     lead?: boolean | Student$leadArgs<ExtArgs>
     teacher?: boolean | Student$teacherArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -12269,6 +12316,7 @@ export namespace Prisma {
       feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
       payments: Prisma.$PaymentPayload<ExtArgs>[]
       group: Prisma.$GroupPayload<ExtArgs> | null
+      center: Prisma.$CenterPayload<ExtArgs> | null
       lead: Prisma.$CrmLeadPayload<ExtArgs> | null
       teacher: Prisma.$TeacherPayload<ExtArgs> | null
       user: Prisma.$UserPayload<ExtArgs>
@@ -12282,6 +12330,7 @@ export namespace Prisma {
       userId: string
       groupId: string | null
       teacherId: string | null
+      centerId: string | null
       currentStreak: number
       age: number | null
       dateOfBirth: Date | null
@@ -12668,6 +12717,7 @@ export namespace Prisma {
     feedbacks<T extends Student$feedbacksArgs<ExtArgs> = {}>(args?: Subset<T, Student$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany"> | Null>
     payments<T extends Student$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Student$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany"> | Null>
     group<T extends Student$groupArgs<ExtArgs> = {}>(args?: Subset<T, Student$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    center<T extends Student$centerArgs<ExtArgs> = {}>(args?: Subset<T, Student$centerArgs<ExtArgs>>): Prisma__CenterClient<$Result.GetResult<Prisma.$CenterPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     lead<T extends Student$leadArgs<ExtArgs> = {}>(args?: Subset<T, Student$leadArgs<ExtArgs>>): Prisma__CrmLeadClient<$Result.GetResult<Prisma.$CrmLeadPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     teacher<T extends Student$teacherArgs<ExtArgs> = {}>(args?: Subset<T, Student$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
@@ -12708,6 +12758,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"Student", 'String'>
     readonly groupId: FieldRef<"Student", 'String'>
     readonly teacherId: FieldRef<"Student", 'String'>
+    readonly centerId: FieldRef<"Student", 'String'>
     readonly currentStreak: FieldRef<"Student", 'Int'>
     readonly age: FieldRef<"Student", 'Int'>
     readonly dateOfBirth: FieldRef<"Student", 'DateTime'>
@@ -13116,6 +13167,21 @@ export namespace Prisma {
      */
     include?: GroupInclude<ExtArgs> | null
     where?: GroupWhereInput
+  }
+
+  /**
+   * Student.center
+   */
+  export type Student$centerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Center
+     */
+    select?: CenterSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CenterInclude<ExtArgs> | null
+    where?: CenterWhereInput
   }
 
   /**
@@ -36212,6 +36278,7 @@ export namespace Prisma {
     userId: 'userId',
     groupId: 'groupId',
     teacherId: 'teacherId',
+    centerId: 'centerId',
     currentStreak: 'currentStreak',
     age: 'age',
     dateOfBirth: 'dateOfBirth',
@@ -37091,6 +37158,7 @@ export namespace Prisma {
     groups?: GroupListRelationFilter
     managerProfiles?: ManagerProfileListRelationFilter
     teacherCenters?: TeacherCenterListRelationFilter
+    students?: StudentListRelationFilter
   }
 
   export type CenterOrderByWithRelationInput = {
@@ -37108,6 +37176,7 @@ export namespace Prisma {
     groups?: GroupOrderByRelationAggregateInput
     managerProfiles?: ManagerProfileOrderByRelationAggregateInput
     teacherCenters?: TeacherCenterOrderByRelationAggregateInput
+    students?: StudentOrderByRelationAggregateInput
   }
 
   export type CenterWhereUniqueInput = Prisma.AtLeast<{
@@ -37128,6 +37197,7 @@ export namespace Prisma {
     groups?: GroupListRelationFilter
     managerProfiles?: ManagerProfileListRelationFilter
     teacherCenters?: TeacherCenterListRelationFilter
+    students?: StudentListRelationFilter
   }, "id">
 
   export type CenterOrderByWithAggregationInput = {
@@ -37581,6 +37651,7 @@ export namespace Prisma {
     userId?: StringFilter<"Student"> | string
     groupId?: StringNullableFilter<"Student"> | string | null
     teacherId?: StringNullableFilter<"Student"> | string | null
+    centerId?: StringNullableFilter<"Student"> | string | null
     currentStreak?: IntFilter<"Student"> | number
     age?: IntNullableFilter<"Student"> | number | null
     dateOfBirth?: DateTimeNullableFilter<"Student"> | Date | string | null
@@ -37603,6 +37674,7 @@ export namespace Prisma {
     feedbacks?: FeedbackListRelationFilter
     payments?: PaymentListRelationFilter
     group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    center?: XOR<CenterNullableRelationFilter, CenterWhereInput> | null
     lead?: XOR<CrmLeadNullableRelationFilter, CrmLeadWhereInput> | null
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     user?: XOR<UserRelationFilter, UserWhereInput>
@@ -37617,6 +37689,7 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrderInput | SortOrder
     teacherId?: SortOrderInput | SortOrder
+    centerId?: SortOrderInput | SortOrder
     currentStreak?: SortOrder
     age?: SortOrderInput | SortOrder
     dateOfBirth?: SortOrderInput | SortOrder
@@ -37639,6 +37712,7 @@ export namespace Prisma {
     feedbacks?: FeedbackOrderByRelationAggregateInput
     payments?: PaymentOrderByRelationAggregateInput
     group?: GroupOrderByWithRelationInput
+    center?: CenterOrderByWithRelationInput
     lead?: CrmLeadOrderByWithRelationInput
     teacher?: TeacherOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
@@ -37657,6 +37731,7 @@ export namespace Prisma {
     NOT?: StudentWhereInput | StudentWhereInput[]
     groupId?: StringNullableFilter<"Student"> | string | null
     teacherId?: StringNullableFilter<"Student"> | string | null
+    centerId?: StringNullableFilter<"Student"> | string | null
     currentStreak?: IntFilter<"Student"> | number
     age?: IntNullableFilter<"Student"> | number | null
     dateOfBirth?: DateTimeNullableFilter<"Student"> | Date | string | null
@@ -37678,6 +37753,7 @@ export namespace Prisma {
     feedbacks?: FeedbackListRelationFilter
     payments?: PaymentListRelationFilter
     group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    center?: XOR<CenterNullableRelationFilter, CenterWhereInput> | null
     lead?: XOR<CrmLeadNullableRelationFilter, CrmLeadWhereInput> | null
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     user?: XOR<UserRelationFilter, UserWhereInput>
@@ -37692,6 +37768,7 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrderInput | SortOrder
     teacherId?: SortOrderInput | SortOrder
+    centerId?: SortOrderInput | SortOrder
     currentStreak?: SortOrder
     age?: SortOrderInput | SortOrder
     dateOfBirth?: SortOrderInput | SortOrder
@@ -37725,6 +37802,7 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Student"> | string
     groupId?: StringNullableWithAggregatesFilter<"Student"> | string | null
     teacherId?: StringNullableWithAggregatesFilter<"Student"> | string | null
+    centerId?: StringNullableWithAggregatesFilter<"Student"> | string | null
     currentStreak?: IntWithAggregatesFilter<"Student"> | number
     age?: IntNullableWithAggregatesFilter<"Student"> | number | null
     dateOfBirth?: DateTimeNullableWithAggregatesFilter<"Student"> | Date | string | null
@@ -39839,6 +39917,7 @@ export namespace Prisma {
     groups?: GroupCreateNestedManyWithoutCenterInput
     managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
     teacherCenters?: TeacherCenterCreateNestedManyWithoutCenterInput
+    students?: StudentCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUncheckedCreateInput = {
@@ -39856,6 +39935,7 @@ export namespace Prisma {
     groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
     managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
     teacherCenters?: TeacherCenterUncheckedCreateNestedManyWithoutCenterInput
+    students?: StudentUncheckedCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUpdateInput = {
@@ -39873,6 +39953,7 @@ export namespace Prisma {
     groups?: GroupUpdateManyWithoutCenterNestedInput
     managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
     teacherCenters?: TeacherCenterUpdateManyWithoutCenterNestedInput
+    students?: StudentUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterUncheckedUpdateInput = {
@@ -39890,6 +39971,7 @@ export namespace Prisma {
     groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
     managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
     teacherCenters?: TeacherCenterUncheckedUpdateManyWithoutCenterNestedInput
+    students?: StudentUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterCreateManyInput = {
@@ -40388,6 +40470,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
@@ -40402,6 +40485,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -40452,6 +40536,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
@@ -40466,6 +40551,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -40498,6 +40584,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -40544,6 +40631,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -42967,6 +43055,12 @@ export namespace Prisma {
     none?: TeacherCenterWhereInput
   }
 
+  export type StudentListRelationFilter = {
+    every?: StudentWhereInput
+    some?: StudentWhereInput
+    none?: StudentWhereInput
+  }
+
   export type GroupOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -42976,6 +43070,10 @@ export namespace Prisma {
   }
 
   export type TeacherCenterOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type StudentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -43104,12 +43202,6 @@ export namespace Prisma {
     none?: LessonWhereInput
   }
 
-  export type StudentListRelationFilter = {
-    every?: StudentWhereInput
-    some?: StudentWhereInput
-    none?: StudentWhereInput
-  }
-
   export type StudentGroupHistoryListRelationFilter = {
     every?: StudentGroupHistoryWhereInput
     some?: StudentGroupHistoryWhereInput
@@ -43129,10 +43221,6 @@ export namespace Prisma {
   }
 
   export type LessonOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type StudentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -43484,6 +43572,11 @@ export namespace Prisma {
     isNot?: GroupWhereInput | null
   }
 
+  export type CenterNullableRelationFilter = {
+    is?: CenterWhereInput | null
+    isNot?: CenterWhereInput | null
+  }
+
   export type CrmLeadNullableRelationFilter = {
     is?: CrmLeadWhereInput | null
     isNot?: CrmLeadWhereInput | null
@@ -43518,6 +43611,7 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    centerId?: SortOrder
     currentStreak?: SortOrder
     age?: SortOrder
     dateOfBirth?: SortOrder
@@ -43549,6 +43643,7 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    centerId?: SortOrder
     currentStreak?: SortOrder
     age?: SortOrder
     dateOfBirth?: SortOrder
@@ -43574,6 +43669,7 @@ export namespace Prisma {
     userId?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    centerId?: SortOrder
     currentStreak?: SortOrder
     age?: SortOrder
     dateOfBirth?: SortOrder
@@ -44725,11 +44821,6 @@ export namespace Prisma {
     none?: CrmLeadAttachmentWhereInput
   }
 
-  export type CenterNullableRelationFilter = {
-    is?: CenterWhereInput | null
-    isNot?: CenterWhereInput | null
-  }
-
   export type CrmLeadActivityOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -45380,6 +45471,13 @@ export namespace Prisma {
     connect?: TeacherCenterWhereUniqueInput | TeacherCenterWhereUniqueInput[]
   }
 
+  export type StudentCreateNestedManyWithoutCenterInput = {
+    create?: XOR<StudentCreateWithoutCenterInput, StudentUncheckedCreateWithoutCenterInput> | StudentCreateWithoutCenterInput[] | StudentUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutCenterInput | StudentCreateOrConnectWithoutCenterInput[]
+    createMany?: StudentCreateManyCenterInputEnvelope
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+  }
+
   export type CrmLeadUncheckedCreateNestedManyWithoutCenterInput = {
     create?: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput> | CrmLeadCreateWithoutCenterInput[] | CrmLeadUncheckedCreateWithoutCenterInput[]
     connectOrCreate?: CrmLeadCreateOrConnectWithoutCenterInput | CrmLeadCreateOrConnectWithoutCenterInput[]
@@ -45406,6 +45504,13 @@ export namespace Prisma {
     connectOrCreate?: TeacherCenterCreateOrConnectWithoutCenterInput | TeacherCenterCreateOrConnectWithoutCenterInput[]
     createMany?: TeacherCenterCreateManyCenterInputEnvelope
     connect?: TeacherCenterWhereUniqueInput | TeacherCenterWhereUniqueInput[]
+  }
+
+  export type StudentUncheckedCreateNestedManyWithoutCenterInput = {
+    create?: XOR<StudentCreateWithoutCenterInput, StudentUncheckedCreateWithoutCenterInput> | StudentCreateWithoutCenterInput[] | StudentUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutCenterInput | StudentCreateOrConnectWithoutCenterInput[]
+    createMany?: StudentCreateManyCenterInputEnvelope
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -45468,6 +45573,20 @@ export namespace Prisma {
     deleteMany?: TeacherCenterScalarWhereInput | TeacherCenterScalarWhereInput[]
   }
 
+  export type StudentUpdateManyWithoutCenterNestedInput = {
+    create?: XOR<StudentCreateWithoutCenterInput, StudentUncheckedCreateWithoutCenterInput> | StudentCreateWithoutCenterInput[] | StudentUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutCenterInput | StudentCreateOrConnectWithoutCenterInput[]
+    upsert?: StudentUpsertWithWhereUniqueWithoutCenterInput | StudentUpsertWithWhereUniqueWithoutCenterInput[]
+    createMany?: StudentCreateManyCenterInputEnvelope
+    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    update?: StudentUpdateWithWhereUniqueWithoutCenterInput | StudentUpdateWithWhereUniqueWithoutCenterInput[]
+    updateMany?: StudentUpdateManyWithWhereWithoutCenterInput | StudentUpdateManyWithWhereWithoutCenterInput[]
+    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
+  }
+
   export type CrmLeadUncheckedUpdateManyWithoutCenterNestedInput = {
     create?: XOR<CrmLeadCreateWithoutCenterInput, CrmLeadUncheckedCreateWithoutCenterInput> | CrmLeadCreateWithoutCenterInput[] | CrmLeadUncheckedCreateWithoutCenterInput[]
     connectOrCreate?: CrmLeadCreateOrConnectWithoutCenterInput | CrmLeadCreateOrConnectWithoutCenterInput[]
@@ -45522,6 +45641,20 @@ export namespace Prisma {
     update?: TeacherCenterUpdateWithWhereUniqueWithoutCenterInput | TeacherCenterUpdateWithWhereUniqueWithoutCenterInput[]
     updateMany?: TeacherCenterUpdateManyWithWhereWithoutCenterInput | TeacherCenterUpdateManyWithWhereWithoutCenterInput[]
     deleteMany?: TeacherCenterScalarWhereInput | TeacherCenterScalarWhereInput[]
+  }
+
+  export type StudentUncheckedUpdateManyWithoutCenterNestedInput = {
+    create?: XOR<StudentCreateWithoutCenterInput, StudentUncheckedCreateWithoutCenterInput> | StudentCreateWithoutCenterInput[] | StudentUncheckedCreateWithoutCenterInput[]
+    connectOrCreate?: StudentCreateOrConnectWithoutCenterInput | StudentCreateOrConnectWithoutCenterInput[]
+    upsert?: StudentUpsertWithWhereUniqueWithoutCenterInput | StudentUpsertWithWhereUniqueWithoutCenterInput[]
+    createMany?: StudentCreateManyCenterInputEnvelope
+    set?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    disconnect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    delete?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    connect?: StudentWhereUniqueInput | StudentWhereUniqueInput[]
+    update?: StudentUpdateWithWhereUniqueWithoutCenterInput | StudentUpdateWithWhereUniqueWithoutCenterInput[]
+    updateMany?: StudentUpdateManyWithWhereWithoutCenterInput | StudentUpdateManyWithWhereWithoutCenterInput[]
+    deleteMany?: StudentScalarWhereInput | StudentScalarWhereInput[]
   }
 
   export type CenterCreateNestedOneWithoutManagerProfilesInput = {
@@ -46460,6 +46593,12 @@ export namespace Prisma {
     connect?: GroupWhereUniqueInput
   }
 
+  export type CenterCreateNestedOneWithoutStudentsInput = {
+    create?: XOR<CenterCreateWithoutStudentsInput, CenterUncheckedCreateWithoutStudentsInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutStudentsInput
+    connect?: CenterWhereUniqueInput
+  }
+
   export type CrmLeadCreateNestedOneWithoutStudentInput = {
     create?: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
     connectOrCreate?: CrmLeadCreateOrConnectWithoutStudentInput
@@ -46621,6 +46760,16 @@ export namespace Prisma {
     delete?: GroupWhereInput | boolean
     connect?: GroupWhereUniqueInput
     update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutStudentsInput, GroupUpdateWithoutStudentsInput>, GroupUncheckedUpdateWithoutStudentsInput>
+  }
+
+  export type CenterUpdateOneWithoutStudentsNestedInput = {
+    create?: XOR<CenterCreateWithoutStudentsInput, CenterUncheckedCreateWithoutStudentsInput>
+    connectOrCreate?: CenterCreateOrConnectWithoutStudentsInput
+    upsert?: CenterUpsertWithoutStudentsInput
+    disconnect?: CenterWhereInput | boolean
+    delete?: CenterWhereInput | boolean
+    connect?: CenterWhereUniqueInput
+    update?: XOR<XOR<CenterUpdateToOneWithWhereWithoutStudentsInput, CenterUpdateWithoutStudentsInput>, CenterUncheckedUpdateWithoutStudentsInput>
   }
 
   export type CrmLeadUpdateOneWithoutStudentNestedInput = {
@@ -48710,6 +48859,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
@@ -48722,6 +48872,7 @@ export namespace Prisma {
     id?: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -49061,6 +49212,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
@@ -49073,6 +49225,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -49331,6 +49484,80 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type StudentCreateWithoutCenterInput = {
+    id?: string
+    currentStreak?: number
+    age?: number | null
+    dateOfBirth?: Date | string | null
+    firstLessonDate?: Date | string | null
+    status?: $Enums.StudentStatus
+    riskLabel?: $Enums.RiskLabel
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    parentPassportInfo?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
+    payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
+    recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
+    notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+  }
+
+  export type StudentUncheckedCreateWithoutCenterInput = {
+    id?: string
+    userId: string
+    groupId?: string | null
+    teacherId?: string | null
+    currentStreak?: number
+    age?: number | null
+    dateOfBirth?: Date | string | null
+    firstLessonDate?: Date | string | null
+    status?: $Enums.StudentStatus
+    riskLabel?: $Enums.RiskLabel
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    parentPassportInfo?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leadId?: string | null
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
+    recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
+    notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+  }
+
+  export type StudentCreateOrConnectWithoutCenterInput = {
+    where: StudentWhereUniqueInput
+    create: XOR<StudentCreateWithoutCenterInput, StudentUncheckedCreateWithoutCenterInput>
+  }
+
+  export type StudentCreateManyCenterInputEnvelope = {
+    data: StudentCreateManyCenterInput | StudentCreateManyCenterInput[]
+    skipDuplicates?: boolean
+  }
+
   export type CrmLeadUpsertWithWhereUniqueWithoutCenterInput = {
     where: CrmLeadWhereUniqueInput
     update: XOR<CrmLeadUpdateWithoutCenterInput, CrmLeadUncheckedUpdateWithoutCenterInput>
@@ -49434,6 +49661,51 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"TeacherCenter"> | Date | string
   }
 
+  export type StudentUpsertWithWhereUniqueWithoutCenterInput = {
+    where: StudentWhereUniqueInput
+    update: XOR<StudentUpdateWithoutCenterInput, StudentUncheckedUpdateWithoutCenterInput>
+    create: XOR<StudentCreateWithoutCenterInput, StudentUncheckedCreateWithoutCenterInput>
+  }
+
+  export type StudentUpdateWithWhereUniqueWithoutCenterInput = {
+    where: StudentWhereUniqueInput
+    data: XOR<StudentUpdateWithoutCenterInput, StudentUncheckedUpdateWithoutCenterInput>
+  }
+
+  export type StudentUpdateManyWithWhereWithoutCenterInput = {
+    where: StudentScalarWhereInput
+    data: XOR<StudentUpdateManyMutationInput, StudentUncheckedUpdateManyWithoutCenterInput>
+  }
+
+  export type StudentScalarWhereInput = {
+    AND?: StudentScalarWhereInput | StudentScalarWhereInput[]
+    OR?: StudentScalarWhereInput[]
+    NOT?: StudentScalarWhereInput | StudentScalarWhereInput[]
+    id?: StringFilter<"Student"> | string
+    userId?: StringFilter<"Student"> | string
+    groupId?: StringNullableFilter<"Student"> | string | null
+    teacherId?: StringNullableFilter<"Student"> | string | null
+    centerId?: StringNullableFilter<"Student"> | string | null
+    currentStreak?: IntFilter<"Student"> | number
+    age?: IntNullableFilter<"Student"> | number | null
+    dateOfBirth?: DateTimeNullableFilter<"Student"> | Date | string | null
+    firstLessonDate?: DateTimeNullableFilter<"Student"> | Date | string | null
+    status?: EnumStudentStatusFilter<"Student"> | $Enums.StudentStatus
+    riskLabel?: EnumRiskLabelFilter<"Student"> | $Enums.RiskLabel
+    parentName?: StringNullableFilter<"Student"> | string | null
+    parentPhone?: StringNullableFilter<"Student"> | string | null
+    parentEmail?: StringNullableFilter<"Student"> | string | null
+    parentPassportInfo?: StringNullableFilter<"Student"> | string | null
+    monthlyFee?: DecimalFilter<"Student"> | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFilter<"Student"> | Date | string
+    registerDate?: DateTimeNullableFilter<"Student"> | Date | string | null
+    notes?: StringNullableFilter<"Student"> | string | null
+    receiveReports?: BoolFilter<"Student"> | boolean
+    createdAt?: DateTimeFilter<"Student"> | Date | string
+    updatedAt?: DateTimeFilter<"Student"> | Date | string
+    leadId?: StringNullableFilter<"Student"> | string | null
+  }
+
   export type CenterCreateWithoutManagerProfilesInput = {
     id?: string
     name: string
@@ -49448,6 +49720,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
     groups?: GroupCreateNestedManyWithoutCenterInput
     teacherCenters?: TeacherCenterCreateNestedManyWithoutCenterInput
+    students?: StudentCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUncheckedCreateWithoutManagerProfilesInput = {
@@ -49464,6 +49737,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
     groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
     teacherCenters?: TeacherCenterUncheckedCreateNestedManyWithoutCenterInput
+    students?: StudentUncheckedCreateNestedManyWithoutCenterInput
   }
 
   export type CenterCreateOrConnectWithoutManagerProfilesInput = {
@@ -49547,6 +49821,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
     groups?: GroupUpdateManyWithoutCenterNestedInput
     teacherCenters?: TeacherCenterUpdateManyWithoutCenterNestedInput
+    students?: StudentUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterUncheckedUpdateWithoutManagerProfilesInput = {
@@ -49563,6 +49838,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
     groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
     teacherCenters?: TeacherCenterUncheckedUpdateManyWithoutCenterNestedInput
+    students?: StudentUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type UserUpsertWithoutManagerProfileInput = {
@@ -49735,6 +50011,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
     managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
     teacherCenters?: TeacherCenterCreateNestedManyWithoutCenterInput
+    students?: StudentCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUncheckedCreateWithoutGroupsInput = {
@@ -49751,6 +50028,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
     managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
     teacherCenters?: TeacherCenterUncheckedCreateNestedManyWithoutCenterInput
+    students?: StudentUncheckedCreateNestedManyWithoutCenterInput
   }
 
   export type CenterCreateOrConnectWithoutGroupsInput = {
@@ -49954,6 +50232,7 @@ export namespace Prisma {
     attendances?: AttendanceCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
@@ -49967,6 +50246,7 @@ export namespace Prisma {
     id?: string
     userId: string
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -50168,6 +50448,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
     managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
     teacherCenters?: TeacherCenterUpdateManyWithoutCenterNestedInput
+    students?: StudentUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterUncheckedUpdateWithoutGroupsInput = {
@@ -50184,6 +50465,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
     managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
     teacherCenters?: TeacherCenterUncheckedUpdateManyWithoutCenterNestedInput
+    students?: StudentUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type TeacherUpsertWithoutGroupsInput = {
@@ -50365,34 +50647,6 @@ export namespace Prisma {
   export type StudentUpdateManyWithWhereWithoutGroupInput = {
     where: StudentScalarWhereInput
     data: XOR<StudentUpdateManyMutationInput, StudentUncheckedUpdateManyWithoutGroupInput>
-  }
-
-  export type StudentScalarWhereInput = {
-    AND?: StudentScalarWhereInput | StudentScalarWhereInput[]
-    OR?: StudentScalarWhereInput[]
-    NOT?: StudentScalarWhereInput | StudentScalarWhereInput[]
-    id?: StringFilter<"Student"> | string
-    userId?: StringFilter<"Student"> | string
-    groupId?: StringNullableFilter<"Student"> | string | null
-    teacherId?: StringNullableFilter<"Student"> | string | null
-    currentStreak?: IntFilter<"Student"> | number
-    age?: IntNullableFilter<"Student"> | number | null
-    dateOfBirth?: DateTimeNullableFilter<"Student"> | Date | string | null
-    firstLessonDate?: DateTimeNullableFilter<"Student"> | Date | string | null
-    status?: EnumStudentStatusFilter<"Student"> | $Enums.StudentStatus
-    riskLabel?: EnumRiskLabelFilter<"Student"> | $Enums.RiskLabel
-    parentName?: StringNullableFilter<"Student"> | string | null
-    parentPhone?: StringNullableFilter<"Student"> | string | null
-    parentEmail?: StringNullableFilter<"Student"> | string | null
-    parentPassportInfo?: StringNullableFilter<"Student"> | string | null
-    monthlyFee?: DecimalFilter<"Student"> | Decimal | DecimalJsLike | number | string
-    enrolledAt?: DateTimeFilter<"Student"> | Date | string
-    registerDate?: DateTimeNullableFilter<"Student"> | Date | string | null
-    notes?: StringNullableFilter<"Student"> | string | null
-    receiveReports?: BoolFilter<"Student"> | boolean
-    createdAt?: DateTimeFilter<"Student"> | Date | string
-    updatedAt?: DateTimeFilter<"Student"> | Date | string
-    leadId?: StringNullableFilter<"Student"> | string | null
   }
 
   export type StudentGroupHistoryUpsertWithWhereUniqueWithoutGroupInput = {
@@ -50865,6 +51119,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
@@ -50877,6 +51132,7 @@ export namespace Prisma {
     id?: string
     userId: string
     groupId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -51410,6 +51666,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
     groups?: GroupCreateNestedManyWithoutCenterInput
     managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
+    students?: StudentCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUncheckedCreateWithoutTeacherCentersInput = {
@@ -51426,6 +51683,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
     groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
     managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
+    students?: StudentUncheckedCreateNestedManyWithoutCenterInput
   }
 
   export type CenterCreateOrConnectWithoutTeacherCentersInput = {
@@ -51519,6 +51777,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
     groups?: GroupUpdateManyWithoutCenterNestedInput
     managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
+    students?: StudentUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterUncheckedUpdateWithoutTeacherCentersInput = {
@@ -51535,6 +51794,7 @@ export namespace Prisma {
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
     groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
     managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
+    students?: StudentUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type TeacherCreateWithoutNotesInput = {
@@ -51820,6 +52080,45 @@ export namespace Prisma {
   export type GroupCreateOrConnectWithoutStudentsInput = {
     where: GroupWhereUniqueInput
     create: XOR<GroupCreateWithoutStudentsInput, GroupUncheckedCreateWithoutStudentsInput>
+  }
+
+  export type CenterCreateWithoutStudentsInput = {
+    id?: string
+    name: string
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    description?: string | null
+    colorHex?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadCreateNestedManyWithoutCenterInput
+    groups?: GroupCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
+    teacherCenters?: TeacherCenterCreateNestedManyWithoutCenterInput
+  }
+
+  export type CenterUncheckedCreateWithoutStudentsInput = {
+    id?: string
+    name: string
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    description?: string | null
+    colorHex?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutCenterInput
+    groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
+    managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
+    teacherCenters?: TeacherCenterUncheckedCreateNestedManyWithoutCenterInput
+  }
+
+  export type CenterCreateOrConnectWithoutStudentsInput = {
+    where: CenterWhereUniqueInput
+    create: XOR<CenterCreateWithoutStudentsInput, CenterUncheckedCreateWithoutStudentsInput>
   }
 
   export type CrmLeadCreateWithoutStudentInput = {
@@ -52227,6 +52526,51 @@ export namespace Prisma {
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutGroupNestedInput
   }
 
+  export type CenterUpsertWithoutStudentsInput = {
+    update: XOR<CenterUpdateWithoutStudentsInput, CenterUncheckedUpdateWithoutStudentsInput>
+    create: XOR<CenterCreateWithoutStudentsInput, CenterUncheckedCreateWithoutStudentsInput>
+    where?: CenterWhereInput
+  }
+
+  export type CenterUpdateToOneWithWhereWithoutStudentsInput = {
+    where?: CenterWhereInput
+    data: XOR<CenterUpdateWithoutStudentsInput, CenterUncheckedUpdateWithoutStudentsInput>
+  }
+
+  export type CenterUpdateWithoutStudentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUpdateManyWithoutCenterNestedInput
+    groups?: GroupUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
+    teacherCenters?: TeacherCenterUpdateManyWithoutCenterNestedInput
+  }
+
+  export type CenterUncheckedUpdateWithoutStudentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    colorHex?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutCenterNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
+    managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
+    teacherCenters?: TeacherCenterUncheckedUpdateManyWithoutCenterNestedInput
+  }
+
   export type CrmLeadUpsertWithoutStudentInput = {
     update: XOR<CrmLeadUpdateWithoutStudentInput, CrmLeadUncheckedUpdateWithoutStudentInput>
     create: XOR<CrmLeadCreateWithoutStudentInput, CrmLeadUncheckedCreateWithoutStudentInput>
@@ -52529,6 +52873,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
@@ -52542,6 +52887,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -52607,6 +52953,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
@@ -52620,6 +52967,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -52669,6 +53017,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
@@ -52682,6 +53031,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -52747,6 +53097,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
@@ -52760,6 +53111,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -52809,6 +53161,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
@@ -52822,6 +53175,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -52934,6 +53288,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
@@ -52947,6 +53302,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53592,6 +53948,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
@@ -53606,6 +53963,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -53792,6 +54150,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
@@ -53806,6 +54165,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53913,6 +54273,7 @@ export namespace Prisma {
     attendances?: AttendanceCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
@@ -53927,6 +54288,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -54111,6 +54473,7 @@ export namespace Prisma {
     attendances?: AttendanceUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
@@ -54125,6 +54488,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54234,6 +54598,7 @@ export namespace Prisma {
     attendances?: AttendanceCreateNestedManyWithoutStudentInput
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
@@ -54248,6 +54613,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -54312,6 +54678,7 @@ export namespace Prisma {
     attendances?: AttendanceUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
@@ -54326,6 +54693,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55866,6 +56234,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     lead?: CrmLeadCreateNestedOneWithoutStudentInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
@@ -55879,6 +56248,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -56056,6 +56426,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
@@ -56069,6 +56440,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -56279,6 +56651,7 @@ export namespace Prisma {
     groups?: GroupCreateNestedManyWithoutCenterInput
     managerProfiles?: ManagerProfileCreateNestedManyWithoutCenterInput
     teacherCenters?: TeacherCenterCreateNestedManyWithoutCenterInput
+    students?: StudentCreateNestedManyWithoutCenterInput
   }
 
   export type CenterUncheckedCreateWithoutCrmLeadsInput = {
@@ -56295,6 +56668,7 @@ export namespace Prisma {
     groups?: GroupUncheckedCreateNestedManyWithoutCenterInput
     managerProfiles?: ManagerProfileUncheckedCreateNestedManyWithoutCenterInput
     teacherCenters?: TeacherCenterUncheckedCreateNestedManyWithoutCenterInput
+    students?: StudentUncheckedCreateNestedManyWithoutCenterInput
   }
 
   export type CenterCreateOrConnectWithoutCrmLeadsInput = {
@@ -56478,6 +56852,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
     payments?: PaymentCreateNestedManyWithoutStudentInput
     group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
     teacher?: TeacherCreateNestedOneWithoutStudentsInput
     user: UserCreateNestedOneWithoutStudentInput
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
@@ -56491,6 +56866,7 @@ export namespace Prisma {
     userId: string
     groupId?: string | null
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -56661,6 +57037,7 @@ export namespace Prisma {
     groups?: GroupUpdateManyWithoutCenterNestedInput
     managerProfiles?: ManagerProfileUpdateManyWithoutCenterNestedInput
     teacherCenters?: TeacherCenterUpdateManyWithoutCenterNestedInput
+    students?: StudentUpdateManyWithoutCenterNestedInput
   }
 
   export type CenterUncheckedUpdateWithoutCrmLeadsInput = {
@@ -56677,6 +57054,7 @@ export namespace Prisma {
     groups?: GroupUncheckedUpdateManyWithoutCenterNestedInput
     managerProfiles?: ManagerProfileUncheckedUpdateManyWithoutCenterNestedInput
     teacherCenters?: TeacherCenterUncheckedUpdateManyWithoutCenterNestedInput
+    students?: StudentUncheckedUpdateManyWithoutCenterNestedInput
   }
 
   export type UserUpsertWithoutCrmLeadsCreatedInput = {
@@ -56884,6 +57262,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
@@ -56897,6 +57276,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57690,6 +58070,31 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type StudentCreateManyCenterInput = {
+    id?: string
+    userId: string
+    groupId?: string | null
+    teacherId?: string | null
+    currentStreak?: number
+    age?: number | null
+    dateOfBirth?: Date | string | null
+    firstLessonDate?: Date | string | null
+    status?: $Enums.StudentStatus
+    riskLabel?: $Enums.RiskLabel
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    parentPassportInfo?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leadId?: string | null
+  }
+
   export type CrmLeadUpdateWithoutCenterInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumCrmLeadStatusFieldUpdateOperationsInput | $Enums.CrmLeadStatus
@@ -57875,6 +58280,95 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type StudentUpdateWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    currentStreak?: IntFieldUpdateOperationsInput | number
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumStudentStatusFieldUpdateOperationsInput | $Enums.StudentStatus
+    riskLabel?: EnumRiskLabelFieldUpdateOperationsInput | $Enums.RiskLabel
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
+    recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
+    notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+  }
+
+  export type StudentUncheckedUpdateWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentStreak?: IntFieldUpdateOperationsInput | number
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumStudentStatusFieldUpdateOperationsInput | $Enums.StudentStatus
+    riskLabel?: EnumRiskLabelFieldUpdateOperationsInput | $Enums.RiskLabel
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
+    recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
+    notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+  }
+
+  export type StudentUncheckedUpdateManyWithoutCenterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentStreak?: IntFieldUpdateOperationsInput | number
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumStudentStatusFieldUpdateOperationsInput | $Enums.StudentStatus
+    riskLabel?: EnumRiskLabelFieldUpdateOperationsInput | $Enums.RiskLabel
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type CrmLeadCreateManyGroupInput = {
     id?: string
     status?: $Enums.CrmLeadStatus
@@ -57930,6 +58424,7 @@ export namespace Prisma {
     id?: string
     userId: string
     teacherId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -58168,6 +58663,7 @@ export namespace Prisma {
     attendances?: AttendanceUpdateManyWithoutStudentNestedInput
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     teacher?: TeacherUpdateOneWithoutStudentsNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
@@ -58181,6 +58677,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58212,6 +58709,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58448,6 +58946,7 @@ export namespace Prisma {
     id?: string
     userId: string
     groupId?: string | null
+    centerId?: string | null
     currentStreak?: number
     age?: number | null
     dateOfBirth?: Date | string | null
@@ -58924,6 +59423,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
     payments?: PaymentUpdateManyWithoutStudentNestedInput
     group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
     lead?: CrmLeadUpdateOneWithoutStudentNestedInput
     user?: UserUpdateOneRequiredWithoutStudentNestedInput
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
@@ -58936,6 +59436,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58967,6 +59468,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     age?: NullableIntFieldUpdateOperationsInput | number | null
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

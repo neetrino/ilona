@@ -23,6 +23,7 @@ export function leadToCreateStudentFormDefaults(
     age: undefined,
     groupId: (p.groupId ?? lead.groupId) ?? '',
     teacherId: (p.teacherId ?? lead.teacherId) ?? '',
+    centerId: (p.centerId ?? lead.centerId) ?? '',
     parentName: (p.parentName ?? lead.parentName) ?? '',
     parentPhone: parentPhoneDigits,
     parentEmail: '',

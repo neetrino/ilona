@@ -11,6 +11,7 @@ import type { UpdateLeadDto } from '@/features/crm/types';
 import { leadToCreateStudentFormDefaults } from '@/features/crm/lead-to-student-form-defaults';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
+import { useCenters } from '@/features/centers';
 import {
   createStudentSchema,
   computeAgeFromDob,
@@ -49,7 +50,9 @@ export function PaidRegistrationModal({
 
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true }, open);
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' }, open);
+  const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true }, open);
   const teachers = teachersData?.items ?? [];
+  const centers = centersData?.items ?? [];
 
   const { data: lead, isLoading: isLoadingLead } = useQuery({
     queryKey: ['crm-lead', leadId],
@@ -77,6 +80,7 @@ export function PaidRegistrationModal({
       age: undefined,
       groupId: '',
       teacherId: '',
+      centerId: '',
       parentName: '',
       parentPhone: '',
       parentEmail: '',
@@ -88,14 +92,23 @@ export function PaidRegistrationModal({
   });
 
   const watchedTeacherId = watch('teacherId') || '';
+  const watchedGroupId = watch('groupId') || '';
   const groupsForTeacher = useMemo(() => {
     const allGroups = groupsData?.items ?? [];
     return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
   }, [groupsData?.items, watchedTeacherId]);
 
   useEffect(() => {
-    if (!watchedTeacherId) setValue('groupId', '');
-  }, [watchedTeacherId, setValue]);
+    if (!watchedTeacherId) {
+      setValue('groupId', '');
+      return;
+    }
+    if (!watchedGroupId) return;
+    const g = groupsData?.items?.find((x) => x.id === watchedGroupId);
+    if (g && g.teacherId !== watchedTeacherId) {
+      setValue('groupId', '');
+    }
+  }, [watchedTeacherId, watchedGroupId, groupsData?.items, setValue]);
 
   const dob = watch('dateOfBirth');
   const computedAge = useMemo(() => computeAgeFromDob(dob), [dob]);
@@ -128,6 +141,7 @@ export function PaidRegistrationModal({
         age: undefined,
         groupId: '',
         teacherId: '',
+        centerId: '',
         parentName: '',
         parentPhone: '',
         parentEmail: '',
@@ -217,13 +231,14 @@ export function PaidRegistrationModal({
                   register={register}
                   errors={errors}
                   watch={watch}
-                  setValue={setValue}
                   computedAge={computedAge}
                   showParentSection={showParentSection}
                   groupsForTeacher={groupsForTeacher}
                   teachers={teachers}
+                  centers={centers}
                   isLoadingGroups={isLoadingGroups}
                   isLoadingTeachers={isLoadingTeachers}
+                  isLoadingCenters={isLoadingCenters}
                   isSubmitting={isSubmitting}
                 />
               </div>

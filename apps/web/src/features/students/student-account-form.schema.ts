@@ -40,6 +40,7 @@ export const createStudentSchema = z
     age: z.number().int().min(1).max(120).optional(),
     groupId: z.string().optional(),
     teacherId: z.string().optional(),
+    centerId: z.string().optional(),
     parentName: z.string().max(100, 'Parent name must be at most 100 characters').optional(),
     parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional(),
     parentEmail: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),

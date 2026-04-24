@@ -3,15 +3,16 @@
 import { useState, useEffect, useMemo, startTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { 
-  useStudents, 
-  useDeleteStudent, 
+import {
+  useStudents,
+  useDeleteStudent,
   useDeleteStudentsBulk,
   useUpdateStudent,
   getItemId,
   isOnboardingItem,
   type Student,
   type StudentLifecycleStatus,
+  type UpdateStudentDto,
 } from '@/features/students';
 import { useTeachers } from '@/features/teachers';
 import { useGroups } from '@/features/groups';
@@ -441,9 +442,20 @@ export function useStudentsPage() {
 
   // Handle inline updates
   const handleTeacherChange = async (studentId: string, teacherId: string | null) => {
+    const row = students.find((s): s is Student => !isOnboardingItem(s) && s.id === studentId);
+    const groupId = row?.groupId ?? null;
+    const allGroups = groupsData?.items ?? [];
+    const currentGroup = groupId ? allGroups.find((g) => g.id === groupId) : undefined;
+    const nextTeacherId = teacherId || null;
+    const groupBelongsToTeacher =
+      !currentGroup || !nextTeacherId || currentGroup.teacherId === nextTeacherId;
+    const payload: UpdateStudentDto = { teacherId: teacherId || undefined };
+    if (!groupBelongsToTeacher) {
+      payload.groupId = null;
+    }
     await updateStudent.mutateAsync({
       id: studentId,
-      data: { teacherId: teacherId || undefined },
+      data: payload,
     });
   };
 
@@ -455,21 +467,10 @@ export function useStudentsPage() {
   };
 
   const handleCenterChange = async (studentId: string, centerId: string | null) => {
-    if (!centerId) {
-      // If center is cleared, clear the group
-      await handleGroupChange(studentId, null);
-      return;
-    }
-
-    // Find a group in the selected center
-    const groupsInCenter = (groupsData?.items || []).filter(g => g.centerId === centerId);
-    if (groupsInCenter.length > 0) {
-      // Assign to the first available group in that center
-      await handleGroupChange(studentId, groupsInCenter[0].id);
-    } else {
-      // No groups in this center, clear the group
-      await handleGroupChange(studentId, null);
-    }
+    await updateStudent.mutateAsync({
+      id: studentId,
+      data: { centerId: centerId === null ? null : centerId },
+    });
   };
 
   const handleRegisterDateChange = async (studentId: string, date: string | null) => {

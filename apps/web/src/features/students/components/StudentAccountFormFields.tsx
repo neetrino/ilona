@@ -1,12 +1,13 @@
 'use client';
 
-import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import type { FieldErrors, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import { Input, Label } from '@/shared/components/ui';
 import type { CreateStudentFormData } from '../student-account-form.schema';
 
 export type StudentAccountTeacherOption = {
   id: string;
   user: { firstName?: string | null; lastName?: string | null; phone?: string | null };
+  centerLinks?: Array<{ center: { id: string; name: string } }>;
 };
 
 export type StudentAccountGroupOption = {
@@ -14,13 +15,13 @@ export type StudentAccountGroupOption = {
   name: string;
   level?: string | null;
   teacherId?: string | null;
+  center?: { id: string; name: string };
 };
 
 export interface StudentAccountFormFieldsProps {
   register: UseFormRegister<CreateStudentFormData>;
   errors: FieldErrors<CreateStudentFormData>;
   watch: UseFormWatch<CreateStudentFormData>;
-  setValue: UseFormSetValue<CreateStudentFormData>;
   computedAge: number | undefined;
   showParentSection: boolean;
   groupsForTeacher: StudentAccountGroupOption[];
@@ -28,6 +29,9 @@ export interface StudentAccountFormFieldsProps {
   isLoadingGroups: boolean;
   isLoadingTeachers: boolean;
   isSubmitting: boolean;
+  /** Active centers for manual Center assignment */
+  centers: Array<{ id: string; name: string }>;
+  isLoadingCenters?: boolean;
   /** Prefix for input ids when multiple forms exist on one page */
   idPrefix?: string;
 }
@@ -39,7 +43,6 @@ export function StudentAccountFormFields({
   register,
   errors,
   watch,
-  setValue,
   computedAge,
   showParentSection,
   groupsForTeacher,
@@ -47,10 +50,25 @@ export function StudentAccountFormFields({
   isLoadingGroups,
   isLoadingTeachers,
   isSubmitting,
+  centers,
+  isLoadingCenters = false,
   idPrefix = '',
 }: StudentAccountFormFieldsProps) {
   const p = (id: string) => (idPrefix ? `${idPrefix}-${id}` : id);
   const watchedTeacherId = watch('teacherId') || '';
+  const watchedGroupId = watch('groupId') || '';
+  const selectedTeacher = teachers.find((t) => t.id === watchedTeacherId);
+  const centerNamesFromTeacher = [
+    ...new Set(
+      (selectedTeacher?.centerLinks ?? []).map((l) => l.center.name).filter(Boolean),
+    ),
+  ];
+  const centerNamesFromGroups = [
+    ...new Set(groupsForTeacher.map((g) => g.center?.name).filter(Boolean) as string[]),
+  ];
+  const teacherCentersLabel = [...new Set([...centerNamesFromTeacher, ...centerNamesFromGroups])].join(
+    ', ',
+  );
 
   return (
     <div className="space-y-4">
@@ -147,9 +165,7 @@ export function StudentAccountFormFields({
           <Label htmlFor={p('teacherId')}>Teacher</Label>
           <select
             id={p('teacherId')}
-            {...register('teacherId', {
-              onChange: () => setValue('groupId', ''),
-            })}
+            {...register('teacherId')}
             className={selectClassName}
             disabled={isLoadingTeachers || isSubmitting}
           >
@@ -163,6 +179,9 @@ export function StudentAccountFormFields({
           </select>
           {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
           {isLoadingTeachers && <p className="text-sm text-slate-500">Loading teachers...</p>}
+          {watchedTeacherId && teacherCentersLabel ? (
+            <p className="text-xs text-slate-500">Centers: {teacherCentersLabel}</p>
+          ) : null}
         </div>
 
         <div className="space-y-2">
@@ -181,7 +200,31 @@ export function StudentAccountFormFields({
             ))}
           </select>
           {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}
+          {watchedGroupId ? (
+            <p className="text-xs text-slate-500">
+              Group location:{' '}
+              {groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? '—'}
+            </p>
+          ) : null}
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={p('centerId')}>Center</Label>
+        <select
+          id={p('centerId')}
+          {...register('centerId')}
+          className={selectClassName}
+          disabled={isLoadingCenters || isSubmitting}
+        >
+          <option value="">Not assigned</option>
+          {centers.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        {errors.centerId && <p className="text-sm text-red-600">{errors.centerId.message}</p>}
       </div>
 
       <div className="space-y-2">

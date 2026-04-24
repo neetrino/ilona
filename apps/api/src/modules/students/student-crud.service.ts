@@ -86,6 +86,7 @@ export class StudentCrudService {
       where: { id: studentId },
       select: {
         id: true,
+        centerId: true,
         group: {
           select: { centerId: true },
         },
@@ -96,7 +97,9 @@ export class StudentCrudService {
       throw new NotFoundException(`Student with ID ${studentId} not found`);
     }
 
-    if (student.group?.centerId !== managerCenterId) {
+    const inManagerCenter =
+      student.group?.centerId === managerCenterId || student.centerId === managerCenterId;
+    if (!inManagerCenter) {
       throw new ForbiddenException('You do not have access to this student');
     }
   }
@@ -197,11 +200,21 @@ export class StudentCrudService {
       where.teacherId = teacherId;
     }
 
-    // Filter by centerId (via group relation)
+    // Filter by center: group location OR explicit student.centerId
     if (centerIds && centerIds.length > 0) {
-      where.group = { centerId: { in: centerIds } };
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: [{ group: { centerId: { in: centerIds } } }, { centerId: { in: centerIds } }],
+        },
+      ];
     } else if (centerId) {
-      where.group = { centerId };
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: [{ group: { centerId } }, { centerId }],
+        },
+      ];
     }
 
     // Filter by persisted lifecycle status (NEW, UNGROUPED, RISK, HIGH_RISK, etc.).
@@ -267,6 +280,7 @@ export class StudentCrudService {
               center: { select: { id: true, name: true } },
             },
           },
+          center: { select: { id: true, name: true } },
           teacher: {
             select: {
               id: true,
@@ -512,6 +526,7 @@ export class StudentCrudService {
             },
           },
         },
+        center: { select: { id: true, name: true } },
         attendances: {
           take: 10,
           orderBy: { lesson: { scheduledAt: 'desc' } },
@@ -560,7 +575,9 @@ export class StudentCrudService {
       if (!managerCenterId) {
         throw new ForbiddenException('Manager account is not assigned to a center');
       }
-      if (student.group?.centerId !== managerCenterId) {
+      const inManagerCenter =
+        student.group?.centerId === managerCenterId || student.centerId === managerCenterId;
+      if (!inManagerCenter) {
         throw new ForbiddenException('You do not have access to this student');
       }
     }
@@ -683,6 +700,10 @@ export class StudentCrudService {
 
     const managerCenterId = getManagerCenterIdOrThrow(user);
 
+    if (dto.centerId && managerCenterId && dto.centerId !== managerCenterId) {
+      throw new ForbiddenException('You can only assign students to your assigned center');
+    }
+
     let resolvedTeacherId: string | undefined = dto.teacherId;
     if (dto.groupId) {
       const group = await this.prisma.group.findUnique({
@@ -777,10 +798,14 @@ export class StudentCrudService {
       },
     });
 
+    const initialCenterId =
+      dto.centerId && String(dto.centerId).trim() !== '' ? String(dto.centerId).trim() : undefined;
+
     const studentCreateData: Prisma.StudentUncheckedCreateInput = {
       userId: createdUser.id,
       groupId: dto.groupId,
       teacherId: resolvedTeacherId,
+      centerId: initialCenterId,
       parentName: dto.parentName,
       parentPhone: dto.parentPhone,
       parentEmail: dto.parentEmail,
@@ -979,6 +1004,7 @@ export class StudentCrudService {
       receiveReports?: boolean;
       groupId?: string | null;
       teacherId?: string | null;
+      centerId?: string | null;
       registerDate?: Date | null;
       dateOfBirth?: Date | null;
       firstLessonDate?: Date | null;
@@ -998,6 +1024,14 @@ export class StudentCrudService {
     }
     if (dto.firstLessonDate !== undefined) {
       updateData.firstLessonDate = dto.firstLessonDate ? new Date(dto.firstLessonDate) : null;
+    }
+
+    if (dto.centerId !== undefined) {
+      const raw = dto.centerId;
+      updateData.centerId = raw && String(raw).trim() !== '' ? String(raw).trim() : null;
+      if (managerCenterId && updateData.centerId && updateData.centerId !== managerCenterId) {
+        throw new ForbiddenException('You can only assign students to your assigned center');
+      }
     }
 
     // When groupId is set, sync teacherId from the group so Teacher → My Students shows the student immediately
@@ -1065,6 +1099,7 @@ export class StudentCrudService {
               center: { select: { id: true, name: true } },
             } 
           },
+          center: { select: { id: true, name: true } },
           teacher: {
             select: {
               id: true,
@@ -1120,7 +1155,7 @@ export class StudentCrudService {
         const scopedStudents = await this.prisma.student.findMany({
           where: {
             id: { in: uniqueIds },
-            group: { centerId: managerCenterId },
+            OR: [{ group: { centerId: managerCenterId } }, { centerId: managerCenterId }],
           },
           select: { id: true, userId: true },
         });
