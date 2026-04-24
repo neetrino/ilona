@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import { LeadsService } from './leads.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { StudentsService } from '../students/students.service';
 
 describe('LeadsService', () => {
   let service: LeadsService;
@@ -10,9 +11,11 @@ describe('LeadsService', () => {
     crmLead: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
     managerProfile: { findUnique: ReturnType<typeof vi.fn> };
     crmLeadActivity: { create: ReturnType<typeof vi.fn> };
+    user: { findMany: ReturnType<typeof vi.fn> };
     $transaction: ReturnType<typeof vi.fn>;
   };
   let storage: { getPresignedUploadUrl: ReturnType<typeof vi.fn> };
+  let studentsService: { createLinkedToCrmPaidLead: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     prisma = {
@@ -24,10 +27,16 @@ describe('LeadsService', () => {
         findUnique: vi.fn(),
       },
       crmLeadActivity: { create: vi.fn() },
+      user: { findMany: vi.fn().mockResolvedValue([]) },
       $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
     };
     storage = { getPresignedUploadUrl: vi.fn() };
-    service = new LeadsService(prisma as unknown as PrismaService, storage as unknown as StorageService);
+    studentsService = { createLinkedToCrmPaidLead: vi.fn() };
+    service = new LeadsService(
+      prisma as unknown as PrismaService,
+      storage as unknown as StorageService,
+      studentsService as unknown as StudentsService,
+    );
   });
 
   describe('changeStatus', () => {
@@ -82,6 +91,31 @@ describe('LeadsService', () => {
 
       await expect(
         service.changeStatus('lead-1', { status: 'FIRST_LESSON' }, 'user-1')
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects any status change away from PAID (including for ADMIN)', async () => {
+      prisma.crmLead.findUnique.mockResolvedValue({
+        id: 'lead-1',
+        status: 'PAID',
+        firstName: 'John',
+        lastName: 'Doe',
+        phone: '+123',
+        centerId: 'c1',
+        createdByUser: {},
+        assignedManager: null,
+        teacher: null,
+        group: null,
+        center: null,
+        attachments: [],
+        activities: [],
+        student: { id: 's1' },
+      });
+
+      await expect(
+        service.changeStatus('lead-1', { status: 'ARCHIVE' }, 'user-1', {
+          user: { role: 'ADMIN', sub: 'admin-1' } as never,
+        }),
       ).rejects.toThrow(BadRequestException);
     });
   });

@@ -149,7 +149,7 @@ export function LeadCard({
               value={lead.status}
               options={availableStatuses}
               onChange={handleStatusChange}
-              disabled={isChangingStatus}
+              disabled={isChangingStatus || lead.status === 'PAID'}
             />
           )}
           {onBranchChange && (

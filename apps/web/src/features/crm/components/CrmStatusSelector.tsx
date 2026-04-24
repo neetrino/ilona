@@ -14,6 +14,8 @@ export interface CrmStatusSelectorProps {
   options: CrmLeadStatus[];
   onChange: (status: CrmLeadStatus) => void;
   disabled?: boolean;
+  /** Shown as title/aria when `disabled` is true (e.g. Paid is final). */
+  disabledHint?: string;
   className?: string;
   /** Optional id for the trigger (e.g. for form labels). */
   id?: string;
@@ -34,6 +36,7 @@ export function CrmStatusSelector({
   options,
   onChange,
   disabled = false,
+  disabledHint = 'Status cannot be changed after payment',
   className,
   id,
   portaledMenuRef,
@@ -96,6 +99,10 @@ export function CrmStatusSelector({
     };
   }, [open]);
 
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
+
   const handleSelect = (e: React.MouseEvent, status: CrmLeadStatus) => {
     e.stopPropagation();
     onChange(status);
@@ -103,6 +110,8 @@ export function CrmStatusSelector({
   };
 
   const displayValue = value ? (STATUS_LABELS[value] ?? value) : '—';
+  const triggerTitle = disabled ? disabledHint : 'Change status';
+  const triggerAria = disabled ? disabledHint : 'Change status';
 
   return (
     <div className={cn('relative', className)}>
@@ -110,14 +119,17 @@ export function CrmStatusSelector({
         ref={triggerRef}
         id={id}
         type="button"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((prev) => !prev);
+        }}
         disabled={disabled}
         className={cn(
           'w-full inline-flex items-center justify-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20',
-          disabled && 'opacity-60 pointer-events-none'
+          disabled && 'cursor-not-allowed opacity-60'
         )}
-        title="Change status"
-        aria-label="Change status"
+        title={triggerTitle}
+        aria-label={triggerAria}
         aria-expanded={open}
       >
         <span>{displayValue}</span>
@@ -126,6 +138,7 @@ export function CrmStatusSelector({
         />
       </button>
       {open &&
+        !disabled &&
         position &&
         typeof document !== 'undefined' &&
         createPortal(

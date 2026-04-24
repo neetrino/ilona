@@ -477,6 +477,7 @@ export function EditLeadModal({
                     options={availableStatuses}
                     portaledMenuRef={crmStatusPortaledMenuRef}
                     onChange={handleCrmStatusChange}
+                    disabled={lead?.status === 'PAID'}
                   />
                 </div>
                 {form.status === 'ARCHIVE' && (

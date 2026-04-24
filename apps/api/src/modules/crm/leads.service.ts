@@ -316,6 +316,15 @@ export class LeadsService {
     const from = lead.status;
     const to = dto.status;
 
+    if (from === 'PAID') {
+      if (to !== 'PAID') {
+        throw new BadRequestException(
+          'Lead status cannot be changed after it has been set to Paid.',
+        );
+      }
+      return this.findById(id, actorUserId, options?.user);
+    }
+
     const adminCanSetAnyStatus = options?.user?.role === 'ADMIN';
     if (!adminCanSetAnyStatus) {
       if (!canTransition(from, to, { isTeacherApprove: options?.isTeacherApprove })) {
