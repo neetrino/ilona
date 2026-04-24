@@ -18,6 +18,7 @@ import { fetchGroups } from '@/features/groups/api/groups.api';
 import type { CrmLead, CrmLeadFilters, CrmLeadStatus, CrmLeadsResponse } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import {
+  CrmExclusiveAudioProvider,
   BoardView,
   ListTable,
   LeadDrawer,
@@ -382,7 +383,8 @@ export default function AdminCrmPage() {
 
   return (
     <DashboardLayout title={t('crm')} subtitle="Lead management">
-      <div className="space-y-4">
+      <CrmExclusiveAudioProvider>
+        <div className="space-y-4">
         {/* View toggle + Filters */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -504,61 +506,62 @@ export default function AdminCrmPage() {
             ))}
           </div>
         )}
-      </div>
+        </div>
 
-      <LeadDrawer
-        leadId={selectedLeadId}
-        onClose={() => setSelectedLeadId(null)}
-        onUpdated={() => refetch()}
-      />
-      <EditLeadModal
-        open={!!editLeadId}
-        leadId={editLeadId}
-        onClose={closeEditLead}
-        onSaved={() => {
-          refetch();
-          closeEditLead();
-        }}
-        centers={centers}
-        teachers={teachers}
-        groups={groups}
-        availableStatuses={adminVisibleStatuses}
-      />
-      <VoiceLeadModal
-        open={voiceModalOpen}
-        onClose={() => setVoiceModalOpen(false)}
-        centerId={newColumnCenterId}
-        onCreated={(createdLead) => {
-          upsertCreatedLeadIntoCaches(createdLead);
-          queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
-          setVoiceModalOpen(false);
-        }}
-      />
-      <PaidRegistrationModal
-        open={paidRegLeadId != null}
-        leadId={paidRegLeadId}
-        onClose={() => setPaidRegLeadId(null)}
-        onSuccess={() => {
-          setPaidRegLeadId(null);
-          void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
-        }}
-      />
-      <CrmDeleteLeadDialog
-        open={isAdmin && leadIdPendingDelete != null}
-        onOpenChange={(open) => {
-          if (!open && !deleteLeadMutation.isPending) {
-            setLeadIdPendingDelete(null);
-            setDeleteLeadError(null);
-          }
-        }}
-        onConfirm={() => {
-          if (leadIdPendingDelete) {
-            deleteLeadMutation.mutate(leadIdPendingDelete);
-          }
-        }}
-        isLoading={deleteLeadMutation.isPending}
-        error={deleteLeadError}
-      />
+        <LeadDrawer
+          leadId={selectedLeadId}
+          onClose={() => setSelectedLeadId(null)}
+          onUpdated={() => refetch()}
+        />
+        <EditLeadModal
+          open={!!editLeadId}
+          leadId={editLeadId}
+          onClose={closeEditLead}
+          onSaved={() => {
+            refetch();
+            closeEditLead();
+          }}
+          centers={centers}
+          teachers={teachers}
+          groups={groups}
+          availableStatuses={adminVisibleStatuses}
+        />
+        <VoiceLeadModal
+          open={voiceModalOpen}
+          onClose={() => setVoiceModalOpen(false)}
+          centerId={newColumnCenterId}
+          onCreated={(createdLead) => {
+            upsertCreatedLeadIntoCaches(createdLead);
+            queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+            setVoiceModalOpen(false);
+          }}
+        />
+        <PaidRegistrationModal
+          open={paidRegLeadId != null}
+          leadId={paidRegLeadId}
+          onClose={() => setPaidRegLeadId(null)}
+          onSuccess={() => {
+            setPaidRegLeadId(null);
+            void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+          }}
+        />
+        <CrmDeleteLeadDialog
+          open={isAdmin && leadIdPendingDelete != null}
+          onOpenChange={(open) => {
+            if (!open && !deleteLeadMutation.isPending) {
+              setLeadIdPendingDelete(null);
+              setDeleteLeadError(null);
+            }
+          }}
+          onConfirm={() => {
+            if (leadIdPendingDelete) {
+              deleteLeadMutation.mutate(leadIdPendingDelete);
+            }
+          }}
+          isLoading={deleteLeadMutation.isPending}
+          error={deleteLeadError}
+        />
+      </CrmExclusiveAudioProvider>
     </DashboardLayout>
   );
 }

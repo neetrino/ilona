@@ -1,3 +1,4 @@
+export { CrmExclusiveAudioProvider } from './CrmExclusiveAudioContext';
 export { BoardView } from './BoardView';
 export { Column } from './Column';
 export { LeadCard, STATUS_LABELS } from './LeadCard';

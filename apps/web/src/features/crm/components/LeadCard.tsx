@@ -17,6 +17,7 @@ import {
 import { cn } from '@/shared/lib/utils';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { CrmBranchSelector, type CrmBranchOption } from './CrmBranchSelector';
+import { LeadCardVoiceInline } from './LeadCardVoiceInline';
 
 interface LeadCardProps {
   lead: CrmLead;
@@ -129,6 +130,14 @@ export function LeadCard({
           <span className="truncate">{lead.phone}</span>
         </p>
       )}
+      {voiceAttachment?.r2Key ? (
+        <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+          <LeadCardVoiceInline
+            r2Key={voiceAttachment.r2Key}
+            mimeType={voiceAttachment.mimeType}
+          />
+        </div>
+      ) : null}
       <div className="flex flex-wrap gap-1 mt-2">
         {lead.center?.name && (
           <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
