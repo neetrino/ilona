@@ -30,6 +30,7 @@ import {
   ChangeBranchDto,
   AddCommentDto,
   ConfirmRecordingDto,
+  RegisterPaidLeadDto,
 } from './dto';
 
 const MAX_VOICE_SIZE = 25 * 1024 * 1024; // 25MB
@@ -138,6 +139,21 @@ export class LeadsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<unknown> {
     return this.leadsService.update(id, dto, user.sub, user);
+  }
+
+  @Post(':id/register-paid')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({
+    summary: 'Complete Paid registration',
+    description:
+      'Updates lead fields, sets status to Paid, and creates the linked student. Use this instead of POST :id/status for Paid.',
+  })
+  registerPaid(
+    @Param('id') id: string,
+    @Body() dto: RegisterPaidLeadDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<unknown> {
+    return this.leadsService.registerPaidLead(id, dto, user.sub, user);
   }
 
   @Post(':id/status')

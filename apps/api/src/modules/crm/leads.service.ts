@@ -14,6 +14,7 @@ import {
   TeacherTransferDto,
   AddCommentDto,
   ConfirmRecordingDto,
+  RegisterPaidLeadDto,
 } from './dto';
 import {
   canTransition,
@@ -351,6 +352,12 @@ export class LeadsService {
       }
     }
 
+    if (to === 'PAID') {
+      throw new BadRequestException(
+        'Marking a lead as Paid requires completing student registration. Use POST /crm/leads/:id/register-paid.',
+      );
+    }
+
     const updateData: { status: CrmLeadStatus; archivedReason?: string } = {
       status: to,
     };
@@ -374,14 +381,117 @@ export class LeadsService {
         },
       });
 
-      if (to === 'PAID') {
-        await this.createStudentFromLeadInTx(id, tx);
-      }
-
       return updatedLead;
     });
 
     return updated;
+  }
+
+  /**
+   * Updates lead fields, sets status to PAID, and creates the linked student in one transaction.
+   * Idempotent: if a student is already linked to this lead, returns the current lead.
+   */
+  async registerPaidLead(
+    id: string,
+    dto: RegisterPaidLeadDto,
+    actorUserId: string,
+    user?: JwtPayload,
+  ) {
+    const lead = await this.findById(id, actorUserId, user);
+    if ((lead as { student?: { id: string } | null }).student) {
+      return this.findById(id, actorUserId, user);
+    }
+
+    const centerId = this.ensureManagerCenterInput(dto.centerId, user);
+
+    const group = await this.prisma.group.findUnique({
+      where: { id: dto.groupId },
+      select: { id: true, teacherId: true, centerId: true, isActive: true },
+    });
+    if (!group || !group.isActive) {
+      throw new BadRequestException('Invalid or inactive group');
+    }
+    if (group.teacherId !== dto.teacherId) {
+      throw new BadRequestException('Selected group does not belong to the selected teacher');
+    }
+    if (group.centerId !== centerId) {
+      throw new BadRequestException('Selected group does not belong to the selected center');
+    }
+
+    const adminCanSetAnyStatus = user?.role === 'ADMIN';
+    const fromStatus = lead.status;
+    const isPaidWithoutStudent = fromStatus === 'PAID';
+    if (!isPaidWithoutStudent && !adminCanSetAnyStatus) {
+      const approved = (lead as { teacherApprovedAt?: Date | null }).teacherApprovedAt != null;
+      if (!canTransition(fromStatus, 'PAID', { isTeacherApprove: approved })) {
+        throw new BadRequestException(
+          `Cannot register as Paid from status ${fromStatus}: transition not allowed`,
+        );
+      }
+    }
+
+    const first = dto.firstName.trim();
+    const last = dto.lastName.trim();
+    const phone = dto.phone.trim();
+    if (!first || !last) {
+      throw new BadRequestException('First and last name are required');
+    }
+    if (!phone) {
+      throw new BadRequestException('Phone is required');
+    }
+
+    if (dto.age > 0 && dto.age < 18) {
+      const pn = dto.parentName?.trim();
+      const pp = dto.parentPhone?.trim();
+      const pi = dto.parentPassportInfo?.trim();
+      if (!pn || !pp || !pi) {
+        throw new BadRequestException(
+          'Students under 18 require parent name, parent phone, and parent passport details',
+        );
+      }
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.crmLead.update({
+        where: { id },
+        data: {
+          firstName: first,
+          lastName: last,
+          phone,
+          age: dto.age,
+          ...(dto.dateOfBirth != null && dto.dateOfBirth !== ''
+            ? { dateOfBirth: new Date(dto.dateOfBirth) }
+            : {}),
+          ...(dto.firstLessonDate != null && dto.firstLessonDate !== ''
+            ? { firstLessonDate: new Date(dto.firstLessonDate) }
+            : {}),
+          parentName: dto.parentName?.trim() || null,
+          parentPhone: dto.parentPhone?.trim() || null,
+          parentPassportInfo: dto.parentPassportInfo?.trim() || null,
+          ...(dto.comment !== undefined ? { comment: dto.comment.trim() || null } : {}),
+          levelId: dto.levelId,
+          teacherId: dto.teacherId,
+          groupId: dto.groupId,
+          centerId,
+          status: 'PAID',
+        },
+      });
+
+      if (fromStatus !== 'PAID') {
+        await tx.crmLeadActivity.create({
+          data: {
+            leadId: id,
+            actorUserId,
+            type: 'STATUS_CHANGE',
+            payload: { fromStatus, toStatus: 'PAID' satisfies CrmLeadStatus, source: 'register_paid' },
+          },
+        });
+      }
+
+      await this.createStudentFromLeadInTx(id, tx);
+    });
+
+    return this.findById(id, actorUserId, user);
   }
 
   async changeBranch(
@@ -436,14 +546,26 @@ export class LeadsService {
     return updatedLead;
   }
 
-  /** Idempotent: create Student from lead when status becomes PAID; link student.leadId */
+  /** Idempotent: create Student from lead when status is PAID; link student.leadId */
   private async createStudentFromLeadInTx(leadId: string, tx: TransactionClient) {
     const lead = await tx.crmLead.findUnique({
       where: { id: leadId },
       include: { student: true },
     });
     if (!lead) return;
-    if (lead.student) return; // already created (idempotent)
+    if (lead.student) return;
+
+    const studentProfileData = {
+      groupId: lead.groupId ?? undefined,
+      teacherId: lead.teacherId ?? undefined,
+      age: lead.age ?? undefined,
+      dateOfBirth: lead.dateOfBirth ?? undefined,
+      firstLessonDate: lead.firstLessonDate ?? undefined,
+      parentName: lead.parentName ?? undefined,
+      parentPhone: lead.parentPhone ?? undefined,
+      parentPassportInfo: lead.parentPassportInfo ?? undefined,
+      registerDate: new Date(),
+    };
 
     const existingUser = lead.phone
       ? await tx.user.findFirst({
@@ -455,10 +577,28 @@ export class LeadsService {
         where: { userId: existingUser.id },
       });
       if (existingStudent) {
+        await tx.user.update({
+          where: { id: existingUser.id },
+          data: {
+            firstName: lead.firstName ?? 'Lead',
+            lastName: lead.lastName ?? '',
+            phone: lead.phone,
+          },
+        });
         await tx.student.update({
           where: { id: existingStudent.id },
-          data: { leadId },
+          data: {
+            leadId: leadId,
+            ...studentProfileData,
+          },
         });
+        if (lead.groupId && lead.groupId !== existingStudent.groupId) {
+          const now = new Date();
+          await tx.$executeRaw`
+            INSERT INTO "student_group_histories" ("id", "studentId", "groupId", "joinedAt", "createdAt", "updatedAt")
+            VALUES (${randomUUID()}, ${existingStudent.id}, ${lead.groupId}, ${now}, ${now}, ${now})
+          `;
+        }
         return;
       }
     }
@@ -487,11 +627,9 @@ export class LeadsService {
     const studentCreateData: Prisma.StudentUncheckedCreateInput = {
       userId: user.id,
       leadId,
-      groupId: lead.groupId ?? undefined,
-      teacherId: lead.teacherId ?? undefined,
       monthlyFee: DEFAULT_MONTHLY_FEE,
+      ...studentProfileData,
     };
-    (studentCreateData as Record<string, unknown>).age = lead.age ?? undefined;
 
     const createdStudent = await tx.student.create({
       data: studentCreateData,

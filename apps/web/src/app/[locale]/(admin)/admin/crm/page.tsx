@@ -17,6 +17,7 @@ import {
   LeadDrawer,
   VoiceLeadModal,
   EditLeadModal,
+  PaidRegistrationModal,
   CRMFilters,
 } from '@/features/crm/components';
 import { Eye, EyeOff } from 'lucide-react';
@@ -110,6 +111,7 @@ export default function AdminCrmPage() {
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [newColumnCenterId] = useState<string | null>(null);
   const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
+  const [paidRegLeadId, setPaidRegLeadId] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
 
   // Restore Archive column visibility from URL after refresh
@@ -275,6 +277,10 @@ export default function AdminCrmPage() {
     }
   };
   const handleCardStatusChange = (leadId: string, status: CrmLeadStatus) => {
+    if (status === 'PAID') {
+      setPaidRegLeadId(leadId);
+      return;
+    }
     statusMutation.mutate({ leadId, status });
   };
   const handleCardBranchChange = (leadId: string, centerId: string | null) => {
@@ -460,6 +466,18 @@ export default function AdminCrmPage() {
           queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
           setVoiceModalOpen(false);
         }}
+      />
+      <PaidRegistrationModal
+        open={paidRegLeadId != null}
+        leadId={paidRegLeadId}
+        onClose={() => setPaidRegLeadId(null)}
+        onSuccess={() => {
+          setPaidRegLeadId(null);
+          void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+        }}
+        centers={centers}
+        teachers={teachers}
+        groups={groups}
       />
     </DashboardLayout>
   );

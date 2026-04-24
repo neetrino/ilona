@@ -6,3 +6,4 @@ export * from './change-branch.dto';
 export * from './teacher-transfer.dto';
 export * from './add-comment.dto';
 export * from './confirm-recording.dto';
+export * from './register-paid-lead.dto';

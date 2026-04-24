@@ -10,6 +10,7 @@ import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
 import { CrmStatusSelector } from './CrmStatusSelector';
+import { PaidRegistrationModal } from './PaidRegistrationModal';
 import { RecordingPlayback } from './VoiceRecorder';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -69,6 +70,8 @@ export function EditLeadModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [paidRegistrationOpen, setPaidRegistrationOpen] = useState(false);
+  const [paidPrefill, setPaidPrefill] = useState<Partial<UpdateLeadDto> | undefined>(undefined);
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ['crm-lead', leadId],
@@ -134,6 +137,30 @@ export function EditLeadModal({
     return () => setIsMounted(false);
   }, []);
 
+  const handleCrmStatusChange = (status: CrmLeadStatus) => {
+    if (status === 'PAID' && lead && lead.status !== 'PAID') {
+      setPaidPrefill({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        phone: form.phone,
+        age: form.age,
+        dateOfBirth: form.dateOfBirth,
+        firstLessonDate: form.firstLessonDate,
+        parentName: form.parentName,
+        parentPhone: form.parentPhone,
+        parentPassportInfo: form.parentPassportInfo,
+        comment: form.comment,
+        levelId: form.levelId,
+        teacherId: form.teacherId,
+        groupId: form.groupId,
+        centerId: form.centerId,
+      });
+      setPaidRegistrationOpen(true);
+      return;
+    }
+    setForm((f) => ({ ...f, status }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadId || !lead) return;
@@ -169,7 +196,7 @@ export function EditLeadModal({
 
   if (!isMounted) return null;
 
-  return createPortal(
+  const editLeadPortal = createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
       onMouseDown={onOverlayMouseDown}
@@ -449,9 +476,7 @@ export function EditLeadModal({
                     value={form.status}
                     options={availableStatuses}
                     portaledMenuRef={crmStatusPortaledMenuRef}
-                    onChange={(status) =>
-                      setForm((f) => ({ ...f, status }))
-                    }
+                    onChange={handleCrmStatusChange}
                   />
                 </div>
                 {form.status === 'ARCHIVE' && (
@@ -491,5 +516,31 @@ export function EditLeadModal({
       </div>
     </div>,
     document.body
+  );
+
+  return (
+    <>
+      {editLeadPortal}
+      <PaidRegistrationModal
+        open={paidRegistrationOpen}
+        leadId={paidRegistrationOpen ? leadId : null}
+        formPrefill={paidPrefill}
+        onClose={() => {
+          setPaidRegistrationOpen(false);
+          setPaidPrefill(undefined);
+        }}
+        onSuccess={() => {
+          setPaidRegistrationOpen(false);
+          setPaidPrefill(undefined);
+          void queryClient.invalidateQueries({ queryKey: ['crm-lead', leadId] });
+          void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+          onSaved();
+          onClose();
+        }}
+        centers={centers}
+        teachers={teachers}
+        groups={groups}
+      />
+    </>
   );
 }
