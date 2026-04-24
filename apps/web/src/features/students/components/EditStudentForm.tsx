@@ -112,7 +112,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true });
-  const teachers = teachersData?.items || [];
+  const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
   const centers = centersData?.items ?? [];
   const groupsForTeacher = useMemo(() => {
     const all = groupsData?.items ?? [];
@@ -138,9 +138,9 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const teacherCentersLabel = useMemo(() => {
     const fromLinks = (selectedTeacher?.centerLinks ?? [])
       .map((l) => l.center.name)
-      .filter(Boolean) as string[];
+      .filter(Boolean);
     const fromGroups = [
-      ...new Set(groupsForTeacher.map((g) => g.center?.name).filter(Boolean) as string[]),
+      ...new Set(groupsForTeacher.map((g) => g.center?.name).filter(Boolean)),
     ];
     return [...new Set([...fromLinks, ...fromGroups])].join(', ');
   }, [selectedTeacher, groupsForTeacher]);

@@ -56,7 +56,7 @@ export function PaidRegistrationModal({
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' }, open);
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true }, open);
   const teachers = teachersData?.items ?? [];
-  const centers = centersData?.items ?? [];
+  const centers = useMemo(() => centersData?.items ?? [], [centersData?.items]);
   const managerCenterLabel = useMemo(() => {
     if (!isManager || !user?.managerCenterId) return null;
     const name = centers.find((c) => c.id === user.managerCenterId)?.name;
