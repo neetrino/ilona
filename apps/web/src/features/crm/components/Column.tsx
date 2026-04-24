@@ -1,6 +1,6 @@
 'use client';
 
-import { Mic } from 'lucide-react';
+import { Mic, Plus } from 'lucide-react';
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { LeadCard } from './LeadCard';
 import { STATUS_LABELS } from './LeadCard';
@@ -17,8 +17,11 @@ interface ColumnProps {
   changingStatusId?: string | null;
   changingBranchId?: string | null;
   onAddClick: () => void;
-  /** When true (admin), NEW column shows the voice-lead button; managers get no header action. */
-  newLeadAddUsesVoice?: boolean;
+  /**
+   * NEW column header action: `voice` = record voice lead (admin); `text` = open text create-lead (manager);
+   * `none` = no button.
+   */
+  newLeadAddMode?: 'voice' | 'text' | 'none';
   showVoiceRecorder?: (lead: CrmLead) => React.ReactNode;
   branchOptions?: CrmBranchOption[];
   canDeleteLead?: boolean;
@@ -37,7 +40,7 @@ export function Column({
   changingStatusId,
   changingBranchId,
   onAddClick,
-  newLeadAddUsesVoice = true,
+  newLeadAddMode = 'voice',
   showVoiceRecorder,
   branchOptions,
   canDeleteLead,
@@ -57,7 +60,7 @@ export function Column({
               {count}
             </span>
           </div>
-          {isNew && newLeadAddUsesVoice && (
+          {isNew && newLeadAddMode === 'voice' && (
             <button
               type="button"
               onClick={onAddClick}
@@ -66,6 +69,17 @@ export function Column({
               aria-label="Record a voice lead"
             >
               <Mic className="size-4" strokeWidth={2} aria-hidden />
+            </button>
+          )}
+          {isNew && newLeadAddMode === 'text' && (
+            <button
+              type="button"
+              onClick={onAddClick}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white hover:bg-primary/90"
+              title="New lead"
+              aria-label="New lead"
+            >
+              <Plus className="size-4" strokeWidth={2} aria-hidden />
             </button>
           )}
         </div>

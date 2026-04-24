@@ -54,7 +54,7 @@ export class LeadsService {
 
   /** Voice lead creation and CRM lead recording uploads are admin-only (defense in depth with controller @Roles). */
   private requireAdminForCrmLeadVoice(user?: JwtPayload): void {
-    if (user?.role === UserRole.MANAGER) {
+    if (user?.role !== UserRole.ADMIN) {
       throw new ForbiddenException(
         'Only administrators can create CRM leads from voice or upload voice attachments.',
       );
