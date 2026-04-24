@@ -24,6 +24,7 @@ import {
 } from '../student-account-form.schema';
 import { formDataToCreateStudentDto } from '../student-account-form.payload';
 import { StudentAccountFormFields } from './StudentAccountFormFields';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 interface AddStudentFormProps {
   open: boolean;
@@ -34,12 +35,19 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const createStudent = useCreateStudent();
+  const user = useAuthStore((s) => s.user);
+  const isManager = user?.role === 'MANAGER';
 
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true });
   const teachers = teachersData?.items ?? [];
   const centers = centersData?.items ?? [];
+  const managerCenterLabel = useMemo(() => {
+    if (!isManager || !user?.managerCenterId) return null;
+    const name = centers.find((c) => c.id === user.managerCenterId)?.name;
+    return name ?? 'Your assigned branch';
+  }, [centers, isManager, user?.managerCenterId]);
 
   const {
     register,
@@ -119,6 +127,9 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     setErrorMessage(null);
     try {
       const payload = formDataToCreateStudentDto(data, computedAge);
+      if (isManager) {
+        delete payload.centerId;
+      }
       await createStudent.mutateAsync(payload);
       setSuccessMessage('Student created successfully!');
       setErrorMessage(null);
@@ -168,6 +179,8 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             isLoadingTeachers={isLoadingTeachers}
             isLoadingCenters={isLoadingCenters}
             isSubmitting={isSubmitting}
+            showCenterSelect={!isManager}
+            assignedCenterDisplay={isManager ? managerCenterLabel : null}
           />
 
           <DialogFooter>

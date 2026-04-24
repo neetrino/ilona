@@ -32,6 +32,10 @@ export interface StudentAccountFormFieldsProps {
   /** Active centers for manual Center assignment */
   centers: Array<{ id: string; name: string }>;
   isLoadingCenters?: boolean;
+  /** When false (e.g. Manager CRM registration), Center dropdown is hidden; backend assigns center. */
+  showCenterSelect?: boolean;
+  /** Read-only label when `showCenterSelect` is false (e.g. manager’s branch name). */
+  assignedCenterDisplay?: string | null;
   /** Prefix for input ids when multiple forms exist on one page */
   idPrefix?: string;
 }
@@ -52,6 +56,8 @@ export function StudentAccountFormFields({
   isSubmitting,
   centers,
   isLoadingCenters = false,
+  showCenterSelect = true,
+  assignedCenterDisplay = null,
   idPrefix = '',
 }: StudentAccountFormFieldsProps) {
   const p = (id: string) => (idPrefix ? `${idPrefix}-${id}` : id);
@@ -209,23 +215,32 @@ export function StudentAccountFormFields({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor={p('centerId')}>Center</Label>
-        <select
-          id={p('centerId')}
-          {...register('centerId')}
-          className={selectClassName}
-          disabled={isLoadingCenters || isSubmitting}
-        >
-          <option value="">Not assigned</option>
-          {centers.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        {errors.centerId && <p className="text-sm text-red-600">{errors.centerId.message}</p>}
-      </div>
+      {showCenterSelect ? (
+        <div className="space-y-2">
+          <Label htmlFor={p('centerId')}>Center</Label>
+          <select
+            id={p('centerId')}
+            {...register('centerId')}
+            className={selectClassName}
+            disabled={isLoadingCenters || isSubmitting}
+          >
+            <option value="">Not assigned</option>
+            {centers.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {errors.centerId && <p className="text-sm text-red-600">{errors.centerId.message}</p>}
+        </div>
+      ) : assignedCenterDisplay ? (
+        <div className="space-y-2">
+          <Label>Center</Label>
+          <p className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-slate-700">
+            {assignedCenterDisplay}
+          </p>
+        </div>
+      ) : null}
 
       <div className="space-y-2">
         <Label htmlFor={p('monthlyFee')}>

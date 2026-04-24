@@ -9,6 +9,7 @@ import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { PaidRegistrationModal } from './PaidRegistrationModal';
 import { RecordingPlayback } from './VoiceRecorder';
@@ -51,6 +52,14 @@ export function EditLeadModal({
   groups,
   availableStatuses = CRM_COLUMN_ORDER,
 }: EditLeadModalProps) {
+  const user = useAuthStore((s) => s.user);
+  const isManager = user?.role === 'MANAGER';
+  const managerCenterReadonlyLabel = useMemo(() => {
+    if (!isManager || !user?.managerCenterId) return null;
+    const name = centers.find((c) => c.id === user.managerCenterId)?.name;
+    return name ?? 'Your assigned branch';
+  }, [centers, isManager, user?.managerCenterId]);
+
   const queryClient = useQueryClient();
   const modalContainerRef = useRef<HTMLDivElement>(null);
   const crmStatusPortaledMenuRef = useRef<HTMLDivElement>(null);
@@ -153,7 +162,7 @@ export function EditLeadModal({
         levelId: form.levelId,
         teacherId: form.teacherId,
         groupId: form.groupId,
-        centerId: form.centerId,
+        ...(isManager ? {} : { centerId: form.centerId }),
       });
       setPaidRegistrationOpen(true);
       return;
@@ -173,6 +182,9 @@ export function EditLeadModal({
         parentSurname: _parentSurname,
         ...updatePayload
       } = form;
+      if (isManager) {
+        delete updatePayload.centerId;
+      }
       await updateLead(leadId, updatePayload);
       if (formStatus && formStatus !== lead.status) {
         await changeLeadStatus(leadId, {
@@ -427,6 +439,9 @@ export function EditLeadModal({
                       </option>
                     ))}
                   </select>
+                  {isManager && teachers.length === 0 ? (
+                    <p className="mt-1 text-xs text-slate-500">No teachers available for your center.</p>
+                  ) : null}
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">Group</label>
@@ -446,23 +461,34 @@ export function EditLeadModal({
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
-                  <select
-                    value={form.centerId ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, centerId: e.target.value || undefined }))
-                    }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">—</option>
-                    {centers.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {isManager ? (
+                  managerCenterReadonlyLabel ? (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
+                      <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                        {managerCenterReadonlyLabel}
+                      </p>
+                    </div>
+                  ) : null
+                ) : (
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
+                    <select
+                      value={form.centerId ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, centerId: e.target.value || undefined }))
+                      }
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">—</option>
+                      {centers.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </section>
             </div>

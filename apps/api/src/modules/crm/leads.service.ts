@@ -65,7 +65,36 @@ export class LeadsService {
     return managerCenterId;
   }
 
+  /** Manager may only assign CRM leads to teachers linked to their center (groups or TeacherCenter). */
+  private async assertManagerLeadTeacherInCenter(
+    teacherId: string | undefined | null,
+    user?: JwtPayload,
+  ): Promise<void> {
+    const managerCenterId = getManagerCenterIdOrThrow(user);
+    if (!managerCenterId) {
+      return;
+    }
+    const tid = teacherId && String(teacherId).trim() !== '' ? String(teacherId).trim() : '';
+    if (!tid) {
+      return;
+    }
+    const ok = await this.prisma.teacher.findFirst({
+      where: {
+        id: tid,
+        OR: [
+          { groups: { some: { centerId: managerCenterId } } },
+          { centerLinks: { some: { centerId: managerCenterId } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!ok) {
+      throw new ForbiddenException('You can only assign leads to teachers in your center');
+    }
+  }
+
   async create(dto: CreateLeadDto, createdByUserId: string, user?: JwtPayload) {
+    await this.assertManagerLeadTeacherInCenter(dto.teacherId, user);
     const centerId = this.ensureManagerCenterInput(dto.centerId, user);
     const lead = await this.prisma.crmLead.create({
       data: {
@@ -257,7 +286,11 @@ export class LeadsService {
     user?: JwtPayload,
   ) {
     await this.findById(id, actorUserId, user);
-    const centerId = this.ensureManagerCenterInput(dto.centerId, user);
+    const isManager = user?.role === UserRole.MANAGER;
+    if (isManager) {
+      await this.assertManagerLeadTeacherInCenter(dto.teacherId, user);
+    }
+    /** Managers cannot set branch via lead edit; `changeBranch` is ADMIN-only. */
     const updated = await this.prisma.crmLead.update({
       where: { id },
       data: {
@@ -274,7 +307,9 @@ export class LeadsService {
         levelId: dto.levelId,
         teacherId: dto.teacherId,
         groupId: dto.groupId,
-        centerId,
+        ...(isManager
+          ? {}
+          : { centerId: this.ensureManagerCenterInput(dto.centerId, user) }),
         source: dto.source,
         notes: dto.notes,
         assignedManagerId: dto.assignedManagerId,

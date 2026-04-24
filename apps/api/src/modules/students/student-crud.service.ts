@@ -699,10 +699,12 @@ export class StudentCrudService {
     }
 
     const managerCenterId = getManagerCenterIdOrThrow(user);
-
-    if (dto.centerId && managerCenterId && dto.centerId !== managerCenterId) {
-      throw new ForbiddenException('You can only assign students to your assigned center');
-    }
+    /** Managers cannot choose center via API; always use JWT `managerCenterId`. Admins use optional `dto.centerId`. */
+    const resolvedStudentCenterId = managerCenterId
+      ? managerCenterId
+      : dto.centerId && String(dto.centerId).trim() !== ''
+        ? String(dto.centerId).trim()
+        : undefined;
 
     let resolvedTeacherId: string | undefined = dto.teacherId;
     if (dto.groupId) {
@@ -770,6 +772,7 @@ export class StudentCrudService {
       resolvedTeacherId,
       finalAge,
       dobDate,
+      resolvedStudentCenterId,
     };
   }
 
@@ -781,10 +784,11 @@ export class StudentCrudService {
       resolvedTeacherId: string | undefined;
       finalAge: number;
       dobDate: Date | null;
+      resolvedStudentCenterId: string | undefined;
     },
     link?: { leadId?: string },
   ) {
-    const { passwordHash, resolvedTeacherId, finalAge, dobDate } = prep;
+    const { passwordHash, resolvedTeacherId, finalAge, dobDate, resolvedStudentCenterId } = prep;
 
     const createdUser = await tx.user.create({
       data: {
@@ -798,8 +802,7 @@ export class StudentCrudService {
       },
     });
 
-    const initialCenterId =
-      dto.centerId && String(dto.centerId).trim() !== '' ? String(dto.centerId).trim() : undefined;
+    const initialCenterId = resolvedStudentCenterId;
 
     const studentCreateData: Prisma.StudentUncheckedCreateInput = {
       userId: createdUser.id,

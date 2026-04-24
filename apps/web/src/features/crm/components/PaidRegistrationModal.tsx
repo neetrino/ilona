@@ -21,6 +21,7 @@ import { formDataToCreateStudentDto } from '@/features/students/student-account-
 import { StudentAccountFormFields } from '@/features/students/components/StudentAccountFormFields';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export interface PaidRegistrationModalProps {
   open: boolean;
@@ -48,11 +49,19 @@ export function PaidRegistrationModal({
   const [mounted, setMounted] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
+  const user = useAuthStore((s) => s.user);
+  const isManager = user?.role === 'MANAGER';
+
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true }, open);
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' }, open);
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true }, open);
   const teachers = teachersData?.items ?? [];
   const centers = centersData?.items ?? [];
+  const managerCenterLabel = useMemo(() => {
+    if (!isManager || !user?.managerCenterId) return null;
+    const name = centers.find((c) => c.id === user.managerCenterId)?.name;
+    return name ?? 'Your assigned branch';
+  }, [centers, isManager, user?.managerCenterId]);
 
   const { data: lead, isLoading: isLoadingLead } = useQuery({
     queryKey: ['crm-lead', leadId],
@@ -129,6 +138,10 @@ export function PaidRegistrationModal({
       return;
     }
     if (!lead || lead.id !== leadId) return;
+    const fromLead = leadToCreateStudentFormDefaults(lead, formPrefill);
+    if (isManager) {
+      fromLead.centerId = '';
+    }
     reset({
       ...{
         email: '',
@@ -150,9 +163,9 @@ export function PaidRegistrationModal({
         notes: '',
         receiveReports: true,
       },
-      ...leadToCreateStudentFormDefaults(lead, formPrefill),
+      ...fromLead,
     });
-  }, [open, lead, leadId, formPrefill, reset]);
+  }, [open, lead, leadId, formPrefill, reset, isManager]);
 
   useEffect(() => {
     if (computedAge !== undefined && computedAge >= 18) {
@@ -169,6 +182,9 @@ export function PaidRegistrationModal({
     submitGuardRef.current = true;
     try {
       const payload = formDataToCreateStudentDto(data, computedAge);
+      if (isManager) {
+        delete payload.centerId;
+      }
       await registerPaidLead(leadId, payload);
       onSuccess();
     } catch (err: unknown) {
@@ -240,6 +256,8 @@ export function PaidRegistrationModal({
                   isLoadingTeachers={isLoadingTeachers}
                   isLoadingCenters={isLoadingCenters}
                   isSubmitting={isSubmitting}
+                  showCenterSelect={!isManager}
+                  assignedCenterDisplay={isManager ? managerCenterLabel : null}
                 />
               </div>
               <div className="flex justify-end gap-2 border-t border-slate-200 px-4 py-3 sm:px-6">
