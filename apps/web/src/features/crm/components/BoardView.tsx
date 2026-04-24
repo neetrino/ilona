@@ -20,6 +20,9 @@ export interface BoardViewProps {
   onAddLead: () => void;
   onRecordingSaved?: () => void;
   branchOptions?: CrmBranchOption[];
+  canDeleteLead?: boolean;
+  onLeadDeleteRequest?: (lead: CrmLead) => void;
+  deleteInProgress?: boolean;
 }
 
 export function BoardView({
@@ -34,6 +37,9 @@ export function BoardView({
   changingBranchId,
   onAddLead,
   branchOptions,
+  canDeleteLead,
+  onLeadDeleteRequest,
+  deleteInProgress,
 }: BoardViewProps) {
   const statusList = availableStatuses.length > 0 ? availableStatuses : CRM_COLUMN_ORDER;
   const columnOrder = columnStatuses && columnStatuses.length > 0 ? columnStatuses : statusList;
@@ -69,6 +75,9 @@ export function BoardView({
           changingBranchId={changingBranchId}
           onAddClick={onAddLead}
           branchOptions={branchOptions}
+          canDeleteLead={canDeleteLead}
+          onLeadDeleteRequest={onLeadDeleteRequest}
+          deleteInProgress={deleteInProgress}
         />
       ))}
     </div>

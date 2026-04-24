@@ -226,7 +226,7 @@ export class LeadsController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete a lead (and its voice recordings)' })
   delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.leadsService.delete(id, user);

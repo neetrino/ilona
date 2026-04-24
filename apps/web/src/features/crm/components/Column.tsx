@@ -19,6 +19,9 @@ interface ColumnProps {
   onAddClick: () => void;
   showVoiceRecorder?: (lead: CrmLead) => React.ReactNode;
   branchOptions?: CrmBranchOption[];
+  canDeleteLead?: boolean;
+  onLeadDeleteRequest?: (lead: CrmLead) => void;
+  deleteInProgress?: boolean;
 }
 
 export function Column({
@@ -34,6 +37,9 @@ export function Column({
   onAddClick,
   showVoiceRecorder,
   branchOptions,
+  canDeleteLead,
+  onLeadDeleteRequest,
+  deleteInProgress,
 }: ColumnProps) {
   const label = STATUS_LABELS[status];
   const isNew = status === 'NEW';
@@ -73,6 +79,11 @@ export function Column({
               onBranchChange={onCardBranchChange}
               isChangingStatus={changingStatusId === lead.id}
               isChangingBranch={changingBranchId === lead.id}
+              showDelete={canDeleteLead}
+              onDeleteClick={
+                canDeleteLead && onLeadDeleteRequest ? () => onLeadDeleteRequest(lead) : undefined
+              }
+              deleteDisabled={deleteInProgress}
             />
             {showVoiceRecorder && status === 'NEW' && showVoiceRecorder(lead)}
           </div>
