@@ -17,7 +17,7 @@ import { ChatModule } from '../chat/chat.module';
     StudentStatisticsService,
     StudentGroupService,
   ],
-  exports: [StudentsService],
+  exports: [StudentsService, StudentCrudService],
 })
 export class StudentsModule {}
 

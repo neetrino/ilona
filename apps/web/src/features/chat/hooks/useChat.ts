@@ -258,7 +258,7 @@ export function useAdminStudents(search?: string) {
     queryKey: chatKeys.adminStudents(search),
     queryFn: () => fetchAdminStudents(search),
     staleTime: 60 * 1000, // Cache for 1 minute
-    enabled: user?.role === 'ADMIN',
+    enabled: user?.role === 'ADMIN' || user?.role === 'MANAGER',
   });
 }
 
@@ -271,7 +271,7 @@ export function useAdminTeachers(search?: string) {
     queryKey: chatKeys.adminTeachers(search),
     queryFn: () => fetchAdminTeachers(search),
     staleTime: 60 * 1000, // Cache for 1 minute
-    enabled: user?.role === 'ADMIN',
+    enabled: user?.role === 'ADMIN' || user?.role === 'MANAGER',
   });
 }
 
@@ -284,7 +284,7 @@ export function useAdminGroups(search?: string) {
     queryKey: chatKeys.adminGroups(search),
     queryFn: () => fetchAdminGroups(search),
     staleTime: 60 * 1000, // Cache for 1 minute
-    enabled: user?.role === 'ADMIN',
+    enabled: user?.role === 'ADMIN' || user?.role === 'MANAGER',
   });
 }
 
@@ -297,7 +297,7 @@ export function useAdminAllUsers(search?: string) {
     queryKey: chatKeys.adminUsers(search),
     queryFn: () => fetchAdminAllUsers(search),
     staleTime: 60 * 1000,
-    enabled: user?.role === 'ADMIN',
+    enabled: user?.role === 'ADMIN' || user?.role === 'MANAGER',
   });
 }
 

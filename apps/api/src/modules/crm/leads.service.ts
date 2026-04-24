@@ -21,23 +21,15 @@ import {
   requireFieldsForTransition,
   CRM_COLUMN_ORDER,
 } from './crm-status.machine';
-import {
-  CrmLeadStatus,
-  CrmLeadActivityType,
-  UserRole,
-  UserStatus,
-} from '@ilona/database';
+import { CrmLeadStatus, CrmLeadActivityType, UserRole } from '@ilona/database';
 import type { Prisma } from '@ilona/database';
-import * as bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 import { parseDurationSecForVoice } from './voice-duration.util';
+import { CreateStudentDto } from '../students/dto/create-student.dto';
+import { StudentsService } from '../students/students.service';
 
 type CrmLeadWhereInput = Prisma.CrmLeadWhereInput;
-type TransactionClient = Prisma.TransactionClient;
-
-const DEFAULT_MONTHLY_FEE = 0; // Can be updated later by admin
 
 export type CreateLeadFromVoiceOptions = {
   centerId?: string;
@@ -54,6 +46,7 @@ export class LeadsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly studentsService: StudentsService,
   ) {}
 
   private applyManagerScope(where: CrmLeadWhereInput, user?: JwtPayload): CrmLeadWhereInput {
@@ -70,6 +63,15 @@ export class LeadsService {
     };
   }
 
+  /** Voice lead creation and CRM lead recording uploads are admin-only (defense in depth with controller @Roles). */
+  private requireAdminForCrmLeadVoice(user?: JwtPayload): void {
+    if (user?.role !== UserRole.ADMIN) {
+      throw new ForbiddenException(
+        'Only administrators can create CRM leads from voice or upload voice attachments.',
+      );
+    }
+  }
+
   private ensureManagerCenterInput(centerId: string | undefined, user?: JwtPayload): string | undefined {
     const managerCenterId = getManagerCenterIdOrThrow(user);
     if (!managerCenterId) {
@@ -83,7 +85,36 @@ export class LeadsService {
     return managerCenterId;
   }
 
+  /** Manager may only assign CRM leads to teachers linked to their center (groups or TeacherCenter). */
+  private async assertManagerLeadTeacherInCenter(
+    teacherId: string | undefined | null,
+    user?: JwtPayload,
+  ): Promise<void> {
+    const managerCenterId = getManagerCenterIdOrThrow(user);
+    if (!managerCenterId) {
+      return;
+    }
+    const tid = teacherId && String(teacherId).trim() !== '' ? String(teacherId).trim() : '';
+    if (!tid) {
+      return;
+    }
+    const ok = await this.prisma.teacher.findFirst({
+      where: {
+        id: tid,
+        OR: [
+          { groups: { some: { centerId: managerCenterId } } },
+          { centerLinks: { some: { centerId: managerCenterId } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!ok) {
+      throw new ForbiddenException('You can only assign leads to teachers in your center');
+    }
+  }
+
   async create(dto: CreateLeadDto, createdByUserId: string, user?: JwtPayload) {
+    await this.assertManagerLeadTeacherInCenter(dto.teacherId, user);
     const centerId = this.ensureManagerCenterInput(dto.centerId, user);
     const lead = await this.prisma.crmLead.create({
       data: {
@@ -125,6 +156,7 @@ export class LeadsService {
     user?: JwtPayload,
     options: CreateLeadFromVoiceOptions = {},
   ) {
+    this.requireAdminForCrmLeadVoice(user);
     if (!file?.buffer?.length) {
       throw new BadRequestException('No audio file provided');
     }
@@ -316,7 +348,11 @@ export class LeadsService {
     user?: JwtPayload,
   ) {
     await this.findById(id, actorUserId, user);
-    const centerId = this.ensureManagerCenterInput(dto.centerId, user);
+    const isManager = user?.role === UserRole.MANAGER;
+    if (isManager) {
+      await this.assertManagerLeadTeacherInCenter(dto.teacherId, user);
+    }
+    /** Managers cannot set branch via lead edit; `changeBranch` is ADMIN-only. */
     const updated = await this.prisma.crmLead.update({
       where: { id },
       data: {
@@ -333,7 +369,9 @@ export class LeadsService {
         levelId: dto.levelId,
         teacherId: dto.teacherId,
         groupId: dto.groupId,
-        centerId,
+        ...(isManager
+          ? {}
+          : { centerId: this.ensureManagerCenterInput(dto.centerId, user) }),
         source: dto.source,
         notes: dto.notes,
         assignedManagerId: dto.assignedManagerId,
@@ -375,6 +413,15 @@ export class LeadsService {
     const from = lead.status;
     const to = dto.status;
 
+    if (from === 'PAID') {
+      if (to !== 'PAID') {
+        throw new BadRequestException(
+          'Lead status cannot be changed after it has been set to Paid.',
+        );
+      }
+      return this.findById(id, actorUserId, options?.user);
+    }
+
     const adminCanSetAnyStatus = options?.user?.role === 'ADMIN';
     if (!adminCanSetAnyStatus) {
       if (!canTransition(from, to, { isTeacherApprove: options?.isTeacherApprove })) {
@@ -403,6 +450,12 @@ export class LeadsService {
       }
     }
 
+    if (to === 'PAID') {
+      throw new BadRequestException(
+        'Marking a lead as Paid requires completing student registration. Use POST /crm/leads/:id/register-paid.',
+      );
+    }
+
     const updateData: { status: CrmLeadStatus; archivedReason?: string } = {
       status: to,
     };
@@ -426,14 +479,41 @@ export class LeadsService {
         },
       });
 
-      if (to === 'PAID') {
-        await this.createStudentFromLeadInTx(id, tx);
-      }
-
       return updatedLead;
     });
 
     return updated;
+  }
+
+  /**
+   * Same payload as Add Student: creates user + student and marks the lead Paid in one transaction.
+   * Idempotent: if a student is already linked to this lead, returns the current lead.
+   */
+  async registerPaidLead(
+    id: string,
+    dto: CreateStudentDto,
+    actorUserId: string,
+    user?: JwtPayload,
+  ) {
+    const lead = await this.findById(id, actorUserId, user);
+    if ((lead as { student?: { id: string } | null }).student) {
+      return this.findById(id, actorUserId, user);
+    }
+
+    const adminCanSetAnyStatus = user?.role === 'ADMIN';
+    const fromStatus = lead.status;
+    const isPaidWithoutStudent = fromStatus === 'PAID';
+    if (!isPaidWithoutStudent && !adminCanSetAnyStatus) {
+      const approved = (lead as { teacherApprovedAt?: Date | null }).teacherApprovedAt != null;
+      if (!canTransition(fromStatus, 'PAID', { isTeacherApprove: approved })) {
+        throw new BadRequestException(
+          `Cannot register as Paid from status ${fromStatus}: transition not allowed`,
+        );
+      }
+    }
+
+    await this.studentsService.createLinkedToCrmPaidLead(id, dto, actorUserId, user);
+    return this.findById(id, actorUserId, user);
   }
 
   async changeBranch(
@@ -488,76 +568,6 @@ export class LeadsService {
     return updatedLead;
   }
 
-  /** Idempotent: create Student from lead when status becomes PAID; link student.leadId */
-  private async createStudentFromLeadInTx(leadId: string, tx: TransactionClient) {
-    const lead = await tx.crmLead.findUnique({
-      where: { id: leadId },
-      include: { student: true },
-    });
-    if (!lead) return;
-    if (lead.student) return; // already created (idempotent)
-
-    const existingUser = lead.phone
-      ? await tx.user.findFirst({
-          where: { phone: lead.phone },
-        })
-      : null;
-    if (existingUser) {
-      const existingStudent = await tx.student.findUnique({
-        where: { userId: existingUser.id },
-      });
-      if (existingStudent) {
-        await tx.student.update({
-          where: { id: existingStudent.id },
-          data: { leadId },
-        });
-        return;
-      }
-    }
-
-    const email =
-      lead.phone && lead.firstName
-        ? `lead-${leadId.slice(0, 8)}-${Date.now()}@lead.local`
-        : `lead-${leadId}@lead.local`;
-    const passwordHash = await bcrypt.hash(
-      `lead-${leadId}-${Date.now()}`,
-      10,
-    );
-
-    const user = await tx.user.create({
-      data: {
-        email,
-        passwordHash,
-        firstName: lead.firstName ?? 'Lead',
-        lastName: lead.lastName ?? '',
-        phone: lead.phone,
-        role: UserRole.STUDENT,
-        status: UserStatus.ACTIVE,
-      },
-    });
-
-    const studentCreateData: Prisma.StudentUncheckedCreateInput = {
-      userId: user.id,
-      leadId,
-      groupId: lead.groupId ?? undefined,
-      teacherId: lead.teacherId ?? undefined,
-      monthlyFee: DEFAULT_MONTHLY_FEE,
-    };
-    (studentCreateData as Record<string, unknown>).age = lead.age ?? undefined;
-
-    const createdStudent = await tx.student.create({
-      data: studentCreateData,
-    });
-
-    if (lead.groupId) {
-      const now = new Date();
-      await tx.$executeRaw`
-        INSERT INTO "student_group_histories" ("id", "studentId", "groupId", "joinedAt", "createdAt", "updatedAt")
-        VALUES (${randomUUID()}, ${createdStudent.id}, ${lead.groupId}, ${now}, ${now}, ${now})
-      `;
-    }
-  }
-
   async getActivities(leadId: string, user?: JwtPayload) {
     await this.findById(leadId, user?.sub, user);
     return this.prisma.crmLeadActivity.findMany({
@@ -580,6 +590,7 @@ export class LeadsService {
   }
 
   async getPresignedRecordingUrl(leadId: string, fileName: string, mimeType: string, user?: JwtPayload) {
+    this.requireAdminForCrmLeadVoice(user);
     await this.findById(leadId, user?.sub, user);
     const result = await this.storage.getPresignedUploadUrl(
       fileName,
@@ -600,6 +611,7 @@ export class LeadsService {
     actorUserId: string,
     user?: JwtPayload,
   ) {
+    this.requireAdminForCrmLeadVoice(user);
     await this.findById(leadId, actorUserId, user);
     const attachment = await this.prisma.crmLeadAttachment.create({
       data: {

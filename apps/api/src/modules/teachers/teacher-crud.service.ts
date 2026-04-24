@@ -30,10 +30,13 @@ export class TeacherCrudService {
     const managerCenterId = getManagerCenterIdOrThrow(currentUser);
     if (!managerCenterId) return;
 
-    const teacherInCenter = await this.prisma.group.findFirst({
+    const teacherInCenter = await this.prisma.teacher.findFirst({
       where: {
-        teacherId,
-        centerId: managerCenterId,
+        id: teacherId,
+        OR: [
+          { groups: { some: { centerId: managerCenterId } } },
+          { centerLinks: { some: { centerId: managerCenterId } } },
+        ],
       },
       select: { id: true },
     });
@@ -75,11 +78,17 @@ export class TeacherCrudService {
 
     const managerCenterId = getManagerCenterIdOrThrow(currentUser);
     if (managerCenterId) {
-      where.groups = {
-        some: {
-          centerId: managerCenterId,
-        },
+      const managerScope: Prisma.TeacherWhereInput = {
+        OR: [
+          { groups: { some: { centerId: managerCenterId } } },
+          { centerLinks: { some: { centerId: managerCenterId } } },
+        ],
       };
+      where.AND = Array.isArray(where.AND)
+        ? [...where.AND, managerScope]
+        : where.AND
+          ? [where.AND, managerScope]
+          : [managerScope];
     }
 
     const total = await this.prisma.teacher.count({ where });

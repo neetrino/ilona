@@ -5,23 +5,34 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { fetchLeads, changeLeadStatus, changeLeadBranch, fetchCrmStatuses } from '@/features/crm/api/crm.api';
+import {
+  fetchLeads,
+  changeLeadStatus,
+  changeLeadBranch,
+  fetchCrmStatuses,
+  deleteLead,
+} from '@/features/crm/api/crm.api';
 import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import type { CrmLead, CrmLeadFilters, CrmLeadStatus, CrmLeadsResponse } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import {
+  CrmExclusiveAudioProvider,
   BoardView,
   ListTable,
   LeadDrawer,
   VoiceLeadModal,
+  CreateLeadModal,
   EditLeadModal,
+  PaidRegistrationModal,
   CRMFilters,
+  CrmDeleteLeadDialog,
 } from '@/features/crm/components';
 import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getErrorMessage } from '@/shared/lib/api';
 
 const DEFAULT_FILTERS: CrmLeadFilters = {
   skip: 0,
@@ -108,9 +119,12 @@ export default function AdminCrmPage() {
   );
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
-  const [newColumnCenterId] = useState<string | null>(null);
+  const [createLeadModalOpen, setCreateLeadModalOpen] = useState(false);
   const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
+  const [paidRegLeadId, setPaidRegLeadId] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
+  const [leadIdPendingDelete, setLeadIdPendingDelete] = useState<string | null>(null);
+  const [deleteLeadError, setDeleteLeadError] = useState<string | null>(null);
 
   // Restore Archive column visibility from URL after refresh
   useEffect(() => {
@@ -213,6 +227,51 @@ export default function AdminCrmPage() {
   });
   const changingBranchId = branchMutation.isPending ? branchMutation.variables?.leadId ?? null : null;
 
+  const deleteLeadMutation = useMutation({
+    mutationFn: (leadId: string) => deleteLead(leadId),
+    onMutate: async (leadId) => {
+      setDeleteLeadError(null);
+      await queryClient.cancelQueries({ queryKey: ['crm-leads', authScopeKey, scopedFilters] });
+      const previous = queryClient.getQueryData<CrmLeadsResponse>(['crm-leads', authScopeKey, scopedFilters]);
+      if (previous?.items) {
+        const removed = previous.items.find((l) => l.id === leadId);
+        const nextItems = previous.items.filter((l) => l.id !== leadId);
+        const counts = { ...previous.countsByStatus } as Partial<Record<CrmLeadStatus, number>>;
+        if (removed && counts[removed.status] !== undefined) {
+          counts[removed.status] = Math.max(0, (counts[removed.status] ?? 0) - 1);
+        }
+        queryClient.setQueryData<CrmLeadsResponse>(['crm-leads', authScopeKey, scopedFilters], {
+          ...previous,
+          items: nextItems,
+          total: Math.max(0, previous.total - 1),
+          countsByStatus: counts,
+        });
+      }
+      return { previous };
+    },
+    onError: (err, _leadId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['crm-leads', authScopeKey, scopedFilters], context.previous);
+      }
+      setDeleteLeadError(getErrorMessage(err, 'Failed to delete lead. Please try again.'));
+    },
+    onSuccess: (_void, leadId) => {
+      setLeadIdPendingDelete(null);
+      setSelectedLeadId((id) => (id === leadId ? null : id));
+      setEditLeadId((id) => {
+        if (id !== leadId) return id;
+        const url = new URL(window.location.href);
+        url.searchParams.delete(EDIT_LEAD_PARAM);
+        window.history.replaceState(null, '', url.pathname + (url.search || ''));
+        return null;
+      });
+      setPaidRegLeadId((id) => (id === leadId ? null : id));
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+    },
+  });
+
   const { data: statuses = CRM_COLUMN_ORDER } = useQuery({
     queryKey: ['crm-statuses'],
     queryFn: fetchCrmStatuses,
@@ -248,6 +307,10 @@ export default function AdminCrmPage() {
   const leads = leadsData?.items ?? [];
   const countsByStatus = leadsData?.countsByStatus ?? {};
   const centers = centersData?.items ?? [];
+  const managerCenterName =
+    userRole === 'MANAGER' && managerCenterId
+      ? centers.find((c) => c.id === managerCenterId)?.name
+      : undefined;
   const teachers = teachersData?.items ?? [];
   const groups = groupsData?.items ?? [];
 
@@ -275,13 +338,29 @@ export default function AdminCrmPage() {
     }
   };
   const handleCardStatusChange = (leadId: string, status: CrmLeadStatus) => {
+    if (status === 'PAID') {
+      setPaidRegLeadId(leadId);
+      return;
+    }
     statusMutation.mutate({ leadId, status });
   };
   const handleCardBranchChange = (leadId: string, centerId: string | null) => {
     if (!isAdmin) return;
     branchMutation.mutate({ leadId, centerId });
   };
-  const handleAddLead = () => setVoiceModalOpen(true);
+  const handleNewLeadFromBoard = () => {
+    if (isAdmin) {
+      setVoiceModalOpen(true);
+    } else {
+      setCreateLeadModalOpen(true);
+    }
+  };
+
+  const handleLeadDeleteRequest = (lead: CrmLead) => {
+    if (!isAdmin) return;
+    setDeleteLeadError(null);
+    setLeadIdPendingDelete(lead.id);
+  };
 
   const upsertCreatedLeadIntoCaches = (createdLead: CrmLead) => {
     const crmQueries = queryClient.getQueriesData<CrmLeadsResponse>({ queryKey: ['crm-leads'] });
@@ -315,7 +394,8 @@ export default function AdminCrmPage() {
 
   return (
     <DashboardLayout title={t('crm')} subtitle="Lead management">
-      <div className="space-y-4">
+      <CrmExclusiveAudioProvider>
+        <div className="space-y-4">
         {/* View toggle + Filters */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -399,15 +479,21 @@ export default function AdminCrmPage() {
             onCardBranchChange={isAdmin ? handleCardBranchChange : undefined}
             changingStatusId={changingStatusId}
             changingBranchId={isAdmin ? changingBranchId : null}
-            onAddLead={handleAddLead}
-            onRecordingSaved={() => refetch()}
+            onAddLead={handleNewLeadFromBoard}
+            newLeadAddMode={isAdmin ? 'voice' : 'text'}
             branchOptions={isAdmin ? centers.map((c) => ({ id: c.id, name: c.name })) : undefined}
+            canDeleteLead={isAdmin}
+            onLeadDeleteRequest={isAdmin ? handleLeadDeleteRequest : undefined}
+            deleteInProgress={deleteLeadMutation.isPending}
           />
         ) : (
           <ListTable
             leads={leads}
             onRowClick={handleCardClick}
             isLoading={isLoading}
+            canDeleteLead={isAdmin}
+            onLeadDeleteRequest={isAdmin ? handleLeadDeleteRequest : undefined}
+            deleteInProgress={deleteLeadMutation.isPending}
           />
         )}
 
@@ -431,36 +517,75 @@ export default function AdminCrmPage() {
             ))}
           </div>
         )}
-      </div>
+        </div>
 
-      <LeadDrawer
-        leadId={selectedLeadId}
-        onClose={() => setSelectedLeadId(null)}
-        onUpdated={() => refetch()}
-      />
-      <EditLeadModal
-        open={!!editLeadId}
-        leadId={editLeadId}
-        onClose={closeEditLead}
-        onSaved={() => {
-          refetch();
-          closeEditLead();
-        }}
-        centers={centers}
-        teachers={teachers}
-        groups={groups}
-        availableStatuses={adminVisibleStatuses}
-      />
-      <VoiceLeadModal
-        open={voiceModalOpen}
-        onClose={() => setVoiceModalOpen(false)}
-        centerId={newColumnCenterId}
-        onCreated={(createdLead) => {
-          upsertCreatedLeadIntoCaches(createdLead);
-          queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
-          setVoiceModalOpen(false);
-        }}
-      />
+        <LeadDrawer
+          leadId={selectedLeadId}
+          onClose={() => setSelectedLeadId(null)}
+          onUpdated={() => refetch()}
+        />
+        <EditLeadModal
+          open={!!editLeadId}
+          leadId={editLeadId}
+          onClose={closeEditLead}
+          onSaved={() => {
+            refetch();
+            closeEditLead();
+          }}
+          centers={centers}
+          teachers={teachers}
+          groups={groups}
+          availableStatuses={adminVisibleStatuses}
+        />
+        {isAdmin ? (
+          <VoiceLeadModal
+            open={voiceModalOpen}
+            onClose={() => setVoiceModalOpen(false)}
+            onCreated={(createdLead) => {
+              upsertCreatedLeadIntoCaches(createdLead);
+              void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+              setVoiceModalOpen(false);
+            }}
+          />
+        ) : null}
+        <CreateLeadModal
+          open={createLeadModalOpen}
+          onClose={() => setCreateLeadModalOpen(false)}
+          onCreated={(createdLead) => {
+            upsertCreatedLeadIntoCaches(createdLead);
+            void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+            setCreateLeadModalOpen(false);
+          }}
+          defaultCenterId={managerCenterId}
+          defaultCenterName={managerCenterName}
+          groupsQueryCenterId={managerCenterId}
+        />
+        <PaidRegistrationModal
+          open={paidRegLeadId != null}
+          leadId={paidRegLeadId}
+          onClose={() => setPaidRegLeadId(null)}
+          onSuccess={() => {
+            setPaidRegLeadId(null);
+            void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+          }}
+        />
+        <CrmDeleteLeadDialog
+          open={isAdmin && leadIdPendingDelete != null}
+          onOpenChange={(open) => {
+            if (!open && !deleteLeadMutation.isPending) {
+              setLeadIdPendingDelete(null);
+              setDeleteLeadError(null);
+            }
+          }}
+          onConfirm={() => {
+            if (leadIdPendingDelete) {
+              deleteLeadMutation.mutate(leadIdPendingDelete);
+            }
+          }}
+          isLoading={deleteLeadMutation.isPending}
+          error={deleteLeadError}
+        />
+      </CrmExclusiveAudioProvider>
     </DashboardLayout>
   );
 }

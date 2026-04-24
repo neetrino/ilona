@@ -18,7 +18,7 @@ interface VoiceLeadModalProps {
   open: boolean;
   onClose: () => void;
   onCreated: (lead: CrmLead) => void;
-  /** Optional pre-selected center for the new lead (used by managers / branch dropdown). */
+  /** Optional pre-selected center for the new voice lead (admin multi-center). */
   centerId?: string | null;
 }
 

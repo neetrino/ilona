@@ -2,91 +2,29 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
-import { useCreateStudent, type CreateStudentDto } from '@/features/students';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/shared/components/ui';
+import { useCreateStudent } from '../hooks/useStudents';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
+import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
-
-const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-function computeAgeFromDob(dob: string | undefined): number | undefined {
-  if (!dob || !ISO_DATE_RE.test(dob)) return undefined;
-  const birth = new Date(`${dob}T00:00:00Z`);
-  if (Number.isNaN(birth.getTime())) return undefined;
-  const now = new Date();
-  let age = now.getUTCFullYear() - birth.getUTCFullYear();
-  const m = now.getUTCMonth() - birth.getUTCMonth();
-  if (m < 0 || (m === 0 && now.getUTCDate() < birth.getUTCDate())) age -= 1;
-  return age >= 0 && age <= 120 ? age : undefined;
-}
-
-const createStudentSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(50, 'Password must be at most 50 characters'),
-  firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
-  phone: z.string().optional(),
-  dateOfBirth: z
-    .string()
-    .regex(ISO_DATE_RE, 'Use YYYY-MM-DD format')
-    .refine((v) => computeAgeFromDob(v) !== undefined, 'Invalid date of birth'),
-  firstLessonDate: z
-    .union([z.string().regex(ISO_DATE_RE, 'Use YYYY-MM-DD format'), z.literal('')])
-    .optional(),
-  age: z.number().int().min(1).max(120).optional(),
-  groupId: z.string().optional(),
-  teacherId: z.string().optional(),
-  parentName: z.string().max(100, 'Parent name must be at most 100 characters').optional(),
-  parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional(),
-  parentEmail: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),
-  parentPassportInfo: z.string().max(100, 'Passport info must be at most 100 characters').optional(),
-  monthlyFee: z.number().min(0, 'Monthly fee must be positive'),
-  notes: z.string().max(500, 'Notes must be at most 500 characters').optional(),
-  receiveReports: z.boolean().optional(),
-}).superRefine((data, ctx) => {
-  const computedAge = computeAgeFromDob(data.dateOfBirth);
-  if (computedAge !== undefined && computedAge < 18) {
-    if (!data.parentName || data.parentName.trim() === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Parent/Guardian name is required for students under 18',
-        path: ['parentName'],
-      });
-    }
-    if (!data.parentPhone || data.parentPhone.trim() === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Parent/Guardian phone is required for students under 18',
-        path: ['parentPhone'],
-      });
-    }
-    if (!data.parentEmail || data.parentEmail.trim() === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Parent/Guardian email is required for students under 18',
-        path: ['parentEmail'],
-      });
-    } else if (data.parentEmail && !z.string().email().safeParse(data.parentEmail).success) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Please enter a valid email address',
-        path: ['parentEmail'],
-      });
-    }
-    if (!data.parentPassportInfo || data.parentPassportInfo.trim() === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Parent passport information is required for students under 18',
-        path: ['parentPassportInfo'],
-      });
-    }
-  }
-});
-
-type CreateStudentFormData = z.infer<typeof createStudentSchema>;
+import {
+  createStudentSchema,
+  computeAgeFromDob,
+  type CreateStudentFormData,
+} from '../student-account-form.schema';
+import { formDataToCreateStudentDto } from '../student-account-form.payload';
+import { StudentAccountFormFields } from './StudentAccountFormFields';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 interface AddStudentFormProps {
   open: boolean;
@@ -97,11 +35,19 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const createStudent = useCreateStudent();
-  
-  // Fetch groups and teachers for dropdowns
+  const user = useAuthStore((s) => s.user);
+  const isManager = user?.role === 'MANAGER';
+
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
-  const teachers = teachersData?.items || [];
+  const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true });
+  const teachers = teachersData?.items ?? [];
+  const centers = useMemo(() => centersData?.items ?? [], [centersData?.items]);
+  const managerCenterLabel = useMemo(() => {
+    if (!isManager || !user?.managerCenterId) return null;
+    const name = centers.find((c) => c.id === user.managerCenterId)?.name;
+    return name ?? 'Your assigned branch';
+  }, [centers, isManager, user?.managerCenterId]);
 
   const {
     register,
@@ -123,6 +69,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       age: undefined as number | undefined,
       groupId: '',
       teacherId: '',
+      centerId: '',
       parentName: '',
       parentPhone: '',
       parentEmail: '',
@@ -134,15 +81,24 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   });
 
   const watchedTeacherId = watch('teacherId') || '';
+  const watchedGroupId = watch('groupId') || '';
   const groupsForTeacher = useMemo(() => {
     const allGroups = groupsData?.items ?? [];
     return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
   }, [groupsData?.items, watchedTeacherId]);
-  useEffect(() => {
-    if (!watchedTeacherId) setValue('groupId', '');
-  }, [watchedTeacherId, setValue]);
 
-  // Derive age from DOB so the user only enters birth date once.
+  useEffect(() => {
+    if (!watchedTeacherId) {
+      setValue('groupId', '');
+      return;
+    }
+    if (!watchedGroupId) return;
+    const g = groupsData?.items?.find((x) => x.id === watchedGroupId);
+    if (g && g.teacherId !== watchedTeacherId) {
+      setValue('groupId', '');
+    }
+  }, [watchedTeacherId, watchedGroupId, groupsData?.items, setValue]);
+
   const dob = watch('dateOfBirth');
   const computedAge = useMemo(() => computeAgeFromDob(dob), [dob]);
   useEffect(() => {
@@ -150,7 +106,6 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   }, [computedAge, setValue]);
   const showParentSection = computedAge !== undefined && computedAge < 18;
 
-  // Reset form when dialog closes
   useEffect(() => {
     if (!open) {
       reset();
@@ -159,7 +114,6 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     }
   }, [open, reset]);
 
-  // Clear parent fields when computed age is 18 or older.
   useEffect(() => {
     if (computedAge !== undefined && computedAge >= 18) {
       setValue('parentName', '');
@@ -171,44 +125,21 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
 
   const onSubmit = async (data: CreateStudentFormData) => {
     setErrorMessage(null);
-    
     try {
-      const payload: CreateStudentDto = {
-        email: data.email,
-        password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone || undefined,
-        dateOfBirth: data.dateOfBirth,
-        firstLessonDate: data.firstLessonDate || undefined,
-        age: computedAge ?? data.age,
-        groupId: data.groupId || undefined,
-        teacherId: data.teacherId || undefined,
-        parentName: data.parentName || undefined,
-        parentPhone: data.parentPhone || undefined,
-        parentEmail: data.parentEmail || undefined,
-        parentPassportInfo: data.parentPassportInfo || undefined,
-        monthlyFee: data.monthlyFee,
-        notes: data.notes || undefined,
-        receiveReports: data.receiveReports ?? true,
-      };
-
+      const payload = formDataToCreateStudentDto(data, computedAge);
+      if (isManager) {
+        delete payload.centerId;
+      }
       await createStudent.mutateAsync(payload);
-      
-      // Show success message
       setSuccessMessage('Student created successfully!');
       setErrorMessage(null);
-      
-      // Reset form and close modal after a brief delay
       reset();
       setTimeout(() => {
         onOpenChange(false);
         setSuccessMessage(null);
       }, 1500);
     } catch (error: unknown) {
-      // Handle error
-      const message = getErrorMessage(error, 'Failed to create student. Please try again.');
-      setErrorMessage(message);
+      setErrorMessage(getErrorMessage(error, 'Failed to create student. Please try again.'));
       setSuccessMessage(null);
     }
   };
@@ -235,250 +166,22 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">
-                First Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="firstName"
-                {...register('firstName')}
-                error={errors.firstName?.message}
-                placeholder="John"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="lastName">
-                Last Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="lastName"
-                {...register('lastName')}
-                error={errors.lastName?.message}
-                placeholder="Doe"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">
-              Email <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              {...register('email')}
-              error={errors.email?.message}
-              placeholder="john.doe@example.com"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">
-              Password <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              {...register('password')}
-              error={errors.password?.message}
-              placeholder="••••••••"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
-            <Input
-              id="phone"
-              type="tel"
-              {...register('phone')}
-              error={errors.phone?.message}
-              placeholder="+1 (555) 123-4567"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">
-                Date of Birth <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="dateOfBirth"
-                type="date"
-                {...register('dateOfBirth')}
-                error={errors.dateOfBirth?.message}
-              />
-              {computedAge !== undefined && (
-                <p className="text-xs text-slate-500">Age: {computedAge}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="firstLessonDate">First Lesson Date</Label>
-              <Input
-                id="firstLessonDate"
-                type="date"
-                {...register('firstLessonDate')}
-                error={errors.firstLessonDate?.message}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="teacherId">Teacher</Label>
-              <select
-                id="teacherId"
-                {...register('teacherId', {
-                  onChange: () => setValue('groupId', ''),
-                })}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={isLoadingTeachers || isSubmitting}
-              >
-                <option value="">Select a teacher</option>
-                {teachers.map((teacher) => (
-                  <option key={teacher.id} value={teacher.id}>
-                    {teacher.user.firstName} {teacher.user.lastName}
-                    {teacher.user.phone ? ` - ${teacher.user.phone}` : ''}
-                  </option>
-                ))}
-              </select>
-              {errors.teacherId && (
-                <p className="text-sm text-red-600">{errors.teacherId.message}</p>
-              )}
-              {isLoadingTeachers && (
-                <p className="text-sm text-slate-500">Loading teachers...</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="groupId">Group</Label>
-              <select
-                id="groupId"
-                {...register('groupId')}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={isLoadingGroups || !watchedTeacherId}
-              >
-                <option value="">
-                  {watchedTeacherId ? 'No group assigned' : 'Select Teacher first'}
-                </option>
-                {groupsForTeacher.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name} {group.level ? `(${group.level})` : ''}
-                  </option>
-                ))}
-              </select>
-              {errors.groupId && (
-                <p className="text-sm text-red-600">{errors.groupId.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="monthlyFee">
-              Monthly Fee (֏) <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="monthlyFee"
-              type="number"
-              step="0.01"
-              min="0"
-              {...register('monthlyFee', { valueAsNumber: true })}
-              error={errors.monthlyFee?.message}
-              placeholder="50000"
-            />
-          </div>
-
-          {showParentSection && (
-            <div className="border-t pt-4 transition-all duration-300 ease-in-out">
-              <h3 className="text-sm font-semibold text-slate-800 mb-2">
-                Parent/Guardian Information
-                <span className="text-red-500 ml-1">*</span>
-              </h3>
-              <p className="text-xs text-slate-500 mb-4">
-                Required for students under 18 years of age
-              </p>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="parentName">
-                    Parent/Guardian Name <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="parentName"
-                    {...register('parentName')}
-                    error={errors.parentName?.message}
-                    placeholder="Jane Doe"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="parentPhone">
-                    Parent/Guardian Phone <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="parentPhone"
-                    type="tel"
-                    {...register('parentPhone')}
-                    error={errors.parentPhone?.message}
-                    placeholder="+1 (555) 123-4567"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="parentEmail">
-                    Parent/Guardian Email <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="parentEmail"
-                    type="email"
-                    {...register('parentEmail')}
-                    error={errors.parentEmail?.message}
-                    placeholder="parent@example.com"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="parentPassportInfo">
-                    Parent Passport Information <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="parentPassportInfo"
-                    {...register('parentPassportInfo')}
-                    error={errors.parentPassportInfo?.message}
-                    placeholder="Passport number / ID"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <textarea
-              id="notes"
-              {...register('notes')}
-              rows={4}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Additional notes about the student..."
-            />
-            {errors.notes && (
-              <p className="text-sm text-red-600">{errors.notes.message}</p>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="receiveReports"
-              {...register('receiveReports')}
-              className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
-            />
-            <Label htmlFor="receiveReports" className="text-sm font-normal cursor-pointer">
-              Receive progress reports via email
-            </Label>
-          </div>
+          <StudentAccountFormFields
+            register={register}
+            errors={errors}
+            watch={watch}
+            computedAge={computedAge}
+            showParentSection={showParentSection}
+            groupsForTeacher={groupsForTeacher}
+            teachers={teachers}
+            centers={centers}
+            isLoadingGroups={isLoadingGroups}
+            isLoadingTeachers={isLoadingTeachers}
+            isLoadingCenters={isLoadingCenters}
+            isSubmitting={isSubmitting}
+            showCenterSelect={!isManager}
+            assignedCenterDisplay={isManager ? managerCenterLabel : null}
+          />
 
           <DialogFooter>
             <Button
@@ -503,4 +206,3 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     </Dialog>
   );
 }
-

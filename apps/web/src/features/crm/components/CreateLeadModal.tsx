@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createLead } from '@/features/crm/api/crm.api';
-import type { CreateLeadDto } from '@/features/crm/types';
+import type { CreateLeadDto, CrmLead } from '@/features/crm/types';
 import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
@@ -12,12 +12,24 @@ import { cn } from '@/shared/lib/utils';
 interface CreateLeadModalProps {
   open: boolean;
   onClose: () => void;
-  onCreated: () => void;
+  onCreated: (lead: CrmLead) => void;
+  /** When set (e.g. manager), center is fixed for the new lead and the center dropdown is hidden. */
+  defaultCenterId?: string;
+  defaultCenterName?: string;
+  /** Narrow groups list to a center (recommended for managers). */
+  groupsQueryCenterId?: string;
 }
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
-export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalProps) {
+export function CreateLeadModal({
+  open,
+  onClose,
+  onCreated,
+  defaultCenterId,
+  defaultCenterName,
+  groupsQueryCenterId,
+}: CreateLeadModalProps) {
   const [form, setForm] = useState<CreateLeadDto>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,10 +50,25 @@ export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalPro
   });
   const teachers = teachersData?.items ?? [];
   const { data: groupsData } = useQuery({
-    queryKey: ['groups'],
-    queryFn: () => fetchGroups({ take: 500 }),
+    queryKey: ['groups', groupsQueryCenterId ?? 'all'],
+    queryFn: () =>
+      fetchGroups({
+        take: 500,
+        ...(groupsQueryCenterId ? { centerId: groupsQueryCenterId } : {}),
+      }),
     enabled: open,
   });
+
+  useEffect(() => {
+    if (!open) {
+      setForm({});
+      setError(null);
+      return;
+    }
+    if (defaultCenterId) {
+      setForm((prev) => ({ ...prev, centerId: defaultCenterId }));
+    }
+  }, [open, defaultCenterId]);
   const groups = groupsData?.items ?? [];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,9 +76,9 @@ export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalPro
     setError(null);
     setSaving(true);
     try {
-      await createLead(form);
+      const lead = await createLead(form);
       setForm({});
-      onCreated();
+      onCreated(lead);
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create lead');
@@ -138,16 +165,22 @@ export function CreateLeadModal({ open, onClose, onCreated }: CreateLeadModalPro
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Center</label>
-            <select
-              value={form.centerId ?? ''}
-              onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value || undefined }))}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            >
-              <option value="">—</option>
-              {centers.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            {defaultCenterId ? (
+              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
+                {defaultCenterName ?? 'Your center'}
+              </p>
+            ) : (
+              <select
+                value={form.centerId ?? ''}
+                onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value || undefined }))}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                <option value="">—</option>
+                {centers.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
           </div>
           {(isUnder18 || isAdult) && (
             <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">

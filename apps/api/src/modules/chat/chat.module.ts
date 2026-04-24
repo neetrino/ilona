@@ -6,6 +6,7 @@ import { ChatManagementService } from './chat-management.service';
 import { MessageService } from './message.service';
 import { ChatListsService } from './chat-lists.service';
 import { ChatAuthorizationService } from './chat-authorization.service';
+import { ChatManagerScopeService } from './chat-manager-scope.service';
 import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 import { FinanceModule } from '../finance/finance.module';
@@ -21,6 +22,7 @@ import { FinanceModule } from '../finance/finance.module';
     MessageService,
     ChatListsService,
     ChatAuthorizationService,
+    ChatManagerScopeService,
   ],
   exports: [ChatService],
 })

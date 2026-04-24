@@ -123,6 +123,8 @@ export function useUpdateStudent() {
           teacher: updatedStudent.teacher ?? null,
           groupId: updatedStudent.groupId ?? null,
           teacherId: updatedStudent.teacherId ?? null,
+          centerId: updatedStudent.centerId ?? null,
+          center: updatedStudent.center ?? null,
           registerDate: updatedStudent.registerDate ?? null,
         };
       });

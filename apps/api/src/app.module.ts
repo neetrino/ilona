@@ -38,6 +38,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { DailyPlanModule } from './modules/daily-plan/daily-plan.module';
 import { TeacherNotesModule } from './modules/teacher-notes/teacher-notes.module';
 import { StudentNotesModule } from './modules/student-notes/student-notes.module';
+import { SearchModule } from './modules/search/search.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -94,6 +95,7 @@ import { AppController } from './app.controller';
     DailyPlanModule,
     TeacherNotesModule,
     StudentNotesModule,
+    SearchModule,
   ],
   providers: [
     // Correlation ID and request logging

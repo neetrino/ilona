@@ -1,4 +1,5 @@
 import type { Student, TeacherAssignedItem } from '@/features/students';
+import { isOnboardingItem } from '@/features/students';
 import type { Center } from '@ilona/types';
 
 /**
@@ -21,9 +22,12 @@ export function groupStudentsByCenter(
   // Add unassigned students column
   grouped['unassigned'] = [];
   
-  // Assign students to their centers
-  students.forEach(student => {
-    const centerId = student.group?.center?.id;
+  // Assign students to their centers (explicit centerId wins for board columns)
+  students.forEach((student) => {
+    const centerId =
+      !isOnboardingItem(student) && student.centerId
+        ? student.centerId
+        : student.group?.center?.id;
     if (centerId && grouped[centerId]) {
       grouped[centerId].push(student);
     } else {

@@ -15,6 +15,9 @@ export interface Student {
   userId: string;
   groupId?: string | null;
   teacherId?: string | null;
+  /** Admin-assigned center; may differ from group.center until aligned manually. */
+  centerId?: string | null;
+  center?: { id: string; name: string } | null;
   age?: number | null;
   /** ISO-8601 date string. */
   dateOfBirth?: string | null;
@@ -154,6 +157,7 @@ export interface CreateStudentDto {
   firstLessonDate?: string;
   groupId?: string;
   teacherId?: string;
+  centerId?: string;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
@@ -175,6 +179,7 @@ export interface UpdateStudentDto {
   status?: UserStatus;
   groupId?: string | null;
   teacherId?: string | null;
+  centerId?: string | null;
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;

@@ -64,6 +64,10 @@ export class UpdateStudentDto {
 
   @IsString()
   @IsOptional()
+  centerId?: string | null;
+
+  @IsString()
+  @IsOptional()
   @MaxLength(100)
   parentName?: string;
 
