@@ -142,7 +142,7 @@
     "welcome": "Welcome, {name}!",
     "overview": "Overview of your organization's performance and key metrics.",
     "myLearning": "My Learning",
-    "welcomeStudent": "Welcome back, {name}! Track your progress and upcoming lessons.",
+    "welcomeStudent": "Hello {name}, you are our next success story.",
     "attendanceRate": "Attendance Rate",
     "streak": "Streak",
     "streakDays": "{count} consecutive present",
