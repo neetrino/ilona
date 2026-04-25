@@ -11,8 +11,6 @@ interface StudentsFiltersProps {
   onStatusChange: (ids: Set<string>) => void;
   selectedTeacherIds: Set<string>;
   onTeacherChange: (ids: Set<string>) => void;
-  selectedCenterIds: Set<string>;
-  onCenterChange: (ids: Set<string>) => void;
   selectedGroupIds: Set<string>;
   onGroupChange: (ids: Set<string>) => void;
   selectedLifecycleIds: Set<string>;
@@ -28,11 +26,9 @@ interface StudentsFiltersProps {
   onBulkDelete: () => void;
   statusFilterOptions: Array<{ id: string; label: string }>;
   teacherFilterOptions: Array<{ id: string; label: string }>;
-  centerFilterOptions: Array<{ id: string; label: string }>;
   groupFilterOptions: Array<{ id: string; label: string }>;
   lifecycleFilterOptions: Array<{ id: string; label: string }>;
   isLoadingTeachers: boolean;
-  isLoadingCenters: boolean;
   isDeleting: boolean;
   t: (key: string) => string;
   now: Date;
@@ -45,8 +41,6 @@ export function StudentsFilters({
   onStatusChange,
   selectedTeacherIds,
   onTeacherChange,
-  selectedCenterIds,
-  onCenterChange,
   selectedGroupIds,
   onGroupChange,
   selectedLifecycleIds,
@@ -62,11 +56,9 @@ export function StudentsFilters({
   onBulkDelete,
   statusFilterOptions,
   teacherFilterOptions,
-  centerFilterOptions,
   groupFilterOptions,
   lifecycleFilterOptions,
   isLoadingTeachers,
-  isLoadingCenters,
   isDeleting,
   t,
   now,
@@ -135,7 +127,7 @@ export function StudentsFilters({
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
         <FilterDropdown
           label="Status"
           options={statusFilterOptions}
@@ -157,14 +149,6 @@ export function StudentsFilters({
           onSelectionChange={onTeacherChange}
           placeholder="All Teachers"
           isLoading={isLoadingTeachers}
-        />
-        <FilterDropdown
-          label="Center"
-          options={centerFilterOptions}
-          selectedIds={selectedCenterIds}
-          onSelectionChange={onCenterChange}
-          placeholder="All Centers"
-          isLoading={isLoadingCenters}
         />
         <FilterDropdown
           label="Group"

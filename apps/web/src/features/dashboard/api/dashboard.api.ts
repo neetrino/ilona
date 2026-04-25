@@ -1,6 +1,8 @@
 import { api, ApiError } from '@/shared/lib/api';
 import type { FinanceDashboard, AdminDashboardStats } from '../types';
 import type { TeachersResponse } from '@/features/teachers';
+import type { StudentsResponse } from '@/features/students';
+import type { GroupsResponse } from '@/features/groups';
 
 /**
  * Fetch finance dashboard data
@@ -28,20 +30,21 @@ export async function fetchAdminDashboardStats(options?: {
 }): Promise<AdminDashboardStats> {
   const includeFinance = options?.includeFinance ?? true;
 
-  // Fetch base dashboard data
-  const teachersResponse = await api.get<TeachersResponse>('/teachers?take=1'); // Just to get total count
-
-  let financeDashboard: Awaited<ReturnType<typeof fetchFinanceDashboard>> | null = null;
-  if (includeFinance) {
-    try {
-      financeDashboard = await fetchFinanceDashboard();
-    } catch (error) {
-      // Manager role may open the same dashboard route, but finance endpoint is ADMIN-only.
-      if (!(error instanceof ApiError) || error.statusCode !== 403) {
+  const teachersPromise = api.get<TeachersResponse>('/teachers?take=1');
+  const studentsPromise = api.get<StudentsResponse>('/students?take=1');
+  const groupsPromise = api.get<GroupsResponse>('/groups?take=1');
+  const financePromise: Promise<FinanceDashboard | null> = includeFinance
+    ? fetchFinanceDashboard().catch((error: unknown) => {
+        // Manager role may open the same dashboard route, but finance endpoint is ADMIN-only.
+        if (error instanceof ApiError && error.statusCode === 403) {
+          return null;
+        }
         throw error;
-      }
-    }
-  }
+      })
+    : Promise.resolve(null);
+
+  const [teachersResponse, studentsResponse, groupsResponse, financeDashboard] =
+    await Promise.all([teachersPromise, studentsPromise, groupsPromise, financePromise]);
 
   // Count active vs total teachers (we'll need to make separate calls if we want active count)
   // For now, estimate active as total since we don't have a separate status filter endpoint
@@ -53,11 +56,11 @@ export async function fetchAdminDashboardStats(options?: {
       active: totalTeachers, // TODO: Add status filter when available
     },
     students: {
-      total: 0, // TODO: Add students endpoint
+      total: studentsResponse.total,
       active: 0,
     },
     groups: {
-      total: 0, // TODO: Add groups endpoint
+      total: groupsResponse.total,
     },
     centers: {
       total: 0, // TODO: Add centers endpoint

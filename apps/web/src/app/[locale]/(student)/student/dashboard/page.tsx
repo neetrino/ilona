@@ -56,7 +56,6 @@ export default function StudentDashboardPage() {
   const upcomingLessons = dashboard?.upcomingLessons || [];
   const stats = dashboard?.statistics;
   const pendingPayments = dashboard?.pendingPayments || [];
-  const student = dashboard?.student;
 
   // Calculate stats
   const attendanceRate = stats?.attendance?.rate || 0;
@@ -190,42 +189,6 @@ export default function StudentDashboardPage() {
         </div>
 
         <StudentNotesBlock />
-        {/* Group Info */}
-        {student?.group && (
-          <div className="bg-primary rounded-2xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-primary-foreground/80 text-sm mb-1">{t('yourGroup')}</p>
-                <h2 className="text-2xl font-bold">{student.group.name}</h2>
-                {student.group.level && (
-                  <p className="text-primary-foreground/80 mt-1">{t('level')}: {student.group.level}</p>
-                )}
-              </div>
-              <Button className="bg-white text-primary hover:bg-primary/10">
-                {t('openGroupChat')}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Search */}
-        <div className="flex items-center gap-4">
-          <div className="flex-1 relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="search"
-              placeholder={t('searchPlaceholder')}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-          </div>
-          <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50">
-            <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-            </svg>
-          </button>
-        </div>
 
         {/* Upcoming Lessons Table */}
         <div className="bg-white rounded-2xl border border-slate-200">

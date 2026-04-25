@@ -380,9 +380,8 @@ export function createStudentsTableColumns({
         if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
         // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
         const manualCenterId = row.centerId ?? null;
-        const groupCenterName = row.group?.center?.name;
         return (
-          <div className="min-w-0 w-full space-y-0.5" onClick={(e) => e.stopPropagation()}>
+          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
               value={manualCenterId}
               options={centerOptions}
@@ -392,11 +391,6 @@ export function createStudentsTableColumns({
               placeholder="Not assigned"
               disabled={isUpdating}
             />
-            {groupCenterName ? (
-              <p className="text-[10px] leading-tight text-slate-500" title="Physical location of the selected group">
-                Group location: {groupCenterName}
-              </p>
-            ) : null}
           </div>
         );
       },

@@ -35,7 +35,6 @@ export default function TeachersPage() {
     sortOrder,
     viewMode,
     selectedStatus,
-    selectedBranchIds,
     selectedTeacherIds,
     selectedTeacher,
     selectedTeacherIdForDetails,
@@ -56,14 +55,12 @@ export default function TeachersPage() {
     
     // Loading states
     isLoading,
-    isLoadingCenters,
     deleteTeacher,
     deleteTeachers,
     updateTeacher,
     
     // Errors
     error,
-    centersError,
     deleteError,
     bulkDeleteError,
     deactivateError,
@@ -76,7 +73,6 @@ export default function TeachersPage() {
     
     // Handlers
     handleSearchChange,
-    handleBranchFilterChange,
     handleStatusChange,
     handleSort,
     handlePageChange,
@@ -120,16 +116,10 @@ export default function TeachersPage() {
           onSearchChange={handleSearchChange}
           selectedStatus={selectedStatus}
           onStatusChange={handleStatusChange}
-          selectedBranchIds={selectedBranchIds}
-          onBranchFilterChange={handleBranchFilterChange}
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
           onAddTeacher={() => setIsAddTeacherOpen(true)}
-          centersData={centersData?.items}
-          isLoadingCenters={isLoadingCenters}
-          centersError={centersError}
           t={t}
-          tCommon={tCommon}
           tStatus={tStatus}
           isDeleting={deleteTeachers.isPending || deleteTeacher.isPending}
           page={page}

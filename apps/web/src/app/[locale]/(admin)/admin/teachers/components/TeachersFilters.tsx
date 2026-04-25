@@ -2,7 +2,6 @@
 
 import { List, LayoutGrid } from 'lucide-react';
 import { Button } from '@/shared/components/ui';
-import { FilterDropdown } from '@/shared/components/ui/filter-dropdown';
 import { cn } from '@/shared/lib/utils';
 import type { useTranslations } from 'next-intl';
 
@@ -11,16 +10,10 @@ interface TeachersFiltersProps {
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   selectedStatus: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '';
   onStatusChange: (status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '') => void;
-  selectedBranchIds: Set<string>;
-  onBranchFilterChange: (selectedIds: Set<string>) => void;
   viewMode: 'list' | 'board';
   onViewModeChange: (mode: 'list' | 'board') => void;
   onAddTeacher: () => void;
-  centersData?: Array<{ id: string; name: string }>;
-  isLoadingCenters: boolean;
-  centersError: unknown;
   t: ReturnType<typeof useTranslations<'teachers'>>;
-  tCommon: ReturnType<typeof useTranslations<'common'>>;
   tStatus: ReturnType<typeof useTranslations<'status'>>;
   isDeleting: boolean;
   // Pagination props
@@ -38,16 +31,10 @@ export function TeachersFilters({
   onSearchChange,
   selectedStatus,
   onStatusChange,
-  selectedBranchIds,
-  onBranchFilterChange,
   viewMode,
   onViewModeChange,
   onAddTeacher,
-  centersData,
-  isLoadingCenters,
-  centersError,
   t,
-  tCommon,
   tStatus,
   isDeleting,
   page = 0,
@@ -59,8 +46,8 @@ export function TeachersFilters({
   return (
     <div className="space-y-4">
       <div className="flex items-end gap-4">
-      {/* Search, Status, Center - equal width in one row */}
-      <div className="grid grid-cols-3 gap-4 flex-1 min-w-0">
+      {/* Search and Status - equal width in one row */}
+      <div className="grid grid-cols-2 gap-4 flex-1 min-w-0">
       {/* Search by Keywords */}
       <div className="min-w-0">
         <label className="block text-sm font-medium text-slate-500 mb-1.5">
@@ -117,22 +104,6 @@ export function TeachersFilters({
         </div>
       </div>
 
-      {/* Center Filter */}
-      <div className="min-w-0">
-        <FilterDropdown
-          label={t('center')}
-          options={(centersData || []).map(center => ({
-            id: center.id,
-            label: center.name,
-          }))}
-          selectedIds={selectedBranchIds}
-          onSelectionChange={onBranchFilterChange}
-          placeholder={tCommon('all')}
-          isLoading={isLoadingCenters}
-          error={centersError ? 'Failed to load centers' : null}
-          className="w-full"
-        />
-      </div>
       </div>
 
       {/* View Mode Toggle */}
