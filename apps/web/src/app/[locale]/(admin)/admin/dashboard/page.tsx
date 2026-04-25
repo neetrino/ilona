@@ -46,9 +46,7 @@ export default function AdminDashboardPage() {
     <DashboardLayout title={t('title')} subtitle={subtitle}>
       <div className="space-y-6">
         <div
-          className={`grid grid-cols-1 gap-6 ${
-            isManager ? 'md:grid-cols-2' : 'md:grid-cols-3'
-          }`}
+          className="grid grid-cols-1 gap-6 md:grid-cols-3"
         >
           <StatCard
             title={t('totalTeachers')}
@@ -56,22 +54,10 @@ export default function AdminDashboardPage() {
             change={{ value: '+4.5%', type: 'positive' }}
           />
           <StatCard
-            title={t('activeTeachers')}
-            value={stats?.teachers.active || 0}
-            change={{ value: '+2.1%', type: 'positive' }}
+            title={t('totalStudents')}
+            value={stats?.students.total || 0}
           />
-          {!isManager && (
-            <StatCard
-              title={t('pendingPayments')}
-              value={stats?.finance.pendingPayments || 0}
-              change={{
-                value: stats?.finance.overduePayments
-                  ? t('overdueCount', { count: stats.finance.overduePayments })
-                  : t('allOnTime'),
-                type: stats?.finance.overduePayments ? 'negative' : 'positive',
-              }}
-            />
-          )}
+          <StatCard title={t('totalGroups')} value={stats?.groups.total || 0} />
         </div>
 
         {!isManager && <RevenueBlock />}
