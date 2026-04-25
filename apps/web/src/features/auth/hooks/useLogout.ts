@@ -17,7 +17,11 @@ export function useLogout() {
   const queryClient = useQueryClient();
 
   return useCallback(() => {
+    // Clear role-scoped data so next login never sees previous user's state.
     queryClient.removeQueries({ queryKey: chatKeys.all });
+    queryClient.removeQueries({ queryKey: [ ...studentKeys.all, 'my-dashboard' ] });
+    queryClient.removeQueries({ queryKey: [ ...studentKeys.all, 'my-profile' ] });
+    queryClient.removeQueries({ queryKey: [ ...studentKeys.all, 'my-teachers' ] });
     queryClient.removeQueries({ queryKey: [...studentKeys.all, 'my-assigned'] });
     queryClient.removeQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
     logout();
