@@ -42,7 +42,6 @@ export default function StudentsPage() {
     allSelected,
     someSelected,
     selectedTeacherIds,
-    selectedCenterIds,
     selectedStatusIds,
     selectedGroupIds,
     selectedLifecycleIds,
@@ -72,7 +71,6 @@ export default function StudentsPage() {
     groups,
     centerOptions,
     teacherFilterOptions,
-    centerFilterOptions,
     statusFilterOptions,
     groupFilterOptions,
     lifecycleFilterOptions,
@@ -103,7 +101,6 @@ export default function StudentsPage() {
     handleCenterChange,
     handleRegisterDateChange,
     setSelectedTeacherIds,
-    setSelectedCenterIds,
     setSelectedStatusIds,
     setSelectedGroupIds,
     setSelectedLifecycleIds,
@@ -147,11 +144,6 @@ export default function StudentsPage() {
 
   const handleTeacherFilterChange = (ids: Set<string>) => {
     setSelectedTeacherIds(ids);
-    handleFilterChange();
-  };
-
-  const handleCenterFilterChange = (ids: Set<string>) => {
-    setSelectedCenterIds(ids);
     handleFilterChange();
   };
 
@@ -202,8 +194,6 @@ export default function StudentsPage() {
           onStatusChange={handleStatusFilterChange}
           selectedTeacherIds={selectedTeacherIds}
           onTeacherChange={handleTeacherFilterChange}
-          selectedCenterIds={selectedCenterIds}
-          onCenterChange={handleCenterFilterChange}
           selectedGroupIds={selectedGroupIds}
           onGroupChange={handleGroupFilterChange}
           selectedLifecycleIds={selectedLifecycleIds}
@@ -219,11 +209,9 @@ export default function StudentsPage() {
           onBulkDelete={handleBulkDeleteClick}
           statusFilterOptions={statusFilterOptions}
           teacherFilterOptions={teacherFilterOptions}
-          centerFilterOptions={centerFilterOptions}
           groupFilterOptions={groupFilterOptions}
           lifecycleFilterOptions={lifecycleFilterOptions}
           isLoadingTeachers={!teachersData}
-          isLoadingCenters={!centersData}
           isDeleting={deleteStudent.isPending || isLoading}
           t={t}
           now={now}
