@@ -72,6 +72,12 @@ export default function AdminSchedulePage() {
   const visibleCenters = managerCenterId
     ? allCenters.filter((c) => c.id === managerCenterId)
     : allCenters;
+  const managerBranchName = useMemo(() => {
+    if (user?.role !== 'MANAGER' || !managerCenterId) {
+      return null;
+    }
+    return allCenters.find((center) => center.id === managerCenterId)?.name ?? null;
+  }, [allCenters, managerCenterId, user?.role]);
 
   const effectiveCenterId = managerCenterId ?? (centerId || undefined);
 
@@ -186,7 +192,7 @@ export default function AdminSchedulePage() {
       </div>
 
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden h-[calc(100vh-260px)] flex flex-col">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-slate-200 p-4">
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-slate-200 p-4">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -215,6 +221,14 @@ export default function AdminSchedulePage() {
               Today
             </button>
           </div>
+
+          {managerBranchName && (
+            <div className="md:absolute md:left-1/2 md:-translate-x-1/2 flex justify-center">
+              <span className="h-9 px-3 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 text-base font-medium text-slate-600 whitespace-nowrap">
+                {managerBranchName}
+              </span>
+            </div>
+          )}
 
           <div className="inline-flex items-center rounded-lg border border-slate-200 p-1 bg-slate-50">
             <button
