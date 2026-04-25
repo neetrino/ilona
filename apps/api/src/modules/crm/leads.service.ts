@@ -31,6 +31,25 @@ import { StudentsService } from '../students/students.service';
 
 type CrmLeadWhereInput = Prisma.CrmLeadWhereInput;
 
+type VoiceAttachmentLite = {
+  id: string;
+  r2Key: string;
+  durationSec: number | null;
+  mimeType: string | null;
+  size: number | null;
+  createdAt: Date;
+};
+
+type VoiceLeadHistoryLite = {
+  id: string;
+  status: CrmLeadStatus;
+  source: string | null;
+  createdAt: Date;
+  centerId: string | null;
+  center: { id: string; name: string } | null;
+  attachments: VoiceAttachmentLite[];
+};
+
 export type CreateLeadFromVoiceOptions = {
   centerId?: string;
   leadSource?: string | null;
@@ -226,6 +245,117 @@ export class LeadsService {
       return center.id;
     }
     return this.ensureManagerCenterInput(trimmedCenterId, user);
+  }
+
+  private ensureAdminForVoiceRecordingsHistory(user?: JwtPayload): void {
+    if (user?.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only administrators may use this endpoint');
+    }
+  }
+
+  private formatVoiceRecordingHistoryItem(lead: VoiceLeadHistoryLite) {
+    const latestAttachment = lead.attachments[0];
+    if (!latestAttachment) {
+      throw new BadRequestException('Voice recording attachment is missing');
+    }
+    return {
+      leadId: lead.id,
+      status: lead.status,
+      source: lead.source,
+      createdAt: lead.createdAt,
+      centerId: lead.centerId,
+      centerName: lead.center?.name ?? null,
+      attachment: {
+        id: latestAttachment.id,
+        r2Key: latestAttachment.r2Key,
+        durationSec: latestAttachment.durationSec,
+        mimeType: latestAttachment.mimeType,
+        size: latestAttachment.size,
+        createdAt: latestAttachment.createdAt,
+      },
+      audioPath: `/storage/file/${encodeURIComponent(latestAttachment.r2Key)}`,
+    };
+  }
+
+  async findVoiceAppRecordingsForAdmin(user?: JwtPayload) {
+    this.ensureAdminForVoiceRecordingsHistory(user);
+    const leads = await this.prisma.crmLead.findMany({
+      where: {
+        status: 'NEW',
+        source: 'VOICE_APP',
+        attachments: {
+          some: {
+            type: 'VOICE_RECORDING',
+          },
+        },
+      },
+      include: {
+        center: { select: { id: true, name: true } },
+        attachments: {
+          where: { type: 'VOICE_RECORDING' },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return leads.map((lead) => this.formatVoiceRecordingHistoryItem(lead as VoiceLeadHistoryLite));
+  }
+
+  async updateVoiceAppRecordingCenter(leadId: string, centerId: string, user?: JwtPayload) {
+    this.ensureAdminForVoiceRecordingsHistory(user);
+    const normalizedCenterId = centerId.trim();
+    if (!normalizedCenterId) {
+      throw new BadRequestException('centerId is required');
+    }
+
+    const lead = await this.prisma.crmLead.findUnique({
+      where: { id: leadId },
+      include: {
+        center: { select: { id: true, name: true } },
+        attachments: {
+          where: { type: 'VOICE_RECORDING' },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!lead) {
+      throw new NotFoundException(`Lead ${leadId} not found`);
+    }
+    if (lead.status !== 'NEW') {
+      throw new BadRequestException('Only NEW leads are allowed for voice recording center update');
+    }
+    if (lead.source !== 'VOICE_APP') {
+      throw new BadRequestException('Lead source must be VOICE_APP');
+    }
+    if (lead.attachments.length === 0) {
+      throw new BadRequestException('Lead has no VOICE_RECORDING attachment');
+    }
+
+    const center = await this.prisma.center.findUnique({
+      where: { id: normalizedCenterId },
+      select: { id: true, name: true, isActive: true },
+    });
+    if (!center) {
+      throw new NotFoundException(`Center ${normalizedCenterId} not found`);
+    }
+    if (!center.isActive) {
+      throw new BadRequestException('This center is not active');
+    }
+
+    const updatedLead = await this.prisma.crmLead.update({
+      where: { id: leadId },
+      data: { centerId: center.id },
+      include: {
+        center: { select: { id: true, name: true } },
+        attachments: {
+          where: { type: 'VOICE_RECORDING' },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    return this.formatVoiceRecordingHistoryItem(updatedLead as VoiceLeadHistoryLite);
   }
 
   async findAll(

@@ -2,7 +2,9 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
+  Param,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -19,6 +21,7 @@ import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { LeadsService } from '../crm/leads.service';
 import { CentersService } from '../centers/centers.service';
+import { UpdateVoiceRecordingCenterDto } from './dto/update-voice-recording-center.dto';
 
 const MAX_VOICE_SIZE = 25 * 1024 * 1024; // 25MB
 
@@ -89,5 +92,29 @@ export class AdminController {
       durationParsing: 'strict',
       requireActiveCenter: true,
     });
+  }
+
+  @Get('voice-recordings')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'List CRM voice-app recordings history (admin only)' })
+  async listVoiceRecordings(@CurrentUser() user: JwtPayload) {
+    if (user.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only administrators may use this endpoint');
+    }
+    return this.leadsService.findVoiceAppRecordingsForAdmin(user);
+  }
+
+  @Patch('voice-recordings/:leadId/center')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update center for CRM voice-app recording lead (admin only)' })
+  async updateVoiceRecordingCenter(
+    @Param('leadId') leadId: string,
+    @Body() dto: UpdateVoiceRecordingCenterDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    if (user.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only administrators may use this endpoint');
+    }
+    return this.leadsService.updateVoiceAppRecordingCenter(leadId, dto.centerId, user);
   }
 }
