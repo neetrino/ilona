@@ -68,7 +68,7 @@ export default function AdminSchedulePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const { data: centersData } = useCenters({ isActive: true });
-  const allCenters = centersData?.items ?? [];
+  const allCenters = useMemo(() => centersData?.items ?? [], [centersData?.items]);
   const visibleCenters = managerCenterId
     ? allCenters.filter((c) => c.id === managerCenterId)
     : allCenters;

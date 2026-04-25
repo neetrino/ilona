@@ -29,7 +29,7 @@ export function TeachersBoard({
   onCardClick,
 }: TeachersBoardProps) {
   const [activeCenterTabId, setActiveCenterTabId] = useState<string | null>(null);
-  const allCenters = centersData || [];
+  const allCenters = useMemo(() => centersData ?? [], [centersData]);
 
   // Sort centers by name to ensure consistent ordering
   const sortedCenters = useMemo(
