@@ -130,6 +130,8 @@ export default function StudentOurTeachersPage() {
         teacherId={selectedTeacherId}
         open={Boolean(selectedTeacherId)}
         onClose={() => setSelectedTeacherId(null)}
+        showInternalStats={false}
+        showInternalMeta={false}
       />
     </DashboardLayout>
   );

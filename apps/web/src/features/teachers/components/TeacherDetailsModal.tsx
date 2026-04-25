@@ -23,6 +23,8 @@ interface TeacherDetailsModalProps {
   teacherId: string | null;
   open: boolean;
   onClose: () => void;
+  showInternalStats?: boolean;
+  showInternalMeta?: boolean;
 }
 
 interface EmbeddedVideoData {
@@ -96,6 +98,8 @@ export function TeacherDetailsModal({
   teacherId,
   open,
   onClose,
+  showInternalStats = true,
+  showInternalMeta = true,
 }: TeacherDetailsModalProps) {
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
@@ -313,15 +317,17 @@ export function TeacherDetailsModal({
                     </label>
                     <p className="text-slate-800 text-sm sm:text-base break-words">{phone}</p>
                   </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
-                    <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                      <CircleDollarSign className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                      Per Lesson Rate
-                    </label>
-                    <p className="text-slate-800 text-sm sm:text-base">
-                      {formatCurrency(lessonRate)}/lesson
-                    </p>
-                  </div>
+                  {showInternalMeta && (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+                      <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                        <CircleDollarSign className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                        Per Lesson Rate
+                      </label>
+                      <p className="text-slate-800 text-sm sm:text-base">
+                        {formatCurrency(lessonRate)}/lesson
+                      </p>
+                    </div>
+                  )}
                   <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
                     <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-slate-400" aria-hidden="true" />
@@ -379,7 +385,7 @@ export function TeacherDetailsModal({
               </div>
 
               {/* Centers/Branches */}
-              {centers.length > 0 && (
+              {showInternalMeta && centers.length > 0 && (
                 <div className="space-y-4">
                   <h4 className="font-semibold text-slate-800 flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-slate-500" aria-hidden="true" />
@@ -396,7 +402,7 @@ export function TeacherDetailsModal({
               )}
 
               {/* Statistics */}
-              {teacher._count && (
+              {showInternalStats && teacher._count && (
                 <div className="space-y-4 pt-6 border-t border-slate-200">
                   <h4 className="font-semibold text-slate-800 flex items-center gap-2">
                     <GraduationCap className="h-4 w-4 text-slate-500" aria-hidden="true" />
@@ -426,7 +432,7 @@ export function TeacherDetailsModal({
               )}
 
               {/* Groups list */}
-              {groups.length > 0 && (
+              {showInternalStats && groups.length > 0 && (
                 <div className="space-y-3 pt-6 border-t border-slate-200">
                   <h4 className="font-semibold text-slate-800 flex items-center gap-2">
                     <Users className="h-4 w-4 text-slate-500" aria-hidden="true" />
@@ -449,7 +455,7 @@ export function TeacherDetailsModal({
               )}
 
               {/* Substitute groups list */}
-              {substituteGroups.length > 0 && (
+              {showInternalStats && substituteGroups.length > 0 && (
                 <div className="space-y-3 pt-6 border-t border-slate-200">
                   <h4 className="font-semibold text-amber-800 flex items-center gap-2">
                     <Users className="h-4 w-4 text-amber-700" aria-hidden="true" />
