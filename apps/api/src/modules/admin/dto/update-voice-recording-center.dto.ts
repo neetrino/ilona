@@ -1,9 +1,8 @@
-import { IsString, Matches } from 'class-validator';
-
-const CUID_REGEX = /^c[a-z0-9]{24,}$/;
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class UpdateVoiceRecordingCenterDto {
   @IsString()
-  @Matches(CUID_REGEX, { message: 'centerId must be a valid CUID' })
+  @IsNotEmpty({ message: 'centerId is required' })
+  @MaxLength(100, { message: 'centerId is too long' })
   centerId!: string;
 }
