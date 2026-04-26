@@ -34,7 +34,7 @@ type CrmLeadWhereInput = Prisma.CrmLeadWhereInput;
 type VoiceAttachmentLite = {
   id: string;
   r2Key: string;
-  durationSec: number | null;
+  durationSec?: number | null;
   mimeType: string | null;
   size: number | null;
   createdAt: Date;
@@ -268,7 +268,7 @@ export class LeadsService {
       attachment: {
         id: latestAttachment.id,
         r2Key: latestAttachment.r2Key,
-        durationSec: latestAttachment.durationSec,
+        durationSec: latestAttachment.durationSec ?? null,
         mimeType: latestAttachment.mimeType,
         size: latestAttachment.size,
         createdAt: latestAttachment.createdAt,
@@ -298,7 +298,7 @@ export class LeadsService {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return leads.map((lead) => this.formatVoiceRecordingHistoryItem(lead as VoiceLeadHistoryLite));
+    return leads.map((lead) => this.formatVoiceRecordingHistoryItem(lead));
   }
 
   async updateVoiceAppRecordingCenter(leadId: string, centerId: string, user?: JwtPayload) {
@@ -355,7 +355,7 @@ export class LeadsService {
       },
     });
 
-    return this.formatVoiceRecordingHistoryItem(updatedLead as VoiceLeadHistoryLite);
+    return this.formatVoiceRecordingHistoryItem(updatedLead);
   }
 
   async findAll(
