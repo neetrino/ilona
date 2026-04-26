@@ -183,9 +183,13 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                 ) : (
                   <Badge variant="success">{tStatus('active')}</Badge>
                 )}
-                {student.status && (
-                  <Badge variant="default">{formatLifecycle(student.status)}</Badge>
-                )}
+                {student.status &&
+                  !(
+                    (student.status === 'ACTIVE' && isUserActive) ||
+                    (student.status === 'INACTIVE' && !isUserActive)
+                  ) && (
+                    <Badge variant="default">{formatLifecycle(student.status)}</Badge>
+                  )}
               </div>
               {student.user?.email && (
                 <div className="mt-1 flex items-center gap-2 text-slate-500 text-sm">
