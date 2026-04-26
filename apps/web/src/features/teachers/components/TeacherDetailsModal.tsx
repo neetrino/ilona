@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { cn, formatCurrency } from '@/shared/lib/utils';
-import { Avatar, Badge } from '@/shared/components/ui';
+import { AdminAvatarPhotoLightbox, AdminDetailModal, Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
 import { getExperienceYearsFromHireDate, formatExperienceLabel } from '../utils/experience';
 import {
@@ -113,29 +113,13 @@ export function TeacherDetailsModal({
 
   const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false);
 
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+  const handleEscapeKey = useCallback(() => {
+    if (photoPreviewOpen) {
+      setPhotoPreviewOpen(false);
+      return true;
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
-
-  // Close on Escape key (same as CRM modal behavior)
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (photoPreviewOpen) setPhotoPreviewOpen(false);
-        else if (open) onClose();
-      }
-    };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [open, onClose, photoPreviewOpen]);
+    return false;
+  }, [photoPreviewOpen]);
 
   const firstName = teacher?.user?.firstName || '';
   const lastName = teacher?.user?.lastName || '';
@@ -177,47 +161,23 @@ export function TeacherDetailsModal({
 
   return (
     <>
-      {/* Photo preview lightbox — only when details are loaded and avatar exists */}
-      {photoPreviewOpen && avatarUrl && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setPhotoPreviewOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('viewFullPhoto')}
-        >
-          <button
-            type="button"
-            onClick={() => setPhotoPreviewOpen(false)}
-            className="absolute right-4 top-4 rounded-lg p-2 text-white/90 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            aria-label={tCommon('close')}
-          >
-            ✕
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={avatarUrl}
-            alt={fullName}
-            className="max-w-[90vw] max-h-[85vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
+      <AdminAvatarPhotoLightbox
+        open={photoPreviewOpen}
+        imageUrl={avatarUrl}
+        imageAlt={fullName}
+        ariaLabel={t('viewFullPhoto')}
+        closeAriaLabel={tCommon('close')}
+        onClose={() => setPhotoPreviewOpen(false)}
+      />
 
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-5"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
-        role="dialog"
-        aria-modal="true"
+      <AdminDetailModal
+        open={open}
+        onClose={onClose}
         aria-label="Teacher details"
-      >
-      <div
-        className="w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header — same structure as CRM VoiceLeadDetailModal */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-7 sm:py-5 flex-shrink-0">
-          <h2 className="text-lg sm:text-xl font-semibold text-slate-900 flex items-center gap-2">
+        closeAriaLabel={tCommon('close')}
+        onEscapeKey={handleEscapeKey}
+        title={
+          <>
             <Image
               src="/teachers-logo.png"
               alt=""
@@ -226,19 +186,9 @@ export function TeacherDetailsModal({
               height={20}
             />
             {t('teacherDetails')}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Body — same spacing as CRM modal */}
-        <div className="flex-1 overflow-y-auto overscroll-contain p-5 sm:p-7 space-y-8">
+          </>
+        }
+      >
           {!teacherId ? (
             <p className="text-slate-500">No teacher selected.</p>
           ) : isLoading ? (
@@ -478,9 +428,7 @@ export function TeacherDetailsModal({
               )}
             </>
           )}
-        </div>
-      </div>
-      </div>
+      </AdminDetailModal>
     </>
   );
 }

@@ -1,13 +1,13 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import type { Student } from '@/features/students';
+import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { formatCurrency } from '@/shared/lib/utils';
 import { 
   AddStudentForm,
   EditStudentForm,
   DeleteConfirmationDialog,
+  StudentDetailsModal,
 } from '@/features/students';
 import { StudentsStats } from './components/StudentsStats';
 import { StudentsFilters } from './components/StudentsFilters';
@@ -19,8 +19,6 @@ import { useStudentsPage } from './hooks/useStudentsPage';
 
 export default function StudentsPage() {
   const router = useRouter();
-  const params = useParams();
-  const locale = (params?.locale as string | undefined) ?? 'en';
   const {
     // Data
     students,
@@ -54,6 +52,8 @@ export default function StudentsPage() {
     isFeedbackModalOpen,
     selectedStudentForFeedback,
     feedbackStudentIdFromUrl,
+    selectedStudentIdForDetails,
+    isStudentDetailsModalOpen,
     deleteError,
     deleteSuccess,
     bulkDeleteError,
@@ -100,6 +100,8 @@ export default function StudentsPage() {
     handleGroupChange,
     handleCenterChange,
     handleRegisterDateChange,
+    handleStudentDetailsOpen,
+    handleStudentDetailsClose,
     setSelectedTeacherIds,
     setSelectedStatusIds,
     setSelectedGroupIds,
@@ -122,6 +124,7 @@ export default function StudentsPage() {
     t,
     tCommon,
     tTeachers,
+    locale,
     
     // Constants
     pageSize,
@@ -155,10 +158,6 @@ export default function StudentsPage() {
   const handleLifecycleFilterChange = (ids: Set<string>) => {
     setSelectedLifecycleIds(ids);
     handleFilterChange();
-  };
-
-  const handleView = (student: Student) => {
-    router.push(`/${locale}/admin/students/${student.id}`);
   };
 
   const handleMonthChange = (month: number) => {
@@ -238,7 +237,7 @@ export default function StudentsPage() {
             onDelete={handleDeleteClick}
             onDeactivate={handleDeactivateClick}
             onShowFeedback={handleShowFeedback}
-            onView={handleView}
+            onView={handleStudentDetailsOpen}
             onTeacherChange={handleTeacherChange}
             onGroupChange={handleGroupChange}
             onCenterChange={handleCenterChange}
@@ -263,6 +262,7 @@ export default function StudentsPage() {
             onEdit={handleEditClick}
             onDelete={handleDeleteClick}
             onDeactivate={handleDeactivateClick}
+            onCardClick={handleStudentDetailsOpen}
           />
         )}
 
@@ -393,6 +393,13 @@ export default function StudentsPage() {
         onOpenChange={handleFeedbackModalOpenChange}
         student={selectedStudentForFeedback}
         studentId={feedbackStudentIdFromUrl}
+      />
+
+      <StudentDetailsModal
+        studentId={selectedStudentIdForDetails}
+        open={isStudentDetailsModalOpen}
+        onClose={handleStudentDetailsClose}
+        locale={locale}
       />
     </DashboardLayout>
   );

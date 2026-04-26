@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, startTransition } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   useStudents,
@@ -50,9 +50,11 @@ function isWithinNewStudentWindow(student: Student): boolean {
 }
 
 export function useStudentsPage() {
+  const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const locale = typeof params?.locale === 'string' ? params.locale : 'en';
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const tTeachers = useTranslations('teachers');
@@ -79,6 +81,10 @@ export function useStudentsPage() {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedStudentForFeedback, setSelectedStudentForFeedback] = useState<Student | null>(null);
+
+  /** Student details modal — synced with `?studentId=` (same pattern as Teachers `?teacherId=`). */
+  const [selectedStudentIdForDetails, setSelectedStudentIdForDetails] = useState<string | null>(null);
+  const [isStudentDetailsModalOpen, setIsStudentDetailsModalOpen] = useState(false);
   
   // Selection state
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
@@ -135,6 +141,12 @@ export function useStudentsPage() {
     } else if (!modeFromUrl) {
       setViewMode('list');
     }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const studentIdFromUrl = searchParams.get('studentId');
+    setSelectedStudentIdForDetails(studentIdFromUrl);
+    setIsStudentDetailsModalOpen(!!studentIdFromUrl);
   }, [searchParams]);
 
   // Feedback modal: read student id from URL so refresh keeps modal open
@@ -553,6 +565,23 @@ export function useStudentsPage() {
     setSelectedStudentIds(new Set());
   };
 
+  const handleStudentDetailsOpen = (student: Student) => {
+    setSelectedStudentIdForDetails(student.id);
+    setIsStudentDetailsModalOpen(true);
+    const next = new URLSearchParams(searchParams.toString());
+    next.set('studentId', student.id);
+    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+  };
+
+  const handleStudentDetailsClose = () => {
+    setIsStudentDetailsModalOpen(false);
+    setSelectedStudentIdForDetails(null);
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete('studentId');
+    const url = next.toString() ? `${pathname}?${next.toString()}` : pathname;
+    router.replace(url, { scroll: false });
+  };
+
   // Stats calculation (only full students have user.status; onboarding items are not counted as active)
   const activeStudents = students.filter((s): s is Student => 'user' in s && s.user?.status === 'ACTIVE').length;
   const studentsWithGroup = students.filter(s => s.group).length;
@@ -596,6 +625,8 @@ export function useStudentsPage() {
     isFeedbackModalOpen,
     selectedStudentForFeedback,
     feedbackStudentIdFromUrl,
+    selectedStudentIdForDetails,
+    isStudentDetailsModalOpen,
     deleteError,
     deleteSuccess,
     bulkDeleteError,
@@ -644,6 +675,8 @@ export function useStudentsPage() {
     handleGroupChange,
     handleCenterChange,
     handleRegisterDateChange,
+    handleStudentDetailsOpen,
+    handleStudentDetailsClose,
     setSelectedTeacherIds,
     setSelectedCenterIds,
     setSelectedStatusIds,
@@ -670,6 +703,7 @@ export function useStudentsPage() {
     tCommon,
     tTeachers,
     tStatus,
+    locale,
     
     // Constants
     pageSize: PAGE_SIZE,

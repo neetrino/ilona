@@ -26,6 +26,7 @@ export { StudentAccountFormFields } from './components/StudentAccountFormFields'
 // Components
 export { AddStudentForm } from './components/AddStudentForm';
 export { EditStudentForm } from './components/EditStudentForm';
+export { StudentDetailsModal } from './components/StudentDetailsModal';
 export { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
 export { InlineSelect } from './components/InlineSelect';
 
