@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Button } from '@/shared/components/ui';
+import { cn } from '@/shared/lib/utils';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { useLessons, useLessonStatistics, useCancelLesson, AddLessonForm, type Lesson, type LessonStatus } from '@/features/lessons';
 import { useTeachers } from '@/features/teachers';
@@ -70,6 +71,13 @@ const _statusConfig: Record<LessonStatus, { label: string; variant: 'success' | 
   MISSED: { label: 'Missed', variant: 'error' },
 };
 
+const CALENDAR_MODAL_QUERY_KEY = 'modal';
+const ADD_LESSON_MODAL_QUERY_VALUE = 'add-lesson';
+
+function isAddLessonModalInSearchParams(params: URLSearchParams): boolean {
+  return params.get(CALENDAR_MODAL_QUERY_KEY) === ADD_LESSON_MODAL_QUERY_VALUE;
+}
+
 export default function CalendarPage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -105,7 +113,9 @@ export default function CalendarPage() {
   });
   
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
+  const [isAddLessonOpen, setIsAddLessonOpen] = useState(() =>
+    isAddLessonModalInSearchParams(searchParams)
+  );
 
   // Fetch teachers for dropdown
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ 
@@ -161,7 +171,31 @@ export default function CalendarPage() {
     // Sync filter state from URL
     setSearchQuery(searchParams.get('q') || '');
     setSelectedTeacherId(searchParams.get('teacherId') || '');
+
+    setIsAddLessonOpen(isAddLessonModalInSearchParams(searchParams));
   }, [searchParams]);
+
+  const updateAddLessonModalInUrl = useCallback(
+    (open: boolean) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (open) {
+        params.set(CALENDAR_MODAL_QUERY_KEY, ADD_LESSON_MODAL_QUERY_VALUE);
+      } else {
+        params.delete(CALENDAR_MODAL_QUERY_KEY);
+      }
+      const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+      router.replace(newUrl, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
+
+  const handleAddLessonOpenChange = useCallback(
+    (open: boolean) => {
+      setIsAddLessonOpen(open);
+      updateAddLessonModalInUrl(open);
+    },
+    [updateAddLessonModalInUrl]
+  );
   
   // Handle sort toggle
   const handleSort = (key: string) => {
@@ -387,40 +421,56 @@ export default function CalendarPage() {
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => updateViewModeInUrl('list')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
-                viewMode === 'list' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              List
-            </button>
-            <button
-              onClick={() => updateViewModeInUrl('week')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
-                viewMode === 'week' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Week
-            </button>
-            <button
-              onClick={() => updateViewModeInUrl('month')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
-                viewMode === 'month'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Month
-            </button>
-            <Button 
-              onClick={() => setIsAddLessonOpen(true)}
-              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
+              <button
+                type="button"
+                onClick={() => updateViewModeInUrl('list')}
+                className={cn(
+                  'px-4 py-2 text-sm font-semibold rounded-md transition-all',
+                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  viewMode === 'list'
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'text-slate-700 hover:bg-slate-100'
+                )}
+                aria-pressed={viewMode === 'list'}
+              >
+                List
+              </button>
+              <button
+                type="button"
+                onClick={() => updateViewModeInUrl('week')}
+                className={cn(
+                  'px-4 py-2 text-sm font-semibold rounded-md transition-all',
+                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  viewMode === 'week'
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'text-slate-700 hover:bg-slate-100'
+                )}
+                aria-pressed={viewMode === 'week'}
+              >
+                Week
+              </button>
+              <button
+                type="button"
+                onClick={() => updateViewModeInUrl('month')}
+                className={cn(
+                  'px-4 py-2 text-sm font-semibold rounded-md transition-all',
+                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  viewMode === 'month'
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'text-slate-700 hover:bg-slate-100'
+                )}
+                aria-pressed={viewMode === 'month'}
+              >
+                Month
+              </button>
+            </div>
+            <Button
+              type="button"
+              variant="default"
+              onClick={() => handleAddLessonOpenChange(true)}
+              className="font-semibold shadow-sm"
             >
               + Add Lesson
             </Button>
@@ -599,59 +649,12 @@ export default function CalendarPage() {
             )}
           </>
         )}
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-purple-50 rounded-xl">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 mb-2">Recurring Schedule</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  Set up recurring lessons for groups with automatic scheduling.
-                </p>
-                <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
-                  Create Recurring
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200 p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-orange-50 rounded-xl">
-                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 mb-2">Attendance Tracking</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  Mark attendance for completed lessons and track student participation.
-                </p>
-                <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700">
-                  Open Attendance
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Add Lesson Dialog */}
       <AddLessonForm 
         open={isAddLessonOpen} 
-        onOpenChange={setIsAddLessonOpen}
+        onOpenChange={handleAddLessonOpenChange}
       />
     </DashboardLayout>
   );
