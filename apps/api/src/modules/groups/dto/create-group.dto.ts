@@ -73,7 +73,7 @@ export class CreateGroupDto {
   isActive?: boolean;
 
   /** Optional predefined icon id; `null` clears on update. */
-  @Transform(({ value }) => (value === '' ? undefined : value))
+  @Transform(({ value }: { value: unknown }) => (value === '' ? undefined : value))
   @IsOptional()
   @ValidateIf((_, value) => value !== undefined && value !== null)
   @IsString()
