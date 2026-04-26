@@ -381,7 +381,7 @@ export function LessonListTable({
                   <td className="px-4 py-3 text-center">
                     {lesson.completionStatus === 'DONE' && (
                       <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">
-                        Ավարտված
+                        Completed
                       </Badge>
                     )}
                     {lesson.completionStatus === 'IN_PROCESS' && (

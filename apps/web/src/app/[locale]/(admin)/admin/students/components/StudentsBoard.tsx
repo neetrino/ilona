@@ -1,7 +1,12 @@
 'use client';
 
 import { StudentCard } from './StudentCard';
-import { getItemId, isOnboardingItem, type TeacherAssignedItem, type Student } from '@/features/students';
+import {
+  getItemId,
+  isOnboardingItem,
+  type TeacherAssignedItem,
+  type Student,
+} from '@/features/students';
 import type { Center } from '@ilona/types';
 
 interface StudentsBoardProps {
@@ -12,6 +17,7 @@ interface StudentsBoardProps {
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
   onDeactivate: (student: Student) => void;
+  onCardClick?: (student: Student) => void;
 }
 
 export function StudentsBoard({
@@ -22,6 +28,7 @@ export function StudentsBoard({
   onEdit,
   onDelete,
   onDeactivate,
+  onCardClick,
 }: StudentsBoardProps) {
   if (isLoading) {
     return (
@@ -95,6 +102,7 @@ export function StudentsBoard({
                           onEdit={() => onEdit(item)}
                           onDelete={() => onDelete(item)}
                           onDeactivate={() => onDeactivate(item)}
+                          onCardClick={onCardClick}
                         />
                       );
                     })
@@ -139,6 +147,7 @@ export function StudentsBoard({
                     onEdit={() => onEdit(item)}
                     onDelete={() => onDelete(item)}
                     onDeactivate={() => onDeactivate(item)}
+                    onCardClick={onCardClick}
                   />
                 );
               })}

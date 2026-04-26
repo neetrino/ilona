@@ -22,3 +22,7 @@ export {
   DialogTitle,
   DialogDescription,
 } from './dialog';
+export { AdminDetailModal } from './admin-detail-modal';
+export type { AdminDetailModalProps } from './admin-detail-modal';
+export { AdminAvatarPhotoLightbox } from './admin-avatar-photo-lightbox';
+export type { AdminAvatarPhotoLightboxProps } from './admin-avatar-photo-lightbox';

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import type { Group, GroupScheduleEntry } from '@/features/groups/types';
+import { GroupIconDisplay } from '@/features/groups';
 
 const DAY_LABELS = [
   'Monday',
@@ -181,11 +182,18 @@ function ScheduleCard({ group, entry, compact = false }: ScheduleCardProps) {
     <div
       className={`rounded-md border border-primary/15 bg-primary/5 leading-tight ${compact ? 'px-1.5 py-1 text-[10px]' : 'px-2 py-1.5 text-xs'}`}
     >
-      <div className="font-semibold text-slate-800 truncate" title={group.name}>
-        {group.name}
-        {group.level ? (
-          <span className="text-slate-500 font-normal"> · {group.level}</span>
-        ) : null}
+      <div className="flex min-w-0 items-center gap-1 font-semibold text-slate-800" title={group.name}>
+        <GroupIconDisplay
+          iconKey={group.iconKey}
+          size={compact ? 12 : 14}
+          className="shrink-0 text-slate-600"
+        />
+        <span className="truncate">
+          {group.name}
+          {group.level ? (
+            <span className="text-slate-500 font-normal"> · {group.level}</span>
+          ) : null}
+        </span>
       </div>
       <div className="text-slate-600 truncate" title={teacherName}>
         {teacherName}

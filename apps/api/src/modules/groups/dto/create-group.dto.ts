@@ -11,8 +11,13 @@ import {
   ValidateNested,
   MaxLength,
   MinLength,
+  IsIn,
+  ValidateIf,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
+import { GROUP_ICON_KEYS } from '@ilona/types';
+
+const GROUP_ICON_KEYS_FOR_VALIDATOR: string[] = [...GROUP_ICON_KEYS];
 
 /** One recurring weekly slot for a group's schedule. */
 export class GroupScheduleEntryDto {
@@ -66,4 +71,12 @@ export class CreateGroupDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  /** Optional predefined icon id; `null` clears on update. */
+  @Transform(({ value }: { value: unknown }) => (value === '' ? undefined : value))
+  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined && value !== null)
+  @IsString()
+  @IsIn(GROUP_ICON_KEYS_FOR_VALIDATOR)
+  iconKey?: string | null;
 }

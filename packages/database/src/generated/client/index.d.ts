@@ -7460,6 +7460,7 @@ export namespace Prisma {
   export type GroupMinAggregateOutputType = {
     id: string | null
     name: string | null
+    iconKey: string | null
     level: string | null
     description: string | null
     maxStudents: number | null
@@ -7474,6 +7475,7 @@ export namespace Prisma {
   export type GroupMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    iconKey: string | null
     level: string | null
     description: string | null
     maxStudents: number | null
@@ -7488,6 +7490,7 @@ export namespace Prisma {
   export type GroupCountAggregateOutputType = {
     id: number
     name: number
+    iconKey: number
     level: number
     description: number
     maxStudents: number
@@ -7513,6 +7516,7 @@ export namespace Prisma {
   export type GroupMinAggregateInputType = {
     id?: true
     name?: true
+    iconKey?: true
     level?: true
     description?: true
     maxStudents?: true
@@ -7527,6 +7531,7 @@ export namespace Prisma {
   export type GroupMaxAggregateInputType = {
     id?: true
     name?: true
+    iconKey?: true
     level?: true
     description?: true
     maxStudents?: true
@@ -7541,6 +7546,7 @@ export namespace Prisma {
   export type GroupCountAggregateInputType = {
     id?: true
     name?: true
+    iconKey?: true
     level?: true
     description?: true
     maxStudents?: true
@@ -7643,6 +7649,7 @@ export namespace Prisma {
   export type GroupGroupByOutputType = {
     id: string
     name: string
+    iconKey: string | null
     level: string | null
     description: string | null
     maxStudents: number
@@ -7677,6 +7684,7 @@ export namespace Prisma {
   export type GroupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    iconKey?: boolean
     level?: boolean
     description?: boolean
     maxStudents?: boolean
@@ -7703,6 +7711,7 @@ export namespace Prisma {
   export type GroupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    iconKey?: boolean
     level?: boolean
     description?: boolean
     maxStudents?: boolean
@@ -7721,6 +7730,7 @@ export namespace Prisma {
   export type GroupSelectScalar = {
     id?: boolean
     name?: boolean
+    iconKey?: boolean
     level?: boolean
     description?: boolean
     maxStudents?: boolean
@@ -7769,6 +7779,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
+      /**
+       * Predefined icon id for admin UI (see @ilona/types GROUP_ICON_KEYS).
+       */
+      iconKey: string | null
       level: string | null
       description: string | null
       maxStudents: number
@@ -8184,6 +8198,7 @@ export namespace Prisma {
   interface GroupFieldRefs {
     readonly id: FieldRef<"Group", 'String'>
     readonly name: FieldRef<"Group", 'String'>
+    readonly iconKey: FieldRef<"Group", 'String'>
     readonly level: FieldRef<"Group", 'String'>
     readonly description: FieldRef<"Group", 'String'>
     readonly maxStudents: FieldRef<"Group", 'Int'>
@@ -36235,6 +36250,7 @@ export namespace Prisma {
   export const GroupScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    iconKey: 'iconKey',
     level: 'level',
     description: 'description',
     maxStudents: 'maxStudents',
@@ -37313,6 +37329,7 @@ export namespace Prisma {
     NOT?: GroupWhereInput | GroupWhereInput[]
     id?: StringFilter<"Group"> | string
     name?: StringFilter<"Group"> | string
+    iconKey?: StringNullableFilter<"Group"> | string | null
     level?: StringNullableFilter<"Group"> | string | null
     description?: StringNullableFilter<"Group"> | string | null
     maxStudents?: IntFilter<"Group"> | number
@@ -37338,6 +37355,7 @@ export namespace Prisma {
   export type GroupOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    iconKey?: SortOrderInput | SortOrder
     level?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
     maxStudents?: SortOrder
@@ -37366,6 +37384,7 @@ export namespace Prisma {
     OR?: GroupWhereInput[]
     NOT?: GroupWhereInput | GroupWhereInput[]
     name?: StringFilter<"Group"> | string
+    iconKey?: StringNullableFilter<"Group"> | string | null
     level?: StringNullableFilter<"Group"> | string | null
     description?: StringNullableFilter<"Group"> | string | null
     maxStudents?: IntFilter<"Group"> | number
@@ -37391,6 +37410,7 @@ export namespace Prisma {
   export type GroupOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    iconKey?: SortOrderInput | SortOrder
     level?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
     maxStudents?: SortOrder
@@ -37414,6 +37434,7 @@ export namespace Prisma {
     NOT?: GroupScalarWhereWithAggregatesInput | GroupScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Group"> | string
     name?: StringWithAggregatesFilter<"Group"> | string
+    iconKey?: StringNullableWithAggregatesFilter<"Group"> | string | null
     level?: StringNullableWithAggregatesFilter<"Group"> | string | null
     description?: StringNullableWithAggregatesFilter<"Group"> | string | null
     maxStudents?: IntWithAggregatesFilter<"Group"> | number
@@ -40092,6 +40113,7 @@ export namespace Prisma {
   export type GroupCreateInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -40114,6 +40136,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -40136,6 +40159,7 @@ export namespace Prisma {
   export type GroupUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -40158,6 +40182,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -40180,6 +40205,7 @@ export namespace Prisma {
   export type GroupCreateManyInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -40195,6 +40221,7 @@ export namespace Prisma {
   export type GroupUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -40207,6 +40234,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -43268,6 +43296,7 @@ export namespace Prisma {
   export type GroupCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    iconKey?: SortOrder
     level?: SortOrder
     description?: SortOrder
     maxStudents?: SortOrder
@@ -43287,6 +43316,7 @@ export namespace Prisma {
   export type GroupMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    iconKey?: SortOrder
     level?: SortOrder
     description?: SortOrder
     maxStudents?: SortOrder
@@ -43301,6 +43331,7 @@ export namespace Prisma {
   export type GroupMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    iconKey?: SortOrder
     level?: SortOrder
     description?: SortOrder
     maxStudents?: SortOrder
@@ -49423,6 +49454,7 @@ export namespace Prisma {
   export type GroupCreateWithoutCenterInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -49444,6 +49476,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutCenterInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -49630,6 +49663,7 @@ export namespace Prisma {
     NOT?: GroupScalarWhereInput | GroupScalarWhereInput[]
     id?: StringFilter<"Group"> | string
     name?: StringFilter<"Group"> | string
+    iconKey?: StringNullableFilter<"Group"> | string | null
     level?: StringNullableFilter<"Group"> | string | null
     description?: StringNullableFilter<"Group"> | string | null
     maxStudents?: IntFilter<"Group"> | number
@@ -50927,6 +50961,7 @@ export namespace Prisma {
   export type GroupCreateWithoutTeacherInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -50948,6 +50983,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutTeacherInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -50979,6 +51015,7 @@ export namespace Prisma {
   export type GroupCreateWithoutSubstituteTeacherInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -51000,6 +51037,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutSubstituteTeacherInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -52072,6 +52110,7 @@ export namespace Prisma {
   export type GroupCreateWithoutStudentsInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -52093,6 +52132,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutStudentsInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -52521,6 +52561,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutStudentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -52542,6 +52583,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutStudentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -53244,6 +53286,7 @@ export namespace Prisma {
   export type GroupCreateWithoutStudentHistoryEntriesInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -53265,6 +53308,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutStudentHistoryEntriesInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -53377,6 +53421,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutStudentHistoryEntriesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -53398,6 +53443,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutStudentHistoryEntriesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -53501,6 +53547,7 @@ export namespace Prisma {
   export type GroupCreateWithoutLessonsInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -53522,6 +53569,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutLessonsInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -53703,6 +53751,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutLessonsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -53724,6 +53773,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutLessonsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -55017,6 +55067,7 @@ export namespace Prisma {
   export type GroupCreateWithoutChatInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -55038,6 +55089,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutChatInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -55135,6 +55187,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutChatInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -55156,6 +55209,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutChatInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -55779,6 +55833,7 @@ export namespace Prisma {
   export type GroupCreateWithoutDailyPlansInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -55800,6 +55855,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutDailyPlansInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -55991,6 +56047,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutDailyPlansInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -56012,6 +56069,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutDailyPlansInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -56201,6 +56259,7 @@ export namespace Prisma {
   export type GroupCreateWithoutRecordingItemsInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -56222,6 +56281,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutRecordingItemsInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -56387,6 +56447,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutRecordingItemsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -56408,6 +56469,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutRecordingItemsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -56766,6 +56828,7 @@ export namespace Prisma {
   export type GroupCreateWithoutCrmLeadsInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -56787,6 +56850,7 @@ export namespace Prisma {
   export type GroupUncheckedCreateWithoutCrmLeadsInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -57165,6 +57229,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutCrmLeadsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -57186,6 +57251,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutCrmLeadsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -58083,6 +58149,7 @@ export namespace Prisma {
   export type GroupCreateManyCenterInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -58225,6 +58292,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutCenterInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -58246,6 +58314,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutCenterInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -58267,6 +58336,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateManyWithoutCenterInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -58917,6 +58987,7 @@ export namespace Prisma {
   export type GroupCreateManyTeacherInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -58931,6 +59002,7 @@ export namespace Prisma {
   export type GroupCreateManySubstituteTeacherInput = {
     id?: string
     name: string
+    iconKey?: string | null
     level?: string | null
     description?: string | null
     maxStudents?: number
@@ -59209,6 +59281,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -59230,6 +59303,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -59251,6 +59325,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateManyWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -59265,6 +59340,7 @@ export namespace Prisma {
   export type GroupUpdateWithoutSubstituteTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -59286,6 +59362,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateWithoutSubstituteTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
@@ -59307,6 +59384,7 @@ export namespace Prisma {
   export type GroupUncheckedUpdateManyWithoutSubstituteTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    iconKey?: NullableStringFieldUpdateOperationsInput | string | null
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number

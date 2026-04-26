@@ -154,6 +154,7 @@ export class ChatListsService {
     return groups.map((group) => ({
       id: group.id,
       name: group.name,
+      iconKey: group.iconKey,
       center: group.center ? { id: group.center.id, name: group.center.name } : null,
     }));
   }
@@ -319,6 +320,7 @@ export class ChatListsService {
       return groups.map((group) => ({
         id: group.id,
         name: group.name,
+        iconKey: group.iconKey,
         level: group.level,
         center: group.center ? { id: group.center.id, name: group.center.name } : null,
         chatId: null,
@@ -416,6 +418,7 @@ export class ChatListsService {
         return {
           id: group.id,
           name: group.name,
+          iconKey: group.iconKey,
           level: group.level,
           center: group.center ? { id: group.center.id, name: group.center.name } : null,
           chatId: null,
@@ -453,6 +456,7 @@ export class ChatListsService {
       return {
         id: group.id,
         name: group.name,
+        iconKey: group.iconKey,
         level: group.level,
         center: group.center ? { id: group.center.id, name: group.center.name } : null,
         chatId: group.chat.id,

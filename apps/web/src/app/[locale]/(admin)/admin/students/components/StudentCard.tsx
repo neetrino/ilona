@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge, ActionButtons, Avatar } from '@/shared/components/ui';
+import { cn } from '@/shared/lib/utils';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
 
@@ -53,9 +54,10 @@ interface StudentCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onDeactivate: () => void;
+  onCardClick?: (student: Student) => void;
 }
 
-export function StudentCard({ student, onEdit, onDelete, onDeactivate }: StudentCardProps) {
+export function StudentCard({ student, onEdit, onDelete, onDeactivate, onCardClick }: StudentCardProps) {
   const firstName = student.user?.firstName || '';
   const lastName = student.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim();
@@ -70,7 +72,25 @@ export function StudentCard({ student, onEdit, onDelete, onDeactivate }: Student
   const riskBadge = getRiskBadge(student.derivedRiskLabel ?? student.riskLabel);
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div
+      className={cn(
+        'bg-white rounded-lg border border-slate-200 p-4 shadow-sm transition-shadow',
+        onCardClick && 'hover:shadow-md cursor-pointer',
+      )}
+      onClick={() => onCardClick?.(student)}
+      role={onCardClick ? 'button' : undefined}
+      tabIndex={onCardClick ? 0 : undefined}
+      onKeyDown={
+        onCardClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onCardClick(student);
+              }
+            }
+          : undefined
+      }
+    >
       {/* Student Header */}
       <div className="mb-3">
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -98,23 +118,25 @@ export function StudentCard({ student, onEdit, onDelete, onDeactivate }: Student
               </span>
             )}
           </div>
-          <ActionButtons
-            onEdit={onEdit}
-            onDisable={onDeactivate}
-            onDelete={onDelete}
-            isActive={isActive}
-            size="sm"
-            ariaLabels={{
-              edit: 'Edit student',
-              disable: isActive ? 'Deactivate student' : 'Activate student',
-              delete: 'Delete student',
-            }}
-            titles={{
-              edit: 'Edit student',
-              disable: isActive ? 'Deactivate student' : 'Activate student',
-              delete: 'Delete student',
-            }}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <ActionButtons
+              onEdit={onEdit}
+              onDisable={onDeactivate}
+              onDelete={onDelete}
+              isActive={isActive}
+              size="sm"
+              ariaLabels={{
+                edit: 'Edit student',
+                disable: isActive ? 'Deactivate student' : 'Activate student',
+                delete: 'Delete student',
+              }}
+              titles={{
+                edit: 'Edit student',
+                disable: isActive ? 'Deactivate student' : 'Activate student',
+                delete: 'Delete student',
+              }}
+            />
+          </div>
         </div>
       </div>
 

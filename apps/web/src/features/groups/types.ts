@@ -26,6 +26,8 @@ export interface GroupScheduleEntry {
 export interface Group {
   id: string;
   name: string;
+  /** Predefined icon id from admin picker; null/undefined = default UI icon. */
+  iconKey?: string | null;
   level?: string;
   description?: string;
   maxStudents: number;
@@ -85,6 +87,7 @@ export interface CreateGroupDto {
   substituteTeacherId?: string;
   schedule?: GroupScheduleEntry[];
   isActive?: boolean;
+  iconKey?: string | null;
 }
 
 export interface UpdateGroupDto {
@@ -96,6 +99,7 @@ export interface UpdateGroupDto {
   substituteTeacherId?: string | null;
   schedule?: GroupScheduleEntry[] | null;
   isActive?: boolean;
+  iconKey?: string | null;
 }
 
 /** Student item returned by GET /groups/:groupId/students */

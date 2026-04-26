@@ -72,6 +72,8 @@ model ManagerProfile {
 model Group {
   id                    String                @id @default(cuid())
   name                  String
+  /// Predefined icon id for admin UI (see @ilona/types GROUP_ICON_KEYS).
+  iconKey               String?
   level                 String?
   description           String?
   maxStudents           Int                   @default(8)

@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useGroups } from '@/features/groups/hooks/useGroups';
 import type { Group, GroupScheduleEntry } from '@/features/groups/types';
+import { GroupIconDisplay } from '@/features/groups';
 
 interface TodayEntry {
   group: Group;
@@ -50,8 +51,11 @@ export function BranchScheduleBlock({ centerId }: { centerId?: string }) {
               : t('noTeacher');
             return (
               <li key={`${group.id}-${entry.startTime}`} className="flex items-center justify-between py-2">
-                <div>
-                  <p className="text-sm font-medium text-slate-800">{group.name}</p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <GroupIconDisplay iconKey={group.iconKey} size={18} className="shrink-0 text-slate-600" />
+                    <p className="truncate text-sm font-medium text-slate-800">{group.name}</p>
+                  </div>
                   <p className="text-xs text-slate-500">
                     {group.center.name} · {teacherName}
                   </p>

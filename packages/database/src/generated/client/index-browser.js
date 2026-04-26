@@ -161,6 +161,7 @@ exports.Prisma.ManagerProfileScalarFieldEnum = {
 exports.Prisma.GroupScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  iconKey: 'iconKey',
   level: 'level',
   description: 'description',
   maxStudents: 'maxStudents',

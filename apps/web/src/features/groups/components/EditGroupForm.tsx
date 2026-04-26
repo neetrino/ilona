@@ -11,6 +11,8 @@ import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { GroupScheduleEditor } from './GroupScheduleEditor';
+import { GroupIconPicker } from './GroupIconPicker';
+import { isGroupIconKey, type GroupIconKey } from '@ilona/types';
 
 const updateGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters').optional(),
@@ -34,6 +36,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
+  const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const updateGroup = useUpdateGroup();
   const { data: group, isLoading } = useGroup(groupId, open);
 
@@ -80,6 +83,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         isActive: group.isActive,
       });
       setSchedule(group.schedule ?? []);
+      setIconKey(isGroupIconKey(group.iconKey) ? group.iconKey : null);
     }
   }, [group, reset]);
 
@@ -114,6 +118,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         substituteTeacherId: data.substituteTeacherId ? data.substituteTeacherId : null,
         schedule: schedule.length > 0 ? schedule : null,
         isActive: data.isActive,
+        iconKey,
       };
 
       await updateGroup.mutateAsync({ id: groupId, data: payload });
@@ -191,6 +196,17 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
               error={errors.level?.message}
               placeholder="A1, A2, B1, etc."
               disabled={isSubmitting}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label id="edit-group-icon-label">Group Icon</Label>
+            <p className="text-xs text-slate-500">Optional — pick one icon or Default for the generic group icon.</p>
+            <GroupIconPicker
+              value={iconKey}
+              onChange={setIconKey}
+              disabled={isSubmitting}
+              aria-labelledby="edit-group-icon-label"
             />
           </div>
 

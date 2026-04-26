@@ -11,6 +11,7 @@ import { ApiError } from '@/shared/lib/api';
 import { formatMessagePreview } from '../utils';
 import { Badge } from '@/shared/components/ui/badge';
 import Image from 'next/image';
+import { getGroupIconComponent } from '@/features/groups';
 
 interface TeacherChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -430,6 +431,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
             const hasUnread = unread > 0;
             const showBadge = hasUnread;
             const count = hasUnread ? unread : total;
+            const GroupListIcon = getGroupIconComponent(group.iconKey);
 
             return (
               <button
@@ -443,7 +445,11 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
-                    {group.name[0]}
+                    {GroupListIcon ? (
+                      <GroupListIcon className="text-white" size={24} strokeWidth={1.75} aria-hidden />
+                    ) : (
+                      group.name[0]
+                    )}
                   </div>
                 </div>
 

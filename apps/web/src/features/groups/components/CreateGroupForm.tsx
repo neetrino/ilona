@@ -11,6 +11,8 @@ import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { GroupScheduleEditor } from './GroupScheduleEditor';
+import { GroupIconPicker } from './GroupIconPicker';
+import type { GroupIconKey } from '@ilona/types';
 
 const createGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters'),
@@ -33,6 +35,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
+  const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const createGroup = useCreateGroup();
 
   // Fetch centers and teachers for dropdowns
@@ -87,6 +90,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         isActive: true,
       });
       setSchedule([]);
+      setIconKey(null);
       setErrorMessage(null);
       setSuccessMessage(null);
     }
@@ -113,6 +117,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         substituteTeacherId: data.substituteTeacherId || undefined,
         schedule: schedule.length > 0 ? schedule : undefined,
         isActive: data.isActive ?? true,
+        ...(iconKey ? { iconKey } : {}),
       };
 
       await createGroup.mutateAsync(payload);
@@ -131,6 +136,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         isActive: true,
       });
       setSchedule([]);
+      setIconKey(null);
       setTimeout(() => {
         onOpenChange(false);
         setSuccessMessage(null);
@@ -186,6 +192,17 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               error={errors.level?.message}
               placeholder="A1, A2, B1, etc."
               disabled={isSubmitting}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label id="group-icon-label">Group Icon</Label>
+            <p className="text-xs text-slate-500">Optional — pick one icon for quick recognition in lists.</p>
+            <GroupIconPicker
+              value={iconKey}
+              onChange={setIconKey}
+              disabled={isSubmitting}
+              aria-labelledby="group-icon-label"
             />
           </div>
 

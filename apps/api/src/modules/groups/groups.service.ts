@@ -383,6 +383,7 @@ export class GroupsService {
         name: dto.name,
         level: dto.level,
         description: dto.description,
+        iconKey: dto.iconKey ?? null,
         maxStudents: FIXED_GROUP_MAX_STUDENTS,
         centerId: dto.centerId,
         teacherId: dto.teacherId,
