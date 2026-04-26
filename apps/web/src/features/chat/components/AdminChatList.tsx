@@ -9,6 +9,7 @@ import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { Badge } from '@/shared/components/ui/badge';
 import Image from 'next/image';
+import { getGroupIconComponent } from '@/features/groups';
 
 type AdminChatTab = 'students' | 'teachers' | 'groups';
 
@@ -331,7 +332,9 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
           </button>
         ))}
         {/* Class groups (teaching groups) */}
-        {filteredClassGroups.map((group) => (
+        {filteredClassGroups.map((group) => {
+          const GroupListIcon = getGroupIconComponent(group.iconKey);
+          return (
           <button
             key={group.id}
             onClick={() => handleSelectGroup(group.id)}
@@ -341,7 +344,11 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             )}
           >
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-              {getAvatar(group.name)}
+              {GroupListIcon ? (
+                <GroupListIcon className="text-white" size={24} strokeWidth={1.75} aria-hidden />
+              ) : (
+                getAvatar(group.name)
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
@@ -357,7 +364,8 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               )}
             </div>
           </button>
-        ))}
+        );
+        })}
       </div>
     );
   };

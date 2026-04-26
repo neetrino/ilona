@@ -3,6 +3,7 @@ import { Clock, UserPlus } from 'lucide-react';
 import { Badge, ActionButtons } from '@/shared/components/ui';
 import type { Group, GroupScheduleEntry } from '../types';
 import { getGroupOccupancyMeta } from '../occupancy';
+import { GroupIconDisplay } from '../group-icon-registry';
 
 const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -55,9 +56,14 @@ export function GroupCard({
       {/* Group Header */}
       <div className="mb-3 shrink-0">
         <div className="flex items-start justify-between gap-2 mb-1 min-w-0">
-          <h4 className="min-w-0 flex-1 break-words font-semibold text-slate-800 text-sm leading-snug">
-            {group.name}
-          </h4>
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <span className="mt-0.5 shrink-0" aria-hidden>
+              <GroupIconDisplay iconKey={group.iconKey} size={20} />
+            </span>
+            <h4 className="min-w-0 flex-1 break-words font-semibold text-slate-800 text-sm leading-snug">
+              {group.name}
+            </h4>
+          </div>
           {teacherName && (
             <div
               className="flex items-center gap-1.5 shrink-0 ml-2 pl-2 border-l border-slate-200"

@@ -92,6 +92,7 @@ export interface AdminChatUser {
 export interface AdminChatGroup {
   id: string;
   name: string;
+  iconKey?: string | null;
   center?: {
     id: string;
     name: string;
@@ -193,6 +194,7 @@ export async function addCustomGroupChatMember(
 export interface TeacherGroup {
   id: string;
   name: string;
+  iconKey?: string | null;
   level?: string | null;
   center?: {
     id: string;

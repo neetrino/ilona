@@ -30,6 +30,8 @@ export type {
 // Components
 export { CreateGroupForm } from './components/CreateGroupForm';
 export { EditGroupForm } from './components/EditGroupForm';
+export { GroupIconPicker } from './components/GroupIconPicker';
+export { GroupIconDisplay, getGroupIconComponent } from './group-icon-registry';
 export { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
 export { GroupCard } from './components/GroupCard';
 export { GroupScheduleEditor } from './components/GroupScheduleEditor';

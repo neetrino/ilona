@@ -15,6 +15,7 @@ import {
   DeleteConfirmationDialog,
   useGroup,
   getGroupOccupancyMeta,
+  GroupIconDisplay,
   type Group,
 } from '@/features/groups';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
@@ -316,9 +317,14 @@ export function GroupsTab({
       key: 'name',
       header: 'Group',
       render: (group: Group) => (
-        <div>
-          <p className="font-semibold text-slate-800">{group.name}</p>
-          <p className="text-sm text-slate-500">{group.description || 'No description'}</p>
+        <div className="flex items-start gap-2.5">
+          <span className="mt-0.5 shrink-0" aria-hidden>
+            <GroupIconDisplay iconKey={group.iconKey} size={22} />
+          </span>
+          <div className="min-w-0">
+            <p className="font-semibold text-slate-800">{group.name}</p>
+            <p className="text-sm text-slate-500">{group.description || 'No description'}</p>
+          </div>
         </div>
       ),
     },
