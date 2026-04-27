@@ -103,6 +103,10 @@ export class StudentsService {
     return this.queryService.getMyTeachers(userId);
   }
 
+  async getFeaturedAvatarsForMarketing(limit: number) {
+    return this.queryService.findFeaturedAvatarsForMarketing(limit);
+  }
+
   // Statistics Methods
   async getStatistics(id: string, currentUserId?: string, userRole?: UserRole) {
     return this.statisticsService.getStatistics(id, currentUserId, userRole);

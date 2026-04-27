@@ -8,10 +8,12 @@ import {
   Body,
   Param,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { CreateStudentDto, UpdateStudentDto, QueryStudentDto } from './dto';
-import { Roles, CurrentUser } from '../../common/decorators';
+import { Public, Roles, CurrentUser } from '../../common/decorators';
 import { UserRole, UserStatus, StudentStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
@@ -84,6 +86,15 @@ export class StudentsController {
   @Roles(UserRole.STUDENT)
   async getMyTeachers(@CurrentUser() user: JwtPayload) {
     return this.studentsService.getMyTeachers(user.sub);
+  }
+
+  @Get('featured-avatars')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async getFeaturedAvatars(@Query('limit') limitRaw?: string) {
+    const n = Math.min(8, Math.max(1, parseInt(String(limitRaw ?? '4'), 10) || 4));
+    const items = await this.studentsService.getFeaturedAvatarsForMarketing(n);
+    return { items };
   }
 
   @Get(':id')

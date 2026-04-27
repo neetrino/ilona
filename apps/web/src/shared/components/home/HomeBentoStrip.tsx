@@ -1,11 +1,81 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { bricolageDisplay, dmSansHome } from '@/shared/components/home/home-fonts';
 import { FigmaImage } from '@/shared/components/home/figma-image';
 import { BENTO_CHART } from '@/shared/components/home/home-figma-assets';
+import { fetchFeaturedStudentAvatars } from '@/shared/lib/featured-students.api';
 import { cn } from '@/shared/lib/utils';
+
+const BENTO_JOIN_AVATAR_BGS = ['#d47b5a', '#3a6b8a', '#5a7d42', '#8a5a3a'] as const;
+const BENTO_JOIN_AVATAR_COUNT = 4;
+
+function BentoJoinLearnerAvatars() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['public', 'featured-student-avatars', BENTO_JOIN_AVATAR_COUNT] as const,
+    queryFn: () => fetchFeaturedStudentAvatars(BENTO_JOIN_AVATAR_COUNT),
+    staleTime: 10 * 60 * 1000,
+  });
+  const items = data?.items ?? [];
+
+  if (isLoading) {
+    return (
+      <div className="flex -space-x-1.5" aria-hidden>
+        {Array.from({ length: BENTO_JOIN_AVATAR_COUNT }, (_, i) => (
+          <div
+            key={i}
+            className={cn(
+              'relative flex size-10 items-center justify-center rounded-full border-[3px] border-[#ffd23f] sm:size-11',
+              'bg-black/10'
+            )}
+            style={{ zIndex: BENTO_JOIN_AVATAR_COUNT - i }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex -space-x-1.5">
+      {items.map((row, i) => (
+        <div
+          key={row.id}
+          className={cn(
+            'relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full',
+            'border-[3px] border-[#ffd23f] text-sm font-bold text-white sm:size-11'
+          )}
+          style={{ zIndex: BENTO_JOIN_AVATAR_COUNT - i }}
+        >
+          {row.avatarUrl ? (
+            <Image
+              src={row.avatarUrl}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 40px, 44px"
+              unoptimized
+              loading="lazy"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ background: BENTO_JOIN_AVATAR_BGS[i % BENTO_JOIN_AVATAR_BGS.length] }}
+            >
+              {row.initials}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const b = bricolageDisplay.className;
 const d = dmSansHome.className;
@@ -110,19 +180,7 @@ export function HomeBentoStrip() {
             {t('bentoJoinLine2')}
           </h2>
           <div className="relative z-[1] mt-5 flex flex-wrap sm:mt-4">
-            <div className="flex -space-x-1.5">
-              {(['#d47b5a', '#3a6b8a', '#5a7d42', '#8a5a3a'] as const).map(
-                (bg, i) => (
-                  <div
-                    key={bg}
-                    className="relative z-[calc(4-i)] flex size-10 items-center justify-center rounded-full border-[3px] border-[#ffd23f] text-sm font-bold text-white sm:size-11"
-                    style={{ background: bg }}
-                  >
-                    {(['A', 'M', 'N', 'S'] as const)[i]}
-                  </div>
-                )
-              )}
-            </div>
+            <BentoJoinLearnerAvatars />
           </div>
           <div className="relative z-[1] mt-3 sm:mt-2">
             <Link

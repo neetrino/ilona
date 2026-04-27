@@ -4,7 +4,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, UserStatus } from '@ilona/database';
+import { Prisma, UserStatus, UserRole, StudentStatus } from '@ilona/database';
 
 @Injectable()
 export class StudentQueryService {
@@ -332,6 +332,56 @@ export class StudentQueryService {
       lastName: teacher.user.lastName,
       phone: teacher.user.phone,
       avatarUrl: teacher.user.avatarUrl,
+    }));
+  }
+
+  /**
+   * Public marketing list: active students, prefer rows with a profile image.
+   * Returns only non-sensitive fields (id, optional avatarUrl, display initials).
+   */
+  async findFeaturedAvatarsForMarketing(limit: number) {
+    const cap = Math.min(Math.max(1, limit), 8);
+    const poolSize = 48;
+
+    const rows = await this.prisma.student.findMany({
+      where: {
+        user: {
+          status: UserStatus.ACTIVE,
+          role: UserRole.STUDENT,
+        },
+        status: { not: StudentStatus.INACTIVE },
+      },
+      select: {
+        id: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      take: poolSize,
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    const sorted = [...rows].sort((a, b) => {
+      const aHas = a.user.avatarUrl ? 1 : 0;
+      const bHas = b.user.avatarUrl ? 1 : 0;
+      return bHas - aHas;
+    });
+
+    const buildInitials = (first: string, last: string) => {
+      const f = first?.trim().charAt(0) ?? '';
+      const l = last?.trim().charAt(0) ?? '';
+      const out = (f + l).toUpperCase();
+      return out || '?';
+    };
+
+    return sorted.slice(0, cap).map((row) => ({
+      id: row.id,
+      avatarUrl: row.user.avatarUrl,
+      initials: buildInitials(row.user.firstName, row.user.lastName),
     }));
   }
 }
