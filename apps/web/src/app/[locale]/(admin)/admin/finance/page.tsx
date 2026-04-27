@@ -23,7 +23,6 @@ import { FinanceTabs } from './components/FinanceTabs';
 import { FinanceFilters } from './components/FinanceFilters';
 import { PaymentsTable } from './components/PaymentsTable';
 import { SalariesTable } from './components/SalariesTable';
-import { FinanceInfoCards } from './components/FinanceInfoCards';
 
 export default function FinancePage() {
   const t = useTranslations('finance');
@@ -293,9 +292,6 @@ export default function FinancePage() {
             noResultsKey="noSalariesMatch"
           />
         )}
-
-        {/* Info Cards */}
-        <FinanceInfoCards dashboard={dashboard} />
 
         {/* Salary Details Modal */}
         <SalaryDetailsModal
