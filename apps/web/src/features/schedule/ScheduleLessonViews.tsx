@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { Lesson } from '@/features/lessons';
 import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
+import { formatScheduleDate, scheduleDateKeyFromIso } from '@/features/schedule/schedule-dates';
 import { cn } from '@/shared/lib/utils';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -20,13 +21,6 @@ interface MonthLessonGridProps {
   lessonsByDate: Record<string, Lesson[]>;
   isLoading?: boolean;
   className?: string;
-}
-
-function formatDateKey(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 function formatTime(dateString: string): string {
@@ -97,9 +91,9 @@ function LessonCard({
 export function WeekLessonGrid({ weekDates, lessons, isLoading }: WeekLessonGridProps) {
   const { slots, cells, totalLessons } = useMemo(() => {
     const groupedByDay = weekDates.map((date) => {
-      const dayKey = formatDateKey(date);
+      const dayKey = formatScheduleDate(date);
       return lessons
-        .filter((lesson) => lesson.scheduledAt.startsWith(dayKey))
+        .filter((lesson) => scheduleDateKeyFromIso(lesson.scheduledAt) === dayKey)
         .sort(
           (a, b) =>
             new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime(),

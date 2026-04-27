@@ -10,6 +10,7 @@ import { ScheduleBoard } from '@/features/schedule/ScheduleBoard';
 import {
   formatScheduleDate,
   getMonthDates,
+  getWeekDateRangeForApi,
   getWeekDates,
   type ScheduleViewMode,
 } from '@/features/schedule/schedule-dates';
@@ -32,34 +33,29 @@ export default function StudentSchedulePage() {
     [currentDate],
   );
 
-  const dateFrom = useMemo(() => {
+  const { dateFrom: queryDateFrom, dateTo: queryDateTo } = useMemo(() => {
     if (viewMode === 'month') {
-      return new Date(
+      const from = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth(),
         1,
       );
-    }
-    return weekDates[0];
-  }, [currentDate, viewMode, weekDates]);
-
-  const dateTo = useMemo(() => {
-    if (viewMode === 'month') {
-      return new Date(
+      const to = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth() + 1,
         1,
       );
+      return { dateFrom: formatScheduleDate(from), dateTo: formatScheduleDate(to) };
     }
-    return new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000);
+    return getWeekDateRangeForApi(weekDates);
   }, [currentDate, viewMode, weekDates]);
 
   const hasGroup = Boolean(profile?.groupId);
 
   const { data: lessonsData, isLoading: isLessonsLoading } = useLessons(
     {
-      dateFrom: formatScheduleDate(dateFrom),
-      dateTo: formatScheduleDate(dateTo),
+      dateFrom: queryDateFrom,
+      dateTo: queryDateTo,
       take: 500,
       sortBy: 'scheduledAt',
       sortOrder: 'asc',

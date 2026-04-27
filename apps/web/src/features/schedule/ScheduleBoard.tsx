@@ -3,12 +3,15 @@
 import { useMemo } from 'react';
 import type { Lesson } from '@/features/lessons';
 import { WeekLessonGrid, MonthLessonGrid } from '@/features/schedule/ScheduleLessonViews';
-import type { ScheduleViewMode } from '@/features/schedule/schedule-dates';
+import { scheduleDateKeyFromIso, type ScheduleViewMode } from '@/features/schedule/schedule-dates';
 import type { ReactNode } from 'react';
 
 function buildLessonsByDate(lessons: Lesson[]): Record<string, Lesson[]> {
   return lessons.reduce<Record<string, Lesson[]>>((acc, lesson) => {
-    const key = lesson.scheduledAt.split('T')[0];
+    const key = scheduleDateKeyFromIso(lesson.scheduledAt);
+    if (!key) {
+      return acc;
+    }
     if (!acc[key]) {
       acc[key] = [];
     }
