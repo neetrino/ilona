@@ -334,7 +334,7 @@ export function getSalaryColumns({
     {
       key: 'lessons',
       header: 'Lessons',
-      className: 'text-right',
+      className: 'text-center',
       render: (salary: SalaryRecord) => (
         <span className="text-slate-700">{salary.lessonsCount ?? 0}</span>
       ),
@@ -342,7 +342,7 @@ export function getSalaryColumns({
     {
       key: 'deductions',
       header: 'Deductions',
-      className: 'text-right',
+      className: 'text-center',
       render: (salary: SalaryRecord) => {
         const amount =
           typeof salary.totalDeductions === 'string'
@@ -365,7 +365,7 @@ export function getSalaryColumns({
     {
       key: 'salary',
       header: 'Salary',
-      className: 'text-right',
+      className: 'text-center',
       render: (salary: SalaryRecord) => {
         const amount = typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
         return (
