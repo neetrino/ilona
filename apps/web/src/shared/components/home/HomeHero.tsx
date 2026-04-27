@@ -21,7 +21,10 @@ const body = dmSansHome.className;
  */
 const heroPillTypeSize = 'text-[1.95em]';
 
-const heroTextMatchEnglish = cn('text-inherit', heroPillTypeSize);
+/** Slight stroke: Bricolage has no 900; `!font-extrabold` enforces 800 over next/font’s class. */
+const heroTypeEmbolden = '[-webkit-text-stroke:0.042em_currentColor]';
+
+const heroTextMatchEnglish = cn('text-inherit', heroPillTypeSize, '!font-extrabold', heroTypeEmbolden);
 
 /** h1 has `text-balance`; for “Learning Center” we use normal wrap so the two words stay on one line when they fit. */
 const heroTextMatchEnglishLine3 = cn(heroTextMatchEnglish, 'inline-block [text-wrap:wrap] max-w-full');
@@ -32,18 +35,19 @@ const heroTextMatchEnglishLine3 = cn(heroTextMatchEnglish, 'inline-block [text-w
  */
 const heroTitle = cn(
   'text-balance',
-  'font-extrabold',
+  '!font-extrabold',
   'text-[#1A1614] antialiased',
   'tracking-[-0.04em] sm:tracking-[-0.05em] lg:tracking-[-0.06em]',
   'leading-[0.94] sm:leading-[0.92] xl:leading-[0.9]',
-  'text-[clamp(1.95rem,0.1rem+3.75vw,3.8rem)]'
+  'text-[clamp(1.9rem,0.1rem+3.65vw,3.72rem)]'
 );
 
 const pillTextBoost = cn(
   'text-inherit',
   heroPillTypeSize,
   '[line-height:0.75] sm:[line-height:0.73] xl:[line-height:0.71]',
-  '[letter-spacing:inherit] [font-weight:inherit] antialiased'
+  '[letter-spacing:inherit] !font-extrabold antialiased',
+  heroTypeEmbolden
 );
 
 const pillBox = cn(
@@ -54,11 +58,12 @@ const pillBox = cn(
   'overflow-hidden'
 );
 
-/** 300×105 (Your) — slightly tighter than Figma 323×110; typography unchanged */
+/** Your pill — override pillBox’s overflow-wrap:anywhere so the word does not break mid-line on narrow widths */
 const pillTextYour = cn(
   pillBox,
   pillTextBoost,
-  'h-[105px] w-[min(100%,300px)] shrink-0 rounded-[30px] bg-[#ABEE00] md:w-[300px]',
+  'whitespace-nowrap [overflow-wrap:normal]',
+  'h-[110px] w-[min(100%,315px)] shrink-0 rounded-[30px] bg-[#ABEE00] md:w-[315px]',
   'px-3 sm:px-3.5 max-sm:px-2.5 max-md:px-2.5'
 );
 /** 456×123 (English) */
@@ -88,11 +93,11 @@ export function HomeHero() {
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:gap-4">
         <div className="relative z-[1] max-w-[50rem] mt-8 sm:mt-10 md:mt-12 lg:mt-16">
           <h1
-            className={cn(heroDisplay, heroTitle, 'mt-0 max-w-[min(100%,64rem)]')}
+            className={cn(heroTitle, heroDisplay, 'mt-0 max-w-[min(100%,64rem)]')}
           >
-            <span className="mb-0 flex w-full min-w-0 max-w-full flex-nowrap items-center gap-2.5 sm:mb-0 sm:gap-3.5">
+            <span className="mb-0 flex w-full min-w-0 max-w-full flex-wrap items-center gap-2.5 sm:mb-0 sm:flex-nowrap sm:gap-3.5">
               <span className={cn(heroTextMatchEnglish, 'shrink-0')}>{t('heroLine1a')}</span>
-              <span className={cn(pillTextYour, 'min-w-0 max-w-full shrink')}>{t('heroLine1b')}</span>
+              <span className={pillTextYour}>{t('heroLine1b')}</span>
             </span>
             <span className="mt-2.5 flex w-full min-w-0 max-w-full flex-col gap-1.5 sm:mt-3.5 sm:flex-row sm:items-stretch sm:gap-3 sm:pl-0 md:pl-0">
               <span
