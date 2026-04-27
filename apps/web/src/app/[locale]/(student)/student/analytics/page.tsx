@@ -161,7 +161,10 @@ export default function StudentAnalyticsPage() {
   const totalPayments = paymentsList.length;
   const paymentRate = totalPayments > 0 ? Math.round((paidPayments / totalPayments) * 100) : 100;
 
-  const payPeriodList = payPeriod?.items || [];
+  const payPeriodList = useMemo(
+    () => payPeriod?.items ?? [],
+    [payPeriod],
+  );
   const paidInRange = useMemo(
     () => payPeriodList.filter((p) => p.status === 'PAID'),
     [payPeriodList],

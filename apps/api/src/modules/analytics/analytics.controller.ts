@@ -46,7 +46,7 @@ export class AnalyticsController {
     @Query('series') series?: 'none' | 'per_day' | 'per_month',
   ) {
     if (dateFrom && dateTo) {
-      const s = (series || 'none') as 'none' | 'per_day' | 'per_month';
+      const s = (series || 'none');
       if (s !== 'none' && s !== 'per_day' && s !== 'per_month') {
         throw new BadRequestException('Invalid series: use none, per_day, or per_month');
       }

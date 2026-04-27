@@ -300,7 +300,7 @@ export class SalaryRecordService {
       where.AND = Array.isArray(existingAnd)
         ? [...existingAnd, rangeAnd]
         : existingAnd
-          ? [existingAnd as Prisma.SalaryRecordWhereInput, rangeAnd]
+          ? [existingAnd, rangeAnd]
           : [rangeAnd];
     }
 

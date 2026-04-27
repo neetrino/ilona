@@ -148,6 +148,15 @@ export default function TeacherProfilePage() {
     };
   }, [isEditMode, refetch]);
 
+  const handleNavigation = useCallback((path: string) => {
+    if (hasUnsavedChanges && isEditMode) {
+      if (!window.confirm('You have unsaved changes. Are you sure you want to leave? Your changes will be lost.')) {
+        return;
+      }
+    }
+    router.push(path);
+  }, [hasUnsavedChanges, isEditMode, router]);
+
   if (!teacherId) {
     return (
       <DashboardLayout title={t('teacherProfile')} subtitle={t('loadingTeacherInfo')}>
@@ -157,16 +166,6 @@ export default function TeacherProfilePage() {
       </DashboardLayout>
     );
   }
-
-  // Handle navigation with unsaved changes warning
-  const handleNavigation = useCallback((path: string) => {
-    if (hasUnsavedChanges && isEditMode) {
-      if (!window.confirm('You have unsaved changes. Are you sure you want to leave? Your changes will be lost.')) {
-        return;
-      }
-    }
-    router.push(path);
-  }, [hasUnsavedChanges, isEditMode, router]);
 
   const onSubmit = async (data: UpdateTeacherFormData) => {
     setErrorMessage(null);
