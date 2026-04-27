@@ -21,7 +21,9 @@ export function HomeStudentLife() {
         <h2
           className={cn(
             b,
-            'max-w-[20rem] text-balance text-[#111] text-[2rem] font-extrabold leading-tight sm:max-w-[28rem] sm:text-5xl sm:leading-[1.05] md:text-6xl'
+            'min-w-0 max-w-none whitespace-nowrap text-[#111] font-extrabold leading-tight',
+            'text-[clamp(1.05rem,0.35rem+2.4vw,2rem)]',
+            'sm:text-5xl sm:leading-[1.05] md:text-6xl'
           )}
         >
           {t('studentLifeTitle')}
@@ -36,7 +38,7 @@ export function HomeStudentLife() {
         </p>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-10 sm:gap-5 lg:grid-cols-12">
+      <div className="mt-32 grid grid-cols-1 gap-4 sm:mt-36 sm:gap-5 lg:grid-cols-12">
         <div className="flex min-h-[280px] flex-col justify-between overflow-hidden rounded-3xl bg-[#b8e986] p-5 sm:min-h-[360px] sm:p-6 lg:col-span-5 lg:min-h-[420px]">
           <p className={cn(j, 'text-[#3f5b22] text-[0.7rem] sm:text-xs')}>{t('lifeFeatured')}</p>
           <div className="mt-auto">
@@ -58,15 +60,17 @@ export function HomeStudentLife() {
 
         <div
           className={cn(
-            'min-h-[220px] overflow-hidden rounded-3xl p-5 sm:min-h-[300px] sm:p-6 lg:col-span-3',
+            'flex min-h-[220px] flex-col overflow-hidden rounded-3xl p-5 sm:min-h-[300px] sm:p-6 lg:col-span-3',
             "bg-gradient-to-br from-zinc-100/90 to-zinc-200/40"
           )}
         >
-          <p className={cn(j, 'text-[#8a8680] text-[0.7rem] sm:text-xs')}>{t('lifeImgLabel1')}</p>
+          <p className={cn(j, 'shrink-0 text-[#8a8680] text-[0.7rem] sm:text-xs')}>
+            {t('lifeImgLabel1')}
+          </p>
           <h3
             className={cn(
               b,
-              'mt-auto block pt-16 text-[#111] text-2xl font-bold leading-8 sm:pt-24 sm:text-3xl'
+              'mt-auto text-[#111] text-2xl font-bold leading-8 sm:text-3xl'
             )}
           >
             {t('lifeSmall1a')}
@@ -78,26 +82,28 @@ export function HomeStudentLife() {
         <div className="flex min-h-0 flex-col gap-4 lg:col-span-4">
           <div
             className={cn(
-              'min-h-[180px] flex-1 overflow-hidden rounded-3xl p-5 sm:min-h-[200px] sm:p-6',
+              'flex min-h-[180px] flex-1 flex-col overflow-hidden rounded-3xl p-5 sm:min-h-[200px] sm:p-6',
               "bg-gradient-to-br from-zinc-100/90 to-zinc-200/40"
             )}
           >
-            <p className={cn(j, 'text-[#8a8680] text-[0.7rem] sm:text-xs')}>{t('lifeEventLabel')}</p>
+            <p className={cn(j, 'shrink-0 text-[#8a8680] text-[0.7rem] sm:text-xs')}>
+              {t('lifeEventLabel')}
+            </p>
             <h3
               className={cn(
                 b,
-                'mt-12 text-[#111] text-2xl font-bold leading-8 sm:mt-16 sm:text-3xl'
+                'mt-auto text-[#111] text-2xl font-bold leading-8 sm:text-3xl'
               )}
             >
               {t('lifeBook')}
             </h3>
           </div>
-          <div className="min-h-[180px] flex-1 overflow-hidden rounded-3xl border border-[#e7e3d9] bg-white p-5 sm:min-h-[200px] sm:p-6">
-            <p className={cn(j, 'text-[#8a8680] text-[0.7rem] sm:text-xs')}>{t('lifeAwards')}</p>
+          <div className="flex min-h-[180px] flex-1 flex-col overflow-hidden rounded-3xl border border-[#e7e3d9] bg-white p-5 sm:min-h-[200px] sm:p-6">
+            <p className={cn(j, 'shrink-0 text-[#8a8680] text-[0.7rem] sm:text-xs')}>{t('lifeAwards')}</p>
             <h3
               className={cn(
                 b,
-                'mt-8 text-[#111] text-2xl font-bold leading-8 sm:mt-12 sm:text-3xl'
+                'mt-auto text-[#111] text-2xl font-bold leading-8 sm:text-3xl'
               )}
             >
               {t('lifeTop')}
