@@ -23,6 +23,9 @@ const heroPillTypeSize = 'text-[1.95em]';
 
 const heroTextMatchEnglish = cn('text-inherit', heroPillTypeSize);
 
+/** h1 has `text-balance`; for “Learning Center” we use normal wrap so the two words stay on one line when they fit. */
+const heroTextMatchEnglishLine3 = cn(heroTextMatchEnglish, 'inline-block [text-wrap:wrap] max-w-full');
+
 /**
  * `heroTitle` applies to the h1. Inner spans with `heroTextMatchEnglish` use 1.95em so they match
  * the “English” pill. Pills add tight `line-height` so the fixed Figma block heights are preserved.
@@ -33,7 +36,7 @@ const heroTitle = cn(
   'text-[#1A1614] antialiased',
   'tracking-[-0.04em] sm:tracking-[-0.05em] lg:tracking-[-0.06em]',
   'leading-[0.94] sm:leading-[0.92] xl:leading-[0.9]',
-  'text-[clamp(2.125rem,0.12rem+4.1vw,4.1rem)]'
+  'text-[clamp(1.95rem,0.1rem+3.75vw,3.8rem)]'
 );
 
 const pillTextBoost = cn(
@@ -51,26 +54,26 @@ const pillBox = cn(
   'overflow-hidden'
 );
 
-/** 323×110 (Your) — Figma block; type scaled via `pillTextBoost` + tight leading, not by growing the box */
+/** 300×105 (Your) — slightly tighter than Figma 323×110; typography unchanged */
 const pillTextYour = cn(
   pillBox,
   pillTextBoost,
-  'h-[110px] w-[min(100%,323px)] shrink-0 rounded-[30px] bg-[#ABEE00] md:w-[323px]',
-  'px-3.5 sm:px-4 max-sm:px-2.5 max-md:px-3'
+  'h-[105px] w-[min(100%,300px)] shrink-0 rounded-[30px] bg-[#ABEE00] md:w-[300px]',
+  'px-3 sm:px-3.5 max-sm:px-2.5 max-md:px-2.5'
 );
-/** 513×134 (English) */
+/** 456×123 (English) */
 const pillTextEnglish = cn(
   pillBox,
   pillTextBoost,
-  'h-[134px] w-[min(100%,513px)] shrink-0 rounded-[30px] bg-[#66B2FF] md:w-[513px]',
-  'px-3.5 sm:px-4 max-sm:px-2.5'
+  'h-[123px] w-[min(100%,456px)] shrink-0 rounded-[30px] bg-[#66B2FF] md:w-[456px]',
+  'px-2.5 sm:px-3 max-sm:px-2.5'
 );
-/** 330×108 (Ease) */
+/** 308×100 (Ease) — same sizing pass as other pills; typography unchanged */
 const pillTextEase = cn(
   pillBox,
   pillTextBoost,
-  'h-[108px] w-[min(100%,330px)] shrink-0 rounded-[30px] bg-[#FFCD2C] md:w-[330px]',
-  'px-3.5 sm:px-4 max-sm:px-2.5'
+  'h-[100px] w-[min(100%,308px)] shrink-0 rounded-[30px] bg-[#FFCD2C] md:w-[308px]',
+  'px-3 sm:px-3.5 max-sm:px-2.5'
 );
 
 export function HomeHero() {
@@ -94,21 +97,21 @@ export function HomeHero() {
             <span className="mt-2.5 flex w-full min-w-0 max-w-full flex-col gap-1.5 sm:mt-3.5 sm:flex-row sm:items-stretch sm:gap-3 sm:pl-0 md:pl-0">
               <span
                 className={cn(
-                  'box-border flex w-[min(100%,420px)] shrink-0',
-                  'h-[121.078px] items-start justify-center gap-2 rounded-[30px] bg-[#FF8A6B]',
-                  'py-0 pl-[20.516px] pr-[20.25px]',
-                  'md:w-[420px]'
+                  'box-border flex w-[min(100%,360px)] shrink-0',
+                  'h-[104px] items-center justify-center gap-1.5 rounded-[30px] bg-[#FF8A6B]',
+                  'px-2 py-0 sm:gap-1.5',
+                  'md:w-[360px]'
                 )}
                 aria-hidden
               >
-                <HeroDecoStarIcon />
-                <HeroDecoRingIcon />
-                <HeroDecoTriangleIcon />
+                <HeroDecoStarIcon className="h-[96px] w-[96px] sm:h-[98px] sm:w-[98px]" />
+                <HeroDecoRingIcon className="h-[96px] w-[96px] sm:h-[98px] sm:w-[98px]" />
+                <HeroDecoTriangleIcon className="h-[96px] w-[96px] sm:h-[98px] sm:w-[98px]" />
               </span>
               <span className={pillTextEnglish}>{t('heroLine2')}</span>
             </span>
             <span className="mb-0 mt-2.5 block w-full min-w-0 text-inherit sm:mt-3.5">
-              <span className={heroTextMatchEnglish}>{t('heroLine3')}</span>
+              <span className={heroTextMatchEnglishLine3}>{t('heroLine3')}</span>
             </span>
             <span className="mt-1.5 flex min-w-0 max-w-full flex-col gap-1.5 sm:mt-2.5 sm:flex-row sm:items-baseline sm:gap-3.5">
               <span className={heroTextMatchEnglish}>{t('heroLine4a')}</span>
