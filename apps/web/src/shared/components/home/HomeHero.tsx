@@ -91,7 +91,7 @@ export function HomeHero() {
       className="relative mx-auto w-full max-w-[1920px] overflow-hidden px-4 pt-2 pb-12 sm:px-10 sm:pt-3 sm:pb-16 lg:px-10 lg:pb-20 xl:px-14"
       id="top"
     >
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:gap-4">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,0.65fr)_minmax(0,1.35fr)] lg:items-center lg:gap-1 xl:gap-2">
         <div className="relative z-[1] max-w-[50rem] pt-1 mt-8 sm:mt-10 md:mt-12 lg:mt-16">
           <h1
             className={cn(heroTitle, heroDisplay, 'mt-0 max-w-[min(100%,64rem)]')}
@@ -171,7 +171,7 @@ export function HomeHero() {
             width={1164}
             height={874}
             priority
-            className="h-auto w-full max-w-[17rem] object-contain sm:max-w-sm md:max-w-md lg:ml-auto lg:max-w-lg xl:max-w-none xl:pr-4"
+            className="h-auto w-full max-w-[min(100%,40rem)] object-contain sm:max-w-[min(100%,80rem)] md:max-w-[min(100%,1350px)] md:translate-x-20 lg:ml-auto lg:max-w-[min(100%,1500px)] lg:translate-x-32 xl:translate-x-40 2xl:translate-x-56 2xl:max-w-[min(100%,1700px)] min-[2000px]:max-w-[min(100%,1850px)] min-[2000px]:translate-x-64 xl:pr-0"
             alt=""
           />
         </div>
