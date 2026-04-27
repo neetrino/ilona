@@ -192,8 +192,10 @@ export class PaymentsService {
     skip?: number;
     take?: number;
     status?: PaymentStatus;
+    dateFrom?: Date;
+    dateTo?: Date;
   }) {
-    const { studentId, skip = 0, take = 50, status } = params;
+    const { studentId, skip = 0, take = 50, status, dateFrom, dateTo } = params;
 
     const where: Prisma.PaymentWhereInput = { studentId };
     if (status) where.status = status;
@@ -221,6 +223,8 @@ export class PaymentsService {
     }
 
     const now = new Date();
+    const rangeFrom = dateFrom?.getTime();
+    const rangeTo = dateTo?.getTime();
     const grouped = Array.from(byMonth.entries())
       .map(([, list]) => {
         // Use representative payment's amount only (one monthly fee per month). Do not sum.
@@ -256,6 +260,26 @@ export class PaymentsService {
           canPay,
           paymentWindowReason: unpaid ? window.reason : undefined,
         };
+      })
+      .filter((row) => {
+        if (rangeFrom === undefined || rangeTo === undefined) return true;
+        const f = rangeFrom;
+        const t = rangeTo;
+        const mStart = row.month.getTime();
+        const mEnd = Date.UTC(
+          row.month.getUTCFullYear(),
+          row.month.getUTCMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999,
+        );
+        if (row.status === PaymentStatus.PAID && row.paidAt) {
+          const p = new Date(row.paidAt).getTime();
+          return p >= f && p <= t;
+        }
+        return mStart <= t && mEnd >= f;
       })
       .sort((a, b) => b.month.getTime() - a.month.getTime());
 

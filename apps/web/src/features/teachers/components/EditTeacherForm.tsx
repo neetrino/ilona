@@ -85,7 +85,9 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const updateTeacher = useUpdateTeacher();
-  const { data: teacher, isLoading: isLoadingTeacher } = useTeacher(teacherId, open);
+  const { data: teacher, isLoading: isQueryLoading } = useTeacher(teacherId, open);
+  const isLoadingTeacher =
+    isQueryLoading || Boolean(teacher && teacher.id !== teacherId);
   const { data: centersData } = useCenters({ isActive: true, take: 100 }, open);
   const centers = centersData?.items ?? [];
 
@@ -123,7 +125,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
 
   // Pre-fill form when teacher data is loaded
   useEffect(() => {
-    if (teacher && open) {
+    if (teacher && open && teacher.id === teacherId) {
       setValue('firstName', teacher.user.firstName || '');
       setValue('lastName', teacher.user.lastName || '');
       setValue('phone', teacher.user.phone || '');
@@ -156,7 +158,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       setErrorMessage(null);
       setSuccessMessage(null);
     }
-  }, [teacher, open, setValue]);
+  }, [teacher, teacherId, open, setValue]);
 
   // Reset form when dialog closes
   useEffect(() => {

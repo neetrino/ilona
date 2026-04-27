@@ -38,6 +38,10 @@ export class LessonSchedulingService {
       throw new BadRequestException('End time must be after start time');
     }
 
+    if (duration < 15 || duration > 240) {
+      throw new BadRequestException('Lesson duration must be between 15 and 240 minutes (set a valid time range).');
+    }
+
     // Validate group exists and teacher is assigned
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
@@ -88,8 +92,36 @@ export class LessonSchedulingService {
       );
     }
 
-    // Create lessons from all potential dates (allow duplicates - user can create lessons whenever they want)
-    for (const scheduledAt of potentialLessons) {
+    if (potentialLessons.length === 0) {
+      const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const selectedWeekdays = weekdays.map((wd) => weekdayNames[wd]).join(', ');
+
+      throw new BadRequestException(
+        `No lessons match the selected weekdays (${selectedWeekdays}) in the date range ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}.`
+      );
+    }
+
+    const alreadyScheduled = await this.prisma.lesson.findMany({
+      where: {
+        groupId,
+        teacherId,
+        scheduledAt: { in: potentialLessons },
+      },
+      select: { scheduledAt: true },
+    });
+    const existingAt = new Set(alreadyScheduled.map((r) => r.scheduledAt.getTime()));
+    const newSlots = potentialLessons.filter((d) => !existingAt.has(d.getTime()));
+    const skippedDuplicateCount = potentialLessons.length - newSlots.length;
+
+    if (newSlots.length === 0) {
+      throw new BadRequestException(
+        skippedDuplicateCount > 0
+          ? 'All selected time slots already have lessons for this group and teacher. No new lessons were created.'
+          : 'No new lessons to create in this range.',
+      );
+    }
+
+    for (const scheduledAt of newSlots) {
       lessons.push({
         groupId,
         teacherId,
@@ -100,16 +132,8 @@ export class LessonSchedulingService {
       });
     }
 
-    if (lessons.length === 0) {
-      const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const selectedWeekdays = weekdays.map(wd => weekdayNames[wd]).join(', ');
-      
-      throw new BadRequestException(
-        `No lessons match the selected weekdays (${selectedWeekdays}) in the date range ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}.`
-      );
-    }
-
-    return this.crudService.createBulk(lessons);
+    const created = await this.crudService.createBulk(lessons);
+    return { items: created, skippedDuplicateCount };
   }
 }
 

@@ -373,9 +373,6 @@ export function LessonListTable({
                   <td className="px-4 py-3">
                     <div>
                       <p className="font-semibold text-slate-800">{lesson.group?.name || 'Unknown Group'}</p>
-                      {lesson.topic && (
-                        <p className="text-sm text-slate-500">{lesson.topic}</p>
-                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center">

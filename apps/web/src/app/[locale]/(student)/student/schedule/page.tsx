@@ -3,9 +3,8 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { useGroups } from '@/features/groups';
-import { useCenters } from '@/features/centers';
 import { useLessons } from '@/features/lessons';
+import { useMyProfile } from '@/features/students';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ScheduleBoard } from '@/features/schedule/ScheduleBoard';
 import { useScheduleViewMode } from '@/features/schedule/useScheduleViewMode';
@@ -16,41 +15,14 @@ import {
   getWeekDates,
 } from '@/features/schedule/schedule-dates';
 
-export default function AdminSchedulePage() {
+export default function StudentSchedulePage() {
   const t = useTranslations('nav');
-  const { user } = useAuthStore();
-  const managerCenterId =
-    user?.role === 'MANAGER' ? user.managerCenterId : undefined;
+  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
+  const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
+  const { data: profile, isLoading: isProfileLoading } = useMyProfile(isAuthReady);
 
-  const [centerId, setCenterId] = useState<string>('');
   const { viewMode, setViewMode } = useScheduleViewMode();
   const [currentDate, setCurrentDate] = useState(new Date());
-
-  const { data: centersData } = useCenters({ isActive: true });
-  const allCenters = useMemo(
-    () => centersData?.items ?? [],
-    [centersData?.items],
-  );
-  const visibleCenters = managerCenterId
-    ? allCenters.filter((c) => c.id === managerCenterId)
-    : allCenters;
-  const managerBranchName = useMemo(() => {
-    if (user?.role !== 'MANAGER' || !managerCenterId) {
-      return null;
-    }
-    return allCenters.find((center) => center.id === managerCenterId)?.name ?? null;
-  }, [allCenters, managerCenterId, user?.role]);
-
-  const effectiveCenterId = managerCenterId ?? (centerId || undefined);
-
-  const { data: groupsData, isLoading } = useGroups({
-    isActive: true,
-    take: 200,
-    centerId: effectiveCenterId,
-  });
-
-  const groups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
-  const groupIds = useMemo(() => groups.map((group) => group.id), [groups]);
 
   const weekDates = useMemo(
     () => getWeekDates(new Date(currentDate)),
@@ -78,22 +50,26 @@ export default function AdminSchedulePage() {
     return getWeekDateRangeForApi(weekDates);
   }, [currentDate, viewMode, weekDates]);
 
+  const hasGroup = Boolean(profile?.groupId);
+
   const { data: lessonsData, isLoading: isLessonsLoading } = useLessons(
     {
-      groupIds: groupIds.length > 0 ? groupIds : undefined,
-      centerId: effectiveCenterId,
       dateFrom: queryDateFrom,
       dateTo: queryDateTo,
       take: 500,
       sortBy: 'scheduledAt',
       sortOrder: 'asc',
     },
-    { refetchInterval: 60000, refetchIntervalInBackground: false },
+    {
+      refetchInterval: 60000,
+      refetchIntervalInBackground: false,
+      enabled: isAuthReady && hasGroup,
+    },
   );
 
   const lessons = useMemo(
-    () => lessonsData?.items ?? [],
-    [lessonsData?.items],
+    () => (hasGroup ? (lessonsData?.items ?? []) : []),
+    [hasGroup, lessonsData?.items],
   );
 
   const periodLabel = useMemo(() => {
@@ -123,45 +99,15 @@ export default function AdminSchedulePage() {
     >
       <ScheduleBoard
         lessons={lessons}
-        isLoading={isLoading || isLessonsLoading}
+        isLoading={!isAuthReady || isProfileLoading || (hasGroup && isLessonsLoading)}
         topBar={(
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
-            {!managerCenterId && (
-              <div className="md:w-72">
-                <label
-                  htmlFor="schedule-center"
-                  className="mb-1.5 block text-sm font-medium text-slate-600"
-                >
-                  Center
-                </label>
-                <select
-                  id="schedule-center"
-                  value={centerId}
-                  onChange={(e) => setCenterId(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
-                >
-                  <option value="">All centers</option>
-                  {visibleCenters.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            <div className="flex-1 text-sm text-slate-500">
-              Showing {groups.length} active group{groups.length !== 1 ? 's' : ''}
-              {effectiveCenterId
-                ? ` in ${
-                    visibleCenters.find((c) => c.id === effectiveCenterId)
-                      ?.name ?? 'selected center'
-                  }`
-                : ''}
-              .
-            </div>
+          <div className="mb-6 text-sm text-slate-500">
+            {profile && !hasGroup
+              ? 'You are not assigned to a class group yet. When you are, your schedule will appear here.'
+              : 'Lessons for your class group in this center.'}
           </div>
         )}
-        managerBranchName={managerBranchName}
+        managerBranchName={null}
         weekDates={weekDates}
         monthDates={monthDates}
         viewMode={viewMode}

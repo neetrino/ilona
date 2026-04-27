@@ -1,9 +1,6 @@
-import { cn } from '@/shared/lib/utils';
+import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
 import type { Lesson } from '@/features/lessons';
 import { LessonBlock } from './CalendarComponents';
-import { formatDate } from '../utils/calendar-utils';
-
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 interface MonthViewProps {
   monthDates: (Date | null)[][];
@@ -11,79 +8,33 @@ interface MonthViewProps {
   onComplete?: (lessonId: string) => void;
   onLessonClick?: (lessonId: string) => void;
   isLoading?: boolean;
-  t?: (key: string) => string;
 }
 
-export function MonthView({ 
-  monthDates, 
-  lessonsByDate, 
+export function MonthView({
+  monthDates,
+  lessonsByDate,
   onComplete,
   onLessonClick,
   isLoading,
-  t 
 }: MonthViewProps) {
-  if (isLoading) {
-    return (
-      <div className="p-8 text-center text-slate-500">
-        {t?.('loading') || 'Loading...'}
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div className="grid grid-cols-7 border-b border-slate-200">
-        {DAYS.map((day) => (
-          <div key={day} className="p-2 text-center text-sm font-medium text-slate-600 bg-slate-50">
-            {day}
-          </div>
-        ))}
-      </div>
-      <div className="divide-y divide-slate-200">
-        {monthDates.map((week, weekIndex) => (
-          <div key={weekIndex} className="grid grid-cols-7 divide-x divide-slate-200">
-            {week.map((date, dayIndex) => {
-              if (!date) {
-                return <div key={dayIndex} className="min-h-[100px] bg-slate-50" />;
-              }
-              
-              const dateKey = formatDate(date);
-              const dayLessons = lessonsByDate[dateKey] || [];
-              const isToday = date.toDateString() === new Date().toDateString();
-
-              return (
-                <div key={dayIndex} className={cn(
-                  'min-h-[100px] p-1',
-                  isToday && 'bg-blue-50'
-                )}>
-                  <p className={cn(
-                    'text-sm font-medium mb-1',
-                    isToday ? 'text-blue-600' : 'text-slate-800'
-                  )}>
-                    {date.getDate()}
-                  </p>
-                  {dayLessons.slice(0, 2).map((lesson) => (
-                    <LessonBlock
-                      key={lesson.id}
-                      lesson={lesson}
-                      onComplete={onComplete}
-                      onClick={onLessonClick}
-                    />
-                  ))}
-                  {dayLessons.length > 2 && (
-                    <p className="text-xs text-slate-500">+{dayLessons.length - 2} more</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
+    <CalendarMonthGrid<Lesson>
+      monthDates={monthDates}
+      getLessonsForDay={(k) => lessonsByDate[k] ?? []}
+      getLessonKey={(l) => l.id}
+      getSortTime={(l) => new Date(l.scheduledAt).getTime()}
+      renderLesson={({ lesson, variant }) => (
+        <div
+          className={variant === 'dialog' ? 'min-w-0' : 'min-w-0 max-w-full overflow-hidden'}
+        >
+          <LessonBlock
+            lesson={lesson}
+            onComplete={onComplete}
+            onClick={onLessonClick}
+          />
+        </div>
+      )}
+      isLoading={isLoading}
+    />
   );
 }
-
-
-
-
-

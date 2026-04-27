@@ -45,7 +45,7 @@ export function TextTab({ lessonId }: TextTabProps) {
 
       // Mark text as sent and invalidate both detail and list queries to ensure consistency
       await api.patch(`/lessons/${lesson.id}/text-sent`);
-      queryClient.invalidateQueries({ queryKey: lessonKeys.detail(lesson.id) });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
 
       setText('');

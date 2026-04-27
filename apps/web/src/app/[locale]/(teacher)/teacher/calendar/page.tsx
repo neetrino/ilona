@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { cn } from '@/shared/lib/utils';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/BulkDeleteConfirmationDialog';
@@ -135,7 +136,12 @@ export default function TeacherCalendarPage() {
           />
         </>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div
+          className={cn(
+            'overflow-hidden rounded-xl border border-slate-200 bg-white',
+            viewMode === 'month' && 'h-[min(70vh,720px)] min-h-0',
+          )}
+        >
           {viewMode === 'week' ? (
             <WeekView
               weekDates={weekDates}
@@ -156,7 +162,6 @@ export default function TeacherCalendarPage() {
                 router.push(`/${locale}/teacher/calendar/${lessonId}`)
               }
               isLoading={isLoading}
-              t={tCommon}
             />
           )}
         </div>

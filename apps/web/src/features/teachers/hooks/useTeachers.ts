@@ -21,22 +21,33 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { settingsKeys } from '@/features/settings/hooks/useSettings';
 import { financeKeys } from '@/features/finance/hooks/useFinance';
 
-// Query keys
+function viewerScope(viewerId: string | null | undefined): string {
+  return viewerId ?? 'guest';
+}
+
+// Query keys (viewer scope prevents reusing another account's cached teacher list/detail in the same browser)
 export const teacherKeys = {
   all: ['teachers'] as const,
   lists: () => [...teacherKeys.all, 'list'] as const,
-  list: (filters?: TeacherFilters) => [...teacherKeys.lists(), filters] as const,
+  list: (filters?: TeacherFilters, viewerId?: string | null) =>
+    [...teacherKeys.lists(), { scope: viewerScope(viewerId) }, filters] as const,
   details: () => [...teacherKeys.all, 'detail'] as const,
-  detail: (id: string) => [...teacherKeys.details(), id] as const,
-  statistics: (id: string) => [...teacherKeys.detail(id), 'statistics'] as const,
+  detail: (id: string, viewerId?: string | null) =>
+    [...teacherKeys.details(), { scope: viewerScope(viewerId) }, id] as const,
+  statistics: (id: string, viewerId?: string | null) => [...teacherKeys.detail(id, viewerId), 'statistics'] as const,
 };
+
+function useViewerId(): string | null {
+  return useAuthStore((s) => s.user?.id ?? null);
+}
 
 /**
  * Hook to fetch teachers list
  */
 export function useTeachers(filters?: TeacherFilters, enabled = true) {
+  const viewerId = useViewerId();
   return useQuery({
-    queryKey: teacherKeys.list(filters),
+    queryKey: teacherKeys.list(filters, viewerId),
     queryFn: () => fetchTeachers(filters),
     enabled,
     staleTime: 30 * 1000,
@@ -44,14 +55,15 @@ export function useTeachers(filters?: TeacherFilters, enabled = true) {
 }
 
 /**
- * Hook to fetch a single teacher
+ * Hook to fetch a single teacher. Query is keyed by id — always use `data?.id === id`
+ * before showing UI when the route id can change without remounting (defensive).
  */
 export function useTeacher(id: string, enabled = true) {
+  const viewerId = useViewerId();
   return useQuery({
-    queryKey: teacherKeys.detail(id),
+    queryKey: teacherKeys.detail(id, viewerId),
     queryFn: () => fetchTeacher(id),
     enabled: enabled && !!id,
-    // Data is considered stale after 30 seconds
     staleTime: 30 * 1000,
   });
 }
@@ -65,8 +77,9 @@ export function useTeacherStatistics(
   dateTo?: string,
   enabled = true
 ) {
+  const viewerId = useViewerId();
   return useQuery({
-    queryKey: teacherKeys.statistics(id),
+    queryKey: teacherKeys.statistics(id, viewerId),
     queryFn: () => fetchTeacherStatistics(id, dateFrom, dateTo),
     enabled: enabled && !!id,
   });
@@ -101,17 +114,18 @@ export function useUpdateTeacher() {
       updateTeacher(id, data),
     // Optimistic update for better UX
     onMutate: async ({ id, data }) => {
+      const viewerId = user?.id ?? null;
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: teacherKeys.detail(id) });
+      await queryClient.cancelQueries({ queryKey: teacherKeys.detail(id, viewerId) });
       await queryClient.cancelQueries({ queryKey: teacherKeys.lists() });
 
       // Snapshot previous values
-      const previousTeacher = queryClient.getQueryData<Teacher>(teacherKeys.detail(id));
+      const previousTeacher = queryClient.getQueryData<Teacher>(teacherKeys.detail(id, viewerId));
       const previousLists = queryClient.getQueriesData({ queryKey: teacherKeys.lists() });
 
       // Optimistically update the detail query
       if (previousTeacher) {
-        queryClient.setQueryData<Teacher>(teacherKeys.detail(id), {
+        queryClient.setQueryData<Teacher>(teacherKeys.detail(id, viewerId), {
           ...previousTeacher,
           ...data,
           user: {
@@ -155,8 +169,9 @@ export function useUpdateTeacher() {
     },
     onError: (err, { id }, context) => {
       // Rollback on error
+      const viewerId = user?.id ?? null;
       if (context?.previousTeacher) {
-        queryClient.setQueryData(teacherKeys.detail(id), context.previousTeacher);
+        queryClient.setQueryData(teacherKeys.detail(id, viewerId), context.previousTeacher);
       }
       if (context?.previousLists) {
         context.previousLists.forEach(([queryKey, oldData]) => {
@@ -166,7 +181,8 @@ export function useUpdateTeacher() {
     },
     onSuccess: (updatedTeacher, { id }) => {
       // Invalidate and refetch all related queries
-      queryClient.invalidateQueries({ queryKey: teacherKeys.detail(id) });
+      const viewerId = user?.id ?? null;
+      queryClient.invalidateQueries({ queryKey: teacherKeys.detail(id, viewerId) });
       queryClient.invalidateQueries({ queryKey: teacherKeys.lists() });
       queryClient.invalidateQueries({ queryKey: teacherKeys.all });
       // Also invalidate user profile queries (settings)

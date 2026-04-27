@@ -107,9 +107,13 @@ export function TeacherDetailsModal({
 
   const {
     data: teacher,
-    isLoading,
+    isLoading: queryLoading,
     error,
   } = useTeacher(teacherId || '', !!teacherId && open);
+  const isMismatchedRecord = Boolean(
+    teacherId && teacher && teacher.id !== teacherId,
+  );
+  const isLoading = queryLoading || isMismatchedRecord;
 
   const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false);
 

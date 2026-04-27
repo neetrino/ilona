@@ -7,6 +7,7 @@ import { StatCard, Button } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { useLessons, useLessonStatistics, useCancelLesson, AddLessonForm, type Lesson, type LessonStatus } from '@/features/lessons';
+import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
 import { useTeachers } from '@/features/teachers';
 import { CalendarFilters } from './components/CalendarFilters';
 
@@ -242,7 +243,7 @@ export default function CalendarPage() {
     {
       dateFrom: rangeFrom,
       dateTo: rangeTo,
-      take: 100,
+      take: viewMode === 'month' ? 500 : 100,
       sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
       sortOrder: sortOrder,
       search: searchQuery || undefined,
@@ -259,29 +260,24 @@ export default function CalendarPage() {
 
   const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
 
-  // Group lessons by date
+  // Group lessons by date (all days in the fetched range, not only the current week)
   const lessonsByDate = useMemo(() => {
     const grouped: Record<string, Lesson[]> = {};
-    weekDates.forEach(date => {
-      grouped[formatDate(date)] = [];
-    });
-    
-    lessons.forEach(lesson => {
+    for (const lesson of lessons) {
       const dateKey = lesson.scheduledAt.split('T')[0];
-      if (grouped[dateKey]) {
-        grouped[dateKey].push(lesson);
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
       }
-    });
-
-    // Sort by time
-    Object.keys(grouped).forEach(key => {
-      grouped[key].sort((a, b) => 
-        new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+      grouped[dateKey].push(lesson);
+    }
+    for (const key of Object.keys(grouped)) {
+      grouped[key].sort(
+        (a, b) =>
+          new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime(),
       );
-    });
-
+    }
     return grouped;
-  }, [lessons, weekDates]);
+  }, [lessons]);
 
   // Navigation
   const goToPreviousWeek = () => {
@@ -555,9 +551,6 @@ export default function CalendarPage() {
                               <p className="text-slate-600 truncate">
                                 {lesson.group?.name || 'Unknown'}
                               </p>
-                              <p className="text-slate-500 truncate">
-                                {lesson.topic || 'No topic'}
-                              </p>
                             </div>
                           );
                         })}
@@ -571,45 +564,28 @@ export default function CalendarPage() {
         )}
 
         {viewMode === 'month' && (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="grid grid-cols-7 border-b border-slate-200">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                <div key={day} className="p-2 text-center text-sm font-medium text-slate-600 bg-slate-50">
-                  {day}
-                </div>
-              ))}
-            </div>
-            <div className="divide-y divide-slate-200">
-              {monthDates.map((week, weekIndex) => (
-                <div key={weekIndex} className="grid grid-cols-7 divide-x divide-slate-200">
-                  {week.map((date, dayIndex) => {
-                    if (!date) return <div key={dayIndex} className="min-h-[120px] bg-slate-50" />;
-                    const dateKey = formatDate(date);
-                    const dayLessons = lessonsByDate[dateKey] || [];
-                    return (
-                      <div key={dayIndex} className="min-h-[120px] p-2">
-                        <p className="mb-1 text-sm font-medium text-slate-700">{date.getDate()}</p>
-                        <div className="space-y-1">
-                          {dayLessons.slice(0, 2).map((lesson) => (
-                            <button
-                              key={lesson.id}
-                              type="button"
-                              onClick={() => router.push(`/admin/calendar/${lesson.id}`)}
-                              className="w-full rounded border border-blue-100 bg-blue-50 px-2 py-1 text-left text-xs text-slate-700 hover:bg-blue-100"
-                            >
-                              {formatTime(lesson.scheduledAt)} · {lesson.group?.name || 'Unknown'}
-                            </button>
-                          ))}
-                          {dayLessons.length > 2 && (
-                            <p className="text-xs text-slate-500">+{dayLessons.length - 2} more</p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
+          <div className="h-[min(70vh,720px)] overflow-hidden bg-white rounded-xl border border-slate-200 min-h-0">
+            <CalendarMonthGrid<Lesson>
+              monthDates={monthDates}
+              getLessonsForDay={(k) => lessonsByDate[k] ?? []}
+              getLessonKey={(l) => l.id}
+              getSortTime={(l) => new Date(l.scheduledAt).getTime()}
+              isLoading={isLoading}
+              renderLesson={({ lesson, variant }) => (
+                <button
+                  type="button"
+                  onClick={() => router.push(`/admin/calendar/${lesson.id}`)}
+                  className={cn(
+                    'w-full min-w-0 max-w-full truncate rounded border border-blue-100/90 bg-blue-50/90 text-left text-slate-800 transition hover:border-blue-200 hover:bg-blue-100/80',
+                    variant === 'cell'
+                      ? 'px-1.5 py-0.5 text-[9px] leading-tight sm:px-2 sm:py-1 sm:text-[10px] sm:leading-tight'
+                      : 'px-3 py-2.5 text-sm',
+                  )}
+                >
+                  {formatTime(lesson.scheduledAt)} · {lesson.group?.name ?? 'Unknown'}
+                </button>
+              )}
+            />
           </div>
         )}
 

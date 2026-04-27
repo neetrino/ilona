@@ -112,6 +112,20 @@ export async function fetchRevenueAnalytics(months = 6): Promise<RevenueData[]> 
   return api.get<RevenueData[]>(`${ANALYTICS_ENDPOINT}/revenue?months=${months}`);
 }
 
+export type RevenueSeries = 'none' | 'per_day' | 'per_month';
+
+export async function fetchRevenueAnalyticsByRange(
+  dateFrom: string,
+  dateTo: string,
+  series: RevenueSeries,
+): Promise<RevenueData[]> {
+  const p = new URLSearchParams();
+  p.append('dateFrom', dateFrom);
+  p.append('dateTo', dateTo);
+  p.append('series', series);
+  return api.get<RevenueData[]>(`${ANALYTICS_ENDPOINT}/revenue?${p.toString()}`);
+}
+
 export async function fetchAttendanceOverview(
   dateFrom?: string,
   dateTo?: string

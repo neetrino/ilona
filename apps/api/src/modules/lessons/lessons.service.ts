@@ -25,6 +25,7 @@ export class LessonsService {
   async findAll(params?: {
     skip?: number;
     take?: number;
+    centerId?: string;
     groupId?: string;
     groupIds?: string[];
     teacherId?: string;

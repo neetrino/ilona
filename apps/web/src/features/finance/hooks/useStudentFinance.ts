@@ -11,7 +11,8 @@ import {
 export const studentFinanceKeys = {
   all: ['student-finance'] as const,
   payments: () => [...studentFinanceKeys.all, 'payments'] as const,
-  paymentList: (skip?: number, take?: number, status?: string) => [...studentFinanceKeys.payments(), { skip, take, status }] as const,
+  paymentList: (skip?: number, take?: number, status?: string, dateFrom?: string, dateTo?: string) =>
+    [...studentFinanceKeys.payments(), { skip, take, status, dateFrom, dateTo }] as const,
   paymentSummary: () => [...studentFinanceKeys.all, 'payment-summary'] as const,
 };
 
@@ -19,10 +20,16 @@ export const studentFinanceKeys = {
  * Hook to fetch student's payment records.
  * refetchOnMount: 'always' ensures correct amount is shown when opening the Payments page (no stale cache).
  */
-export function useMyPayments(skip?: number, take?: number, status?: string) {
+export function useMyPayments(
+  skip?: number,
+  take?: number,
+  status?: string,
+  dateFrom?: string,
+  dateTo?: string
+) {
   return useQuery({
-    queryKey: studentFinanceKeys.paymentList(skip, take, status),
-    queryFn: () => fetchMyPayments(skip, take, status),
+    queryKey: studentFinanceKeys.paymentList(skip, take, status, dateFrom, dateTo),
+    queryFn: () => fetchMyPayments(skip, take, status, dateFrom, dateTo),
     staleTime: 0,
     refetchOnMount: 'always',
   });

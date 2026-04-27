@@ -274,13 +274,34 @@ export class SalaryRecordService {
    */
   async findAllRecordsByTeacher(
     teacherId: string,
-    params?: { skip?: number; take?: number; status?: SalaryStatus },
+    params?: { skip?: number; take?: number; status?: SalaryStatus; dateFrom?: Date; dateTo?: Date },
   ) {
-    const { skip = 0, take = 50, status } = params || {};
+    const { skip = 0, take = 50, status, dateFrom, dateTo } = params || {};
 
     const where: Prisma.SalaryRecordWhereInput = { teacherId };
     if (status) {
       where.status = status;
+    }
+    if (dateFrom && dateTo) {
+      const f = dateFrom;
+      const t = dateTo;
+      const fromMonth = new Date(Date.UTC(f.getUTCFullYear(), f.getUTCMonth(), 1, 0, 0, 0, 0));
+      const toMonth = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1, 0, 0, 0, 0));
+      const existingAnd = where.AND;
+      const rangeAnd: Prisma.SalaryRecordWhereInput = {
+        OR: [
+          { status: SalaryStatus.PAID, paidAt: { gte: f, lte: t } },
+          {
+            status: { in: [SalaryStatus.PENDING, SalaryStatus.PROCESSING] },
+            month: { gte: fromMonth, lte: toMonth },
+          },
+        ],
+      };
+      where.AND = Array.isArray(existingAnd)
+        ? [...existingAnd, rangeAnd]
+        : existingAnd
+          ? [existingAnd, rangeAnd]
+          : [rangeAnd];
     }
 
     const [salaryRecords, total] = await Promise.all([

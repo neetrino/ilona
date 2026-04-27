@@ -235,7 +235,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       });
 
       // Invalidate both detail and list queries to ensure consistency
-      queryClient.invalidateQueries({ queryKey: lessonKeys.detail(lesson.id) });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
       
       // Show success message

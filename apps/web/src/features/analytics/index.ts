@@ -4,6 +4,7 @@ export {
   useTeacherPerformance,
   useStudentRisk,
   useRevenueAnalytics,
+  useRevenueAnalyticsByRange,
   useAttendanceOverview,
   useLessonsOverview,
   analyticsKeys,
@@ -15,6 +16,7 @@ export type {
   TeacherPerformance,
   StudentRisk,
   RevenueData,
+  RevenueSeries,
   AttendanceOverview,
   LessonsOverview,
 } from './api/analytics.api';

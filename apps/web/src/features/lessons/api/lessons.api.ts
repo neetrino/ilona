@@ -7,6 +7,7 @@ import type {
   UpdateLessonDto,
   CompleteLessonDto,
   CreateRecurringLessonsDto,
+  CreateRecurringLessonsResult,
   LessonStatistics,
 } from '../types';
 
@@ -20,6 +21,7 @@ export async function fetchLessons(filters?: LessonFilters): Promise<LessonsResp
   
   if (filters?.skip !== undefined) params.append('skip', String(filters.skip));
   if (filters?.take !== undefined) params.append('take', String(filters.take));
+  if (filters?.centerId) params.append('centerId', filters.centerId);
   if (filters?.groupId) params.append('groupId', filters.groupId);
   if (filters?.groupIds && filters.groupIds.length > 0) {
     filters.groupIds.forEach(id => params.append('groupIds', id));
@@ -102,8 +104,10 @@ export async function createLesson(data: CreateLessonDto): Promise<Lesson> {
 /**
  * Create recurring lessons
  */
-export async function createRecurringLessons(data: CreateRecurringLessonsDto): Promise<Lesson[]> {
-  return api.post<Lesson[]>(`${LESSONS_ENDPOINT}/recurring`, data);
+export async function createRecurringLessons(
+  data: CreateRecurringLessonsDto
+): Promise<CreateRecurringLessonsResult> {
+  return api.post<CreateRecurringLessonsResult>(`${LESSONS_ENDPOINT}/recurring`, data);
 }
 
 /**

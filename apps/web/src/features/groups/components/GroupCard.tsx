@@ -22,6 +22,8 @@ interface GroupCardProps {
   onToggleActive: () => void;
   /** When provided, each student name opens that student's profile (e.g. board view) */
   onStudentClick?: (studentId: string) => void;
+  /** Disables the active/inactive toggle (e.g. while a status update is in progress) */
+  isStatusTogglePending?: boolean;
 }
 
 export function GroupCard({
@@ -30,6 +32,7 @@ export function GroupCard({
   onDelete,
   onToggleActive,
   onStudentClick,
+  isStatusTogglePending = false,
 }: GroupCardProps) {
   const teacherName = group.teacher
     ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`
@@ -85,6 +88,7 @@ export function GroupCard({
             onDelete={onDelete}
             isActive={group.isActive}
             size="sm"
+            disableDisabled={isStatusTogglePending}
             ariaLabels={{
               edit: 'Edit group',
               disable: group.isActive ? 'Deactivate group' : 'Activate group',

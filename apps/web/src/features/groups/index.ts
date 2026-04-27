@@ -33,6 +33,10 @@ export { EditGroupForm } from './components/EditGroupForm';
 export { GroupIconPicker } from './components/GroupIconPicker';
 export { GroupIconDisplay, getGroupIconComponent } from './group-icon-registry';
 export { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
+export {
+  GroupStatusConfirmationDialog,
+} from './components/GroupStatusConfirmationDialog';
+export type { GroupStatusDialogAction } from './components/GroupStatusConfirmationDialog';
 export { GroupCard } from './components/GroupCard';
 export { GroupScheduleEditor } from './components/GroupScheduleEditor';
 export { getGroupOccupancyMeta } from './occupancy';

@@ -28,8 +28,17 @@ export default function TeacherProfilePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { data: teacher, isLoading, error, refetch } = useTeacher(teacherId);
+  const {
+    data: teacher,
+    isError,
+    error,
+    refetch,
+  } = useTeacher(teacherId, Boolean(teacherId));
   const updateTeacher = useUpdateTeacher();
+
+  // Wait until the fetched record matches the route (no wrong teacher flash, no stuck spinner on error)
+  const isDataForRoute = teacher?.id === teacherId;
+  const showDataLoading = Boolean(teacherId) && !isError && !isDataForRoute;
 
   const {
     register,
@@ -52,9 +61,17 @@ export default function TeacherProfilePage() {
     },
   });
 
+  // Dismiss edit mode and messages when navigating to another teacher
+  useEffect(() => {
+    setIsEditMode(false);
+    setHasUnsavedChanges(false);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+  }, [teacherId]);
+
   // Reset form when teacher data loads or when exiting edit mode
   useEffect(() => {
-    if (teacher && !isEditMode) {
+    if (teacher && teacher.id === teacherId && !isEditMode) {
       const hourlyRate = typeof teacher.hourlyRate === 'string' 
         ? parseFloat(teacher.hourlyRate) 
         : Number(teacher.hourlyRate || 0);
@@ -91,7 +108,7 @@ export default function TeacherProfilePage() {
       setErrorMessage(null);
       setSuccessMessage(null);
     }
-  }, [teacher, isEditMode, reset]);
+  }, [teacher, teacherId, isEditMode, reset]);
 
   // Track unsaved changes
   useEffect(() => {
@@ -131,7 +148,6 @@ export default function TeacherProfilePage() {
     };
   }, [isEditMode, refetch]);
 
-  // Handle navigation with unsaved changes warning
   const handleNavigation = useCallback((path: string) => {
     if (hasUnsavedChanges && isEditMode) {
       if (!window.confirm('You have unsaved changes. Are you sure you want to leave? Your changes will be lost.')) {
@@ -140,6 +156,16 @@ export default function TeacherProfilePage() {
     }
     router.push(path);
   }, [hasUnsavedChanges, isEditMode, router]);
+
+  if (!teacherId) {
+    return (
+      <DashboardLayout title={t('teacherProfile')} subtitle={t('loadingTeacherInfo')}>
+        <div className="flex min-h-[400px] items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const onSubmit = async (data: UpdateTeacherFormData) => {
     setErrorMessage(null);
@@ -216,8 +242,8 @@ export default function TeacherProfilePage() {
     setSuccessMessage(null);
   };
 
-  // Loading state
-  if (isLoading) {
+  // Loading state (include mismatch guard so we never render another teacher)
+  if (showDataLoading) {
     return (
       <DashboardLayout 
         title={t('teacherProfile')} 
@@ -231,7 +257,7 @@ export default function TeacherProfilePage() {
   }
 
   // Error state
-  if (error || !teacher) {
+  if (isError || !teacher) {
     return (
       <DashboardLayout 
         title={t('teacherProfile')} 
@@ -276,7 +302,7 @@ export default function TeacherProfilePage() {
       title={t('teacherProfile')} 
       subtitle={`Viewing profile for ${firstName} ${lastName}`}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form key={teacherId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Back Button & Edit Mode Toggle */}
         <div className="flex items-center justify-between mb-4">
           <Button 

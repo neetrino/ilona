@@ -25,38 +25,58 @@ import type {
   UpdateLessonDto,
   CompleteLessonDto,
   CreateRecurringLessonsDto,
+  CreateRecurringLessonsResult,
 } from '../types';
 import { financeKeys } from '@/features/finance/hooks/useFinance';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
-// Query keys
+type Scope = string;
+
+function scopeKey(userId: string | null | undefined): Scope {
+  return userId ?? 'guest';
+}
+
+// Query keys (scoped by auth user so another account never receives cached lesson rows)
 export const lessonKeys = {
   all: ['lessons'] as const,
   lists: () => [...lessonKeys.all, 'list'] as const,
-  list: (filters?: LessonFilters) => [...lessonKeys.lists(), filters] as const,
+  list: (filters?: LessonFilters, userId?: string | null) =>
+    [...lessonKeys.lists(), { scope: scopeKey(userId) }, filters] as const,
   details: () => [...lessonKeys.all, 'detail'] as const,
-  detail: (id: string) => [...lessonKeys.details(), id] as const,
-  today: () => [...lessonKeys.all, 'today'] as const,
-  upcoming: (limit?: number) => [...lessonKeys.all, 'upcoming', limit] as const,
-  myLessons: (dateFrom?: string, dateTo?: string) => [...lessonKeys.all, 'my-lessons', { dateFrom, dateTo }] as const,
-  statistics: (teacherId?: string, dateFrom?: string, dateTo?: string) =>
-    [...lessonKeys.all, 'statistics', { teacherId, dateFrom, dateTo }] as const,
+  detail: (id: string, userId?: string | null) =>
+    [...lessonKeys.details(), { scope: scopeKey(userId) }, id] as const,
+  today: (userId?: string | null) =>
+    [...lessonKeys.all, 'today', { scope: scopeKey(userId) }] as const,
+  upcoming: (limit?: number, userId?: string | null) =>
+    [...lessonKeys.all, 'upcoming', { scope: scopeKey(userId) }, limit] as const,
+  myLessons: (dateFrom?: string, dateTo?: string, userId?: string | null) =>
+    [...lessonKeys.all, 'my-lessons', { scope: scopeKey(userId) }, { dateFrom, dateTo }] as const,
+  statistics: (teacherId?: string, dateFrom?: string, dateTo?: string, userId?: string | null) =>
+    [...lessonKeys.all, 'statistics', { scope: scopeKey(userId) }, { teacherId, dateFrom, dateTo }] as const,
 };
+
+function useAuthUserId(): string | null {
+  return useAuthStore((s) => s.user?.id ?? null);
+}
 
 export interface UseLessonsOptions {
   /** Polling interval in ms (e.g. 60000 for calendar). Only when tab visible if refetchIntervalInBackground is false. */
   refetchInterval?: number | false;
   refetchIntervalInBackground?: boolean;
+  enabled?: boolean;
 }
 
 /**
  * Hook to fetch lessons list
  */
 export function useLessons(filters?: LessonFilters, options?: UseLessonsOptions) {
+  const userId = useAuthUserId();
   return useQuery({
-    queryKey: lessonKeys.list(filters),
+    queryKey: lessonKeys.list(filters, userId),
     queryFn: () => fetchLessons(filters),
     refetchInterval: options?.refetchInterval,
     refetchIntervalInBackground: options?.refetchIntervalInBackground ?? false,
+    enabled: options?.enabled !== false,
   });
 }
 
@@ -64,8 +84,9 @@ export function useLessons(filters?: LessonFilters, options?: UseLessonsOptions)
  * Hook to fetch a single lesson
  */
 export function useLesson(id: string, enabled = true) {
+  const userId = useAuthUserId();
   return useQuery({
-    queryKey: lessonKeys.detail(id),
+    queryKey: lessonKeys.detail(id, userId),
     queryFn: () => fetchLesson(id),
     enabled: enabled && !!id,
   });
@@ -75,8 +96,9 @@ export function useLesson(id: string, enabled = true) {
  * Hook to fetch today's lessons for current teacher
  */
 export function useTodayLessons(enabled = true) {
+  const userId = useAuthUserId();
   return useQuery({
-    queryKey: lessonKeys.today(),
+    queryKey: lessonKeys.today(userId),
     queryFn: () => fetchTodayLessons(),
     enabled,
   });
@@ -86,8 +108,9 @@ export function useTodayLessons(enabled = true) {
  * Hook to fetch upcoming lessons for current teacher
  */
 export function useUpcomingLessons(limit = 10, enabled = true) {
+  const userId = useAuthUserId();
   return useQuery({
-    queryKey: lessonKeys.upcoming(limit),
+    queryKey: lessonKeys.upcoming(limit, userId),
     queryFn: () => fetchUpcomingLessons(limit),
     enabled,
   });
@@ -97,8 +120,9 @@ export function useUpcomingLessons(limit = 10, enabled = true) {
  * Hook to fetch teacher's lessons with date filter
  */
 export function useMyLessons(dateFrom?: string, dateTo?: string, enabled = true) {
+  const userId = useAuthUserId();
   return useQuery({
-    queryKey: lessonKeys.myLessons(dateFrom, dateTo),
+    queryKey: lessonKeys.myLessons(dateFrom, dateTo, userId),
     queryFn: () => fetchMyLessons(dateFrom, dateTo),
     enabled,
   });
@@ -108,8 +132,9 @@ export function useMyLessons(dateFrom?: string, dateTo?: string, enabled = true)
  * Hook to fetch lesson statistics
  */
 export function useLessonStatistics(teacherId?: string, dateFrom?: string, dateTo?: string) {
+  const userId = useAuthUserId();
   return useQuery({
-    queryKey: lessonKeys.statistics(teacherId, dateFrom, dateTo),
+    queryKey: lessonKeys.statistics(teacherId, dateFrom, dateTo, userId),
     queryFn: () => fetchLessonStatistics(teacherId, dateFrom, dateTo),
   });
 }
@@ -123,7 +148,7 @@ export function useCreateLesson() {
   return useMutation({
     mutationFn: (data: CreateLessonDto) => createLesson(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.all });
     },
   });
 }
@@ -134,10 +159,10 @@ export function useCreateLesson() {
 export function useCreateRecurringLessons() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: CreateRecurringLessonsDto) => createRecurringLessons(data),
+  return useMutation<CreateRecurringLessonsResult, Error, CreateRecurringLessonsDto>({
+    mutationFn: (data) => createRecurringLessons(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.all });
     },
   });
 }
@@ -151,8 +176,8 @@ export function useUpdateLesson() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateLessonDto }) =>
       updateLesson(id, data),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: lessonKeys.detail(id) });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
     },
   });
@@ -166,9 +191,7 @@ export function useStartLesson() {
 
   return useMutation({
     mutationFn: (id: string) => startLesson(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: lessonKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: lessonKeys.all });
     },
   });
@@ -183,13 +206,8 @@ export function useCompleteLesson() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data?: CompleteLessonDto }) =>
       completeLesson(id, data),
-    onSuccess: (_, { id }) => {
-      // Invalidate all lesson queries to ensure UI updates immediately
-      queryClient.invalidateQueries({ queryKey: lessonKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: lessonKeys.all });
-      queryClient.invalidateQueries({ queryKey: lessonKeys.today() });
-      queryClient.invalidateQueries({ queryKey: lessonKeys.myLessons() });
       // Invalidate salary queries since completing a lesson affects salary calculation
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
     },
@@ -205,9 +223,7 @@ export function useCancelLesson() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
       cancelLesson(id, reason),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: lessonKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: lessonKeys.all });
     },
   });
@@ -221,8 +237,8 @@ export function useMarkLessonMissed() {
 
   return useMutation({
     mutationFn: (id: string) => markLessonMissed(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: lessonKeys.detail(id) });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
     },
   });
@@ -236,8 +252,8 @@ export function useMarkVocabularySent() {
 
   return useMutation({
     mutationFn: (id: string) => markVocabularySent(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: lessonKeys.detail(id) });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
     },
   });

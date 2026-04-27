@@ -156,14 +156,6 @@ export function useGroupsManagement(
     }
   };
 
-  const handleToggleActive = async (id: string) => {
-    try {
-      await toggleActive.mutateAsync(id);
-    } catch (err) {
-      console.error('Failed to toggle group status:', err);
-    }
-  };
-
   const handleToggleSelectGroup = (groupId: string) => {
     setSelectedGroupIds((prev) => {
       const newSet = new Set(prev);
@@ -278,7 +270,7 @@ export function useGroupsManagement(
     deleteGroupError,
     handleDeleteClick,
     handleDeleteConfirm,
-    handleToggleActive,
+    toggleGroupActive: toggleActive,
     selectedGroupIds,
     setSelectedGroupIds,
     handleToggleSelectGroup,

@@ -71,6 +71,7 @@ export interface LessonsResponse {
 export interface LessonFilters {
   skip?: number;
   take?: number;
+  centerId?: string;
   groupId?: string;
   groupIds?: string[];
   teacherId?: string;
@@ -106,13 +107,19 @@ export interface CompleteLessonDto {
 export interface CreateRecurringLessonsDto {
   groupId: string;
   teacherId: string;
-  weekdays: number[]; // Array of 0-6 (Sunday-Saturday)
+  weekdays: number[]; // Array of 0-6 (Sunday-Saturday, Date.getDay())
   startTime: string; // "09:00"
   endTime: string; // "10:30"
   startDate: string;
   endDate: string;
   topic?: string;
   description?: string;
+}
+
+/** Response from POST /lessons/recurring (bulk create with deduplication) */
+export interface CreateRecurringLessonsResult {
+  items: Lesson[];
+  skippedDuplicateCount: number;
 }
 
 export interface LessonStatistics {

@@ -65,7 +65,7 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
 
       // Mark voice as sent and invalidate both detail and list queries to ensure consistency
       await api.patch(`/lessons/${lesson.id}/voice-sent`);
-      queryClient.invalidateQueries({ queryKey: lessonKeys.detail(lesson.id) });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
 
       // Navigate to chat if navigation metadata is available

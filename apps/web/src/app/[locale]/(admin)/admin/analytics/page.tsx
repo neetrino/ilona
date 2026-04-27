@@ -1,24 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
   useTeacherPerformance,
   useStudentRisk,
-  useRevenueAnalytics,
+  useRevenueAnalyticsByRange,
   useAttendanceOverview,
   TeacherRatioTable,
   type StudentRisk,
 } from '@/features/analytics';
+import { AnalyticsTimeFilterBar } from '@/shared/components/analytics/AnalyticsTimeFilterBar';
+import {
+  buildTimeRange,
+  resolveRevenueApiSeries,
+} from '@/shared/lib/analytics-time-range';
 import { cn, formatCurrency } from '@/shared/lib/utils';
-
-type TabType =
-  | 'attendance'
-  | 'payments'
-  | 'recordings'
-  | 'feedback'
-  | 'risk';
+import { useAdminAnalyticsUrl, type AdminAnalyticsTab } from './use-admin-analytics-url';
+import { useAdminPaymentsTimeFilter } from './use-payments-time-filter';
 
 function RiskBadge({ level }: { level: 'LOW' | 'MEDIUM' | 'HIGH' }) {
   const styles = {
@@ -121,13 +121,39 @@ function StudentRiskRow({ student }: { student: StudentRisk }) {
 export default function AdminAnalyticsPage() {
   const tCommon = useTranslations('common');
   const t = useTranslations('analytics');
-  const [activeTab, setActiveTab] = useState<TabType>('attendance');
+  const analyticsUrl = useAdminAnalyticsUrl();
+  const { activeTab, setActiveTab } = analyticsUrl;
+  const {
+    committed: paymentsTimeCommitted,
+    hasUnsavedChanges: hasUnsavedPaymentsTime,
+    onApply: onApplyPaymentsTime,
+    timeFilterBarProps: paymentsTimeFilterBarProps,
+  } = useAdminPaymentsTimeFilter(analyticsUrl);
+
+  const timeRange = useMemo(
+    () =>
+      buildTimeRange(paymentsTimeCommitted.timeMode, {
+        dayYmd: paymentsTimeCommitted.dayYmd,
+        weekAnchorYmd: paymentsTimeCommitted.weekAnchorYmd,
+        customFromYmd: paymentsTimeCommitted.customFromYmd,
+        customToYmd: paymentsTimeCommitted.customToYmd,
+      }),
+    [paymentsTimeCommitted],
+  );
+  const revenueSeries = resolveRevenueApiSeries(
+    paymentsTimeCommitted.timeMode,
+    timeRange.daySpan,
+  );
 
   const { data: teachers = [], isLoading: isLoadingTeachers } =
     useTeacherPerformance(undefined, undefined);
   const { data: students = [], isLoading: isLoadingStudents } = useStudentRisk();
-  const { data: revenue = [], isLoading: isLoadingRevenue } =
-    useRevenueAnalytics(6);
+  const { data: revenue = [], isLoading: isLoadingRevenue } = useRevenueAnalyticsByRange(
+    timeRange.dateFrom,
+    timeRange.dateTo,
+    revenueSeries,
+    { enabled: activeTab === 'payments' },
+  );
   const { data: attendance, isLoading: isLoadingAttendance } =
     useAttendanceOverview(undefined, undefined);
 
@@ -138,7 +164,7 @@ export default function AdminAnalyticsPage() {
   const mediumRisk = students.filter((s) => s.riskLevel === 'MEDIUM').length;
   const lowRisk = students.filter((s) => s.riskLevel === 'LOW').length;
 
-  const tabs: { id: TabType; label: string }[] = [
+  const tabs: { id: AdminAnalyticsTab; label: string }[] = [
     { id: 'attendance', label: 'Attendance' },
     { id: 'payments', label: 'Payments' },
     { id: 'recordings', label: 'Recordings' },
@@ -208,6 +234,19 @@ export default function AdminAnalyticsPage() {
 
       {activeTab === 'payments' && (
         <div className="space-y-6">
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-600">
+              {t('paymentsTimeFilterLabel')}
+            </p>
+            <AnalyticsTimeFilterBar
+              {...paymentsTimeFilterBarProps}
+              className="transition-all duration-200"
+              applyAction={{
+                onApply: onApplyPaymentsTime,
+                hasUnsavedChanges: hasUnsavedPaymentsTime,
+              }}
+            />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-green-50 border border-green-200 rounded-xl p-4">
               <p className="text-sm text-green-600">Total Income</p>
@@ -250,14 +289,14 @@ export default function AdminAnalyticsPage() {
 
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <div className="p-4 border-b border-slate-200">
-              <h3 className="font-semibold text-slate-800">Monthly Breakdown</h3>
+              <h3 className="font-semibold text-slate-800">Breakdown</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
-                      Month
+                      {t('periodColumn')}
                     </th>
                     <th className="px-4 py-3 text-right text-sm font-medium text-slate-600">
                       Income

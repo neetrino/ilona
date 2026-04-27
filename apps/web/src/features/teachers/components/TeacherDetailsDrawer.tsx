@@ -24,9 +24,13 @@ export function TeacherDetailsDrawer({
 
   const {
     data: teacher,
-    isLoading,
+    isLoading: queryLoading,
     error,
   } = useTeacher(teacherId || '', !!teacherId && open);
+  const isMismatchedRecord = Boolean(
+    teacherId && teacher && teacher.id !== teacherId,
+  );
+  const isLoading = queryLoading || isMismatchedRecord;
 
   // Prevent body scroll when drawer is open
   useEffect(() => {

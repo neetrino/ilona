@@ -7,6 +7,8 @@ import {
   fetchTeacherPerformance,
   fetchStudentRisk,
   fetchRevenueAnalytics,
+  fetchRevenueAnalyticsByRange,
+  type RevenueSeries,
   fetchAttendanceOverview,
   fetchLessonsOverview,
   type DashboardSummary,
@@ -23,6 +25,8 @@ export const analyticsKeys = {
   teachers: (dateFrom?: string, dateTo?: string) => [...analyticsKeys.all, 'teachers', { dateFrom, dateTo }] as const,
   studentsRisk: () => [...analyticsKeys.all, 'students-risk'] as const,
   revenue: (months?: number) => [...analyticsKeys.all, 'revenue', months] as const,
+  revenueRange: (dateFrom: string, dateTo: string, series: RevenueSeries) =>
+    [...analyticsKeys.all, 'revenue', 'range', { dateFrom, dateTo, series }] as const,
   attendance: (dateFrom?: string, dateTo?: string) => [...analyticsKeys.all, 'attendance', { dateFrom, dateTo }] as const,
   lessons: (dateFrom?: string, dateTo?: string) => [...analyticsKeys.all, 'lessons', { dateFrom, dateTo }] as const,
 };
@@ -67,6 +71,19 @@ export function useRevenueAnalytics(
   return useQuery({
     queryKey: analyticsKeys.revenue(months),
     queryFn: () => fetchRevenueAnalytics(months),
+    ...options,
+  });
+}
+
+export function useRevenueAnalyticsByRange(
+  dateFrom: string,
+  dateTo: string,
+  series: RevenueSeries,
+  options?: Omit<UseQueryOptions<RevenueData[]>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery({
+    queryKey: analyticsKeys.revenueRange(dateFrom, dateTo, series),
+    queryFn: () => fetchRevenueAnalyticsByRange(dateFrom, dateTo, series),
     ...options,
   });
 }
