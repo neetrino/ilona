@@ -103,28 +103,37 @@ export function HomePlatformGrid() {
           {t('featuresSubtitleFigma')}
         </p>
       </div>
-      <div className="mt-9 grid grid-cols-1 gap-4 sm:mt-10 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div
+        className={cn(
+          'mt-9 grid grid-cols-1 items-stretch gap-4 sm:mt-10 sm:gap-5 md:grid-cols-2',
+          'xl:grid-cols-3'
+        )}
+      >
         {CARDS.map((c) => {
           const w = c.wrap;
           const colors = wrapMap[w];
           return (
             <div
               key={c.title}
-              className={cn('relative min-h-[260px] overflow-hidden rounded-[22px] p-6 sm:p-7', colors.card)}
+              className={cn(
+                'relative flex h-full min-h-[260px] max-md:min-h-[24rem] flex-col overflow-hidden rounded-[22px] p-6',
+                'sm:p-7',
+                colors.card
+              )}
             >
               <div
                 className={cn(
-                  'inline-flex size-[52px] items-center justify-center rounded-[14px]',
+                  'inline-flex size-[52px] shrink-0 items-center justify-center rounded-[14px]',
                   iconBoxClass(c)
                 )}
               >
                 <FigmaImage src={c.icon} width={22} height={22} className="size-[22px]" alt="" />
               </div>
-              <div className="mt-6 sm:mt-8">
+              <div className="mt-6 flex min-h-0 flex-1 flex-col sm:mt-8">
                 <h3
                   className={cn(
                     b,
-                    'text-2xl font-bold leading-7',
+                    'shrink-0 text-2xl font-bold leading-7',
                     w === 'dark' ? 'text-[#f5efe6]' : 'text-[#1a1614]'
                   )}
                 >
@@ -133,7 +142,7 @@ export function HomePlatformGrid() {
                 <p
                   className={cn(
                     d,
-                    'mt-1.5 max-w-[20rem] text-pretty text-[15px] font-normal leading-[22px]',
+                    'mt-1.5 max-w-[20rem] grow text-pretty text-[15px] font-normal leading-[22px]',
                     colors.sub
                   )}
                 >
