@@ -1,12 +1,20 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyPayments } from '@/features/finance';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatCurrency } from '@/shared/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/shared/lib/api';
+import { AnalyticsTimeFilterBar } from '@/shared/components/analytics/AnalyticsTimeFilterBar';
+import {
+  buildTimeRange,
+  defaultCustomRangeLast30Days,
+  toYmd,
+  type TimeFilterMode,
+} from '@/shared/lib/analytics-time-range';
 
 interface StudentAttendanceStats {
   attendances: {
@@ -110,9 +118,34 @@ function CircularProgress({ value, label, color }: { value: number; label: strin
 
 export default function StudentAnalyticsPage() {
   const t = useTranslations('analytics');
+  const defPay = useMemo(() => defaultCustomRangeLast30Days(), []);
+  const [timeMode, setTimeMode] = useState<TimeFilterMode>('date');
+  const [dayYmd, setDayYmd] = useState(() => toYmd(new Date()));
+  const [weekAnchorYmd, setWeekAnchorYmd] = useState(() => toYmd(new Date()));
+  const [customFromYmd, setCustomFromYmd] = useState(defPay.fromYmd);
+  const [customToYmd, setCustomToYmd] = useState(defPay.toYmd);
+
+  const payTimeRange = useMemo(
+    () =>
+      buildTimeRange(timeMode, {
+        dayYmd,
+        weekAnchorYmd,
+        customFromYmd: customFromYmd,
+        customToYmd: customToYmd,
+      }),
+    [timeMode, dayYmd, weekAnchorYmd, customFromYmd, customToYmd],
+  );
+
   // Fetch data
   const { data: attendance, isLoading: isLoadingAttendance } = useMyAttendance();
   const { data: payments, isLoading: isLoadingPayments } = useMyPayments();
+  const { data: payPeriod, isLoading: isLoadingPayPeriod } = useMyPayments(
+    0,
+    200,
+    undefined,
+    payTimeRange.dateFrom,
+    payTimeRange.dateTo,
+  );
 
   // Calculate attendance stats
   const stats = attendance?.statistics;
@@ -122,16 +155,28 @@ export default function StudentAnalyticsPage() {
   const absentUnjustified = stats?.absentUnjustified || 0;
   const attendanceRate = stats?.attendanceRate || 100;
 
-  // Calculate payment stats
+  // Calculate payment stats (all-time, progress rings)
   const paymentsList = payments?.items || [];
   const paidPayments = paymentsList.filter((p) => p.status === 'PAID').length;
   const totalPayments = paymentsList.length;
   const paymentRate = totalPayments > 0 ? Math.round((paidPayments / totalPayments) * 100) : 100;
 
+  const payPeriodList = payPeriod?.items || [];
+  const paidInRange = useMemo(
+    () => payPeriodList.filter((p) => p.status === 'PAID'),
+    [payPeriodList],
+  );
+  const paidTotalAmount = paidInRange.reduce((s, p) => s + Number(p.amount), 0);
+  const outstandingInRange = useMemo(
+    () => payPeriodList.filter((p) => p.status === 'PENDING' || p.status === 'OVERDUE'),
+    [payPeriodList],
+  );
+
   // Calculate participation score (combined metric)
   const participationScore = Math.round((attendanceRate * 0.7) + (paymentRate * 0.3));
 
   const isLoading = isLoadingAttendance || isLoadingPayments;
+  const isLoadingPayAnalytics = isLoadingPayPeriod;
 
   return (
     <DashboardLayout
@@ -164,6 +209,81 @@ export default function StudentAnalyticsPage() {
                 color={participationScore >= 90 ? '#22c55e' : participationScore >= 70 ? '#eab308' : '#ef4444'}
               />
             </div>
+          </div>
+
+          <div className="mb-6">
+            <h3 className="mb-2 font-semibold text-slate-800">{t('paymentsSectionTitle')}</h3>
+            <p className="mb-2 text-sm font-medium text-slate-600">{t('paymentsTimeFilterLabel')}</p>
+            <AnalyticsTimeFilterBar
+              mode={timeMode}
+              onModeChange={setTimeMode}
+              dayYmd={dayYmd}
+              onDayYmdChange={setDayYmd}
+              weekAnchorYmd={weekAnchorYmd}
+              onWeekAnchorYmdChange={setWeekAnchorYmd}
+              customFromYmd={customFromYmd}
+              customToYmd={customToYmd}
+              onCustomFromYmd={setCustomFromYmd}
+              onCustomToYmd={setCustomToYmd}
+              className="mb-4 transition-all duration-200"
+            />
+            {isLoadingPayAnalytics ? (
+              <div className="flex h-32 items-center justify-center rounded-xl border border-slate-200 bg-white">
+                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <p className="text-sm text-slate-500">{t('paidInPeriod')}</p>
+                    <p className="text-2xl font-bold text-emerald-700">
+                      {formatCurrency(paidTotalAmount)}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {t('paymentsRowsSummary', { paid: paidInRange.length, total: payPeriodList.length })}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <p className="text-sm text-slate-500">{t('outstandingInPeriod')}</p>
+                    <p className="text-2xl font-bold text-amber-700">
+                      {outstandingInRange.length}
+                    </p>
+                    <p className="text-xs text-slate-500">Unpaid in range</p>
+                  </div>
+                </div>
+                {payPeriodList.length > 0 && (
+                  <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-50 text-slate-600">
+                        <tr>
+                          <th className="px-4 py-3">Period</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3 text-right">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {payPeriodList.map((p) => (
+                          <tr key={p.id} className="hover:bg-slate-50">
+                            <td className="px-4 py-2 text-slate-800">
+                              {p.month
+                                ? new Date(p.month).toLocaleDateString(undefined, {
+                                    month: 'long',
+                                    year: 'numeric',
+                                  })
+                                : '—'}
+                            </td>
+                            <td className="px-4 py-2">{p.status}</td>
+                            <td className="px-4 py-2 text-right font-medium">
+                              {formatCurrency(Number(p.amount))}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Stats Cards */}

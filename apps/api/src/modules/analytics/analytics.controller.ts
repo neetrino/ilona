@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
 import { Roles } from '../../common/decorators';
 import { UserRole } from '@ilona/database';
@@ -39,7 +39,26 @@ export class AnalyticsController {
   @Get('revenue')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async getRevenueAnalytics(@Query('months') months?: string) {
+  async getRevenueAnalytics(
+    @Query('months') months?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('series') series?: 'none' | 'per_day' | 'per_month',
+  ) {
+    if (dateFrom && dateTo) {
+      const s = (series || 'none') as 'none' | 'per_day' | 'per_month';
+      if (s !== 'none' && s !== 'per_day' && s !== 'per_month') {
+        throw new BadRequestException('Invalid series: use none, per_day, or per_month');
+      }
+      return this.analyticsService.getRevenueForDateRange(
+        new Date(dateFrom),
+        new Date(dateTo),
+        s,
+      );
+    }
+    if (dateFrom || dateTo || series) {
+      throw new BadRequestException('dateFrom and dateTo are both required for range revenue');
+    }
     return this.analyticsService.getRevenueAnalytics(
       months ? parseInt(months, 10) : 6,
     );

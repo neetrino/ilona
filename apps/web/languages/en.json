@@ -588,7 +588,21 @@
     "attendancePatternsTab": "Attendance",
     "feedbackTrendsTab": "Feedback",
     "studentPerformanceTab": "Performance",
-    "revenueTab": "Revenue"
+    "revenueTab": "Revenue",
+    "timeFilterDay": "Day",
+    "timeFilterWeek": "Week",
+    "timeFilterDate": "Date",
+    "timeFilterSelectDay": "Day",
+    "timeFilterSelectWeek": "Week of",
+    "timeFilterFrom": "From",
+    "timeFilterTo": "To",
+    "periodColumn": "Period",
+    "paymentsTimeFilterLabel": "Payments period",
+    "earningsInPeriod": "In selected period",
+    "paymentsSectionTitle": "Payments",
+    "paidInPeriod": "Paid in period",
+    "outstandingInPeriod": "Outstanding in period",
+    "paymentsRowsSummary": "{paid} paid of {total} in range"
   },
   "settings": {
     "title": "Settings",

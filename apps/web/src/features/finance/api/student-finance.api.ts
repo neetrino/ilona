@@ -60,12 +60,16 @@ const FINANCE_ENDPOINT = '/finance';
 export async function fetchMyPayments(
   skip?: number,
   take?: number,
-  status?: string
+  status?: string,
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<PaymentsResponse> {
   const params = new URLSearchParams();
   if (skip !== undefined) params.append('skip', String(skip));
   if (take !== undefined) params.append('take', String(take));
   if (status) params.append('status', status);
+  if (dateFrom) params.append('dateFrom', dateFrom);
+  if (dateTo) params.append('dateTo', dateTo);
 
   const query = params.toString();
   const url = query ? `${FINANCE_ENDPOINT}/my-payments?${query}` : `${FINANCE_ENDPOINT}/my-payments`;

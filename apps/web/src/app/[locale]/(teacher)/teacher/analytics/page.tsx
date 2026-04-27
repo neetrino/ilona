@@ -4,11 +4,14 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyLessons } from '@/features/lessons';
+import { useMySalaries, useMyDeductions } from '@/features/finance';
+import { AnalyticsTimeFilterBar } from '@/shared/components/analytics/AnalyticsTimeFilterBar';
 import {
-  useMySalaries,
-  useMySalarySummary,
-  useMyDeductions,
-} from '@/features/finance';
+  buildTimeRange,
+  defaultCustomRangeLast30Days,
+  toYmd,
+  type TimeFilterMode,
+} from '@/shared/lib/analytics-time-range';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 
 type TabId = 'attendance' | 'feedback' | 'performance' | 'revenue';
@@ -77,14 +80,41 @@ export default function TeacherAnalyticsPage() {
   const t = useTranslations('analytics');
   const [activeTab, setActiveTab] = useState<TabId>('attendance');
 
+  const defPay = useMemo(() => defaultCustomRangeLast30Days(), []);
+  const [payTimeMode, setPayTimeMode] = useState<TimeFilterMode>('date');
+  const [payDayYmd, setPayDayYmd] = useState(() => toYmd(new Date()));
+  const [payWeekAnchorYmd, setPayWeekAnchorYmd] = useState(() => toYmd(new Date()));
+  const [payFromYmd, setPayFromYmd] = useState(defPay.fromYmd);
+  const [payToYmd, setPayToYmd] = useState(defPay.toYmd);
+
+  const payRange = useMemo(
+    () =>
+      buildTimeRange(payTimeMode, {
+        dayYmd: payDayYmd,
+        weekAnchorYmd: payWeekAnchorYmd,
+        customFromYmd: payFromYmd,
+        customToYmd: payToYmd,
+      }),
+    [payTimeMode, payDayYmd, payWeekAnchorYmd, payFromYmd, payToYmd],
+  );
+
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
 
   const { data: monthLessons } = useMyLessons(monthStart, monthEnd);
-  const { data: salarySummary } = useMySalarySummary();
-  const { data: salaries } = useMySalaries();
-  const { data: deductions } = useMyDeductions();
+  const { data: salaries } = useMySalaries(
+    0,
+    500,
+    undefined,
+    payRange.dateFrom,
+    payRange.dateTo,
+    { enabled: activeTab === 'revenue' },
+  );
+  const { data: deductions } = useMyDeductions(0, 200);
+  const { data: deductionsInPeriod } = useMyDeductions(0, 200, payRange.dateFrom, payRange.dateTo, {
+    enabled: activeTab === 'revenue',
+  });
 
   const lessons = monthLessons?.items ?? [];
   const completedLessons = lessons.filter((l) => l.status === 'COMPLETED');
@@ -124,13 +154,27 @@ export default function TeacherAnalyticsPage() {
     (sum, d) => sum + Number(d.amount),
     0,
   );
+  const periodDeductionsList = deductionsInPeriod?.items ?? [];
+  const totalDeductionsInPeriod = periodDeductionsList.reduce(
+    (sum, d) => sum + Number(d.amount),
+    0,
+  );
   const paidSalaries = useMemo(
     () => (salaries?.items ?? []).filter((s) => s.status === 'PAID'),
     [salaries],
   );
 
-  const totalEarned = Number(salarySummary?.totalEarned) || 0;
-  const pendingAmount = Number(salarySummary?.totalPending) || 0;
+  const totalEarned = useMemo(
+    () => paidSalaries.reduce((s, x) => s + Number(x.netAmount), 0),
+    [paidSalaries],
+  );
+  const pendingAmount = useMemo(
+    () =>
+      (salaries?.items ?? [])
+        .filter((s) => s.status !== 'PAID')
+        .reduce((s, x) => s + Number(x.netAmount), 0),
+    [salaries],
+  );
 
   const tabs: Array<{ id: TabId; label: string }> = [
     { id: 'attendance', label: t('attendancePatternsTab') ?? 'Attendance' },
@@ -279,11 +323,29 @@ export default function TeacherAnalyticsPage() {
 
       {activeTab === 'revenue' && (
         <div className="space-y-6">
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-600">
+              {t('paymentsTimeFilterLabel')}
+            </p>
+            <AnalyticsTimeFilterBar
+              mode={payTimeMode}
+              onModeChange={setPayTimeMode}
+              dayYmd={payDayYmd}
+              onDayYmdChange={setPayDayYmd}
+              weekAnchorYmd={payWeekAnchorYmd}
+              onWeekAnchorYmdChange={setPayWeekAnchorYmd}
+              customFromYmd={payFromYmd}
+              customToYmd={payToYmd}
+              onCustomFromYmd={setPayFromYmd}
+              onCustomToYmd={setPayToYmd}
+              className="transition-all duration-200"
+            />
+          </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <StatCard
               label={t('totalEarned')}
               value={formatCurrency(totalEarned)}
-              subtext={t('allTime')}
+              subtext={t('earningsInPeriod')}
               color="green"
             />
             <StatCard
@@ -294,24 +356,24 @@ export default function TeacherAnalyticsPage() {
             />
             <StatCard
               label={t('deductions')}
-              value={formatCurrency(totalDeductions)}
-              subtext={t('deductionsCount', { count: deductionsList.length })}
+              value={formatCurrency(totalDeductionsInPeriod)}
+              subtext={t('deductionsCount', { count: periodDeductionsList.length })}
               color="red"
             />
             <StatCard
               label="Paid periods"
               value={paidSalaries.length}
-              subtext="fully settled"
+              subtext="fully settled in period"
               color="blue"
             />
           </div>
-          {deductionsList.length > 0 && (
+          {periodDeductionsList.length > 0 && (
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
               <div className="border-b border-slate-200 p-4">
                 <h3 className="font-semibold text-slate-800">Recent deductions</h3>
               </div>
               <div className="divide-y divide-slate-100">
-                {deductionsList.slice(0, 5).map((deduction) => (
+                {periodDeductionsList.slice(0, 5).map((deduction) => (
                   <div
                     key={deduction.id}
                     className="flex items-center justify-between p-4"

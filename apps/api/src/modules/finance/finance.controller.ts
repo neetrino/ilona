@@ -138,6 +138,8 @@ export class FinanceController {
     @Query('skip') skip?: string,
     @Query('take') take?: string,
     @Query('status') status?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ) {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
@@ -153,6 +155,8 @@ export class FinanceController {
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
       status: status as SalaryStatus | undefined,
+      dateFrom: dateFrom ? new Date(dateFrom) : undefined,
+      dateTo: dateTo ? new Date(dateTo) : undefined,
     });
   }
 
@@ -252,6 +256,8 @@ export class FinanceController {
     @CurrentUser() user: JwtPayload,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ): Promise<unknown> {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
@@ -265,6 +271,8 @@ export class FinanceController {
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
       teacherId: teacher.id,
+      dateFrom: dateFrom ? new Date(dateFrom) : undefined,
+      dateTo: dateTo ? new Date(dateTo) : undefined,
     });
   }
 
@@ -278,6 +286,8 @@ export class FinanceController {
     @Query('skip') skip?: string,
     @Query('take') take?: string,
     @Query('status') status?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ): Promise<unknown> {
     const student = await this.getCurrentStudentOrThrow(user);
 
@@ -288,6 +298,8 @@ export class FinanceController {
       skip: skip ? parseInt(skip, 10) : undefined,
       take: take ? parseInt(take, 10) : undefined,
       status: status as PaymentStatus | undefined,
+      dateFrom: dateFrom ? new Date(dateFrom) : undefined,
+      dateTo: dateTo ? new Date(dateTo) : undefined,
     });
   }
 

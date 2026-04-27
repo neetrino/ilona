@@ -42,7 +42,13 @@ export class SalariesService {
    */
   async findAllRecordsByTeacher(
     teacherId: string,
-    params?: { skip?: number; take?: number; status?: SalaryStatus },
+    params?: {
+      skip?: number;
+      take?: number;
+      status?: SalaryStatus;
+      dateFrom?: Date;
+      dateTo?: Date;
+    },
   ): Promise<unknown> {
     return this.recordService.findAllRecordsByTeacher(teacherId, params);
   }

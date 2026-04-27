@@ -34,12 +34,16 @@ const FINANCE_ENDPOINT = '/finance';
 export async function fetchMySalaries(
   skip?: number,
   take?: number,
-  status?: string
+  status?: string,
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<SalariesResponse> {
   const params = new URLSearchParams();
   if (skip !== undefined) params.append('skip', String(skip));
   if (take !== undefined) params.append('take', String(take));
   if (status) params.append('status', status);
+  if (dateFrom) params.append('dateFrom', dateFrom);
+  if (dateTo) params.append('dateTo', dateTo);
 
   const query = params.toString();
   const url = query ? `${FINANCE_ENDPOINT}/my-salary?${query}` : `${FINANCE_ENDPOINT}/my-salary`;
@@ -73,11 +77,15 @@ export async function fetchMySalaryById(id: string): Promise<SalaryRecord> {
  */
 export async function fetchMyDeductions(
   skip?: number,
-  take?: number
+  take?: number,
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<DeductionsResponse> {
   const params = new URLSearchParams();
   if (skip !== undefined) params.append('skip', String(skip));
   if (take !== undefined) params.append('take', String(take));
+  if (dateFrom) params.append('dateFrom', dateFrom);
+  if (dateTo) params.append('dateTo', dateTo);
 
   const query = params.toString();
   const url = query ? `${FINANCE_ENDPOINT}/my-deductions?${query}` : `${FINANCE_ENDPOINT}/my-deductions`;
