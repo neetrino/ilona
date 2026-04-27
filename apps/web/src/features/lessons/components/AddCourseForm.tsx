@@ -166,12 +166,19 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
         description: data.description || undefined,
       };
 
-      await createRecurringLessons.mutateAsync(recurringData);
-      
+      const result = await createRecurringLessons.mutateAsync(recurringData);
+
       // Invalidate calendar queries
       queryClient.invalidateQueries({ queryKey: ['lessons'] });
-      
-      setSuccessMessage(t('courseCreatedSuccess') || 'Course created successfully!');
+
+      const base = t('courseCreatedSuccess') || 'Course created successfully!';
+      if (result.skippedDuplicateCount > 0) {
+        setSuccessMessage(
+          `${base} (${result.items.length} created; ${result.skippedDuplicateCount} slot(s) already existed.)`
+        );
+      } else {
+        setSuccessMessage(base);
+      }
       
       // Close dialog after a short delay
       setTimeout(() => {

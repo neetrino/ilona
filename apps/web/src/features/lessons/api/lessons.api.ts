@@ -7,6 +7,7 @@ import type {
   UpdateLessonDto,
   CompleteLessonDto,
   CreateRecurringLessonsDto,
+  CreateRecurringLessonsResult,
   LessonStatistics,
 } from '../types';
 
@@ -103,8 +104,10 @@ export async function createLesson(data: CreateLessonDto): Promise<Lesson> {
 /**
  * Create recurring lessons
  */
-export async function createRecurringLessons(data: CreateRecurringLessonsDto): Promise<Lesson[]> {
-  return api.post<Lesson[]>(`${LESSONS_ENDPOINT}/recurring`, data);
+export async function createRecurringLessons(
+  data: CreateRecurringLessonsDto
+): Promise<CreateRecurringLessonsResult> {
+  return api.post<CreateRecurringLessonsResult>(`${LESSONS_ENDPOINT}/recurring`, data);
 }
 
 /**

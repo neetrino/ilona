@@ -174,8 +174,8 @@ export class LessonsController {
     const startDate = new Date(dto.startDate);
     const endDate = new Date(dto.endDate);
     
-    if (endDate <= startDate) {
-      throw new BadRequestException('End date must be after start date');
+    if (endDate < startDate) {
+      throw new BadRequestException('End date must be on or after start date');
     }
 
     let teacherId = dto.teacherId;

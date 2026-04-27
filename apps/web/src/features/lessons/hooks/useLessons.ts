@@ -25,6 +25,7 @@ import type {
   UpdateLessonDto,
   CompleteLessonDto,
   CreateRecurringLessonsDto,
+  CreateRecurringLessonsResult,
 } from '../types';
 import { financeKeys } from '@/features/finance/hooks/useFinance';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -147,7 +148,7 @@ export function useCreateLesson() {
   return useMutation({
     mutationFn: (data: CreateLessonDto) => createLesson(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.all });
     },
   });
 }
@@ -158,10 +159,10 @@ export function useCreateLesson() {
 export function useCreateRecurringLessons() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: CreateRecurringLessonsDto) => createRecurringLessons(data),
+  return useMutation<CreateRecurringLessonsResult, Error, CreateRecurringLessonsDto>({
+    mutationFn: (data) => createRecurringLessons(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.all });
     },
   });
 }

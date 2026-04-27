@@ -535,8 +535,10 @@ export class LessonCrudService {
   }
 
   async createBulk(lessons: CreateLessonDto[], currentUserId?: string, userRole?: UserRole) {
-    const created = await Promise.all(lessons.map((dto) => this.create(dto, currentUserId, userRole)));
-    return created;
+    if (lessons.length === 0) {
+      return [];
+    }
+    return Promise.all(lessons.map((dto) => this.create(dto, currentUserId, userRole)));
   }
 
   async update(id: string, dto: UpdateLessonDto, userId?: string, userRole?: UserRole) {

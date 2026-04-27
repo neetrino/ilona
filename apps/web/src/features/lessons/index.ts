@@ -29,6 +29,7 @@ export type {
   UpdateLessonDto,
   CompleteLessonDto,
   CreateRecurringLessonsDto,
+  CreateRecurringLessonsResult,
   LessonStatistics,
 } from './types';
 
