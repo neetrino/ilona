@@ -18,8 +18,8 @@ export function HomeLearnWithUs() {
       className="relative z-10 mx-auto w-full max-w-[1920px] overflow-visible px-4 pt-12 pb-24 sm:px-10 sm:pt-16 sm:pb-28 lg:pt-20 lg:pb-32"
       id="about"
     >
-      <div className="pointer-events-none absolute inset-0 flex justify-end opacity-40">
-        <div className="relative h-full w-full max-w-4xl mix-blend-multiply lg:max-w-5xl">
+      <div className="pointer-events-none absolute inset-0 flex justify-end overflow-visible pl-2 opacity-40 sm:pl-4 md:pl-5 lg:pl-8">
+        <div className="relative h-full w-full max-w-6xl translate-x-[calc(-2.5rem+5%)] translate-y-1.5 mix-blend-multiply md:translate-x-[calc(-4rem+5%)] md:translate-y-2 lg:max-w-7xl lg:translate-x-[calc(-6rem+5%)] lg:translate-y-2">
           <FigmaImage
             src={LEARN_BG}
             width={1172}
@@ -57,7 +57,7 @@ export function HomeLearnWithUs() {
         {t('learnIntro')}
       </p>
 
-      <div className="relative z-[1] mt-10 grid gap-8 lg:mt-12 lg:grid-cols-2 lg:items-end lg:gap-6">
+      <div className="relative z-[1] mt-16 grid gap-8 pl-2 sm:mt-20 sm:pl-4 md:pl-5 lg:mt-32 lg:grid-cols-2 lg:items-end lg:gap-6 lg:pl-8">
         <div className="order-2 flex justify-center lg:order-1 lg:justify-start">
           <FigmaImage
             src={LEARN_ILLUSTRATION}
