@@ -18,6 +18,7 @@ import {
 } from '@/shared/lib/analytics-time-range';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { useAdminAnalyticsUrl, type AdminAnalyticsTab } from './use-admin-analytics-url';
+import { useAdminPaymentsTimeFilter } from './use-payments-time-filter';
 
 function RiskBadge({ level }: { level: 'LOW' | 'MEDIUM' | 'HIGH' }) {
   const styles = {
@@ -120,32 +121,29 @@ function StudentRiskRow({ student }: { student: StudentRisk }) {
 export default function AdminAnalyticsPage() {
   const tCommon = useTranslations('common');
   const t = useTranslations('analytics');
+  const analyticsUrl = useAdminAnalyticsUrl();
+  const { activeTab, setActiveTab } = analyticsUrl;
   const {
-    activeTab,
-    setActiveTab,
-    timeMode,
-    setTimeMode,
-    dayYmd,
-    setDayYmd,
-    weekAnchorYmd,
-    setWeekAnchorYmd,
-    customFromYmd,
-    setCustomFromYmd,
-    customToYmd,
-    setCustomToYmd,
-  } = useAdminAnalyticsUrl();
+    committed: paymentsTimeCommitted,
+    hasUnsavedChanges: hasUnsavedPaymentsTime,
+    onApply: onApplyPaymentsTime,
+    timeFilterBarProps: paymentsTimeFilterBarProps,
+  } = useAdminPaymentsTimeFilter(analyticsUrl);
 
   const timeRange = useMemo(
     () =>
-      buildTimeRange(timeMode, {
-        dayYmd,
-        weekAnchorYmd,
-        customFromYmd,
-        customToYmd,
+      buildTimeRange(paymentsTimeCommitted.timeMode, {
+        dayYmd: paymentsTimeCommitted.dayYmd,
+        weekAnchorYmd: paymentsTimeCommitted.weekAnchorYmd,
+        customFromYmd: paymentsTimeCommitted.customFromYmd,
+        customToYmd: paymentsTimeCommitted.customToYmd,
       }),
-    [timeMode, dayYmd, weekAnchorYmd, customFromYmd, customToYmd],
+    [paymentsTimeCommitted],
   );
-  const revenueSeries = resolveRevenueApiSeries(timeMode, timeRange.daySpan);
+  const revenueSeries = resolveRevenueApiSeries(
+    paymentsTimeCommitted.timeMode,
+    timeRange.daySpan,
+  );
 
   const { data: teachers = [], isLoading: isLoadingTeachers } =
     useTeacherPerformance(undefined, undefined);
@@ -241,17 +239,12 @@ export default function AdminAnalyticsPage() {
               {t('paymentsTimeFilterLabel')}
             </p>
             <AnalyticsTimeFilterBar
-              mode={timeMode}
-              onModeChange={setTimeMode}
-              dayYmd={dayYmd}
-              onDayYmdChange={setDayYmd}
-              weekAnchorYmd={weekAnchorYmd}
-              onWeekAnchorYmdChange={setWeekAnchorYmd}
-              customFromYmd={customFromYmd}
-              customToYmd={customToYmd}
-              onCustomFromYmd={setCustomFromYmd}
-              onCustomToYmd={setCustomToYmd}
+              {...paymentsTimeFilterBarProps}
               className="transition-all duration-200"
+              applyAction={{
+                onApply: onApplyPaymentsTime,
+                hasUnsavedChanges: hasUnsavedPaymentsTime,
+              }}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

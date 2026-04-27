@@ -4,6 +4,13 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { type TimeFilterMode } from '@/shared/lib/analytics-time-range';
 
+type ApplyAction = {
+  onApply: () => void;
+  hasUnsavedChanges: boolean;
+  /** If false, Apply is disabled; defaults to hasUnsavedChanges. */
+  applyDisabled?: boolean;
+};
+
 type AnalyticsTimeFilterBarProps = {
   mode: TimeFilterMode;
   onModeChange: (m: TimeFilterMode) => void;
@@ -16,6 +23,8 @@ type AnalyticsTimeFilterBarProps = {
   onCustomFromYmd: (v: string) => void;
   onCustomToYmd: (v: string) => void;
   className?: string;
+  /** When set, shows an Apply control (used when API requests must not run until explicit confirm). */
+  applyAction?: ApplyAction;
 };
 
 export function AnalyticsTimeFilterBar({
@@ -30,6 +39,7 @@ export function AnalyticsTimeFilterBar({
   onCustomFromYmd,
   onCustomToYmd,
   className,
+  applyAction,
 }: AnalyticsTimeFilterBarProps) {
   const t = useTranslations('analytics');
   const modes: { id: TimeFilterMode; label: string }[] = [
@@ -102,6 +112,24 @@ export function AnalyticsTimeFilterBar({
               value={customToYmd}
               onChange={(e) => onCustomToYmd(e.target.value)}
             />
+          </div>
+        )}
+
+        {applyAction && (
+          <div className="flex min-w-0 flex-col items-stretch gap-1 sm:items-end sm:pl-2">
+            {applyAction.hasUnsavedChanges && (
+              <span className="text-right text-xs font-medium text-amber-700" role="status">
+                {t('timeFilterUnsaved')}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={applyAction.onApply}
+              disabled={applyAction.applyDisabled ?? !applyAction.hasUnsavedChanges}
+              className="inline-flex w-full min-w-[7rem] items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm ring-1 ring-slate-200/40 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {t('applyTimeFilter')}
+            </button>
           </div>
         )}
       </div>

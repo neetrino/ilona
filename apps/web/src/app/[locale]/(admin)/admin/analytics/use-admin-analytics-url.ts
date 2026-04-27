@@ -153,6 +153,25 @@ export function useAdminAnalyticsUrl() {
     [updateParams],
   );
 
+  const applyPaymentsTimeFilter = useCallback(
+    (state: {
+      timeMode: TimeFilterMode;
+      dayYmd: string;
+      weekAnchorYmd: string;
+      customFromYmd: string;
+      customToYmd: string;
+    }) => {
+      updateParams((p) => {
+        p.set('pm', state.timeMode);
+        if (isValidYmd(state.dayYmd)) p.set('pd', state.dayYmd);
+        if (isValidYmd(state.weekAnchorYmd)) p.set('pw', state.weekAnchorYmd);
+        if (isValidYmd(state.customFromYmd)) p.set('cfrom', state.customFromYmd);
+        if (isValidYmd(state.customToYmd)) p.set('cto', state.customToYmd);
+      });
+    },
+    [updateParams],
+  );
+
   return {
     activeTab,
     setActiveTab,
@@ -166,5 +185,6 @@ export function useAdminAnalyticsUrl() {
     setCustomFromYmd,
     customToYmd,
     setCustomToYmd,
+    applyPaymentsTimeFilter,
   };
 }

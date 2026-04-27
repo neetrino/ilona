@@ -596,6 +596,8 @@
     "timeFilterSelectWeek": "Week of",
     "timeFilterFrom": "From",
     "timeFilterTo": "To",
+    "applyTimeFilter": "Apply",
+    "timeFilterUnsaved": "Unsaved changes",
     "periodColumn": "Period",
     "paymentsTimeFilterLabel": "Payments period",
     "earningsInPeriod": "In selected period",
