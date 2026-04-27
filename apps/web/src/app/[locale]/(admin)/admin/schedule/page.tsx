@@ -8,12 +8,12 @@ import { useCenters } from '@/features/centers';
 import { useLessons } from '@/features/lessons';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ScheduleBoard } from '@/features/schedule/ScheduleBoard';
+import { useScheduleViewMode } from '@/features/schedule/useScheduleViewMode';
 import {
   formatScheduleDate,
   getMonthDates,
   getWeekDateRangeForApi,
   getWeekDates,
-  type ScheduleViewMode,
 } from '@/features/schedule/schedule-dates';
 
 export default function AdminSchedulePage() {
@@ -23,7 +23,7 @@ export default function AdminSchedulePage() {
     user?.role === 'MANAGER' ? user.managerCenterId : undefined;
 
   const [centerId, setCenterId] = useState<string>('');
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>('week');
+  const { viewMode, setViewMode } = useScheduleViewMode();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const { data: centersData } = useCenters({ isActive: true });

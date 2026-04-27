@@ -7,12 +7,12 @@ import { useLessons } from '@/features/lessons';
 import { useMyProfile } from '@/features/students';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ScheduleBoard } from '@/features/schedule/ScheduleBoard';
+import { useScheduleViewMode } from '@/features/schedule/useScheduleViewMode';
 import {
   formatScheduleDate,
   getMonthDates,
   getWeekDateRangeForApi,
   getWeekDates,
-  type ScheduleViewMode,
 } from '@/features/schedule/schedule-dates';
 
 export default function StudentSchedulePage() {
@@ -21,7 +21,7 @@ export default function StudentSchedulePage() {
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
   const { data: profile, isLoading: isProfileLoading } = useMyProfile(isAuthReady);
 
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>('week');
+  const { viewMode, setViewMode } = useScheduleViewMode();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const weekDates = useMemo(

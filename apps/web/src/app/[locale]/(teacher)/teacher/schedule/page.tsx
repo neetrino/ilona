@@ -7,12 +7,12 @@ import { useLessons } from '@/features/lessons';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ScheduleBoard } from '@/features/schedule/ScheduleBoard';
+import { useScheduleViewMode } from '@/features/schedule/useScheduleViewMode';
 import {
   formatScheduleDate,
   getMonthDates,
   getWeekDateRangeForApi,
   getWeekDates,
-  type ScheduleViewMode,
 } from '@/features/schedule/schedule-dates';
 
 export default function TeacherSchedulePage() {
@@ -22,7 +22,7 @@ export default function TeacherSchedulePage() {
   const { data: myGroups, isLoading: isGroupsLoading } = useMyGroups();
   const groupsList = myGroups ?? [];
 
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>('week');
+  const { viewMode, setViewMode } = useScheduleViewMode();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const weekDates = useMemo(
