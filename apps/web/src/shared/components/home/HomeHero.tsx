@@ -86,7 +86,7 @@ export function HomeHero() {
       id="top"
     >
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:gap-4">
-        <div className="relative z-[1] max-w-[50rem]">
+        <div className="relative z-[1] max-w-[50rem] mt-8 sm:mt-10 md:mt-12 lg:mt-16">
           <h1
             className={cn(heroDisplay, heroTitle, 'mt-0 max-w-[min(100%,64rem)]')}
           >
