@@ -34,13 +34,14 @@ export class LessonsController {
   ) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER, UserRole.STUDENT)
   async findAll(@Query() query: QueryLessonDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     // Handle both single groupId (backward compatibility) and groupIds array
     const groupIds = query.groupIds || (query.groupId ? [query.groupId] : undefined);
     return this.lessonsService.findAll({
       skip: query.skip,
       take: query.take,
+      centerId: query.centerId,
       groupId: query.groupId,
       groupIds,
       teacherId: query.teacherId,
@@ -132,7 +133,7 @@ export class LessonsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER, UserRole.STUDENT)
   async findById(@Param('id') id: string, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     return this.lessonsService.findById(id, user?.sub, user?.role);
   }

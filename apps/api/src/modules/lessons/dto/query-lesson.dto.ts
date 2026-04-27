@@ -17,6 +17,10 @@ export class QueryLessonDto {
 
   @IsOptional()
   @IsString()
+  centerId?: string;
+
+  @IsOptional()
+  @IsString()
   groupId?: string;
 
   @IsOptional()

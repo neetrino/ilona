@@ -71,6 +71,7 @@ export interface LessonsResponse {
 export interface LessonFilters {
   skip?: number;
   take?: number;
+  centerId?: string;
   groupId?: string;
   groupIds?: string[];
   teacherId?: string;

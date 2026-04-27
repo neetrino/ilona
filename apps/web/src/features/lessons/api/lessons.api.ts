@@ -20,6 +20,7 @@ export async function fetchLessons(filters?: LessonFilters): Promise<LessonsResp
   
   if (filters?.skip !== undefined) params.append('skip', String(filters.skip));
   if (filters?.take !== undefined) params.append('take', String(filters.take));
+  if (filters?.centerId) params.append('centerId', filters.centerId);
   if (filters?.groupId) params.append('groupId', filters.groupId);
   if (filters?.groupIds && filters.groupIds.length > 0) {
     filters.groupIds.forEach(id => params.append('groupIds', id));

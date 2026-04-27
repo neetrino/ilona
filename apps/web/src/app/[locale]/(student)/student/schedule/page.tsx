@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useLessons } from '@/features/lessons';
-import { useMyGroups } from '@/features/groups/hooks/useGroups';
+import { useMyProfile } from '@/features/students';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ScheduleBoard } from '@/features/schedule/ScheduleBoard';
 import {
@@ -14,12 +14,11 @@ import {
   type ScheduleViewMode,
 } from '@/features/schedule/schedule-dates';
 
-export default function TeacherSchedulePage() {
+export default function StudentSchedulePage() {
   const t = useTranslations('nav');
   const { isHydrated, isAuthenticated, tokens } = useAuthStore();
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
-  const { data: myGroups, isLoading: isGroupsLoading } = useMyGroups();
-  const groupsList = myGroups ?? [];
+  const { data: profile, isLoading: isProfileLoading } = useMyProfile(isAuthReady);
 
   const [viewMode, setViewMode] = useState<ScheduleViewMode>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -55,6 +54,8 @@ export default function TeacherSchedulePage() {
     return new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000);
   }, [currentDate, viewMode, weekDates]);
 
+  const hasGroup = Boolean(profile?.groupId);
+
   const { data: lessonsData, isLoading: isLessonsLoading } = useLessons(
     {
       dateFrom: formatScheduleDate(dateFrom),
@@ -66,13 +67,13 @@ export default function TeacherSchedulePage() {
     {
       refetchInterval: 60000,
       refetchIntervalInBackground: false,
-      enabled: isAuthReady,
+      enabled: isAuthReady && hasGroup,
     },
   );
 
   const lessons = useMemo(
-    () => lessonsData?.items ?? [],
-    [lessonsData?.items],
+    () => (hasGroup ? (lessonsData?.items ?? []) : []),
+    [hasGroup, lessonsData?.items],
   );
 
   const periodLabel = useMemo(() => {
@@ -102,11 +103,12 @@ export default function TeacherSchedulePage() {
     >
       <ScheduleBoard
         lessons={lessons}
-        isLoading={!isAuthReady || isGroupsLoading || isLessonsLoading}
+        isLoading={!isAuthReady || isProfileLoading || (hasGroup && isLessonsLoading)}
         topBar={(
           <div className="mb-6 text-sm text-slate-500">
-            Showing {groupsList.length} group{groupsList.length !== 1 ? 's' : ''}{' '}
-            you teach{groupsList.length ? '.' : ' — assign groups to see lessons in your schedule.'}
+            {profile && !hasGroup
+              ? 'You are not assigned to a class group yet. When you are, your schedule will appear here.'
+              : 'Lessons for your class group in this center.'}
           </div>
         )}
         managerBranchName={null}

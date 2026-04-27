@@ -2,6 +2,8 @@
 
 import { useMemo } from 'react';
 import type { Lesson } from '@/features/lessons';
+import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
+import { cn } from '@/shared/lib/utils';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const SCHEDULE_START_HOUR = 9;
@@ -17,6 +19,7 @@ interface MonthLessonGridProps {
   monthDates: (Date | null)[][];
   lessonsByDate: Record<string, Lesson[]>;
   isLoading?: boolean;
+  className?: string;
 }
 
 function formatDateKey(date: Date): string {
@@ -57,7 +60,14 @@ function lessonCardTone(status: Lesson['status']): string {
   return 'border-primary/15 bg-primary/5';
 }
 
-function LessonCard({ lesson, compact = false }: { lesson: Lesson; compact?: boolean }) {
+function LessonCard({
+  lesson,
+  variant = 'cell',
+}: {
+  lesson: Lesson;
+  variant?: 'cell' | 'dialog';
+}) {
+  const compact = variant === 'cell';
   const teacherName = `${lesson.teacher?.user?.firstName ?? ''} ${lesson.teacher?.user?.lastName ?? ''}`.trim() || 'No teacher';
   const timeBounds = getLessonTimeBounds(lesson);
   const timeLabel = timeBounds
@@ -66,7 +76,7 @@ function LessonCard({ lesson, compact = false }: { lesson: Lesson; compact?: boo
 
   return (
     <div
-      className={`rounded-md border leading-tight ${lessonCardTone(lesson.status)} ${compact ? 'px-1.5 py-1 text-[10px]' : 'px-2.5 py-2 text-sm'}`}
+      className={`rounded-md border leading-tight ${lessonCardTone(lesson.status)} ${compact ? 'px-1.5 py-0.5 text-[9px] sm:px-1.5 sm:py-1 sm:text-[10px]' : 'px-2.5 py-2 text-sm'}`}
     >
       <div className="font-semibold text-slate-800 truncate" title={lesson.group?.name}>
         {lesson.group?.name ?? 'Unknown group'}
@@ -128,7 +138,7 @@ export function WeekLessonGrid({ weekDates, lessons, isLoading }: WeekLessonGrid
   if (totalLessons === 0) {
     return (
       <div className="h-full p-10 text-center text-sm text-slate-500 flex items-center justify-center">
-        No lessons for this week.
+        No lessons available.
       </div>
     );
   }
@@ -170,7 +180,7 @@ export function WeekLessonGrid({ weekDates, lessons, isLoading }: WeekLessonGrid
                   >
                     <div className="space-y-0.5">
                       {items.map((lesson) => (
-                        <LessonCard key={lesson.id} lesson={lesson} compact />
+                        <LessonCard key={lesson.id} lesson={lesson} />
                       ))}
                     </div>
                   </td>
@@ -188,56 +198,37 @@ export function MonthLessonGrid({
   monthDates,
   lessonsByDate,
   isLoading,
+  className,
 }: MonthLessonGridProps) {
-  if (isLoading) {
-    return <div className="p-8 text-center text-slate-500">Loading schedule...</div>;
+  const totalInMonth = useMemo(
+    () => Object.values(lessonsByDate).reduce((n, list) => n + list.length, 0),
+    [lessonsByDate],
+  );
+
+  if (!isLoading && totalInMonth === 0) {
+    return (
+      <div
+        className={cn(
+          'flex h-full min-h-0 flex-1 flex-col items-center justify-center rounded-b-[inherit] p-10 text-center text-sm text-slate-500',
+          className,
+        )}
+      >
+        No lessons available.
+      </div>
+    );
   }
 
   return (
-    <div>
-      <div className="grid grid-cols-7 border-b border-slate-200">
-        {DAY_LABELS.map((day) => (
-          <div key={day} className="p-2 text-center text-xs font-semibold text-slate-500 bg-slate-50 uppercase">
-            {day}
-          </div>
-        ))}
-      </div>
-      <div className="divide-y divide-slate-200">
-        {monthDates.map((week, weekIdx) => (
-          <div key={weekIdx} className="grid grid-cols-7 divide-x divide-slate-200">
-            {week.map((date, dayIdx) => {
-              if (!date) {
-                return <div key={dayIdx} className="min-h-[88px] bg-slate-50" />;
-              }
-
-              const dayKey = formatDateKey(date);
-              const dayLessons = (lessonsByDate[dayKey] ?? []).sort(
-                (a, b) =>
-                  new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime(),
-              );
-
-              return (
-                <div key={dayIdx} className="min-h-[88px] p-1.5">
-                  <p className="mb-1 text-xs font-semibold text-slate-700">{date.getDate()}</p>
-                  <div className="space-y-1">
-                    {dayLessons.slice(0, 2).map((lesson) => (
-                      <LessonCard key={lesson.id} lesson={lesson} compact />
-                    ))}
-                    {dayLessons.length > 2 ? (
-                      <p className="text-xs text-slate-500">
-                        +{dayLessons.length - 2} more
-                      </p>
-                    ) : null}
-                    {dayLessons.length === 0 ? (
-                      <p className="text-[11px] text-slate-400">No lessons</p>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
+    <CalendarMonthGrid<Lesson>
+      monthDates={monthDates}
+      getLessonsForDay={(k) => lessonsByDate[k] ?? []}
+      getLessonKey={(l) => l.id}
+      getSortTime={(l) => new Date(l.scheduledAt).getTime()}
+      renderLesson={({ lesson, variant }) => (
+        <LessonCard lesson={lesson} variant={variant} />
+      )}
+      isLoading={isLoading}
+      className={className}
+    />
   );
 }

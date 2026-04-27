@@ -170,6 +170,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
     case 'STUDENT':
       return [
         { label: t('dashboard'), href: '/student/dashboard', icon: icons.dashboard },
+        { label: t('schedule'), href: '/student/schedule', icon: icons.schedule },
         { label: t('recordings'), href: '/student/recordings', icon: icons.recordings },
         { label: t('myFeedbacks'), href: '/student/my-feedbacks', icon: icons.feedbacks },
         { label: t('ourTeachers'), href: '/student/our-teachers', icon: icons.teachers },

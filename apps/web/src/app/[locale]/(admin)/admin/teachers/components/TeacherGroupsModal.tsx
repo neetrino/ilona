@@ -34,7 +34,8 @@ export function TeacherGroupsModal({
   const { data: teacherDetails, isLoading, isError } = useTeacher(teacherId, open && !!teacherId);
   if (!teacher) return null;
 
-  const groupsSource = teacherDetails ?? teacher;
+  const groupsSource =
+    teacherDetails && teacherDetails.id === teacherId ? teacherDetails : teacher;
   const mainGroups = (groupsSource.groups ?? []).map((group) => group.name);
   const substituteGroups = (groupsSource.substituteForGroups ?? []).map((group) => group.name);
   const firstName = groupsSource.user?.firstName ?? '';

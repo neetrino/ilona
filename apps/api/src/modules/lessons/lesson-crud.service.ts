@@ -39,6 +39,7 @@ export class LessonCrudService {
   async findAll(params?: {
     skip?: number;
     take?: number;
+    centerId?: string;
     groupId?: string;
     groupIds?: string[];
     teacherId?: string;
@@ -51,7 +52,22 @@ export class LessonCrudService {
     currentUserId?: string;
     userRole?: UserRole;
   }) {
-    const { skip = 0, take = 50, groupId, groupIds, teacherId, status, dateFrom, dateTo, sortBy, sortOrder, search, currentUserId, userRole } = params || {};
+    const {
+      skip = 0,
+      take = 50,
+      centerId: centerIdParam,
+      groupId,
+      groupIds,
+      teacherId,
+      status,
+      dateFrom,
+      dateTo,
+      sortBy,
+      sortOrder,
+      search,
+      currentUserId,
+      userRole,
+    } = params || {};
 
     const where: Prisma.LessonWhereInput = {};
 
@@ -67,17 +83,8 @@ export class LessonCrudService {
 
       if (teacher) {
         currentTeacherId = teacher.id;
-        // Include lessons where teacher is directly assigned OR where teacher is assigned to the group
-        roleScopeCondition = {
-          OR: [
-            { teacherId: teacher.id },
-            {
-              group: {
-                teacherId: teacher.id,
-              },
-            },
-          ],
-        };
+        // Only lessons where this user is the assigned teacher on the row
+        roleScopeCondition = { teacherId: teacher.id };
       } else {
         // Teacher not found, return empty result
         return {
@@ -101,6 +108,23 @@ export class LessonCrudService {
       }
     }
 
+    if (userRole === UserRole.STUDENT && currentUserId) {
+      const student = await this.prisma.student.findUnique({
+        where: { userId: currentUserId },
+        select: { id: true, groupId: true },
+      });
+      if (!student?.groupId) {
+        return {
+          items: [],
+          total: 0,
+          page: 1,
+          pageSize: take,
+          totalPages: 0,
+        };
+      }
+      roleScopeCondition = { groupId: student.groupId };
+    }
+
     // Build filter conditions
     const filterConditions: Prisma.LessonWhereInput[] = [];
 
@@ -109,13 +133,30 @@ export class LessonCrudService {
       filterConditions.push(roleScopeCondition);
     }
 
-    // Admin can see all lessons, but can still filter
     const additionalFilters: Prisma.LessonWhereInput = {};
-    // Support both single groupId (backward compatibility) and groupIds array
-    if (groupIds && groupIds.length > 0) {
-      additionalFilters.groupId = { in: groupIds };
-    } else if (groupId) {
-      additionalFilters.groupId = groupId;
+    // Group / center filters (never trust client for role scope; manager/student/teacher scoping is applied above)
+    if (userRole === UserRole.ADMIN) {
+      if (centerIdParam) {
+        const groupIs: Prisma.GroupWhereInput = { centerId: centerIdParam };
+        if (groupIds && groupIds.length > 0) {
+          groupIs.id = { in: groupIds };
+        } else if (groupId) {
+          groupIs.id = groupId;
+        }
+        additionalFilters.group = { is: groupIs };
+      } else {
+        if (groupIds && groupIds.length > 0) {
+          additionalFilters.groupId = { in: groupIds };
+        } else if (groupId) {
+          additionalFilters.groupId = groupId;
+        }
+      }
+    } else if (userRole !== UserRole.STUDENT) {
+      if (groupIds && groupIds.length > 0) {
+        additionalFilters.groupId = { in: groupIds };
+      } else if (groupId) {
+        additionalFilters.groupId = groupId;
+      }
     }
     if (teacherId) {
       // For teachers, ensure they can only query their own teacherId
@@ -313,15 +354,24 @@ export class LessonCrudService {
       });
 
       if (teacher) {
-        // Check if teacher is assigned to this lesson (directly or via group)
-        const isAssigned =
-          lesson.teacherId === teacher.id || lesson.group.teacherId === teacher.id;
-
-        if (!isAssigned) {
+        if (lesson.teacherId !== teacher.id) {
           throw new ForbiddenException('You do not have access to this lesson');
         }
       } else {
         throw new ForbiddenException('Teacher profile not found');
+      }
+    }
+
+    if (userRole === UserRole.STUDENT && currentUserId) {
+      const student = await this.prisma.student.findUnique({
+        where: { userId: currentUserId },
+        select: { groupId: true },
+      });
+      if (!student?.groupId) {
+        throw new ForbiddenException('You do not have access to this lesson');
+      }
+      if (lesson.groupId !== student.groupId) {
+        throw new ForbiddenException('You do not have access to this lesson');
       }
     }
 
@@ -334,16 +384,8 @@ export class LessonCrudService {
   }
 
   async findByTeacher(teacherId: string, dateFrom?: Date, dateTo?: Date) {
-    // Include lessons where teacher is directly assigned OR where teacher is assigned to the group
     const where: Prisma.LessonWhereInput = {
-      OR: [
-        { teacherId },
-        {
-          group: {
-            teacherId,
-          },
-        },
-      ],
+      teacherId,
     };
 
     if (dateFrom || dateTo) {
@@ -504,20 +546,15 @@ export class LessonCrudService {
     if (userRole === UserRole.TEACHER && userId) {
       const teacher = await this.prisma.teacher.findUnique({
         where: { userId },
-        include: { groups: { select: { id: true } } },
+        select: { id: true },
       });
 
       if (!teacher) {
         throw new ForbiddenException('Teacher profile not found');
       }
 
-      // Check if teacher is assigned to this lesson
-      const isAssignedToLesson = lesson.teacherId === teacher.id;
-      // Check if teacher is assigned to the lesson's group
-      const isAssignedToGroup = teacher.groups.some((g) => g.id === lesson.groupId);
-
-      if (!isAssignedToLesson && !isAssignedToGroup) {
-        throw new ForbiddenException('You can only edit lessons assigned to you or your groups');
+      if (lesson.teacherId !== teacher.id) {
+        throw new ForbiddenException('You can only edit your own lessons');
       }
 
       // Phase 9: teachers cannot move a lesson into the past, nor can
