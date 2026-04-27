@@ -13,11 +13,13 @@ import {
   CreateGroupForm,
   EditGroupForm,
   DeleteConfirmationDialog,
+  GroupStatusConfirmationDialog,
   useGroup,
   getGroupOccupancyMeta,
   GroupIconDisplay,
   type Group,
 } from '@/features/groups';
+import { getErrorMessage } from '@/shared/lib/api';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
 import { GroupStudentsModal } from './GroupStudentsModal';
 import { StudentDetailsModal } from './StudentDetailsModal';
@@ -81,6 +83,12 @@ export function GroupsTab({
   const locale = useLocale();
   const router = useRouter();
   const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
+  /** Captured at open; optimistic updates must not change dialog copy */
+  const [statusDialog, setStatusDialog] = useState<{
+    groupId: string;
+    wasActive: boolean;
+  } | null>(null);
+  const [statusDialogError, setStatusDialogError] = useState<string | null>(null);
 
   useEffect(() => {
     if (selectedCenterId) {
@@ -119,7 +127,7 @@ export function GroupsTab({
     deleteGroupError,
     handleDeleteClick,
     handleDeleteConfirm,
-    handleToggleActive,
+    toggleGroupActive,
     selectedGroupIds,
     setSelectedGroupIds,
     handleToggleSelectGroup,
@@ -136,6 +144,34 @@ export function GroupsTab({
     handleBulkDeleteGroupsClick,
     handleBulkDeleteGroupsConfirm,
   } = useGroupsManagement(viewMode, searchQuery, page, selectedCenterId, boardTabCenterId);
+
+  const openGroupStatusDialog = (groupId: string, wasActive: boolean) => {
+    setStatusDialogError(null);
+    setStatusDialog({ groupId, wasActive });
+  };
+
+  const closeGroupStatusDialog = (open: boolean) => {
+    if (!open) {
+      if (toggleGroupActive.isPending) return;
+      setStatusDialog(null);
+      setStatusDialogError(null);
+    }
+  };
+
+  const handleConfirmGroupStatus = async () => {
+    if (!statusDialog) return;
+    setStatusDialogError(null);
+    try {
+      await toggleGroupActive.mutateAsync(statusDialog.groupId);
+      setStatusDialog(null);
+    } catch (err: unknown) {
+      setStatusDialogError(
+        getErrorMessage(err, 'Could not update group status. Please try again.')
+      );
+    }
+  };
+
+  const isGroupStatusTogglePending = toggleGroupActive.isPending;
 
   useEffect(() => {
     if (viewMode !== 'board' || selectedCenterId || isLoadingBranchTabs) {
@@ -410,9 +446,10 @@ export function GroupsTab({
       render: (group: Group) => (
         <ActionButtons
           onEdit={() => handleEditGroupIdChange(group.id)}
-          onDisable={() => handleToggleActive(group.id)}
+          onDisable={() => openGroupStatusDialog(group.id, group.isActive)}
           onDelete={() => handleDeleteClick(group.id)}
           isActive={group.isActive}
+          disableDisabled={isGroupStatusTogglePending}
           ariaLabels={{
             edit: 'Edit group',
             disable: group.isActive ? 'Deactivate group' : 'Activate group',
@@ -681,8 +718,9 @@ export function GroupsTab({
                     group={group}
                     onEdit={() => handleEditGroupIdChange(group.id)}
                     onDelete={() => handleDeleteClick(group.id)}
-                    onToggleActive={() => handleToggleActive(group.id)}
+                    onToggleActive={() => openGroupStatusDialog(group.id, group.isActive)}
                     onStudentClick={openStudentFromGroupCard}
+                    isStatusTogglePending={isGroupStatusTogglePending}
                   />
                 ))}
               </div>
@@ -760,6 +798,15 @@ export function GroupsTab({
           groupId={editGroupId}
         />
       )}
+      <GroupStatusConfirmationDialog
+        open={!!statusDialog}
+        onOpenChange={closeGroupStatusDialog}
+        onConfirm={handleConfirmGroupStatus}
+        action={statusDialog ? (statusDialog.wasActive ? 'deactivate' : 'activate') : 'activate'}
+        groupName={statusDialog ? groups.find((g) => g.id === statusDialog.groupId)?.name : undefined}
+        isLoading={toggleGroupActive.isPending}
+        error={statusDialogError ?? undefined}
+      />
       <DeleteConfirmationDialog
         open={!!deleteGroupId}
         onOpenChange={(open) => !open && setDeleteGroupId(null)}
