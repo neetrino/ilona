@@ -15,7 +15,7 @@ export function HomeLearnWithUs() {
 
   return (
     <section
-      className="relative mx-auto w-full max-w-[1920px] overflow-hidden px-4 py-12 sm:px-10 sm:py-16 lg:py-20"
+      className="relative z-10 mx-auto w-full max-w-[1920px] overflow-visible px-4 pt-12 pb-24 sm:px-10 sm:pt-16 sm:pb-28 lg:pt-20 lg:pb-32"
       id="about"
     >
       <div className="pointer-events-none absolute inset-0 flex justify-end opacity-40">
@@ -63,11 +63,11 @@ export function HomeLearnWithUs() {
             src={LEARN_ILLUSTRATION}
             width={400}
             height={400}
-            className="w-full max-w-xs object-contain sm:max-w-sm"
+            className="w-full max-w-[15.25rem] object-contain sm:max-w-[18rem] translate-x-[60%] translate-y-[60%]"
             alt=""
           />
         </div>
-        <div className="order-1 h-auto min-h-[200px] rounded-[2.2rem] bg-[rgba(239,243,251,0.45)] p-6 backdrop-blur-sm sm:p-8 lg:order-2 lg:max-w-xl">
+        <div className="order-1 h-auto min-h-[200px] rounded-[2.2rem] bg-[rgba(239,243,251,0.45)] p-6 backdrop-blur-sm sm:p-8 lg:order-2 lg:max-w-md lg:-translate-x-full lg:-translate-y-[10%]">
           <h3 className={cn(b, 'text-[#111] text-2xl font-bold leading-tight sm:text-4xl sm:leading-tight')}>
             {t('aboutCardH1')}
             <br />

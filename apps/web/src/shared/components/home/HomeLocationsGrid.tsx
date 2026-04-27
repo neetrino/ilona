@@ -36,7 +36,7 @@ export function HomeLocationsGrid() {
 
   return (
     <section
-      className="mx-auto w-full max-w-[1920px] px-4 py-12 sm:px-10 sm:py-16 lg:py-20"
+      className="relative z-0 mx-auto w-full max-w-[1920px] px-4 py-12 sm:px-10 sm:py-16 lg:py-20"
       id="branches"
     >
       <p className={cn(j, 'text-[#8a8680] text-xs sm:text-sm')}>{t('branchesLabel')}</p>
