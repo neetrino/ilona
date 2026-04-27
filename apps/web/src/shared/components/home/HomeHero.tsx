@@ -66,12 +66,13 @@ const pillTextYour = cn(
   'h-[110px] w-[min(100%,315px)] shrink-0 rounded-[30px] bg-[#ABEE00] md:w-[315px]',
   'px-3 sm:px-3.5 max-sm:px-2.5 max-md:px-2.5'
 );
-/** 456×123 (English) */
+/** 456×123 (English) — `translateX` nudges the pill only; does not reflow siblings */
 const pillTextEnglish = cn(
   pillBox,
   pillTextBoost,
   'h-[123px] w-[min(100%,456px)] shrink-0 rounded-[30px] bg-[#66B2FF] md:w-[456px]',
-  'px-2.5 sm:px-3 max-sm:px-2.5'
+  'px-2.5 sm:px-3 max-sm:px-2.5',
+  'translate-x-8 sm:translate-x-14 md:translate-x-16'
 );
 /** 308×100 (Ease) — same sizing pass as other pills; typography unchanged */
 const pillTextEase = cn(
@@ -91,7 +92,7 @@ export function HomeHero() {
       id="top"
     >
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:gap-4">
-        <div className="relative z-[1] max-w-[50rem] mt-8 sm:mt-10 md:mt-12 lg:mt-16">
+        <div className="relative z-[1] max-w-[50rem] pt-1 mt-8 sm:mt-10 md:mt-12 lg:mt-16">
           <h1
             className={cn(heroTitle, heroDisplay, 'mt-0 max-w-[min(100%,64rem)]')}
           >
