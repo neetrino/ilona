@@ -53,11 +53,6 @@ const addLessonFormSchema = z
     weekdays: z.array(z.number().int().min(0).max(6)).optional(),
     startTime: z.string().optional(),
     endTime: z.string().optional(),
-    topic: z
-      .string()
-      .max(200, 'Topic must be at most 200 characters')
-      .optional()
-      .or(z.literal('')),
     description: z
       .string()
       .max(1000, 'Description must be at most 1000 characters')
@@ -206,7 +201,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
       weekdays: [],
       startTime: '10:00',
       endTime: '11:00',
-      topic: '',
       description: '',
     },
   });
@@ -256,7 +250,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
         weekdays: rec.weekdays,
         startTime: rec.startTime,
         endTime: rec.endTime,
-        topic: '',
         description: '',
       });
       setErrorMessage(null);
@@ -279,7 +272,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
           teacherId: data.teacherId,
           scheduledAt: new Date(data.scheduledAt as string).toISOString(),
           duration: data.duration,
-          topic: data.topic || undefined,
           description: data.description || undefined,
         };
         await createLesson.mutateAsync(lessonData);
@@ -293,7 +285,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
           endTime: data.endTime as string,
           startDate: data.startDate as string,
           endDate: data.endDate as string,
-          topic: data.topic || undefined,
           description: data.description || undefined,
         };
         const res = await createRecurring.mutateAsync(recurringData);
@@ -576,17 +567,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
               <p className="text-xs text-slate-500">Duration between 15 and 240 minutes (default: 60)</p>
             </div>
           )}
-
-          <div className="space-y-2">
-            <Label htmlFor="topic">Topic</Label>
-            <Input
-              id="topic"
-              {...register('topic')}
-              error={errors.topic?.message}
-              placeholder="e.g., Present Simple, Vocabulary Review"
-              disabled={isBusy}
-            />
-          </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>

@@ -551,9 +551,6 @@ export default function CalendarPage() {
                               <p className="text-slate-600 truncate">
                                 {lesson.group?.name || 'Unknown'}
                               </p>
-                              <p className="text-slate-500 truncate">
-                                {lesson.topic || 'No topic'}
-                              </p>
                             </div>
                           );
                         })}
