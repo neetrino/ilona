@@ -23,6 +23,9 @@ const PAGE_SIZE = 10;
 const ADD_TEACHER_URL_PARAM = 'addTeacher';
 const ADD_TEACHER_URL_VALUE = '1';
 
+/** Teacher id in query so Edit dialog survives refresh (same idea as `teacherId` for details). */
+const EDIT_TEACHER_URL_PARAM = 'editTeacherId';
+
 export function useTeachersPage() {
   const params = useParams();
   const router = useRouter();
@@ -46,7 +49,6 @@ export function useTeachersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
   // Modal/Dialog states
-  const [isEditTeacherOpen, setIsEditTeacherOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
@@ -85,17 +87,30 @@ export function useTeachersPage() {
 
   const isAddTeacherOpen = searchParams.get(ADD_TEACHER_URL_PARAM) === ADD_TEACHER_URL_VALUE;
 
+  const selectedTeacherIdForEdit = searchParams.get(EDIT_TEACHER_URL_PARAM);
+  const isEditTeacherOpen = Boolean(selectedTeacherIdForEdit);
+
   const setIsAddTeacherOpen = (open: boolean) => {
     const params = new URLSearchParams(searchParams.toString());
     if (open) {
       params.set(ADD_TEACHER_URL_PARAM, ADD_TEACHER_URL_VALUE);
       params.delete('teacherId');
+      params.delete(EDIT_TEACHER_URL_PARAM);
     } else {
       params.delete(ADD_TEACHER_URL_PARAM);
     }
     const qs = params.toString();
     const path = qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`;
     router.replace(path, { scroll: false });
+  };
+
+  const setIsEditTeacherOpen = (open: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!open) {
+      params.delete(EDIT_TEACHER_URL_PARAM);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`, { scroll: false });
   };
 
   // Debounce search query (300ms delay). Use startTransition to avoid "setTimeout handler took Xms" violations.
@@ -363,7 +378,11 @@ export function useTeachersPage() {
 
   const handleEditClick = (teacher: Teacher) => {
     setSelectedTeacher(teacher);
-    setIsEditTeacherOpen(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(EDIT_TEACHER_URL_PARAM, teacher.id);
+    params.delete(ADD_TEACHER_URL_PARAM);
+    params.delete('teacherId');
+    router.replace(`/${locale}/admin/teachers?${params.toString()}`, { scroll: false });
   };
 
   const handleDeleteClick = (teacher: Teacher) => {
@@ -380,11 +399,19 @@ export function useTeachersPage() {
     setDeleteSuccess(false);
 
     try {
-      await deleteTeacher.mutateAsync(selectedTeacher.id);
+      const deletedId = selectedTeacher.id;
+      await deleteTeacher.mutateAsync(deletedId);
       setDeleteSuccess(true);
       setIsDeleteDialogOpen(false);
       setSelectedTeacher(null);
-      
+
+      const params = new URLSearchParams(searchParams.toString());
+      if (params.get(EDIT_TEACHER_URL_PARAM) === deletedId) {
+        params.delete(EDIT_TEACHER_URL_PARAM);
+        const qs = params.toString();
+        router.replace(qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`, { scroll: false });
+      }
+
       setTimeout(() => {
         startTransition(() => setDeleteSuccess(false));
       }, 3000);
@@ -415,7 +442,15 @@ export function useTeachersPage() {
       setBulkDeleteSuccess(true);
       setIsBulkDeleteDialogOpen(false);
       setSelectedTeacherIds(new Set());
-      
+
+      const editId = searchParams.get(EDIT_TEACHER_URL_PARAM);
+      if (editId && idsArray.includes(editId)) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete(EDIT_TEACHER_URL_PARAM);
+        const qs = params.toString();
+        router.replace(qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`, { scroll: false });
+      }
+
       setTimeout(() => {
         startTransition(() => {
           setBulkDeleteSuccess(false);
@@ -464,6 +499,7 @@ export function useTeachersPage() {
     const params = new URLSearchParams(searchParams.toString());
     params.set('teacherId', teacher.id);
     params.delete(ADD_TEACHER_URL_PARAM);
+    params.delete(EDIT_TEACHER_URL_PARAM);
     router.replace(`/${locale}/admin/teachers?${params.toString()}`, { scroll: false });
   };
 
@@ -496,6 +532,7 @@ export function useTeachersPage() {
     selectedTeacherIds,
     selectedTeacher,
     selectedTeacherIdForDetails,
+    selectedTeacherIdForEdit,
     isAddTeacherOpen,
     isEditTeacherOpen,
     isDeleteDialogOpen,

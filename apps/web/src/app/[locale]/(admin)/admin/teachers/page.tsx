@@ -38,6 +38,7 @@ export default function TeachersPage() {
     selectedTeacherIds,
     selectedTeacher,
     selectedTeacherIdForDetails,
+    selectedTeacherIdForEdit,
     isAddTeacherOpen,
     isEditTeacherOpen,
     isDeleteDialogOpen,
@@ -218,19 +219,19 @@ export default function TeachersPage() {
         onOpenChange={setIsAddTeacherOpen} 
       />
 
-      {/* Edit Teacher Modal */}
-      {selectedTeacher && (
-        <EditTeacherForm 
-          open={isEditTeacherOpen} 
+      {/* Edit Teacher Modal — `editTeacherId` in URL keeps dialog open after refresh */}
+      {selectedTeacherIdForEdit ? (
+        <EditTeacherForm
+          open={isEditTeacherOpen}
           onOpenChange={(open) => {
             setIsEditTeacherOpen(open);
             if (!open) {
               setSelectedTeacher(null);
             }
           }}
-          teacherId={selectedTeacher.id}
+          teacherId={selectedTeacherIdForEdit}
         />
-      )}
+      ) : null}
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
