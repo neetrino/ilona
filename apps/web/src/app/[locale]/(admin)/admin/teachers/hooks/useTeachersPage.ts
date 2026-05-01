@@ -125,9 +125,9 @@ export function useTeachersPage() {
     data: teachersData, 
     isLoading,
     error 
-  } = useTeachers({ 
+  } = useTeachers({
     skip: 0,
-    take: 100, // Max allowed by backend
+    take: 500,
     search: debouncedSearchQuery || undefined,
     status: selectedStatus || undefined,
     sortBy: sortBy,
@@ -175,25 +175,47 @@ export function useTeachersPage() {
 
   const hasUnassignedTeachers = (teachersByCenter.unassigned?.length || 0) > 0;
 
-  const [activeCenterTabId, setActiveCenterTabId] = useState<string | null>(null);
+  const [centerTabSelection, setCenterTabSelection] = useState<string | null>(null);
+
+  /** Resolves selection on the same render (avoids empty pagination when strip exists but state is still null). */
+  const activeCenterTabId = useMemo((): string | null => {
+    const hasStrip =
+      sortedVisibleCenters.length > 0 || hasUnassignedTeachers;
+    if (!hasStrip) {
+      return null;
+    }
+    if (sortedVisibleCenters.length === 0) {
+      return hasUnassignedTeachers ? 'unassigned' : null;
+    }
+    if (centerTabSelection === 'unassigned' && hasUnassignedTeachers) {
+      return 'unassigned';
+    }
+    if (
+      centerTabSelection &&
+      sortedVisibleCenters.some((center) => center.id === centerTabSelection)
+    ) {
+      return centerTabSelection;
+    }
+    return sortedVisibleCenters[0].id;
+  }, [sortedVisibleCenters, hasUnassignedTeachers, centerTabSelection]);
 
   useEffect(() => {
     if (sortedVisibleCenters.length === 0) {
-      setActiveCenterTabId(hasUnassignedTeachers ? 'unassigned' : null);
+      setCenterTabSelection(hasUnassignedTeachers ? 'unassigned' : null);
       return;
     }
 
     const activeStillExists =
-      activeCenterTabId === 'unassigned'
+      centerTabSelection === 'unassigned'
         ? hasUnassignedTeachers
-        : sortedVisibleCenters.some((center) => center.id === activeCenterTabId);
+        : sortedVisibleCenters.some((center) => center.id === centerTabSelection);
 
     if (activeStillExists) {
       return;
     }
 
-    setActiveCenterTabId(sortedVisibleCenters[0].id);
-  }, [activeCenterTabId, hasUnassignedTeachers, sortedVisibleCenters]);
+    setCenterTabSelection(sortedVisibleCenters[0].id);
+  }, [centerTabSelection, hasUnassignedTeachers, sortedVisibleCenters]);
 
   const teachersPaginationSource = useMemo(() => {
     const hasCenterStrip =
@@ -222,7 +244,7 @@ export function useTeachersPage() {
     const endIndex = startIndex + PAGE_SIZE;
     const paginatedTeachers = teachersPaginationSource.slice(startIndex, endIndex);
     const total = teachersPaginationSource.length;
-    const totalPagesCount = Math.ceil(total / PAGE_SIZE) || 1;
+    const totalPagesCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
     return {
       teachers: paginatedTeachers,
@@ -334,7 +356,7 @@ export function useTeachersPage() {
   };
 
   const handleActiveCenterTabChange = (centerId: string) => {
-    setActiveCenterTabId(centerId);
+    setCenterTabSelection(centerId);
     setPage(0);
     setSelectedTeacherIds(new Set());
   };
