@@ -45,7 +45,9 @@ export default function TeachersPage() {
     isDetailsDrawerOpen,
     allSelected,
     someSelected,
-    
+    activeCenterTabId,
+    sortedVisibleCenters,
+
     // Data
     teachers,
     totalTeachers,
@@ -79,6 +81,7 @@ export default function TeachersPage() {
     handleToggleSelect,
     handleSelectAll,
     handleViewModeChange,
+    handleActiveCenterTabChange,
     handleEditClick,
     handleDeleteClick,
     handleDeleteConfirm,
@@ -145,6 +148,10 @@ export default function TeachersPage() {
         {/* Teachers View */}
         {viewMode === 'list' ? (
           <TeachersList
+            centers={sortedVisibleCenters}
+            teachersByCenter={teachersByCenter}
+            activeCenterTabId={activeCenterTabId}
+            onSelectCenter={handleActiveCenterTabChange}
             teachers={teachers}
             sortBy={sortBy}
             sortOrder={sortOrder}
@@ -180,7 +187,9 @@ export default function TeachersPage() {
         ) : (
           <TeachersBoard
             teachersByCenter={teachersByCenter}
-            centersData={centersData?.items}
+            centersData={sortedVisibleCenters}
+            activeCenterTabId={activeCenterTabId}
+            onSelectCenter={handleActiveCenterTabChange}
             isLoading={isLoading}
             searchQuery={searchQuery}
             onEdit={handleEditClick}

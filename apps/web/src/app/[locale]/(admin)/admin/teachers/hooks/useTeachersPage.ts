@@ -149,6 +149,11 @@ export function useTeachersPage() {
     return centers.filter((center) => center.id === managerCenterId);
   }, [centersData?.items, managerCenterId]);
 
+  const sortedVisibleCenters = useMemo(
+    () => [...visibleCenters].sort((a, b) => a.name.localeCompare(b.name)),
+    [visibleCenters]
+  );
+
   // Mutations
   const deleteTeacher = useDeleteTeacher();
   const deleteTeachers = useDeleteTeachers();
@@ -162,26 +167,77 @@ export function useTeachersPage() {
     return filterTeachersByBranches(allTeachers, selectedBranchIds);
   }, [allTeachers, selectedBranchIds]);
 
-  // Group teachers by center for board view
+  // Group teachers by center for board tabs and list center filter
   const teachersByCenter = useMemo(() => {
     const centers = visibleCenters;
-    return groupTeachersByCenter(filteredTeachers, centers, viewMode);
-  }, [filteredTeachers, visibleCenters, viewMode]);
+    return groupTeachersByCenter(filteredTeachers, centers);
+  }, [filteredTeachers, visibleCenters]);
 
-  // Apply pagination to filtered results with memoization
+  const hasUnassignedTeachers = (teachersByCenter.unassigned?.length || 0) > 0;
+
+  const [activeCenterTabId, setActiveCenterTabId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (sortedVisibleCenters.length === 0) {
+      setActiveCenterTabId(hasUnassignedTeachers ? 'unassigned' : null);
+      return;
+    }
+
+    const activeStillExists =
+      activeCenterTabId === 'unassigned'
+        ? hasUnassignedTeachers
+        : sortedVisibleCenters.some((center) => center.id === activeCenterTabId);
+
+    if (activeStillExists) {
+      return;
+    }
+
+    setActiveCenterTabId(sortedVisibleCenters[0].id);
+  }, [activeCenterTabId, hasUnassignedTeachers, sortedVisibleCenters]);
+
+  const teachersPaginationSource = useMemo(() => {
+    const hasCenterStrip =
+      sortedVisibleCenters.length > 0 || hasUnassignedTeachers;
+    if (!hasCenterStrip) {
+      return filteredTeachers;
+    }
+    if (activeCenterTabId === 'unassigned') {
+      return teachersByCenter.unassigned ?? [];
+    }
+    if (activeCenterTabId) {
+      return teachersByCenter[activeCenterTabId] ?? [];
+    }
+    return [];
+  }, [
+    filteredTeachers,
+    sortedVisibleCenters.length,
+    hasUnassignedTeachers,
+    teachersByCenter,
+    activeCenterTabId,
+  ]);
+
+  // Apply pagination (list view uses center-scoped rows when the strip is shown)
   const { teachers, totalTeachers, totalPages } = useMemo(() => {
     const startIndex = page * PAGE_SIZE;
     const endIndex = startIndex + PAGE_SIZE;
-    const paginatedTeachers = filteredTeachers.slice(startIndex, endIndex);
-    const total = filteredTeachers.length;
-    const totalPagesCount = Math.ceil(total / PAGE_SIZE);
-    
+    const paginatedTeachers = teachersPaginationSource.slice(startIndex, endIndex);
+    const total = teachersPaginationSource.length;
+    const totalPagesCount = Math.ceil(total / PAGE_SIZE) || 1;
+
     return {
       teachers: paginatedTeachers,
       totalTeachers: total,
       totalPages: totalPagesCount,
     };
-  }, [filteredTeachers, page]);
+  }, [teachersPaginationSource, page]);
+
+  useEffect(() => {
+    const total = teachersPaginationSource.length;
+    const totalPagesCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (page >= totalPagesCount) {
+      setPage(Math.max(0, totalPagesCount - 1));
+    }
+  }, [teachersPaginationSource, page]);
 
   // Selection helpers
   const allSelected = teachers.length > 0 && teachers.every((t) => selectedTeacherIds.has(t.id));
@@ -273,6 +329,12 @@ export function useTeachersPage() {
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
     updateViewModeInUrl(mode);
+    setPage(0);
+    setSelectedTeacherIds(new Set());
+  };
+
+  const handleActiveCenterTabChange = (centerId: string) => {
+    setActiveCenterTabId(centerId);
     setPage(0);
     setSelectedTeacherIds(new Set());
   };
@@ -419,7 +481,9 @@ export function useTeachersPage() {
     isDetailsDrawerOpen,
     allSelected,
     someSelected,
-    
+    activeCenterTabId,
+    sortedVisibleCenters,
+
     // Data
     teachers,
     totalTeachers,
@@ -460,6 +524,7 @@ export function useTeachersPage() {
     handleToggleSelect,
     handleSelectAll,
     handleViewModeChange,
+    handleActiveCenterTabChange,
     handleEditClick,
     handleDeleteClick,
     handleDeleteConfirm,
