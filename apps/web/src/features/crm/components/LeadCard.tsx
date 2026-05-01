@@ -44,6 +44,13 @@ function formatRecordingTime(isoDate: string): string {
   });
 }
 
+/** CRM cards: API often stores digits-only; show E.164-style leading + when absent. */
+function formatPhoneForDisplay(phone: string): string {
+  const t = phone.trim();
+  if (!t) return '';
+  return t.startsWith('+') ? t : `+${t}`;
+}
+
 export function LeadCard({
   lead,
   availableStatuses = CRM_COLUMN_ORDER,
@@ -127,7 +134,7 @@ export function LeadCard({
       {lead.phone && (
         <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500 truncate">
           <Phone className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{lead.phone}</span>
+          <span className="truncate">{formatPhoneForDisplay(lead.phone)}</span>
         </p>
       )}
       {voiceAttachment?.r2Key ? (
