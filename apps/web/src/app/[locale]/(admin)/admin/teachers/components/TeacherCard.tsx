@@ -1,146 +1,156 @@
 'use client';
 
-import { Avatar, Badge } from '@/shared/components/ui';
-import { ActionButtons } from '@/shared/components/ui';
-import { cn, formatCurrency } from '@/shared/lib/utils';
+import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
+import { ActionButtons, Badge } from '@/shared/components/ui';
+import { formatCurrency } from '@/shared/lib/utils';
+import { TeacherShowcaseCard } from '@/features/teachers';
 import type { Teacher } from '@/features/teachers';
+import type { UserStatus } from '@/types';
+import { getTeacherCenters } from '../utils';
+import { Building2, Mail, Users } from 'lucide-react';
 
 interface TeacherCardProps {
   teacher: Teacher;
   onEdit: () => void;
   onDelete: () => void;
   onDeactivate: () => void;
-  /** Opens teacher details in CRM-style modal when card is clicked (not on action buttons) */
   onCardClick?: (teacher: Teacher) => void;
 }
 
-export function TeacherCard({ teacher, onEdit, onDelete, onDeactivate, onCardClick }: TeacherCardProps) {
-  const firstName = teacher.user?.firstName || '';
-  const lastName = teacher.user?.lastName || '';
-  const fullName = `${firstName} ${lastName}`.trim();
-  const phone = teacher.user?.phone || 'No phone';
-  const isActive = teacher.user?.status === 'ACTIVE';
-  const hourlyRate = typeof teacher.hourlyRate === 'string' ? parseFloat(teacher.hourlyRate) : Number(teacher.hourlyRate || 0);
-  const studentCount = teacher._count?.students || 0;
-  
-  // Get centers
-  const centers = teacher.centers || 
-    Array.from(
-      new Map(
-        (teacher.groups || [])
-          .filter((group) => group.center)
-          .map((group) => [group.center!.id, group.center!])
-      ).values()
-    );
+function statusBadgeVariant(status: UserStatus | undefined): 'success' | 'warning' | 'error' {
+  if (status === 'ACTIVE') return 'success';
+  if (status === 'SUSPENDED') return 'error';
+  return 'warning';
+}
 
+function AdminMetaRow({
+  icon,
+  label,
+  children,
+}: {
+  icon: ReactNode;
+  label: string;
+  children: ReactNode;
+}) {
   return (
-    <div
-      className={cn(
-        'bg-white rounded-lg border border-slate-200 p-4 shadow-sm transition-shadow',
-        onCardClick && 'hover:shadow-md cursor-pointer'
-      )}
-      onClick={() => onCardClick?.(teacher)}
-      role={onCardClick ? 'button' : undefined}
-      tabIndex={onCardClick ? 0 : undefined}
-      onKeyDown={onCardClick ? (e) => e.key === 'Enter' && onCardClick(teacher) : undefined}
-    >
-      {/* Teacher Header */}
-      <div className="mb-3">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Avatar
-              src={teacher.user?.avatarUrl}
-              name={fullName}
-              size="sm"
-              className={cn(!isActive && "opacity-80")}
-              alt={fullName}
-            />
-            <h4 className={cn("font-semibold text-slate-800 text-sm leading-tight truncate", !isActive && "text-slate-500")}>
-              {fullName}
-            </h4>
-          </div>
-          <div onClick={(e) => e.stopPropagation()}>
-            <ActionButtons
-            onEdit={onEdit}
-            onDisable={onDeactivate}
-            onDelete={onDelete}
-            isActive={isActive}
-            size="sm"
-            ariaLabels={{
-              edit: 'Edit teacher',
-              disable: isActive ? 'Deactivate teacher' : 'Activate teacher',
-              delete: 'Delete teacher',
-            }}
-            titles={{
-              edit: 'Edit teacher',
-              disable: isActive ? 'Deactivate teacher' : 'Activate teacher',
-              delete: 'Delete teacher',
-            }}
-          />
-          </div>
-        </div>
-      </div>
-
-      {/* Teacher Details */}
-      <div className="space-y-2 text-xs">
-        <div className="flex items-center gap-2 text-slate-600">
-          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-          </svg>
-          <span className="truncate" title={phone}>{phone}</span>
-        </div>
-
-        <div className="flex items-center gap-2 text-slate-600">
-          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          <span>{studentCount} {studentCount === 1 ? 'student' : 'students'}</span>
-        </div>
-
-        <div className="flex items-center gap-2 text-slate-600">
-          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>
-            {formatCurrency(hourlyRate)}/hr
-          </span>
-        </div>
-
-        {centers.length > 0 && (
-          <div className="flex items-start gap-2 text-slate-600 pt-1">
-            <svg className="w-3.5 h-3.5 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <div className="flex flex-wrap gap-1">
-              {centers.slice(0, 2).map((center) => (
-                <Badge key={center.id} variant="default" className="text-xs py-0.5 px-1.5">
-                  {center.name}
-                </Badge>
-              ))}
-              {centers.length > 2 && (
-                <Badge variant="default" className="text-xs py-0.5 px-1.5">
-                  +{centers.length - 2}
-                </Badge>
-              )}
-            </div>
-          </div>
-        )}
-
-        {!isActive && (
-          <div className="pt-1">
-            <Badge variant="warning" className="text-xs py-0.5 px-2">
-              Inactive
-            </Badge>
-          </div>
-        )}
+    <div className="flex gap-2 text-slate-600">
+      <span className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <span className="sr-only">{label}</span>
+        {children}
       </div>
     </div>
   );
 }
 
+export function TeacherCard({
+  teacher,
+  onEdit,
+  onDelete,
+  onDeactivate,
+  onCardClick,
+}: TeacherCardProps) {
+  const t = useTranslations('teachers');
+  const tCommon = useTranslations('common');
+  const tStatus = useTranslations('status');
 
+  const status = teacher.user?.status;
+  const isActive = status === 'ACTIVE';
+  const email = teacher.user?.email?.trim() || '—';
+  const hourlyRate =
+    typeof teacher.hourlyRate === 'string'
+      ? parseFloat(teacher.hourlyRate)
+      : Number(teacher.hourlyRate || 0);
+  const studentCount = teacher._count?.students ?? 0;
+  const centers = getTeacherCenters(teacher);
+  const groups = teacher.groups ?? [];
 
+  const statusLabel =
+    status === 'ACTIVE'
+      ? tStatus('active')
+      : status === 'SUSPENDED'
+        ? tStatus('suspended')
+        : tStatus('inactive');
 
+  const groupsSummary =
+    groups.length === 0
+      ? t('noGroups')
+      : groups
+          .slice(0, 4)
+          .map((g) => g.name)
+          .join(', ') + (groups.length > 4 ? ` +${groups.length - 4}` : '');
 
+  const centersSummary =
+    centers.length === 0
+      ? t('noCenter')
+      : centers
+          .slice(0, 3)
+          .map((c) => c.name)
+          .join(', ') + (centers.length > 3 ? ` +${centers.length - 3}` : '');
 
-
+  return (
+    <TeacherShowcaseCard
+      teacher={teacher}
+      onCardClick={onCardClick ? () => onCardClick(teacher) : undefined}
+      isMuted={!isActive}
+      headerActions={
+        <ActionButtons
+          onEdit={onEdit}
+          onDisable={onDeactivate}
+          onDelete={onDelete}
+          isActive={isActive}
+          size="sm"
+          ariaLabels={{
+            edit: 'Edit teacher',
+            disable: isActive ? 'Deactivate teacher' : 'Activate teacher',
+            delete: 'Delete teacher',
+          }}
+          titles={{
+            edit: 'Edit teacher',
+            disable: isActive ? 'Deactivate teacher' : 'Activate teacher',
+            delete: 'Delete teacher',
+          }}
+        />
+      }
+      afterExperience={
+        <div className="space-y-2.5 text-xs sm:text-sm">
+          <AdminMetaRow icon={<Mail className="h-3.5 w-3.5" />} label={tCommon('email')}>
+            <span className="break-all text-slate-700" title={email}>
+              {email}
+            </span>
+          </AdminMetaRow>
+          <AdminMetaRow icon={<Users className="h-3.5 w-3.5" />} label={t('assignedGroups')}>
+            <span className="line-clamp-2 text-slate-700" title={groupsSummary}>
+              {groupsSummary}
+            </span>
+          </AdminMetaRow>
+          <AdminMetaRow icon={<Building2 className="h-3.5 w-3.5" />} label={t('center')}>
+            <span className="line-clamp-2 text-slate-700" title={centersSummary}>
+              {centersSummary}
+            </span>
+          </AdminMetaRow>
+          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+              {t('status')}
+            </span>
+            <Badge variant={statusBadgeVariant(status)} className="text-[11px]">
+              {statusLabel}
+            </Badge>
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 border-t border-slate-100 pt-2 text-[11px] text-slate-500 sm:text-xs">
+            <span>
+              {t('students')}: <span className="font-medium text-slate-700">{studentCount}</span>
+            </span>
+            <span>
+              {t('rate')}:{' '}
+              <span className="font-medium text-slate-700">{formatCurrency(hourlyRate)}/hr</span>
+            </span>
+          </div>
+        </div>
+      }
+    />
+  );
+}
