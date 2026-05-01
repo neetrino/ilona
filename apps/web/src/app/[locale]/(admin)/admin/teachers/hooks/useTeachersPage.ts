@@ -19,6 +19,10 @@ type ViewMode = 'list' | 'board';
 
 const PAGE_SIZE = 10;
 
+/** Query flag so "Add teacher" dialog survives full page refresh (same pattern as `teacherId`). */
+const ADD_TEACHER_URL_PARAM = 'addTeacher';
+const ADD_TEACHER_URL_VALUE = '1';
+
 export function useTeachersPage() {
   const params = useParams();
   const router = useRouter();
@@ -42,7 +46,6 @@ export function useTeachersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
   // Modal/Dialog states
-  const [isAddTeacherOpen, setIsAddTeacherOpen] = useState(false);
   const [isEditTeacherOpen, setIsEditTeacherOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
@@ -79,6 +82,21 @@ export function useTeachersPage() {
   // Details modal: URL is the only source of truth (avoids stale id for one frame before useEffect)
   const selectedTeacherIdForDetails = searchParams.get('teacherId');
   const isDetailsDrawerOpen = Boolean(selectedTeacherIdForDetails);
+
+  const isAddTeacherOpen = searchParams.get(ADD_TEACHER_URL_PARAM) === ADD_TEACHER_URL_VALUE;
+
+  const setIsAddTeacherOpen = (open: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (open) {
+      params.set(ADD_TEACHER_URL_PARAM, ADD_TEACHER_URL_VALUE);
+      params.delete('teacherId');
+    } else {
+      params.delete(ADD_TEACHER_URL_PARAM);
+    }
+    const qs = params.toString();
+    const path = qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`;
+    router.replace(path, { scroll: false });
+  };
 
   // Debounce search query (300ms delay). Use startTransition to avoid "setTimeout handler took Xms" violations.
   useEffect(() => {
@@ -361,6 +379,7 @@ export function useTeachersPage() {
   const handleRowClick = (teacher: Teacher) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('teacherId', teacher.id);
+    params.delete(ADD_TEACHER_URL_PARAM);
     router.replace(`/${locale}/admin/teachers?${params.toString()}`, { scroll: false });
   };
 
