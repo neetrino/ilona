@@ -54,7 +54,8 @@ export class CentersService {
       where.isActive = isActive;
     }
 
-    const [items, total] = await Promise.all([
+    // Single connection for list + total (avoids pool contention vs parallel Promise.all).
+    const [items, total] = await this.prisma.$transaction([
       this.prisma.center.findMany({
         where,
         skip,

@@ -256,6 +256,8 @@
     "activate": "Activate",
     "noTeachersMatch": "No teachers match your search",
     "noTeachersFound": "No teachers found",
+    "noTeachersInThisCenter": "No teachers in this center",
+    "noUnassignedTeachers": "No unassigned teachers",
     "showing": "Showing {start}-{end} of {total} teachers",
     "page": "Page {current} of {total}",
     "salaryCalculation": "Salary Calculation",

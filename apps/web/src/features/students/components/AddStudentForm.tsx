@@ -17,13 +17,10 @@ import { useTeachers } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
-import {
-  createStudentSchema,
-  computeAgeFromDob,
-  type CreateStudentFormData,
-} from '../student-account-form.schema';
+import { createStudentSchema, type CreateStudentFormData } from '../student-account-form.schema';
 import { formDataToCreateStudentDto } from '../student-account-form.payload';
-import { StudentAccountFormFields } from './StudentAccountFormFields';
+import { resolveAgeFromDobAndManual } from '../student-account-form.age';
+import { StudentAccountFormFieldsCrmLeadLayout } from './StudentAccountFormFieldsCrmLeadLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 interface AddStudentFormProps {
@@ -66,11 +63,13 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       phone: '',
       dateOfBirth: '',
       firstLessonDate: '',
-      age: undefined as number | undefined,
+      manualAge: undefined,
+      levelId: '',
       groupId: '',
       teacherId: '',
       centerId: '',
       parentName: '',
+      parentSurname: '',
       parentPhone: '',
       parentEmail: '',
       parentPassportInfo: '',
@@ -82,10 +81,20 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
 
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
+  const watchedLevelId = watch('levelId') || '';
+  const watchedDob = watch('dateOfBirth');
+  const watchedManualAge = watch('manualAge');
+  const computedAge = useMemo(
+    () => resolveAgeFromDobAndManual(watchedDob, watchedManualAge),
+    [watchedDob, watchedManualAge],
+  );
+
   const groupsForTeacher = useMemo(() => {
     const allGroups = groupsData?.items ?? [];
-    return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
-  }, [groupsData?.items, watchedTeacherId]);
+    const byTeacher = watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
+    if (!watchedLevelId) return byTeacher;
+    return byTeacher.filter((g) => (g.level ?? '') === watchedLevelId);
+  }, [groupsData?.items, watchedTeacherId, watchedLevelId]);
 
   useEffect(() => {
     if (!watchedTeacherId) {
@@ -94,16 +103,11 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     }
     if (!watchedGroupId) return;
     const g = groupsData?.items?.find((x) => x.id === watchedGroupId);
-    if (g && g.teacherId !== watchedTeacherId) {
+    if (g && (g.teacherId !== watchedTeacherId || (watchedLevelId && (g.level ?? '') !== watchedLevelId))) {
       setValue('groupId', '');
     }
-  }, [watchedTeacherId, watchedGroupId, groupsData?.items, setValue]);
+  }, [watchedTeacherId, watchedGroupId, watchedLevelId, groupsData?.items, setValue]);
 
-  const dob = watch('dateOfBirth');
-  const computedAge = useMemo(() => computeAgeFromDob(dob), [dob]);
-  useEffect(() => {
-    if (computedAge !== undefined) setValue('age', computedAge, { shouldValidate: false });
-  }, [computedAge, setValue]);
   const showParentSection = computedAge !== undefined && computedAge < 18;
 
   useEffect(() => {
@@ -117,6 +121,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   useEffect(() => {
     if (computedAge !== undefined && computedAge >= 18) {
       setValue('parentName', '');
+      setValue('parentSurname', '');
       setValue('parentPhone', '');
       setValue('parentEmail', '');
       setValue('parentPassportInfo', '');
@@ -126,7 +131,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   const onSubmit = async (data: CreateStudentFormData) => {
     setErrorMessage(null);
     try {
-      const payload = formDataToCreateStudentDto(data, computedAge);
+      const payload = formDataToCreateStudentDto(data);
       if (isManager) {
         delete payload.centerId;
       }
@@ -146,28 +151,30 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Student</DialogTitle>
           <DialogDescription>
-            Fill in the information below to create a new student account. All fields marked with * are required.
+            Basic info and phone first, then account credentials, dates, parent details when under 18, academic
+            assignment, then billing. Voice and lead comment stay on the CRM board only.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {successMessage && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3">
               <p className="text-sm text-green-600">{successMessage}</p>
             </div>
           )}
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
               <p className="text-sm text-red-600">{errorMessage}</p>
             </div>
           )}
 
-          <StudentAccountFormFields
+          <StudentAccountFormFieldsCrmLeadLayout
             register={register}
+            setValue={setValue}
             errors={errors}
             watch={watch}
             computedAge={computedAge}

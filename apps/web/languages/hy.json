@@ -255,6 +255,8 @@
     "activate": "Ակտիվացնել",
     "noTeachersMatch": "Ոչ մի ուսուցիչ չի համապատասխանում ձեր որոնմանը",
     "noTeachersFound": "Ուսուցիչներ չեն գտնվել",
+    "noTeachersInThisCenter": "Այս կենտրոնում ուսուցիչներ չկան",
+    "noUnassignedTeachers": "Չնշանակված ուսուցիչներ չկան",
     "showing": "Ցուցադրվում է {start}-{end} {total} ուսուցիչներից",
     "page": "Էջ {current} {total}-ից",
     "salaryCalculation": "Աշխատավարձի հաշվարկ",

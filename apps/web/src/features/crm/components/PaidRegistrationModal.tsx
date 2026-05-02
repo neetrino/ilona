@@ -12,12 +12,9 @@ import { leadToCreateStudentFormDefaults } from '@/features/crm/lead-to-student-
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
-import {
-  createStudentSchema,
-  computeAgeFromDob,
-  type CreateStudentFormData,
-} from '@/features/students/student-account-form.schema';
+import { createStudentSchema, type CreateStudentFormData } from '@/features/students/student-account-form.schema';
 import { formDataToCreateStudentDto } from '@/features/students/student-account-form.payload';
+import { resolveAgeFromDobAndManual } from '@/features/students/student-account-form.age';
 import { StudentAccountFormFields } from '@/features/students/components/StudentAccountFormFields';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
@@ -86,11 +83,13 @@ export function PaidRegistrationModal({
       phone: '',
       dateOfBirth: '',
       firstLessonDate: '',
-      age: undefined,
+      manualAge: undefined,
+      levelId: '',
       groupId: '',
       teacherId: '',
       centerId: '',
       parentName: '',
+      parentSurname: '',
       parentPhone: '',
       parentEmail: '',
       parentPassportInfo: '',
@@ -102,10 +101,13 @@ export function PaidRegistrationModal({
 
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
+  const watchedLevelId = watch('levelId') || '';
   const groupsForTeacher = useMemo(() => {
     const allGroups = groupsData?.items ?? [];
-    return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
-  }, [groupsData?.items, watchedTeacherId]);
+    const byTeacher = watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
+    if (!watchedLevelId) return byTeacher;
+    return byTeacher.filter((g) => (g.level ?? '') === watchedLevelId);
+  }, [groupsData?.items, watchedTeacherId, watchedLevelId]);
 
   useEffect(() => {
     if (!watchedTeacherId) {
@@ -114,16 +116,17 @@ export function PaidRegistrationModal({
     }
     if (!watchedGroupId) return;
     const g = groupsData?.items?.find((x) => x.id === watchedGroupId);
-    if (g && g.teacherId !== watchedTeacherId) {
+    if (g && (g.teacherId !== watchedTeacherId || (watchedLevelId && (g.level ?? '') !== watchedLevelId))) {
       setValue('groupId', '');
     }
-  }, [watchedTeacherId, watchedGroupId, groupsData?.items, setValue]);
+  }, [watchedTeacherId, watchedGroupId, watchedLevelId, groupsData?.items, setValue]);
 
-  const dob = watch('dateOfBirth');
-  const computedAge = useMemo(() => computeAgeFromDob(dob), [dob]);
-  useEffect(() => {
-    if (computedAge !== undefined) setValue('age', computedAge, { shouldValidate: false });
-  }, [computedAge, setValue]);
+  const watchedDob = watch('dateOfBirth');
+  const watchedManualAge = watch('manualAge');
+  const computedAge = useMemo(
+    () => resolveAgeFromDobAndManual(watchedDob, watchedManualAge),
+    [watchedDob, watchedManualAge],
+  );
   const showParentSection = computedAge !== undefined && computedAge < 18;
 
   useEffect(() => {
@@ -151,11 +154,13 @@ export function PaidRegistrationModal({
         phone: '',
         dateOfBirth: '',
         firstLessonDate: '',
-        age: undefined,
+        manualAge: undefined,
+        levelId: '',
         groupId: '',
         teacherId: '',
         centerId: '',
         parentName: '',
+        parentSurname: '',
         parentPhone: '',
         parentEmail: '',
         parentPassportInfo: '',
@@ -170,6 +175,7 @@ export function PaidRegistrationModal({
   useEffect(() => {
     if (computedAge !== undefined && computedAge >= 18) {
       setValue('parentName', '');
+      setValue('parentSurname', '');
       setValue('parentPhone', '');
       setValue('parentEmail', '');
       setValue('parentPassportInfo', '');
@@ -181,7 +187,7 @@ export function PaidRegistrationModal({
     setApiError(null);
     submitGuardRef.current = true;
     try {
-      const payload = formDataToCreateStudentDto(data, computedAge);
+      const payload = formDataToCreateStudentDto(data);
       if (isManager) {
         delete payload.centerId;
       }

@@ -15,6 +15,7 @@ export { AddTeacherForm } from './components/AddTeacherForm';
 export { EditTeacherForm } from './components/EditTeacherForm';
 export { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
 export { TeacherDetailsModal } from './components/TeacherDetailsModal';
+export { TeacherShowcaseCard } from './components/TeacherShowcaseCard';
 export { ObligationDetailsModal } from './components/ObligationDetailsModal';
 
 // Types

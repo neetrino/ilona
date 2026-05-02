@@ -1,11 +1,18 @@
 'use client';
 
+import { useMemo } from 'react';
 import { DataTable } from '@/shared/components/ui';
 import { createTeachersTableColumns } from './TeachersTableColumns';
+import { TeachersCentersStrip } from './TeachersCentersStrip';
 import type { Teacher } from '@/features/teachers';
+import type { Center } from '@ilona/types';
 import type { useTranslations } from 'next-intl';
 
 interface TeachersListProps {
+  centers: Center[];
+  teachersByCenter: Record<string, Teacher[]>;
+  activeCenterTabId: string | null;
+  onSelectCenter: (centerId: string) => void;
   teachers: Teacher[];
   sortBy: string | undefined;
   sortOrder: 'asc' | 'desc';
@@ -33,6 +40,10 @@ interface TeachersListProps {
 }
 
 export function TeachersList({
+  centers,
+  teachersByCenter,
+  activeCenterTabId,
+  onSelectCenter,
   teachers,
   sortBy,
   sortOrder,
@@ -79,22 +90,52 @@ export function TeachersList({
     centerOptions,
   });
 
-  return (
-    <>
-      {/* Teachers Table */}
-      <DataTable
-        columns={teacherColumns}
-        data={teachers}
-        keyExtractor={(teacher) => teacher.id}
-        isLoading={isLoading}
-        emptyMessage={searchQuery ? t('noTeachersMatch') : t('noTeachersFound')}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSort={onSort}
-        onRowClick={onRowClick}
-      />
+  const showCenterStrip =
+    !isLoading &&
+    (centers.length > 0 || (teachersByCenter.unassigned?.length || 0) > 0);
 
-    </>
+  const emptyMessage = useMemo(() => {
+    if (searchQuery.trim()) {
+      return t('noTeachersMatch');
+    }
+    if (showCenterStrip) {
+      if (activeCenterTabId === 'unassigned') {
+        return t('noUnassignedTeachers');
+      }
+      return t('noTeachersInThisCenter');
+    }
+    return t('noTeachersFound');
+  }, [searchQuery, showCenterStrip, activeCenterTabId, t]);
+
+  const table = (
+    <DataTable
+      columns={teacherColumns}
+      data={teachers}
+      keyExtractor={(teacher) => teacher.id}
+      isLoading={isLoading}
+      emptyMessage={emptyMessage}
+      sortBy={sortBy}
+      sortOrder={sortOrder}
+      onSort={onSort}
+      onRowClick={onRowClick}
+      embedInParentCard={showCenterStrip}
+    />
+  );
+
+  if (!showCenterStrip) {
+    return table;
+  }
+
+  return (
+    <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
+      <TeachersCentersStrip
+        centers={centers}
+        teachersByCenter={teachersByCenter}
+        activeCenterTabId={activeCenterTabId}
+        onSelectCenter={onSelectCenter}
+      />
+      {table}
+    </div>
   );
 }
 

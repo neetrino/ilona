@@ -580,6 +580,7 @@ model CrmLead {
   dateOfBirth        DateTime?
   parentName         String?
   parentPhone        String?
+  parentEmail        String?
   parentPassportInfo String?
   firstLessonDate    DateTime?
   comment            String?

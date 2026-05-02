@@ -39,15 +39,12 @@ export function filterTeachersByBranches(
 }
 
 /**
- * Group teachers by center for board view
+ * Group teachers by primary center (first assigned center) for board tabs and list summary chips.
  */
 export function groupTeachersByCenter(
   teachers: Teacher[],
-  centers: Center[],
-  viewMode: 'list' | 'board'
+  centers: Center[]
 ): Record<string, Teacher[]> {
-  if (viewMode !== 'board') return {};
-  
   const grouped: Record<string, Teacher[]> = {};
   
   // Initialize all centers

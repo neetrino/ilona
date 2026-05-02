@@ -38,6 +38,7 @@ export default function TeachersPage() {
     selectedTeacherIds,
     selectedTeacher,
     selectedTeacherIdForDetails,
+    selectedTeacherIdForEdit,
     isAddTeacherOpen,
     isEditTeacherOpen,
     isDeleteDialogOpen,
@@ -45,7 +46,9 @@ export default function TeachersPage() {
     isDetailsDrawerOpen,
     allSelected,
     someSelected,
-    
+    activeCenterTabId,
+    sortedVisibleCenters,
+
     // Data
     teachers,
     totalTeachers,
@@ -79,6 +82,7 @@ export default function TeachersPage() {
     handleToggleSelect,
     handleSelectAll,
     handleViewModeChange,
+    handleActiveCenterTabChange,
     handleEditClick,
     handleDeleteClick,
     handleDeleteConfirm,
@@ -145,6 +149,10 @@ export default function TeachersPage() {
         {/* Teachers View */}
         {viewMode === 'list' ? (
           <TeachersList
+            centers={sortedVisibleCenters}
+            teachersByCenter={teachersByCenter}
+            activeCenterTabId={activeCenterTabId}
+            onSelectCenter={handleActiveCenterTabChange}
             teachers={teachers}
             sortBy={sortBy}
             sortOrder={sortOrder}
@@ -180,7 +188,9 @@ export default function TeachersPage() {
         ) : (
           <TeachersBoard
             teachersByCenter={teachersByCenter}
-            centersData={centersData?.items}
+            centersData={sortedVisibleCenters}
+            activeCenterTabId={activeCenterTabId}
+            onSelectCenter={handleActiveCenterTabChange}
             isLoading={isLoading}
             searchQuery={searchQuery}
             onEdit={handleEditClick}
@@ -209,19 +219,19 @@ export default function TeachersPage() {
         onOpenChange={setIsAddTeacherOpen} 
       />
 
-      {/* Edit Teacher Modal */}
-      {selectedTeacher && (
-        <EditTeacherForm 
-          open={isEditTeacherOpen} 
+      {/* Edit Teacher Modal — `editTeacherId` in URL keeps dialog open after refresh */}
+      {selectedTeacherIdForEdit ? (
+        <EditTeacherForm
+          open={isEditTeacherOpen}
           onOpenChange={(open) => {
             setIsEditTeacherOpen(open);
             if (!open) {
               setSelectedTeacher(null);
             }
           }}
-          teacherId={selectedTeacher.id}
+          teacherId={selectedTeacherIdForEdit}
         />
-      )}
+      ) : null}
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog

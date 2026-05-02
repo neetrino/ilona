@@ -484,6 +484,7 @@ exports.Prisma.CrmLeadScalarFieldEnum = {
   dateOfBirth: 'dateOfBirth',
   parentName: 'parentName',
   parentPhone: 'parentPhone',
+  parentEmail: 'parentEmail',
   parentPassportInfo: 'parentPassportInfo',
   firstLessonDate: 'firstLessonDate',
   comment: 'comment',

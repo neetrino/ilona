@@ -19,6 +19,13 @@ type ViewMode = 'list' | 'board';
 
 const PAGE_SIZE = 10;
 
+/** Query flag so "Add teacher" dialog survives full page refresh (same pattern as `teacherId`). */
+const ADD_TEACHER_URL_PARAM = 'addTeacher';
+const ADD_TEACHER_URL_VALUE = '1';
+
+/** Teacher id in query so Edit dialog survives refresh (same idea as `teacherId` for details). */
+const EDIT_TEACHER_URL_PARAM = 'editTeacherId';
+
 export function useTeachersPage() {
   const params = useParams();
   const router = useRouter();
@@ -42,8 +49,6 @@ export function useTeachersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
   // Modal/Dialog states
-  const [isAddTeacherOpen, setIsAddTeacherOpen] = useState(false);
-  const [isEditTeacherOpen, setIsEditTeacherOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
@@ -80,6 +85,34 @@ export function useTeachersPage() {
   const selectedTeacherIdForDetails = searchParams.get('teacherId');
   const isDetailsDrawerOpen = Boolean(selectedTeacherIdForDetails);
 
+  const isAddTeacherOpen = searchParams.get(ADD_TEACHER_URL_PARAM) === ADD_TEACHER_URL_VALUE;
+
+  const selectedTeacherIdForEdit = searchParams.get(EDIT_TEACHER_URL_PARAM);
+  const isEditTeacherOpen = Boolean(selectedTeacherIdForEdit);
+
+  const setIsAddTeacherOpen = (open: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (open) {
+      params.set(ADD_TEACHER_URL_PARAM, ADD_TEACHER_URL_VALUE);
+      params.delete('teacherId');
+      params.delete(EDIT_TEACHER_URL_PARAM);
+    } else {
+      params.delete(ADD_TEACHER_URL_PARAM);
+    }
+    const qs = params.toString();
+    const path = qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`;
+    router.replace(path, { scroll: false });
+  };
+
+  const setIsEditTeacherOpen = (open: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!open) {
+      params.delete(EDIT_TEACHER_URL_PARAM);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`, { scroll: false });
+  };
+
   // Debounce search query (300ms delay). Use startTransition to avoid "setTimeout handler took Xms" violations.
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -107,9 +140,9 @@ export function useTeachersPage() {
     data: teachersData, 
     isLoading,
     error 
-  } = useTeachers({ 
+  } = useTeachers({
     skip: 0,
-    take: 100, // Max allowed by backend
+    take: 500,
     search: debouncedSearchQuery || undefined,
     status: selectedStatus || undefined,
     sortBy: sortBy,
@@ -131,6 +164,11 @@ export function useTeachersPage() {
     return centers.filter((center) => center.id === managerCenterId);
   }, [centersData?.items, managerCenterId]);
 
+  const sortedVisibleCenters = useMemo(
+    () => [...visibleCenters].sort((a, b) => a.name.localeCompare(b.name)),
+    [visibleCenters]
+  );
+
   // Mutations
   const deleteTeacher = useDeleteTeacher();
   const deleteTeachers = useDeleteTeachers();
@@ -144,26 +182,99 @@ export function useTeachersPage() {
     return filterTeachersByBranches(allTeachers, selectedBranchIds);
   }, [allTeachers, selectedBranchIds]);
 
-  // Group teachers by center for board view
+  // Group teachers by center for board tabs and list center filter
   const teachersByCenter = useMemo(() => {
     const centers = visibleCenters;
-    return groupTeachersByCenter(filteredTeachers, centers, viewMode);
-  }, [filteredTeachers, visibleCenters, viewMode]);
+    return groupTeachersByCenter(filteredTeachers, centers);
+  }, [filteredTeachers, visibleCenters]);
 
-  // Apply pagination to filtered results with memoization
+  const hasUnassignedTeachers = (teachersByCenter.unassigned?.length || 0) > 0;
+
+  const [centerTabSelection, setCenterTabSelection] = useState<string | null>(null);
+
+  /** Resolves selection on the same render (avoids empty pagination when strip exists but state is still null). */
+  const activeCenterTabId = useMemo((): string | null => {
+    const hasStrip =
+      sortedVisibleCenters.length > 0 || hasUnassignedTeachers;
+    if (!hasStrip) {
+      return null;
+    }
+    if (sortedVisibleCenters.length === 0) {
+      return hasUnassignedTeachers ? 'unassigned' : null;
+    }
+    if (centerTabSelection === 'unassigned' && hasUnassignedTeachers) {
+      return 'unassigned';
+    }
+    if (
+      centerTabSelection &&
+      sortedVisibleCenters.some((center) => center.id === centerTabSelection)
+    ) {
+      return centerTabSelection;
+    }
+    return sortedVisibleCenters[0].id;
+  }, [sortedVisibleCenters, hasUnassignedTeachers, centerTabSelection]);
+
+  useEffect(() => {
+    if (sortedVisibleCenters.length === 0) {
+      setCenterTabSelection(hasUnassignedTeachers ? 'unassigned' : null);
+      return;
+    }
+
+    const activeStillExists =
+      centerTabSelection === 'unassigned'
+        ? hasUnassignedTeachers
+        : sortedVisibleCenters.some((center) => center.id === centerTabSelection);
+
+    if (activeStillExists) {
+      return;
+    }
+
+    setCenterTabSelection(sortedVisibleCenters[0].id);
+  }, [centerTabSelection, hasUnassignedTeachers, sortedVisibleCenters]);
+
+  const teachersPaginationSource = useMemo(() => {
+    const hasCenterStrip =
+      sortedVisibleCenters.length > 0 || hasUnassignedTeachers;
+    if (!hasCenterStrip) {
+      return filteredTeachers;
+    }
+    if (activeCenterTabId === 'unassigned') {
+      return teachersByCenter.unassigned ?? [];
+    }
+    if (activeCenterTabId) {
+      return teachersByCenter[activeCenterTabId] ?? [];
+    }
+    return [];
+  }, [
+    filteredTeachers,
+    sortedVisibleCenters.length,
+    hasUnassignedTeachers,
+    teachersByCenter,
+    activeCenterTabId,
+  ]);
+
+  // Apply pagination (list view uses center-scoped rows when the strip is shown)
   const { teachers, totalTeachers, totalPages } = useMemo(() => {
     const startIndex = page * PAGE_SIZE;
     const endIndex = startIndex + PAGE_SIZE;
-    const paginatedTeachers = filteredTeachers.slice(startIndex, endIndex);
-    const total = filteredTeachers.length;
-    const totalPagesCount = Math.ceil(total / PAGE_SIZE);
-    
+    const paginatedTeachers = teachersPaginationSource.slice(startIndex, endIndex);
+    const total = teachersPaginationSource.length;
+    const totalPagesCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
     return {
       teachers: paginatedTeachers,
       totalTeachers: total,
       totalPages: totalPagesCount,
     };
-  }, [filteredTeachers, page]);
+  }, [teachersPaginationSource, page]);
+
+  useEffect(() => {
+    const total = teachersPaginationSource.length;
+    const totalPagesCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (page >= totalPagesCount) {
+      setPage(Math.max(0, totalPagesCount - 1));
+    }
+  }, [teachersPaginationSource, page]);
 
   // Selection helpers
   const allSelected = teachers.length > 0 && teachers.every((t) => selectedTeacherIds.has(t.id));
@@ -259,9 +370,19 @@ export function useTeachersPage() {
     setSelectedTeacherIds(new Set());
   };
 
+  const handleActiveCenterTabChange = (centerId: string) => {
+    setCenterTabSelection(centerId);
+    setPage(0);
+    setSelectedTeacherIds(new Set());
+  };
+
   const handleEditClick = (teacher: Teacher) => {
     setSelectedTeacher(teacher);
-    setIsEditTeacherOpen(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(EDIT_TEACHER_URL_PARAM, teacher.id);
+    params.delete(ADD_TEACHER_URL_PARAM);
+    params.delete('teacherId');
+    router.replace(`/${locale}/admin/teachers?${params.toString()}`, { scroll: false });
   };
 
   const handleDeleteClick = (teacher: Teacher) => {
@@ -278,11 +399,19 @@ export function useTeachersPage() {
     setDeleteSuccess(false);
 
     try {
-      await deleteTeacher.mutateAsync(selectedTeacher.id);
+      const deletedId = selectedTeacher.id;
+      await deleteTeacher.mutateAsync(deletedId);
       setDeleteSuccess(true);
       setIsDeleteDialogOpen(false);
       setSelectedTeacher(null);
-      
+
+      const params = new URLSearchParams(searchParams.toString());
+      if (params.get(EDIT_TEACHER_URL_PARAM) === deletedId) {
+        params.delete(EDIT_TEACHER_URL_PARAM);
+        const qs = params.toString();
+        router.replace(qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`, { scroll: false });
+      }
+
       setTimeout(() => {
         startTransition(() => setDeleteSuccess(false));
       }, 3000);
@@ -313,7 +442,15 @@ export function useTeachersPage() {
       setBulkDeleteSuccess(true);
       setIsBulkDeleteDialogOpen(false);
       setSelectedTeacherIds(new Set());
-      
+
+      const editId = searchParams.get(EDIT_TEACHER_URL_PARAM);
+      if (editId && idsArray.includes(editId)) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete(EDIT_TEACHER_URL_PARAM);
+        const qs = params.toString();
+        router.replace(qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`, { scroll: false });
+      }
+
       setTimeout(() => {
         startTransition(() => {
           setBulkDeleteSuccess(false);
@@ -361,6 +498,8 @@ export function useTeachersPage() {
   const handleRowClick = (teacher: Teacher) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('teacherId', teacher.id);
+    params.delete(ADD_TEACHER_URL_PARAM);
+    params.delete(EDIT_TEACHER_URL_PARAM);
     router.replace(`/${locale}/admin/teachers?${params.toString()}`, { scroll: false });
   };
 
@@ -393,6 +532,7 @@ export function useTeachersPage() {
     selectedTeacherIds,
     selectedTeacher,
     selectedTeacherIdForDetails,
+    selectedTeacherIdForEdit,
     isAddTeacherOpen,
     isEditTeacherOpen,
     isDeleteDialogOpen,
@@ -400,7 +540,9 @@ export function useTeachersPage() {
     isDetailsDrawerOpen,
     allSelected,
     someSelected,
-    
+    activeCenterTabId,
+    sortedVisibleCenters,
+
     // Data
     teachers,
     totalTeachers,
@@ -441,6 +583,7 @@ export function useTeachersPage() {
     handleToggleSelect,
     handleSelectAll,
     handleViewModeChange,
+    handleActiveCenterTabChange,
     handleEditClick,
     handleDeleteClick,
     handleDeleteConfirm,

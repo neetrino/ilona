@@ -43,6 +43,8 @@ export interface StudentAccountFormFieldsProps {
 const selectClassName =
   'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
+const LEVEL_FILTER_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
+
 export function StudentAccountFormFields({
   register,
   errors,
@@ -141,18 +143,27 @@ export function StudentAccountFormFields({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor={p('dateOfBirth')}>
-            Date of Birth <span className="text-red-500">*</span>
-          </Label>
+          <Label htmlFor={p('manualAge')}>Age (years)</Label>
+          <Input
+            id={p('manualAge')}
+            type="number"
+            min={0}
+            {...register('manualAge')}
+            error={errors.manualAge?.message}
+          />
+          <p className="text-xs text-slate-500">Use if date of birth is unknown</p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={p('dateOfBirth')}>Date of Birth</Label>
           <Input
             id={p('dateOfBirth')}
             type="date"
             {...register('dateOfBirth')}
             error={errors.dateOfBirth?.message}
           />
-          {computedAge !== undefined && <p className="text-xs text-slate-500">Age: {computedAge}</p>}
+          {computedAge !== undefined && <p className="text-xs text-slate-500">Effective age: {computedAge}</p>}
         </div>
 
         <div className="space-y-2">
@@ -164,6 +175,24 @@ export function StudentAccountFormFields({
             error={errors.firstLessonDate?.message}
           />
         </div>
+      </div>
+      <p className="text-xs text-slate-500">Provide date of birth or age (1–120).</p>
+
+      <div className="space-y-2">
+        <Label htmlFor={p('levelId')}>Level (optional)</Label>
+        <select
+          id={p('levelId')}
+          {...register('levelId')}
+          className={selectClassName}
+          disabled={isSubmitting}
+        >
+          <option value="">Any level</option>
+          {LEVEL_FILTER_OPTIONS.map((l) => (
+            <option key={l} value={l}>
+              {l}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -279,6 +308,16 @@ export function StudentAccountFormFields({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor={p('parentSurname')}>Parent/Guardian Surname</Label>
+              <Input
+                id={p('parentSurname')}
+                {...register('parentSurname')}
+                error={errors.parentSurname?.message}
+                placeholder="Doe"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor={p('parentPhone')}>
                 Parent/Guardian Phone <span className="text-red-500">*</span>
               </Label>
@@ -298,6 +337,7 @@ export function StudentAccountFormFields({
               <Input
                 id={p('parentEmail')}
                 type="email"
+                autoComplete="email"
                 {...register('parentEmail')}
                 error={errors.parentEmail?.message}
                 placeholder="parent@example.com"

@@ -26,6 +26,8 @@ interface DataTableProps<T> {
   containerClassName?: string;
   compact?: boolean;
   disableHorizontalScroll?: boolean;
+  /** When true, omit outer card chrome so the table can sit inside a parent card (e.g. with a header strip). */
+  embedInParentCard?: boolean;
 }
 
 export function DataTable<T>({
@@ -42,10 +44,16 @@ export function DataTable<T>({
   containerClassName,
   compact = false,
   disableHorizontalScroll = false,
+  embedInParentCard = false,
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 p-12">
+      <div
+        className={cn(
+          'p-12',
+          embedInParentCard ? '' : 'bg-white rounded-2xl border border-slate-200'
+        )}
+      >
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -54,7 +62,11 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+    <div
+      className={cn(
+        embedInParentCard ? 'overflow-hidden' : 'bg-white rounded-2xl border border-slate-200 overflow-hidden'
+      )}
+    >
       <div className={cn('w-full', disableHorizontalScroll ? 'overflow-x-hidden' : 'overflow-x-auto', containerClassName)}>
         <table className={cn('w-full table-auto', !disableHorizontalScroll && 'min-w-max', tableClassName)}>
         <thead>

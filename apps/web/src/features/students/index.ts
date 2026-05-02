@@ -20,7 +20,12 @@ export {
   ISO_DATE_RE,
   type CreateStudentFormData,
 } from './student-account-form.schema';
-export { formDataToCreateStudentDto } from './student-account-form.payload';
+export {
+  formDataToCreateStudentDto,
+  resolveStudentCreateAge,
+  combineParentDisplayName,
+} from './student-account-form.payload';
+export { resolveAgeFromDobAndManual } from './student-account-form.age';
 export { StudentAccountFormFields } from './components/StudentAccountFormFields';
 
 // Components
