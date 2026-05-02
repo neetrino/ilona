@@ -11,6 +11,10 @@ export function leadToCreateStudentFormDefaults(
   const parentPhoneDigits = (p.parentPhone ?? lead.parentPhone ?? '').replace(/\D/g, '');
   const rawNotes = p.notes ?? lead.notes ?? p.comment ?? lead.comment;
   const notesFromLead = rawNotes != null && rawNotes !== '' ? String(rawNotes) : '';
+  const dobStr = (p.dateOfBirth ?? lead.dateOfBirth)?.slice(0, 10) ?? '';
+  const leadAge = lead.age;
+  const manualAgeFromLead =
+    leadAge != null && leadAge >= 1 && leadAge <= 120 && dobStr === '' ? leadAge : undefined;
 
   return {
     email: '',
@@ -18,15 +22,17 @@ export function leadToCreateStudentFormDefaults(
     firstName: (p.firstName ?? lead.firstName) ?? '',
     lastName: (p.lastName ?? lead.lastName) ?? '',
     phone: phoneDigits,
-    dateOfBirth: (p.dateOfBirth ?? lead.dateOfBirth)?.slice(0, 10) ?? '',
+    dateOfBirth: dobStr,
     firstLessonDate: (p.firstLessonDate ?? lead.firstLessonDate)?.slice(0, 10) ?? '',
-    age: undefined,
+    manualAge: manualAgeFromLead,
+    levelId: (p.levelId ?? lead.levelId) ?? '',
     groupId: (p.groupId ?? lead.groupId) ?? '',
     teacherId: (p.teacherId ?? lead.teacherId) ?? '',
     centerId: (p.centerId ?? lead.centerId) ?? '',
     parentName: (p.parentName ?? lead.parentName) ?? '',
+    parentSurname: '',
     parentPhone: parentPhoneDigits,
-    parentEmail: '',
+    parentEmail: (p.parentEmail ?? lead.parentEmail) ?? '',
     parentPassportInfo: (p.parentPassportInfo ?? lead.parentPassportInfo) ?? '',
     monthlyFee: 0,
     notes: notesFromLead,

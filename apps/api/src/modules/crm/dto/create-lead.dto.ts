@@ -5,7 +5,10 @@ import {
   Min,
   MaxLength,
   IsISO8601,
+  IsEmail,
+  ValidateIf,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateLeadDto {
   @IsString()
@@ -44,6 +47,18 @@ export class CreateLeadDto {
   @IsOptional()
   @MaxLength(50)
   parentPhone?: string;
+
+  /** Parent / guardian email (under-18 case). */
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === null) return null;
+    if (value === '' || value === undefined) return undefined;
+    return String(value).trim();
+  })
+  @ValidateIf((_, v) => v !== undefined && v !== null && String(v).trim() !== '')
+  @IsEmail()
+  @MaxLength(254)
+  parentEmail?: string | null;
 
   /** Passport/ID info — used for the responsible adult (parent if minor, student if 18+). */
   @IsString()

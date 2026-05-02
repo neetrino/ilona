@@ -31972,6 +31972,7 @@ export namespace Prisma {
     dateOfBirth: Date | null
     parentName: string | null
     parentPhone: string | null
+    parentEmail: string | null
     parentPassportInfo: string | null
     firstLessonDate: Date | null
     comment: string | null
@@ -32001,6 +32002,7 @@ export namespace Prisma {
     dateOfBirth: Date | null
     parentName: string | null
     parentPhone: string | null
+    parentEmail: string | null
     parentPassportInfo: string | null
     firstLessonDate: Date | null
     comment: string | null
@@ -32030,6 +32032,7 @@ export namespace Prisma {
     dateOfBirth: number
     parentName: number
     parentPhone: number
+    parentEmail: number
     parentPassportInfo: number
     firstLessonDate: number
     comment: number
@@ -32069,6 +32072,7 @@ export namespace Prisma {
     dateOfBirth?: true
     parentName?: true
     parentPhone?: true
+    parentEmail?: true
     parentPassportInfo?: true
     firstLessonDate?: true
     comment?: true
@@ -32098,6 +32102,7 @@ export namespace Prisma {
     dateOfBirth?: true
     parentName?: true
     parentPhone?: true
+    parentEmail?: true
     parentPassportInfo?: true
     firstLessonDate?: true
     comment?: true
@@ -32127,6 +32132,7 @@ export namespace Prisma {
     dateOfBirth?: true
     parentName?: true
     parentPhone?: true
+    parentEmail?: true
     parentPassportInfo?: true
     firstLessonDate?: true
     comment?: true
@@ -32243,6 +32249,7 @@ export namespace Prisma {
     dateOfBirth: Date | null
     parentName: string | null
     parentPhone: string | null
+    parentEmail: string | null
     parentPassportInfo: string | null
     firstLessonDate: Date | null
     comment: string | null
@@ -32291,6 +32298,7 @@ export namespace Prisma {
     dateOfBirth?: boolean
     parentName?: boolean
     parentPhone?: boolean
+    parentEmail?: boolean
     parentPassportInfo?: boolean
     firstLessonDate?: boolean
     comment?: boolean
@@ -32329,6 +32337,7 @@ export namespace Prisma {
     dateOfBirth?: boolean
     parentName?: boolean
     parentPhone?: boolean
+    parentEmail?: boolean
     parentPassportInfo?: boolean
     firstLessonDate?: boolean
     comment?: boolean
@@ -32363,6 +32372,7 @@ export namespace Prisma {
     dateOfBirth?: boolean
     parentName?: boolean
     parentPhone?: boolean
+    parentEmail?: boolean
     parentPassportInfo?: boolean
     firstLessonDate?: boolean
     comment?: boolean
@@ -32423,6 +32433,7 @@ export namespace Prisma {
       dateOfBirth: Date | null
       parentName: string | null
       parentPhone: string | null
+      parentEmail: string | null
       parentPassportInfo: string | null
       firstLessonDate: Date | null
       comment: string | null
@@ -32850,6 +32861,7 @@ export namespace Prisma {
     readonly dateOfBirth: FieldRef<"CrmLead", 'DateTime'>
     readonly parentName: FieldRef<"CrmLead", 'String'>
     readonly parentPhone: FieldRef<"CrmLead", 'String'>
+    readonly parentEmail: FieldRef<"CrmLead", 'String'>
     readonly parentPassportInfo: FieldRef<"CrmLead", 'String'>
     readonly firstLessonDate: FieldRef<"CrmLead", 'DateTime'>
     readonly comment: FieldRef<"CrmLead", 'String'>
@@ -36642,6 +36654,7 @@ export namespace Prisma {
     dateOfBirth: 'dateOfBirth',
     parentName: 'parentName',
     parentPhone: 'parentPhone',
+    parentEmail: 'parentEmail',
     parentPassportInfo: 'parentPassportInfo',
     firstLessonDate: 'firstLessonDate',
     comment: 'comment',
@@ -39429,6 +39442,7 @@ export namespace Prisma {
     dateOfBirth?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     parentName?: StringNullableFilter<"CrmLead"> | string | null
     parentPhone?: StringNullableFilter<"CrmLead"> | string | null
+    parentEmail?: StringNullableFilter<"CrmLead"> | string | null
     parentPassportInfo?: StringNullableFilter<"CrmLead"> | string | null
     firstLessonDate?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     comment?: StringNullableFilter<"CrmLead"> | string | null
@@ -39466,6 +39480,7 @@ export namespace Prisma {
     dateOfBirth?: SortOrderInput | SortOrder
     parentName?: SortOrderInput | SortOrder
     parentPhone?: SortOrderInput | SortOrder
+    parentEmail?: SortOrderInput | SortOrder
     parentPassportInfo?: SortOrderInput | SortOrder
     firstLessonDate?: SortOrderInput | SortOrder
     comment?: SortOrderInput | SortOrder
@@ -39506,6 +39521,7 @@ export namespace Prisma {
     dateOfBirth?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     parentName?: StringNullableFilter<"CrmLead"> | string | null
     parentPhone?: StringNullableFilter<"CrmLead"> | string | null
+    parentEmail?: StringNullableFilter<"CrmLead"> | string | null
     parentPassportInfo?: StringNullableFilter<"CrmLead"> | string | null
     firstLessonDate?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     comment?: StringNullableFilter<"CrmLead"> | string | null
@@ -39543,6 +39559,7 @@ export namespace Prisma {
     dateOfBirth?: SortOrderInput | SortOrder
     parentName?: SortOrderInput | SortOrder
     parentPhone?: SortOrderInput | SortOrder
+    parentEmail?: SortOrderInput | SortOrder
     parentPassportInfo?: SortOrderInput | SortOrder
     firstLessonDate?: SortOrderInput | SortOrder
     comment?: SortOrderInput | SortOrder
@@ -39580,6 +39597,7 @@ export namespace Prisma {
     dateOfBirth?: DateTimeNullableWithAggregatesFilter<"CrmLead"> | Date | string | null
     parentName?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
     parentPhone?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
+    parentEmail?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
     parentPassportInfo?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
     firstLessonDate?: DateTimeNullableWithAggregatesFilter<"CrmLead"> | Date | string | null
     comment?: StringNullableWithAggregatesFilter<"CrmLead"> | string | null
@@ -42397,6 +42415,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -42431,6 +42450,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -42461,6 +42481,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42495,6 +42516,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42527,6 +42549,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -42554,6 +42577,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42580,6 +42604,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44903,6 +44928,7 @@ export namespace Prisma {
     dateOfBirth?: SortOrder
     parentName?: SortOrder
     parentPhone?: SortOrder
+    parentEmail?: SortOrder
     parentPassportInfo?: SortOrder
     firstLessonDate?: SortOrder
     comment?: SortOrder
@@ -44936,6 +44962,7 @@ export namespace Prisma {
     dateOfBirth?: SortOrder
     parentName?: SortOrder
     parentPhone?: SortOrder
+    parentEmail?: SortOrder
     parentPassportInfo?: SortOrder
     firstLessonDate?: SortOrder
     comment?: SortOrder
@@ -44965,6 +44992,7 @@ export namespace Prisma {
     dateOfBirth?: SortOrder
     parentName?: SortOrder
     parentPhone?: SortOrder
+    parentEmail?: SortOrder
     parentPassportInfo?: SortOrder
     firstLessonDate?: SortOrder
     comment?: SortOrder
@@ -48640,6 +48668,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -48672,6 +48701,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -48712,6 +48742,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -48744,6 +48775,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -49087,6 +49119,7 @@ export namespace Prisma {
     dateOfBirth?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     parentName?: StringNullableFilter<"CrmLead"> | string | null
     parentPhone?: StringNullableFilter<"CrmLead"> | string | null
+    parentEmail?: StringNullableFilter<"CrmLead"> | string | null
     parentPassportInfo?: StringNullableFilter<"CrmLead"> | string | null
     firstLessonDate?: DateTimeNullableFilter<"CrmLead"> | Date | string | null
     comment?: StringNullableFilter<"CrmLead"> | string | null
@@ -49391,6 +49424,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -49424,6 +49458,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -50005,6 +50040,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -50038,6 +50074,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -50818,6 +50855,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -50851,6 +50889,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -52207,6 +52246,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -52240,6 +52280,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -52670,6 +52711,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52703,6 +52745,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57418,6 +57461,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -57451,6 +57495,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -57496,6 +57541,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57529,6 +57575,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57558,6 +57605,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -57591,6 +57639,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -57636,6 +57685,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57669,6 +57719,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57708,6 +57759,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -57736,6 +57788,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -57830,6 +57883,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57862,6 +57916,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57893,6 +57948,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57920,6 +57976,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57952,6 +58009,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57983,6 +58041,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58132,6 +58191,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -58211,6 +58271,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58244,6 +58305,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58275,6 +58337,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58490,6 +58553,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -58593,6 +58657,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58626,6 +58691,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58657,6 +58723,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58940,6 +59007,7 @@ export namespace Prisma {
     dateOfBirth?: Date | string | null
     parentName?: string | null
     parentPhone?: string | null
+    parentEmail?: string | null
     parentPassportInfo?: string | null
     firstLessonDate?: Date | string | null
     comment?: string | null
@@ -59110,6 +59178,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59143,6 +59212,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59174,6 +59244,7 @@ export namespace Prisma {
     dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     parentName?: NullableStringFieldUpdateOperationsInput | string | null
     parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
     parentPassportInfo?: NullableStringFieldUpdateOperationsInput | string | null
     firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null

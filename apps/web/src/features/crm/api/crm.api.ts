@@ -79,6 +79,10 @@ function sanitizeUpdateLeadPayload(data: UpdateLeadDto): Record<string, unknown>
   for (const key of strFields) {
     if (data[key] !== undefined) out[key] = data[key];
   }
+  if (data.parentEmail !== undefined) {
+    const t = typeof data.parentEmail === 'string' ? data.parentEmail.trim() : '';
+    out.parentEmail = t === '' ? null : t;
+  }
   const dateFields = ['dateOfBirth', 'firstLessonDate'] as const;
   for (const key of dateFields) {
     const v = data[key];

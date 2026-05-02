@@ -115,6 +115,7 @@ export function EditLeadModal({
       comment: lead.comment ?? '',
       parentName: lead.parentName ?? '',
       parentPhone: (lead.parentPhone ?? '').replace(/\D/g, ''),
+      parentEmail: lead.parentEmail ?? '',
       parentPassportInfo: lead.parentPassportInfo ?? '',
       levelId: lead.levelId ?? undefined,
       teacherId: lead.teacherId ?? undefined,
@@ -157,6 +158,7 @@ export function EditLeadModal({
         firstLessonDate: form.firstLessonDate,
         parentName: form.parentName,
         parentPhone: form.parentPhone,
+        parentEmail: form.parentEmail,
         parentPassportInfo: form.parentPassportInfo,
         comment: form.comment,
         levelId: form.levelId,
@@ -388,6 +390,17 @@ export function EditLeadModal({
                       setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
                     }
                     placeholder="+374XXXXXXXX"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent email</label>
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    value={form.parentEmail ?? ''}
+                    onChange={(e) => setForm((f) => ({ ...f, parentEmail: e.target.value }))}
+                    placeholder="parent@example.com"
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>

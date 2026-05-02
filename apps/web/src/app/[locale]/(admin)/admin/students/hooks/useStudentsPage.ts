@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, startTransition } from 'react';
+import { useState, useEffect, useMemo, useCallback, startTransition } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -25,6 +25,8 @@ type ViewMode = 'list' | 'board';
 
 const PAGE_SIZE = 10;
 const NEW_STUDENT_BADGE_DAYS = 30;
+/** URL flag so Add Student modal survives refresh (same idea as `?studentId=`). */
+const ADD_STUDENT_URL_PARAM = 'addStudent';
 
 function isWithinNewStudentWindow(student: Student): boolean {
   if (student.isRecentlyPaidFromCrm !== undefined) {
@@ -74,7 +76,20 @@ export function useStudentsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
   // Modal/Dialog states
-  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const isAddStudentOpen = searchParams.get(ADD_STUDENT_URL_PARAM) === '1';
+  const setIsAddStudentOpen = useCallback(
+    (open: boolean) => {
+      const next = new URLSearchParams(searchParams.toString());
+      if (open) {
+        next.set(ADD_STUDENT_URL_PARAM, '1');
+      } else {
+        next.delete(ADD_STUDENT_URL_PARAM);
+      }
+      const url = next.toString() ? `${pathname}?${next.toString()}` : pathname;
+      router.replace(url, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
   const [isEditStudentOpen, setIsEditStudentOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);

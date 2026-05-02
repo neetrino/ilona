@@ -932,6 +932,7 @@ export class StudentCrudService {
           firstLessonDate: dto.firstLessonDate ? new Date(dto.firstLessonDate) : null,
           parentName: dto.parentName ?? null,
           parentPhone: dto.parentPhone ?? null,
+          parentEmail: dto.parentEmail ?? null,
           parentPassportInfo: dto.parentPassportInfo ?? null,
           teacherId: prep.resolvedTeacherId ?? null,
           groupId: dto.groupId,

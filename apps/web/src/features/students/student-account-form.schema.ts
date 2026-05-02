@@ -13,6 +13,18 @@ export function computeAgeFromDob(dob: string | undefined): number | undefined {
   return age >= 0 && age <= 120 ? age : undefined;
 }
 
+function preprocessManualAge(val: unknown): number | undefined {
+  if (val === '' || val === null || val === undefined) return undefined;
+  const n = typeof val === 'number' ? val : Number(val);
+  if (!Number.isFinite(n) || n < 1) return undefined;
+  return Math.trunc(n);
+}
+
+const optionalDob = z.union([
+  z.string().regex(ISO_DATE_RE, 'Use YYYY-MM-DD format'),
+  z.literal(''),
+]);
+
 /** Same validation as Add New Student — reuse for CRM Paid registration. */
 export const createStudentSchema = z
   .object({
@@ -30,18 +42,18 @@ export const createStudentSchema = z
       .min(2, 'Last name must be at least 2 characters')
       .max(50, 'Last name must be at most 50 characters'),
     phone: z.string().optional(),
-    dateOfBirth: z
-      .string()
-      .regex(ISO_DATE_RE, 'Use YYYY-MM-DD format')
-      .refine((v) => computeAgeFromDob(v) !== undefined, 'Invalid date of birth'),
+    dateOfBirth: optionalDob.optional(),
+    manualAge: z.preprocess(preprocessManualAge, z.number().int().min(1).max(120).optional()),
     firstLessonDate: z
       .union([z.string().regex(ISO_DATE_RE, 'Use YYYY-MM-DD format'), z.literal('')])
       .optional(),
-    age: z.number().int().min(1).max(120).optional(),
+    /** Matches CRM lead level ids (filters group list only; not sent to API). */
+    levelId: z.string().max(10).optional(),
     groupId: z.string().optional(),
     teacherId: z.string().optional(),
     centerId: z.string().optional(),
     parentName: z.string().max(100, 'Parent name must be at most 100 characters').optional(),
+    parentSurname: z.string().max(100, 'Parent surname must be at most 100 characters').optional(),
     parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional(),
     parentEmail: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),
     parentPassportInfo: z.string().max(100, 'Passport info must be at most 100 characters').optional(),
@@ -50,8 +62,17 @@ export const createStudentSchema = z
     receiveReports: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
-    const computedAge = computeAgeFromDob(data.dateOfBirth);
-    if (computedAge !== undefined && computedAge < 18) {
+    const fromDob = computeAgeFromDob(data.dateOfBirth?.trim() || undefined);
+    const fromManual = data.manualAge;
+    if (fromDob === undefined && (fromManual === undefined || fromManual < 1)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Enter date of birth or age (1–120)',
+        path: ['dateOfBirth'],
+      });
+    }
+    const effectiveAge = fromDob ?? fromManual;
+    if (effectiveAge !== undefined && effectiveAge < 18) {
       if (!data.parentName || data.parentName.trim() === '') {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
