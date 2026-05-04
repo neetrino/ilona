@@ -246,17 +246,32 @@ export class ChatListsService {
       return [];
     }
 
-    // Use the same WHERE clause logic as GroupsService.findByTeacher
-    // This ensures both endpoints return identical groups
+    // Align with GroupsService.findByTeacher + per-lesson substitutes (group chat access)
+    const searchFilter: Prisma.GroupWhereInput | undefined = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { description: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : undefined;
+
     const where: Prisma.GroupWhereInput = {
-      teacherId: teacher.id,
       isActive: true,
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
+      AND: [
+        {
+          OR: [
+            { teacherId: teacher.id },
+            { substituteTeacherId: teacher.id },
+            {
+              lessons: {
+                some: { substituteTeacherId: teacher.id },
+              },
+            },
+          ],
+        },
+        ...(searchFilter ? [searchFilter] : []),
+      ],
     };
 
     const groups = await this.prisma.group.findMany({

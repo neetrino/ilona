@@ -10,13 +10,15 @@ export class ChatAuthorizationService {
 
   /**
    * Centralized authorization check: Can a teacher access a group chat?
-   * 
+   *
    * A teacher can access a group chat if:
    * 1. They are the assigned group teacher (Group.teacherId === Teacher.id), OR
-   * 2. They have lessons scheduled in that group (Lesson.teacherId === Teacher.id)
-   * 
+   * 2. They are the group's substitute teacher (Group.substituteTeacherId), OR
+   * 3. They have lessons in that group as primary teacher (Lesson.teacherId), OR
+   * 4. They cover at least one lesson in that group as substitute (Lesson.substituteTeacherId)
+   *
    * This is the canonical source of truth for teacher->group chat access.
-   * 
+   *
    * @param teacherUserId - The User.id of the teacher
    * @param groupId - The Group.id to check access for
    * @returns Object with access boolean and debug context (for dev logging)
@@ -24,7 +26,16 @@ export class ChatAuthorizationService {
   async canTeacherAccessGroupChat(
     teacherUserId: string,
     groupId: string,
-  ): Promise<{ hasAccess: boolean; debug?: { teacherId?: string; groupTeacherId?: string | null; hasLessons: boolean } }> {
+  ): Promise<{
+    hasAccess: boolean;
+    debug?: {
+      teacherId?: string;
+      groupTeacherId?: string | null;
+      groupSubstituteTeacherId?: string | null;
+      hasLessons: boolean;
+      hasSubstituteLessons: boolean;
+    };
+  }> {
     // Get teacher entity
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: teacherUserId },
@@ -32,41 +43,68 @@ export class ChatAuthorizationService {
     });
 
     if (!teacher) {
-      return { hasAccess: false, debug: { teacherId: undefined, groupTeacherId: undefined, hasLessons: false } };
+      return {
+        hasAccess: false,
+        debug: {
+          teacherId: undefined,
+          groupTeacherId: undefined,
+          groupSubstituteTeacherId: undefined,
+          hasLessons: false,
+          hasSubstituteLessons: false,
+        },
+      };
     }
 
     // Get group with teacher assignment
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
-      select: { teacherId: true },
+      select: { teacherId: true, substituteTeacherId: true },
     });
 
     if (!group) {
-      return { hasAccess: false, debug: { teacherId: teacher.id, groupTeacherId: undefined, hasLessons: false } };
+      return {
+        hasAccess: false,
+        debug: {
+          teacherId: teacher.id,
+          groupTeacherId: undefined,
+          groupSubstituteTeacherId: undefined,
+          hasLessons: false,
+          hasSubstituteLessons: false,
+        },
+      };
     }
 
-    // Check 1: Direct group assignment (Group.teacherId === Teacher.id)
     const isGroupTeacher = group.teacherId === teacher.id;
+    const isGroupSubstitute = group.substituteTeacherId === teacher.id;
 
-    // Check 2: Has lessons in this group (Lesson.teacherId === Teacher.id)
-    const lessonCount = await this.prisma.lesson.count({
-      where: {
-        groupId,
-        teacherId: teacher.id,
-      },
-    });
+    const [primaryLessonCount, substituteLessonCount] = await Promise.all([
+      this.prisma.lesson.count({
+        where: {
+          groupId,
+          teacherId: teacher.id,
+        },
+      }),
+      this.prisma.lesson.count({
+        where: {
+          groupId,
+          substituteTeacherId: teacher.id,
+        },
+      }),
+    ]);
 
-    const hasLessons = lessonCount > 0;
+    const hasLessons = primaryLessonCount > 0;
+    const hasSubstituteLessons = substituteLessonCount > 0;
 
-    // Teacher has access if they're the group teacher OR have lessons in the group
-    const hasAccess = isGroupTeacher || hasLessons;
+    const hasAccess = isGroupTeacher || isGroupSubstitute || hasLessons || hasSubstituteLessons;
 
     return {
       hasAccess,
       debug: {
         teacherId: teacher.id,
         groupTeacherId: group.teacherId,
+        groupSubstituteTeacherId: group.substituteTeacherId,
         hasLessons,
+        hasSubstituteLessons,
       },
     };
   }

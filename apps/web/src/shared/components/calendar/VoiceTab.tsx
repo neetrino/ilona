@@ -52,6 +52,9 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
       const { url: fileUrl, fileName, fileSize } = uploadResponse.data;
 
       // Send message to group chat with lesson metadata
+      const isLessonSubstitute =
+        !!lesson.substituteTeacher?.user?.id && lesson.substituteTeacher.user.id === user?.id;
+
       const messageResponse = await sendMessageHttp(chat.id, '', 'VOICE', {
         fileUrl,
         fileName,
@@ -60,6 +63,12 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
         metadata: {
           lessonId: lesson.id,
           fromLessonDetail: true,
+          ...(isLessonSubstitute
+            ? {
+                sentAsSubstitute: true,
+                substituteLabel: 'Substitute teacher',
+              }
+            : {}),
         },
       });
 
