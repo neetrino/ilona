@@ -44,6 +44,24 @@ export class SalaryRecordService {
     return this.prisma as unknown as PrismaDelegates;
   }
 
+  /** Lessons where this teacher is the per-lesson substitute and receives that occurrence's pay. */
+  private async countSubstitutePayLessons(teacherId: string, monthDate: Date): Promise<number> {
+    const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59);
+    return this.db.lesson.count({
+      where: {
+        substituteTeacherId: teacherId,
+        scheduledAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+        status: {
+          not: LessonStatus.CANCELLED,
+        },
+      },
+    });
+  }
+
   /**
    * Get all salary records - teacher-based (includes ALL teachers)
    * Returns one entry per teacher with their most recent salary record, or defaults if none exists
@@ -176,11 +194,17 @@ export class SalaryRecordService {
             salaryRecord.month
           );
 
+          const substituteCount = await this.countSubstitutePayLessons(
+            salaryRecord.teacherId,
+            salaryRecord.month,
+          );
+
           return {
             ...salaryRecord,
             // Override netAmount with computed salary from completed lessons
             netAmount: computedSalary,
             obligationsInfo,
+            hasSubstituteEarnings: substituteCount > 0,
             // Transform DateTime month to separate month and year numbers for frontend
             month: salaryRecord.month.getMonth() + 1, // 1-12
             year: salaryRecord.month.getFullYear(),
@@ -209,7 +233,7 @@ export class SalaryRecordService {
           
           const lessonsCount = await this.db.lesson.count({
             where: {
-              teacherId: teacher.id,
+              ...lessonsPayableToTeacherWhere(teacher.id),
               scheduledAt: {
                 gte: startOfMonth,
                 lte: endOfMonth,
@@ -219,6 +243,8 @@ export class SalaryRecordService {
               },
             },
           });
+
+          const substituteCount = await this.countSubstitutePayLessons(teacher.id, defaultMonth);
 
           // Get teacher's lesson rate for grossAmount calculation
           const teacherWithRate = await this.db.teacher.findUnique({
@@ -251,6 +277,7 @@ export class SalaryRecordService {
               user: teacher.user,
             },
             obligationsInfo: null,
+            hasSubstituteEarnings: substituteCount > 0,
           };
         }
       })
@@ -345,10 +372,16 @@ export class SalaryRecordService {
           salaryRecord.month,
         );
 
+        const substituteCount = await this.countSubstitutePayLessons(
+          salaryRecord.teacherId,
+          salaryRecord.month,
+        );
+
         return {
           ...salaryRecord,
           netAmount: computedSalary,
           obligationsInfo,
+          hasSubstituteEarnings: substituteCount > 0,
           month: salaryRecord.month.getMonth() + 1,
           year: salaryRecord.month.getFullYear(),
         };

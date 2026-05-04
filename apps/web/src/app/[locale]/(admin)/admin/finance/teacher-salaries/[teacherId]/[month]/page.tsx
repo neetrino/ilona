@@ -7,7 +7,9 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { DataTable } from '@/shared/components/ui';
 import { Button, StatCard } from '@/shared/components/ui';
 import { useSalaryBreakdown, useExcludeLessonsFromSalary, financeKeys } from '@/features/finance/hooks/useFinance';
+import { TeacherSubstituteBadge, substituteLessonChipClassName } from '@/features/finance';
 import type { SalaryBreakdownLesson } from '@/features/finance/types';
+import { cn } from '@/shared/lib/utils';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ObligationDetailsModal } from '@/features/finance/components/ObligationDetailsModal';
@@ -197,6 +199,10 @@ export default function SalaryBreakdownPage() {
   };
 
   const teacherInitials = initialsFromLabel(teacherName);
+  const substituteSummary = breakdown?.substituteSummary ?? {
+    lessonCount: 0,
+    netAmount: 0,
+  };
 
   const breakdownColumns = [
     {
@@ -225,19 +231,25 @@ export default function SalaryBreakdownPage() {
     {
       key: 'teacherName',
       header: t('teacher'),
-      render: () => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold shrink-0">
-            {teacherInitials}
+      render: (lesson: SalaryBreakdownLesson) => {
+        const isSub = lesson.isSubstituteLesson === true;
+        return (
+          <div className="flex items-center gap-3">
+            <div className="relative shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600">
+                {teacherInitials}
+              </div>
+              {isSub ? <TeacherSubstituteBadge /> : null}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-slate-800">{teacherName}</p>
+              <p className="truncate text-sm text-slate-500">
+                {month ? formatMonth(month) : t('period')}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="font-semibold text-slate-800 truncate">{teacherName}</p>
-            <p className="text-sm text-slate-500 truncate">
-              {month ? formatMonth(month) : t('period')}
-            </p>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'lessonName',
@@ -249,10 +261,23 @@ export default function SalaryBreakdownPage() {
           lesson.groupName && lesson.lessonName && lesson.groupName !== lesson.lessonName
             ? lesson.lessonName
             : '';
+        const isSub = lesson.isSubstituteLesson === true;
         return (
           <div className="min-w-0">
-            <p className="font-semibold text-slate-800 truncate">{primary}</p>
+            <div className="flex items-start gap-2 min-w-0">
+              {isSub ? (
+                <span className={`${substituteLessonChipClassName} mt-0.5`}>
+                  {t('substituteLessonBadge')}
+                </span>
+              ) : null}
+              <p className="font-semibold text-slate-800 truncate min-w-0">{primary}</p>
+            </div>
             {secondary ? <p className="text-sm text-slate-500 truncate">{secondary}</p> : null}
+            {isSub && lesson.mainTeacherName ? (
+              <p className="mt-1 text-xs leading-snug text-violet-900">
+                {t('substituteForMainTeacher', { name: lesson.mainTeacherName })}
+              </p>
+            ) : null}
           </div>
         );
       },
@@ -338,16 +363,33 @@ export default function SalaryBreakdownPage() {
         </Button>
 
         {!isLoading && !error && breakdown && sortedLessons.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
-            <StatCard
-              title={t('lessons')}
-              value={sortedLessons.length}
-              change={{ value: formatMonth(month) || t('period'), type: 'neutral' }}
-            />
-            <StatCard title={t('earnings')} value={formatCurrency(totalSalary)} />
-            <StatCard title={t('deductions')} value={formatCurrency(totalDeduction)} />
-            <StatCard title={t('netTotal')} value={formatCurrency(totalNet)} />
-          </div>
+          <>
+            <div
+              className={cn(
+                'grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 lg:gap-6',
+                substituteSummary.lessonCount > 0 ? 'lg:grid-cols-5' : 'lg:grid-cols-4',
+              )}
+            >
+              <StatCard
+                title={t('lessons')}
+                value={sortedLessons.length}
+                change={{ value: formatMonth(month) || t('period'), type: 'neutral' }}
+              />
+              <StatCard title={t('earnings')} value={formatCurrency(totalSalary)} />
+              <StatCard title={t('deductions')} value={formatCurrency(totalDeduction)} />
+              <StatCard title={t('netTotal')} value={formatCurrency(totalNet)} />
+              {substituteSummary.lessonCount > 0 ? (
+                <StatCard
+                  title={t('substituteStatTitle')}
+                  value={formatCurrency(substituteSummary.netAmount)}
+                  change={{
+                    value: t('lessons') + `: ${substituteSummary.lessonCount}`,
+                    type: 'neutral',
+                  }}
+                />
+              ) : null}
+            </div>
+          </>
         )}
 
         {selectedLessonIds.size > 0 && (

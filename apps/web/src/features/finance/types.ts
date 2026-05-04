@@ -60,6 +60,8 @@ export interface SalaryRecord {
   lessonsCount: number;
   totalDeductions: number;
   netAmount: number;
+  /** True when this period includes pay as per-lesson substitute (Lesson.substituteTeacherId). */
+  hasSubstituteEarnings?: boolean;
   status: SalaryStatus;
   paidAt?: string;
   notes?: string; // JSON string with obligations info
@@ -175,6 +177,15 @@ export interface SalaryBreakdownLesson {
   salary: number;
   deduction: number;
   total: number;
+  /** Payee taught this occurrence as substitute (not the group's main teacher). */
+  isSubstituteLesson?: boolean;
+  /** Main teacher on the lesson when `isSubstituteLesson` is true. */
+  mainTeacherName?: string;
+}
+
+export interface SalaryBreakdownSubstituteSummary {
+  lessonCount: number;
+  netAmount: number;
 }
 
 export interface SalaryBreakdown {
@@ -182,4 +193,5 @@ export interface SalaryBreakdown {
   teacherName: string;
   month: string;
   lessons: SalaryBreakdownLesson[];
+  substituteSummary?: SalaryBreakdownSubstituteSummary;
 }

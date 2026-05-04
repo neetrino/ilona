@@ -24,3 +24,11 @@ export function lessonsPayableToTeacherWhere(teacherId: string): Prisma.LessonWh
     ],
   };
 }
+
+/** True when this teacher is paid as the substitute for this lesson (not the group's main teacher). */
+export function isSubstitutePayeeLesson(
+  lesson: { substituteTeacherId: string | null | undefined },
+  payeeTeacherId: string,
+): boolean {
+  return lesson.substituteTeacherId != null && lesson.substituteTeacherId === payeeTeacherId;
+}

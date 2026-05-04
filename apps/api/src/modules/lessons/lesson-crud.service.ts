@@ -753,7 +753,7 @@ export class LessonCrudService {
     }
     const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
-    let nextSub: string | null =
+    const nextSub: string | null =
       params.substituteTeacherId === '' || params.substituteTeacherId === undefined
         ? null
         : params.substituteTeacherId;
