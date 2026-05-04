@@ -36,8 +36,8 @@ export function SalariesTable({
   noResultsKey,
 }: SalariesTableProps) {
   const t = useTranslations('finance');
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const columns = getSalaryColumns({
+    t: t as (key: string) => string,
     allSalariesSelected,
     someSalariesSelected,
     isLoadingSalaries: isLoading,

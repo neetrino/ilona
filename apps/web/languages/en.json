@@ -536,7 +536,10 @@
     "paymentPeriodEnded": "Payment period ended. This month could only be paid in that month.",
     "paymentNotYetAvailable": "Available from {month}.",
     "payableOnlyInMonth": "Payable only in {month}.",
-    "nextPaymentMonth": "Next payment: {month}"
+    "nextPaymentMonth": "Next payment: {month}",
+    "lessons": "Lessons",
+    "searchPaymentsPlaceholder": "Search groups, students, payments...",
+    "searchSalariesPlaceholder": "Search teachers, salaries, periods..."
   },
   "analytics": {
     "title": "Analytics",

@@ -535,7 +535,10 @@
     "paymentPeriodEnded": "Վճարման ժամկետն ավարտվել է: Այդ ամսվա վճարումը հնարավոր էր միայն այդ ամսում:",
     "paymentNotYetAvailable": "Հասանելի է {month}-ից:",
     "payableOnlyInMonth": "Վճարման ժամկետը միայն {month}:",
-    "nextPaymentMonth": "Հաջորդ վճարումը՝ {month}"
+    "nextPaymentMonth": "Հաջորդ վճարումը՝ {month}",
+    "lessons": "Դասեր",
+    "searchPaymentsPlaceholder": "Որոնել խմբեր, աշակերտներ, վճարումներ...",
+    "searchSalariesPlaceholder": "Որոնել ուսուցիչներ, աշխատավարձ, ժամանակաշրջաններ..."
   },
   "analytics": {
     "title": "Վերլուծություն",
