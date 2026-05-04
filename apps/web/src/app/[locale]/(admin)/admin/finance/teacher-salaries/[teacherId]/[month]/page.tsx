@@ -1,64 +1,53 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { DataTable } from '@/shared/components/ui';
-import { Button } from '@/shared/components/ui';
+import { Button, StatCard } from '@/shared/components/ui';
 import { useSalaryBreakdown, useExcludeLessonsFromSalary, financeKeys } from '@/features/finance/hooks/useFinance';
 import type { SalaryBreakdownLesson } from '@/features/finance/types';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ObligationDetailsModal } from '@/features/finance/components/ObligationDetailsModal';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/lib/utils';
+import { SelectAllCheckbox } from '../../../components/SelectAllCheckbox';
 
-function SelectAllCheckbox({
-  checked,
-  indeterminate,
-  onChange,
-  disabled,
-}: {
-  checked: boolean;
-  indeterminate: boolean;
-  onChange: () => void;
-  disabled?: boolean;
-}) {
-  const checkboxRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = indeterminate;
-    }
-  }, [indeterminate]);
-
-  return (
-    <input
-      ref={checkboxRef}
-      type="checkbox"
-      className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-      checked={checked}
-      onChange={onChange}
-      onClick={(e) => e.stopPropagation()}
-      disabled={disabled}
-      aria-label="Select all"
-    />
-  );
+function initialsFromLabel(label: string): string {
+  const parts = label.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) {
+    const w = parts[0];
+    return w.slice(0, 2).toUpperCase();
+  }
+  const a = parts[0][0] ?? '';
+  const b = parts[parts.length - 1][0] ?? '';
+  return `${a}${b}`.toUpperCase() || '?';
 }
 
 export default function SalaryBreakdownPage() {
+  const t = useTranslations('finance');
+  const tCommon = useTranslations('common');
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  
+
   const teacherId = params.teacherId as string;
-  const month = params.month as string; // YYYY-MM format
+  const month = params.month as string;
   const locale = params.locale as string;
 
-  // Get teacher name from query params (encoded)
   const teacherNameFromUrl = searchParams.get('teacherName');
-  const teacherName = teacherNameFromUrl ? decodeURIComponent(teacherNameFromUrl) : 'Teacher';
+  const teacherName = teacherNameFromUrl ? decodeURIComponent(teacherNameFromUrl) : t('teacher');
 
   const { data: breakdown, isLoading, error, refetch } = useSalaryBreakdown(teacherId, month, !!teacherId);
   const excludeLessons = useExcludeLessonsFromSalary();
@@ -76,10 +65,10 @@ export default function SalaryBreakdownPage() {
       return '';
     }
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
+    if (Number.isNaN(date.getTime())) {
       return '';
     }
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -96,17 +85,16 @@ export default function SalaryBreakdownPage() {
     }
     const yearNum = parseInt(year, 10);
     const monthNumParsed = parseInt(monthNum, 10);
-    if (isNaN(yearNum) || isNaN(monthNumParsed) || monthNumParsed < 1 || monthNumParsed > 12) {
+    if (Number.isNaN(yearNum) || Number.isNaN(monthNumParsed) || monthNumParsed < 1 || monthNumParsed > 12) {
       return '';
     }
     const date = new Date(yearNum, monthNumParsed - 1);
-    if (isNaN(date.getTime())) {
+    if (Number.isNaN(date.getTime())) {
       return '';
     }
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
   };
 
-  // Handle sorting
   const handleSort = (key: string) => {
     if (sortBy === key) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -116,37 +104,39 @@ export default function SalaryBreakdownPage() {
     }
   };
 
-  // Sort lessons
-  const sortedLessons = breakdown?.lessons ? [...breakdown.lessons].sort((a, b) => {
-    let aVal: string | number;
-    let bVal: string | number;
+  const sortedLessons = breakdown?.lessons
+    ? [...breakdown.lessons].sort((a, b) => {
+        let aVal: string | number;
+        let bVal: string | number;
 
-    if (sortBy === 'lessonDate') {
-      const aDate = a.lessonDate ? new Date(a.lessonDate) : new Date(0);
-      const bDate = b.lessonDate ? new Date(b.lessonDate) : new Date(0);
-      aVal = isNaN(aDate.getTime()) ? 0 : aDate.getTime();
-      bVal = isNaN(bDate.getTime()) ? 0 : bDate.getTime();
-    } else if (sortBy === 'lessonName') {
-      aVal = a.lessonName.toLowerCase();
-      bVal = b.lessonName.toLowerCase();
-    } else if (sortBy === 'salary') {
-      aVal = a.salary;
-      bVal = b.salary;
-    } else if (sortBy === 'total') {
-      aVal = a.total;
-      bVal = b.total;
-    } else {
-      return 0;
-    }
+        if (sortBy === 'lessonDate') {
+          const aDate = a.lessonDate ? new Date(a.lessonDate) : new Date(0);
+          const bDate = b.lessonDate ? new Date(b.lessonDate) : new Date(0);
+          aVal = Number.isNaN(aDate.getTime()) ? 0 : aDate.getTime();
+          bVal = Number.isNaN(bDate.getTime()) ? 0 : bDate.getTime();
+        } else if (sortBy === 'lessonName') {
+          aVal = a.lessonName.toLowerCase();
+          bVal = b.lessonName.toLowerCase();
+        } else if (sortBy === 'salary') {
+          aVal = a.salary;
+          bVal = b.salary;
+        } else if (sortBy === 'total') {
+          aVal = a.total;
+          bVal = b.total;
+        } else {
+          return 0;
+        }
 
-    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  }) : [];
+        if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      })
+    : [];
 
-  // Checkbox handlers
-  const allSelected = sortedLessons.length > 0 && selectedLessonIds.size === sortedLessons.length;
-  const someSelected = selectedLessonIds.size > 0 && selectedLessonIds.size < sortedLessons.length;
+  const allSelected =
+    sortedLessons.length > 0 && sortedLessons.every((l) => selectedLessonIds.has(l.lessonId));
+  const someSelected =
+    sortedLessons.some((l) => selectedLessonIds.has(l.lessonId)) && !allSelected;
 
   const handleSelectAll = () => {
     if (allSelected) {
@@ -166,14 +156,12 @@ export default function SalaryBreakdownPage() {
     setSelectedLessonIds(newSet);
   };
 
-  // Handle delete button click
   const handleDeleteClick = () => {
     if (selectedLessonIds.size === 0) return;
     setDeleteError(null);
     setIsDeleteDialogOpen(true);
   };
 
-  // Handle delete confirmation
   const handleDeleteConfirm = async () => {
     if (selectedLessonIds.size === 0) return;
 
@@ -186,28 +174,29 @@ export default function SalaryBreakdownPage() {
       await refetch();
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to exclude lessons from salary. Please try again.';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to exclude lessons from salary. Please try again.';
       setDeleteError(errorMessage);
     }
   };
 
-  // Build back URL preserving query params from finance page
   const getBackUrl = () => {
-    // Preserve common query params that might be useful
     const tab = searchParams.get('tab');
     const salariesPage = searchParams.get('salariesPage');
     const salaryStatus = searchParams.get('salaryStatus');
     const q = searchParams.get('q');
-    
-    const params = new URLSearchParams();
-    if (tab) params.set('tab', tab);
-    if (salariesPage) params.set('salariesPage', salariesPage);
-    if (salaryStatus) params.set('salaryStatus', salaryStatus);
-    if (q) params.set('q', q);
-    
-    const query = params.toString();
+
+    const backParams = new URLSearchParams();
+    if (tab) backParams.set('tab', tab);
+    if (salariesPage) backParams.set('salariesPage', salariesPage);
+    if (salaryStatus) backParams.set('salaryStatus', salaryStatus);
+    if (q) backParams.set('q', q);
+
+    const query = backParams.toString();
     return query ? `/${locale}/admin/finance?${query}` : `/${locale}/admin/finance`;
   };
+
+  const teacherInitials = initialsFromLabel(teacherName);
 
   const breakdownColumns = [
     {
@@ -220,56 +209,75 @@ export default function SalaryBreakdownPage() {
           disabled={isLoading}
         />
       ),
-      className: 'w-12',
+      className: '!pl-4 !pr-2 w-12',
       render: (lesson: SalaryBreakdownLesson) => (
         <input
           type="checkbox"
           checked={selectedLessonIds.has(lesson.lessonId)}
           onChange={(e) => handleSelectOne(lesson.lessonId, e.target.checked)}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isLoading}
           aria-label={`Select lesson ${lesson.lessonName}`}
         />
       ),
     },
     {
       key: 'teacherName',
-      header: 'Teacher Name',
-      className: 'text-left',
-      render: () => <span className="text-slate-800">{teacherName}</span>,
-    },
-    {
-      key: 'lessonName',
-      header: 'Group Name',
-      className: 'text-left',
-      sortable: true,
-      render: (lesson: SalaryBreakdownLesson) => (
-        <span className="font-medium text-slate-800">
-          {lesson.groupName || lesson.lessonName}
-        </span>
+      header: t('teacher'),
+      render: () => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold shrink-0">
+            {teacherInitials}
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-slate-800 truncate">{teacherName}</p>
+            <p className="text-sm text-slate-500 truncate">
+              {month ? formatMonth(month) : t('period')}
+            </p>
+          </div>
+        </div>
       ),
     },
     {
+      key: 'lessonName',
+      header: t('breakdownGroup'),
+      sortable: true,
+      render: (lesson: SalaryBreakdownLesson) => {
+        const primary = lesson.groupName || lesson.lessonName;
+        const secondary =
+          lesson.groupName && lesson.lessonName && lesson.groupName !== lesson.lessonName
+            ? lesson.lessonName
+            : '';
+        return (
+          <div className="min-w-0">
+            <p className="font-semibold text-slate-800 truncate">{primary}</p>
+            {secondary ? <p className="text-sm text-slate-500 truncate">{secondary}</p> : null}
+          </div>
+        );
+      },
+    },
+    {
       key: 'lessonDate',
-      header: 'Lesson Date',
-      className: 'text-left',
+      header: t('lessonDate'),
       sortable: true,
       render: (lesson: SalaryBreakdownLesson) => (
-        <span className="text-slate-700">{formatDate(lesson.lessonDate)}</span>
+        <span className="text-slate-500">{formatDate(lesson.lessonDate)}</span>
       ),
     },
     {
       key: 'obligation',
-      header: 'Obligation',
+      header: t('obligation'),
       className: 'text-center',
       render: (lesson: SalaryBreakdownLesson) => (
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             setSelectedLessonIdForObligation(lesson.lessonId);
             setIsObligationModalOpen(true);
           }}
-          className="text-slate-700 font-medium hover:text-primary hover:underline cursor-pointer transition-colors"
+          className="text-sm font-medium text-slate-600 hover:text-primary transition-colors mx-auto block"
           aria-label={`View obligation details for ${lesson.lessonName}`}
         >
           {lesson.obligationCompleted}/{lesson.obligationTotal}
@@ -278,27 +286,25 @@ export default function SalaryBreakdownPage() {
     },
     {
       key: 'salary',
-      header: 'Salary',
-      className: 'text-right',
+      header: t('lessonSalary'),
       sortable: true,
       render: (lesson: SalaryBreakdownLesson) => (
-        <span className="text-slate-700">{formatCurrency(lesson.salary)}</span>
+        <span className="font-semibold text-slate-800">{formatCurrency(lesson.salary)}</span>
       ),
     },
     {
       key: 'deduction',
-      header: 'Deduction',
-      className: 'text-right',
+      header: t('lessonDeduction'),
       render: (lesson: SalaryBreakdownLesson) => (
-        <span className="text-red-500 font-medium">
-          -{formatCurrency(lesson.deduction)}
+        <span className="font-medium text-red-600">
+          {lesson.deduction > 0 ? '−' : ''}
+          {formatCurrency(lesson.deduction)}
         </span>
       ),
     },
     {
       key: 'total',
-      header: 'Total',
-      className: 'text-right',
+      header: t('rowTotal'),
       sortable: true,
       render: (lesson: SalaryBreakdownLesson) => (
         <span className="font-semibold text-slate-800">{formatCurrency(lesson.total)}</span>
@@ -306,73 +312,50 @@ export default function SalaryBreakdownPage() {
     },
   ];
 
-  // Calculate totals
   const totalSalary = sortedLessons.reduce((sum, l) => sum + l.salary, 0);
   const totalDeduction = sortedLessons.reduce((sum, l) => sum + l.deduction, 0);
   const totalNet = sortedLessons.reduce((sum, l) => sum + l.total, 0);
 
+  const pageTitle = month
+    ? `${t('salaryBreakdown')}: ${teacherName} — ${formatMonth(month)}`
+    : `${t('salaryBreakdown')}: ${teacherName}`;
+
+  const cardState = (children: ReactNode) => (
+    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">{children}</div>
+  );
+
   return (
-    <DashboardLayout 
-      title={`Salary Breakdown: ${teacherName}${month ? ` - ${formatMonth(month)}` : ''}`}
-      subtitle="Detailed lesson-by-lesson breakdown of salary calculations for this month"
-    >
+    <DashboardLayout title={pageTitle} subtitle={t('salaryBreakdownSubtitle')}>
       <div className="space-y-6">
-        {/* Back Button */}
         <Button
+          type="button"
           variant="outline"
           onClick={() => router.push(getBackUrl())}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 rounded-xl px-6 py-3 font-medium w-full sm:w-auto justify-center"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Finance
+          {t('backToFinance')}
         </Button>
 
-        {/* Top Summary */}
         {!isLoading && !error && breakdown && sortedLessons.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Total Lessons
-              </p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">
-                {sortedLessons.length}
-              </p>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Earnings
-              </p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">
-                {formatCurrency(totalSalary)}
-              </p>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Deductions
-              </p>
-              <p className="mt-1 text-2xl font-bold text-red-600">
-                {totalDeduction > 0 ? '−' : ''}
-                {formatCurrency(totalDeduction)}
-              </p>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Net Total
-              </p>
-              <p className="mt-1 text-2xl font-bold text-emerald-700">
-                {formatCurrency(totalNet)}
-              </p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
+            <StatCard
+              title={t('lessons')}
+              value={sortedLessons.length}
+              change={{ value: formatMonth(month) || t('period'), type: 'neutral' }}
+            />
+            <StatCard title={t('earnings')} value={formatCurrency(totalSalary)} />
+            <StatCard title={t('deductions')} value={formatCurrency(totalDeduction)} />
+            <StatCard title={t('netTotal')} value={formatCurrency(totalNet)} />
           </div>
         )}
 
-        {/* Action Bar */}
         {selectedLessonIds.size > 0 && (
-          <div className="flex items-center justify-end">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-4">
             <Button
+              type="button"
               variant="destructive"
-              size="sm"
-              className="flex items-center gap-2"
+              className="px-6 py-3 rounded-xl font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
               onClick={handleDeleteClick}
               disabled={excludeLessons.isPending}
             >
@@ -382,56 +365,65 @@ export default function SalaryBreakdownPage() {
           </div>
         )}
 
-        {/* Content */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
+          cardState(
+            <div className="p-12 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>,
+          )
         ) : error ? (
-          <div className="text-center py-12 text-red-500">
-            Failed to load salary breakdown. Please try again.
-          </div>
+          cardState(
+            <div className="px-6 py-12 text-center text-red-600 text-sm">{t('breakdownLoadError')}</div>,
+          )
         ) : !breakdown || sortedLessons.length === 0 ? (
-          <div className="text-center py-12 text-slate-500">
-            No lessons found for this period.
-          </div>
+          cardState(
+            <div className="px-6 py-12 text-center text-slate-500 text-sm">{t('breakdownNoLessons')}</div>,
+          )
         ) : (
-          <>
-            <DataTable
-              columns={breakdownColumns}
-              data={sortedLessons}
-              keyExtractor={(lesson) => lesson.lessonId}
-              isLoading={false}
-              emptyMessage="No lessons found"
-              sortBy={sortBy}
-              sortOrder={sortOrder}
-              onSort={handleSort}
-            />
-            
-            {/* Totals Row */}
-            <div className="mt-4 pt-4 border-t border-slate-200">
-              <div className="grid grid-cols-12 gap-4 text-sm font-semibold">
-                <div className="col-span-5"></div>
-                <div className="col-span-2 text-right text-slate-600">Totals:</div>
-                <div className="col-span-1 text-right text-slate-800">{formatCurrency(totalSalary)}</div>
-                <div className="col-span-1 text-right text-red-500">-{formatCurrency(totalDeduction)}</div>
-                <div className="col-span-1 text-right text-slate-900">{formatCurrency(totalNet)}</div>
-                <div className="col-span-2"></div>
+          cardState(
+            <>
+              <DataTable
+                columns={breakdownColumns}
+                data={sortedLessons}
+                keyExtractor={(lesson) => lesson.lessonId}
+                isLoading={false}
+                emptyMessage={t('breakdownNoLessons')}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+                embedInParentCard
+              />
+              <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 sm:gap-8 text-sm">
+                <span className="text-slate-500 font-medium uppercase tracking-wide">{t('totals')}</span>
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 justify-end">
+                  <span>
+                    <span className="text-slate-500 mr-2">{t('lessonSalary')}</span>
+                    <span className="font-semibold text-slate-800">{formatCurrency(totalSalary)}</span>
+                  </span>
+                  <span>
+                    <span className="text-slate-500 mr-2">{t('lessonDeduction')}</span>
+                    <span className="font-medium text-red-600">
+                      {totalDeduction > 0 ? '−' : ''}
+                      {formatCurrency(totalDeduction)}
+                    </span>
+                  </span>
+                  <span>
+                    <span className="text-slate-500 mr-2">{t('rowTotal')}</span>
+                    <span className="font-semibold text-slate-800">{formatCurrency(totalNet)}</span>
+                  </span>
+                </div>
               </div>
-            </div>
-          </>
+            </>,
+          )
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Exclude Lessons from Salary</DialogTitle>
+            <DialogTitle>{t('excludeLessonsTitle')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to exclude {selectedLessonIds.size} lesson{selectedLessonIds.size > 1 ? 's' : ''} from salary calculation? 
-              This will change the lesson status to CANCELLED and remove {selectedLessonIds.size > 1 ? 'them' : 'it'} from the salary breakdown. 
-              The lesson{selectedLessonIds.size > 1 ? 's' : ''} will remain in the system but won't be counted for salary.
+              {t('excludeLessonsLead', { count: selectedLessonIds.size })} {t('excludeLessonsDetail')}
             </DialogDescription>
           </DialogHeader>
           {deleteError && (
@@ -449,7 +441,7 @@ export default function SalaryBreakdownPage() {
               }}
               disabled={excludeLessons.isPending}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               type="button"
@@ -457,13 +449,12 @@ export default function SalaryBreakdownPage() {
               onClick={handleDeleteConfirm}
               disabled={excludeLessons.isPending}
             >
-              {excludeLessons.isPending ? 'Excluding...' : 'Exclude'}
+              {excludeLessons.isPending ? t('excluding') : t('excludeLessonsConfirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Obligation Details Modal */}
       <ObligationDetailsModal
         lessonId={selectedLessonIdForObligation}
         open={isObligationModalOpen}
@@ -475,4 +466,3 @@ export default function SalaryBreakdownPage() {
     </DashboardLayout>
   );
 }
-
