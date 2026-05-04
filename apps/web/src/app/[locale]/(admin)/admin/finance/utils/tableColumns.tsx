@@ -8,16 +8,6 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { formatCurrency } from '@/shared/lib/utils';
 
-// Format month from salary record (month field is a number)
-function formatMonthFromSalary(salary: SalaryRecord) {
-  // month is a number (1-12), year is also a number
-  if (salary.month && salary.year) {
-    const date = new Date(salary.year, salary.month - 1);
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  }
-  return 'Unknown';
-}
-
 // Get month string in YYYY-MM format from salary record
 function getMonthString(salary: SalaryRecord): string {
   // month is a number (1-12), year is also a number
@@ -53,14 +43,14 @@ function SalaryActionCell({ salary, locale }: { salary: SalaryRecord; locale: st
   const href = `/${locale}/admin/finance/teacher-salaries/${salary.teacherId}/${monthStr}${queryString ? `?${queryString}` : ''}`;
   
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-start">
       <Link
         href={href}
         onClick={(e) => e.stopPropagation()}
         className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
         aria-label="View breakdown"
       >
-        <Eye className="w-5 h-5 text-slate-900" />
+        <Eye className="w-5 h-5 text-slate-600" />
       </Link>
     </div>
   );
@@ -263,6 +253,7 @@ export function getPaymentColumns({
 }
 
 interface SalaryColumnsProps {
+  t: (key: string) => string;
   allSalariesSelected: boolean;
   someSalariesSelected: boolean;
   isLoadingSalaries: boolean;
@@ -277,6 +268,7 @@ interface SalaryColumnsProps {
 }
 
 export function getSalaryColumns({
+  t,
   allSalariesSelected,
   someSalariesSelected,
   isLoadingSalaries,
@@ -297,52 +289,65 @@ export function getSalaryColumns({
           disabled={isLoadingSalaries}
         />
       ),
-      className: 'w-12',
+      className: '!pl-4 !pr-2 w-12',
       render: (salary: SalaryRecord) => (
         <input
           type="checkbox"
           checked={selectedSalaryIds.has(salary.id)}
           onChange={(e) => onSelectOne(salary.id, e.target.checked)}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isLoadingSalaries}
           aria-label={`Select salary for ${salary.teacher?.user?.firstName} ${salary.teacher?.user?.lastName}`}
         />
       ),
     },
     {
       key: 'teacher',
-      header: 'Teacher Name',
-      className: 'text-left',
+      header: t('teacher'),
       render: (salary: SalaryRecord) => {
         const firstName = salary.teacher?.user?.firstName || '';
         const lastName = salary.teacher?.user?.lastName || '';
+        const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
+        const email = salary.teacher?.user?.email || '';
         return (
-          <span className="font-semibold text-slate-800">
-            {firstName} {lastName}
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold shrink-0">
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-slate-800 truncate">
+                {firstName} {lastName}
+              </p>
+              <p className="text-sm text-slate-500 truncate">{email}</p>
+            </div>
+          </div>
         );
       },
     },
     {
       key: 'month',
-      header: 'Month',
-      className: 'text-left',
-      render: (salary: SalaryRecord) => (
-        <span className="text-slate-700">{formatMonthFromSalary(salary)}</span>
-      ),
+      header: t('month'),
+      render: (salary: SalaryRecord) => {
+        const date =
+          salary.month && salary.year ? new Date(salary.year, salary.month - 1) : null;
+        return (
+          <span className="text-slate-500">
+            {date ? date.toLocaleDateString(locale, { month: 'short', year: 'numeric' }) : '—'}
+          </span>
+        );
+      },
     },
     {
       key: 'lessons',
-      header: 'Lessons',
-      className: 'text-center',
+      header: t('lessons'),
       render: (salary: SalaryRecord) => (
-        <span className="text-slate-700">{salary.lessonsCount ?? 0}</span>
+        <span className="text-slate-600">{salary.lessonsCount ?? 0}</span>
       ),
     },
     {
       key: 'deductions',
-      header: 'Deductions',
-      className: 'text-center',
+      header: t('deductions'),
       render: (salary: SalaryRecord) => {
         const amount =
           typeof salary.totalDeductions === 'string'
@@ -353,7 +358,7 @@ export function getSalaryColumns({
             className={
               amount > 0
                 ? 'font-medium text-red-600'
-                : 'text-slate-500'
+                : 'text-slate-600'
             }
           >
             {amount > 0 ? '−' : ''}
@@ -364,10 +369,10 @@ export function getSalaryColumns({
     },
     {
       key: 'salary',
-      header: 'Salary',
-      className: 'text-center',
+      header: t('netSalary'),
       render: (salary: SalaryRecord) => {
-        const amount = typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
+        const amount =
+          typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
         return (
           <span className="font-semibold text-slate-800">
             {formatCurrency(amount)}
@@ -377,15 +382,15 @@ export function getSalaryColumns({
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('status'),
       className: 'text-left',
       render: (salary: SalaryRecord) => (
         <div className="w-32">
           <InlineSelect
             value={salary.status}
             options={[
-              { id: 'PENDING', label: 'Pending' },
-              { id: 'PAID', label: 'Paid' },
+              { id: 'PENDING', label: t('pending') },
+              { id: 'PAID', label: t('paid') },
             ]}
             onChange={async (newStatus) => {
               if (newStatus && newStatus !== salary.status) {
@@ -407,8 +412,8 @@ export function getSalaryColumns({
     },
     {
       key: 'action',
-      header: 'Action',
-      className: 'text-center',
+      header: t('actions'),
+      className: 'text-left',
       render: (salary: SalaryRecord) => (
         <SalaryActionCell salary={salary} locale={locale} />
       ),

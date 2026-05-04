@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SalariesService } from '../finance/salaries.service';
 import { LessonCrudService } from './lesson-crud.service';
 import { UserRole } from '@ilona/database';
+import { effectiveLessonInstructorTeacherId } from '../../common/lesson-instructor';
 
 /**
  * Service responsible for lesson action completion
@@ -46,7 +47,7 @@ export class LessonActionsService {
     if (!wasAlreadyMarked && lesson.scheduledAt) {
       const lessonMonth = new Date(lesson.scheduledAt);
       await this.salariesService.recalculateSalaryForMonth(
-        lesson.teacherId,
+        effectiveLessonInstructorTeacherId(lesson),
         lessonMonth,
       ).catch(() => {
         // Silently fail to avoid breaking the update
@@ -73,7 +74,7 @@ export class LessonActionsService {
     if (!wasAlreadySent && lesson.scheduledAt) {
       const lessonMonth = new Date(lesson.scheduledAt);
       await this.salariesService.recalculateSalaryForMonth(
-        lesson.teacherId,
+        effectiveLessonInstructorTeacherId(lesson),
         lessonMonth,
       ).catch(() => {
         // Silently fail to avoid breaking the update
@@ -100,7 +101,7 @@ export class LessonActionsService {
     if (!wasAlreadySent && lesson.scheduledAt) {
       const lessonMonth = new Date(lesson.scheduledAt);
       await this.salariesService.recalculateSalaryForMonth(
-        lesson.teacherId,
+        effectiveLessonInstructorTeacherId(lesson),
         lessonMonth,
       ).catch(() => {
         // Silently fail to avoid breaking the update

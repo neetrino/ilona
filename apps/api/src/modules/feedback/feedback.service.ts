@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateFeedbackDto, UpdateFeedbackDto } from './dto';
 import { UserRole, Prisma } from '@ilona/database';
 import { SalariesService } from '../finance/salaries.service';
+import { effectiveLessonInstructorTeacherId, teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
 
 /**
  * Build the structured-feedback Prisma payload from a DTO. We only set
@@ -258,7 +259,7 @@ export class FeedbackService {
         where: { userId },
       });
 
-      if (!teacher || teacher.id !== lesson.teacherId) {
+      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
         throw new ForbiddenException('You are not assigned to this lesson');
       }
     }
@@ -315,7 +316,7 @@ export class FeedbackService {
           if (!wasAlreadyCompleted && lessonWithGroup.scheduledAt) {
             const lessonMonth = new Date(lessonWithGroup.scheduledAt);
             await this.salariesService.recalculateSalaryForMonth(
-              lessonWithGroup.teacherId,
+              effectiveLessonInstructorTeacherId(lessonWithGroup),
               lessonMonth,
             );
           }
@@ -387,7 +388,7 @@ export class FeedbackService {
         if (!wasAlreadyCompleted && lessonWithGroup.scheduledAt) {
           const lessonMonth = new Date(lessonWithGroup.scheduledAt);
           await this.salariesService.recalculateSalaryForMonth(
-            lessonWithGroup.teacherId,
+            effectiveLessonInstructorTeacherId(lessonWithGroup),
             lessonMonth,
           );
         }
@@ -501,7 +502,7 @@ export class FeedbackService {
         if (wasCompleted && lessonWithGroup.scheduledAt) {
           const lessonMonth = new Date(lessonWithGroup.scheduledAt);
           await this.salariesService.recalculateSalaryForMonth(
-            lessonWithGroup.teacherId,
+            effectiveLessonInstructorTeacherId(lessonWithGroup),
             lessonMonth,
           );
         }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@ilona/database';
+import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
 
 /**
  * Service responsible for lesson statistics
@@ -12,7 +13,7 @@ export class LessonStatisticsService {
   async getLessonStatistics(teacherId?: string, dateFrom?: Date, dateTo?: Date, centerId?: string) {
     const where: Prisma.LessonWhereInput = {};
 
-    if (teacherId) where.teacherId = teacherId;
+    if (teacherId) Object.assign(where, lessonsPayableToTeacherWhere(teacherId));
     if (centerId) where.group = { centerId };
 
     if (dateFrom || dateTo) {

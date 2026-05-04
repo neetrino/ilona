@@ -69,6 +69,14 @@ export class LessonsService {
     return this.crudService.update(id, dto, userId, userRole);
   }
 
+  async setSubstituteForGroupDay(
+    params: { groupId: string; date: string; substituteTeacherId: string | null },
+    userId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
+    return this.crudService.setSubstituteForGroupDay(params, userId, userRole);
+  }
+
   async delete(id: string) {
     return this.crudService.delete(id);
   }

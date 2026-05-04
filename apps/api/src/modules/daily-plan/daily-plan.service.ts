@@ -15,6 +15,7 @@ import {
   DailyPlanTopicInputDto,
 } from './dto';
 import { DailyPlanResourceKind, Prisma, UserRole } from '@ilona/database';
+import { effectiveLessonInstructorTeacherId, teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
 
 const RESOURCE_KINDS = new Set<string>([
   DailyPlanResourceKind.READING,
@@ -193,17 +194,23 @@ export class DailyPlanService {
     if (dto.lessonId) {
       const lesson = await this.prisma.lesson.findUnique({
         where: { id: dto.lessonId },
-        select: { id: true, groupId: true, scheduledAt: true, teacherId: true },
+        select: {
+          id: true,
+          groupId: true,
+          scheduledAt: true,
+          teacherId: true,
+          substituteTeacherId: true,
+        },
       });
       if (!lesson) {
         throw new BadRequestException(`Lesson ${dto.lessonId} not found`);
       }
-      if (teacherId && lesson.teacherId !== teacherId) {
+      if (teacherId && !teacherActsAsLessonInstructor(lesson, teacherId)) {
         throw new ForbiddenException(
           'You can only create plans for your own lessons',
         );
       }
-      resolvedTeacherId = lesson.teacherId;
+      resolvedTeacherId = effectiveLessonInstructorTeacherId(lesson);
       lessonGroupId = lesson.groupId;
       resolvedDate = lesson.scheduledAt;
 

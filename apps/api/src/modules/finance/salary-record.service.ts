@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, SalaryStatus, LessonStatus } from '@ilona/database';
 import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
+import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
 import { SalaryCalculationService } from './salary-calculation.service';
 
 /** Prisma delegate access for this service. */
@@ -41,6 +42,24 @@ export class SalaryRecordService {
 
   private get db(): PrismaDelegates {
     return this.prisma as unknown as PrismaDelegates;
+  }
+
+  /** Lessons where this teacher is the per-lesson substitute and receives that occurrence's pay. */
+  private async countSubstitutePayLessons(teacherId: string, monthDate: Date): Promise<number> {
+    const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59);
+    return this.db.lesson.count({
+      where: {
+        substituteTeacherId: teacherId,
+        scheduledAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+        status: {
+          not: LessonStatus.CANCELLED,
+        },
+      },
+    });
   }
 
   /**
@@ -175,11 +194,17 @@ export class SalaryRecordService {
             salaryRecord.month
           );
 
+          const substituteCount = await this.countSubstitutePayLessons(
+            salaryRecord.teacherId,
+            salaryRecord.month,
+          );
+
           return {
             ...salaryRecord,
             // Override netAmount with computed salary from completed lessons
             netAmount: computedSalary,
             obligationsInfo,
+            hasSubstituteEarnings: substituteCount > 0,
             // Transform DateTime month to separate month and year numbers for frontend
             month: salaryRecord.month.getMonth() + 1, // 1-12
             year: salaryRecord.month.getFullYear(),
@@ -208,7 +233,7 @@ export class SalaryRecordService {
           
           const lessonsCount = await this.db.lesson.count({
             where: {
-              teacherId: teacher.id,
+              ...lessonsPayableToTeacherWhere(teacher.id),
               scheduledAt: {
                 gte: startOfMonth,
                 lte: endOfMonth,
@@ -218,6 +243,8 @@ export class SalaryRecordService {
               },
             },
           });
+
+          const substituteCount = await this.countSubstitutePayLessons(teacher.id, defaultMonth);
 
           // Get teacher's lesson rate for grossAmount calculation
           const teacherWithRate = await this.db.teacher.findUnique({
@@ -250,6 +277,7 @@ export class SalaryRecordService {
               user: teacher.user,
             },
             obligationsInfo: null,
+            hasSubstituteEarnings: substituteCount > 0,
           };
         }
       })
@@ -344,10 +372,16 @@ export class SalaryRecordService {
           salaryRecord.month,
         );
 
+        const substituteCount = await this.countSubstitutePayLessons(
+          salaryRecord.teacherId,
+          salaryRecord.month,
+        );
+
         return {
           ...salaryRecord,
           netAmount: computedSalary,
           obligationsInfo,
+          hasSubstituteEarnings: substituteCount > 0,
           month: salaryRecord.month.getMonth() + 1,
           year: salaryRecord.month.getFullYear(),
         };
@@ -398,7 +432,7 @@ export class SalaryRecordService {
     // Get ALL lessons for this month (not just completed ones) for action breakdown
     const lessons = await this.db.lesson.findMany({
       where: {
-        teacherId: record.teacherId,
+        ...lessonsPayableToTeacherWhere(record.teacherId),
         scheduledAt: {
           gte: startOfMonth,
           lte: endOfMonth,

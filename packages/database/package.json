@@ -18,6 +18,7 @@
     "db:generate": "prisma generate",
     "db:push": "node scripts/prisma-with-root-env.cjs db push",
     "db:migrate": "node scripts/migrate-deploy-with-resolve.js",
+    "db:reconcile-lesson-substitute": "node scripts/apply-lesson-substitute-reconcile.js",
     "db:migrate:resolve-planned-absences-rollback": "prisma migrate resolve --rolled-back 20260331120000_add_planned_absences",
     "db:apply-teacher-approved": "node scripts/apply-teacher-approved-at.js",
     "db:migrate:dev": "node scripts/prisma-with-root-env.cjs migrate dev",

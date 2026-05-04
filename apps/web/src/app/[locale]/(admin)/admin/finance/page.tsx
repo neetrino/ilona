@@ -155,8 +155,10 @@ export default function FinancePage() {
   };
 
   // Checkbox handlers for salaries
-  const allSalariesSelected = salaries.length > 0 && selectedSalaryIds.size === salaries.length;
-  const someSalariesSelected = selectedSalaryIds.size > 0 && selectedSalaryIds.size < salaries.length;
+  const allSalariesSelected =
+    salaries.length > 0 && salaries.every((s) => selectedSalaryIds.has(s.id));
+  const someSalariesSelected =
+    salaries.some((s) => selectedSalaryIds.has(s.id)) && !allSalariesSelected;
 
   const handleSelectAllSalaries = () => {
     if (allSalariesSelected) {

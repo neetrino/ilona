@@ -18,6 +18,8 @@ interface LessonListTableProps {
   onEdit?: (lessonId: string) => void;
   onDelete?: (lessonId: string) => void;
   onComplete?: (lessonId: string) => void;
+  /** Admin calendar: open substitute-teacher dialog for this lesson */
+  onAssignSubstitute?: (lessonId: string) => void;
   onObligationClick?: (
     lessonId: string,
     obligation: 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan'
@@ -151,6 +153,7 @@ export function LessonListTable({
   onEdit,
   onDelete,
   onComplete,
+  onAssignSubstitute,
   onObligationClick,
   hideTeacherColumn = false,
   sortBy,
@@ -396,6 +399,12 @@ export function LessonListTable({
                   {!hideTeacherColumn && (
                     <td className="px-4 py-3">
                       <p className="text-sm text-slate-700">{teacherName}</p>
+                      {lesson.substituteTeacher?.user && (
+                        <p className="text-xs text-amber-800 mt-1">
+                          Sub: {lesson.substituteTeacher.user.firstName}{' '}
+                          {lesson.substituteTeacher.user.lastName}
+                        </p>
+                      )}
                     </td>
                   )}
                   <td className="px-2 py-3 text-center align-middle">
@@ -453,14 +462,32 @@ export function LessonListTable({
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
+                      {!isTeacher && onAssignSubstitute && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onAssignSubstitute(lesson.id)}
+                          className="text-amber-700 hover:text-amber-800"
+                          title="Assign substitute for this lesson"
+                        >
+                          <img
+                            src="/icons/substitute-teacher.svg"
+                            alt=""
+                            width={20}
+                            height={20}
+                            className="h-5 w-5 shrink-0"
+                            aria-hidden
+                          />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleView(lesson.id)}
                         className="text-blue-600 hover:text-blue-700"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
@@ -519,7 +546,7 @@ export function LessonListTable({
                           )}
                           title={isLocked ? "This lesson is locked and cannot be deleted" : "Delete"}
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </Button>

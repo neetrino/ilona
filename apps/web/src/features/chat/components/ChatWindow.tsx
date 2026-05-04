@@ -580,6 +580,22 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               const prevMessage = filteredMessages[index - 1];
               const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
               const isVocabulary = message.metadata && typeof message.metadata === 'object' && 'isVocabulary' in message.metadata;
+              const voiceSubstituteMeta =
+                message.type === 'VOICE' &&
+                message.metadata &&
+                typeof message.metadata === 'object' &&
+                'sentAsSubstitute' in message.metadata &&
+                message.metadata.sentAsSubstitute === true;
+              const substituteVoiceLabel =
+                voiceSubstituteMeta &&
+                typeof message.metadata === 'object' &&
+                message.metadata !== null &&
+                'substituteLabel' in message.metadata &&
+                typeof (message.metadata as { substituteLabel?: unknown }).substituteLabel === 'string'
+                  ? (message.metadata as { substituteLabel: string }).substituteLabel
+                  : voiceSubstituteMeta
+                    ? 'Substitute teacher'
+                    : null;
 
             return (
               <div key={message.id}>
@@ -644,7 +660,14 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                     {!isOwn && chat.type === 'GROUP' && (
                       <p className="text-xs text-slate-500 mb-1 ml-1">
                         {message.sender?.firstName} {message.sender?.lastName}
+                        {substituteVoiceLabel ? (
+                          <span className="ml-2 text-amber-700 font-medium">· {substituteVoiceLabel}</span>
+                        ) : null}
                       </p>
+                    )}
+
+                    {isOwn && chat.type === 'GROUP' && substituteVoiceLabel && (
+                      <p className="text-xs text-amber-700 font-medium mb-1 mr-1 text-right">{substituteVoiceLabel}</p>
                     )}
 
                     {/* Message bubble */}

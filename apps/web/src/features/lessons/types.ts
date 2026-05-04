@@ -5,6 +5,8 @@ export interface Lesson {
   id: string;
   groupId: string;
   teacherId: string;
+  /** Per-lesson substitute (this occurrence only); main teacher stays on `teacherId`. */
+  substituteTeacherId?: string | null;
   scheduledAt: string;
   duration: number;
   topic?: string;
@@ -52,6 +54,15 @@ export interface Lesson {
       avatarUrl?: string;
     };
   };
+  substituteTeacher?: {
+    id: string;
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      avatarUrl?: string;
+    };
+  } | null;
   _count?: {
     attendances: number;
     feedbacks: number;
@@ -98,6 +109,13 @@ export interface UpdateLessonDto {
   topic?: string;
   description?: string;
   notes?: string;
+  substituteTeacherId?: string | null;
+}
+
+export interface SetSubstituteByGroupDayDto {
+  groupId: string;
+  date: string;
+  substituteTeacherId?: string | null;
 }
 
 export interface CompleteLessonDto {

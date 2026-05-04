@@ -8,6 +8,7 @@ export {
   useCreateLesson,
   useCreateRecurringLessons,
   useUpdateLesson,
+  useSetSubstituteByGroupDay,
   useStartLesson,
   useCompleteLesson,
   useCancelLesson,

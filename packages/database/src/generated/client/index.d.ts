@@ -3794,6 +3794,7 @@ export namespace Prisma {
     feedbacks: number
     groups: number
     substituteForGroups: number
+    substituteLessons: number
     lessons: number
     salaryRecords: number
     students: number
@@ -3808,6 +3809,7 @@ export namespace Prisma {
     feedbacks?: boolean | TeacherCountOutputTypeCountFeedbacksArgs
     groups?: boolean | TeacherCountOutputTypeCountGroupsArgs
     substituteForGroups?: boolean | TeacherCountOutputTypeCountSubstituteForGroupsArgs
+    substituteLessons?: boolean | TeacherCountOutputTypeCountSubstituteLessonsArgs
     lessons?: boolean | TeacherCountOutputTypeCountLessonsArgs
     salaryRecords?: boolean | TeacherCountOutputTypeCountSalaryRecordsArgs
     students?: boolean | TeacherCountOutputTypeCountStudentsArgs
@@ -3860,6 +3862,13 @@ export namespace Prisma {
    */
   export type TeacherCountOutputTypeCountSubstituteForGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GroupWhereInput
+  }
+
+  /**
+   * TeacherCountOutputType without action
+   */
+  export type TeacherCountOutputTypeCountSubstituteLessonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LessonWhereInput
   }
 
   /**
@@ -8961,6 +8970,7 @@ export namespace Prisma {
     feedbacks?: boolean | Teacher$feedbacksArgs<ExtArgs>
     groups?: boolean | Teacher$groupsArgs<ExtArgs>
     substituteForGroups?: boolean | Teacher$substituteForGroupsArgs<ExtArgs>
+    substituteLessons?: boolean | Teacher$substituteLessonsArgs<ExtArgs>
     lessons?: boolean | Teacher$lessonsArgs<ExtArgs>
     salaryRecords?: boolean | Teacher$salaryRecordsArgs<ExtArgs>
     students?: boolean | Teacher$studentsArgs<ExtArgs>
@@ -9008,6 +9018,7 @@ export namespace Prisma {
     feedbacks?: boolean | Teacher$feedbacksArgs<ExtArgs>
     groups?: boolean | Teacher$groupsArgs<ExtArgs>
     substituteForGroups?: boolean | Teacher$substituteForGroupsArgs<ExtArgs>
+    substituteLessons?: boolean | Teacher$substituteLessonsArgs<ExtArgs>
     lessons?: boolean | Teacher$lessonsArgs<ExtArgs>
     salaryRecords?: boolean | Teacher$salaryRecordsArgs<ExtArgs>
     students?: boolean | Teacher$studentsArgs<ExtArgs>
@@ -9029,6 +9040,7 @@ export namespace Prisma {
       feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
       groups: Prisma.$GroupPayload<ExtArgs>[]
       substituteForGroups: Prisma.$GroupPayload<ExtArgs>[]
+      substituteLessons: Prisma.$LessonPayload<ExtArgs>[]
       lessons: Prisma.$LessonPayload<ExtArgs>[]
       salaryRecords: Prisma.$SalaryRecordPayload<ExtArgs>[]
       students: Prisma.$StudentPayload<ExtArgs>[]
@@ -9419,6 +9431,7 @@ export namespace Prisma {
     feedbacks<T extends Teacher$feedbacksArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany"> | Null>
     groups<T extends Teacher$groupsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany"> | Null>
     substituteForGroups<T extends Teacher$substituteForGroupsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$substituteForGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany"> | Null>
+    substituteLessons<T extends Teacher$substituteLessonsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$substituteLessonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findMany"> | Null>
     lessons<T extends Teacher$lessonsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$lessonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findMany"> | Null>
     salaryRecords<T extends Teacher$salaryRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$salaryRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SalaryRecordPayload<ExtArgs>, T, "findMany"> | Null>
     students<T extends Teacher$studentsArgs<ExtArgs> = {}>(args?: Subset<T, Teacher$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findMany"> | Null>
@@ -9882,6 +9895,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
+  }
+
+  /**
+   * Teacher.substituteLessons
+   */
+  export type Teacher$substituteLessonsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Lesson
+     */
+    select?: LessonSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LessonInclude<ExtArgs> | null
+    where?: LessonWhereInput
+    orderBy?: LessonOrderByWithRelationInput | LessonOrderByWithRelationInput[]
+    cursor?: LessonWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LessonScalarFieldEnum | LessonScalarFieldEnum[]
   }
 
   /**
@@ -16201,6 +16234,7 @@ export namespace Prisma {
     id: string | null
     groupId: string | null
     teacherId: string | null
+    substituteTeacherId: string | null
     scheduledAt: Date | null
     duration: number | null
     topic: string | null
@@ -16225,6 +16259,7 @@ export namespace Prisma {
     id: string | null
     groupId: string | null
     teacherId: string | null
+    substituteTeacherId: string | null
     scheduledAt: Date | null
     duration: number | null
     topic: string | null
@@ -16249,6 +16284,7 @@ export namespace Prisma {
     id: number
     groupId: number
     teacherId: number
+    substituteTeacherId: number
     scheduledAt: number
     duration: number
     topic: number
@@ -16283,6 +16319,7 @@ export namespace Prisma {
     id?: true
     groupId?: true
     teacherId?: true
+    substituteTeacherId?: true
     scheduledAt?: true
     duration?: true
     topic?: true
@@ -16307,6 +16344,7 @@ export namespace Prisma {
     id?: true
     groupId?: true
     teacherId?: true
+    substituteTeacherId?: true
     scheduledAt?: true
     duration?: true
     topic?: true
@@ -16331,6 +16369,7 @@ export namespace Prisma {
     id?: true
     groupId?: true
     teacherId?: true
+    substituteTeacherId?: true
     scheduledAt?: true
     duration?: true
     topic?: true
@@ -16442,6 +16481,7 @@ export namespace Prisma {
     id: string
     groupId: string
     teacherId: string
+    substituteTeacherId: string | null
     scheduledAt: Date
     duration: number
     topic: string | null
@@ -16485,6 +16525,7 @@ export namespace Prisma {
     id?: boolean
     groupId?: boolean
     teacherId?: boolean
+    substituteTeacherId?: boolean
     scheduledAt?: boolean
     duration?: boolean
     topic?: boolean
@@ -16507,6 +16548,7 @@ export namespace Prisma {
     feedbacks?: boolean | Lesson$feedbacksArgs<ExtArgs>
     group?: boolean | GroupDefaultArgs<ExtArgs>
     teacher?: boolean | TeacherDefaultArgs<ExtArgs>
+    substituteTeacher?: boolean | Lesson$substituteTeacherArgs<ExtArgs>
     dailyPlan?: boolean | Lesson$dailyPlanArgs<ExtArgs>
     recordingItems?: boolean | Lesson$recordingItemsArgs<ExtArgs>
     _count?: boolean | LessonCountOutputTypeDefaultArgs<ExtArgs>
@@ -16516,6 +16558,7 @@ export namespace Prisma {
     id?: boolean
     groupId?: boolean
     teacherId?: boolean
+    substituteTeacherId?: boolean
     scheduledAt?: boolean
     duration?: boolean
     topic?: boolean
@@ -16536,12 +16579,14 @@ export namespace Prisma {
     updatedAt?: boolean
     group?: boolean | GroupDefaultArgs<ExtArgs>
     teacher?: boolean | TeacherDefaultArgs<ExtArgs>
+    substituteTeacher?: boolean | Lesson$substituteTeacherArgs<ExtArgs>
   }, ExtArgs["result"]["lesson"]>
 
   export type LessonSelectScalar = {
     id?: boolean
     groupId?: boolean
     teacherId?: boolean
+    substituteTeacherId?: boolean
     scheduledAt?: boolean
     duration?: boolean
     topic?: boolean
@@ -16567,6 +16612,7 @@ export namespace Prisma {
     feedbacks?: boolean | Lesson$feedbacksArgs<ExtArgs>
     group?: boolean | GroupDefaultArgs<ExtArgs>
     teacher?: boolean | TeacherDefaultArgs<ExtArgs>
+    substituteTeacher?: boolean | Lesson$substituteTeacherArgs<ExtArgs>
     dailyPlan?: boolean | Lesson$dailyPlanArgs<ExtArgs>
     recordingItems?: boolean | Lesson$recordingItemsArgs<ExtArgs>
     _count?: boolean | LessonCountOutputTypeDefaultArgs<ExtArgs>
@@ -16574,6 +16620,7 @@ export namespace Prisma {
   export type LessonIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     group?: boolean | GroupDefaultArgs<ExtArgs>
     teacher?: boolean | TeacherDefaultArgs<ExtArgs>
+    substituteTeacher?: boolean | Lesson$substituteTeacherArgs<ExtArgs>
   }
 
   export type $LessonPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16583,6 +16630,7 @@ export namespace Prisma {
       feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
       group: Prisma.$GroupPayload<ExtArgs>
       teacher: Prisma.$TeacherPayload<ExtArgs>
+      substituteTeacher: Prisma.$TeacherPayload<ExtArgs> | null
       dailyPlan: Prisma.$DailyPlanPayload<ExtArgs> | null
       recordingItems: Prisma.$RecordingItemPayload<ExtArgs>[]
     }
@@ -16590,6 +16638,10 @@ export namespace Prisma {
       id: string
       groupId: string
       teacherId: string
+      /**
+       * When set, this teacher covers the class for this lesson only (salary + teacher workflows).
+       */
+      substituteTeacherId: string | null
       scheduledAt: Date
       duration: number
       topic: string | null
@@ -16976,6 +17028,7 @@ export namespace Prisma {
     feedbacks<T extends Lesson$feedbacksArgs<ExtArgs> = {}>(args?: Subset<T, Lesson$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany"> | Null>
     group<T extends GroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GroupDefaultArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     teacher<T extends TeacherDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TeacherDefaultArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    substituteTeacher<T extends Lesson$substituteTeacherArgs<ExtArgs> = {}>(args?: Subset<T, Lesson$substituteTeacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     dailyPlan<T extends Lesson$dailyPlanArgs<ExtArgs> = {}>(args?: Subset<T, Lesson$dailyPlanArgs<ExtArgs>>): Prisma__DailyPlanClient<$Result.GetResult<Prisma.$DailyPlanPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     recordingItems<T extends Lesson$recordingItemsArgs<ExtArgs> = {}>(args?: Subset<T, Lesson$recordingItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecordingItemPayload<ExtArgs>, T, "findMany"> | Null>
     /**
@@ -17010,6 +17063,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Lesson", 'String'>
     readonly groupId: FieldRef<"Lesson", 'String'>
     readonly teacherId: FieldRef<"Lesson", 'String'>
+    readonly substituteTeacherId: FieldRef<"Lesson", 'String'>
     readonly scheduledAt: FieldRef<"Lesson", 'DateTime'>
     readonly duration: FieldRef<"Lesson", 'Int'>
     readonly topic: FieldRef<"Lesson", 'String'>
@@ -17383,6 +17437,21 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FeedbackScalarFieldEnum | FeedbackScalarFieldEnum[]
+  }
+
+  /**
+   * Lesson.substituteTeacher
+   */
+  export type Lesson$substituteTeacherArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Teacher
+     */
+    select?: TeacherSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TeacherInclude<ExtArgs> | null
+    where?: TeacherWhereInput
   }
 
   /**
@@ -36387,6 +36456,7 @@ export namespace Prisma {
     id: 'id',
     groupId: 'groupId',
     teacherId: 'teacherId',
+    substituteTeacherId: 'substituteTeacherId',
     scheduledAt: 'scheduledAt',
     duration: 'duration',
     topic: 'topic',
@@ -37481,6 +37551,7 @@ export namespace Prisma {
     feedbacks?: FeedbackListRelationFilter
     groups?: GroupListRelationFilter
     substituteForGroups?: GroupListRelationFilter
+    substituteLessons?: LessonListRelationFilter
     lessons?: LessonListRelationFilter
     salaryRecords?: SalaryRecordListRelationFilter
     students?: StudentListRelationFilter
@@ -37508,6 +37579,7 @@ export namespace Prisma {
     feedbacks?: FeedbackOrderByRelationAggregateInput
     groups?: GroupOrderByRelationAggregateInput
     substituteForGroups?: GroupOrderByRelationAggregateInput
+    substituteLessons?: LessonOrderByRelationAggregateInput
     lessons?: LessonOrderByRelationAggregateInput
     salaryRecords?: SalaryRecordOrderByRelationAggregateInput
     students?: StudentOrderByRelationAggregateInput
@@ -37538,6 +37610,7 @@ export namespace Prisma {
     feedbacks?: FeedbackListRelationFilter
     groups?: GroupListRelationFilter
     substituteForGroups?: GroupListRelationFilter
+    substituteLessons?: LessonListRelationFilter
     lessons?: LessonListRelationFilter
     salaryRecords?: SalaryRecordListRelationFilter
     students?: StudentListRelationFilter
@@ -38070,6 +38143,7 @@ export namespace Prisma {
     id?: StringFilter<"Lesson"> | string
     groupId?: StringFilter<"Lesson"> | string
     teacherId?: StringFilter<"Lesson"> | string
+    substituteTeacherId?: StringNullableFilter<"Lesson"> | string | null
     scheduledAt?: DateTimeFilter<"Lesson"> | Date | string
     duration?: IntFilter<"Lesson"> | number
     topic?: StringNullableFilter<"Lesson"> | string | null
@@ -38092,6 +38166,7 @@ export namespace Prisma {
     feedbacks?: FeedbackListRelationFilter
     group?: XOR<GroupRelationFilter, GroupWhereInput>
     teacher?: XOR<TeacherRelationFilter, TeacherWhereInput>
+    substituteTeacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     dailyPlan?: XOR<DailyPlanNullableRelationFilter, DailyPlanWhereInput> | null
     recordingItems?: RecordingItemListRelationFilter
   }
@@ -38100,6 +38175,7 @@ export namespace Prisma {
     id?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    substituteTeacherId?: SortOrderInput | SortOrder
     scheduledAt?: SortOrder
     duration?: SortOrder
     topic?: SortOrderInput | SortOrder
@@ -38122,6 +38198,7 @@ export namespace Prisma {
     feedbacks?: FeedbackOrderByRelationAggregateInput
     group?: GroupOrderByWithRelationInput
     teacher?: TeacherOrderByWithRelationInput
+    substituteTeacher?: TeacherOrderByWithRelationInput
     dailyPlan?: DailyPlanOrderByWithRelationInput
     recordingItems?: RecordingItemOrderByRelationAggregateInput
   }
@@ -38133,6 +38210,7 @@ export namespace Prisma {
     NOT?: LessonWhereInput | LessonWhereInput[]
     groupId?: StringFilter<"Lesson"> | string
     teacherId?: StringFilter<"Lesson"> | string
+    substituteTeacherId?: StringNullableFilter<"Lesson"> | string | null
     scheduledAt?: DateTimeFilter<"Lesson"> | Date | string
     duration?: IntFilter<"Lesson"> | number
     topic?: StringNullableFilter<"Lesson"> | string | null
@@ -38155,6 +38233,7 @@ export namespace Prisma {
     feedbacks?: FeedbackListRelationFilter
     group?: XOR<GroupRelationFilter, GroupWhereInput>
     teacher?: XOR<TeacherRelationFilter, TeacherWhereInput>
+    substituteTeacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
     dailyPlan?: XOR<DailyPlanNullableRelationFilter, DailyPlanWhereInput> | null
     recordingItems?: RecordingItemListRelationFilter
   }, "id">
@@ -38163,6 +38242,7 @@ export namespace Prisma {
     id?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    substituteTeacherId?: SortOrderInput | SortOrder
     scheduledAt?: SortOrder
     duration?: SortOrder
     topic?: SortOrderInput | SortOrder
@@ -38195,6 +38275,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Lesson"> | string
     groupId?: StringWithAggregatesFilter<"Lesson"> | string
     teacherId?: StringWithAggregatesFilter<"Lesson"> | string
+    substituteTeacherId?: StringNullableWithAggregatesFilter<"Lesson"> | string | null
     scheduledAt?: DateTimeWithAggregatesFilter<"Lesson"> | Date | string
     duration?: IntWithAggregatesFilter<"Lesson"> | number
     topic?: StringNullableWithAggregatesFilter<"Lesson"> | string | null
@@ -40282,6 +40363,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -40309,6 +40391,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -40334,6 +40417,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -40361,6 +40445,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -40936,6 +41021,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
     group: GroupCreateNestedOneWithoutLessonsInput
     teacher: TeacherCreateNestedOneWithoutLessonsInput
+    substituteTeacher?: TeacherCreateNestedOneWithoutSubstituteLessonsInput
     dailyPlan?: DailyPlanCreateNestedOneWithoutLessonInput
     recordingItems?: RecordingItemCreateNestedManyWithoutLessonInput
   }
@@ -40944,6 +41030,7 @@ export namespace Prisma {
     id?: string
     groupId: string
     teacherId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -40992,6 +41079,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
     group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
+    substituteTeacher?: TeacherUpdateOneWithoutSubstituteLessonsNestedInput
     dailyPlan?: DailyPlanUpdateOneWithoutLessonNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutLessonNestedInput
   }
@@ -41000,6 +41088,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41028,6 +41117,7 @@ export namespace Prisma {
     id?: string
     groupId: string
     teacherId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -41074,6 +41164,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43932,6 +44023,7 @@ export namespace Prisma {
     id?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    substituteTeacherId?: SortOrder
     scheduledAt?: SortOrder
     duration?: SortOrder
     topic?: SortOrder
@@ -43960,6 +44052,7 @@ export namespace Prisma {
     id?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    substituteTeacherId?: SortOrder
     scheduledAt?: SortOrder
     duration?: SortOrder
     topic?: SortOrder
@@ -43984,6 +44077,7 @@ export namespace Prisma {
     id?: SortOrder
     groupId?: SortOrder
     teacherId?: SortOrder
+    substituteTeacherId?: SortOrder
     scheduledAt?: SortOrder
     duration?: SortOrder
     topic?: SortOrder
@@ -46155,6 +46249,13 @@ export namespace Prisma {
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
+  export type LessonCreateNestedManyWithoutSubstituteTeacherInput = {
+    create?: XOR<LessonCreateWithoutSubstituteTeacherInput, LessonUncheckedCreateWithoutSubstituteTeacherInput> | LessonCreateWithoutSubstituteTeacherInput[] | LessonUncheckedCreateWithoutSubstituteTeacherInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutSubstituteTeacherInput | LessonCreateOrConnectWithoutSubstituteTeacherInput[]
+    createMany?: LessonCreateManySubstituteTeacherInputEnvelope
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+  }
+
   export type LessonCreateNestedManyWithoutTeacherInput = {
     create?: XOR<LessonCreateWithoutTeacherInput, LessonUncheckedCreateWithoutTeacherInput> | LessonCreateWithoutTeacherInput[] | LessonUncheckedCreateWithoutTeacherInput[]
     connectOrCreate?: LessonCreateOrConnectWithoutTeacherInput | LessonCreateOrConnectWithoutTeacherInput[]
@@ -46236,6 +46337,13 @@ export namespace Prisma {
     connectOrCreate?: GroupCreateOrConnectWithoutSubstituteTeacherInput | GroupCreateOrConnectWithoutSubstituteTeacherInput[]
     createMany?: GroupCreateManySubstituteTeacherInputEnvelope
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  }
+
+  export type LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput = {
+    create?: XOR<LessonCreateWithoutSubstituteTeacherInput, LessonUncheckedCreateWithoutSubstituteTeacherInput> | LessonCreateWithoutSubstituteTeacherInput[] | LessonUncheckedCreateWithoutSubstituteTeacherInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutSubstituteTeacherInput | LessonCreateOrConnectWithoutSubstituteTeacherInput[]
+    createMany?: LessonCreateManySubstituteTeacherInputEnvelope
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
   }
 
   export type LessonUncheckedCreateNestedManyWithoutTeacherInput = {
@@ -46369,6 +46477,20 @@ export namespace Prisma {
     update?: GroupUpdateWithWhereUniqueWithoutSubstituteTeacherInput | GroupUpdateWithWhereUniqueWithoutSubstituteTeacherInput[]
     updateMany?: GroupUpdateManyWithWhereWithoutSubstituteTeacherInput | GroupUpdateManyWithWhereWithoutSubstituteTeacherInput[]
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
+  }
+
+  export type LessonUpdateManyWithoutSubstituteTeacherNestedInput = {
+    create?: XOR<LessonCreateWithoutSubstituteTeacherInput, LessonUncheckedCreateWithoutSubstituteTeacherInput> | LessonCreateWithoutSubstituteTeacherInput[] | LessonUncheckedCreateWithoutSubstituteTeacherInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutSubstituteTeacherInput | LessonCreateOrConnectWithoutSubstituteTeacherInput[]
+    upsert?: LessonUpsertWithWhereUniqueWithoutSubstituteTeacherInput | LessonUpsertWithWhereUniqueWithoutSubstituteTeacherInput[]
+    createMany?: LessonCreateManySubstituteTeacherInputEnvelope
+    set?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    disconnect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    delete?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    update?: LessonUpdateWithWhereUniqueWithoutSubstituteTeacherInput | LessonUpdateWithWhereUniqueWithoutSubstituteTeacherInput[]
+    updateMany?: LessonUpdateManyWithWhereWithoutSubstituteTeacherInput | LessonUpdateManyWithWhereWithoutSubstituteTeacherInput[]
+    deleteMany?: LessonScalarWhereInput | LessonScalarWhereInput[]
   }
 
   export type LessonUpdateManyWithoutTeacherNestedInput = {
@@ -46531,6 +46653,20 @@ export namespace Prisma {
     update?: GroupUpdateWithWhereUniqueWithoutSubstituteTeacherInput | GroupUpdateWithWhereUniqueWithoutSubstituteTeacherInput[]
     updateMany?: GroupUpdateManyWithWhereWithoutSubstituteTeacherInput | GroupUpdateManyWithWhereWithoutSubstituteTeacherInput[]
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
+  }
+
+  export type LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput = {
+    create?: XOR<LessonCreateWithoutSubstituteTeacherInput, LessonUncheckedCreateWithoutSubstituteTeacherInput> | LessonCreateWithoutSubstituteTeacherInput[] | LessonUncheckedCreateWithoutSubstituteTeacherInput[]
+    connectOrCreate?: LessonCreateOrConnectWithoutSubstituteTeacherInput | LessonCreateOrConnectWithoutSubstituteTeacherInput[]
+    upsert?: LessonUpsertWithWhereUniqueWithoutSubstituteTeacherInput | LessonUpsertWithWhereUniqueWithoutSubstituteTeacherInput[]
+    createMany?: LessonCreateManySubstituteTeacherInputEnvelope
+    set?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    disconnect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    delete?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    connect?: LessonWhereUniqueInput | LessonWhereUniqueInput[]
+    update?: LessonUpdateWithWhereUniqueWithoutSubstituteTeacherInput | LessonUpdateWithWhereUniqueWithoutSubstituteTeacherInput[]
+    updateMany?: LessonUpdateManyWithWhereWithoutSubstituteTeacherInput | LessonUpdateManyWithWhereWithoutSubstituteTeacherInput[]
+    deleteMany?: LessonScalarWhereInput | LessonScalarWhereInput[]
   }
 
   export type LessonUncheckedUpdateManyWithoutTeacherNestedInput = {
@@ -47129,6 +47265,12 @@ export namespace Prisma {
     connect?: TeacherWhereUniqueInput
   }
 
+  export type TeacherCreateNestedOneWithoutSubstituteLessonsInput = {
+    create?: XOR<TeacherCreateWithoutSubstituteLessonsInput, TeacherUncheckedCreateWithoutSubstituteLessonsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutSubstituteLessonsInput
+    connect?: TeacherWhereUniqueInput
+  }
+
   export type DailyPlanCreateNestedOneWithoutLessonInput = {
     create?: XOR<DailyPlanCreateWithoutLessonInput, DailyPlanUncheckedCreateWithoutLessonInput>
     connectOrCreate?: DailyPlanCreateOrConnectWithoutLessonInput
@@ -47215,6 +47357,16 @@ export namespace Prisma {
     upsert?: TeacherUpsertWithoutLessonsInput
     connect?: TeacherWhereUniqueInput
     update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutLessonsInput, TeacherUpdateWithoutLessonsInput>, TeacherUncheckedUpdateWithoutLessonsInput>
+  }
+
+  export type TeacherUpdateOneWithoutSubstituteLessonsNestedInput = {
+    create?: XOR<TeacherCreateWithoutSubstituteLessonsInput, TeacherUncheckedCreateWithoutSubstituteLessonsInput>
+    connectOrCreate?: TeacherCreateOrConnectWithoutSubstituteLessonsInput
+    upsert?: TeacherUpsertWithoutSubstituteLessonsInput
+    disconnect?: TeacherWhereInput | boolean
+    delete?: TeacherWhereInput | boolean
+    connect?: TeacherWhereUniqueInput
+    update?: XOR<XOR<TeacherUpdateToOneWithWhereWithoutSubstituteLessonsInput, TeacherUpdateWithoutSubstituteLessonsInput>, TeacherUncheckedUpdateWithoutSubstituteLessonsInput>
   }
 
   export type DailyPlanUpdateOneWithoutLessonNestedInput = {
@@ -49019,6 +49171,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -49044,6 +49197,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -49379,6 +49533,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -49404,6 +49559,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -50157,6 +50313,7 @@ export namespace Prisma {
     deductions?: DeductionCreateNestedManyWithoutTeacherInput
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -50183,6 +50340,7 @@ export namespace Prisma {
     deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -50212,6 +50370,7 @@ export namespace Prisma {
     deductions?: DeductionCreateNestedManyWithoutTeacherInput
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -50238,6 +50397,7 @@ export namespace Prisma {
     deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -50274,6 +50434,7 @@ export namespace Prisma {
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
     feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
     teacher: TeacherCreateNestedOneWithoutLessonsInput
+    substituteTeacher?: TeacherCreateNestedOneWithoutSubstituteLessonsInput
     dailyPlan?: DailyPlanCreateNestedOneWithoutLessonInput
     recordingItems?: RecordingItemCreateNestedManyWithoutLessonInput
   }
@@ -50281,6 +50442,7 @@ export namespace Prisma {
   export type LessonUncheckedCreateWithoutGroupInput = {
     id?: string
     teacherId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -50600,6 +50762,7 @@ export namespace Prisma {
     deductions?: DeductionUpdateManyWithoutTeacherNestedInput
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -50626,6 +50789,7 @@ export namespace Prisma {
     deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -50661,6 +50825,7 @@ export namespace Prisma {
     deductions?: DeductionUpdateManyWithoutTeacherNestedInput
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -50687,6 +50852,7 @@ export namespace Prisma {
     deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -50718,6 +50884,7 @@ export namespace Prisma {
     id?: StringFilter<"Lesson"> | string
     groupId?: StringFilter<"Lesson"> | string
     teacherId?: StringFilter<"Lesson"> | string
+    substituteTeacherId?: StringNullableFilter<"Lesson"> | string | null
     scheduledAt?: DateTimeFilter<"Lesson"> | Date | string
     duration?: IntFilter<"Lesson"> | number
     topic?: StringNullableFilter<"Lesson"> | string | null
@@ -51105,6 +51272,72 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LessonCreateWithoutSubstituteTeacherInput = {
+    id?: string
+    scheduledAt: Date | string
+    duration?: number
+    topic?: string | null
+    description?: string | null
+    status?: $Enums.LessonStatus
+    vocabularySent?: boolean
+    vocabularySentAt?: Date | string | null
+    feedbacksCompleted?: boolean
+    absenceMarked?: boolean
+    absenceMarkedAt?: Date | string | null
+    voiceSent?: boolean
+    voiceSentAt?: Date | string | null
+    textSent?: boolean
+    textSentAt?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceCreateNestedManyWithoutLessonInput
+    feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
+    group: GroupCreateNestedOneWithoutLessonsInput
+    teacher: TeacherCreateNestedOneWithoutLessonsInput
+    dailyPlan?: DailyPlanCreateNestedOneWithoutLessonInput
+    recordingItems?: RecordingItemCreateNestedManyWithoutLessonInput
+  }
+
+  export type LessonUncheckedCreateWithoutSubstituteTeacherInput = {
+    id?: string
+    groupId: string
+    teacherId: string
+    scheduledAt: Date | string
+    duration?: number
+    topic?: string | null
+    description?: string | null
+    status?: $Enums.LessonStatus
+    vocabularySent?: boolean
+    vocabularySentAt?: Date | string | null
+    feedbacksCompleted?: boolean
+    absenceMarked?: boolean
+    absenceMarkedAt?: Date | string | null
+    voiceSent?: boolean
+    voiceSentAt?: Date | string | null
+    textSent?: boolean
+    textSentAt?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutLessonInput
+    dailyPlan?: DailyPlanUncheckedCreateNestedOneWithoutLessonInput
+    recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutLessonInput
+  }
+
+  export type LessonCreateOrConnectWithoutSubstituteTeacherInput = {
+    where: LessonWhereUniqueInput
+    create: XOR<LessonCreateWithoutSubstituteTeacherInput, LessonUncheckedCreateWithoutSubstituteTeacherInput>
+  }
+
+  export type LessonCreateManySubstituteTeacherInputEnvelope = {
+    data: LessonCreateManySubstituteTeacherInput | LessonCreateManySubstituteTeacherInput[]
+    skipDuplicates?: boolean
+  }
+
   export type LessonCreateWithoutTeacherInput = {
     id?: string
     scheduledAt: Date | string
@@ -51128,6 +51361,7 @@ export namespace Prisma {
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
     feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
     group: GroupCreateNestedOneWithoutLessonsInput
+    substituteTeacher?: TeacherCreateNestedOneWithoutSubstituteLessonsInput
     dailyPlan?: DailyPlanCreateNestedOneWithoutLessonInput
     recordingItems?: RecordingItemCreateNestedManyWithoutLessonInput
   }
@@ -51135,6 +51369,7 @@ export namespace Prisma {
   export type LessonUncheckedCreateWithoutTeacherInput = {
     id?: string
     groupId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -51526,6 +51761,22 @@ export namespace Prisma {
     data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutSubstituteTeacherInput>
   }
 
+  export type LessonUpsertWithWhereUniqueWithoutSubstituteTeacherInput = {
+    where: LessonWhereUniqueInput
+    update: XOR<LessonUpdateWithoutSubstituteTeacherInput, LessonUncheckedUpdateWithoutSubstituteTeacherInput>
+    create: XOR<LessonCreateWithoutSubstituteTeacherInput, LessonUncheckedCreateWithoutSubstituteTeacherInput>
+  }
+
+  export type LessonUpdateWithWhereUniqueWithoutSubstituteTeacherInput = {
+    where: LessonWhereUniqueInput
+    data: XOR<LessonUpdateWithoutSubstituteTeacherInput, LessonUncheckedUpdateWithoutSubstituteTeacherInput>
+  }
+
+  export type LessonUpdateManyWithWhereWithoutSubstituteTeacherInput = {
+    where: LessonScalarWhereInput
+    data: XOR<LessonUpdateManyMutationInput, LessonUncheckedUpdateManyWithoutSubstituteTeacherInput>
+  }
+
   export type LessonUpsertWithWhereUniqueWithoutTeacherInput = {
     where: LessonWhereUniqueInput
     update: XOR<LessonUpdateWithoutTeacherInput, LessonUncheckedUpdateWithoutTeacherInput>
@@ -51725,6 +51976,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -51751,6 +52003,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -51830,6 +52083,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -51856,6 +52110,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -51925,6 +52180,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -51951,6 +52207,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -51991,6 +52248,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -52017,6 +52275,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -52320,6 +52579,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     user: UserCreateNestedOneWithoutTeacherInput
@@ -52346,6 +52606,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     centerLinks?: TeacherCenterUncheckedCreateNestedManyWithoutTeacherInput
@@ -52791,6 +53052,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     user?: UserUpdateOneRequiredWithoutTeacherNestedInput
@@ -52817,6 +53079,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     centerLinks?: TeacherCenterUncheckedUpdateManyWithoutTeacherNestedInput
@@ -53653,6 +53916,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
     user: UserCreateNestedOneWithoutTeacherInput
@@ -53679,6 +53943,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
     centerLinks?: TeacherCenterUncheckedCreateNestedManyWithoutTeacherInput
@@ -53689,6 +53954,63 @@ export namespace Prisma {
   export type TeacherCreateOrConnectWithoutLessonsInput = {
     where: TeacherWhereUniqueInput
     create: XOR<TeacherCreateWithoutLessonsInput, TeacherUncheckedCreateWithoutLessonsInput>
+  }
+
+  export type TeacherCreateWithoutSubstituteLessonsInput = {
+    id?: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    videoUrl?: string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
+    groups?: GroupCreateNestedManyWithoutTeacherInput
+    substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    lessons?: LessonCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
+    students?: StudentCreateNestedManyWithoutTeacherInput
+    user: UserCreateNestedOneWithoutTeacherInput
+    centerLinks?: TeacherCenterCreateNestedManyWithoutTeacherInput
+    notes?: TeacherNoteCreateNestedManyWithoutTeacherInput
+    dailyPlans?: DailyPlanCreateNestedManyWithoutTeacherInput
+  }
+
+  export type TeacherUncheckedCreateWithoutSubstituteLessonsInput = {
+    id?: string
+    userId: string
+    bio?: string | null
+    specialization?: string | null
+    hourlyRate: Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: Decimal | DecimalJsLike | number | string | null
+    videoUrl?: string | null
+    workingDays?: TeacherCreateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
+    deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
+    groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
+    substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
+    salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
+    students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
+    centerLinks?: TeacherCenterUncheckedCreateNestedManyWithoutTeacherInput
+    notes?: TeacherNoteUncheckedCreateNestedManyWithoutTeacherInput
+    dailyPlans?: DailyPlanUncheckedCreateNestedManyWithoutTeacherInput
+  }
+
+  export type TeacherCreateOrConnectWithoutSubstituteLessonsInput = {
+    where: TeacherWhereUniqueInput
+    create: XOR<TeacherCreateWithoutSubstituteLessonsInput, TeacherUncheckedCreateWithoutSubstituteLessonsInput>
   }
 
   export type DailyPlanCreateWithoutLessonInput = {
@@ -53863,6 +54185,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
     user?: UserUpdateOneRequiredWithoutTeacherNestedInput
@@ -53889,6 +54212,70 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
+    students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
+    centerLinks?: TeacherCenterUncheckedUpdateManyWithoutTeacherNestedInput
+    notes?: TeacherNoteUncheckedUpdateManyWithoutTeacherNestedInput
+    dailyPlans?: DailyPlanUncheckedUpdateManyWithoutTeacherNestedInput
+  }
+
+  export type TeacherUpsertWithoutSubstituteLessonsInput = {
+    update: XOR<TeacherUpdateWithoutSubstituteLessonsInput, TeacherUncheckedUpdateWithoutSubstituteLessonsInput>
+    create: XOR<TeacherCreateWithoutSubstituteLessonsInput, TeacherUncheckedCreateWithoutSubstituteLessonsInput>
+    where?: TeacherWhereInput
+  }
+
+  export type TeacherUpdateToOneWithWhereWithoutSubstituteLessonsInput = {
+    where?: TeacherWhereInput
+    data: XOR<TeacherUpdateWithoutSubstituteLessonsInput, TeacherUncheckedUpdateWithoutSubstituteLessonsInput>
+  }
+
+  export type TeacherUpdateWithoutSubstituteLessonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUpdateManyWithoutTeacherNestedInput
+    substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    lessons?: LessonUpdateManyWithoutTeacherNestedInput
+    salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
+    students?: StudentUpdateManyWithoutTeacherNestedInput
+    user?: UserUpdateOneRequiredWithoutTeacherNestedInput
+    centerLinks?: TeacherCenterUpdateManyWithoutTeacherNestedInput
+    notes?: TeacherNoteUpdateManyWithoutTeacherNestedInput
+    dailyPlans?: DailyPlanUpdateManyWithoutTeacherNestedInput
+  }
+
+  export type TeacherUncheckedUpdateWithoutSubstituteLessonsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    hourlyRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lessonRateAMD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    workingDays?: TeacherUpdateworkingDaysInput | string[]
+    workingHours?: NullableJsonNullValueInput | InputJsonValue
+    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
+    deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
+    substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
     centerLinks?: TeacherCenterUncheckedUpdateManyWithoutTeacherNestedInput
@@ -53966,6 +54353,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
     group: GroupCreateNestedOneWithoutLessonsInput
     teacher: TeacherCreateNestedOneWithoutLessonsInput
+    substituteTeacher?: TeacherCreateNestedOneWithoutSubstituteLessonsInput
     dailyPlan?: DailyPlanCreateNestedOneWithoutLessonInput
     recordingItems?: RecordingItemCreateNestedManyWithoutLessonInput
   }
@@ -53974,6 +54362,7 @@ export namespace Prisma {
     id?: string
     groupId: string
     teacherId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -54156,6 +54545,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
     group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
+    substituteTeacher?: TeacherUpdateOneWithoutSubstituteLessonsNestedInput
     dailyPlan?: DailyPlanUpdateOneWithoutLessonNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutLessonNestedInput
   }
@@ -54164,6 +54554,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null
@@ -54342,6 +54733,7 @@ export namespace Prisma {
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
     group: GroupCreateNestedOneWithoutLessonsInput
     teacher: TeacherCreateNestedOneWithoutLessonsInput
+    substituteTeacher?: TeacherCreateNestedOneWithoutSubstituteLessonsInput
     dailyPlan?: DailyPlanCreateNestedOneWithoutLessonInput
     recordingItems?: RecordingItemCreateNestedManyWithoutLessonInput
   }
@@ -54350,6 +54742,7 @@ export namespace Prisma {
     id?: string
     groupId: string
     teacherId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -54463,6 +54856,7 @@ export namespace Prisma {
     deductions?: DeductionCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -54489,6 +54883,7 @@ export namespace Prisma {
     deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -54536,6 +54931,7 @@ export namespace Prisma {
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
     group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
+    substituteTeacher?: TeacherUpdateOneWithoutSubstituteLessonsNestedInput
     dailyPlan?: DailyPlanUpdateOneWithoutLessonNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutLessonNestedInput
   }
@@ -54544,6 +54940,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null
@@ -54669,6 +55066,7 @@ export namespace Prisma {
     deductions?: DeductionUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -54695,6 +55093,7 @@ export namespace Prisma {
     deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -54864,6 +55263,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
     user: UserCreateNestedOneWithoutTeacherInput
@@ -54890,6 +55290,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
     centerLinks?: TeacherCenterUncheckedCreateNestedManyWithoutTeacherInput
@@ -54930,6 +55331,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
     user?: UserUpdateOneRequiredWithoutTeacherNestedInput
@@ -54956,6 +55358,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
     centerLinks?: TeacherCenterUncheckedUpdateManyWithoutTeacherNestedInput
@@ -54979,6 +55382,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -55005,6 +55409,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -55045,6 +55450,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -55071,6 +55477,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -55783,6 +56190,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
     group: GroupCreateNestedOneWithoutLessonsInput
     teacher: TeacherCreateNestedOneWithoutLessonsInput
+    substituteTeacher?: TeacherCreateNestedOneWithoutSubstituteLessonsInput
     recordingItems?: RecordingItemCreateNestedManyWithoutLessonInput
   }
 
@@ -55790,6 +56198,7 @@ export namespace Prisma {
     id?: string
     groupId: string
     teacherId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -55835,6 +56244,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -55861,6 +56271,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -55985,6 +56396,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
     group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
+    substituteTeacher?: TeacherUpdateOneWithoutSubstituteLessonsNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutLessonNestedInput
   }
 
@@ -55992,6 +56404,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null
@@ -56043,6 +56456,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -56069,6 +56483,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -56441,6 +56856,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
     group: GroupCreateNestedOneWithoutLessonsInput
     teacher: TeacherCreateNestedOneWithoutLessonsInput
+    substituteTeacher?: TeacherCreateNestedOneWithoutSubstituteLessonsInput
     dailyPlan?: DailyPlanCreateNestedOneWithoutLessonInput
   }
 
@@ -56448,6 +56864,7 @@ export namespace Prisma {
     id?: string
     groupId: string
     teacherId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -56641,6 +57058,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
     group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
+    substituteTeacher?: TeacherUpdateOneWithoutSubstituteLessonsNestedInput
     dailyPlan?: DailyPlanUpdateOneWithoutLessonNestedInput
   }
 
@@ -56648,6 +57066,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null
@@ -56933,6 +57352,7 @@ export namespace Prisma {
     feedbacks?: FeedbackCreateNestedManyWithoutTeacherInput
     groups?: GroupCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordCreateNestedManyWithoutTeacherInput
     students?: StudentCreateNestedManyWithoutTeacherInput
@@ -56959,6 +57379,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutTeacherInput
     groups?: GroupUncheckedCreateNestedManyWithoutTeacherInput
     substituteForGroups?: GroupUncheckedCreateNestedManyWithoutSubstituteTeacherInput
+    substituteLessons?: LessonUncheckedCreateNestedManyWithoutSubstituteTeacherInput
     lessons?: LessonUncheckedCreateNestedManyWithoutTeacherInput
     salaryRecords?: SalaryRecordUncheckedCreateNestedManyWithoutTeacherInput
     students?: StudentUncheckedCreateNestedManyWithoutTeacherInput
@@ -57340,6 +57761,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUpdateManyWithoutTeacherNestedInput
     groups?: GroupUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUpdateManyWithoutTeacherNestedInput
     students?: StudentUpdateManyWithoutTeacherNestedInput
@@ -57366,6 +57788,7 @@ export namespace Prisma {
     feedbacks?: FeedbackUncheckedUpdateManyWithoutTeacherNestedInput
     groups?: GroupUncheckedUpdateManyWithoutTeacherNestedInput
     substituteForGroups?: GroupUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
+    substituteLessons?: LessonUncheckedUpdateManyWithoutSubstituteTeacherNestedInput
     lessons?: LessonUncheckedUpdateManyWithoutTeacherNestedInput
     salaryRecords?: SalaryRecordUncheckedUpdateManyWithoutTeacherNestedInput
     students?: StudentUncheckedUpdateManyWithoutTeacherNestedInput
@@ -58571,6 +58994,7 @@ export namespace Prisma {
   export type LessonCreateManyGroupInput = {
     id?: string
     teacherId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -58761,6 +59185,7 @@ export namespace Prisma {
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
+    substituteTeacher?: TeacherUpdateOneWithoutSubstituteLessonsNestedInput
     dailyPlan?: DailyPlanUpdateOneWithoutLessonNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutLessonNestedInput
   }
@@ -58768,6 +59193,7 @@ export namespace Prisma {
   export type LessonUncheckedUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58795,6 +59221,7 @@ export namespace Prisma {
   export type LessonUncheckedUpdateManyWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     teacherId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59082,9 +59509,34 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type LessonCreateManySubstituteTeacherInput = {
+    id?: string
+    groupId: string
+    teacherId: string
+    scheduledAt: Date | string
+    duration?: number
+    topic?: string | null
+    description?: string | null
+    status?: $Enums.LessonStatus
+    vocabularySent?: boolean
+    vocabularySentAt?: Date | string | null
+    feedbacksCompleted?: boolean
+    absenceMarked?: boolean
+    absenceMarkedAt?: Date | string | null
+    voiceSent?: boolean
+    voiceSentAt?: Date | string | null
+    textSent?: boolean
+    textSentAt?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type LessonCreateManyTeacherInput = {
     id?: string
     groupId: string
+    substituteTeacherId?: string | null
     scheduledAt: Date | string
     duration?: number
     topic?: string | null
@@ -59467,6 +59919,86 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LessonUpdateWithoutSubstituteTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration?: IntFieldUpdateOperationsInput | number
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLessonStatusFieldUpdateOperationsInput | $Enums.LessonStatus
+    vocabularySent?: BoolFieldUpdateOperationsInput | boolean
+    vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    absenceMarked?: BoolFieldUpdateOperationsInput | boolean
+    absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voiceSent?: BoolFieldUpdateOperationsInput | boolean
+    voiceSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    textSent?: BoolFieldUpdateOperationsInput | boolean
+    textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attendances?: AttendanceUpdateManyWithoutLessonNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
+    group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
+    teacher?: TeacherUpdateOneRequiredWithoutLessonsNestedInput
+    dailyPlan?: DailyPlanUpdateOneWithoutLessonNestedInput
+    recordingItems?: RecordingItemUpdateManyWithoutLessonNestedInput
+  }
+
+  export type LessonUncheckedUpdateWithoutSubstituteTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    teacherId?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration?: IntFieldUpdateOperationsInput | number
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLessonStatusFieldUpdateOperationsInput | $Enums.LessonStatus
+    vocabularySent?: BoolFieldUpdateOperationsInput | boolean
+    vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    absenceMarked?: BoolFieldUpdateOperationsInput | boolean
+    absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voiceSent?: BoolFieldUpdateOperationsInput | boolean
+    voiceSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    textSent?: BoolFieldUpdateOperationsInput | boolean
+    textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attendances?: AttendanceUncheckedUpdateManyWithoutLessonNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutLessonNestedInput
+    dailyPlan?: DailyPlanUncheckedUpdateOneWithoutLessonNestedInput
+    recordingItems?: RecordingItemUncheckedUpdateManyWithoutLessonNestedInput
+  }
+
+  export type LessonUncheckedUpdateManyWithoutSubstituteTeacherInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    teacherId?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration?: IntFieldUpdateOperationsInput | number
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumLessonStatusFieldUpdateOperationsInput | $Enums.LessonStatus
+    vocabularySent?: BoolFieldUpdateOperationsInput | boolean
+    vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    absenceMarked?: BoolFieldUpdateOperationsInput | boolean
+    absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voiceSent?: BoolFieldUpdateOperationsInput | boolean
+    voiceSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    textSent?: BoolFieldUpdateOperationsInput | boolean
+    textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LessonUpdateWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59490,6 +60022,7 @@ export namespace Prisma {
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
     group?: GroupUpdateOneRequiredWithoutLessonsNestedInput
+    substituteTeacher?: TeacherUpdateOneWithoutSubstituteLessonsNestedInput
     dailyPlan?: DailyPlanUpdateOneWithoutLessonNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutLessonNestedInput
   }
@@ -59497,6 +60030,7 @@ export namespace Prisma {
   export type LessonUncheckedUpdateWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null
@@ -59524,6 +60058,7 @@ export namespace Prisma {
   export type LessonUncheckedUpdateManyWithoutTeacherInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: StringFieldUpdateOperationsInput | string
+    substituteTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
     scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     duration?: IntFieldUpdateOperationsInput | number
     topic?: NullableStringFieldUpdateOperationsInput | string | null

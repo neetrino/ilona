@@ -7,6 +7,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, SalaryStatus, LessonStatus } from '@ilona/database';
 import { SalaryCalculationService } from './salary-calculation.service';
 import type { CompletedActions, LessonActionData } from '@ilona/types';
+import {
+  lessonsPayableToTeacherWhere,
+  isSubstitutePayeeLesson,
+} from '../../common/lesson-instructor';
 
 /** Prisma delegate access for this service. */
 type PrismaDelegates = {
@@ -126,7 +130,7 @@ export class SalaryBreakdownService {
     // Get ALL lessons for this month (not just completed ones)
     const lessons = await this.db.lesson.findMany({
       where: {
-        teacherId,
+        ...lessonsPayableToTeacherWhere(teacherId),
         scheduledAt: {
           gte: startOfMonth,
           lte: endOfMonth,
@@ -138,6 +142,8 @@ export class SalaryBreakdownService {
       },
       select: {
         id: true,
+        teacherId: true,
+        substituteTeacherId: true,
         topic: true,
         scheduledAt: true,
         completedAt: true,
@@ -148,6 +154,13 @@ export class SalaryBreakdownService {
         textSent: true,
         dailyPlan: {
           select: { id: true },
+        },
+        teacher: {
+          select: {
+            user: {
+              select: { firstName: true, lastName: true },
+            },
+          },
         },
         group: {
           select: {
@@ -197,6 +210,12 @@ export class SalaryBreakdownService {
     // Base salary is per lesson (fixed price), NOT per hour
     type LessonRow = (typeof lessons)[number];
     const lessonBreakdown = lessons.map((lesson: LessonRow) => {
+      const isSubstituteLesson = isSubstitutePayeeLesson(lesson, teacherId);
+      const mainUser = lesson.teacher?.user;
+      const mainTeacherName =
+        isSubstituteLesson && mainUser
+          ? `${mainUser.firstName ?? ''} ${mainUser.lastName ?? ''}`.trim() || undefined
+          : undefined;
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
@@ -253,14 +272,23 @@ export class SalaryBreakdownService {
         salary: baseSalary,
         deduction: deduction,
         total,
+        isSubstituteLesson,
+        mainTeacherName,
       };
     });
+
+    const substituteLessons = lessonBreakdown.filter((row) => row.isSubstituteLesson);
+    const substituteSummary = {
+      lessonCount: substituteLessons.length,
+      netAmount: substituteLessons.reduce((sum, row) => sum + row.total, 0),
+    };
 
     return {
       teacherId,
       teacherName: `${teacher.user.firstName} ${teacher.user.lastName}`,
       month: month,
       lessons: lessonBreakdown,
+      substituteSummary,
     };
   }
 

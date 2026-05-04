@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Button } from '@/shared/components/ui';
 import { DataTable } from '@/shared/components/ui';
 import { useSalaryBreakdown, useExcludeLessonsFromSalary, financeKeys } from '../hooks/useFinance';
@@ -9,6 +10,19 @@ import { Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ObligationDetailsModal } from './ObligationDetailsModal';
 import { formatCurrency } from '@/shared/lib/utils';
+import { TeacherSubstituteBadge, substituteLessonChipClassName } from './TeacherSubstituteBadge';
+
+function initialsFromLabel(label: string): string {
+  const parts = label.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) {
+    const w = parts[0];
+    return w.slice(0, 2).toUpperCase();
+  }
+  const a = parts[0][0] ?? '';
+  const b = parts[parts.length - 1][0] ?? '';
+  return `${a}${b}`.toUpperCase() || '?';
+}
 
 interface SalaryBreakdownModalProps {
   teacherId: string | null;
@@ -58,6 +72,7 @@ export function SalaryBreakdownModal({
   open,
   onClose,
 }: SalaryBreakdownModalProps) {
+  const t = useTranslations('finance');
   const queryClient = useQueryClient();
   const { data: breakdown, isLoading, error, refetch } = useSalaryBreakdown(teacherId, month, open && !!teacherId);
   const excludeLessons = useExcludeLessonsFromSalary();
@@ -219,6 +234,8 @@ export function SalaryBreakdownModal({
     }
   };
 
+  const teacherInitials = initialsFromLabel(teacherName);
+
   const breakdownColumns = [
     {
       key: 'checkbox',
@@ -244,18 +261,54 @@ export function SalaryBreakdownModal({
     },
     {
       key: 'teacherName',
-      header: 'Teacher Name',
+      header: t('teacher'),
       className: 'text-left',
-      render: () => <span className="text-slate-800">{teacherName}</span>,
+      render: (lesson: SalaryBreakdownLesson) => {
+        const isSub = lesson.isSubstituteLesson === true;
+        return (
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="relative shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600">
+                {teacherInitials}
+              </div>
+              {isSub ? <TeacherSubstituteBadge /> : null}
+            </div>
+            <span className="truncate font-medium text-slate-800">{teacherName}</span>
+          </div>
+        );
+      },
     },
     {
       key: 'lessonName',
-      header: 'Lesson Name',
+      header: t('breakdownGroup'),
       className: 'text-left',
       sortable: true,
-      render: (lesson: SalaryBreakdownLesson) => (
-        <span className="font-medium text-slate-800">{lesson.lessonName}</span>
-      ),
+      render: (lesson: SalaryBreakdownLesson) => {
+        const primary = lesson.groupName || lesson.lessonName;
+        const secondary =
+          lesson.groupName && lesson.lessonName && lesson.groupName !== lesson.lessonName
+            ? lesson.lessonName
+            : '';
+        const isSub = lesson.isSubstituteLesson === true;
+        return (
+          <div className="min-w-0">
+            <div className="flex items-start gap-2 min-w-0">
+              {isSub ? (
+                <span className={`${substituteLessonChipClassName} mt-0.5`}>
+                  {t('substituteLessonBadge')}
+                </span>
+              ) : null}
+              <span className="font-medium text-slate-800 truncate min-w-0">{primary}</span>
+            </div>
+            {secondary ? <p className="text-sm text-slate-500 truncate">{secondary}</p> : null}
+            {isSub && lesson.mainTeacherName ? (
+              <p className="mt-1 text-xs leading-snug text-violet-900">
+                {t('substituteForMainTeacher', { name: lesson.mainTeacherName })}
+              </p>
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       key: 'lessonDate',

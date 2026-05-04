@@ -342,7 +342,8 @@ export class ChatManagementService {
               `userId: ${userId}, chatId: ${chatId}, groupId: ${chat.groupId}, ` +
               `teacherId: ${accessCheck.debug?.teacherId || 'N/A'}, ` +
               `groupTeacherId: ${accessCheck.debug?.groupTeacherId || 'N/A'}, ` +
-              `hasLessons: ${accessCheck.debug?.hasLessons || false}`
+              `hasLessons: ${accessCheck.debug?.hasLessons || false}, ` +
+              `hasSubstituteLessons: ${accessCheck.debug?.hasSubstituteLessons || false}`
             );
           }
           throw new ForbiddenException('You are not assigned to this group');
@@ -916,7 +917,8 @@ export class ChatManagementService {
             `userId: ${userId}, groupId: ${groupId}, ` +
             `teacherId: ${accessCheck.debug?.teacherId || 'N/A'}, ` +
             `groupTeacherId: ${accessCheck.debug?.groupTeacherId || 'N/A'}, ` +
-            `hasLessons: ${accessCheck.debug?.hasLessons || false}`
+            `hasLessons: ${accessCheck.debug?.hasLessons || false}, ` +
+            `hasSubstituteLessons: ${accessCheck.debug?.hasSubstituteLessons || false}`
           );
         }
         throw new ForbiddenException('You are not assigned to this group');

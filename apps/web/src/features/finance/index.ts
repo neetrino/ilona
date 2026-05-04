@@ -28,6 +28,11 @@ export {
   financeKeys,
 } from './hooks';
 
+export {
+  TeacherSubstituteBadge,
+  substituteLessonChipClassName,
+} from './components/TeacherSubstituteBadge';
+
 // Teacher Finance Hooks
 export {
   useMySalaries,
@@ -63,4 +68,5 @@ export type {
   ProcessPaymentDto,
   SalaryBreakdown,
   SalaryBreakdownLesson,
+  SalaryBreakdownSubstituteSummary,
 } from './types';
