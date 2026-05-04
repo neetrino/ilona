@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { effectiveLessonInstructorTeacherId } from '../../common/lesson-instructor';
 import { Prisma, DeductionReason } from '@ilona/database';
 import { CreateDeductionDto } from './dto/create-deduction.dto';
 
@@ -180,7 +181,7 @@ export class DeductionsService {
     }
 
     return this.create({
-      teacherId: lesson.teacherId,
+      teacherId: effectiveLessonInstructorTeacherId(lesson),
       reason: DeductionReason.MISSING_VOCABULARY,
       amount,
       note: `Missing vocabulary for lesson on ${lesson.scheduledAt.toISOString().split('T')[0]}`,
@@ -202,7 +203,7 @@ export class DeductionsService {
     }
 
     return this.create({
-      teacherId: lesson.teacherId,
+      teacherId: effectiveLessonInstructorTeacherId(lesson),
       reason: DeductionReason.MISSING_FEEDBACK,
       amount,
       note: `Missing feedback for lesson on ${lesson.scheduledAt.toISOString().split('T')[0]}`,

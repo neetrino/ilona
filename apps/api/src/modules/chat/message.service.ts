@@ -29,6 +29,7 @@ type MessageWithChatForRecordings = Prisma.MessageGetPayload<{
 import { SendMessageDto, UpdateMessageDto } from './dto';
 import { StorageService } from '../storage/storage.service';
 import { SalariesService } from '../finance/salaries.service';
+import { effectiveLessonInstructorTeacherId } from '../../common/lesson-instructor';
 import { ChatManagementService } from './chat-management.service';
 import { ChatAuthorizationService } from './chat-authorization.service';
 import { ChatManagerScopeService } from './chat-manager-scope.service';
@@ -388,7 +389,7 @@ export class MessageService {
       if (messageType === MessageType.VOICE) {
         const lesson = await this.prisma.lesson.findUnique({
           where: { id: lessonId },
-          select: { teacherId: true, scheduledAt: true, voiceSent: true },
+          select: { teacherId: true, substituteTeacherId: true, scheduledAt: true, voiceSent: true },
         }).catch(() => null);
 
         if (lesson && !lesson.voiceSent) {
@@ -406,7 +407,7 @@ export class MessageService {
           if (lesson.scheduledAt) {
             const lessonMonth = new Date(lesson.scheduledAt);
             await this.salariesService.recalculateSalaryForMonth(
-              lesson.teacherId,
+              effectiveLessonInstructorTeacherId(lesson),
               lessonMonth,
             ).catch(() => {
               // Silently fail to avoid breaking message sending
@@ -417,7 +418,7 @@ export class MessageService {
         // Only mark text as sent if it's explicitly from lesson detail page
         const lesson = await this.prisma.lesson.findUnique({
           where: { id: lessonId },
-          select: { teacherId: true, scheduledAt: true, textSent: true },
+          select: { teacherId: true, substituteTeacherId: true, scheduledAt: true, textSent: true },
         }).catch(() => null);
 
         if (lesson && !lesson.textSent) {
@@ -435,7 +436,7 @@ export class MessageService {
           if (lesson.scheduledAt) {
             const lessonMonth = new Date(lesson.scheduledAt);
             await this.salariesService.recalculateSalaryForMonth(
-              lesson.teacherId,
+              effectiveLessonInstructorTeacherId(lesson),
               lessonMonth,
             ).catch(() => {
               // Silently fail to avoid breaking message sending

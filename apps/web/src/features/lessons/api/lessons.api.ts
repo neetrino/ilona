@@ -9,6 +9,7 @@ import type {
   CreateRecurringLessonsDto,
   CreateRecurringLessonsResult,
   LessonStatistics,
+  SetSubstituteByGroupDayDto,
 } from '../types';
 
 const LESSONS_ENDPOINT = '/lessons';
@@ -115,6 +116,15 @@ export async function createRecurringLessons(
  */
 export async function updateLesson(id: string, data: UpdateLessonDto): Promise<Lesson> {
   return api.put<Lesson>(`${LESSONS_ENDPOINT}/${id}`, data);
+}
+
+export async function setSubstituteByGroupDay(
+  data: SetSubstituteByGroupDayDto,
+): Promise<{ updatedCount: number; lessonIds: string[] }> {
+  return api.post<{ updatedCount: number; lessonIds: string[] }>(
+    `${LESSONS_ENDPOINT}/substitute/by-group-day`,
+    data,
+  );
 }
 
 /**

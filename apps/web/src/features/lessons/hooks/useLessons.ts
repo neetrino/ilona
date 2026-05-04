@@ -11,6 +11,7 @@ import {
   createLesson,
   createRecurringLessons,
   updateLesson,
+  setSubstituteByGroupDay,
   startLesson,
   completeLesson,
   cancelLesson,
@@ -23,6 +24,7 @@ import type {
   LessonFilters,
   CreateLessonDto,
   UpdateLessonDto,
+  SetSubstituteByGroupDayDto,
   CompleteLessonDto,
   CreateRecurringLessonsDto,
   CreateRecurringLessonsResult,
@@ -179,6 +181,19 @@ export function useUpdateLesson() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
+    },
+  });
+}
+
+export function useSetSubstituteByGroupDay() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SetSubstituteByGroupDayDto) => setSubstituteByGroupDay(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: lessonKeys.all });
+      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
     },
   });
 }

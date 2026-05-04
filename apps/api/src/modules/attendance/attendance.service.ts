@@ -11,6 +11,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MarkAttendanceDto, BulkAttendanceDto } from './dto';
 import { Prisma, AbsenceType, UserRole, LessonStatus } from '@ilona/database';
 import { SalariesService } from '../finance/salaries.service';
+import { effectiveLessonInstructorTeacherId, teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
 
 @Injectable()
 export class AttendanceService {
@@ -122,7 +123,7 @@ export class AttendanceService {
         where: { userId },
       });
 
-      if (!teacher || lesson.group.teacherId !== teacher.id) {
+      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
         throw new ForbiddenException('You do not have access to this lesson');
       }
     }
@@ -225,7 +226,7 @@ export class AttendanceService {
 
     const result: Record<string, Awaited<ReturnType<AttendanceService['getByLesson']>>> = {};
     for (const lesson of lessons) {
-      if (teacherId !== null && lesson.group.teacherId !== teacherId) {
+      if (teacherId !== null && !teacherActsAsLessonInstructor(lesson, teacherId)) {
         continue;
       }
       if (managerCenterId && lesson.group.centerId !== managerCenterId) {
@@ -348,7 +349,7 @@ export class AttendanceService {
         where: { userId },
       });
 
-      if (!teacher || lesson.group.teacherId !== teacher.id) {
+      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
         throw new ForbiddenException('You do not have access to this lesson');
       }
     }
@@ -455,7 +456,9 @@ export class AttendanceService {
         attendance: attendanceRecord,
         lessonCompletedForAbsence,
         lessonScheduledAt: lessonWithAttendances?.scheduledAt ?? null,
-        lessonTeacherId: lessonWithAttendances?.teacherId ?? null,
+        lessonTeacherId: lessonWithAttendances
+        ? effectiveLessonInstructorTeacherId(lessonWithAttendances)
+        : null,
       };
     });
 
@@ -504,7 +507,7 @@ export class AttendanceService {
         where: { userId },
       });
 
-      if (!teacher || lesson.group.teacherId !== teacher.id) {
+      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
         throw new ForbiddenException('You do not have access to this lesson');
       }
     }
@@ -562,7 +565,7 @@ export class AttendanceService {
         where: { userId },
       });
 
-      if (!teacher || attendance.lesson.group.teacherId !== teacher.id) {
+      if (!teacher || !teacherActsAsLessonInstructor(attendance.lesson, teacher.id)) {
         throw new ForbiddenException('You do not have access to this attendance record');
       }
     }

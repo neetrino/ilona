@@ -8,6 +8,7 @@ import { CompleteLessonDto } from './dto';
 import { UserRole } from '@ilona/database';
 import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { LessonCrudService } from './lesson-crud.service';
+import { teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
 
 /**
  * Service responsible for lesson status management
@@ -29,7 +30,7 @@ export class LessonStatusService {
         where: { userId },
       });
 
-      if (!teacher || teacher.id !== lesson.teacherId) {
+      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
         throw new ForbiddenException('You are not assigned to this lesson');
       }
     }
@@ -53,7 +54,7 @@ export class LessonStatusService {
         where: { userId },
       });
 
-      if (!teacher || teacher.id !== lesson.teacherId) {
+      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
         throw new ForbiddenException('You are not assigned to this lesson');
       }
     }

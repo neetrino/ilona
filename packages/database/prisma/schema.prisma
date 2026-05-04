@@ -119,6 +119,7 @@ model Teacher {
   feedbacks           Feedback[]
   groups              Group[]
   substituteForGroups Group[]        @relation("GroupSubstitute")
+  substituteLessons   Lesson[]       @relation("LessonSubstituteTeacher")
   lessons             Lesson[]
   salaryRecords       SalaryRecord[]
   students            Student[]
@@ -253,6 +254,8 @@ model Lesson {
   id                 String       @id @default(cuid())
   groupId            String
   teacherId          String
+  /// When set, this teacher covers the class for this lesson only (salary + teacher workflows).
+  substituteTeacherId String?
   scheduledAt        DateTime
   duration           Int          @default(60)
   topic              String?
@@ -275,11 +278,13 @@ model Lesson {
   feedbacks          Feedback[]
   group              Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
   teacher            Teacher      @relation(fields: [teacherId], references: [id])
+  substituteTeacher  Teacher?     @relation("LessonSubstituteTeacher", fields: [substituteTeacherId], references: [id], onDelete: SetNull)
   dailyPlan          DailyPlan?
   recordingItems     RecordingItem[]
 
   @@index([groupId])
   @@index([teacherId])
+  @@index([substituteTeacherId])
   @@index([scheduledAt])
   @@index([status])
   @@index([groupId, scheduledAt])

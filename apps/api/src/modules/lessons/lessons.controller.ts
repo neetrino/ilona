@@ -20,6 +20,7 @@ import {
   GetUpcomingLessonsQueryDto,
   CompleteLessonDto,
   CreateRecurringLessonDto,
+  SetSubstituteByGroupDayDto,
 } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
 import { UserRole, LessonStatus } from '@ilona/database';
@@ -103,6 +104,23 @@ export class LessonsController {
     }
 
     return this.lessonsService.getUpcoming(teacher.id, query.limit ?? 10);
+  }
+
+  @Post('substitute/by-group-day')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async setSubstituteByGroupDay(
+    @Body() dto: SetSubstituteByGroupDayDto,
+    @CurrentUser() user?: JwtPayload,
+  ): Promise<unknown> {
+    return this.lessonsService.setSubstituteForGroupDay(
+      {
+        groupId: dto.groupId,
+        date: dto.date,
+        substituteTeacherId: dto.substituteTeacherId ?? null,
+      },
+      user?.sub,
+      user?.role,
+    );
   }
 
   @Get('statistics')

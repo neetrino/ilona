@@ -9,7 +9,10 @@ import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
 import { useLessons, useLessonStatistics, useCancelLesson, AddLessonForm, type Lesson, type LessonStatus } from '@/features/lessons';
 import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
 import { useTeachers } from '@/features/teachers';
+import { useGroups } from '@/features/groups';
 import { CalendarFilters } from './components/CalendarFilters';
+import { SubstituteLessonModal } from './components/SubstituteLessonModal';
+import { SubstituteByGroupDayModal } from './components/SubstituteByGroupDayModal';
 
 // Helper to get week dates
 function getWeekDates(date: Date): Date[] {
@@ -117,6 +120,9 @@ export default function CalendarPage() {
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(() =>
     isAddLessonModalInSearchParams(searchParams)
   );
+  const [substituteLessonId, setSubstituteLessonId] = useState<string | null>(null);
+  const [substituteLessonModalOpen, setSubstituteLessonModalOpen] = useState(false);
+  const [substituteByDayOpen, setSubstituteByDayOpen] = useState(false);
 
   // Fetch teachers for dropdown
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ 
@@ -132,7 +138,10 @@ export default function CalendarPage() {
       label: `${teacher.user.firstName} ${teacher.user.lastName}`,
     }));
   }, [teachersData]);
-  
+
+  const { data: groupsData, isLoading: groupsLoading } = useGroups({ take: 300, isActive: true });
+  const groupList = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
+
   // Update URL when view mode changes
   const updateViewModeInUrl = (mode: 'week' | 'month' | 'list') => {
     // Update state immediately for responsive UI
@@ -464,6 +473,14 @@ export default function CalendarPage() {
             </div>
             <Button
               type="button"
+              variant="outline"
+              onClick={() => setSubstituteByDayOpen(true)}
+              className="font-semibold"
+            >
+              Substitute (by day)
+            </Button>
+            <Button
+              type="button"
               variant="default"
               onClick={() => handleAddLessonOpenChange(true)}
               className="font-semibold shadow-sm"
@@ -551,6 +568,12 @@ export default function CalendarPage() {
                               <p className="text-slate-600 truncate">
                                 {lesson.group?.name || 'Unknown'}
                               </p>
+                              {lesson.substituteTeacher?.user && (
+                                <p className="text-amber-800 truncate mt-0.5" title="Substitute teacher">
+                                  Sub: {lesson.substituteTeacher.user.firstName}{' '}
+                                  {lesson.substituteTeacher.user.lastName}
+                                </p>
+                              )}
                             </div>
                           );
                         })}
@@ -583,6 +606,9 @@ export default function CalendarPage() {
                   )}
                 >
                   {formatTime(lesson.scheduledAt)} · {lesson.group?.name ?? 'Unknown'}
+                  {lesson.substituteTeacher?.user
+                    ? ` · Sub ${lesson.substituteTeacher.user.firstName[0]}.`
+                    : ''}
                 </button>
               )}
             />
@@ -621,6 +647,10 @@ export default function CalendarPage() {
                     handleCancel(lessonId);
                   }
                 }}
+                onAssignSubstitute={(lessonId) => {
+                  setSubstituteLessonId(lessonId);
+                  setSubstituteLessonModalOpen(true);
+                }}
               />
             )}
           </>
@@ -631,6 +661,24 @@ export default function CalendarPage() {
       <AddLessonForm 
         open={isAddLessonOpen} 
         onOpenChange={handleAddLessonOpenChange}
+      />
+
+      <SubstituteLessonModal
+        open={substituteLessonModalOpen}
+        onOpenChange={(open) => {
+          setSubstituteLessonModalOpen(open);
+          if (!open) setSubstituteLessonId(null);
+        }}
+        lessonId={substituteLessonId}
+        teacherOptions={teacherOptions}
+      />
+
+      <SubstituteByGroupDayModal
+        open={substituteByDayOpen}
+        onOpenChange={setSubstituteByDayOpen}
+        groups={groupList}
+        groupsLoading={groupsLoading}
+        teacherOptions={teacherOptions}
       />
     </DashboardLayout>
   );

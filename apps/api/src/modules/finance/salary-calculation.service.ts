@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
 import { LessonStatus } from '@ilona/database';
 import type { ActionWeights, CompletedActions, PenaltyAmounts } from '@ilona/types';
+import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
 
 /**
  * Service responsible for salary calculation logic
@@ -111,7 +112,7 @@ export class SalaryCalculationService {
     // Filter by scheduledAt to include all lessons scheduled in this month
     const lessons = await this.prisma.lesson.findMany({
       where: {
-        teacherId,
+        ...lessonsPayableToTeacherWhere(teacherId),
         scheduledAt: {
           gte: startOfMonth,
           lte: endOfMonth,

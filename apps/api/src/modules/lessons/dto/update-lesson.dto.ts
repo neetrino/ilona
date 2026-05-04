@@ -33,6 +33,11 @@ export class UpdateLessonDto {
   @IsOptional()
   @MaxLength(1000)
   notes?: string;
+
+  /** Admin/manager only: per-lesson substitute (null clears). */
+  @IsString()
+  @IsOptional()
+  substituteTeacherId?: string | null;
 }
 
 

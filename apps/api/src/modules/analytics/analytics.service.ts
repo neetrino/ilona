@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@ilona/database';
 import { PrismaService } from '../prisma/prisma.service';
+import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
 
 // Date utility functions
 function subMonths(date: Date, months: number): Date {
@@ -67,7 +68,7 @@ export class AnalyticsService {
         // Lessons in period
         const lessons = await this.prisma.lesson.findMany({
           where: {
-            teacherId: teacher.id,
+            ...lessonsPayableToTeacherWhere(teacher.id),
             scheduledAt: { gte: from, lte: to },
           },
           include: {

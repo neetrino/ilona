@@ -262,6 +262,7 @@ exports.Prisma.LessonScalarFieldEnum = {
   id: 'id',
   groupId: 'groupId',
   teacherId: 'teacherId',
+  substituteTeacherId: 'substituteTeacherId',
   scheduledAt: 'scheduledAt',
   duration: 'duration',
   topic: 'topic',

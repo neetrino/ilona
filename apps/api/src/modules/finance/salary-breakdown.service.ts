@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, SalaryStatus, LessonStatus } from '@ilona/database';
 import { SalaryCalculationService } from './salary-calculation.service';
 import type { CompletedActions, LessonActionData } from '@ilona/types';
+import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
 
 /** Prisma delegate access for this service. */
 type PrismaDelegates = {
@@ -126,7 +127,7 @@ export class SalaryBreakdownService {
     // Get ALL lessons for this month (not just completed ones)
     const lessons = await this.db.lesson.findMany({
       where: {
-        teacherId,
+        ...lessonsPayableToTeacherWhere(teacherId),
         scheduledAt: {
           gte: startOfMonth,
           lte: endOfMonth,
