@@ -1,8 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useMessages, useSocket, useAddMessageToCache, useCreateDirectChat } from '../hooks';
+import {
+  useMessages,
+  useSocket,
+  useAddMessageToCache,
+  useCreateDirectChat,
+  useChatMessageNavigation,
+} from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
@@ -11,6 +17,7 @@ import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 import { VoiceRecorder } from './VoiceRecorder';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
+import { MessageNavigationControls } from './MessageNavigationControls';
 import { sendMessageHttp } from '../api/chat.api';
 import { formatTime, formatDateSeparator, shouldShowDateSeparator } from '../utils/chat-utils';
 import Image from 'next/image';
@@ -106,6 +113,32 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
 
   // Flatten messages from infinite query
   const messages = messagesData?.pages.flatMap((page) => page.items) || [];
+
+  const filteredMessages = useMemo(
+    () =>
+      messages.filter(
+        (message) => !(message.content === null && message.isSystem)
+      ),
+    [messages]
+  );
+
+  const navigableMessageIds = useMemo(
+    () => filteredMessages.map((m) => m.id),
+    [filteredMessages]
+  );
+
+  const {
+    focusedMessageId,
+    registerMessageElement,
+    goToPrevious,
+    goToNext,
+    canGoPrevious,
+    canGoNext,
+  } = useChatMessageNavigation({
+    navigableMessageIds,
+    chatId: chat.id,
+    endAnchorRef: messagesEndRef,
+  });
 
   // Reset scroll state when switching chats so the new chat gets initial scroll when its messages load
   useEffect(() => {
@@ -528,6 +561,14 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               <span className="hidden sm:inline">Vocabulary</span>
             </button>
           )}
+          {!isLoading && filteredMessages.length >= 2 && (
+            <MessageNavigationControls
+              onPrevious={goToPrevious}
+              onNext={goToNext}
+              canGoPrevious={canGoPrevious}
+              canGoNext={canGoNext}
+            />
+          )}
           <div
             className={cn(
               'w-2 h-2 rounded-full',
@@ -562,20 +603,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
           <div className="flex items-center justify-center py-8">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : messages.length === 0 ? (
+        ) : filteredMessages.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-slate-500">No messages yet</p>
             <p className="text-sm text-slate-400 mt-1">Start the conversation!</p>
           </div>
         ) : (
-          (() => {
-            // Filter out deleted messages (soft deleted from old system)
-            // With hard delete, messages are completely removed, but we filter old soft-deleted ones
-            const filteredMessages = messages.filter(
-              (message) => !(message.content === null && message.isSystem)
-            );
-
-            return filteredMessages.map((message, index) => {
+          filteredMessages.map((message, index) => {
               const isOwn = message.senderId === user?.id;
               const prevMessage = filteredMessages[index - 1];
               const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
@@ -598,7 +632,15 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                     : null;
 
             return (
-              <div key={message.id}>
+              <div
+                key={message.id}
+                ref={(el) => registerMessageElement(message.id, el)}
+                className={cn(
+                  'rounded-lg scroll-mt-8',
+                  focusedMessageId === message.id &&
+                    'ring-2 ring-primary/40 ring-offset-2 ring-offset-slate-50'
+                )}
+              >
                 {/* Date separator */}
                 {showDateSeparator && (
                   <div className="flex items-center justify-center my-4">
@@ -722,8 +764,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                 </div>
               </div>
             );
-          });
-          })()
+          })
         )}
 
         <div ref={messagesEndRef} />
