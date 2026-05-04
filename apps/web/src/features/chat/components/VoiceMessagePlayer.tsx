@@ -2,7 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { getProxiedFileUrl } from '@/shared/lib/api';
+import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+
+const VOICE_SEEK_SKIP_SECONDS = 5;
 
 const PLAYBACK_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 type PlaybackSpeed = (typeof PLAYBACK_SPEED_OPTIONS)[number];
@@ -68,7 +71,13 @@ export function VoiceMessagePlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   /** Progress 0–100 for the progress bar; reset to 0 when starting playback. */
   const [progress, setProgress] = useState(0);
+  const [currentTimeSec, setCurrentTimeSec] = useState(0);
+  /** Total length for UI when metadata loads (fallback if durationProp missing). */
+  const [mediaDurationSec, setMediaDurationSec] = useState(0);
+  const [isScrubbing, setIsScrubbing] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const progressTrackRef = useRef<HTMLDivElement>(null);
+  const isScrubbingRef = useRef(false);
 
   // Hydrate speed from user-scoped localStorage on mount and when user changes (login/logout)
   useEffect(() => {
@@ -102,8 +111,103 @@ export function VoiceMessagePlayer({
     if (el && proxiedUrl) {
       el.currentTime = 0;
       setProgress(0);
+      setCurrentTimeSec(0);
+      setMediaDurationSec(0);
     }
   }, [proxiedUrl]);
+
+  const getEffectiveDuration = (el: HTMLAudioElement | null): number => {
+    if (el?.duration && isFinite(el.duration) && el.duration > 0) {
+      return el.duration;
+    }
+    if (durationProp != null && durationProp > 0) {
+      return durationProp;
+    }
+    return 0;
+  };
+
+  const seekToRatio = (ratio: number) => {
+    const el = audioRef.current;
+    if (!el || isLoading) return;
+    const dur = getEffectiveDuration(el);
+    if (dur <= 0) return;
+    const clamped = Math.max(0, Math.min(1, ratio));
+    el.currentTime = clamped * dur;
+    setProgress(clamped * 100);
+    setCurrentTimeSec(el.currentTime);
+  };
+
+  const seekFromClientX = (clientX: number) => {
+    const track = progressTrackRef.current;
+    if (!track) return;
+    const rect = track.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const ratio = (clientX - rect.left) / rect.width;
+    seekToRatio(ratio);
+  };
+
+  const seekBySeconds = (delta: number) => {
+    const el = audioRef.current;
+    if (!el || isLoading) return;
+    const dur = getEffectiveDuration(el);
+    if (dur <= 0) return;
+    const next = Math.max(0, Math.min(dur, el.currentTime + delta));
+    el.currentTime = next;
+    setProgress((next / dur) * 100);
+    setCurrentTimeSec(next);
+  };
+
+  const endScrubbing = (target: HTMLDivElement, pointerId: number) => {
+    isScrubbingRef.current = false;
+    setIsScrubbing(false);
+    try {
+      target.releasePointerCapture(pointerId);
+    } catch {
+      // already released
+    }
+  };
+
+  const handleProgressPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isLoading) return;
+    e.preventDefault();
+    isScrubbingRef.current = true;
+    setIsScrubbing(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    seekFromClientX(e.clientX);
+  };
+
+  const handleProgressPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isScrubbingRef.current) return;
+    seekFromClientX(e.clientX);
+  };
+
+  const handleProgressPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isScrubbingRef.current) return;
+    endScrubbing(e.currentTarget, e.pointerId);
+  };
+
+  const handleProgressPointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isScrubbingRef.current) return;
+    endScrubbing(e.currentTarget, e.pointerId);
+  };
+
+  const handleProgressKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isLoading) return;
+    const step = 0.05;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      seekToRatio(progress / 100 - step);
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      seekToRatio(progress / 100 + step);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      seekToRatio(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      seekToRatio(1);
+    }
+  };
 
   // Format duration for voice messages (seconds to MM:SS)
   const formatDuration = (seconds: number) => {
@@ -144,12 +248,20 @@ export function VoiceMessagePlayer({
     setIsLoading(false);
   };
 
+  const syncDurationFromElement = () => {
+    const el = audioRef.current;
+    if (el?.duration && isFinite(el.duration) && el.duration > 0) {
+      setMediaDurationSec(el.duration);
+    }
+  };
+
   const handleCanPlay = () => {
     setIsLoading(false);
     setHasError(false);
     if (audioRef.current) {
       audioRef.current.playbackRate = playbackSpeed;
     }
+    syncDurationFromElement();
   };
 
   const handlePlay = () => {
@@ -175,24 +287,28 @@ export function VoiceMessagePlayer({
     }
     setIsPlaying(false);
     const el = audioRef.current;
-    if (el?.duration && isFinite(el.duration)) {
+    const dur = getEffectiveDuration(el);
+    if (dur > 0) {
       setProgress(100);
+      setCurrentTimeSec(dur);
     }
   };
 
   /** Update progress bar from current playback position (smooth, real-time). */
   const handleTimeUpdate = () => {
     const el = audioRef.current;
-    if (!el) return;
+    if (!el || isScrubbingRef.current) return;
     const duration = el.duration;
     if (duration && isFinite(duration) && duration > 0) {
       setProgress((el.currentTime / duration) * 100);
+      setCurrentTimeSec(el.currentTime);
     } else if (durationProp != null && durationProp > 0) {
       setProgress((el.currentTime / durationProp) * 100);
+      setCurrentTimeSec(el.currentTime);
     }
   };
 
-  /** Start from beginning and play; used by custom play button so progress bar starts at 0. */
+  /** Play from current position (after seek / pause); restart only if clip has ended. */
   const handlePlayClick = () => {
     const el = audioRef.current;
     if (!el) return;
@@ -203,8 +319,13 @@ export function VoiceMessagePlayer({
       activeAudioElement.currentTime = 0;
     }
 
-    el.currentTime = 0;
-    setProgress(0);
+    const dur = getEffectiveDuration(el);
+    if (dur > 0 && el.currentTime >= dur - 0.15) {
+      el.currentTime = 0;
+      setProgress(0);
+      setCurrentTimeSec(0);
+    }
+
     el.play().catch(() => {});
   };
 
@@ -240,6 +361,9 @@ export function VoiceMessagePlayer({
       }
     }
   };
+
+  const totalLabelSec =
+    durationProp != null && durationProp > 0 ? durationProp : mediaDurationSec;
 
   if (hasError) {
     return (
@@ -290,6 +414,7 @@ export function VoiceMessagePlayer({
           onPause={handlePause}
           onEnded={handleEnded}
           onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={syncDurationFromElement}
           crossOrigin="anonymous"
         />
         <div className="flex items-center gap-2">
@@ -311,19 +436,51 @@ export function VoiceMessagePlayer({
               </svg>
             )}
           </button>
+          <button
+            type="button"
+            onClick={() => seekBySeconds(-VOICE_SEEK_SKIP_SECONDS)}
+            disabled={isLoading}
+            className="flex-shrink-0 min-w-[2.25rem] h-8 px-1 rounded-full bg-slate-700/80 text-white text-[10px] font-semibold leading-none flex items-center justify-center hover:bg-slate-600 disabled:opacity-40 touch-manipulation"
+            title={`Back ${VOICE_SEEK_SKIP_SECONDS} seconds`}
+            aria-label={`Rewind ${VOICE_SEEK_SKIP_SECONDS} seconds`}
+          >
+            −{VOICE_SEEK_SKIP_SECONDS}
+          </button>
+          <button
+            type="button"
+            onClick={() => seekBySeconds(VOICE_SEEK_SKIP_SECONDS)}
+            disabled={isLoading}
+            className="flex-shrink-0 min-w-[2.25rem] h-8 px-1 rounded-full bg-slate-700/80 text-white text-[10px] font-semibold leading-none flex items-center justify-center hover:bg-slate-600 disabled:opacity-40 touch-manipulation"
+            title={`Forward ${VOICE_SEEK_SKIP_SECONDS} seconds`}
+            aria-label={`Forward ${VOICE_SEEK_SKIP_SECONDS} seconds`}
+          >
+            +{VOICE_SEEK_SKIP_SECONDS}
+          </button>
           <div className="flex-1 min-w-0">
             <div
-              className="h-2 bg-slate-200 rounded-full overflow-hidden"
-              role="progressbar"
+              ref={progressTrackRef}
+              role="slider"
+              tabIndex={0}
               aria-valuenow={Math.round(progress)}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label="Playback progress"
+              aria-label="Playback position; drag or use arrow keys to seek"
+              className="relative py-2 -my-1 cursor-pointer touch-manipulation group"
+              onPointerDown={handleProgressPointerDown}
+              onPointerMove={handleProgressPointerMove}
+              onPointerUp={handleProgressPointerUp}
+              onPointerCancel={handleProgressPointerCancel}
+              onKeyDown={handleProgressKeyDown}
             >
-              <div
-                className="h-full bg-primary transition-[width] duration-75 ease-linear"
-                style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-              />
+              <div className="h-2 bg-slate-200 rounded-full overflow-hidden pointer-events-none">
+                <div
+                  className={cn(
+                    'h-full bg-primary rounded-full group-focus-within:ring-2 group-focus-within:ring-primary/40',
+                    !isScrubbing && 'transition-[width] duration-75 ease-linear'
+                  )}
+                  style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -342,11 +499,11 @@ export function VoiceMessagePlayer({
       >
         {formatSpeedLabel(playbackSpeed)}
       </button>
-      {durationProp != null && (
-        <span className="text-sm font-semibold flex-shrink-0 text-slate-500 tabular-nums">
-          {formatDuration(durationProp)}
+      {totalLabelSec > 0 ? (
+        <span className="text-sm font-semibold flex-shrink-0 text-slate-500 tabular-nums whitespace-nowrap">
+          {formatDuration(currentTimeSec)} / {formatDuration(totalLabelSec)}
         </span>
-      )}
+      ) : null}
     </div>
   );
 }

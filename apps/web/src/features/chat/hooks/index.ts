@@ -28,3 +28,5 @@ export {
   useSocket,
   useSocketStatus,
 } from './useSocket';
+
+export { useChatMessageNavigation } from './useChatMessageNavigation';
