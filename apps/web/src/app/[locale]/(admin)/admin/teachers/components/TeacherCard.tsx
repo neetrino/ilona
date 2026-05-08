@@ -8,6 +8,7 @@ import { TeacherShowcaseCard } from '@/features/teachers';
 import type { Teacher } from '@/features/teachers';
 import type { UserStatus } from '@/types';
 import { getTeacherCenters } from '../utils';
+import { TeacherBranchDisplay } from './TeacherBranchDisplay';
 import { Building2, Mail, Users } from 'lucide-react';
 
 interface TeacherCardProps {
@@ -83,14 +84,6 @@ export function TeacherCard({
           .map((g) => g.name)
           .join(', ') + (groups.length > 4 ? ` +${groups.length - 4}` : '');
 
-  const centersSummary =
-    centers.length === 0
-      ? t('noCenter')
-      : centers
-          .slice(0, 3)
-          .map((c) => c.name)
-          .join(', ') + (centers.length > 3 ? ` +${centers.length - 3}` : '');
-
   return (
     <TeacherShowcaseCard
       teacher={teacher}
@@ -128,9 +121,7 @@ export function TeacherCard({
             </span>
           </AdminMetaRow>
           <AdminMetaRow icon={<Building2 className="h-3.5 w-3.5" />} label={t('center')}>
-            <span className="line-clamp-2 text-slate-700" title={centersSummary}>
-              {centersSummary}
-            </span>
+            <TeacherBranchDisplay centers={centers} t={t} density="default" />
           </AdminMetaRow>
           <div className="flex flex-wrap items-center gap-2 pt-0.5">
             <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">

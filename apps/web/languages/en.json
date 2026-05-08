@@ -269,6 +269,8 @@
     "viewAnalytics": "View Analytics",
     "rate": "Rate",
     "center": "Center",
+    "noBranchAssigned": "No branch assigned",
+    "branchQuickAssign": "Assign branch…",
     "noBranches": "—",
     "loadingTeacherInfo": "Loading teacher information...",
     "errorLoadingTeacherInfo": "Error loading teacher information",

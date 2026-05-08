@@ -4,6 +4,7 @@ import { Avatar } from '@/shared/components/ui';
 import { ActionButtons } from '@/shared/components/ui';
 import { InlineSelect } from '@/features/students';
 import { SelectAllCheckbox } from './SelectAllCheckbox';
+import { TeacherBranchDisplay } from './TeacherBranchDisplay';
 import { cn } from '@/shared/lib/utils';
 import type { Teacher } from '@/features/teachers';
 import { getTeacherCenters, formatLessonRate } from '../utils';
@@ -114,18 +115,24 @@ export function createTeachersTableColumns({
       className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
       render: (teacher: Teacher) => {
         const centers = getTeacherCenters(teacher);
-        const currentCenterId = centers[0]?.id || null;
+        const currentCenterId = centers.length === 1 ? centers[0].id : null;
 
         return (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <div className="min-w-[150px]" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="flex flex-col gap-1.5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="min-w-0">
+              <TeacherBranchDisplay centers={centers} t={t} density="compact" />
+            </div>
+            <div className="min-w-[150px]">
               <InlineSelect
                 value={currentCenterId}
                 options={centerOptions}
                 onChange={async (centerId) => {
                   await onCenterChange(teacher.id, centerId);
                 }}
-                placeholder={t('noBranches')}
+                placeholder={t('branchQuickAssign')}
                 disabled={isUpdating || isDeleting || isLoading}
               />
             </div>
