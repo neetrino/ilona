@@ -26,7 +26,6 @@ const updateGroupSchema = z.object({
   centerId: z.string().min(1, 'Center is required').optional().or(z.literal('')),
   teacherId: z.string().optional().or(z.literal('')),
   substituteTeacherId: z.string().optional().or(z.literal('')),
-  isActive: z.boolean().optional(),
 });
 
 type UpdateGroupFormData = z.infer<typeof updateGroupSchema>;
@@ -46,8 +45,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
   const [hadCalendarOnLoad, setHadCalendarOnLoad] = useState(false);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [lessonTopic, setLessonTopic] = useState('');
-  const [lessonDescription, setLessonDescription] = useState('');
   const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const updateGroup = useUpdateGroup();
@@ -79,7 +76,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       centerId: '',
       teacherId: '',
       substituteTeacherId: '',
-      isActive: true,
     },
   });
   const watchedTeacherId = watch('teacherId');
@@ -94,7 +90,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         centerId: group.centerId,
         teacherId: group.teacherId || '',
         substituteTeacherId: group.substituteTeacherId || '',
-        isActive: group.isActive,
       });
       const normalized = normalizeGroupSchedulePayload(group.schedule);
       setSchedule(normalized.weeklySlots);
@@ -102,14 +97,10 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       if (normalized.calendar) {
         setDateFrom(normalized.calendar.dateFrom);
         setDateTo(normalized.calendar.dateTo);
-        setLessonTopic(normalized.calendar.topic ?? '');
-        setLessonDescription(normalized.calendar.description ?? '');
       } else {
         const r = defaultMonthDateRange();
         setDateFrom(r.from);
         setDateTo(r.to);
-        setLessonTopic('');
-        setLessonDescription('');
       }
       setIconKey(isGroupIconKey(group.iconKey) ? group.iconKey : null);
     }
@@ -132,8 +123,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       calendarPlan = {
         dateFrom,
         dateTo,
-        topic: lessonTopic.trim() || undefined,
-        description: lessonDescription.trim() || undefined,
       };
     } else if (hadCalendarOnLoad) {
       calendarPlan = null;
@@ -151,7 +140,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       schedule: schedule.length > 0 ? schedule : null,
       calendarPlan,
       ...(confirmReplaceGeneratedLessons ? { confirmReplaceGeneratedLessons: true } : {}),
-      isActive: data.isActive,
       iconKey,
     };
   };
@@ -391,25 +379,8 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             dateTo={dateTo}
             onDateFromChange={setDateFrom}
             onDateToChange={setDateTo}
-            lessonTopic={lessonTopic}
-            onLessonTopicChange={setLessonTopic}
-            lessonDescription={lessonDescription}
-            onLessonDescriptionChange={setLessonDescription}
             disabled={isSubmitting || updateGroup.isPending}
           />
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="isActive"
-              {...register('isActive')}
-              className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
-              disabled={isSubmitting}
-            />
-            <Label htmlFor="isActive" className="font-normal cursor-pointer">
-              Active (Group is currently active and accepting students)
-            </Label>
-          </div>
 
           <DialogFooter>
             <Button

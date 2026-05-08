@@ -21,7 +21,6 @@ const createGroupSchema = z.object({
   centerId: z.string().min(1, 'Please select a center'),
   teacherId: z.string().optional().or(z.literal('')),
   substituteTeacherId: z.string().optional().or(z.literal('')),
-  isActive: z.boolean().optional(),
 });
 
 type CreateGroupFormData = z.infer<typeof createGroupSchema>;
@@ -38,8 +37,6 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
   const [dateFrom, setDateFrom] = useState(() => defaultMonthDateRange().from);
   const [dateTo, setDateTo] = useState(() => defaultMonthDateRange().to);
-  const [lessonTopic, setLessonTopic] = useState('');
-  const [lessonDescription, setLessonDescription] = useState('');
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const createGroup = useCreateGroup();
 
@@ -68,7 +65,6 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       centerId: defaultCenterId || '',
       teacherId: '',
       substituteTeacherId: '',
-      isActive: true,
     },
   });
   const watchedTeacherId = watch('teacherId');
@@ -92,14 +88,11 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         centerId: defaultCenterId || '',
         teacherId: '',
         substituteTeacherId: '',
-        isActive: true,
       });
       setSchedule([]);
       const r = defaultMonthDateRange();
       setDateFrom(r.from);
       setDateTo(r.to);
-      setLessonTopic('');
-      setLessonDescription('');
       setIconKey(null);
       setErrorMessage(null);
       setSuccessMessage(null);
@@ -146,16 +139,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         teacherId: data.teacherId || undefined,
         substituteTeacherId: data.substituteTeacherId || undefined,
         schedule: schedule.length > 0 ? schedule : undefined,
-        calendarPlan:
-          schedule.length > 0
-            ? {
-                dateFrom,
-                dateTo,
-                topic: lessonTopic.trim() || undefined,
-                description: lessonDescription.trim() || undefined,
-              }
-            : undefined,
-        isActive: data.isActive ?? true,
+        calendarPlan: schedule.length > 0 ? { dateFrom, dateTo } : undefined,
         ...(iconKey ? { iconKey } : {}),
       };
 
@@ -172,14 +156,11 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         centerId: defaultCenterId || '',
         teacherId: '',
         substituteTeacherId: '',
-        isActive: true,
       });
       setSchedule([]);
       const r = defaultMonthDateRange();
       setDateFrom(r.from);
       setDateTo(r.to);
-      setLessonTopic('');
-      setLessonDescription('');
       setIconKey(null);
       setTimeout(() => {
         onOpenChange(false);
@@ -335,26 +316,8 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
             dateTo={dateTo}
             onDateFromChange={setDateFrom}
             onDateToChange={setDateTo}
-            lessonTopic={lessonTopic}
-            onLessonTopicChange={setLessonTopic}
-            lessonDescription={lessonDescription}
-            onLessonDescriptionChange={setLessonDescription}
             disabled={isSubmitting || createGroup.isPending}
           />
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="isActive"
-              {...register('isActive')}
-              defaultChecked={true}
-              className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
-              disabled={isSubmitting || createGroup.isPending}
-            />
-            <Label htmlFor="isActive" className="font-normal cursor-pointer">
-              Active (Group is currently active and accepting students)
-            </Label>
-          </div>
 
           <DialogFooter>
             <Button
