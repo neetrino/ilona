@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge, Input, Label } from '@/shared/components/ui';
-import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
+import type { WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
 import type { Teacher } from '@/features/teachers';
 import { getExperienceYearsFromHireDate, formatExperienceLabel } from '@/features/teachers/utils/experience';
 import { DAYS_OF_WEEK } from '../schemas';
@@ -16,7 +16,6 @@ interface TeacherDetailsProps {
   errors?: {
     phone?: { message?: string };
     experienceYears?: { message?: string };
-    workingHours?: { message?: string };
   };
   register: UseFormRegister<UpdateTeacherFormData>;
   watch: UseFormWatch<UpdateTeacherFormData>;
@@ -138,13 +137,6 @@ export function TeacherDetails({
                     );
                   })}
                 </div>
-              </div>
-              <div className="space-y-2">
-                <WeeklySchedule
-                  value={watch('workingHours')}
-                  onChange={(schedule) => setValue('workingHours', schedule)}
-                  error={errors?.workingHours?.message}
-                />
               </div>
             </>
           ) : (
