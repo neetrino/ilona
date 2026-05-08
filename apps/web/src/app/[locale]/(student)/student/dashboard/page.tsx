@@ -109,6 +109,13 @@ export default function StudentDashboardPage() {
       minute: '2-digit',
     });
 
+  const formatLessonCalendarDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString(locale, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+
   return (
     <DashboardLayout 
       title={t('myLearning')} 
@@ -145,11 +152,24 @@ export default function StudentDashboardPage() {
         <StudentNotesBlock />
 
         {/* Next upcoming lesson */}
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <div className="border-b border-slate-200 p-4 sm:p-5">
-            <h2 className="text-lg font-semibold text-slate-800">{t('upcomingLessonsTitle')}</h2>
+        <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm shadow-slate-200/40">
+          <div className="border-b border-slate-100 bg-gradient-to-br from-sky-50/90 via-white to-white px-4 py-5 sm:px-6 sm:py-6">
+            <div className="flex items-start gap-3">
+              <span
+                className="mt-1.5 hidden h-9 w-1 shrink-0 rounded-full bg-gradient-to-b from-sky-400 to-sky-600 sm:block"
+                aria-hidden
+              />
+              <div className="min-w-0">
+                <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+                  {t('upcomingLessonsTitle')}
+                </h2>
+                <p className="mt-1.5 max-w-md text-sm leading-relaxed text-slate-600 sm:text-[15px]">
+                  {t('upcomingLessonsSubtitle')}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="p-4 sm:p-6">
+          <div className="p-5 sm:p-7">
             {isLoading ? (
               <div className="animate-pulse space-y-4" aria-hidden>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -163,13 +183,13 @@ export default function StudentDashboardPage() {
                 </div>
               </div>
             ) : !nextLesson ? (
-              <p className="py-8 text-center text-sm leading-relaxed text-slate-500 sm:py-10">
+              <p className="mx-auto max-w-sm py-10 text-center text-[15px] font-medium leading-relaxed text-slate-600 sm:py-12 sm:text-base">
                 {t('noUpcomingLessons')}
               </p>
             ) : (
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
+              <div className="flex flex-col gap-7 sm:flex-row sm:items-start sm:gap-10">
                 <div className="flex shrink-0 justify-center sm:justify-start">
-                  <div className="rounded-2xl bg-sky-50 p-4 sm:p-5">
+                  <div className="rounded-2xl bg-gradient-to-br from-sky-100 to-sky-50/80 p-4 ring-1 ring-sky-100/80 sm:p-5">
                     <svg
                       className="h-10 w-10 text-sky-600 sm:h-12 sm:w-12"
                       fill="none"
@@ -186,40 +206,47 @@ export default function StudentDashboardPage() {
                     </svg>
                   </div>
                 </div>
-                <dl className="min-w-0 flex-1 space-y-5">
+                <dl className="min-w-0 flex-1 space-y-6">
                   <div>
-                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    <dt className="text-sm font-medium text-slate-500">
                       {tCommon('date')}
                     </dt>
-                    <dd className="mt-1.5 flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
-                      <span className="text-lg font-semibold text-slate-900 sm:text-xl">
-                        {formatLessonDateLabel(nextLesson.scheduledAt)}
-                      </span>
-                      <span className="text-base text-slate-600">{formatLessonTime(nextLesson.scheduledAt)}</span>
+                    <dd className="mt-2 space-y-1.5">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-3">
+                        <span className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[1.65rem]">
+                          {formatLessonDateLabel(nextLesson.scheduledAt)}
+                        </span>
+                        <span className="text-lg font-medium tabular-nums text-sky-700">
+                          {formatLessonTime(nextLesson.scheduledAt)}
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium leading-snug text-slate-600 sm:text-[15px]">
+                        {formatLessonCalendarDate(nextLesson.scheduledAt)}
+                      </p>
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    <dt className="text-sm font-medium text-slate-500">
                       {tCommon('searchTypeLesson')}
                     </dt>
-                    <dd className="mt-1.5 break-words text-base font-semibold text-slate-900 sm:text-lg">
+                    <dd className="mt-2 break-words text-lg font-semibold leading-snug text-slate-800 sm:text-xl">
                       {nextLesson.topic?.trim() || tCommon('searchTypeLesson')}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    <dt className="text-sm font-medium text-slate-500">
                       {t('nextLessonTeacherLabel')}
                     </dt>
-                    <dd className="mt-1.5">
+                    <dd className="mt-2">
                       {nextLessonTeacherDisplay ? (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3.5">
                           <div
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-700"
+                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-200/90 text-sm font-semibold text-slate-700 ring-1 ring-slate-200/80"
                             aria-hidden
                           >
                             {nextLessonTeacherDisplay.initials}
                           </div>
-                          <span className="text-base text-slate-800 sm:text-lg">
+                          <span className="text-lg font-medium text-slate-900">
                             {nextLessonTeacherDisplay.full || '—'}
                           </span>
                         </div>

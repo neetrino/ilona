@@ -227,6 +227,7 @@
     "paymentsRatio": "{paid} paid / {due} due",
     "unexcusedAbsencesShort": "{count} unexcused absences",
     "upcomingLessonsTitle": "Upcoming Lessons",
+    "upcomingLessonsSubtitle": "Your next class, at a glance.",
     "noUpcomingLessons": "No upcoming lessons scheduled.",
     "nextLessonTeacherLabel": "Teacher"
   },

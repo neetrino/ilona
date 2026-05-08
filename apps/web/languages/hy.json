@@ -227,6 +227,7 @@
     "paymentsRatio": "{paid} վճարված / {due} պարտք",
     "unexcusedAbsencesShort": "{count} չհիմնավորված բացակայություն",
     "upcomingLessonsTitle": "Առաջիկա դասեր",
+    "upcomingLessonsSubtitle": "Ձեր հաջորդ դասը՝ մեկ հայացքով։",
     "noUpcomingLessons": "Առաջիկա դասեր պլանավորված չեն։",
     "nextLessonTeacherLabel": "Ուսուցիչ"
   },
