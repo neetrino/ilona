@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -216,39 +216,6 @@ export default function AdminRecordingPage() {
     dateTo,
   ]);
 
-  const apiFilters = useMemo(() => {
-    const groupIds = Array.from(selectedGroupIds).sort();
-    if (groupIds.length === 0) {
-      return {};
-    }
-    const studentIds = Array.from(selectedStudentUserIds).sort();
-    return {
-      ...(groupIds.length ? { groupIds } : {}),
-      ...(studentIds.length ? { studentIds } : {}),
-      ...(search.trim() ? { search: search.trim() } : {}),
-    };
-  }, [selectedGroupIds, selectedStudentUserIds, search]);
-
-  const apiFiltersKey = useMemo(
-    () =>
-      JSON.stringify({
-        groupIds: apiFilters.groupIds ?? [],
-        studentIds: apiFilters.studentIds ?? [],
-        search: apiFilters.search ?? '',
-      }),
-    [apiFilters],
-  );
-
-  const hasGroupSelection = selectedGroupIds.size > 0;
-
-  const { data: recordings = [], isLoading } = useQuery({
-    queryKey: [...chatKeys.all, 'admin', 'student-recordings', apiFiltersKey],
-    queryFn: () => fetchAdminStudentRecordings(apiFilters),
-    enabled: hasGroupSelection,
-    refetchInterval: 15_000,
-    refetchOnWindowFocus: true,
-  });
-
   const { data: allGroups = [], isLoading: isLoadingGroups } = useQuery({
     queryKey: [...chatKeys.all, 'admin', 'recordings-directory', 'groups'],
     queryFn: fetchAllGroups,
@@ -320,54 +287,122 @@ export default function AdminRecordingPage() {
     }));
   }, [studentDirectory, selectedGroupIds]);
 
-  // Prune stale selections when directory loads
-  const pruneSelections = useCallback(() => {
+  const isAllGroupsSelected =
+    groupOptions.length > 0 &&
+    selectedGroupIds.size === groupOptions.length &&
+    groupOptions.every((g) => selectedGroupIds.has(g.id));
+
+  const isAllStudentsSelected =
+    studentMultiOptions.length > 0 &&
+    selectedStudentUserIds.size === studentMultiOptions.length &&
+    studentMultiOptions.every((s) => selectedStudentUserIds.has(s.id));
+
+  const apiFilters = useMemo(() => {
+    const shouldOmitGroupIds =
+      groupOptions.length === 0 ||
+      selectedGroupIds.size === 0 ||
+      isAllGroupsSelected;
+    const groupIds = shouldOmitGroupIds
+      ? undefined
+      : Array.from(selectedGroupIds).sort();
+
+    const shouldOmitStudentIds =
+      studentMultiOptions.length === 0 ||
+      selectedStudentUserIds.size === 0 ||
+      isAllStudentsSelected;
+    const studentIds = shouldOmitStudentIds
+      ? undefined
+      : Array.from(selectedStudentUserIds).sort();
+
+    return {
+      ...(groupIds?.length ? { groupIds } : {}),
+      ...(studentIds?.length ? { studentIds } : {}),
+      ...(search.trim() ? { search: search.trim() } : {}),
+    };
+  }, [
+    groupOptions.length,
+    selectedGroupIds,
+    isAllGroupsSelected,
+    studentMultiOptions.length,
+    selectedStudentUserIds,
+    isAllStudentsSelected,
+    search,
+  ]);
+
+  const apiFiltersKey = useMemo(
+    () =>
+      JSON.stringify({
+        groupIds: apiFilters.groupIds ?? [],
+        studentIds: apiFilters.studentIds ?? [],
+        search: apiFilters.search ?? '',
+      }),
+    [apiFilters],
+  );
+
+  const { data: recordings = [], isLoading } = useQuery({
+    queryKey: [...chatKeys.all, 'admin', 'student-recordings', apiFiltersKey],
+    queryFn: () => fetchAdminStudentRecordings(apiFilters),
+    enabled: isHydrated && !isLoadingDirectory,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
+  });
+
+  // Prune invalid group ids; default to all groups when nothing valid remains (after load or clear).
+  useEffect(() => {
+    if (!isHydrated || isLoadingDirectory) return;
     setSelectedGroupIds((prev) => {
       const validIds = new Set(groupOptions.map((g) => g.id));
-      const next = new Set<string>();
+      if (validIds.size === 0) {
+        return prev.size === 0 ? prev : new Set();
+      }
+      const pruned = new Set<string>();
       prev.forEach((id) => {
-        if (validIds.has(id)) next.add(id);
+        if (validIds.has(id)) pruned.add(id);
       });
-      return next;
-    });
-    setSelectedStudentUserIds((prev) => {
-      const valid = new Set(studentDirectory.map((s) => s.userId));
-      const next = new Set<string>();
-      prev.forEach((id) => {
-        if (valid.has(id)) next.add(id);
-      });
-      return next;
-    });
-  }, [groupOptions, studentDirectory]);
-
-  useEffect(() => {
-    if (!isHydrated || isLoadingDirectory) return;
-    pruneSelections();
-  }, [isHydrated, isLoadingDirectory, pruneSelections]);
-
-  // Drop student selections that aren't in current group filter
-  useEffect(() => {
-    if (!isHydrated || isLoadingDirectory) return;
-    setSelectedStudentUserIds((prev) => {
-      const next = new Set<string>();
-      prev.forEach((uid) => {
-        if (allowedStudentUserIds.has(uid)) next.add(uid);
-      });
+      const next = pruned.size > 0 ? pruned : validIds;
       if (next.size === prev.size && [...prev].every((id) => next.has(id))) {
         return prev;
       }
       return next;
     });
-  }, [isHydrated, isLoadingDirectory, allowedStudentUserIds]);
+  }, [isHydrated, isLoadingDirectory, groupOptions, selectedGroupIds]);
+
+  // Keep student selection in sync with allowed set; default to all allowed when empty.
+  useEffect(() => {
+    if (!isHydrated || isLoadingDirectory) return;
+    setSelectedStudentUserIds((prev) => {
+      if (allowedStudentUserIds.size === 0) {
+        return prev.size === 0 ? prev : new Set();
+      }
+      const pruned = new Set<string>();
+      prev.forEach((uid) => {
+        if (allowedStudentUserIds.has(uid)) pruned.add(uid);
+      });
+      const next =
+        pruned.size > 0 ? pruned : new Set(allowedStudentUserIds);
+      if (next.size === prev.size && [...prev].every((id) => next.has(id))) {
+        return prev;
+      }
+      return next;
+    });
+  }, [
+    isHydrated,
+    isLoadingDirectory,
+    allowedStudentUserIds,
+    selectedStudentUserIds,
+  ]);
 
   const visibleRecordings = useMemo(() => {
-    if (!hasGroupSelection) return [];
-
-    const studentRows = studentDirectory.filter((student) =>
-      selectedGroupIds.has(directoryStudentGroupKey(student.groupId)),
-    );
+    const studentRows = studentDirectory.filter((student) => {
+      if (isAllGroupsSelected || selectedGroupIds.size === 0) {
+        return true;
+      }
+      return selectedGroupIds.has(directoryStudentGroupKey(student.groupId));
+    });
     const selectedStudentFilter =
-      selectedStudentUserIds.size > 0 ? selectedStudentUserIds : null;
+      !isAllStudentsSelected && selectedStudentUserIds.size > 0
+        ? selectedStudentUserIds
+        : null;
     const fromTs = dateFrom ? new Date(`${dateFrom}T00:00:00`).getTime() : null;
     const toTs = dateTo ? new Date(`${dateTo}T23:59:59.999`).getTime() : null;
     const recordingsByStudent = new Map<string, AdminStudentRecording>();
@@ -419,10 +454,11 @@ export default function AdminRecordingPage() {
       }))
       .sort((a, b) => a.studentFullName.localeCompare(b.studentFullName));
   }, [
-    hasGroupSelection,
     studentDirectory,
     selectedGroupIds,
+    isAllGroupsSelected,
     selectedStudentUserIds,
+    isAllStudentsSelected,
     recordings,
     search,
     dateFrom,
@@ -665,9 +701,9 @@ export default function AdminRecordingPage() {
                     colSpan={5}
                     className="px-4 py-10 text-center text-sm text-slate-500"
                   >
-                    {hasGroupSelection
-                      ? 'No students found for the selected filters.'
-                      : 'Select a group to view students and recordings.'}
+                    {studentDirectory.length === 0
+                      ? 'No students in the directory yet.'
+                      : 'No students found for the selected filters.'}
                   </td>
                 </tr>
               ) : (
