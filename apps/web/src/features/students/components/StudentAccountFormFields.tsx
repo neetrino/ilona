@@ -1,7 +1,7 @@
 'use client';
 
 import type { FieldErrors, UseFormRegister, UseFormWatch } from 'react-hook-form';
-import { Input, Label } from '@/shared/components/ui';
+import { Input, Label, PasswordInput } from '@/shared/components/ui';
 import type { CreateStudentFormData } from '../student-account-form.schema';
 
 export type StudentAccountTeacherOption = {
@@ -123,9 +123,8 @@ export function StudentAccountFormFields({
         <Label htmlFor={p('password')}>
           Password <span className="text-red-500">*</span>
         </Label>
-        <Input
+        <PasswordInput
           id={p('password')}
-          type="password"
           {...register('password')}
           error={errors.password?.message}
           placeholder="••••••••"

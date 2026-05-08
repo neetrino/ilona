@@ -1,6 +1,7 @@
 'use client';
 
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import { PasswordInput } from '@/shared/components/ui';
 import type { CreateStudentFormData } from '../student-account-form.schema';
 import type { StudentAccountGroupOption, StudentAccountTeacherOption } from './StudentAccountFormFields';
 
@@ -132,14 +133,13 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <label htmlFor={p('password')} className="mb-1 block text-sm font-medium text-slate-700">
               Password <span className="text-red-500">*</span>
             </label>
-            <input
+            <PasswordInput
               id={p('password')}
-              type="password"
               autoComplete="new-password"
               {...register('password')}
               className={inputClass}
+              error={errors.password?.message}
             />
-            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
           </div>
         </div>
       </section>

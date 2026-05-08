@@ -3,7 +3,18 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
+import {
+  Button,
+  Input,
+  Label,
+  PasswordInput,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/shared/components/ui';
 import { useCreateTeacher, type CreateTeacherDto } from '@/features/teachers';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -179,9 +190,8 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
             <Label htmlFor="password">
               Password <span className="text-red-500">*</span>
             </Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               {...register('password')}
               error={errors.password?.message}
               placeholder="••••••••"
