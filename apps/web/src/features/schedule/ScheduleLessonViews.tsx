@@ -3,7 +3,11 @@
 import { useMemo } from 'react';
 import type { Lesson } from '@/features/lessons';
 import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
-import { formatScheduleDate, scheduleDateKeyFromIso } from '@/features/schedule/schedule-dates';
+import {
+  formatScheduleDate,
+  getScheduleCardDayStatus,
+  scheduleDateKeyFromIso,
+} from '@/features/schedule/schedule-dates';
 import { cn } from '@/shared/lib/utils';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -14,6 +18,8 @@ interface WeekLessonGridProps {
   weekDates: Date[];
   lessons: Lesson[];
   isLoading?: boolean;
+  /** When true, lesson days before today use the past (green) card style (admin/manager schedule). */
+  highlightPastLessonCards?: boolean;
 }
 
 interface MonthLessonGridProps {
@@ -21,6 +27,7 @@ interface MonthLessonGridProps {
   lessonsByDate: Record<string, Lesson[]>;
   isLoading?: boolean;
   className?: string;
+  highlightPastLessonCards?: boolean;
 }
 
 function formatTime(dateString: string): string {
@@ -45,10 +52,19 @@ function getLessonTimeBounds(lesson: Lesson): { start: number; end: number } | n
   return { start, end };
 }
 
-function lessonCardTone(status: Lesson['status']): string {
-  if (status === 'COMPLETED') return 'border-green-200 bg-green-50';
-  if (status === 'IN_PROGRESS') return 'border-amber-200 bg-amber-50';
-  if (status === 'CANCELLED' || status === 'MISSED') {
+const PAST_LESSON_CARD_CLASSES = 'border-green-200 bg-green-50';
+
+function lessonCardTone(
+  lesson: Lesson,
+  options: { highlightPastLessonCards: boolean },
+): string {
+  const dayStatus = getScheduleCardDayStatus(lesson.scheduledAt);
+  if (options.highlightPastLessonCards && dayStatus === 'past') {
+    return PAST_LESSON_CARD_CLASSES;
+  }
+  if (lesson.status === 'COMPLETED') return 'border-green-200 bg-green-50';
+  if (lesson.status === 'IN_PROGRESS') return 'border-amber-200 bg-amber-50';
+  if (lesson.status === 'CANCELLED' || lesson.status === 'MISSED') {
     return 'border-slate-200 bg-slate-100';
   }
   return 'border-primary/15 bg-primary/5';
@@ -57,9 +73,11 @@ function lessonCardTone(status: Lesson['status']): string {
 function LessonCard({
   lesson,
   variant = 'cell',
+  highlightPastLessonCards = false,
 }: {
   lesson: Lesson;
   variant?: 'cell' | 'dialog';
+  highlightPastLessonCards?: boolean;
 }) {
   const compact = variant === 'cell';
   const teacherName = `${lesson.teacher?.user?.firstName ?? ''} ${lesson.teacher?.user?.lastName ?? ''}`.trim() || 'No teacher';
@@ -70,7 +88,7 @@ function LessonCard({
 
   return (
     <div
-      className={`rounded-md border leading-tight ${lessonCardTone(lesson.status)} ${compact ? 'px-1.5 py-0.5 text-[9px] sm:px-1.5 sm:py-1 sm:text-[10px]' : 'px-2.5 py-2 text-sm'}`}
+      className={`rounded-md border leading-tight ${lessonCardTone(lesson, { highlightPastLessonCards })} ${compact ? 'px-1.5 py-0.5 text-[9px] sm:px-1.5 sm:py-1 sm:text-[10px]' : 'px-2.5 py-2 text-sm'}`}
     >
       <div className="font-semibold text-slate-800 truncate" title={lesson.group?.name}>
         {lesson.group?.name ?? 'Unknown group'}
@@ -88,7 +106,12 @@ function LessonCard({
   );
 }
 
-export function WeekLessonGrid({ weekDates, lessons, isLoading }: WeekLessonGridProps) {
+export function WeekLessonGrid({
+  weekDates,
+  lessons,
+  isLoading,
+  highlightPastLessonCards = false,
+}: WeekLessonGridProps) {
   const { slots, cells, totalLessons } = useMemo(() => {
     const groupedByDay = weekDates.map((date) => {
       const dayKey = formatScheduleDate(date);
@@ -174,7 +197,11 @@ export function WeekLessonGrid({ weekDates, lessons, isLoading }: WeekLessonGrid
                   >
                     <div className="space-y-0.5">
                       {items.map((lesson) => (
-                        <LessonCard key={lesson.id} lesson={lesson} />
+                        <LessonCard
+                          key={lesson.id}
+                          lesson={lesson}
+                          highlightPastLessonCards={highlightPastLessonCards}
+                        />
                       ))}
                     </div>
                   </td>
@@ -193,6 +220,7 @@ export function MonthLessonGrid({
   lessonsByDate,
   isLoading,
   className,
+  highlightPastLessonCards = false,
 }: MonthLessonGridProps) {
   const totalInMonth = useMemo(
     () => Object.values(lessonsByDate).reduce((n, list) => n + list.length, 0),
@@ -219,7 +247,11 @@ export function MonthLessonGrid({
       getLessonKey={(l) => l.id}
       getSortTime={(l) => new Date(l.scheduledAt).getTime()}
       renderLesson={({ lesson, variant }) => (
-        <LessonCard lesson={lesson} variant={variant} />
+        <LessonCard
+          lesson={lesson}
+          variant={variant}
+          highlightPastLessonCards={highlightPastLessonCards}
+        />
       )}
       isLoading={isLoading}
       className={className}

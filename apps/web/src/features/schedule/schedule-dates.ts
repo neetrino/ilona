@@ -82,6 +82,38 @@ export function scheduleDateKeyFromIso(iso: string): string | null {
   return formatScheduleDate(t);
 }
 
+/** Day bucket for a lesson relative to "today" in the local calendar (same basis as the schedule grid). */
+export type ScheduleCardDayStatus = 'past' | 'today' | 'future';
+
+/**
+ * Compares the lesson's local calendar date to `referenceDate`'s calendar date only (no time-of-day).
+ * Uses the same local YYYY-MM-DD keys as `scheduleDateKeyFromIso` / week and month views.
+ */
+export function getScheduleCardDayStatus(
+  scheduledAtIso: string,
+  referenceDate: Date = new Date(),
+): ScheduleCardDayStatus {
+  const lessonKey = scheduleDateKeyFromIso(scheduledAtIso);
+  if (!lessonKey) {
+    return 'future';
+  }
+  const todayKey = formatScheduleDate(referenceDate);
+  if (lessonKey < todayKey) {
+    return 'past';
+  }
+  if (lessonKey > todayKey) {
+    return 'future';
+  }
+  return 'today';
+}
+
+export function isPastLessonCalendarDay(
+  scheduledAtIso: string,
+  referenceDate: Date = new Date(),
+): boolean {
+  return getScheduleCardDayStatus(scheduledAtIso, referenceDate) === 'past';
+}
+
 export function getMonthDates(anchor: Date): (Date | null)[][] {
   const year = anchor.getFullYear();
   const month = anchor.getMonth();
