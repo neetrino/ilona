@@ -828,7 +828,20 @@
     "inProgress": "In Progress",
     "completed": "Completed",
     "cancelled": "Cancelled",
-    "noLessons": "No lessons"
+    "noLessons": "No lessons",
+    "sectionUpcoming": "Upcoming lessons",
+    "sectionToday": "Today's lessons",
+    "sectionCompleted": "Completed lessons",
+    "scheduleCategoryColumn": "Schedule",
+    "scheduleStatusUpcoming": "Upcoming",
+    "scheduleStatusNext": "Next",
+    "scheduleStatusToday": "Today",
+    "scheduleStatusCompleted": "Completed",
+    "scheduleTodayPastSlot": "Past",
+    "paginationPrevious": "Previous",
+    "paginationNext": "Next",
+    "paginationPageOf": "Page {current} of {total}",
+    "paginationSummary": "Showing {showingFrom}–{showingTo} of {total}"
   }
 }
 

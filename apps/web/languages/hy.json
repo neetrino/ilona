@@ -828,6 +828,19 @@
     "inProgress": "Ընթանում է",
     "completed": "Ավարտված",
     "cancelled": "Չեղարկված",
-    "noLessons": "Դասեր չկան"
+    "noLessons": "Դասեր չկան",
+    "sectionUpcoming": "Առաջիկա դասեր",
+    "sectionToday": "Այսօրվա դասեր",
+    "sectionCompleted": "Ավարտված դասեր",
+    "scheduleCategoryColumn": "Ժամանակացույց",
+    "scheduleStatusUpcoming": "Առաջիկա",
+    "scheduleStatusNext": "Հաջորդը",
+    "scheduleStatusToday": "Այսօր",
+    "scheduleStatusCompleted": "Ավարտված",
+    "scheduleTodayPastSlot": "Անցած",
+    "paginationPrevious": "Նախորդը",
+    "paginationNext": "Հաջորդը",
+    "paginationPageOf": "Էջ {current} / {total}",
+    "paginationSummary": "Ցուցադրվում է {showingFrom}–{showingTo} / {total}"
   }
 }

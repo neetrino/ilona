@@ -125,6 +125,7 @@ export default function TeacherCalendarPage() {
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
+            teacherTemporalList
           />
           <BulkDeleteConfirmationDialog
             open={isBulkDeleteDialogOpen}
