@@ -28,6 +28,8 @@
     "submit": "Ուղարկել",
     "close": "Փակել",
     "retry": "Կրկին փորձել",
+    "today": "Այսօր",
+    "tomorrow": "Վաղը",
     "yes": "Այո",
     "no": "Ոչ",
     "all": "Բոլորը",
@@ -223,7 +225,10 @@
     "lessonsRatio": "{present}/{total} դաս",
     "recordingsRatio": "{submitted}/{total} ուղարկված",
     "paymentsRatio": "{paid} վճարված / {due} պարտք",
-    "unexcusedAbsencesShort": "{count} չհիմնավորված բացակայություն"
+    "unexcusedAbsencesShort": "{count} չհիմնավորված բացակայություն",
+    "upcomingLessonsTitle": "Առաջիկա դասեր",
+    "noUpcomingLessons": "Առաջիկա դասեր պլանավորված չեն։",
+    "nextLessonTeacherLabel": "Ուսուցիչ"
   },
   "teachers": {
     "title": "Ուսուցիչներ",

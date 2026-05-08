@@ -29,6 +29,7 @@
     "close": "Close",
     "retry": "Retry",
     "today": "Today",
+    "tomorrow": "Tomorrow",
     "yes": "Yes",
     "no": "No",
     "all": "All",
@@ -224,7 +225,10 @@
     "lessonsRatio": "{present}/{total} lessons",
     "recordingsRatio": "{submitted}/{total} submitted",
     "paymentsRatio": "{paid} paid / {due} due",
-    "unexcusedAbsencesShort": "{count} unexcused absences"
+    "unexcusedAbsencesShort": "{count} unexcused absences",
+    "upcomingLessonsTitle": "Upcoming Lessons",
+    "noUpcomingLessons": "No upcoming lessons scheduled.",
+    "nextLessonTeacherLabel": "Teacher"
   },
   "teachers": {
     "title": "Teachers",

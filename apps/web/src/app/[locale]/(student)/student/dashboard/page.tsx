@@ -1,12 +1,30 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
+import { StatCard, Button } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMyDashboard, type StudentUpcomingLesson } from '@/features/students';
 import { formatCurrency } from '@/shared/lib/utils';
 import { StudentNotesBlock } from '@/features/student-notes';
+
+function isSameLocalCalendarDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function pickNextUpcomingLesson(lessons: StudentUpcomingLesson[]): StudentUpcomingLesson | null {
+  const now = Date.now();
+  const candidates = lessons
+    .map((lesson) => ({ lesson, t: new Date(lesson.scheduledAt).getTime() }))
+    .filter(({ t }) => t > now)
+    .sort((x, y) => x.t - y.t);
+  return candidates[0]?.lesson ?? null;
+}
 
 type ProgressTone = 'emerald' | 'sky' | 'amber';
 
@@ -48,112 +66,48 @@ function ProgressFactor({
 export default function StudentDashboardPage() {
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const { user } = useAuthStore();
-  
-  // Fetch student dashboard data
+
   const { data: dashboard, isLoading } = useMyDashboard();
 
   const upcomingLessons = dashboard?.upcomingLessons || [];
+  const nextLesson = useMemo(
+    () => pickNextUpcomingLesson(upcomingLessons),
+    [upcomingLessons],
+  );
+  const nextLessonTeacherDisplay = useMemo(() => {
+    if (!nextLesson) return null;
+    const firstName = nextLesson.teacher?.user?.firstName || '';
+    const lastName = nextLesson.teacher?.user?.lastName || '';
+    const full = `${firstName} ${lastName}`.trim();
+    const initials = `${firstName.charAt(0) || ''}${lastName.charAt(0) || ''}` || '?';
+    return { full, initials };
+  }, [nextLesson]);
   const stats = dashboard?.statistics;
   const pendingPayments = dashboard?.pendingPayments || [];
 
-  // Calculate stats
   const attendanceRate = stats?.attendance?.rate || 0;
   const totalLessons = stats?.attendance?.total || 0;
   const pendingPaymentAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
   const nextPayment = pendingPayments[0];
-  const formatDate = (dateStr: string) => {
+
+  const formatLessonDateLabel = (dateStr: string) => {
     const date = new Date(dateStr);
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    if (isSameLocalCalendarDay(date, today)) return tCommon('today');
+    if (isSameLocalCalendarDay(date, tomorrow)) return tCommon('tomorrow');
+    return date.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
   };
 
-  const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString('en-US', {
+  const formatLessonTime = (dateStr: string) =>
+    new Date(dateStr).toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false,
     });
-  };
-
-  // Check if lesson is starting soon (within 30 min)
-  const isStartingSoon = (dateStr: string) => {
-    const lessonTime = new Date(dateStr).getTime();
-    const now = Date.now();
-    const diff = lessonTime - now;
-    return diff > 0 && diff < 30 * 60 * 1000; // 30 minutes
-  };
-
-  const lessonColumns = [
-    {
-      key: 'date',
-      header: 'Date',
-      render: (lesson: StudentUpcomingLesson) => (
-        <div className="text-center">
-          <p className="font-semibold text-slate-800">{formatDate(lesson.scheduledAt)}</p>
-          <p className="text-sm text-slate-500">{formatTime(lesson.scheduledAt)}</p>
-        </div>
-      ),
-    },
-    {
-      key: 'lesson',
-      header: 'Lesson',
-      render: (lesson: StudentUpcomingLesson) => (
-        <div>
-          <p className="font-semibold text-slate-800">{lesson.topic || 'Lesson'}</p>
-          <p className="text-sm text-slate-500">{lesson.duration} min</p>
-        </div>
-      ),
-    },
-    {
-      key: 'teacher',
-      header: 'Teacher',
-      render: (lesson: StudentUpcomingLesson) => {
-        const firstName = lesson.teacher?.user?.firstName || '';
-        const lastName = lesson.teacher?.user?.lastName || '';
-        const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
-        return (
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 text-sm font-medium">
-              {initials}
-            </div>
-            <span className="text-slate-700">{firstName} {lastName}</span>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      render: (lesson: StudentUpcomingLesson) => (
-        isStartingSoon(lesson.scheduledAt) ? (
-          <Badge variant="success">Starting Soon</Badge>
-        ) : (
-          <span className="text-slate-500">Scheduled</span>
-        )
-      ),
-    },
-    {
-      key: 'actions',
-      header: 'Actions',
-      render: (lesson: StudentUpcomingLesson) => (
-        isStartingSoon(lesson.scheduledAt) ? (
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm">
-            Join Lesson
-          </Button>
-        ) : (
-          <Button variant="ghost" className="text-primary text-sm">
-            View Details
-          </Button>
-        )
-      ),
-    },
-  ];
 
   return (
     <DashboardLayout 
@@ -190,19 +144,93 @@ export default function StudentDashboardPage() {
 
         <StudentNotesBlock />
 
-        {/* Upcoming Lessons Table */}
-        <div className="bg-white rounded-2xl border border-slate-200">
-          <div className="p-4 border-b border-slate-200">
-            <h2 className="text-lg font-semibold text-slate-800">Upcoming Lessons</h2>
+        {/* Next upcoming lesson */}
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="border-b border-slate-200 p-4 sm:p-5">
+            <h2 className="text-lg font-semibold text-slate-800">{t('upcomingLessonsTitle')}</h2>
           </div>
-          <DataTable
-            columns={lessonColumns}
-            data={upcomingLessons}
-            keyExtractor={(lesson) => lesson.id}
-            isLoading={isLoading}
-            emptyMessage="No upcoming lessons scheduled"
-          />
-        </div>
+          <div className="p-4 sm:p-6">
+            {isLoading ? (
+              <div className="animate-pulse space-y-4" aria-hidden>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <div className="h-16 w-16 shrink-0 rounded-xl bg-slate-100 sm:h-20 sm:w-20" />
+                  <div className="min-w-0 flex-1 space-y-3">
+                    <div className="h-4 w-24 rounded bg-slate-100" />
+                    <div className="h-7 max-w-md rounded bg-slate-100" />
+                    <div className="h-4 w-32 rounded bg-slate-100" />
+                    <div className="h-6 max-w-sm rounded bg-slate-100" />
+                  </div>
+                </div>
+              </div>
+            ) : !nextLesson ? (
+              <p className="py-8 text-center text-sm leading-relaxed text-slate-500 sm:py-10">
+                {t('noUpcomingLessons')}
+              </p>
+            ) : (
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
+                <div className="flex shrink-0 justify-center sm:justify-start">
+                  <div className="rounded-2xl bg-sky-50 p-4 sm:p-5">
+                    <svg
+                      className="h-10 w-10 text-sky-600 sm:h-12 sm:w-12"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <dl className="min-w-0 flex-1 space-y-5">
+                  <div>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                      {tCommon('date')}
+                    </dt>
+                    <dd className="mt-1.5 flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-2">
+                      <span className="text-lg font-semibold text-slate-900 sm:text-xl">
+                        {formatLessonDateLabel(nextLesson.scheduledAt)}
+                      </span>
+                      <span className="text-base text-slate-600">{formatLessonTime(nextLesson.scheduledAt)}</span>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                      {tCommon('searchTypeLesson')}
+                    </dt>
+                    <dd className="mt-1.5 break-words text-base font-semibold text-slate-900 sm:text-lg">
+                      {nextLesson.topic?.trim() || tCommon('searchTypeLesson')}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                      {t('nextLessonTeacherLabel')}
+                    </dt>
+                    <dd className="mt-1.5">
+                      {nextLessonTeacherDisplay ? (
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-700"
+                            aria-hidden
+                          >
+                            {nextLessonTeacherDisplay.initials}
+                          </div>
+                          <span className="text-base text-slate-800 sm:text-lg">
+                            {nextLessonTeacherDisplay.full || '—'}
+                          </span>
+                        </div>
+                      ) : null}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Pending Payments Alert */}
         {pendingPayments.length > 0 && (
