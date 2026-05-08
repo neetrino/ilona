@@ -13,7 +13,11 @@ import { ApiError, getErrorMessage } from '@/shared/lib/api';
 import { GroupCalendarScheduleSection } from './GroupCalendarScheduleSection';
 import { GroupIconPicker } from './GroupIconPicker';
 import { isGroupIconKey, type GroupIconKey } from '@ilona/types';
-import { normalizeGroupSchedulePayload, scheduleSlotsValidationError } from '../group-schedule-utils';
+import {
+  defaultMonthDateRange,
+  normalizeGroupSchedulePayload,
+  scheduleSlotsValidationError,
+} from '../group-schedule-utils';
 
 const updateGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters').optional(),
@@ -39,7 +43,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
-  const [calendarEnabled, setCalendarEnabled] = useState(false);
   const [hadCalendarOnLoad, setHadCalendarOnLoad] = useState(false);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -96,15 +99,15 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       const normalized = normalizeGroupSchedulePayload(group.schedule);
       setSchedule(normalized.weeklySlots);
       setHadCalendarOnLoad(!!normalized.calendar);
-      setCalendarEnabled(!!normalized.calendar);
       if (normalized.calendar) {
         setDateFrom(normalized.calendar.dateFrom);
         setDateTo(normalized.calendar.dateTo);
         setLessonTopic(normalized.calendar.topic ?? '');
         setLessonDescription(normalized.calendar.description ?? '');
       } else {
-        setDateFrom('');
-        setDateTo('');
+        const r = defaultMonthDateRange();
+        setDateFrom(r.from);
+        setDateTo(r.to);
         setLessonTopic('');
         setLessonDescription('');
       }
@@ -125,7 +128,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     confirmReplaceGeneratedLessons: boolean,
   ): UpdateGroupDto => {
     let calendarPlan: UpdateGroupDto['calendarPlan'];
-    if (calendarEnabled) {
+    if (schedule.length > 0) {
       calendarPlan = {
         dateFrom,
         dateTo,
@@ -163,13 +166,9 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       return;
     }
 
-    if (calendarEnabled) {
+    if (schedule.length > 0) {
       if (!data.teacherId?.trim()) {
         setErrorMessage('Select a main teacher to generate calendar lessons.');
-        return;
-      }
-      if (schedule.length === 0) {
-        setErrorMessage('Add at least one weekly time slot for calendar generation.');
         return;
       }
       const slotErr = scheduleSlotsValidationError(schedule);
@@ -342,7 +341,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
 
           <div className="space-y-2">
             <Label htmlFor="teacherId">
-              Main Teacher {calendarEnabled ? <span className="text-red-500">*</span> : '(Optional)'}
+              Main Teacher {schedule.length > 0 ? <span className="text-red-500">*</span> : '(Optional)'}
             </Label>
             <select
               id="teacherId"
@@ -388,8 +387,6 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
           <GroupCalendarScheduleSection
             schedule={schedule}
             onScheduleChange={setSchedule}
-            calendarEnabled={calendarEnabled}
-            onCalendarEnabledChange={setCalendarEnabled}
             dateFrom={dateFrom}
             dateTo={dateTo}
             onDateFromChange={setDateFrom}

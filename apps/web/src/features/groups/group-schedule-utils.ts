@@ -35,6 +35,17 @@ export function normalizeGroupSchedulePayload(raw: unknown): {
   return { weeklySlots: [], calendar: null };
 }
 
+/** Default calendar generation range: first–last day of the current month (YYYY-MM-DD). */
+export function defaultMonthDateRange(): { from: string; to: string } {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return {
+    from: start.toISOString().slice(0, 10),
+    to: end.toISOString().slice(0, 10),
+  };
+}
+
 function parseYmd(ymd: string): Date | null {
   const d = new Date(`${ymd}T00:00:00`);
   return Number.isNaN(d.getTime()) ? null : d;
