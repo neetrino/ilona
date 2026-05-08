@@ -32,7 +32,7 @@ export type ScheduleBoardProps = {
   periodLabel: string;
   onPeriodNavigate: (direction: 'prev' | 'next') => void;
   onGoToToday: () => void;
-  /** Admin/manager schedule: color lesson cards green when the lesson day is before today (local date). */
+  /** Past vs future lesson starts (local instant): green vs blue; status accents unchanged. */
   highlightPastLessonCards?: boolean;
 };
 

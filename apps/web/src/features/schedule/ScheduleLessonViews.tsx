@@ -5,7 +5,7 @@ import type { Lesson } from '@/features/lessons';
 import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
 import {
   formatScheduleDate,
-  getScheduleCardDayStatus,
+  isLessonStartStrictlyInFuture,
   scheduleDateKeyFromIso,
 } from '@/features/schedule/schedule-dates';
 import { cn } from '@/shared/lib/utils';
@@ -18,7 +18,10 @@ interface WeekLessonGridProps {
   weekDates: Date[];
   lessons: Lesson[];
   isLoading?: boolean;
-  /** When true, lesson days before today use the past (green) card style (admin/manager schedule). */
+  /**
+   * When true, card background follows lesson start vs now: past/start reached = green,
+   * strictly future start = blue (schedule pages for all roles).
+   */
   highlightPastLessonCards?: boolean;
 }
 
@@ -27,6 +30,10 @@ interface MonthLessonGridProps {
   lessonsByDate: Record<string, Lesson[]>;
   isLoading?: boolean;
   className?: string;
+  /**
+   * When true, card background follows lesson start vs now: past/start reached = green,
+   * strictly future start = blue (schedule pages for all roles).
+   */
   highlightPastLessonCards?: boolean;
 }
 
@@ -53,20 +60,25 @@ function getLessonTimeBounds(lesson: Lesson): { start: number; end: number } | n
 }
 
 const PAST_LESSON_CARD_CLASSES = 'border-green-200 bg-green-50';
+const FUTURE_LESSON_CARD_CLASSES = 'border-blue-200 bg-blue-50';
 
 function lessonCardTone(
   lesson: Lesson,
-  options: { highlightPastLessonCards: boolean },
+  options: { highlightPastLessonCards: boolean; referenceTime: Date },
 ): string {
-  const dayStatus = getScheduleCardDayStatus(lesson.scheduledAt);
-  if (options.highlightPastLessonCards && dayStatus === 'past') {
-    return PAST_LESSON_CARD_CLASSES;
-  }
-  if (lesson.status === 'COMPLETED') return 'border-green-200 bg-green-50';
-  if (lesson.status === 'IN_PROGRESS') return 'border-amber-200 bg-amber-50';
   if (lesson.status === 'CANCELLED' || lesson.status === 'MISSED') {
     return 'border-slate-200 bg-slate-100';
   }
+  if (options.highlightPastLessonCards) {
+    if (isLessonStartStrictlyInFuture(lesson.scheduledAt, options.referenceTime)) {
+      return FUTURE_LESSON_CARD_CLASSES;
+    }
+    if (lesson.status === 'COMPLETED') return PAST_LESSON_CARD_CLASSES;
+    if (lesson.status === 'IN_PROGRESS') return 'border-amber-200 bg-amber-50';
+    return PAST_LESSON_CARD_CLASSES;
+  }
+  if (lesson.status === 'COMPLETED') return PAST_LESSON_CARD_CLASSES;
+  if (lesson.status === 'IN_PROGRESS') return 'border-amber-200 bg-amber-50';
   return 'border-primary/15 bg-primary/5';
 }
 
@@ -74,10 +86,12 @@ function LessonCard({
   lesson,
   variant = 'cell',
   highlightPastLessonCards = false,
+  referenceTime,
 }: {
   lesson: Lesson;
   variant?: 'cell' | 'dialog';
   highlightPastLessonCards?: boolean;
+  referenceTime: Date;
 }) {
   const compact = variant === 'cell';
   const teacherName = `${lesson.teacher?.user?.firstName ?? ''} ${lesson.teacher?.user?.lastName ?? ''}`.trim() || 'No teacher';
@@ -88,7 +102,7 @@ function LessonCard({
 
   return (
     <div
-      className={`rounded-md border leading-tight ${lessonCardTone(lesson, { highlightPastLessonCards })} ${compact ? 'px-1.5 py-0.5 text-[9px] sm:px-1.5 sm:py-1 sm:text-[10px]' : 'px-2.5 py-2 text-sm'}`}
+      className={`rounded-md border leading-tight ${lessonCardTone(lesson, { highlightPastLessonCards, referenceTime })} ${compact ? 'px-1.5 py-0.5 text-[9px] sm:px-1.5 sm:py-1 sm:text-[10px]' : 'px-2.5 py-2 text-sm'}`}
     >
       <div className="font-semibold text-slate-800 truncate" title={lesson.group?.name}>
         {lesson.group?.name ?? 'Unknown group'}
@@ -112,6 +126,7 @@ export function WeekLessonGrid({
   isLoading,
   highlightPastLessonCards = false,
 }: WeekLessonGridProps) {
+  const referenceTime = new Date();
   const { slots, cells, totalLessons } = useMemo(() => {
     const groupedByDay = weekDates.map((date) => {
       const dayKey = formatScheduleDate(date);
@@ -201,6 +216,7 @@ export function WeekLessonGrid({
                           key={lesson.id}
                           lesson={lesson}
                           highlightPastLessonCards={highlightPastLessonCards}
+                          referenceTime={referenceTime}
                         />
                       ))}
                     </div>
@@ -222,6 +238,7 @@ export function MonthLessonGrid({
   className,
   highlightPastLessonCards = false,
 }: MonthLessonGridProps) {
+  const referenceTime = new Date();
   const totalInMonth = useMemo(
     () => Object.values(lessonsByDate).reduce((n, list) => n + list.length, 0),
     [lessonsByDate],
@@ -251,6 +268,7 @@ export function MonthLessonGrid({
           lesson={lesson}
           variant={variant}
           highlightPastLessonCards={highlightPastLessonCards}
+          referenceTime={referenceTime}
         />
       )}
       isLoading={isLoading}

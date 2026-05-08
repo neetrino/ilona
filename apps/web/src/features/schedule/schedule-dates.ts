@@ -114,6 +114,21 @@ export function isPastLessonCalendarDay(
   return getScheduleCardDayStatus(scheduledAtIso, referenceDate) === 'past';
 }
 
+/**
+ * True when the lesson start is strictly after `referenceDate` (wall-clock instant).
+ * Uses the same `Date` parsing as the grid (local display of ISO timestamps from the API).
+ */
+export function isLessonStartStrictlyInFuture(
+  scheduledAtIso: string,
+  referenceDate: Date = new Date(),
+): boolean {
+  const start = new Date(scheduledAtIso);
+  if (Number.isNaN(start.getTime())) {
+    return false;
+  }
+  return start.getTime() > referenceDate.getTime();
+}
+
 export function getMonthDates(anchor: Date): (Date | null)[][] {
   const year = anchor.getFullYear();
   const month = anchor.getMonth();
