@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
 import { useTeacher, useUpdateTeacher, type UpdateTeacherDto } from '@/features/teachers';
-import { type WeeklySchedule as WeeklyScheduleType, type DayOfWeek } from '@/features/teachers/components/WeeklySchedule';
 import { TeacherProfileHeader } from './components/TeacherProfileHeader';
 import { TeacherStats } from './components/TeacherStats';
 import { TeacherDetails } from './components/TeacherDetails';
@@ -57,7 +56,6 @@ export default function TeacherProfilePage() {
       hourlyRate: 0,
       experienceYears: 0,
       workingDays: [],
-      workingHours: undefined,
     },
   });
 
@@ -76,24 +74,6 @@ export default function TeacherProfilePage() {
         ? parseFloat(teacher.hourlyRate) 
         : Number(teacher.hourlyRate || 0);
       
-      // Convert old format to new format if needed
-      let workingHoursValue: WeeklyScheduleType | undefined = undefined;
-      if (teacher.workingHours) {
-        // Check if it's the new format (has day keys)
-        if ('MON' in teacher.workingHours || 'TUE' in teacher.workingHours) {
-          workingHoursValue = teacher.workingHours as WeeklyScheduleType;
-        } else if ('start' in teacher.workingHours && 'end' in teacher.workingHours) {
-          // Old format: convert to new format using workingDays
-          const oldHours = teacher.workingHours as { start: string; end: string };
-          workingHoursValue = {};
-          (teacher.workingDays || []).forEach((day) => {
-            workingHoursValue![day as DayOfWeek] = [
-              { start: oldHours.start, end: oldHours.end },
-            ];
-          });
-        }
-      }
-      
       reset({
         firstName: teacher.user?.firstName || '',
         lastName: teacher.user?.lastName || '',
@@ -102,7 +82,6 @@ export default function TeacherProfilePage() {
         hourlyRate,
         experienceYears: getExperienceYearsFromHireDate(teacher.hireDate),
         workingDays: teacher.workingDays || [],
-        workingHours: workingHoursValue,
       });
       setHasUnsavedChanges(false);
       setErrorMessage(null);
@@ -172,9 +151,6 @@ export default function TeacherProfilePage() {
     setSuccessMessage(null);
     
     try {
-      // Extract working days from workingHours
-      const workingDays = data.workingHours ? Object.keys(data.workingHours) : [];
-      
       const payload: UpdateTeacherDto = {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -182,8 +158,7 @@ export default function TeacherProfilePage() {
         status: data.status,
         hourlyRate: data.hourlyRate,
         experienceYears: data.experienceYears,
-        workingDays: workingDays.length > 0 ? workingDays : undefined,
-        workingHours: data.workingHours && Object.keys(data.workingHours).length > 0 ? data.workingHours : undefined,
+        workingDays: data.workingDays,
       };
 
       await updateTeacher.mutateAsync({ id: teacherId, data: payload });

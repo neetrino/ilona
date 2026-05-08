@@ -103,6 +103,7 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
       </div>
       <div className="bg-white rounded-xl border border-slate-200 h-[calc(100vh-200px)] flex flex-col">
         <LessonDetailTabs
+          lesson={lesson}
           activeTab={activeTab}
           onTabChange={handleTabChange}
         >

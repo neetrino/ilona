@@ -25,6 +25,19 @@ function formatDate(value: string) {
       });
 }
 
+function formatDateTime(value: string) {
+  const d = new Date(value);
+  return Number.isNaN(d.getTime())
+    ? value
+    : d.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+}
+
 export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 overflow-y-auto">
@@ -32,9 +45,23 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
         <header className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
           <div>
             <h2 className="text-lg font-semibold text-slate-800">Daily Plan</h2>
-            <p className="text-sm text-slate-500">
-              {formatDate(plan.date)} · {plan.group?.name ?? 'No group'}
+            <p className="text-sm text-slate-600">
+              {plan.teacher.user.firstName} {plan.teacher.user.lastName}
             </p>
+            <p className="text-sm text-slate-500">
+              {formatDate(plan.date)} · {plan.group?.name ?? plan.lesson?.group?.name ?? 'No group'}
+              {(plan.group?.center?.name ?? plan.lesson?.group?.center?.name) && (
+                <>
+                  {' '}
+                  · {plan.group?.center?.name ?? plan.lesson?.group?.center?.name}
+                </>
+              )}
+            </p>
+            {plan.lesson?.scheduledAt && (
+              <p className="text-xs text-slate-500 mt-1">
+                Lesson: {formatDateTime(plan.lesson.scheduledAt)}
+              </p>
+            )}
           </div>
           <button
             type="button"

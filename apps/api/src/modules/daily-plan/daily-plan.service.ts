@@ -16,6 +16,7 @@ import {
 } from './dto';
 import { DailyPlanResourceKind, Prisma, UserRole } from '@ilona/database';
 import { effectiveLessonInstructorTeacherId, teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
+import { JwtPayload } from '../../common/types/auth.types';
 
 const RESOURCE_KINDS = new Set<string>([
   DailyPlanResourceKind.READING,
@@ -29,8 +30,29 @@ const dailyPlanInclude = {
     orderBy: { order: 'asc' as const },
     include: { resources: { orderBy: { kind: 'asc' as const } } },
   },
-  group: { select: { id: true, name: true, level: true } },
-  lesson: { select: { id: true, scheduledAt: true } },
+  group: {
+    select: {
+      id: true,
+      name: true,
+      level: true,
+      centerId: true,
+      center: { select: { id: true, name: true } },
+    },
+  },
+  lesson: {
+    select: {
+      id: true,
+      scheduledAt: true,
+      group: {
+        select: {
+          id: true,
+          name: true,
+          centerId: true,
+          center: { select: { id: true, name: true } },
+        },
+      },
+    },
+  },
   teacher: {
     select: {
       id: true,
@@ -104,47 +126,106 @@ export class DailyPlanService {
     return teacher.id;
   }
 
-  async findAll(query: QueryDailyPlanDto, userId: string, userRole: UserRole) {
-    const where: Prisma.DailyPlanWhereInput = {};
+  /** Same scope as TeacherCrudService for managers: group at center OR explicit teacher↔center link. */
+  private managerTeacherAtCenterScope(
+    managerCenterId: string,
+  ): Prisma.TeacherWhereInput {
+    return {
+      OR: [
+        { groups: { some: { centerId: managerCenterId } } },
+        { centerLinks: { some: { centerId: managerCenterId } } },
+      ],
+    };
+  }
 
-    if (userRole === UserRole.TEACHER) {
-      where.teacherId = await this.resolveTeacherId(userId);
-    } else if (query.teacherId) {
-      where.teacherId = query.teacherId;
+  async findAll(query: QueryDailyPlanDto, user: JwtPayload) {
+    const userRole = user.role;
+    const take = Math.min(Math.max(query.take ?? 50, 1), 200);
+    const skip = Math.max(query.skip ?? 0, 0);
+
+    if (userRole === UserRole.MANAGER && !user.managerCenterId) {
+      return { items: [], total: 0, take, skip };
     }
 
-    if (query.groupId) where.groupId = query.groupId;
-    if (query.lessonId) where.lessonId = query.lessonId;
+    const whereParts: Prisma.DailyPlanWhereInput[] = [];
+
+    if (userRole === UserRole.TEACHER) {
+      whereParts.push({ teacherId: await this.resolveTeacherId(user.sub) });
+    } else if (query.teacherId) {
+      if (userRole === UserRole.MANAGER) {
+        const managerCenterId = user.managerCenterId;
+        if (managerCenterId) {
+          const teacherInCenter = await this.prisma.teacher.findFirst({
+            where: {
+              id: query.teacherId,
+              ...this.managerTeacherAtCenterScope(managerCenterId),
+            },
+            select: { id: true },
+          });
+          if (!teacherInCenter) {
+            throw new ForbiddenException('Teacher is not assigned to your center');
+          }
+        }
+      }
+      whereParts.push({ teacherId: query.teacherId });
+    }
+
+    if (query.groupId) whereParts.push({ groupId: query.groupId });
+    if (query.lessonId) whereParts.push({ lessonId: query.lessonId });
 
     if (query.dateFrom || query.dateTo) {
-      where.date = {};
-      if (query.dateFrom) where.date.gte = new Date(query.dateFrom);
-      if (query.dateTo) where.date.lte = new Date(query.dateTo);
+      whereParts.push({
+        date: {
+          ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+          ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
+        },
+      });
     }
 
     if (query.search?.trim()) {
       const term = query.search.trim();
-      where.topics = {
-        some: {
-          OR: [
-            { title: { contains: term, mode: 'insensitive' } },
-            {
-              resources: {
-                some: {
-                  OR: [
-                    { title: { contains: term, mode: 'insensitive' } },
-                    { description: { contains: term, mode: 'insensitive' } },
-                  ],
+      whereParts.push({
+        topics: {
+          some: {
+            OR: [
+              { title: { contains: term, mode: 'insensitive' } },
+              {
+                resources: {
+                  some: {
+                    OR: [
+                      { title: { contains: term, mode: 'insensitive' } },
+                      { description: { contains: term, mode: 'insensitive' } },
+                    ],
+                  },
                 },
               },
-            },
-          ],
+            ],
+          },
         },
-      };
+      });
     }
 
-    const take = Math.min(Math.max(query.take ?? 50, 1), 200);
-    const skip = Math.max(query.skip ?? 0, 0);
+    if (userRole === UserRole.MANAGER) {
+      const managerCenterId = user.managerCenterId;
+      if (managerCenterId) {
+        whereParts.push({
+          teacher: this.managerTeacherAtCenterScope(managerCenterId),
+        });
+        whereParts.push({
+          OR: [
+            { group: { centerId: managerCenterId } },
+            { lesson: { group: { centerId: managerCenterId } } },
+          ],
+        });
+      }
+    }
+
+    const where: Prisma.DailyPlanWhereInput =
+      whereParts.length === 0
+        ? {}
+        : whereParts.length === 1
+          ? whereParts[0]
+          : { AND: whereParts };
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.dailyPlan.findMany({
@@ -160,7 +241,7 @@ export class DailyPlanService {
     return { items, total, take, skip };
   }
 
-  async findById(id: string, userId: string, userRole: UserRole) {
+  async findById(id: string, user: JwtPayload) {
     const plan = await this.prisma.dailyPlan.findUnique({
       where: { id },
       include: dailyPlanInclude,
@@ -168,10 +249,31 @@ export class DailyPlanService {
     if (!plan) {
       throw new NotFoundException(`Daily plan ${id} not found`);
     }
-    if (userRole === UserRole.TEACHER) {
-      const teacherId = await this.resolveTeacherId(userId);
+    if (user.role === UserRole.TEACHER) {
+      const teacherId = await this.resolveTeacherId(user.sub);
       if (plan.teacherId !== teacherId) {
         throw new ForbiddenException('You can only view your own daily plans');
+      }
+    } else if (user.role === UserRole.MANAGER) {
+      const managerCenterId = user.managerCenterId ?? null;
+      if (!managerCenterId) {
+        throw new ForbiddenException('Manager account is not assigned to a center');
+      }
+      const teacherInCenter = await this.prisma.teacher.findFirst({
+        where: {
+          id: plan.teacherId,
+          ...this.managerTeacherAtCenterScope(managerCenterId),
+        },
+        select: { id: true },
+      });
+      if (!teacherInCenter) {
+        throw new ForbiddenException('Access denied');
+      }
+      const inCenter =
+        plan.group?.centerId === managerCenterId ||
+        plan.lesson?.group?.centerId === managerCenterId;
+      if (!inCenter) {
+        throw new ForbiddenException('Access denied');
       }
     }
     return plan;
@@ -262,10 +364,9 @@ export class DailyPlanService {
   async update(
     id: string,
     dto: UpdateDailyPlanDto,
-    userId: string,
-    userRole: UserRole,
+    user: JwtPayload,
   ) {
-    const existing = await this.findById(id, userId, userRole);
+    const existing = await this.findById(id, user);
 
     return this.prisma.$transaction(async (tx) => {
       if (dto.topics) {
@@ -318,8 +419,8 @@ export class DailyPlanService {
     );
   }
 
-  async remove(id: string, userId: string, userRole: UserRole) {
-    const existing = await this.findById(id, userId, userRole);
+  async remove(id: string, user: JwtPayload) {
+    const existing = await this.findById(id, user);
     await this.prisma.dailyPlan.delete({ where: { id } });
     await this.triggerSalaryRecalculationForPlan(existing);
     return { ok: true } as const;

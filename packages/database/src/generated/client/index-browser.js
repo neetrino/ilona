@@ -279,6 +279,7 @@ exports.Prisma.LessonScalarFieldEnum = {
   textSentAt: 'textSentAt',
   completedAt: 'completedAt',
   notes: 'notes',
+  creationSource: 'creationSource',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -594,6 +595,11 @@ exports.LessonStatus = exports.$Enums.LessonStatus = {
   CANCELLED: 'CANCELLED',
   MISSED: 'MISSED',
   REPLACED: 'REPLACED'
+};
+
+exports.LessonCreationSource = exports.$Enums.LessonCreationSource = {
+  MANUAL: 'MANUAL',
+  GROUP_SCHEDULE: 'GROUP_SCHEDULE'
 };
 
 exports.AbsenceType = exports.$Enums.AbsenceType = {

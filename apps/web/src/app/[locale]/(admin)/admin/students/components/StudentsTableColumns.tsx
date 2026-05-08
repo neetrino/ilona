@@ -9,9 +9,64 @@ import { formatCurrency } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
+import { teacherBelongsToCenter } from '@/features/students/lib/center-scoped-assignment';
 import type { Group } from '@/features/groups';
+import type { Teacher } from '@/features/teachers';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
+
+function buildTeacherOptionsForRow(
+  centerId: string | null,
+  currentTeacherId: string | null,
+  teachers: Teacher[],
+  groups: Group[],
+): Array<{ id: string; label: string }> {
+  if (!centerId) {
+    if (!currentTeacherId) return [];
+    const t = teachers.find((x) => x.id === currentTeacherId);
+    return t
+      ? [{ id: t.id, label: `${t.user.firstName} ${t.user.lastName}`.trim() }]
+      : [];
+  }
+  const filtered = teachers
+    .filter((t) => teacherBelongsToCenter(t.id, centerId, t.centerLinks, groups))
+    .map((t) => ({
+      id: t.id,
+      label: `${t.user.firstName} ${t.user.lastName}`.trim(),
+    }));
+  if (currentTeacherId && !filtered.some((o) => o.id === currentTeacherId)) {
+    const t = teachers.find((x) => x.id === currentTeacherId);
+    if (t) {
+      return [{ id: t.id, label: `${t.user.firstName} ${t.user.lastName}`.trim() }, ...filtered];
+    }
+  }
+  return filtered;
+}
+
+function buildGroupOptionsForRow(
+  centerId: string | null,
+  teacherId: string | null,
+  currentGroupId: string | null,
+  groups: Group[],
+): Array<{ id: string; label: string }> {
+  if (!centerId || !teacherId) {
+    if (!currentGroupId) return [];
+    const g = groups.find((x) => x.id === currentGroupId);
+    return g
+      ? [{ id: g.id, label: `${g.name}${g.level ? ` (${g.level})` : ''}` }]
+      : [];
+  }
+  const filtered = groups
+    .filter((g) => g.teacherId === teacherId && g.centerId === centerId)
+    .map((g) => ({ id: g.id, label: `${g.name}${g.level ? ` (${g.level})` : ''}` }));
+  if (currentGroupId && !filtered.some((o) => o.id === currentGroupId)) {
+    const g = groups.find((x) => x.id === currentGroupId);
+    if (g) {
+      return [{ id: g.id, label: `${g.name}${g.level ? ` (${g.level})` : ''}` }, ...filtered];
+    }
+  }
+  return filtered;
+}
 
 function getRiskBadge(
   derivedRisk: Student['derivedRiskLabel'] | undefined,
@@ -221,7 +276,7 @@ interface StudentsTableColumnsProps {
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
   onRegisterDateChange: (studentId: string, date: string | null) => Promise<void>;
-  teacherOptions: Array<{ id: string; label: string }>;
+  teachers: Teacher[];
   groups: Group[];
   centerOptions: Array<{ id: string; label: string }>;
   isDeleting: boolean;
@@ -245,7 +300,7 @@ export function createStudentsTableColumns({
   onGroupChange,
   onCenterChange,
   onRegisterDateChange,
-  teacherOptions,
+  teachers,
   groups,
   centerOptions,
   isDeleting,
@@ -325,54 +380,6 @@ export function createStudentsTableColumns({
       },
     },
     {
-      key: 'teacher',
-      header: 'TEACHER',
-      className: '!w-[14%] align-top',
-      render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
-        return (
-          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
-            <InlineSelect
-              value={row.teacherId || null}
-              options={teacherOptions}
-              onChange={async (teacherId) => {
-                await onTeacherChange(row.id, teacherId);
-              }}
-              placeholder="Not assigned"
-              disabled={isUpdating}
-            />
-          </div>
-        );
-      },
-    },
-    {
-      key: 'group',
-      header: 'GROUP',
-      className: '!w-[14%] align-top',
-      render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
-        const teacherId = row.teacherId || null;
-        const groupOptionsForTeacher = teacherId
-          ? groups
-              .filter((g) => g.teacherId === teacherId)
-              .map((g) => ({ id: g.id, label: `${g.name}${g.level ? ` (${g.level})` : ''}` }))
-          : [];
-        return (
-          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
-            <InlineSelect
-              value={row.groupId || null}
-              options={groupOptionsForTeacher}
-              onChange={async (groupId) => {
-                await onGroupChange(row.id, groupId);
-              }}
-              placeholder={!teacherId ? 'Select Teacher first' : 'Not assigned'}
-              disabled={isUpdating || !teacherId}
-            />
-          </div>
-        );
-      },
-    },
-    {
       key: 'center',
       header: 'CENTER',
       className: '!w-[14%] align-top',
@@ -389,7 +396,69 @@ export function createStudentsTableColumns({
                 await onCenterChange(row.id, centerId);
               }}
               placeholder="Not assigned"
+              clearLabel="Not assigned"
               disabled={isUpdating}
+            />
+          </div>
+        );
+      },
+    },
+    {
+      key: 'teacher',
+      header: 'TEACHER',
+      className: '!w-[14%] align-top',
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        const manualCenterId = row.centerId ?? null;
+        const teacherOptionsForRow = buildTeacherOptionsForRow(
+          manualCenterId,
+          row.teacherId || null,
+          teachers,
+          groups,
+        );
+        const teacherPlaceholder = !manualCenterId ? 'Select a center first' : 'Select teacher';
+        return (
+          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
+            <InlineSelect
+              value={row.teacherId || null}
+              options={teacherOptionsForRow}
+              onChange={async (teacherId) => {
+                await onTeacherChange(row.id, teacherId);
+              }}
+              placeholder={teacherPlaceholder}
+              clearLabel="Not assigned"
+              disabled={isUpdating || !manualCenterId}
+            />
+          </div>
+        );
+      },
+    },
+    {
+      key: 'group',
+      header: 'GROUP',
+      className: '!w-[14%] align-top',
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        const manualCenterId = row.centerId ?? null;
+        const teacherId = row.teacherId || null;
+        const groupOptionsForRow = buildGroupOptionsForRow(
+          manualCenterId,
+          teacherId,
+          row.groupId || null,
+          groups,
+        );
+        const groupPlaceholder = !teacherId ? 'Select a teacher first' : 'Select group';
+        return (
+          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
+            <InlineSelect
+              value={row.groupId || null}
+              options={groupOptionsForRow}
+              onChange={async (groupId) => {
+                await onGroupChange(row.id, groupId);
+              }}
+              placeholder={groupPlaceholder}
+              clearLabel="Not assigned"
+              disabled={isUpdating || !teacherId}
             />
           </div>
         );

@@ -616,7 +616,7 @@ export class TeacherCrudService {
       await this.syncTeacherCenters(id, dto.centerIds);
     }
 
-    // Update teacher fields
+    // Update teacher fields (omit workingDays/workingHours when absent so existing values are preserved)
     return this.prisma.teacher.update({
       where: { id },
       data: {
@@ -628,8 +628,8 @@ export class TeacherCrudService {
           dto.experienceYears !== undefined
             ? this.getHireDateFromExperienceYears(dto.experienceYears)
             : undefined,
-        workingDays: dto.workingDays,
-        workingHours: dto.workingHours,
+        ...(dto.workingDays !== undefined ? { workingDays: dto.workingDays } : {}),
+        ...(dto.workingHours !== undefined ? { workingHours: dto.workingHours } : {}),
         videoUrl: dto.videoUrl,
       },
       include: {

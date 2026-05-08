@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateTeacher, useTeacher, type UpdateTeacherDto } from '@/features/teachers';
-import { WeeklySchedule, type WeeklySchedule as WeeklyScheduleType } from './WeeklySchedule';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCenters } from '@/features/centers';
@@ -27,50 +26,6 @@ const updateTeacherSchema = z.object({
     .or(z.literal('').transform(() => undefined)),
   centerIds: z.array(z.string()).optional(),
   workingDays: z.array(z.string()).optional(),
-  workingHours: z
-    .object({
-      MON: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      TUE: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      WED: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      THU: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      FRI: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      SAT: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-      SUN: z.array(z.object({ start: z.string(), end: z.string() })).optional(),
-    })
-    .optional()
-    .refine(
-      (val) => {
-        if (!val) return true;
-        const hasDays = Object.keys(val).length > 0;
-        if (!hasDays) return false;
-        // Validate each day's time ranges
-        for (const day of Object.keys(val)) {
-          const ranges = val[day as keyof typeof val];
-          if (ranges && Array.isArray(ranges)) {
-            for (const range of ranges) {
-              if (range.start >= range.end) return false;
-            }
-            // Check for overlaps
-            for (let i = 0; i < ranges.length; i++) {
-              for (let j = i + 1; j < ranges.length; j++) {
-                const r1 = ranges[i];
-                const r2 = ranges[j];
-                if (
-                  (r1.start < r2.end && r1.end > r2.start) ||
-                  (r2.start < r1.end && r2.end > r1.start)
-                ) {
-                  return false;
-                }
-              }
-            }
-          }
-        }
-        return true;
-      },
-      {
-        message: 'At least one day must be selected with valid, non-overlapping time ranges',
-      }
-    ),
 });
 
 type UpdateTeacherFormData = z.infer<typeof updateTeacherSchema>;
@@ -109,11 +64,9 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       videoUrl: '',
       centerIds: [],
       workingDays: [],
-      workingHours: undefined,
     },
   });
 
-  const workingHours = watch('workingHours');
   const selectedCenterIds = watch('centerIds') ?? [];
 
   const toggleCenter = (centerId: string) => {
@@ -136,25 +89,6 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       const linkedCenterIds = teacher.centerLinks?.map((l) => l.center.id) ?? [];
       setValue('centerIds', linkedCenterIds);
       setValue('workingDays', teacher.workingDays || []);
-      
-      // Convert old format to new format if needed
-      let workingHoursValue: WeeklyScheduleType | undefined = undefined;
-      if (teacher.workingHours) {
-        // Check if it's the new format (has day keys)
-        if ('MON' in teacher.workingHours || 'TUE' in teacher.workingHours) {
-          workingHoursValue = teacher.workingHours as WeeklyScheduleType;
-        } else if ('start' in teacher.workingHours && 'end' in teacher.workingHours) {
-          // Old format: convert to new format using workingDays
-          const oldHours = teacher.workingHours as { start: string; end: string };
-          workingHoursValue = {};
-          (teacher.workingDays || []).forEach((day) => {
-            workingHoursValue![day as keyof WeeklyScheduleType] = [
-              { start: oldHours.start, end: oldHours.end },
-            ];
-          });
-        }
-      }
-      setValue('workingHours', workingHoursValue);
       setErrorMessage(null);
       setSuccessMessage(null);
     }
@@ -173,9 +107,6 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
     setErrorMessage(null);
     
     try {
-      // Extract working days from workingHours
-      const workingDays = data.workingHours ? Object.keys(data.workingHours) : [];
-      
       const payload: UpdateTeacherDto = {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -185,8 +116,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
         experienceYears: data.experienceYears,
         videoUrl: data.videoUrl ? data.videoUrl : null,
         centerIds: data.centerIds ?? [],
-        workingDays: workingDays.length > 0 ? workingDays : undefined,
-        workingHours: data.workingHours && Object.keys(data.workingHours).length > 0 ? data.workingHours : undefined,
+        workingDays: data.workingDays && data.workingDays.length > 0 ? data.workingDays : undefined,
       };
 
       await updateTeacher.mutateAsync({ id: teacherId, data: payload });
@@ -356,14 +286,6 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
                   })}
                 </div>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <WeeklySchedule
-                value={workingHours}
-                onChange={(schedule) => setValue('workingHours', schedule)}
-                error={errors.workingHours?.message}
-              />
             </div>
 
             <DialogFooter>

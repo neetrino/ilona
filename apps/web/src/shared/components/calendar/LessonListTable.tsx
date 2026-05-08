@@ -1,15 +1,20 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useState, useMemo, useEffect, type ReactElement } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Badge } from '@/shared/components/ui/badge';
-import { ArrowUpDown, ArrowUp, ArrowDown, Pencil, CheckCircle2 } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LessonListTableBodyRow } from '@/shared/components/calendar/LessonListTableBodyRow';
 import type { Lesson } from '@/features/lessons';
+import { getScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import {
+  buildTeacherCalendarOrderedRows,
+  TEACHER_CALENDAR_LIST_PAGE_SIZE,
+  teacherCalendarRowSection,
+} from '@/shared/lib/calendar/teacher-calendar-list-order';
 
 interface LessonListTableProps {
   lessons: Lesson[];
@@ -28,122 +33,13 @@ interface LessonListTableProps {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onSort?: (key: string) => void;
-}
-
-const _statusConfig: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
-  SCHEDULED: { label: 'Scheduled', variant: 'info' },
-  IN_PROGRESS: { label: 'In Progress', variant: 'warning' },
-  COMPLETED: { label: 'Completed', variant: 'success' },
-  CANCELLED: { label: 'Cancelled', variant: 'default' },
-  MISSED: { label: 'Missed', variant: 'error' },
-};
-
-function formatTime(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString(locale === 'hy' ? 'hy-AM' : 'en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    hour12: false 
-  });
-}
-
-function formatDate(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', { 
-    weekday: 'short', 
-    month: 'short', 
-    day: 'numeric'
-    // Year removed as per requirements
-  });
-}
-
-/**
- * Determines if a lesson is past, today, or future based on its scheduled date.
- * Compares calendar dates (year, month, day) in the local timezone.
- * @param scheduledAt - ISO date string of the lesson
- * @returns 'past' | 'today' | 'future'
- */
-function getLessonDateStatus(scheduledAt: string): 'past' | 'today' | 'future' {
-  const lessonDate = new Date(scheduledAt);
-  const today = new Date();
-  
-  // Compare calendar dates (year, month, day) by resetting time to midnight
-  const lessonDateOnly = new Date(lessonDate.getFullYear(), lessonDate.getMonth(), lessonDate.getDate());
-  const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  
-  if (lessonDateOnly < todayOnly) {
-    return 'past';
-  } else if (lessonDateOnly.getTime() === todayOnly.getTime()) {
-    return 'today';
-  } else {
-    return 'future';
-  }
-}
-
-function StatusIndicator({
-  completed,
-  isLocked,
-  onClick,
-  label,
-  count,
-}: {
-  completed: boolean;
-  isLocked?: boolean;
-  onClick: () => void;
-  label: string;
-  count?: number;
-}) {
-  // Priority logic:
-  // 1. If action is completed → GREEN ✓
-  // 2. Else if locked (manually completed OR day passed) → RED X (non-editable)
-  // 3. Else → GRAY X (editable)
-  
-  const isRedX = !completed && isLocked;
-
-  return (
-    <button
-      onClick={onClick}
-      disabled={isLocked}
-      className={cn(
-        'inline-flex items-center justify-center min-w-[32px] h-6 px-1.5 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
-        completed
-          ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer'
-          : isRedX
-          ? 'bg-red-100 text-red-700 border border-red-300 cursor-not-allowed'
-          : 'bg-slate-50 text-slate-400 hover:bg-slate-100 cursor-pointer'
-      )}
-      title={
-        completed
-          ? `${label}: Completed`
-          : isLocked
-          ? `${label}: Locked (cannot be edited)`
-          : `${label}: Not completed (click to edit)`
-      }
-      aria-label={`${label}: ${completed ? 'Completed' : isLocked ? 'Locked' : 'Not completed'}${count !== undefined ? ` (${count})` : ''}`}
-    >
-      {completed ? (
-        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path
-            fillRule="evenodd"
-            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-            clipRule="evenodd"
-          />
-        </svg>
-      ) : (
-        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      )}
-      {count !== undefined && count > 0 && (
-        <span className={cn(
-          'ml-1 text-xs font-medium',
-          completed ? 'text-emerald-700' : isRedX ? 'text-red-600' : 'text-slate-500'
-        )}>
-          {count}
-        </span>
-      )}
-    </button>
-  );
+  /** When true, bulk action bar stays visible with a disabled delete until at least one row is selected (admin calendar). */
+  showBulkBarWhenEmpty?: boolean;
+  /**
+   * List view: completed first, then next 2 upcoming, today, later; Schedule column; 10 rows per page.
+   * Used for teacher and admin calendar list.
+   */
+  sectionedCalendarList?: boolean;
 }
 
 export function LessonListTable({
@@ -159,12 +55,63 @@ export function LessonListTable({
   sortBy,
   sortOrder,
   onSort,
+  showBulkBarWhenEmpty = false,
+  sectionedCalendarList = false,
 }: LessonListTableProps) {
-  const router = useRouter();
   const locale = useLocale();
+  const tCal = useTranslations('calendar');
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
+  const [sectionedListPage, setSectionedListPage] = useState(1);
   const { user } = useAuthStore();
   const isTeacher = user?.role === 'TEACHER';
+
+  const sectionedOrderedRows = useMemo(
+    () => (sectionedCalendarList ? buildTeacherCalendarOrderedRows(lessons) : []),
+    [lessons, sectionedCalendarList],
+  );
+
+  const sectionedLessonsKey = useMemo(() => lessons.map((l) => l.id).join('|'), [lessons]);
+
+  useEffect(() => {
+    if (sectionedCalendarList) {
+      setSectionedListPage(1);
+    }
+  }, [sectionedCalendarList, sectionedLessonsKey]);
+
+  const sectionedTotalPages = Math.max(
+    1,
+    Math.ceil(sectionedOrderedRows.length / TEACHER_CALENDAR_LIST_PAGE_SIZE),
+  );
+
+  useEffect(() => {
+    if (sectionedCalendarList && sectionedListPage > sectionedTotalPages) {
+      setSectionedListPage(sectionedTotalPages);
+    }
+  }, [sectionedCalendarList, sectionedListPage, sectionedTotalPages]);
+
+  const sectionedPageRows = useMemo(() => {
+    if (!sectionedCalendarList) return [];
+    return sectionedOrderedRows.slice(
+      (sectionedListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE,
+      sectionedListPage * TEACHER_CALENDAR_LIST_PAGE_SIZE,
+    );
+  }, [sectionedCalendarList, sectionedOrderedRows, sectionedListPage]);
+
+  const sectionedPageLessonIds = useMemo(
+    () => sectionedPageRows.map((r) => r.lesson.id),
+    [sectionedPageRows],
+  );
+
+  const scheduleCategoryLabels = useMemo(
+    () => ({
+      upcoming: tCal('scheduleStatusUpcoming'),
+      upcomingNext: tCal('scheduleStatusNext'),
+      today: tCal('scheduleStatusToday'),
+      completed: tCal('scheduleStatusCompleted'),
+      todayPastSlot: tCal('scheduleTodayPastSlot'),
+    }),
+    [tCal],
+  );
 
   // Sort lessons: Respect server-side sort order when sorting by scheduledAt
   // Otherwise, apply completion status grouping
@@ -198,7 +145,32 @@ export function LessonListTable({
     return sorted;
   }, [lessons, sortBy, sortOrder]);
 
+  const lessonIdSet = useMemo(() => new Set(lessons.map((l) => l.id)), [lessons]);
+
+  useEffect(() => {
+    setSelectedLessons((prev) => {
+      let changed = false;
+      const next = new Set<string>();
+      for (const id of prev) {
+        if (lessonIdSet.has(id)) {
+          next.add(id);
+        } else {
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [lessonIdSet]);
+
   const handleSelectAll = (checked: boolean) => {
+    if (sectionedCalendarList) {
+      if (checked) {
+        setSelectedLessons(new Set(sectionedPageLessonIds));
+      } else {
+        setSelectedLessons(new Set());
+      }
+      return;
+    }
     if (checked) {
       setSelectedLessons(new Set(lessons.map((l) => l.id)));
     } else {
@@ -223,19 +195,6 @@ export function LessonListTable({
     }
   };
 
-  const handleView = (lessonId: string) => {
-    // Get current path and navigate to detail page
-    // Check if we're in admin or teacher route
-    const currentPath = window.location.pathname;
-    if (currentPath.includes('/admin/')) {
-      router.push(`/admin/calendar/${lessonId}`);
-    } else if (currentPath.includes('/teacher/')) {
-      router.push(`/teacher/calendar/${lessonId}`);
-    } else {
-      router.push(`/calendar/${lessonId}`);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-12">
@@ -249,31 +208,41 @@ export function LessonListTable({
   if (lessons.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
-        <p className="text-slate-500">No lessons found</p>
+        <p className="text-slate-500">{tCal('noLessons')}</p>
       </div>
     );
   }
 
-  const allSelected = lessons.length > 0 && selectedLessons.size === lessons.length;
-  const someSelected = selectedLessons.size > 0 && selectedLessons.size < lessons.length;
+  const tableColSpan =
+    10 + (sectionedCalendarList ? 1 : 0) + (hideTeacherColumn ? 0 : 1);
+
+  const allSelected = sectionedCalendarList
+    ? sectionedPageLessonIds.length > 0 && sectionedPageLessonIds.every((id) => selectedLessons.has(id))
+    : lessons.length > 0 && selectedLessons.size === lessons.length;
+  const someSelected = sectionedCalendarList
+    ? sectionedPageLessonIds.some((id) => selectedLessons.has(id)) && !allSelected
+    : selectedLessons.size > 0 && selectedLessons.size < lessons.length;
+  const showBulkBar = onBulkDelete && (showBulkBarWhenEmpty || selectedLessons.size > 0);
+  const bulkDeleteDisabled = selectedLessons.size === 0;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       {/* Bulk Actions */}
-      {selectedLessons.size > 0 && (
-        <div className="px-6 py-3 bg-blue-50 border-b border-slate-200 flex items-center justify-between">
+      {showBulkBar && (
+        <div className="px-6 py-3 bg-blue-50 border-b border-slate-200 flex items-center justify-between gap-4">
           <span className="text-sm font-medium text-blue-900">
-            {selectedLessons.size} lesson{selectedLessons.size !== 1 ? 's' : ''} selected
+            {selectedLessons.size === 0
+              ? 'Select lessons with the checkboxes to delete multiple at once.'
+              : `${selectedLessons.size} lesson${selectedLessons.size !== 1 ? 's' : ''} selected`}
           </span>
-          {onBulkDelete && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleBulkDelete}
-            >
-              Delete Selected
-            </Button>
-          )}
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleBulkDelete}
+            disabled={bulkDeleteDisabled}
+          >
+            Delete selected
+          </Button>
         </div>
       )}
 
@@ -291,21 +260,26 @@ export function LessonListTable({
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Lesson Name</th>
               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[120px]">Status</th>
+              {sectionedCalendarList && (
+                <th className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase min-w-[7rem]">
+                  {tCal('scheduleCategoryColumn')}
+                </th>
+              )}
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
-                {onSort ? (
+                {!sectionedCalendarList && onSort ? (
                   <button
                     type="button"
                     onClick={() => onSort('scheduledAt')}
                     className={cn(
                       'flex items-center gap-1.5 w-full text-left text-xs font-semibold uppercase hover:bg-slate-50 rounded-md px-0 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
-                      sortBy === 'scheduledAt' && 'text-slate-700'
+                      sortBy === 'scheduledAt' && 'text-slate-700',
                     )}
                     aria-label={
                       sortBy !== 'scheduledAt'
                         ? 'Sort by Date & Time'
                         : sortOrder === 'asc'
-                        ? 'Sorted by Date & Time ascending. Click to sort descending.'
-                        : 'Sorted by Date & Time descending. Click to sort ascending.'
+                          ? 'Sorted by Date & Time ascending. Click to sort descending.'
+                          : 'Sorted by Date & Time descending. Click to sort ascending.'
                     }
                   >
                     <span>Date & Time</span>
@@ -337,228 +311,120 @@ export function LessonListTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {sortedLessons.map((lesson) => {
-              const teacherName = lesson.teacher?.user
-                ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
-                : 'Unknown';
-              
-              const dateStatus = getLessonDateStatus(lesson.scheduledAt);
-              
-              // Determine row color based on completionStatus
-              const getRowColor = () => {
-                if (lesson.completionStatus === 'DONE') {
-                  return 'bg-green-50 hover:bg-green-100';
-                } else if (lesson.completionStatus === 'IN_PROCESS') {
-                  return 'bg-yellow-50 hover:bg-yellow-100';
-                }
-                // Future lessons or no completion status
-                if (dateStatus === 'today') {
-                  return 'bg-blue-50 hover:bg-blue-100';
-                } else if (dateStatus === 'past') {
-                  return 'bg-slate-50 hover:bg-slate-100';
-                }
-                return 'hover:bg-slate-50';
-              };
-
-              const rowClassName = cn('transition-colors', getRowColor());
-              
-              // Check if lesson is locked for teacher
-              const isLocked = isTeacher && lesson.isLockedForTeacher;
-
-              return (
-                <tr key={lesson.id} className={rowClassName}>
-                  <td className="px-4 py-3">
-                    <Checkbox
-                      checked={selectedLessons.has(lesson.id)}
-                      onCheckedChange={(checked) => handleSelectLesson(lesson.id, checked === true)}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div>
-                      <p className="font-semibold text-slate-800">{lesson.group?.name || 'Unknown Group'}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {lesson.completionStatus === 'DONE' && (
-                      <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">
-                        Completed
-                      </Badge>
-                    )}
-                    {lesson.completionStatus === 'IN_PROCESS' && (
-                      <Badge variant="warning" className="bg-yellow-100 text-yellow-700 border-yellow-200">
-                        In Process
-                      </Badge>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div>
-                      <p className="text-sm font-medium text-slate-800">{formatDate(lesson.scheduledAt, locale)}</p>
-                      <p className="text-sm text-slate-600">{formatTime(lesson.scheduledAt, locale)}</p>
-                    </div>
-                  </td>
-                  {!hideTeacherColumn && (
-                    <td className="px-4 py-3">
-                      <p className="text-sm text-slate-700">{teacherName}</p>
-                      {lesson.substituteTeacher?.user && (
-                        <p className="text-xs text-amber-800 mt-1">
-                          Sub: {lesson.substituteTeacher.user.firstName}{' '}
-                          {lesson.substituteTeacher.user.lastName}
-                        </p>
-                      )}
-                    </td>
-                  )}
-                  <td className="px-2 py-3 text-center align-middle">
-                    <div className="flex items-center justify-center">
-                      <StatusIndicator
-                        completed={lesson.absenceMarked || false}
-                        isLocked={lesson.isAbsenceLocked || (lesson.status === 'COMPLETED' && !lesson.absenceMarked)}
-                        onClick={() => onObligationClick?.(lesson.id, 'absence')}
-                        label="Absence"
-                      />
-                    </div>
-                  </td>
-                  <td className="px-2 py-3 text-center align-middle">
-                    <div className="flex items-center justify-center">
-                      <StatusIndicator
-                        completed={lesson.feedbacksCompleted || false}
-                        isLocked={lesson.isFeedbackLocked || (lesson.status === 'COMPLETED' && !lesson.feedbacksCompleted)}
-                        onClick={() => onObligationClick?.(lesson.id, 'feedback')}
-                        label="Feedbacks"
-                        count={lesson._count?.feedbacks}
-                      />
-                    </div>
-                  </td>
-                  <td className="px-2 py-3 text-center align-middle">
-                    <div className="flex items-center justify-center">
-                      <StatusIndicator
-                        completed={lesson.voiceSent || false}
-                        isLocked={lesson.isVoiceLocked || (lesson.status === 'COMPLETED' && !lesson.voiceSent)}
-                        onClick={() => onObligationClick?.(lesson.id, 'voice')}
-                        label="Voice"
-                      />
-                    </div>
-                  </td>
-                  <td className="px-2 py-3 text-center align-middle">
-                    <div className="flex items-center justify-center">
-                      <StatusIndicator
-                        completed={lesson.textSent || false}
-                        isLocked={lesson.isTextLocked || (lesson.status === 'COMPLETED' && !lesson.textSent)}
-                        onClick={() => onObligationClick?.(lesson.id, 'text')}
-                        label="Text"
-                      />
-                    </div>
-                  </td>
-                  <td className="px-2 py-3 text-center align-middle">
-                    <div className="flex items-center justify-center">
-                      <StatusIndicator
-                        completed={lesson.dailyPlanCompleted || false}
-                        isLocked={
-                          lesson.isDailyPlanLocked ||
-                          (lesson.status === 'COMPLETED' && !lesson.dailyPlanCompleted)
-                        }
-                        onClick={() => onObligationClick?.(lesson.id, 'dailyPlan')}
-                        label="Daily Plan"
-                      />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-2 flex-wrap">
-                      {!isTeacher && onAssignSubstitute && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onAssignSubstitute(lesson.id)}
-                          className="text-amber-700 hover:text-amber-800"
-                          title="Assign substitute for this lesson"
-                        >
-                          <img
-                            src="/icons/substitute-teacher.svg"
-                            alt=""
-                            width={20}
-                            height={20}
-                            className="h-5 w-5 shrink-0"
-                            aria-hidden
-                          />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleView(lesson.id)}
-                        className="text-blue-600 hover:text-blue-700"
+            {sectionedCalendarList
+              ? sectionedPageRows.flatMap((row, idx) => {
+                  const globalIdx = (sectionedListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE + idx;
+                  const prevGlobal = globalIdx > 0 ? sectionedOrderedRows[globalIdx - 1] : undefined;
+                  const section = teacherCalendarRowSection(row.category);
+                  const prevSection = prevGlobal ? teacherCalendarRowSection(prevGlobal.category) : null;
+                  const showSectionHeader = section !== prevSection;
+                  const nodes: ReactElement[] = [];
+                  if (showSectionHeader) {
+                    const title =
+                      section === 'upcoming'
+                        ? tCal('sectionUpcoming')
+                        : section === 'today'
+                          ? tCal('sectionToday')
+                          : tCal('sectionCompleted');
+                    nodes.push(
+                      <tr
+                        key={`sec-${sectionedListPage}-${section}-${idx}`}
+                        className="bg-slate-100/95 border-y border-slate-200"
                       >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </Button>
-                      {onComplete && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onComplete(lesson.id)}
-                          disabled={lesson.status === 'COMPLETED' || isLocked}
-                          className={cn(
-                            lesson.status === 'COMPLETED'
-                              ? "text-green-600 cursor-default"
-                              : "text-green-600 hover:text-green-700",
-                            isLocked && "opacity-50 cursor-not-allowed"
-                          )}
-                          title={
-                            lesson.status === 'COMPLETED'
-                              ? "Lesson already completed"
-                              : isLocked
-                              ? "This lesson is locked"
-                              : "Mark lesson as completed"
-                          }
+                        <td
+                          colSpan={tableColSpan}
+                          className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-slate-700"
                         >
-                          {lesson.status === 'COMPLETED' ? (
-                            <CheckCircle2 className="w-4 h-4 fill-current" />
-                          ) : (
-                            <CheckCircle2 className="w-4 h-4" />
-                          )}
-                        </Button>
-                      )}
-                      {onEdit && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onEdit(lesson.id)}
-                          disabled={isLocked}
-                          className={cn(
-                            "text-slate-600 hover:text-slate-700",
-                            isLocked && "opacity-50 cursor-not-allowed"
-                          )}
-                          title={isLocked ? "This lesson is locked for editing" : "Edit"}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                      )}
-                      {onDelete && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onDelete(lesson.id)}
-                          disabled={isLocked}
-                          className={cn(
-                            "text-red-600 hover:text-red-700",
-                            isLocked && "opacity-75 cursor-not-allowed"
-                          )}
-                          title={isLocked ? "This lesson is locked and cannot be deleted" : "Delete"}
-                        >
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+                          {title}
+                        </td>
+                      </tr>,
+                    );
+                  }
+                  nodes.push(
+                    <LessonListTableBodyRow
+                      key={row.lesson.id}
+                      lesson={row.lesson}
+                      locale={locale}
+                      hideTeacherColumn={hideTeacherColumn}
+                      isTeacher={isTeacher}
+                      isSelected={selectedLessons.has(row.lesson.id)}
+                      onSelectLesson={handleSelectLesson}
+                      dateStatus={getScheduleCardDayStatus(row.lesson.scheduledAt)}
+                      onObligationClick={onObligationClick}
+                      onComplete={onComplete}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      onAssignSubstitute={onAssignSubstitute}
+                      scheduleCategory={row.category}
+                      scheduleCategoryLabels={scheduleCategoryLabels}
+                    />,
+                  );
+                  return nodes;
+                })
+              : sortedLessons.map((lesson) => (
+                  <LessonListTableBodyRow
+                    key={lesson.id}
+                    lesson={lesson}
+                    locale={locale}
+                    hideTeacherColumn={hideTeacherColumn}
+                    isTeacher={isTeacher}
+                    isSelected={selectedLessons.has(lesson.id)}
+                    onSelectLesson={handleSelectLesson}
+                    dateStatus={getScheduleCardDayStatus(lesson.scheduledAt)}
+                    onObligationClick={onObligationClick}
+                    onComplete={onComplete}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onAssignSubstitute={onAssignSubstitute}
+                    scheduleCategoryLabels={scheduleCategoryLabels}
+                  />
+                ))}
           </tbody>
         </table>
       </div>
+      {sectionedCalendarList && sectionedTotalPages > 1 && (
+        <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-center text-sm text-slate-600 sm:text-left">
+            {tCal('paginationSummary', {
+              showingFrom: (sectionedListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE + 1,
+              showingTo: Math.min(
+                sectionedListPage * TEACHER_CALENDAR_LIST_PAGE_SIZE,
+                sectionedOrderedRows.length,
+              ),
+              total: sectionedOrderedRows.length,
+            })}
+          </p>
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              disabled={sectionedListPage <= 1}
+              onClick={() => setSectionedListPage((p) => Math.max(1, p - 1))}
+              aria-label={tCal('paginationPrevious')}
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden />
+              <span className="hidden sm:inline">{tCal('paginationPrevious')}</span>
+            </Button>
+            <span className="min-w-[6.5rem] text-center text-sm font-medium text-slate-800">
+              {tCal('paginationPageOf', { current: sectionedListPage, total: sectionedTotalPages })}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              disabled={sectionedListPage >= sectionedTotalPages}
+              onClick={() => setSectionedListPage((p) => Math.min(sectionedTotalPages, p + 1))}
+              aria-label={tCal('paginationNext')}
+            >
+              <span className="hidden sm:inline">{tCal('paginationNext')}</span>
+              <ChevronRight className="h-4 w-4" aria-hidden />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

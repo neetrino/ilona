@@ -11,6 +11,7 @@ import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
+import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -95,6 +96,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     },
   });
 
+  const watchedCenterId = watch('centerId') || '';
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
   const watchedDob = watch('dateOfBirth');
@@ -114,10 +116,31 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true });
   const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
   const centers = centersData?.items ?? [];
+  const assignmentGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
+  const teachersForCenter = useMemo(() => {
+    if (!watchedCenterId) return [];
+    let list = teachers.filter((t) =>
+      teacherBelongsToCenter(t.id, watchedCenterId, t.centerLinks, assignmentGroups),
+    );
+    if (watchedTeacherId && !list.some((t) => t.id === watchedTeacherId)) {
+      const current = teachers.find((t) => t.id === watchedTeacherId);
+      if (current) list = [current, ...list];
+    }
+    return list;
+  }, [assignmentGroups, teachers, watchedCenterId, watchedTeacherId]);
   const groupsForTeacher = useMemo(() => {
     const all = groupsData?.items ?? [];
-    return watchedTeacherId ? all.filter((g) => g.teacherId === watchedTeacherId) : [];
-  }, [groupsData?.items, watchedTeacherId]);
+    if (!watchedTeacherId) return [];
+    let list = all.filter((g) => g.teacherId === watchedTeacherId);
+    if (watchedCenterId) {
+      list = list.filter((g) => g.centerId === watchedCenterId);
+    }
+    if (watchedGroupId && !list.some((g) => g.id === watchedGroupId)) {
+      const current = all.find((g) => g.id === watchedGroupId);
+      if (current) list = [current, ...list];
+    }
+    return list;
+  }, [groupsData?.items, watchedTeacherId, watchedCenterId, watchedGroupId]);
 
   useEffect(() => {
     if (!watchedTeacherId) {
@@ -126,10 +149,21 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     }
     if (!watchedGroupId) return;
     const g = groupsData?.items?.find((x) => x.id === watchedGroupId);
-    if (g && g.teacherId !== watchedTeacherId) {
+    if (!g) return;
+    if (g.teacherId !== watchedTeacherId) {
+      setValue('groupId', '');
+      return;
+    }
+    if (watchedCenterId && g.centerId !== watchedCenterId) {
       setValue('groupId', '');
     }
-  }, [watchedTeacherId, watchedGroupId, groupsData?.items, setValue]);
+  }, [
+    watchedTeacherId,
+    watchedGroupId,
+    watchedCenterId,
+    groupsData?.items,
+    setValue,
+  ]);
 
   const selectedTeacher = useMemo(
     () => teachers.find((t) => t.id === watchedTeacherId),
@@ -147,6 +181,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
   const selectFieldClass =
     'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+
+  const { onChange: onCenterChangeField, ...centerIdFieldRest } = register('centerId');
 
   // Pre-fill form when student data is loaded
   useEffect(() => {
@@ -350,6 +386,31 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               )}
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="centerId">Center</Label>
+              <select
+                id="centerId"
+                {...centerIdFieldRest}
+                className={selectFieldClass}
+                disabled={isLoadingCenters || isSubmitting}
+                onChange={(e) => {
+                  onCenterChangeField(e);
+                  setValue('teacherId', '', { shouldDirty: true });
+                  setValue('groupId', '', { shouldDirty: true });
+                }}
+              >
+                <option value="">Not assigned</option>
+                {centers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {errors.centerId && (
+                <p className="text-sm text-red-600">{errors.centerId.message}</p>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="teacherId">Teacher</Label>
@@ -357,10 +418,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   id="teacherId"
                   {...register('teacherId')}
                   className={selectFieldClass}
-                  disabled={isLoadingTeachers || isSubmitting}
+                  disabled={isLoadingTeachers || isSubmitting || !watchedCenterId}
                 >
-                  <option value="">Select a teacher</option>
-                  {teachers.map((teacher) => (
+                  <option value="">
+                    {watchedCenterId ? 'Select teacher' : 'Select a center first'}
+                  </option>
+                  {teachersForCenter.map((teacher) => (
                     <option key={teacher.id} value={teacher.id}>
                       {teacher.user.firstName} {teacher.user.lastName}
                       {teacher.user.phone ? ` - ${teacher.user.phone}` : ''}
@@ -386,7 +449,9 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   className={selectFieldClass}
                   disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
                 >
-                  <option value="">{watchedTeacherId ? 'No group assigned' : 'Select Teacher first'}</option>
+                  <option value="">
+                    {watchedTeacherId ? 'Select group' : 'Select a teacher first'}
+                  </option>
                   {groupsForTeacher.map((group) => (
                     <option key={group.id} value={group.id}>
                       {group.name} {group.level ? `(${group.level})` : ''}
@@ -406,26 +471,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   </p>
                 ) : null}
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="centerId">Center</Label>
-              <select
-                id="centerId"
-                {...register('centerId')}
-                className={selectFieldClass}
-                disabled={isLoadingCenters || isSubmitting}
-              >
-                <option value="">Not assigned</option>
-                {centers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              {errors.centerId && (
-                <p className="text-sm text-red-600">{errors.centerId.message}</p>
-              )}
             </div>
 
             <div className="space-y-2">

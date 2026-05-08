@@ -10,9 +10,10 @@ import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
-import { GroupScheduleEditor } from './GroupScheduleEditor';
+import { GroupCalendarScheduleSection } from './GroupCalendarScheduleSection';
 import { GroupIconPicker } from './GroupIconPicker';
 import type { GroupIconKey } from '@ilona/types';
+import { defaultMonthDateRange, scheduleSlotsValidationError } from '../group-schedule-utils';
 
 const createGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters'),
@@ -20,7 +21,6 @@ const createGroupSchema = z.object({
   centerId: z.string().min(1, 'Please select a center'),
   teacherId: z.string().optional().or(z.literal('')),
   substituteTeacherId: z.string().optional().or(z.literal('')),
-  isActive: z.boolean().optional(),
 });
 
 type CreateGroupFormData = z.infer<typeof createGroupSchema>;
@@ -35,6 +35,8 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
+  const [dateFrom, setDateFrom] = useState(() => defaultMonthDateRange().from);
+  const [dateTo, setDateTo] = useState(() => defaultMonthDateRange().to);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const createGroup = useCreateGroup();
 
@@ -63,7 +65,6 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       centerId: defaultCenterId || '',
       teacherId: '',
       substituteTeacherId: '',
-      isActive: true,
     },
   });
   const watchedTeacherId = watch('teacherId');
@@ -87,9 +88,11 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         centerId: defaultCenterId || '',
         teacherId: '',
         substituteTeacherId: '',
-        isActive: true,
       });
       setSchedule([]);
+      const r = defaultMonthDateRange();
+      setDateFrom(r.from);
+      setDateTo(r.to);
       setIconKey(null);
       setErrorMessage(null);
       setSuccessMessage(null);
@@ -109,6 +112,26 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         return;
       }
 
+      if (schedule.length > 0) {
+        if (!data.teacherId?.trim()) {
+          setErrorMessage('Select a main teacher to generate calendar lessons.');
+          return;
+        }
+        const slotErr = scheduleSlotsValidationError(schedule);
+        if (slotErr) {
+          setErrorMessage(slotErr);
+          return;
+        }
+        if (!dateFrom || !dateTo) {
+          setErrorMessage('Choose a start and end date for the calendar range.');
+          return;
+        }
+        if (dateTo < dateFrom) {
+          setErrorMessage('End date must be on or after the start date.');
+          return;
+        }
+      }
+
       const payload: CreateGroupDto = {
         name: data.name,
         level: data.level || undefined,
@@ -116,7 +139,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         teacherId: data.teacherId || undefined,
         substituteTeacherId: data.substituteTeacherId || undefined,
         schedule: schedule.length > 0 ? schedule : undefined,
-        isActive: data.isActive ?? true,
+        calendarPlan: schedule.length > 0 ? { dateFrom, dateTo } : undefined,
         ...(iconKey ? { iconKey } : {}),
       };
 
@@ -133,9 +156,11 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         centerId: defaultCenterId || '',
         teacherId: '',
         substituteTeacherId: '',
-        isActive: true,
       });
       setSchedule([]);
+      const r = defaultMonthDateRange();
+      setDateFrom(r.from);
+      setDateTo(r.to);
       setIconKey(null);
       setTimeout(() => {
         onOpenChange(false);
@@ -237,11 +262,13 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="teacherId">Main Teacher (Optional)</Label>
+            <Label htmlFor="teacherId">
+              Main Teacher {schedule.length > 0 ? <span className="text-red-500">*</span> : '(Optional)'}
+            </Label>
             <select
               id="teacherId"
               {...register('teacherId')}
-              disabled={isSubmitting || isLoadingTeachers}
+              disabled={isSubmitting || createGroup.isPending || isLoadingTeachers}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm ${
                 errors.teacherId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
@@ -266,10 +293,10 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
             <select
               id="substituteTeacherId"
               {...register('substituteTeacherId')}
-              disabled={isSubmitting || isLoadingTeachers}
+              disabled={isSubmitting || createGroup.isPending || isLoadingTeachers}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm ${
                 errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+              } ${isSubmitting || createGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
               <option value="">No substitute</option>
               {teachers
@@ -282,44 +309,37 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
             </select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Working hours (Schedule)</Label>
-            <GroupScheduleEditor
-              value={schedule}
-              onChange={setSchedule}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="isActive"
-              {...register('isActive')}
-              defaultChecked={true}
-              className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
-              disabled={isSubmitting}
-            />
-            <Label htmlFor="isActive" className="font-normal cursor-pointer">
-              Active (Group is currently active and accepting students)
-            </Label>
-          </div>
+          <GroupCalendarScheduleSection
+            schedule={schedule}
+            onScheduleChange={setSchedule}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            disabled={isSubmitting || createGroup.isPending}
+          />
 
           <DialogFooter>
             <Button
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
+              disabled={isSubmitting || createGroup.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || isLoadingCenters || isLoadingTeachers || centers.length === 0}
+              disabled={
+                isSubmitting ||
+                createGroup.isPending ||
+                isLoadingCenters ||
+                isLoadingTeachers ||
+                centers.length === 0
+              }
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isSubmitting ? 'Creating...' : 'Create Group'}
+              {isSubmitting || createGroup.isPending ? 'Creating...' : 'Create Group'}
             </Button>
           </DialogFooter>
         </form>

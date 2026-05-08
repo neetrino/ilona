@@ -32,6 +32,8 @@ export type ScheduleBoardProps = {
   periodLabel: string;
   onPeriodNavigate: (direction: 'prev' | 'next') => void;
   onGoToToday: () => void;
+  /** Past vs future lesson starts (local instant): green vs blue; status accents unchanged. */
+  highlightPastLessonCards?: boolean;
 };
 
 export function ScheduleBoard({
@@ -46,6 +48,7 @@ export function ScheduleBoard({
   periodLabel,
   onPeriodNavigate,
   onGoToToday,
+  highlightPastLessonCards = false,
 }: ScheduleBoardProps) {
   const lessonsByDate = useMemo(
     () => buildLessonsByDate(lessons),
@@ -126,6 +129,7 @@ export function ScheduleBoard({
               weekDates={weekDates}
               lessons={lessons}
               isLoading={isLoading}
+              highlightPastLessonCards={highlightPastLessonCards}
             />
           ) : (
             <MonthLessonGrid
@@ -133,6 +137,7 @@ export function ScheduleBoard({
               monthDates={monthDates}
               lessonsByDate={lessonsByDate}
               isLoading={isLoading}
+              highlightPastLessonCards={highlightPastLessonCards}
             />
           )}
         </div>

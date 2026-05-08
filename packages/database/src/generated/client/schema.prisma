@@ -250,35 +250,41 @@ model StudentGroupHistory {
   @@map("student_group_histories")
 }
 
+enum LessonCreationSource {
+  MANUAL
+  GROUP_SCHEDULE
+}
+
 model Lesson {
-  id                  String          @id @default(cuid())
+  id                  String               @id @default(cuid())
   groupId             String
   teacherId           String
   /// When set, this teacher covers the class for this lesson only (salary + teacher workflows).
   substituteTeacherId String?
   scheduledAt         DateTime
-  duration            Int             @default(60)
+  duration            Int                  @default(60)
   topic               String?
   description         String?
-  status              LessonStatus    @default(SCHEDULED)
-  vocabularySent      Boolean         @default(false)
+  status              LessonStatus         @default(SCHEDULED)
+  vocabularySent      Boolean              @default(false)
   vocabularySentAt    DateTime?
-  feedbacksCompleted  Boolean         @default(false)
-  absenceMarked       Boolean         @default(false)
+  feedbacksCompleted  Boolean              @default(false)
+  absenceMarked       Boolean              @default(false)
   absenceMarkedAt     DateTime?
-  voiceSent           Boolean         @default(false)
+  voiceSent           Boolean              @default(false)
   voiceSentAt         DateTime?
-  textSent            Boolean         @default(false)
+  textSent            Boolean              @default(false)
   textSentAt          DateTime?
   completedAt         DateTime?
   notes               String?
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  creationSource      LessonCreationSource @default(MANUAL)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   attendances         Attendance[]
   feedbacks           Feedback[]
-  group               Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  teacher             Teacher         @relation(fields: [teacherId], references: [id])
-  substituteTeacher   Teacher?        @relation("LessonSubstituteTeacher", fields: [substituteTeacherId], references: [id], onDelete: SetNull)
+  group               Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teacher             Teacher              @relation(fields: [teacherId], references: [id])
+  substituteTeacher   Teacher?             @relation("LessonSubstituteTeacher", fields: [substituteTeacherId], references: [id], onDelete: SetNull)
   dailyPlan           DailyPlan?
   recordingItems      RecordingItem[]
 

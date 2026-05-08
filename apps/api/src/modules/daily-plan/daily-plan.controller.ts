@@ -28,13 +28,13 @@ export class DailyPlanController {
     @Query() query: QueryDailyPlanDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.service.findAll(query, user.sub, user.role);
+    return this.service.findAll(query, user);
   }
 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
   async findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.service.findById(id, user.sub, user.role);
+    return this.service.findById(id, user);
   }
 
   @Post()
@@ -53,12 +53,12 @@ export class DailyPlanController {
     @Body() dto: UpdateDailyPlanDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.service.update(id, dto, user.sub, user.role);
+    return this.service.update(id, dto, user);
   }
 
   @Delete(':id')
   @Roles(UserRole.TEACHER, UserRole.ADMIN)
   async remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.service.remove(id, user.sub, user.role);
+    return this.service.remove(id, user);
   }
 }

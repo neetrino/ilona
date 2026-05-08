@@ -474,10 +474,14 @@ export function useStudentsPage() {
     const allGroups = groupsData?.items ?? [];
     const currentGroup = groupId ? allGroups.find((g) => g.id === groupId) : undefined;
     const nextTeacherId = teacherId || null;
-    const groupBelongsToTeacher =
-      !currentGroup || !nextTeacherId || currentGroup.teacherId === nextTeacherId;
+    const rowCenterId = row?.centerId ?? null;
+    const groupMatchesTeacherAndCenter =
+      !currentGroup ||
+      !nextTeacherId ||
+      (currentGroup.teacherId === nextTeacherId &&
+        (!rowCenterId || currentGroup.centerId === rowCenterId));
     const payload: UpdateStudentDto = { teacherId: teacherId || undefined };
-    if (!groupBelongsToTeacher) {
+    if (!groupMatchesTeacherAndCenter) {
       payload.groupId = null;
     }
     await updateStudent.mutateAsync({
@@ -494,9 +498,16 @@ export function useStudentsPage() {
   };
 
   const handleCenterChange = async (studentId: string, centerId: string | null) => {
+    const row = students.find((s): s is Student => !isOnboardingItem(s) && s.id === studentId);
+    const prevCenterId = row?.centerId ?? null;
+    const nextCenterId = centerId;
+    const centerChanged = row ? prevCenterId !== nextCenterId : true;
     await updateStudent.mutateAsync({
       id: studentId,
-      data: { centerId: centerId === null ? null : centerId },
+      data: {
+        centerId: nextCenterId === null ? null : nextCenterId,
+        ...(centerChanged ? { teacherId: null, groupId: null } : {}),
+      },
     });
   };
 
@@ -507,14 +518,7 @@ export function useStudentsPage() {
     });
   };
 
-  // Prepare options for dropdowns
-  const teacherOptions = useMemo(() => 
-    (teachersData?.items || []).map(teacher => ({
-      id: teacher.id,
-      label: `${teacher.user.firstName} ${teacher.user.lastName}`,
-    })),
-    [teachersData]
-  );
+  const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
 
   // Full groups list with teacherId for per-row filtering (group options are filtered by selected teacher in table)
   const groups = useMemo(() => groupsData?.items ?? [], [groupsData]);
@@ -655,7 +659,7 @@ export function useStudentsPage() {
     updateStudent,
     
     // Options
-    teacherOptions,
+    teachers,
     groups,
     centerOptions,
     teacherFilterOptions,

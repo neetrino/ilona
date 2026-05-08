@@ -10,6 +10,8 @@ interface InlineSelectProps {
   options: Array<{ id: string; label: string }>;
   onChange: (value: string | null) => Promise<void>;
   placeholder?: string;
+  /** First row in the open menu (clear value). Defaults to `placeholder`. */
+  clearLabel?: string;
   disabled?: boolean;
   className?: string;
 }
@@ -19,6 +21,7 @@ export function InlineSelect({
   options,
   onChange,
   placeholder = 'Not assigned',
+  clearLabel,
   disabled = false,
   className,
 }: InlineSelectProps) {
@@ -126,6 +129,8 @@ export function InlineSelect({
     };
   }, [isOpen, options.length]);
 
+  const emptyActionLabel = clearLabel ?? placeholder;
+
   const handleSelect = async (newValue: string | null) => {
     if (newValue === localValue) {
       setIsOpen(false);
@@ -174,7 +179,7 @@ export function InlineSelect({
               !localValue && 'bg-primary/10 font-medium'
             )}
           >
-            {placeholder}
+            {emptyActionLabel}
           </button>
           {options.map((option) => (
             <button

@@ -185,7 +185,7 @@ export class StudentStatisticsService {
         scheduledAt: { gte: new Date() },
         status: 'SCHEDULED',
       },
-      take: 5,
+      take: 1,
       orderBy: { scheduledAt: 'asc' },
       include: {
         teacher: {

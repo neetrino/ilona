@@ -8,13 +8,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLessonDto, UpdateLessonDto } from './dto';
-import { Prisma, LessonStatus, UserRole } from '@ilona/database';
+import { Prisma, LessonStatus, UserRole, LessonCreationSource } from '@ilona/database';
 import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { SalariesService } from '../finance/salaries.service';
 import {
   teacherActsAsLessonInstructor,
   lessonsPayableToTeacherWhere,
 } from '../../common/lesson-instructor';
+import { GroupScheduleLessonsService } from './group-schedule-lessons.service';
 
 /**
  * Service responsible for lesson CRUD operations
@@ -26,6 +27,7 @@ export class LessonCrudService {
     private readonly enrichmentService: LessonEnrichmentService,
     @Inject(forwardRef(() => SalariesService))
     private readonly salariesService: SalariesService,
+    private readonly groupScheduleLessonsService: GroupScheduleLessonsService,
   ) {}
 
   private async getManagerCenterId(currentUserId?: string, userRole?: UserRole): Promise<string | null> {
@@ -586,6 +588,7 @@ export class LessonCrudService {
         topic: dto.topic,
         description: dto.description,
         status: 'SCHEDULED',
+        creationSource: dto.creationSource ?? LessonCreationSource.MANUAL,
       },
       include: {
         group: { select: { id: true, name: true } },
@@ -822,10 +825,22 @@ export class LessonCrudService {
   }
 
   async delete(id: string) {
-    // Allow deletion of any lesson regardless of status
-    return this.prisma.lesson.delete({
+    const existing = await this.prisma.lesson.findUnique({
+      where: { id },
+      select: { groupId: true, scheduledAt: true, creationSource: true },
+    });
+    if (!existing) {
+      throw new NotFoundException(`Lesson with ID ${id} not found`);
+    }
+    const deleted = await this.prisma.lesson.delete({
       where: { id },
     });
+    await this.groupScheduleLessonsService.recordSuppressedSlotAfterLessonDeletion({
+      groupId: existing.groupId,
+      scheduledAt: existing.scheduledAt,
+      creationSource: existing.creationSource,
+    });
+    return deleted;
   }
 
   async deleteBulk(lessonIds: string[], currentUserId?: string, userRole?: UserRole) {

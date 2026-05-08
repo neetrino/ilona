@@ -28,10 +28,11 @@ export function useCalendarData({
     if (viewMode === 'week') {
       return weekDates[0];
     } else if (viewMode === 'list') {
-      // Start from today (beginning of today)
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return today;
+      // Include past lessons for completed history; same local calendar as week/month.
+      const from = new Date();
+      from.setMonth(from.getMonth() - 3);
+      from.setHours(0, 0, 0, 0);
+      return from;
     } else {
       return new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     }
@@ -56,7 +57,7 @@ export function useCalendarData({
     {
       dateFrom: formatDate(dateFrom),
       dateTo: formatDate(dateTo),
-      take: 100,
+      take: viewMode === 'list' ? 250 : 100,
       sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
       sortOrder: sortBy === 'scheduledAt' ? sortOrder : undefined,
     },

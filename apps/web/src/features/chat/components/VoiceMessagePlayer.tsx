@@ -5,8 +5,6 @@ import { getProxiedFileUrl } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
-const VOICE_SEEK_SKIP_SECONDS = 5;
-
 const PLAYBACK_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 type PlaybackSpeed = (typeof PLAYBACK_SPEED_OPTIONS)[number];
 let activeAudioElement: HTMLAudioElement | null = null;
@@ -144,17 +142,6 @@ export function VoiceMessagePlayer({
     if (rect.width <= 0) return;
     const ratio = (clientX - rect.left) / rect.width;
     seekToRatio(ratio);
-  };
-
-  const seekBySeconds = (delta: number) => {
-    const el = audioRef.current;
-    if (!el || isLoading) return;
-    const dur = getEffectiveDuration(el);
-    if (dur <= 0) return;
-    const next = Math.max(0, Math.min(dur, el.currentTime + delta));
-    el.currentTime = next;
-    setProgress((next / dur) * 100);
-    setCurrentTimeSec(next);
   };
 
   const endScrubbing = (target: HTMLDivElement, pointerId: number) => {
@@ -435,26 +422,6 @@ export function VoiceMessagePlayer({
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
-          </button>
-          <button
-            type="button"
-            onClick={() => seekBySeconds(-VOICE_SEEK_SKIP_SECONDS)}
-            disabled={isLoading}
-            className="flex-shrink-0 min-w-[2.25rem] h-8 px-1 rounded-full bg-slate-700/80 text-white text-[10px] font-semibold leading-none flex items-center justify-center hover:bg-slate-600 disabled:opacity-40 touch-manipulation"
-            title={`Back ${VOICE_SEEK_SKIP_SECONDS} seconds`}
-            aria-label={`Rewind ${VOICE_SEEK_SKIP_SECONDS} seconds`}
-          >
-            −{VOICE_SEEK_SKIP_SECONDS}
-          </button>
-          <button
-            type="button"
-            onClick={() => seekBySeconds(VOICE_SEEK_SKIP_SECONDS)}
-            disabled={isLoading}
-            className="flex-shrink-0 min-w-[2.25rem] h-8 px-1 rounded-full bg-slate-700/80 text-white text-[10px] font-semibold leading-none flex items-center justify-center hover:bg-slate-600 disabled:opacity-40 touch-manipulation"
-            title={`Forward ${VOICE_SEEK_SKIP_SECONDS} seconds`}
-            aria-label={`Forward ${VOICE_SEEK_SKIP_SECONDS} seconds`}
-          >
-            +{VOICE_SEEK_SKIP_SECONDS}
           </button>
           <div className="flex-1 min-w-0">
             <div

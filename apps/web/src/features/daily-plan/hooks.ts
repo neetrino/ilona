@@ -26,6 +26,8 @@ export function useDailyPlans(filters?: DailyPlanFilters, enabled = true) {
     queryFn: () => fetchDailyPlans(filters),
     enabled,
     staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 }
 

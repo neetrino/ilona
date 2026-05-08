@@ -15,15 +15,28 @@ export interface DailyPlanTopic {
   resources: DailyPlanResource[];
 }
 
+export interface DailyPlanCenterRef {
+  id: string;
+  name: string;
+}
+
 export interface DailyPlanGroupRef {
   id: string;
   name: string;
   level: string | null;
+  centerId?: string | null;
+  center?: DailyPlanCenterRef | null;
 }
 
 export interface DailyPlanLessonRef {
   id: string;
   scheduledAt: string;
+  group?: {
+    id: string;
+    name: string;
+    centerId?: string | null;
+    center?: DailyPlanCenterRef | null;
+  } | null;
 }
 
 export interface DailyPlanTeacherRef {

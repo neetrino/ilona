@@ -3,6 +3,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
 import { Prisma } from '@ilona/database';
 import { ChatService } from '../chat/chat.service';
+import { GroupScheduleLessonsService } from '../lessons/group-schedule-lessons.service';
+import {
+  buildScheduleJson,
+  parseGroupSchedulePayload,
+  type GroupCalendarStored,
+  type GroupWeeklySlot,
+} from './group-schedule-payload';
 import {
   FIXED_GROUP_MAX_STUDENTS,
   GROUP_CAPACITY_EXCEEDED_MESSAGE,
@@ -16,6 +23,7 @@ export class GroupsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chatService: ChatService,
+    private readonly groupScheduleLessonsService: GroupScheduleLessonsService,
   ) {}
 
   private async assertManagerGroupAccess(groupId: string, user?: JwtPayload) {
@@ -377,8 +385,51 @@ export class GroupsService {
       }
     }
 
-    // Create group
-    const group = await this.prisma.group.create({
+    if (dto.calendarPlan) {
+      if (!dto.teacherId) {
+        throw new BadRequestException(
+          'Assign a main teacher to the group to generate calendar lessons from the schedule.',
+        );
+      }
+      if (!dto.schedule?.length) {
+        throw new BadRequestException('Add at least one weekly time slot to generate calendar lessons.');
+      }
+    }
+
+    const weeklySlots = (dto.schedule ?? []) as GroupWeeklySlot[];
+    const nextCalendar: GroupCalendarStored | null = dto.calendarPlan
+      ? {
+          dateFrom: dto.calendarPlan.dateFrom,
+          dateTo: dto.calendarPlan.dateTo,
+          topic: dto.calendarPlan.topic,
+          description: dto.calendarPlan.description,
+          suppressedSlotStarts: [],
+        }
+      : null;
+
+    const scheduleForCreate =
+      buildScheduleJson(weeklySlots, nextCalendar) ??
+      (weeklySlots.length > 0 ? (weeklySlots as unknown as Prisma.InputJsonValue) : undefined);
+
+    const groupInclude = {
+      center: { select: { id: true, name: true } },
+      teacher: {
+        include: {
+          user: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+        },
+      },
+      substituteTeacher: {
+        include: {
+          user: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+        },
+      },
+    } as const;
+
+    let group = await this.prisma.group.create({
       data: {
         name: dto.name,
         level: dto.level,
@@ -388,30 +439,31 @@ export class GroupsService {
         centerId: dto.centerId,
         teacherId: dto.teacherId,
         substituteTeacherId: dto.substituteTeacherId,
-        schedule: dto.schedule ? (dto.schedule as unknown as Prisma.InputJsonValue) : undefined,
+        schedule: scheduleForCreate ?? undefined,
         isActive: dto.isActive ?? true,
       },
-      include: {
-        center: { select: { id: true, name: true } },
-        teacher: {
-          include: {
-            user: {
-              select: { id: true, firstName: true, lastName: true, email: true },
-            },
-          },
-        },
-        substituteTeacher: {
-          include: {
-            user: {
-              select: { id: true, firstName: true, lastName: true, email: true },
-            },
-          },
-        },
-      },
+      include: groupInclude,
     });
 
-    // Create group chat automatically
     await this.createGroupChat(group.id, group.name, dto.teacherId);
+
+    const syncedSchedule = await this.groupScheduleLessonsService.syncAfterGroupSaved({
+      groupId: group.id,
+      teacherId: group.teacherId,
+      weeklySlots,
+      calendar: nextCalendar,
+      previousScheduleJson: null,
+      previousTeacherId: null,
+      confirmReplaceGeneratedLessons: false,
+    });
+
+    if (syncedSchedule !== undefined) {
+      group = await this.prisma.group.update({
+        where: { id: group.id },
+        data: { schedule: syncedSchedule },
+        include: groupInclude,
+      });
+    }
 
     return group;
   }
@@ -530,13 +582,75 @@ export class GroupsService {
       }
     }
 
-    const { schedule: scheduleDto, substituteTeacherId, ...rest } = dto;
-    const scheduleData =
-      scheduleDto === undefined
-        ? {}
+    const {
+      schedule: scheduleDto,
+      calendarPlan,
+      confirmReplaceGeneratedLessons,
+      substituteTeacherId,
+      ...rest
+    } = dto;
+
+    const prevParsed = parseGroupSchedulePayload(currentGroup.schedule);
+
+    const nextWeekly: GroupWeeklySlot[] =
+      scheduleDto !== undefined ? ((scheduleDto ?? []) as GroupWeeklySlot[]) : prevParsed.weeklySlots;
+
+    let nextCalendar: GroupCalendarStored | null;
+    if (calendarPlan === undefined) {
+      nextCalendar = prevParsed.calendar;
+    } else if (calendarPlan === null) {
+      nextCalendar = null;
+    } else {
+      nextCalendar = {
+        dateFrom: calendarPlan.dateFrom,
+        dateTo: calendarPlan.dateTo,
+        topic: calendarPlan.topic,
+        description: calendarPlan.description,
+        suppressedSlotStarts: prevParsed.calendar?.suppressedSlotStarts ?? [],
+      };
+    }
+
+    const nextTeacherId =
+      dto.teacherId !== undefined ? dto.teacherId || null : currentGroup.teacherId;
+
+    if (nextCalendar) {
+      if (!nextTeacherId) {
+        throw new BadRequestException(
+          'Assign a main teacher to the group to use calendar generation.',
+        );
+      }
+      if (nextWeekly.length === 0) {
+        throw new BadRequestException('Add at least one weekly time slot for calendar generation.');
+      }
+    }
+
+    let finalSchedule: Prisma.InputJsonValue | typeof Prisma.JsonNull | undefined =
+      buildScheduleJson(nextWeekly, nextCalendar) ??
+      (nextWeekly.length > 0
+        ? (nextWeekly as unknown as Prisma.InputJsonValue)
         : scheduleDto === null
-          ? { schedule: Prisma.JsonNull }
-          : { schedule: scheduleDto as unknown as Prisma.InputJsonValue };
+          ? Prisma.JsonNull
+          : undefined);
+
+    const synced = await this.groupScheduleLessonsService.syncAfterGroupSaved({
+      groupId: id,
+      teacherId: nextTeacherId,
+      weeklySlots: nextWeekly,
+      calendar: nextCalendar,
+      previousScheduleJson: currentGroup.schedule,
+      previousTeacherId: currentGroup.teacherId,
+      confirmReplaceGeneratedLessons: confirmReplaceGeneratedLessons ?? false,
+    });
+    if (synced !== undefined) {
+      finalSchedule = synced;
+    }
+
+    if (finalSchedule === undefined && nextWeekly.length === 0 && !nextCalendar) {
+      finalSchedule = Prisma.JsonNull;
+    }
+
+    const scheduleUpdate =
+      finalSchedule !== undefined ? { schedule: finalSchedule } : {};
 
     return this.prisma.group.update({
       where: { id },
@@ -545,7 +659,7 @@ export class GroupsService {
         ...(substituteTeacherId !== undefined
           ? { substituteTeacherId: substituteTeacherId || null }
           : {}),
-        ...scheduleData,
+        ...scheduleUpdate,
         maxStudents: FIXED_GROUP_MAX_STUDENTS,
       },
       include: {

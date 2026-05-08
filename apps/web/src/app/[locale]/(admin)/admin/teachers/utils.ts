@@ -2,20 +2,40 @@ import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
 
 /**
- * Extract centers from teacher (from centers field or groups)
+ * Unique centers/branches for a teacher from explicit assignments (centers, centerLinks)
+ * and from groups when no explicit data exists.
  */
 export function getTeacherCenters(teacher: Teacher): Center[] {
-  if (teacher.centers && teacher.centers.length > 0) {
-    return teacher.centers as Center[];
+  const byId = new Map<string, { id: string; name: string }>();
+
+  const add = (c: { id: string; name: string } | undefined) => {
+    if (c?.id) {
+      byId.set(c.id, { id: c.id, name: c.name });
+    }
+  };
+
+  for (const c of teacher.centers ?? []) {
+    add(c);
   }
-  
+  for (const link of teacher.centerLinks ?? []) {
+    add(link.center);
+  }
+
+  if (byId.size > 0) {
+    return Array.from(byId.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    ) as Center[];
+  }
+
   return Array.from(
     new Map(
       (teacher.groups || [])
         .filter((group) => group.center)
         .map((group) => [group.center!.id, group.center!])
     ).values()
-  ) as Center[];
+  )
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((c) => ({ id: c.id, name: c.name })) as Center[];
 }
 
 /**
@@ -39,39 +59,42 @@ export function filterTeachersByBranches(
 }
 
 /**
- * Group teachers by primary center (first assigned center) for board tabs and list summary chips.
+ * Group teachers by center for tabs and strip counts: each teacher appears under every
+ * branch they are assigned to (not only a single "primary" center).
  */
 export function groupTeachersByCenter(
   teachers: Teacher[],
   centers: Center[]
 ): Record<string, Teacher[]> {
   const grouped: Record<string, Teacher[]> = {};
-  
-  // Initialize all centers
-  centers.forEach(center => {
+
+  centers.forEach((center) => {
     grouped[center.id] = [];
   });
-  
-  // Add unassigned teachers column
+
   grouped['unassigned'] = [];
-  
-  // Assign teachers to their centers
-  teachers.forEach(teacher => {
+
+  teachers.forEach((teacher) => {
     const teacherCenters = getTeacherCenters(teacher);
-    
-    if (teacherCenters.length > 0) {
-      // Assign to first center (or could assign to all centers)
-      const firstCenterId = teacherCenters[0].id;
-      if (grouped[firstCenterId]) {
-        grouped[firstCenterId].push(teacher);
-      } else {
-        grouped['unassigned'].push(teacher);
+
+    if (teacherCenters.length === 0) {
+      grouped['unassigned'].push(teacher);
+      return;
+    }
+
+    let matchedVisibleCenter = false;
+    for (const tc of teacherCenters) {
+      if (grouped[tc.id]) {
+        grouped[tc.id].push(teacher);
+        matchedVisibleCenter = true;
       }
-    } else {
+    }
+
+    if (!matchedVisibleCenter) {
       grouped['unassigned'].push(teacher);
     }
   });
-  
+
   return grouped;
 }
 

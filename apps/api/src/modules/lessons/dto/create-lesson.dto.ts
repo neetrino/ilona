@@ -6,7 +6,9 @@ import {
   Min,
   Max,
   MaxLength,
+  IsEnum,
 } from 'class-validator';
+import { LessonCreationSource } from '@ilona/database';
 
 export class CreateLessonDto {
   @IsString()
@@ -33,4 +35,8 @@ export class CreateLessonDto {
   @IsOptional()
   @MaxLength(1000)
   description?: string;
+
+  @IsOptional()
+  @IsEnum(LessonCreationSource)
+  creationSource?: LessonCreationSource;
 }
