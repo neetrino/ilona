@@ -325,6 +325,29 @@ export function createStudentsTableColumns({
       },
     },
     {
+      key: 'center',
+      header: 'CENTER',
+      className: '!w-[14%] align-top',
+      render: (row: TeacherAssignedItem) => {
+        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
+        const manualCenterId = row.centerId ?? null;
+        return (
+          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
+            <InlineSelect
+              value={manualCenterId}
+              options={centerOptions}
+              onChange={async (centerId) => {
+                await onCenterChange(row.id, centerId);
+              }}
+              placeholder="Not assigned"
+              disabled={isUpdating}
+            />
+          </div>
+        );
+      },
+    },
+    {
       key: 'teacher',
       header: 'TEACHER',
       className: '!w-[14%] align-top',
@@ -367,29 +390,6 @@ export function createStudentsTableColumns({
               }}
               placeholder={!teacherId ? 'Select Teacher first' : 'Not assigned'}
               disabled={isUpdating || !teacherId}
-            />
-          </div>
-        );
-      },
-    },
-    {
-      key: 'center',
-      header: 'CENTER',
-      className: '!w-[14%] align-top',
-      render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
-        // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
-        const manualCenterId = row.centerId ?? null;
-        return (
-          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
-            <InlineSelect
-              value={manualCenterId}
-              options={centerOptions}
-              onChange={async (centerId) => {
-                await onCenterChange(row.id, centerId);
-              }}
-              placeholder="Not assigned"
-              disabled={isUpdating}
             />
           </div>
         );
