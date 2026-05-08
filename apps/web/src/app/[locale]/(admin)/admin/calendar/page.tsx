@@ -19,10 +19,8 @@ import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/Bulk
 import { getErrorMessage } from '@/shared/lib/api';
 import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
 import { useTeachers } from '@/features/teachers';
-import { useGroups } from '@/features/groups';
 import { CalendarFilters } from './components/CalendarFilters';
 import { SubstituteLessonModal } from './components/SubstituteLessonModal';
-import { SubstituteByGroupDayModal } from './components/SubstituteByGroupDayModal';
 
 // Helper to get week dates
 function getWeekDates(date: Date): Date[] {
@@ -132,7 +130,6 @@ export default function CalendarPage() {
   );
   const [substituteLessonId, setSubstituteLessonId] = useState<string | null>(null);
   const [substituteLessonModalOpen, setSubstituteLessonModalOpen] = useState(false);
-  const [substituteByDayOpen, setSubstituteByDayOpen] = useState(false);
 
   const [pendingBulkDeleteIds, setPendingBulkDeleteIds] = useState<string[]>([]);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
@@ -160,9 +157,6 @@ export default function CalendarPage() {
       label: `${teacher.user.firstName} ${teacher.user.lastName}`,
     }));
   }, [teachersData]);
-
-  const { data: groupsData, isLoading: groupsLoading } = useGroups({ take: 300, isActive: true });
-  const groupList = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
 
   // Update URL when view mode changes
   const updateViewModeInUrl = (mode: 'week' | 'month' | 'list') => {
@@ -555,14 +549,6 @@ export default function CalendarPage() {
             </div>
             <Button
               type="button"
-              variant="outline"
-              onClick={() => setSubstituteByDayOpen(true)}
-              className="font-semibold"
-            >
-              Substitute (by day)
-            </Button>
-            <Button
-              type="button"
               variant="default"
               onClick={() => handleAddLessonOpenChange(true)}
               className="font-semibold shadow-sm"
@@ -750,14 +736,6 @@ export default function CalendarPage() {
           if (!open) setSubstituteLessonId(null);
         }}
         lessonId={substituteLessonId}
-        teacherOptions={teacherOptions}
-      />
-
-      <SubstituteByGroupDayModal
-        open={substituteByDayOpen}
-        onOpenChange={setSubstituteByDayOpen}
-        groups={groupList}
-        groupsLoading={groupsLoading}
         teacherOptions={teacherOptions}
       />
 
