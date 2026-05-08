@@ -1,8 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { PasswordInput } from '@/shared/components/ui';
+import type { Group } from '@/features/groups';
 import type { CreateStudentFormData } from '../student-account-form.schema';
+import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
 import type { StudentAccountGroupOption, StudentAccountTeacherOption } from './StudentAccountFormFields';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
@@ -28,6 +31,8 @@ export interface StudentAccountFormFieldsCrmLeadLayoutProps {
   isSubmitting: boolean;
   showCenterSelect?: boolean;
   assignedCenterDisplay?: string | null;
+  lockedCenterId?: string | null;
+  groupsForAssignmentFilter?: Pick<Group, 'teacherId' | 'centerId'>[];
   idPrefix?: string;
 }
 
@@ -47,9 +52,14 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   isSubmitting,
   showCenterSelect = true,
   assignedCenterDisplay = null,
+  lockedCenterId = null,
+  groupsForAssignmentFilter = [],
   idPrefix = '',
 }: StudentAccountFormFieldsCrmLeadLayoutProps) {
   const p = (id: string) => (idPrefix ? `${idPrefix}-${id}` : id);
+  const watchedCenterId = watch('centerId') || '';
+  const effectiveCenterId = lockedCenterId || watchedCenterId || '';
+  const hasCenterScope = Boolean(effectiveCenterId);
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
   const phoneDigits = (watch('phone') ?? '').replace(/\D/g, '');
@@ -62,6 +72,26 @@ export function StudentAccountFormFieldsCrmLeadLayout({
     ...new Set(groupsForTeacher.map((g) => g.center?.name).filter(Boolean) as string[]),
   ];
   const teacherCentersLabel = [...new Set([...centerNamesFromTeacher, ...centerNamesFromGroups])].join(', ');
+
+  const teachersScoped = useMemo(() => {
+    if (!hasCenterScope) return [];
+    let list = teachers.filter((t) =>
+      teacherBelongsToCenter(t.id, effectiveCenterId, t.centerLinks, groupsForAssignmentFilter),
+    );
+    if (watchedTeacherId && !list.some((t) => t.id === watchedTeacherId)) {
+      const current = teachers.find((t) => t.id === watchedTeacherId);
+      if (current) list = [current, ...list];
+    }
+    return list;
+  }, [
+    effectiveCenterId,
+    hasCenterScope,
+    teachers,
+    groupsForAssignmentFilter,
+    watchedTeacherId,
+  ]);
+
+  const { onChange: onCenterFieldChange, ...centerIdRegisterRest } = register('centerId');
 
   return (
     <div className="space-y-6">
@@ -274,6 +304,39 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               ))}
             </select>
           </div>
+          {showCenterSelect ? (
+            <div>
+              <label htmlFor={p('centerId')} className="mb-1 block text-sm font-medium text-slate-700">
+                Center
+              </label>
+              <select
+                id={p('centerId')}
+                {...centerIdRegisterRest}
+                className={inputClass}
+                disabled={isLoadingCenters || isSubmitting}
+                onChange={(e) => {
+                  onCenterFieldChange(e);
+                  setValue('teacherId', '', { shouldDirty: true });
+                  setValue('groupId', '', { shouldDirty: true });
+                }}
+              >
+                <option value="">—</option>
+                {centers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {errors.centerId && <p className="mt-1 text-sm text-red-600">{errors.centerId.message}</p>}
+            </div>
+          ) : assignedCenterDisplay ? (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
+              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                {assignedCenterDisplay}
+              </p>
+            </div>
+          ) : null}
           <div>
             <label htmlFor={p('teacherId')} className="mb-1 block text-sm font-medium text-slate-700">
               Teacher
@@ -282,10 +345,10 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               id={p('teacherId')}
               {...register('teacherId')}
               className={inputClass}
-              disabled={isLoadingTeachers || isSubmitting}
+              disabled={isLoadingTeachers || isSubmitting || !hasCenterScope}
             >
-              <option value="">—</option>
-              {teachers.map((t) => (
+              <option value="">{hasCenterScope ? 'Select teacher' : 'Select a center first'}</option>
+              {teachersScoped.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.user?.firstName} {t.user?.lastName}
                 </option>
@@ -305,9 +368,9 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               id={p('groupId')}
               {...register('groupId')}
               className={inputClass}
-              disabled={isLoadingGroups || !watchedTeacherId}
+              disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
             >
-              <option value="">{watchedTeacherId ? '—' : 'Select Teacher first'}</option>
+              <option value="">{watchedTeacherId ? 'Select group' : 'Select a teacher first'}</option>
               {groupsForTeacher.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.name}
@@ -321,34 +384,6 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               </p>
             ) : null}
           </div>
-          {showCenterSelect ? (
-            <div>
-              <label htmlFor={p('centerId')} className="mb-1 block text-sm font-medium text-slate-700">
-                Center
-              </label>
-              <select
-                id={p('centerId')}
-                {...register('centerId')}
-                className={inputClass}
-                disabled={isLoadingCenters || isSubmitting}
-              >
-                <option value="">—</option>
-                {centers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              {errors.centerId && <p className="mt-1 text-sm text-red-600">{errors.centerId.message}</p>}
-            </div>
-          ) : assignedCenterDisplay ? (
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
-              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                {assignedCenterDisplay}
-              </p>
-            </div>
-          ) : null}
         </div>
       </section>
 

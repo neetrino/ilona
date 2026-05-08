@@ -79,6 +79,11 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     },
   });
 
+  const watchedCenterId = watch('centerId') || '';
+  const effectiveCenterId = useMemo(
+    () => (isManager && user?.managerCenterId ? user.managerCenterId : watchedCenterId) || '',
+    [isManager, user?.managerCenterId, watchedCenterId],
+  );
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
   const watchedLevelId = watch('levelId') || '';
@@ -89,12 +94,17 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     [watchedDob, watchedManualAge],
   );
 
+  const assignmentGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
+
   const groupsForTeacher = useMemo(() => {
     const allGroups = groupsData?.items ?? [];
-    const byTeacher = watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
+    let byTeacher = watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
+    if (effectiveCenterId) {
+      byTeacher = byTeacher.filter((g) => g.centerId === effectiveCenterId);
+    }
     if (!watchedLevelId) return byTeacher;
     return byTeacher.filter((g) => (g.level ?? '') === watchedLevelId);
-  }, [groupsData?.items, watchedTeacherId, watchedLevelId]);
+  }, [groupsData?.items, watchedTeacherId, watchedLevelId, effectiveCenterId]);
 
   useEffect(() => {
     if (!watchedTeacherId) {
@@ -188,6 +198,8 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             isSubmitting={isSubmitting}
             showCenterSelect={!isManager}
             assignedCenterDisplay={isManager ? managerCenterLabel : null}
+            lockedCenterId={isManager ? user?.managerCenterId ?? null : null}
+            groupsForAssignmentFilter={assignmentGroups}
           />
 
           <DialogFooter>
