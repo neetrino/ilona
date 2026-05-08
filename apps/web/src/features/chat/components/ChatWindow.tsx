@@ -112,7 +112,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   });
 
   // Flatten messages from infinite query
-  const messages = messagesData?.pages.flatMap((page) => page.items) || [];
+  const messages = useMemo(
+    () => messagesData?.pages.flatMap((page) => page.items) ?? [],
+    [messagesData],
+  );
 
   const filteredMessages = useMemo(
     () =>

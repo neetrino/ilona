@@ -34,7 +34,7 @@ export default function TeacherSchedulePage() {
   const { isHydrated, isAuthenticated, tokens } = useAuthStore();
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
   const { data: myGroups, isLoading: isGroupsLoading } = useMyGroups();
-  const groupsList = myGroups ?? [];
+  const groupsList = useMemo(() => myGroups ?? [], [myGroups]);
 
   const [centerId, setCenterId] = useState<string>('');
   const { viewMode, setViewMode } = useScheduleViewMode();

@@ -71,10 +71,9 @@ export default function StudentDashboardPage() {
 
   const { data: dashboard, isLoading } = useMyDashboard();
 
-  const upcomingLessons = dashboard?.upcomingLessons || [];
   const nextLesson = useMemo(
-    () => pickNextUpcomingLesson(upcomingLessons),
-    [upcomingLessons],
+    () => pickNextUpcomingLesson(dashboard?.upcomingLessons ?? []),
+    [dashboard?.upcomingLessons],
   );
   const nextLessonTeacherDisplay = useMemo(() => {
     if (!nextLesson) return null;

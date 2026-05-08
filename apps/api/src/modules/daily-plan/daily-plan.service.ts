@@ -224,7 +224,7 @@ export class DailyPlanService {
       whereParts.length === 0
         ? {}
         : whereParts.length === 1
-          ? whereParts[0]!
+          ? whereParts[0]
           : { AND: whereParts };
 
     const [items, total] = await this.prisma.$transaction([

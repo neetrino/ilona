@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
@@ -206,7 +207,7 @@ export function LessonListTableBodyRow({
               className="text-amber-700 hover:text-amber-800"
               title="Assign substitute for this lesson"
             >
-              <img
+              <Image
                 src="/icons/substitute-teacher.svg"
                 alt=""
                 width={20}

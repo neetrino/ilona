@@ -89,12 +89,13 @@ export function LessonListTable({
     }
   }, [sectionedCalendarList, sectionedListPage, sectionedTotalPages]);
 
-  const sectionedPageRows = sectionedCalendarList
-    ? sectionedOrderedRows.slice(
-        (sectionedListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE,
-        sectionedListPage * TEACHER_CALENDAR_LIST_PAGE_SIZE,
-      )
-    : [];
+  const sectionedPageRows = useMemo(() => {
+    if (!sectionedCalendarList) return [];
+    return sectionedOrderedRows.slice(
+      (sectionedListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE,
+      sectionedListPage * TEACHER_CALENDAR_LIST_PAGE_SIZE,
+    );
+  }, [sectionedCalendarList, sectionedOrderedRows, sectionedListPage]);
 
   const sectionedPageLessonIds = useMemo(
     () => sectionedPageRows.map((r) => r.lesson.id),

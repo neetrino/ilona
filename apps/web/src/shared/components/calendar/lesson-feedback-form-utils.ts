@@ -87,7 +87,7 @@ export function structuredFromSavedFeedback(saved: SavedFeedbackSlice): Structur
   const parsed = parseLessonFeedbackContent(saved?.content ?? undefined, saved?.rating ?? undefined);
   if (!saved) return parsed;
   let speaking = saved.skills?.includes('speaking') ?? parsed.speaking;
-  let writing = saved.skills?.includes('writing') ?? parsed.writing;
+  const writing = saved.skills?.includes('writing') ?? parsed.writing;
   const skillsComment = saved.skillsNote ?? parsed.skillsComment;
   if (skillsComment?.trim() && !speaking && !writing) {
     speaking = true;
