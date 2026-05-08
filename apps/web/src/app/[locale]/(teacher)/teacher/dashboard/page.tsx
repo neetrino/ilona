@@ -1,6 +1,8 @@
 'use client';
 
-import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { useLocale, useTranslations } from 'next-intl';
+import { DashboardLayout, DashboardPromoBanner } from '@/shared/components/layout';
+import { formatLocaleInteger } from '@/shared/lib/utils';
 import { StatCard, Badge, Button, DataTable } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLessons, useStartLesson, useCompleteLesson, type Lesson } from '@/features/lessons';
@@ -9,6 +11,8 @@ import { PlannedAbsencesStaffBlock } from '@/features/attendance';
 import { NotesBlock } from '@/features/teacher-notes';
 
 export default function TeacherDashboardPage() {
+  const tDash = useTranslations('dashboard');
+  const locale = useLocale();
   const { user } = useAuthStore();
 
   // Get today's date range
@@ -155,10 +159,26 @@ export default function TeacherDashboardPage() {
     },
   ];
 
+  const promoBanner = (
+    <DashboardPromoBanner
+      title={tDash('banner.teacherTitle')}
+      subtitle={tDash('banner.teacherSubtitle')}
+      primaryStat={{
+        label: tDash('banner.statStudents'),
+        value: formatLocaleInteger(totalStudents, locale),
+      }}
+      secondaryStat={{
+        label: tDash('banner.statLessonsToday'),
+        value: tDash('banner.statValueLessonsToday', { count: todayLessons.length }),
+      }}
+    />
+  );
+
   return (
     <DashboardLayout 
       title="Daily Plan" 
       subtitle={`Welcome back, ${user?.firstName || 'Teacher'}! Here's your schedule for today.`}
+      promoBanner={promoBanner}
     >
       <div className="space-y-6">
         {/* Stats */}

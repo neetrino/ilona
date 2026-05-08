@@ -1,8 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
-import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { DashboardLayout, DashboardPromoBanner } from '@/shared/components/layout';
+import { formatLocaleInteger } from '@/shared/lib/utils';
 import { StatCard } from '@/shared/components/ui';
 import {
   useAdminDashboardStats,
@@ -19,6 +20,7 @@ import { fetchCenter } from '@/features/centers/api/centers.api';
 export default function AdminDashboardPage() {
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
+  const locale = useLocale();
   const { user } = useAuthStore();
   const isManager = user?.role === 'MANAGER';
   const managerCenterId =
@@ -42,8 +44,27 @@ export default function AdminDashboardPage() {
     ? `${t('overview')} ${tNav('center')}: ${managerCenter?.name ?? '—'}`
     : t('overview');
 
+  const promoBanner = (
+    <DashboardPromoBanner
+      title={isManager ? t('banner.managerTitle') : t('banner.adminTitle')}
+      subtitle={isManager ? t('banner.managerSubtitle') : t('banner.adminSubtitle')}
+      primaryStat={{
+        label: t('banner.statStudents'),
+        value: stats
+          ? formatLocaleInteger(stats.students.total, locale)
+          : t('banner.statValueLoading'),
+      }}
+      secondaryStat={{
+        label: t('banner.statTeachers'),
+        value: stats
+          ? formatLocaleInteger(stats.teachers.total, locale)
+          : t('banner.statValueLoading'),
+      }}
+    />
+  );
+
   return (
-    <DashboardLayout title={t('title')} subtitle={subtitle}>
+    <DashboardLayout title={t('title')} subtitle={subtitle} promoBanner={promoBanner}>
       <div className="space-y-6">
         <div
           className="grid grid-cols-1 gap-6 md:grid-cols-3"

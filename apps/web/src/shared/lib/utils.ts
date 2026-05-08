@@ -141,4 +141,12 @@ export function getContrastColor(hex: string | null | undefined): 'white' | 'bla
   return luminance < 0.5 ? 'white' : 'black';
 }
 
+/**
+ * Format integers with locale-aware grouping (dashboard banner stats, etc.)
+ */
+export function formatLocaleInteger(value: number, locale: string): string {
+  const tag = locale === 'hy' ? 'hy-AM' : 'en-US';
+  return new Intl.NumberFormat(tag, { maximumFractionDigits: 0 }).format(value);
+}
+
 

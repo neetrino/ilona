@@ -2,11 +2,11 @@
 
 import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { DashboardLayout, DashboardPromoBanner } from '@/shared/components/layout';
 import { StatCard, Button } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMyDashboard, type StudentUpcomingLesson } from '@/features/students';
-import { formatCurrency } from '@/shared/lib/utils';
+import { formatCurrency, formatLocaleInteger } from '@/shared/lib/utils';
 import { StudentNotesBlock } from '@/features/student-notes';
 
 function isSameLocalCalendarDay(a: Date, b: Date): boolean {
@@ -116,10 +116,30 @@ export default function StudentDashboardPage() {
       year: 'numeric',
     });
 
+  const attendanceDisplay = `${Math.max(0, Math.min(100, Math.round(attendanceRate)))}%`;
+
+  const promoBanner = (
+    <DashboardPromoBanner
+      title={t('banner.studentTitle')}
+      subtitle={t('banner.studentSubtitle')}
+      primaryStat={{
+        label: t('banner.statAttendance'),
+        value: isLoading ? t('banner.statValueLoading') : attendanceDisplay,
+      }}
+      secondaryStat={{
+        label: t('banner.statLessonsTracked'),
+        value: isLoading
+          ? t('banner.statValueLoading')
+          : formatLocaleInteger(totalLessons, locale),
+      }}
+    />
+  );
+
   return (
     <DashboardLayout 
       title={t('myLearning')} 
       subtitle={t('welcomeStudent', { name: user?.firstName || tCommon('student') })}
+      promoBanner={promoBanner}
     >
       <div className="space-y-6">
         {/* Stats */}
