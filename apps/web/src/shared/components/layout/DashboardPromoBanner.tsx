@@ -58,7 +58,7 @@ export function DashboardPromoBanner({
         className,
       )}
     >
-      <div className="flex flex-col gap-7 px-8 py-[2.25rem] sm:flex-row sm:items-center sm:justify-between sm:gap-12 sm:px-12 sm:py-[2.6rem]">
+      <div className="flex flex-col gap-7 px-8 py-[3.75rem] sm:flex-row sm:items-center sm:justify-between sm:gap-12 sm:px-12 sm:py-[4.5rem]">
         <div className="min-w-0 flex-1 text-center sm:text-left">
           <h2 className="text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl md:text-5xl">
             {title}
