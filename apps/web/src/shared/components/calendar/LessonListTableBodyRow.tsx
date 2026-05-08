@@ -1,14 +1,19 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Badge } from '@/shared/components/ui/badge';
+import { LessonListScheduleCategoryCell } from '@/shared/components/calendar/LessonListScheduleCategoryCell';
 import { CheckCircle2, Pencil } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
 import type { TeacherCalendarRowCategory } from '@/shared/lib/calendar/teacher-calendar-list-order';
 import type { ScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
+import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/calendar/lesson-action-states';
+import { CalendarListActionPill } from '@/shared/components/calendar/CalendarListActionPill';
 
 function formatTime(dateStr: string, locale: string): string {
   const date = new Date(dateStr);
@@ -26,70 +31,6 @@ function formatDate(dateStr: string, locale: string): string {
     month: 'short',
     day: 'numeric',
   });
-}
-
-function StatusIndicator({
-  completed,
-  isLocked,
-  onClick,
-  label,
-  count,
-}: {
-  completed: boolean;
-  isLocked?: boolean;
-  onClick: () => void;
-  label: string;
-  count?: number;
-}) {
-  const isRedX = !completed && isLocked;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={isLocked}
-      className={cn(
-        'inline-flex items-center justify-center min-w-[32px] h-6 px-1.5 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
-        completed
-          ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer'
-          : isRedX
-            ? 'bg-red-100 text-red-700 border border-red-300 cursor-not-allowed'
-            : 'bg-slate-50 text-slate-400 hover:bg-slate-100 cursor-pointer',
-      )}
-      title={
-        completed
-          ? `${label}: Completed`
-          : isLocked
-            ? `${label}: Locked (cannot be edited)`
-            : `${label}: Not completed (click to edit)`
-      }
-      aria-label={`${label}: ${completed ? 'Completed' : isLocked ? 'Locked' : 'Not completed'}${count !== undefined ? ` (${count})` : ''}`}
-    >
-      {completed ? (
-        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path
-            fillRule="evenodd"
-            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-            clipRule="evenodd"
-          />
-        </svg>
-      ) : (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      )}
-      {count !== undefined && count > 0 && (
-        <span
-          className={cn(
-            'ml-1 text-xs font-medium',
-            completed ? 'text-emerald-700' : isRedX ? 'text-red-600' : 'text-slate-500',
-          )}
-        >
-          {count}
-        </span>
-      )}
-    </button>
-  );
 }
 
 export type LessonListTableBodyRowProps = {
@@ -135,6 +76,14 @@ export function LessonListTableBodyRow({
   scheduleCategoryLabels,
 }: LessonListTableBodyRowProps) {
   const router = useRouter();
+  const t = useTranslations('calendar');
+
+  const actions = useMemo(() => getLessonActionsDerived(lesson), [lesson]);
+  const actionMap = useMemo(() => {
+    const m = new Map<LessonActionId, (typeof actions)[0]>();
+    for (const a of actions) m.set(a.id, a);
+    return m;
+  }, [actions]);
 
   const teacherName = lesson.teacher?.user
     ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
@@ -173,13 +122,27 @@ export function LessonListTableBodyRow({
   const startMs = new Date(lesson.scheduledAt).getTime();
   const isPastInstant = !Number.isNaN(startMs) && startMs < Date.now();
 
+  const pendingCount = actions.filter((a) => a.state === 'pending').length;
+
+  const obligationIds: LessonActionId[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
+
   return (
     <tr className={rowClassName}>
-      <td className="px-4 py-3">
+      <td
+        className={cn(
+          'border-l-4 px-4 py-3',
+          lesson.completionStatus === 'IN_PROCESS' ? 'border-amber-300' : 'border-transparent',
+        )}
+      >
         <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) => onSelectLesson(lesson.id, checked === true)}
         />
+        {pendingCount > 0 && (
+          <p className="mt-1 max-w-[10rem] text-[10px] font-medium leading-snug text-amber-800 sm:max-w-none sm:text-xs">
+            {t('lessonActions.rowPendingHint', { count: pendingCount })}
+          </p>
+        )}
       </td>
       <td className="px-4 py-3">
         <div>
@@ -201,40 +164,11 @@ export function LessonListTableBodyRow({
         </div>
       </td>
       {scheduleCategory !== undefined && (
-        <td className="px-3 py-3 align-middle text-center">
-          <div className="flex min-h-[1.75rem] min-w-[7rem] flex-col items-center justify-center gap-1">
-            {scheduleCategory === 'upcoming-next' && (
-              <>
-                <Badge variant="info" className="bg-sky-100 text-sky-800 border-sky-200 text-[10px] uppercase">
-                  {scheduleCategoryLabels.upcoming}
-                </Badge>
-                <Badge variant="default" className="text-[10px] bg-amber-50 text-amber-900 border-amber-200">
-                  {scheduleCategoryLabels.upcomingNext}
-                </Badge>
-              </>
-            )}
-            {scheduleCategory === 'upcoming-later' && (
-              <Badge variant="info" className="bg-sky-100 text-sky-800 border-sky-200 text-[10px] uppercase">
-                {scheduleCategoryLabels.upcoming}
-              </Badge>
-            )}
-            {scheduleCategory === 'today' && (
-              <>
-                <Badge variant="info" className="bg-indigo-100 text-indigo-800 border-indigo-200 text-[10px] uppercase">
-                  {scheduleCategoryLabels.today}
-                </Badge>
-                {isPastInstant && (
-                  <span className="text-[10px] font-medium text-slate-500">{scheduleCategoryLabels.todayPastSlot}</span>
-                )}
-              </>
-            )}
-            {scheduleCategory === 'completed' && (
-              <Badge variant="default" className="bg-slate-200 text-slate-800 border-slate-300 text-[10px] uppercase">
-                {scheduleCategoryLabels.completed}
-              </Badge>
-            )}
-          </div>
-        </td>
+        <LessonListScheduleCategoryCell
+          scheduleCategory={scheduleCategory}
+          scheduleCategoryLabels={scheduleCategoryLabels}
+          isPastInstant={isPastInstant}
+        />
       )}
       <td className="px-4 py-3">
         <div>
@@ -252,59 +186,16 @@ export function LessonListTableBodyRow({
           )}
         </td>
       )}
-      <td className="px-2 py-3 text-center align-middle">
-        <div className="flex items-center justify-center">
-          <StatusIndicator
-            completed={lesson.absenceMarked || false}
-            isLocked={lesson.isAbsenceLocked || (lesson.status === 'COMPLETED' && !lesson.absenceMarked)}
-            onClick={() => onObligationClick?.(lesson.id, 'absence')}
-            label="Absence"
-          />
-        </div>
-      </td>
-      <td className="px-2 py-3 text-center align-middle">
-        <div className="flex items-center justify-center">
-          <StatusIndicator
-            completed={lesson.feedbacksCompleted || false}
-            isLocked={lesson.isFeedbackLocked || (lesson.status === 'COMPLETED' && !lesson.feedbacksCompleted)}
-            onClick={() => onObligationClick?.(lesson.id, 'feedback')}
-            label="Feedbacks"
-            count={lesson._count?.feedbacks}
-          />
-        </div>
-      </td>
-      <td className="px-2 py-3 text-center align-middle">
-        <div className="flex items-center justify-center">
-          <StatusIndicator
-            completed={lesson.voiceSent || false}
-            isLocked={lesson.isVoiceLocked || (lesson.status === 'COMPLETED' && !lesson.voiceSent)}
-            onClick={() => onObligationClick?.(lesson.id, 'voice')}
-            label="Voice"
-          />
-        </div>
-      </td>
-      <td className="px-2 py-3 text-center align-middle">
-        <div className="flex items-center justify-center">
-          <StatusIndicator
-            completed={lesson.textSent || false}
-            isLocked={lesson.isTextLocked || (lesson.status === 'COMPLETED' && !lesson.textSent)}
-            onClick={() => onObligationClick?.(lesson.id, 'text')}
-            label="Text"
-          />
-        </div>
-      </td>
-      <td className="px-2 py-3 text-center align-middle">
-        <div className="flex items-center justify-center">
-          <StatusIndicator
-            completed={lesson.dailyPlanCompleted || false}
-            isLocked={
-              lesson.isDailyPlanLocked || (lesson.status === 'COMPLETED' && !lesson.dailyPlanCompleted)
-            }
-            onClick={() => onObligationClick?.(lesson.id, 'dailyPlan')}
-            label="Daily Plan"
-          />
-        </div>
-      </td>
+      {obligationIds.map((id) => (
+        <td key={id} className="px-1 py-2 text-center align-middle sm:px-2 sm:py-3">
+          <div className="flex items-center justify-center">
+            <CalendarListActionPill
+              action={actionMap.get(id)!}
+              onActivate={() => onObligationClick?.(lesson.id, id)}
+            />
+          </div>
+        </td>
+      ))}
       <td className="px-4 py-3">
         <div className="flex items-center justify-center gap-2 flex-wrap">
           {!isTeacher && onAssignSubstitute && (

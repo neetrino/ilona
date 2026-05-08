@@ -858,7 +858,37 @@
     "paginationPrevious": "Previous",
     "paginationNext": "Next",
     "paginationPageOf": "Page {current} of {total}",
-    "paginationSummary": "Showing {showingFrom}–{showingTo} of {total}"
+    "paginationSummary": "Showing {showingFrom}–{showingTo} of {total}",
+    "lessonActions": {
+      "absenceLabel": "Absence",
+      "feedbackLabel": "Feedbacks",
+      "voiceLabel": "Voice",
+      "textLabel": "Text",
+      "dailyPlanLabel": "Daily Plan",
+      "pillShortAbsence": "Absence",
+      "pillShortFeedback": "Feedback",
+      "pillShortVoice": "Voice",
+      "pillShortText": "Text",
+      "pillShortDailyPlan": "Plan",
+      "statusDone": "Done",
+      "statusPending": "Pending",
+      "statusMissed": "Closed",
+      "reminderAbsence": "Absence is not recorded yet. Open Absence and mark attendance for each student.",
+      "reminderFeedback": "Feedback is not completed yet. Open Feedbacks and fill it in for this lesson.",
+      "reminderVoice": "Voice summary is missing. Open Voice and send the vocabulary or lesson recap.",
+      "reminderText": "Text summary is missing. Open Text and send the vocabulary or lesson recap.",
+      "reminderDailyPlan": "Daily Plan is missing. Open Daily Plan and complete it for this lesson.",
+      "emergencyAria": "Required actions for this lesson",
+      "emergencyTitle": "Required actions before this lesson is fully closed",
+      "emergencyIntro": "The items below still need attention while they remain editable.",
+      "openAction": "Open {label}",
+      "missedNoticeTitle": "Some checklist items are no longer editable",
+      "missedNoticeBody": "These were not completed before the cutoff for this lesson day. Contact an administrator if a correction is needed.",
+      "missedHint": "Editing window has passed for this item.",
+      "doneHint": "Completed for this lesson.",
+      "checklistHeading": "Lesson checklist",
+      "rowPendingHint": "{count, plural, one {# step still needs attention} other {# steps still need attention}}"
+    }
   }
 }
 

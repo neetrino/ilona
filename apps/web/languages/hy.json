@@ -858,6 +858,36 @@
     "paginationPrevious": "Նախորդը",
     "paginationNext": "Հաջորդը",
     "paginationPageOf": "Էջ {current} / {total}",
-    "paginationSummary": "Ցուցադրվում է {showingFrom}–{showingTo} / {total}"
+    "paginationSummary": "Ցուցադրվում է {showingFrom}–{showingTo} / {total}",
+    "lessonActions": {
+      "absenceLabel": "Բացակայություն",
+      "feedbackLabel": "Արձագանքներ",
+      "voiceLabel": "Ձայն",
+      "textLabel": "Տեքստ",
+      "dailyPlanLabel": "Օրվա պլան",
+      "pillShortAbsence": "Բացակ.",
+      "pillShortFeedback": "Արձագ.",
+      "pillShortVoice": "Ձայն",
+      "pillShortText": "Տեքստ",
+      "pillShortDailyPlan": "Պլան",
+      "statusDone": "Ավարտված",
+      "statusPending": "Ընթացքում",
+      "statusMissed": "Փակված",
+      "reminderAbsence": "Բացակայությունը դեռ չի նշվել։ Բացեք «Բացակայություն» և նշեք ներկայությունը յուրաքանչյուր աշակերտի համար։",
+      "reminderFeedback": "Արձագանքները դեռ չեն լրացվել։ Բացեք «Արձագանքներ» և լրացրեք այս դասի համար։",
+      "reminderVoice": "Ձայնային ամփոփումը բացակայում է։ Բացեք «Ձայն» և ուղարկեք բառապաշարը կամ դասի ամփոփումը։",
+      "reminderText": "Տեքստային ամփոփումը բացակայում է։ Բացեք «Տեքստ» և ուղարկեք բառապաշարը կամ դասի ամփոփումը։",
+      "reminderDailyPlan": "Օրվա պլանը բացակայում է։ Բացեք «Օրվա պլան» և լրացրեք այս դասի համար։",
+      "emergencyAria": "Այս դասի պարտադիր քայլեր",
+      "emergencyTitle": "Պարտադիր քայլեր մինչև դասը լիովին փակելը",
+      "emergencyIntro": "Ստորև նշված կետերը դեռ խմբագրվելի են և պահանջում են ձեր ուշադրությունը։",
+      "openAction": "Բացել {label}",
+      "missedNoticeTitle": "Որոշ կետեր այլևս խմբագրվելի չեն",
+      "missedNoticeBody": "Դրանք չեն ավարտվել մինչև այս դասի օրվա վերջը։ Խնդրում ենք կապվել ադմինիստրատորի հետ, եթե անհրաժեշտ է ուղղում։",
+      "missedHint": "Խմբագրման ժամկետը սպառվել է։",
+      "doneHint": "Ավարտված է այս դասի համար։",
+      "checklistHeading": "Դասի ստուգացուցակ",
+      "rowPendingHint": "{count, plural, one {Դեռ # քայլ է մնացել} other {Դեռ # քայլ են մնացել}}"
+    }
   }
 }

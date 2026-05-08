@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonDetailTabs } from '@/shared/components/calendar/LessonDetailTabs';
 import { AbsenceTab } from '@/shared/components/calendar/AbsenceTab';
@@ -12,22 +12,31 @@ import { DailyPlanTab } from '@/shared/components/calendar/DailyPlanTab';
 import { useLesson } from '@/features/lessons';
 import { Button } from '@/shared/components/ui/button';
 
+type LessonTab = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
+
 export default function TeacherLessonDetailPage({ params }: { params: Promise<{ lessonId: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get('tab') as 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan' | null;
-  
+  const tabParam = searchParams.get('tab') as LessonTab | null;
+
   const { data: lesson, isLoading } = useLesson(resolvedParams.lessonId);
-  const [activeTab, setActiveTab] = useState<'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan'>(
-    tabParam || 'absence'
-  );
+  const [activeTab, setActiveTab] = useState<LessonTab>(tabParam || 'absence');
 
   useEffect(() => {
     if (tabParam) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
+
+  const handleTabChange = (tab: LessonTab) => {
+    setActiveTab(tab);
+    const paramsNext = new URLSearchParams(searchParams.toString());
+    paramsNext.set('tab', tab);
+    const query = paramsNext.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   if (isLoading) {
     return (
@@ -55,10 +64,7 @@ export default function TeacherLessonDetailPage({ params }: { params: Promise<{ 
       subtitle={`${new Date(lesson.scheduledAt).toLocaleDateString()} at ${new Date(lesson.scheduledAt).toLocaleTimeString()}`}
     >
       <div className="bg-white rounded-xl border border-slate-200 h-[calc(100vh-200px)] flex flex-col">
-        <LessonDetailTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        >
+        <LessonDetailTabs lesson={lesson} activeTab={activeTab} onTabChange={handleTabChange}>
           {{
             absence: <AbsenceTab lessonId={resolvedParams.lessonId} />,
             feedback: <FeedbacksTab lessonId={resolvedParams.lessonId} />,
