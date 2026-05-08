@@ -36,10 +36,10 @@ interface LessonListTableProps {
   /** When true, bulk action bar stays visible with a disabled delete until at least one row is selected (admin calendar). */
   showBulkBarWhenEmpty?: boolean;
   /**
-   * Teacher calendar list: section order (next 2 upcoming, today, later, completed), category column,
-   * and client-side pagination (10 lessons per page). Does not affect admin calendar.
+   * List view: completed first, then next 2 upcoming, today, later; Schedule column; 10 rows per page.
+   * Used for teacher and admin calendar list.
    */
-  teacherTemporalList?: boolean;
+  sectionedCalendarList?: boolean;
 }
 
 export function LessonListTable({
@@ -56,49 +56,49 @@ export function LessonListTable({
   sortOrder,
   onSort,
   showBulkBarWhenEmpty = false,
-  teacherTemporalList = false,
+  sectionedCalendarList = false,
 }: LessonListTableProps) {
   const locale = useLocale();
   const tCal = useTranslations('calendar');
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
-  const [teacherListPage, setTeacherListPage] = useState(1);
+  const [sectionedListPage, setSectionedListPage] = useState(1);
   const { user } = useAuthStore();
   const isTeacher = user?.role === 'TEACHER';
 
-  const teacherOrderedRows = useMemo(
-    () => (teacherTemporalList ? buildTeacherCalendarOrderedRows(lessons) : []),
-    [lessons, teacherTemporalList],
+  const sectionedOrderedRows = useMemo(
+    () => (sectionedCalendarList ? buildTeacherCalendarOrderedRows(lessons) : []),
+    [lessons, sectionedCalendarList],
   );
 
-  const teacherLessonsKey = useMemo(() => lessons.map((l) => l.id).join('|'), [lessons]);
+  const sectionedLessonsKey = useMemo(() => lessons.map((l) => l.id).join('|'), [lessons]);
 
   useEffect(() => {
-    if (teacherTemporalList) {
-      setTeacherListPage(1);
+    if (sectionedCalendarList) {
+      setSectionedListPage(1);
     }
-  }, [teacherTemporalList, teacherLessonsKey]);
+  }, [sectionedCalendarList, sectionedLessonsKey]);
 
-  const teacherTotalPages = Math.max(
+  const sectionedTotalPages = Math.max(
     1,
-    Math.ceil(teacherOrderedRows.length / TEACHER_CALENDAR_LIST_PAGE_SIZE),
+    Math.ceil(sectionedOrderedRows.length / TEACHER_CALENDAR_LIST_PAGE_SIZE),
   );
 
   useEffect(() => {
-    if (teacherTemporalList && teacherListPage > teacherTotalPages) {
-      setTeacherListPage(teacherTotalPages);
+    if (sectionedCalendarList && sectionedListPage > sectionedTotalPages) {
+      setSectionedListPage(sectionedTotalPages);
     }
-  }, [teacherTemporalList, teacherListPage, teacherTotalPages]);
+  }, [sectionedCalendarList, sectionedListPage, sectionedTotalPages]);
 
-  const teacherPageRows = teacherTemporalList
-    ? teacherOrderedRows.slice(
-        (teacherListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE,
-        teacherListPage * TEACHER_CALENDAR_LIST_PAGE_SIZE,
+  const sectionedPageRows = sectionedCalendarList
+    ? sectionedOrderedRows.slice(
+        (sectionedListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE,
+        sectionedListPage * TEACHER_CALENDAR_LIST_PAGE_SIZE,
       )
     : [];
 
-  const teacherPageLessonIds = useMemo(
-    () => teacherPageRows.map((r) => r.lesson.id),
-    [teacherPageRows],
+  const sectionedPageLessonIds = useMemo(
+    () => sectionedPageRows.map((r) => r.lesson.id),
+    [sectionedPageRows],
   );
 
   const scheduleCategoryLabels = useMemo(
@@ -162,9 +162,9 @@ export function LessonListTable({
   }, [lessonIdSet]);
 
   const handleSelectAll = (checked: boolean) => {
-    if (teacherTemporalList) {
+    if (sectionedCalendarList) {
       if (checked) {
-        setSelectedLessons(new Set(teacherPageLessonIds));
+        setSelectedLessons(new Set(sectionedPageLessonIds));
       } else {
         setSelectedLessons(new Set());
       }
@@ -213,13 +213,13 @@ export function LessonListTable({
   }
 
   const tableColSpan =
-    10 + (teacherTemporalList ? 1 : 0) + (hideTeacherColumn ? 0 : 1);
+    10 + (sectionedCalendarList ? 1 : 0) + (hideTeacherColumn ? 0 : 1);
 
-  const allSelected = teacherTemporalList
-    ? teacherPageLessonIds.length > 0 && teacherPageLessonIds.every((id) => selectedLessons.has(id))
+  const allSelected = sectionedCalendarList
+    ? sectionedPageLessonIds.length > 0 && sectionedPageLessonIds.every((id) => selectedLessons.has(id))
     : lessons.length > 0 && selectedLessons.size === lessons.length;
-  const someSelected = teacherTemporalList
-    ? teacherPageLessonIds.some((id) => selectedLessons.has(id)) && !allSelected
+  const someSelected = sectionedCalendarList
+    ? sectionedPageLessonIds.some((id) => selectedLessons.has(id)) && !allSelected
     : selectedLessons.size > 0 && selectedLessons.size < lessons.length;
   const showBulkBar = onBulkDelete && (showBulkBarWhenEmpty || selectedLessons.size > 0);
   const bulkDeleteDisabled = selectedLessons.size === 0;
@@ -259,13 +259,13 @@ export function LessonListTable({
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Lesson Name</th>
               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[120px]">Status</th>
-              {teacherTemporalList && (
+              {sectionedCalendarList && (
                 <th className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase min-w-[7rem]">
                   {tCal('scheduleCategoryColumn')}
                 </th>
               )}
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
-                {!teacherTemporalList && onSort ? (
+                {!sectionedCalendarList && onSort ? (
                   <button
                     type="button"
                     onClick={() => onSort('scheduledAt')}
@@ -310,10 +310,10 @@ export function LessonListTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {teacherTemporalList
-              ? teacherPageRows.flatMap((row, idx) => {
-                  const globalIdx = (teacherListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE + idx;
-                  const prevGlobal = globalIdx > 0 ? teacherOrderedRows[globalIdx - 1] : undefined;
+            {sectionedCalendarList
+              ? sectionedPageRows.flatMap((row, idx) => {
+                  const globalIdx = (sectionedListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE + idx;
+                  const prevGlobal = globalIdx > 0 ? sectionedOrderedRows[globalIdx - 1] : undefined;
                   const section = teacherCalendarRowSection(row.category);
                   const prevSection = prevGlobal ? teacherCalendarRowSection(prevGlobal.category) : null;
                   const showSectionHeader = section !== prevSection;
@@ -327,7 +327,7 @@ export function LessonListTable({
                           : tCal('sectionCompleted');
                     nodes.push(
                       <tr
-                        key={`sec-${teacherListPage}-${section}-${idx}`}
+                        key={`sec-${sectionedListPage}-${section}-${idx}`}
                         className="bg-slate-100/95 border-y border-slate-200"
                       >
                         <td
@@ -381,16 +381,16 @@ export function LessonListTable({
           </tbody>
         </table>
       </div>
-      {teacherTemporalList && teacherTotalPages > 1 && (
+      {sectionedCalendarList && sectionedTotalPages > 1 && (
         <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-center text-sm text-slate-600 sm:text-left">
             {tCal('paginationSummary', {
-              showingFrom: (teacherListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE + 1,
+              showingFrom: (sectionedListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE + 1,
               showingTo: Math.min(
-                teacherListPage * TEACHER_CALENDAR_LIST_PAGE_SIZE,
-                teacherOrderedRows.length,
+                sectionedListPage * TEACHER_CALENDAR_LIST_PAGE_SIZE,
+                sectionedOrderedRows.length,
               ),
-              total: teacherOrderedRows.length,
+              total: sectionedOrderedRows.length,
             })}
           </p>
           <div className="flex items-center justify-center gap-2">
@@ -399,23 +399,23 @@ export function LessonListTable({
               variant="outline"
               size="sm"
               className="gap-1"
-              disabled={teacherListPage <= 1}
-              onClick={() => setTeacherListPage((p) => Math.max(1, p - 1))}
+              disabled={sectionedListPage <= 1}
+              onClick={() => setSectionedListPage((p) => Math.max(1, p - 1))}
               aria-label={tCal('paginationPrevious')}
             >
               <ChevronLeft className="h-4 w-4" aria-hidden />
               <span className="hidden sm:inline">{tCal('paginationPrevious')}</span>
             </Button>
             <span className="min-w-[6.5rem] text-center text-sm font-medium text-slate-800">
-              {tCal('paginationPageOf', { current: teacherListPage, total: teacherTotalPages })}
+              {tCal('paginationPageOf', { current: sectionedListPage, total: sectionedTotalPages })}
             </span>
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="gap-1"
-              disabled={teacherListPage >= teacherTotalPages}
-              onClick={() => setTeacherListPage((p) => Math.min(teacherTotalPages, p + 1))}
+              disabled={sectionedListPage >= sectionedTotalPages}
+              onClick={() => setSectionedListPage((p) => Math.min(sectionedTotalPages, p + 1))}
               aria-label={tCal('paginationNext')}
             >
               <span className="hidden sm:inline">{tCal('paginationNext')}</span>

@@ -74,6 +74,14 @@ function formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
 }
 
+/** YYYY-MM-DD in local calendar (matches teacher list window / schedule grid). */
+function formatLocalDateKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 // Status badge config
 const _statusConfig: Record<LessonStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
   SCHEDULED: { label: 'Scheduled', variant: 'info' },
@@ -248,6 +256,15 @@ export default function CalendarPage() {
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
   const monthDates = useMemo(() => getMonthDates(currentDate), [currentDate]);
   const { rangeFrom, rangeTo } = useMemo(() => {
+    if (viewMode === 'list') {
+      const from = new Date();
+      from.setMonth(from.getMonth() - 3);
+      from.setHours(0, 0, 0, 0);
+      const to = new Date();
+      to.setMonth(to.getMonth() + 3);
+      to.setDate(1);
+      return { rangeFrom: formatLocalDateKey(from), rangeTo: formatLocalDateKey(to) };
+    }
     if (viewMode === 'month') {
       const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
@@ -268,7 +285,7 @@ export default function CalendarPage() {
     {
       dateFrom: rangeFrom,
       dateTo: rangeTo,
-      take: viewMode === 'month' ? 500 : 100,
+      take: viewMode === 'list' ? 250 : viewMode === 'month' ? 500 : 100,
       sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
       sortOrder: sortOrder,
       search: searchQuery || undefined,
@@ -708,6 +725,7 @@ export default function CalendarPage() {
                 sortOrder={sortOrder}
                 onSort={handleSort}
                 showBulkBarWhenEmpty
+                sectionedCalendarList
                 onBulkDelete={handleBulkDeleteClick}
                 onObligationClick={(lessonId, obligation) => {
                   router.push(`/admin/calendar/${lessonId}?tab=${obligation}`);
