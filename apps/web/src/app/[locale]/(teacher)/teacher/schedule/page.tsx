@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useLessons } from '@/features/lessons';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
+import type { Group } from '@/features/groups/types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ScheduleBoard } from '@/features/schedule/ScheduleBoard';
 import { useScheduleViewMode } from '@/features/schedule/useScheduleViewMode';
@@ -15,6 +16,19 @@ import {
   getWeekDates,
 } from '@/features/schedule/schedule-dates';
 
+function uniqueCentersFromGroups(groups: Group[]): { id: string; name: string }[] {
+  const map = new Map<string, string>();
+  for (const g of groups) {
+    const id = g.center?.id ?? g.centerId;
+    if (!id) continue;
+    const name = g.center?.name ?? '';
+    if (!map.has(id) || !map.get(id)) {
+      map.set(id, name);
+    }
+  }
+  return [...map.entries()].map(([id, name]) => ({ id, name }));
+}
+
 export default function TeacherSchedulePage() {
   const t = useTranslations('nav');
   const { isHydrated, isAuthenticated, tokens } = useAuthStore();
@@ -22,8 +36,19 @@ export default function TeacherSchedulePage() {
   const { data: myGroups, isLoading: isGroupsLoading } = useMyGroups();
   const groupsList = myGroups ?? [];
 
+  const [centerId, setCenterId] = useState<string>('');
   const { viewMode, setViewMode } = useScheduleViewMode();
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  const visibleCenters = useMemo(() => uniqueCentersFromGroups(groupsList), [groupsList]);
+
+  const visibleGroups = useMemo(() => {
+    if (!centerId) return groupsList;
+    return groupsList.filter((g) => (g.center?.id ?? g.centerId) === centerId);
+  }, [groupsList, centerId]);
+
+  const groupIds = useMemo(() => visibleGroups.map((g) => g.id), [visibleGroups]);
+  const effectiveCenterId = centerId || undefined;
 
   const weekDates = useMemo(
     () => getWeekDates(new Date(currentDate)),
@@ -53,6 +78,8 @@ export default function TeacherSchedulePage() {
 
   const { data: lessonsData, isLoading: isLessonsLoading } = useLessons(
     {
+      groupIds: groupIds.length > 0 ? groupIds : undefined,
+      centerId: effectiveCenterId,
       dateFrom: queryDateFrom,
       dateTo: queryDateTo,
       take: 500,
@@ -62,7 +89,7 @@ export default function TeacherSchedulePage() {
     {
       refetchInterval: 60000,
       refetchIntervalInBackground: false,
-      enabled: isAuthReady,
+      enabled: isAuthReady && groupIds.length > 0,
     },
   );
 
@@ -99,10 +126,43 @@ export default function TeacherSchedulePage() {
       <ScheduleBoard
         lessons={lessons}
         isLoading={!isAuthReady || isGroupsLoading || isLessonsLoading}
+        highlightPastLessonCards
         topBar={(
-          <div className="mb-6 text-sm text-slate-500">
-            Showing {groupsList.length} group{groupsList.length !== 1 ? 's' : ''}{' '}
-            you teach{groupsList.length ? '.' : ' — assign groups to see lessons in your schedule.'}
+          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
+            <div className="md:w-72">
+              <label
+                htmlFor="schedule-center-teacher"
+                className="mb-1.5 block text-sm font-medium text-slate-600"
+              >
+                Center
+              </label>
+              <select
+                id="schedule-center-teacher"
+                value={centerId}
+                onChange={(e) => setCenterId(e.target.value)}
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+              >
+                <option value="">All centers</option>
+                {visibleCenters.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name || c.id}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1 text-sm text-slate-500">
+              Showing {visibleGroups.length} active group{visibleGroups.length !== 1 ? 's' : ''}
+              {effectiveCenterId
+                ? ` in ${
+                    visibleCenters.find((c) => c.id === effectiveCenterId)?.name
+                    ?? 'selected center'
+                  }`
+                : ''}
+              .
+              {groupsList.length === 0
+                ? ' Assign groups to see lessons in your schedule.'
+                : ''}
+            </div>
           </div>
         )}
         managerBranchName={null}
