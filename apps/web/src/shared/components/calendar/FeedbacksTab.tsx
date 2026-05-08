@@ -4,40 +4,61 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLesson } from '@/features/lessons';
 import { useLessonFeedback, useCreateOrUpdateFeedback } from '@/features/feedback';
+import type { CreateFeedbackDto, FeedbackCefrLevelCode } from '@/features/feedback/types';
 import { Button } from '@/shared/components/ui/button';
-import { StarRating } from '@/shared/components/ui/star-rating';
+import { Avatar } from '@/shared/components/ui/avatar';
+import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
+import { cn } from '@/shared/lib/utils';
+import {
+  GRAMMAR_OPTIONS,
+  LEVEL_OPTIONS,
+  PARTICIPATION_OPTIONS,
+  type StructuredFeedbackFields,
+  buildLessonFeedbackContent,
+  emptyStructuredFeedback,
+  participationToRating,
+  structuredFromSavedFeedback,
+} from './lesson-feedback-form-utils';
 
 interface FeedbacksTabProps {
   lessonId: string;
 }
 
-interface FeedbackItem {
-  studentId: string;
-  content?: string;
-  rating?: number | null;
-}
-
 interface StudentItem {
   id: string;
-  user: { firstName: string; lastName: string };
+  user: { firstName: string; lastName: string; avatarUrl?: string };
 }
 
-const MAX_FEEDBACK_LENGTH = 5000;
-const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1'] as const;
-const GRAMMAR_OPTIONS = ['Tenses', 'Articles', 'Prepositions', 'Conditionals', 'Modal verbs'] as const;
+const fieldShell =
+  'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 transition-colors focus:border-blue-500 focus:outline-none focus:ring-0';
 
-interface StructuredFeedbackFields {
-  level: string;
-  grammar: string[];
-  speaking: boolean;
-  writing: boolean;
-  skillsComment: string;
-  comment: string;
-  participationEnabled: boolean;
-  progress: string;
-  encouragement: string;
+function levelSelectClass(hasValue: boolean): string {
+  return cn(
+    'h-11 w-full cursor-pointer appearance-none rounded-xl border-2 bg-white px-3 pr-10 text-sm text-slate-800',
+    'transition-colors focus:border-blue-500 focus:outline-none',
+    hasValue ? 'border-blue-500' : 'border-slate-200'
+  );
+}
+
+/** Same visual as the Participation disclosure tick (emerald + white check when on). */
+function ParticipationStyleTickBox({ checked }: { checked: boolean }) {
+  return (
+    <span
+      className={cn(
+        'flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors',
+        checked ? 'border-emerald-600 bg-emerald-500' : 'border-slate-300 bg-white'
+      )}
+      aria-hidden
+    >
+      {checked ? (
+        <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+        </svg>
+      ) : null}
+    </span>
+  );
 }
 
 export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
@@ -48,14 +69,10 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
   const { data: feedbacksData, isLoading: isLoadingFeedbacks } = useLessonFeedback(lessonId);
   const createOrUpdateFeedback = useCreateOrUpdateFeedback();
 
-  const existingFeedbacks: FeedbackItem[] = useMemo(() => {
-    const list = feedbacksData?.studentsWithFeedback ?? [];
-    return list.map((item) => ({
-      studentId: item.student.id,
-      content: item.feedback?.content,
-      rating: item.feedback?.rating ?? undefined,
-    }));
-  }, [feedbacksData]);
+  const studentFeedbackRows = useMemo(
+    () => feedbacksData?.studentsWithFeedback ?? [],
+    [feedbacksData]
+  );
 
   const students: StudentItem[] = useMemo(() => {
     const list = feedbacksData?.studentsWithFeedback ?? [];
@@ -64,43 +81,56 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       user: {
         firstName: item.student.user.firstName,
         lastName: item.student.user.lastName,
+        avatarUrl: item.student.user.avatarUrl,
       },
     }));
   }, [feedbacksData]);
 
-  const [feedbacks, setFeedbacks] = useState<Record<string, { content: string; rating?: number }>>({});
-  const [structuredFeedbacks, setStructuredFeedbacks] = useState<Record<string, StructuredFeedbackFields>>({});
-  const [saveStatus, setSaveStatus] = useState<Record<string, { success: boolean; error: string | null }>>({});
-
-  // Create stable keys for comparison to prevent infinite loops
-  const studentsKey = useMemo(() => 
-    students.map(s => s.id).sort().join(','), 
-    [students]
+  const [structuredFeedbacks, setStructuredFeedbacks] = useState<
+    Record<string, StructuredFeedbackFields>
+  >({});
+  const [saveStatus, setSaveStatus] = useState<Record<string, { success: boolean; error: string | null }>>(
+    {}
   );
-  const feedbacksKey = useMemo(() => 
-    existingFeedbacks.map(f => 
-      `${f.studentId}-${f.content || ''}-${f.rating ?? ''}`
-    ).sort().join('|'), 
-    [existingFeedbacks]
+  /** Participation pills stay hidden until the user expands this row (per student). */
+  const [participationExpanded, setParticipationExpanded] = useState<Record<string, boolean>>({});
+
+  const studentsKey = useMemo(() => students.map((s) => s.id).sort().join(','), [students]);
+  const feedbacksKey = useMemo(
+    () =>
+      studentFeedbackRows
+        .map(({ student, feedback }) =>
+          [
+            student.id,
+            feedback?.content ?? '',
+            feedback?.rating ?? '',
+            feedback?.level ?? '',
+            (feedback?.grammarTopics ?? []).join(','),
+            (feedback?.skills ?? []).join(','),
+            feedback?.skillsNote ?? '',
+            feedback?.participation ?? '',
+            feedback?.progress ?? '',
+            feedback?.encouragement ?? '',
+          ].join('~')
+        )
+        .sort()
+        .join('|'),
+    [studentFeedbackRows]
   );
 
-  // Store current arrays in refs to avoid stale closures
   const studentsRef = useRef(students);
-  const feedbacksRef = useRef(existingFeedbacks);
+  const rowsRef = useRef(studentFeedbackRows);
   const lastProcessedRef = useRef<{ studentsKey: string; feedbacksKey: string }>({
     studentsKey: '',
     feedbacksKey: '',
   });
 
-  // Update refs when arrays change
   useEffect(() => {
     studentsRef.current = students;
-    feedbacksRef.current = existingFeedbacks;
-  }, [students, existingFeedbacks]);
+    rowsRef.current = studentFeedbackRows;
+  }, [students, studentFeedbackRows]);
 
-  // Initialize feedbacks for ALL students - prefill saved data, empty for others
   useEffect(() => {
-    // Skip if data hasn't actually changed
     if (
       lastProcessedRef.current.studentsKey === studentsKey &&
       lastProcessedRef.current.feedbacksKey === feedbacksKey
@@ -109,80 +139,25 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     }
 
     const currentStudents = studentsRef.current;
-    const currentFeedbacks = feedbacksRef.current;
+    const rows = rowsRef.current;
 
     if (currentStudents.length > 0) {
-      const initial: Record<string, { content: string; rating?: number }> = {};
-      
-      // Initialize all students with their saved feedback or empty values
+      const nextStructured: Record<string, StructuredFeedbackFields> = {};
       currentStudents.forEach((student) => {
-        const savedFeedback = currentFeedbacks.find((f) => f.studentId === student.id);
-        if (savedFeedback) {
-          // Use saved feedback (including rating)
-          initial[student.id] = {
-            content: savedFeedback.content || '',
-            rating: savedFeedback.rating ?? undefined,
-          };
-        } else {
-          // Initialize with empty values for students without feedback
-          initial[student.id] = {
-            content: '',
-            rating: undefined,
-          };
-        }
+        const row = rows.find((r) => r.student.id === student.id);
+        nextStructured[student.id] = structuredFromSavedFeedback(row?.feedback ?? null);
       });
-      
-      setFeedbacks(initial);
-      setStructuredFeedbacks((prev) => {
-        const next = { ...prev };
-        currentStudents.forEach((student) => {
-          if (!next[student.id]) {
-            next[student.id] = {
-              level: '',
-              grammar: [],
-              speaking: false,
-              writing: false,
-              skillsComment: '',
-              comment: '',
-              participationEnabled: false,
-              progress: '',
-              encouragement: '',
-            };
-          }
-        });
-        return next;
-      });
+      setStructuredFeedbacks(nextStructured);
       lastProcessedRef.current = { studentsKey, feedbacksKey };
     }
   }, [studentsKey, feedbacksKey]);
 
-  const handleFeedbackChange = (studentId: string, value: string) => {
-    // Limit to max length
-    if (value.length > MAX_FEEDBACK_LENGTH) return;
-    
-    setFeedbacks((prev) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        content: value,
-      },
-    }));
-    // Clear save status when user types
-    setSaveStatus((prev) => ({
-      ...prev,
-      [studentId]: { success: false, error: null },
-    }));
-  };
+  const grammarOptions = useMemo(
+    () => GRAMMAR_OPTIONS.map((g) => ({ id: g, label: g })),
+    []
+  );
 
-  const handleRatingChange = (studentId: string, rating: number) => {
-    setFeedbacks((prev) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        content: prev[studentId]?.content ?? '',
-        rating,
-      },
-    }));
+  const clearSaveStatusFor = (studentId: string) => {
     setSaveStatus((prev) => ({
       ...prev,
       [studentId]: { success: false, error: null },
@@ -192,19 +167,11 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
   const handleSaveFeedback = async (studentId: string) => {
     if (!lesson) return;
 
-    const feedback = feedbacks[studentId];
-    const structured = structuredFeedbacks[studentId];
-    if (!structured?.level || structured.grammar.length === 0) {
+    const structured = structuredFeedbacks[studentId] ?? emptyStructuredFeedback();
+    if (!structured.level || structured.grammar.length === 0) {
       setSaveStatus((prev) => ({
         ...prev,
         [studentId]: { success: false, error: 'Level and Grammar are required.' },
-      }));
-      return;
-    }
-    if (!feedback || !feedback.content.trim()) {
-      setSaveStatus((prev) => ({
-        ...prev,
-        [studentId]: { success: false, error: t('feedbackPlaceholder') || 'Please enter feedback' },
       }));
       return;
     }
@@ -214,37 +181,39 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       [studentId]: { success: false, error: null },
     }));
 
-    const structuredContent = [
-      `Level: ${structured.level}`,
-      `Grammar: ${structured.grammar.join(', ')}`,
-      `Skills: ${[structured.speaking ? 'speaking' : '', structured.writing ? 'writing' : ''].filter(Boolean).join(', ') || 'none'}${structured.skillsComment ? ` (${structured.skillsComment})` : ''}`,
-      `Comment: ${structured.comment || '-'}`,
-      `Participation: ${structured.participationEnabled ? feedback.rating ?? '-' : 'off'}`,
-      `Progress: ${structured.progress || '-'}`,
-      `Encouragement: ${structured.encouragement || '-'}`,
-      '',
-      `Feedback: ${feedback.content}`,
-    ].join('\n');
+    const content = buildLessonFeedbackContent(structured);
+    const participationScore = participationToRating(structured.participation);
+    const skillsList = [
+      ...(structured.speaking ? ['speaking'] : []),
+      ...(structured.writing ? ['writing'] : []),
+    ];
+
+    const dto: CreateFeedbackDto = {
+      lessonId: lesson.id,
+      studentId,
+      content,
+      level: structured.level as FeedbackCefrLevelCode,
+      grammarTopics: structured.grammar,
+      skills: skillsList,
+      skillsNote: structured.skillsComment.trim() || null,
+      progress: structured.progress.trim() || null,
+      encouragement: structured.encouragement.trim() || null,
+      ...(participationScore != null
+        ? { rating: participationScore, participation: participationScore }
+        : {}),
+    };
 
     try {
-      await createOrUpdateFeedback.mutateAsync({
-        lessonId: lesson.id,
-        studentId,
-        content: structuredContent,
-        ...(feedback.rating != null && feedback.rating >= 1 && feedback.rating <= 5 && { rating: feedback.rating }),
-      });
+      await createOrUpdateFeedback.mutateAsync(dto);
 
-      // Invalidate both detail and list queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
-      
-      // Show success message
+
       setSaveStatus((prev) => ({
         ...prev,
         [studentId]: { success: true, error: null },
       }));
 
-      // Clear success message after 3 seconds
       setTimeout(() => {
         setSaveStatus((prev) => ({
           ...prev,
@@ -255,7 +224,10 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       console.error('Failed to save feedback:', err);
       setSaveStatus((prev) => ({
         ...prev,
-        [studentId]: { success: false, error: t('errorSavingFeedback') || 'Failed to save feedback. Please try again.' },
+        [studentId]: {
+          success: false,
+          error: t('errorSavingFeedback') || 'Failed to save feedback. Please try again.',
+        },
       }));
     }
   };
@@ -264,8 +236,11 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     return (
       <div className="flex flex-col items-center justify-center p-16">
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-100 border-t-blue-600"></div>
-          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-400 animate-spin" style={{ animationDuration: '0.75s' }}></div>
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" />
+          <div
+            className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-blue-400"
+            style={{ animationDuration: '0.75s' }}
+          />
         </div>
         <p className="mt-6 text-sm font-medium text-slate-600">{tCommon('loading')}</p>
       </div>
@@ -275,335 +250,372 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
   if (!lesson) {
     return (
       <div className="flex flex-col items-center justify-center p-16">
-        <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+          <svg className="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
         </div>
-        <p className="text-slate-600 font-medium">{t('noStudents') || 'Lesson not found'}</p>
+        <p className="font-medium text-slate-600">{t('noStudents') || 'Lesson not found'}</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="space-y-8">
+    <div className="mx-auto max-w-4xl p-4 sm:p-6">
+      <div className="space-y-6 sm:space-y-8">
         {students.map((student) => {
-          const feedback = feedbacks[student.id] || { content: '', rating: undefined };
-          const existing = existingFeedbacks.find((f) => f.studentId === student.id);
+          const row = studentFeedbackRows.find((r) => r.student.id === student.id);
+          const hasSavedFeedback = Boolean(row?.feedback?.content?.trim());
           const isSaving = createOrUpdateFeedback.isPending;
           const status = saveStatus[student.id];
-          const charCount = feedback.content.length;
-          const isNearLimit = charCount > MAX_FEEDBACK_LENGTH * 0.9;
-          const isAtLimit = charCount >= MAX_FEEDBACK_LENGTH;
-          const structured = structuredFeedbacks[student.id] ?? {
-            level: '',
-            grammar: [],
-            speaking: false,
-            writing: false,
-            skillsComment: '',
-            comment: '',
-            participationEnabled: false,
-            progress: '',
-            encouragement: '',
-          };
+          const structured = structuredFeedbacks[student.id] ?? emptyStructuredFeedback();
+          const grammarSelected = new Set(structured.grammar);
+
+          const displayName = `${student.user.firstName} ${student.user.lastName}`.trim();
+          const initials = `${student.user.firstName[0] ?? ''}${student.user.lastName[0] ?? ''}`;
+          const participationOpen = participationExpanded[student.id] ?? false;
+          const showSkillsCommentArea = structured.speaking || structured.writing;
 
           return (
             <div
               key={student.id}
-              className="bg-white border border-slate-200 rounded-xl p-8 space-y-6 shadow-sm hover:shadow-md transition-all duration-200"
+              className="space-y-5 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm sm:space-y-6 sm:p-8"
             >
-              {/* Student Header */}
-              <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                    {student.user.firstName[0]}{student.user.lastName[0]}
-                  </div>
-                  {existing && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-4">
+                <div className="relative shrink-0">
+                  {student.user.avatarUrl ? (
+                    <Avatar
+                      src={student.user.avatarUrl}
+                      name={displayName}
+                      size="lg"
+                      className="h-14 w-14 text-lg shadow-md ring-2 ring-white"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 text-lg font-bold text-white shadow-md ring-2 ring-white">
+                      {initials}
+                    </div>
+                  )}
+                  {hasSavedFeedback && (
+                    <div className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-500">
+                      <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
-                  <p className="font-bold text-slate-900 text-xl">
+                <div className="min-w-0 flex-1">
+                  <p className="text-lg font-bold leading-tight text-slate-900 sm:text-xl">
                     {student.user.firstName} {student.user.lastName}
                   </p>
-                  {existing && (
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <p className="text-xs font-medium text-green-600">{t('feedbackProvided')}</p>
-                    </div>
+                  {hasSavedFeedback && (
+                    <p className="mt-1 text-sm font-medium text-emerald-600">✓ {t('feedbackProvided')}</p>
                   )}
                 </div>
               </div>
 
-              {/* Star Rating */}
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">
-                    Level *
-                  </label>
-                  <select
-                    value={structured.level}
-                    onChange={(event) =>
+                  <label className="block text-sm font-bold text-slate-900">Level *</label>
+                  <div className="relative">
+                    <select
+                      value={structured.level}
+                      onChange={(event) => {
+                        setStructuredFeedbacks((prev) => ({
+                          ...prev,
+                          [student.id]: { ...structured, level: event.target.value },
+                        }));
+                        clearSaveStatusFor(student.id);
+                      }}
+                      className={levelSelectClass(Boolean(structured.level))}
+                    >
+                      <option value="">Select</option>
+                      {LEVEL_OPTIONS.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 md:min-w-0">
+                  <label className="block text-sm font-bold text-slate-900">Grammar * (multi-select)</label>
+                  <MultiSelectChipsDropdown
+                    options={grammarOptions}
+                    selectedIds={grammarSelected}
+                    onSelectionChange={(next) => {
                       setStructuredFeedbacks((prev) => ({
                         ...prev,
-                        [student.id]: { ...structured, level: event.target.value },
-                      }))
-                    }
-                    className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
-                  >
-                    <option value="">Select level</option>
-                    {LEVEL_OPTIONS.map((level) => (
-                      <option key={level} value={level}>
-                        {level}
-                      </option>
-                    ))}
-                  </select>
+                        [student.id]: {
+                          ...structured,
+                          grammar: Array.from(next),
+                        },
+                      }));
+                      clearSaveStatusFor(student.id);
+                    }}
+                    placeholder="Select"
+                    hideSelectedLabelsInTrigger
+                    searchPlaceholder="Filter…"
+                    className={cn(
+                      '[&_div[role=button]]:min-h-11 [&_div[role=button]]:rounded-xl [&_div[role=button]]:border-2 [&_div[role=button]]:focus-within:border-blue-500',
+                      grammarSelected.size > 0
+                        ? '[&_div[role=button]]:border-blue-500'
+                        : '[&_div[role=button]]:border-slate-200'
+                    )}
+                  />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">Skills</label>
+                  <div className="flex flex-wrap gap-5 text-sm text-slate-800">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2.5 rounded-lg px-0.5 py-0.5 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+                      aria-pressed={structured.speaking}
+                      onClick={() => {
+                        const nextSpeaking = !structured.speaking;
+                        const nextWriting = structured.writing;
+                        const bothOff = !nextSpeaking && !nextWriting;
+                        setStructuredFeedbacks((prev) => ({
+                          ...prev,
+                          [student.id]: {
+                            ...structured,
+                            speaking: nextSpeaking,
+                            skillsComment: bothOff ? '' : structured.skillsComment,
+                          },
+                        }));
+                        clearSaveStatusFor(student.id);
+                      }}
+                    >
+                      <ParticipationStyleTickBox checked={structured.speaking} />
+                      <span>speaking</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2.5 rounded-lg px-0.5 py-0.5 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+                      aria-pressed={structured.writing}
+                      onClick={() => {
+                        const nextWriting = !structured.writing;
+                        const nextSpeaking = structured.speaking;
+                        const bothOff = !nextSpeaking && !nextWriting;
+                        setStructuredFeedbacks((prev) => ({
+                          ...prev,
+                          [student.id]: {
+                            ...structured,
+                            writing: nextWriting,
+                            skillsComment: bothOff ? '' : structured.skillsComment,
+                          },
+                        }));
+                        clearSaveStatusFor(student.id);
+                      }}
+                    >
+                      <ParticipationStyleTickBox checked={structured.writing} />
+                      <span>writing</span>
+                    </button>
+                  </div>
+                  {showSkillsCommentArea ? (
+                    <textarea
+                      rows={4}
+                      value={structured.skillsComment}
+                      onChange={(event) => {
+                        setStructuredFeedbacks((prev) => ({
+                          ...prev,
+                          [student.id]: { ...structured, skillsComment: event.target.value },
+                        }));
+                        clearSaveStatusFor(student.id);
+                      }}
+                      placeholder="Skills comment (optional)"
+                      className={cn(fieldShell, 'min-h-[100px] resize-y')}
+                    />
+                  ) : (
+                    <p className="text-xs text-slate-500">{t('skillsCommentExpandHint')}</p>
+                  )}
+                </div>
+
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">
-                    Grammar * (multi-select)
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {GRAMMAR_OPTIONS.map((option) => {
-                      const selected = structured.grammar.includes(option);
+                  <label className="block text-sm font-bold text-slate-900">Comment</label>
+                  <textarea
+                    rows={4}
+                    value={structured.comment}
+                    onChange={(event) => {
+                      setStructuredFeedbacks((prev) => ({
+                        ...prev,
+                        [student.id]: { ...structured, comment: event.target.value },
+                      }));
+                      clearSaveStatusFor(student.id);
+                    }}
+                    placeholder="Optional comment"
+                    className={cn(fieldShell, 'min-h-[100px] resize-y')}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between gap-3 rounded-xl border border-transparent px-1 py-1.5 text-left transition-colors hover:border-slate-200 hover:bg-slate-50/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  aria-expanded={participationOpen}
+                  aria-controls={`participation-options-${student.id}`}
+                  id={`participation-trigger-${student.id}`}
+                  onClick={() => {
+                    setParticipationExpanded((prev) => ({
+                      ...prev,
+                      [student.id]: !participationOpen,
+                    }));
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    <ParticipationStyleTickBox checked={participationOpen} />
+                    <span className="text-sm font-bold text-slate-900">Participation</span>
+                  </span>
+                  <svg
+                    className={cn(
+                      'h-5 w-5 shrink-0 text-slate-500 transition-transform',
+                      participationOpen && 'rotate-180'
+                    )}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {participationOpen ? (
+                  <div
+                    id={`participation-options-${student.id}`}
+                    role="group"
+                    aria-labelledby={`participation-trigger-${student.id}`}
+                    className="flex flex-wrap gap-2 pt-1"
+                  >
+                    {PARTICIPATION_OPTIONS.map((option) => {
+                      const selected = structured.participation === option;
                       return (
                         <button
                           key={option}
                           type="button"
-                          onClick={() =>
+                          onClick={() => {
                             setStructuredFeedbacks((prev) => ({
                               ...prev,
                               [student.id]: {
                                 ...structured,
-                                grammar: selected
-                                  ? structured.grammar.filter((item) => item !== option)
-                                  : [...structured.grammar, option],
+                                participation: selected ? null : option,
                               },
-                            }))
-                          }
-                          className={`rounded-md border px-2 py-1 text-xs ${selected ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white text-slate-600'}`}
+                            }));
+                            clearSaveStatusFor(student.id);
+                          }}
+                          className={cn(
+                            'rounded-full border px-3.5 py-2 text-sm font-medium transition-colors',
+                            selected
+                              ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                          )}
                         >
                           {option}
                         </button>
                       );
                     })}
                   </div>
-                </div>
+                ) : null}
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Skills</label>
-                  <div className="flex gap-4 text-sm text-slate-700">
-                    <label className="inline-flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={structured.speaking}
-                        onChange={(event) =>
-                          setStructuredFeedbacks((prev) => ({
-                            ...prev,
-                            [student.id]: { ...structured, speaking: event.target.checked },
-                          }))
-                        }
-                      />
-                      speaking
-                    </label>
-                    <label className="inline-flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={structured.writing}
-                        onChange={(event) =>
-                          setStructuredFeedbacks((prev) => ({
-                            ...prev,
-                            [student.id]: { ...structured, writing: event.target.checked },
-                          }))
-                        }
-                      />
-                      writing
-                    </label>
-                  </div>
-                  <input
-                    type="text"
-                    value={structured.skillsComment}
-                    onChange={(event) =>
-                      setStructuredFeedbacks((prev) => ({
-                        ...prev,
-                        [student.id]: { ...structured, skillsComment: event.target.value },
-                      }))
-                    }
-                    placeholder="Skills comment (optional)"
-                    className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Comment</label>
-                  <input
-                    type="text"
-                    value={structured.comment}
-                    onChange={(event) =>
-                      setStructuredFeedbacks((prev) => ({
-                        ...prev,
-                        [student.id]: { ...structured, comment: event.target.value },
-                      }))
-                    }
-                    placeholder="Optional comment"
-                    className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
-                  <input
-                    type="checkbox"
-                    checked={structured.participationEnabled}
-                    onChange={(event) =>
-                      setStructuredFeedbacks((prev) => ({
-                        ...prev,
-                        [student.id]: { ...structured, participationEnabled: event.target.checked },
-                      }))
-                    }
-                  />
-                  Participation (enable rating)
-                </label>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700">
-                  {t('rateClass') ?? 'Rate this class'}
-                </label>
-                <StarRating
-                  value={feedback.rating ?? 0}
-                  onChange={(rating) => handleRatingChange(student.id, rating)}
-                  size="md"
-                  disabled={!structured.participationEnabled}
-                  className={!structured.participationEnabled ? 'opacity-50' : ''}
-                />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Progress</label>
+                  <label className="block text-sm font-bold text-slate-900">Progress</label>
                   <textarea
-                    rows={3}
+                    rows={4}
                     value={structured.progress}
-                    onChange={(event) =>
+                    onChange={(event) => {
                       setStructuredFeedbacks((prev) => ({
                         ...prev,
                         [student.id]: { ...structured, progress: event.target.value },
-                      }))
-                    }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      }));
+                      clearSaveStatusFor(student.id);
+                    }}
+                    className={cn(fieldShell, 'min-h-[100px] resize-y')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Encouragement</label>
+                  <label className="block text-sm font-bold text-slate-900">Encouragement</label>
                   <textarea
-                    rows={3}
+                    rows={4}
                     value={structured.encouragement}
-                    onChange={(event) =>
+                    onChange={(event) => {
                       setStructuredFeedbacks((prev) => ({
                         ...prev,
                         [student.id]: { ...structured, encouragement: event.target.value },
-                      }))
-                    }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      }));
+                      clearSaveStatusFor(student.id);
+                    }}
+                    className={cn(fieldShell, 'min-h-[100px] resize-y')}
                   />
                 </div>
               </div>
 
-              {/* Feedback TextArea */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-sm font-semibold text-slate-700">
-                    {t('feedback')} <span className="text-red-500">*</span>
-                  </label>
-                  <span className={`text-xs font-medium transition-colors ${
-                    isAtLimit 
-                      ? 'text-red-600' 
-                      : isNearLimit 
-                        ? 'text-amber-600' 
-                        : 'text-slate-400'
-                  }`}>
-                    {charCount.toLocaleString()} / {MAX_FEEDBACK_LENGTH.toLocaleString()}
-                  </span>
-                </div>
-                <textarea
-                  value={feedback.content}
-                  onChange={(e) => handleFeedbackChange(student.id, e.target.value)}
-                  rows={8}
-                  maxLength={MAX_FEEDBACK_LENGTH}
-                  className={`w-full px-4 py-3.5 border-2 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 resize-y transition-all duration-200 ${
-                    isAtLimit
-                      ? 'border-red-300 focus:border-red-400'
-                      : isNearLimit
-                        ? 'border-amber-300 focus:border-amber-400'
-                        : 'border-slate-300 focus:border-blue-500'
-                  }`}
-                  style={{ minHeight: '160px' }}
-                  placeholder={t('feedbackPlaceholder') || 'Write your feedback here...'}
-                />
-              </div>
-
-              {/* Status Messages */}
               {status?.success && (
-                <div className="flex items-center gap-3 text-green-700 bg-gradient-to-r from-green-50 to-emerald-50 px-5 py-3.5 rounded-lg border border-green-200 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-sm font-semibold">
-                    {t('feedbackProvided') || 'Feedback saved successfully'}
-                  </span>
+                <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-3 text-emerald-800">
+                  <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm font-semibold">{t('feedbackProvided')}</span>
                 </div>
               )}
 
               {status?.error && (
-                <div className="flex items-center gap-3 text-red-700 bg-gradient-to-r from-red-50 to-rose-50 px-5 py-3.5 rounded-lg border border-red-200 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
+                <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-gradient-to-r from-red-50 to-rose-50 px-4 py-3 text-red-800">
+                  <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                   <span className="text-sm font-semibold">{status.error}</span>
                 </div>
               )}
 
-              {/* Save Button */}
-              <div className="flex justify-end pt-4">
+              <div className="flex justify-end pt-1">
                 <Button
+                  type="button"
                   onClick={() => handleSaveFeedback(student.id)}
-                  disabled={isSaving || !feedback.content.trim() || isAtLimit}
-                  className={`min-w-[140px] h-11 font-semibold text-base transition-all duration-200 ${
-                    !feedback.content.trim() || isAtLimit
-                      ? 'opacity-50 cursor-not-allowed'
-                      : 'hover:shadow-lg hover:scale-105 active:scale-100'
-                  }`}
+                  disabled={isSaving || !structured.level || structured.grammar.length === 0}
+                  className="h-11 min-w-[140px] rounded-xl px-6 text-base font-semibold"
                 >
                   {isSaving ? (
                     <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
-                      {tCommon('loading') || 'Saving...'}
+                      {tCommon('loading')}
                     </span>
-                  ) : existing ? (
+                  ) : hasSavedFeedback ? (
                     t('editFeedback') || 'Update Feedback'
                   ) : (
                     <span className="flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      {tCommon('save') || 'Save'}
+                      {tCommon('save')}
                     </span>
                   )}
                 </Button>
@@ -614,24 +626,20 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       </div>
 
       {students.length === 0 && (
-        <div className="flex flex-col items-center justify-center p-16 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
-          <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-16">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-200">
+            <svg className="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              />
             </svg>
           </div>
-          <p className="text-slate-600 font-medium">{t('noStudents') || 'No students in this lesson\'s group'}</p>
+          <p className="font-medium text-slate-600">{t('noStudents') || "No students in this lesson's group"}</p>
         </div>
       )}
     </div>
   );
 }
-
-
-
-
-
-
-
-
-

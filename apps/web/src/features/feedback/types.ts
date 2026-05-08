@@ -5,6 +5,14 @@ export interface Feedback {
   teacherId: string;
   content: string;
   rating?: number | null;
+  /** Structured form (Phase 9); mirrors API / Prisma when present */
+  level?: string | null;
+  grammarTopics?: string[];
+  skills?: string[];
+  skillsNote?: string | null;
+  participation?: number | null;
+  progress?: string | null;
+  encouragement?: string | null;
   strengths?: string | null;
   improvements?: string | null;
   createdAt: string;
@@ -46,13 +54,22 @@ export interface Feedback {
   };
 }
 
+export type FeedbackCefrLevelCode = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+
 export interface CreateFeedbackDto {
   lessonId: string;
   studentId: string;
   content: string;
-  rating?: number;
+  rating?: number | null;
   strengths?: string;
   improvements?: string;
+  level?: FeedbackCefrLevelCode;
+  grammarTopics?: string[];
+  skills?: string[];
+  skillsNote?: string | null;
+  participation?: number | null;
+  progress?: string | null;
+  encouragement?: string | null;
 }
 
 export interface UpdateFeedbackDto {

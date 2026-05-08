@@ -386,7 +386,8 @@
     "feedbackDescription": "Provide feedback for this student's performance in this session.",
     "feedbackPlaceholder": "Write your feedback here...",
     "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to close?",
-    "errorSavingFeedback": "Failed to save feedback. Please try again."
+    "errorSavingFeedback": "Failed to save feedback. Please try again.",
+    "skillsCommentExpandHint": "Click “speaking” or “writing” to open the skills comment field."
   },
   "attendance": {
     "title": "Attendance",
