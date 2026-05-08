@@ -284,6 +284,7 @@ export function useDeleteLesson() {
     mutationFn: (id: string) => deleteLesson(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.all });
     },
   });
 }

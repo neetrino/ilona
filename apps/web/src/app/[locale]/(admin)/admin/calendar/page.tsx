@@ -1,12 +1,22 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, startTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Button } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { LessonListTable } from '@/shared/components/calendar/LessonListTable';
-import { useLessons, useLessonStatistics, useCancelLesson, AddLessonForm, type Lesson, type LessonStatus } from '@/features/lessons';
+import {
+  useLessons,
+  useLessonStatistics,
+  useDeleteLesson,
+  useDeleteLessonsBulk,
+  AddLessonForm,
+  type Lesson,
+  type LessonStatus,
+} from '@/features/lessons';
+import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/BulkDeleteConfirmationDialog';
+import { getErrorMessage } from '@/shared/lib/api';
 import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
 import { useTeachers } from '@/features/teachers';
 import { useGroups } from '@/features/groups';
@@ -123,6 +133,18 @@ export default function CalendarPage() {
   const [substituteLessonId, setSubstituteLessonId] = useState<string | null>(null);
   const [substituteLessonModalOpen, setSubstituteLessonModalOpen] = useState(false);
   const [substituteByDayOpen, setSubstituteByDayOpen] = useState(false);
+
+  const [pendingBulkDeleteIds, setPendingBulkDeleteIds] = useState<string[]>([]);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
+
+  const [pendingSingleDeleteId, setPendingSingleDeleteId] = useState<string | null>(null);
+  const [isSingleDeleteDialogOpen, setIsSingleDeleteDialogOpen] = useState(false);
+  const [singleDeleteError, setSingleDeleteError] = useState<string | null>(null);
+
+  const [deleteNotice, setDeleteNotice] = useState<{ variant: 'success' | 'error'; text: string } | null>(
+    null,
+  );
 
   // Fetch teachers for dropdown
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ 
@@ -264,8 +286,8 @@ export default function CalendarPage() {
   // Fetch statistics
   const { data: stats } = useLessonStatistics();
 
-  // Cancel mutation
-  const cancelLesson = useCancelLesson();
+  const deleteLesson = useDeleteLesson();
+  const deleteLessonsBulk = useDeleteLessonsBulk();
 
   const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
 
@@ -305,16 +327,76 @@ export default function CalendarPage() {
     setCurrentDate(new Date());
   };
 
-  // Handle cancel
-  const handleCancel = async (id: string) => {
-    if (confirm('Are you sure you want to cancel this lesson?')) {
-      try {
-        await cancelLesson.mutateAsync({ id });
-      } catch (err) {
-        console.error('Failed to cancel lesson:', err);
-      }
+  const showDeleteNotice = useCallback((variant: 'success' | 'error', text: string) => {
+    setDeleteNotice({ variant, text });
+    window.setTimeout(() => {
+      startTransition(() => setDeleteNotice(null));
+    }, 4000);
+  }, []);
+
+  const handleBulkDeleteClick = useCallback((lessonIds: string[]) => {
+    const unique = [...new Set(lessonIds)];
+    if (unique.length === 0) return;
+    setBulkDeleteError(null);
+    setPendingBulkDeleteIds(unique);
+    setIsBulkDeleteDialogOpen(true);
+  }, []);
+
+  const handleBulkDeleteDialogOpenChange = useCallback((open: boolean) => {
+    setIsBulkDeleteDialogOpen(open);
+    if (!open) {
+      setBulkDeleteError(null);
+      setPendingBulkDeleteIds([]);
     }
-  };
+  }, []);
+
+  const handleBulkDeleteConfirm = useCallback(async () => {
+    if (pendingBulkDeleteIds.length === 0 || deleteLessonsBulk.isPending) return;
+    setBulkDeleteError(null);
+    try {
+      await deleteLessonsBulk.mutateAsync(pendingBulkDeleteIds);
+      const n = pendingBulkDeleteIds.length;
+      setIsBulkDeleteDialogOpen(false);
+      setPendingBulkDeleteIds([]);
+      showDeleteNotice(
+        'success',
+        n === 1 ? 'Lesson deleted successfully.' : `${n} lessons deleted successfully.`,
+      );
+    } catch (err: unknown) {
+      setBulkDeleteError(getErrorMessage(err, 'Failed to delete lessons. Please try again.'));
+    }
+  }, [deleteLessonsBulk, pendingBulkDeleteIds, showDeleteNotice]);
+
+  const handleSingleDeleteClick = useCallback((lessonId: string) => {
+    setSingleDeleteError(null);
+    setPendingSingleDeleteId(lessonId);
+    setIsSingleDeleteDialogOpen(true);
+  }, []);
+
+  const handleSingleDeleteDialogOpenChange = useCallback((open: boolean) => {
+    setIsSingleDeleteDialogOpen(open);
+    if (!open) {
+      setSingleDeleteError(null);
+      setPendingSingleDeleteId(null);
+    }
+  }, []);
+
+  const handleSingleDeleteConfirm = useCallback(async () => {
+    if (!pendingSingleDeleteId || deleteLesson.isPending) return;
+    setSingleDeleteError(null);
+    try {
+      await deleteLesson.mutateAsync(pendingSingleDeleteId);
+      setIsSingleDeleteDialogOpen(false);
+      setPendingSingleDeleteId(null);
+      showDeleteNotice('success', 'Lesson deleted successfully.');
+    } catch (err: unknown) {
+      setSingleDeleteError(getErrorMessage(err, 'Failed to delete lesson. Please try again.'));
+    }
+  }, [deleteLesson, pendingSingleDeleteId, showDeleteNotice]);
+
+  const singleDeleteLesson = pendingSingleDeleteId
+    ? lessons.find((l) => l.id === pendingSingleDeleteId)
+    : undefined;
 
   // Check if date is today
   const isToday = (date: Date) => {
@@ -639,14 +721,12 @@ export default function CalendarPage() {
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
+                showBulkBarWhenEmpty
+                onBulkDelete={handleBulkDeleteClick}
                 onObligationClick={(lessonId, obligation) => {
                   router.push(`/admin/calendar/${lessonId}?tab=${obligation}`);
                 }}
-                onDelete={(lessonId) => {
-                  if (confirm('Are you sure you want to delete this lesson?')) {
-                    handleCancel(lessonId);
-                  }
-                }}
+                onDelete={handleSingleDeleteClick}
                 onAssignSubstitute={(lessonId) => {
                   setSubstituteLessonId(lessonId);
                   setSubstituteLessonModalOpen(true);
@@ -680,6 +760,57 @@ export default function CalendarPage() {
         groupsLoading={groupsLoading}
         teacherOptions={teacherOptions}
       />
+
+      <BulkDeleteConfirmationDialog
+        open={isBulkDeleteDialogOpen}
+        onOpenChange={handleBulkDeleteDialogOpenChange}
+        onConfirm={handleBulkDeleteConfirm}
+        lessonCount={pendingBulkDeleteIds.length}
+        isLoading={deleteLessonsBulk.isPending}
+        error={bulkDeleteError}
+      />
+
+      <BulkDeleteConfirmationDialog
+        open={isSingleDeleteDialogOpen}
+        onOpenChange={handleSingleDeleteDialogOpenChange}
+        onConfirm={handleSingleDeleteConfirm}
+        lessonCount={1}
+        isLoading={deleteLesson.isPending}
+        error={singleDeleteError}
+        title="Delete this lesson?"
+        description={
+          singleDeleteLesson ? (
+            <>
+              Permanently delete the lesson for{' '}
+              <span className="font-semibold text-slate-900">
+                {singleDeleteLesson.group?.name ?? 'Unknown group'}
+              </span>{' '}
+              scheduled{' '}
+              {new Date(singleDeleteLesson.scheduledAt).toLocaleString(undefined, {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              })}
+              ? This cannot be undone (attendance, feedback, and related data will be removed).
+            </>
+          ) : (
+            'Permanently delete this lesson? This cannot be undone.'
+          )
+        }
+      />
+
+      {deleteNotice && (
+        <div
+          className={cn(
+            'fixed bottom-4 right-4 z-50 max-w-sm rounded-lg border p-4 shadow-lg',
+            deleteNotice.variant === 'success'
+              ? 'border-green-200 bg-green-50 text-green-800'
+              : 'border-red-200 bg-red-50 text-red-800',
+          )}
+          role="status"
+        >
+          <p className="text-sm font-medium">{deleteNotice.text}</p>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

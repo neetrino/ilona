@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
@@ -28,6 +28,8 @@ interface LessonListTableProps {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onSort?: (key: string) => void;
+  /** When true, bulk action bar stays visible with a disabled delete until at least one row is selected (admin calendar). */
+  showBulkBarWhenEmpty?: boolean;
 }
 
 const _statusConfig: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
@@ -159,6 +161,7 @@ export function LessonListTable({
   sortBy,
   sortOrder,
   onSort,
+  showBulkBarWhenEmpty = false,
 }: LessonListTableProps) {
   const router = useRouter();
   const locale = useLocale();
@@ -197,6 +200,23 @@ export function LessonListTable({
     
     return sorted;
   }, [lessons, sortBy, sortOrder]);
+
+  const lessonIdSet = useMemo(() => new Set(lessons.map((l) => l.id)), [lessons]);
+
+  useEffect(() => {
+    setSelectedLessons((prev) => {
+      let changed = false;
+      const next = new Set<string>();
+      for (const id of prev) {
+        if (lessonIdSet.has(id)) {
+          next.add(id);
+        } else {
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [lessonIdSet]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -256,24 +276,27 @@ export function LessonListTable({
 
   const allSelected = lessons.length > 0 && selectedLessons.size === lessons.length;
   const someSelected = selectedLessons.size > 0 && selectedLessons.size < lessons.length;
+  const showBulkBar = onBulkDelete && (showBulkBarWhenEmpty || selectedLessons.size > 0);
+  const bulkDeleteDisabled = selectedLessons.size === 0;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       {/* Bulk Actions */}
-      {selectedLessons.size > 0 && (
-        <div className="px-6 py-3 bg-blue-50 border-b border-slate-200 flex items-center justify-between">
+      {showBulkBar && (
+        <div className="px-6 py-3 bg-blue-50 border-b border-slate-200 flex items-center justify-between gap-4">
           <span className="text-sm font-medium text-blue-900">
-            {selectedLessons.size} lesson{selectedLessons.size !== 1 ? 's' : ''} selected
+            {selectedLessons.size === 0
+              ? 'Select lessons with the checkboxes to delete multiple at once.'
+              : `${selectedLessons.size} lesson${selectedLessons.size !== 1 ? 's' : ''} selected`}
           </span>
-          {onBulkDelete && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleBulkDelete}
-            >
-              Delete Selected
-            </Button>
-          )}
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleBulkDelete}
+            disabled={bulkDeleteDisabled}
+          >
+            Delete selected
+          </Button>
         </div>
       )}
 

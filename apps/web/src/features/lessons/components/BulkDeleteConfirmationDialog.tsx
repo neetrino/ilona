@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +18,11 @@ interface BulkDeleteConfirmationDialogProps {
   lessonCount: number;
   isLoading?: boolean;
   error?: string | null;
+  /** Overrides default "Delete Selected Lessons" title */
+  title?: string;
+  /** Overrides default body copy */
+  description?: ReactNode;
+  confirmLabel?: string;
 }
 
 export function BulkDeleteConfirmationDialog({
@@ -26,17 +32,30 @@ export function BulkDeleteConfirmationDialog({
   lessonCount,
   isLoading = false,
   error,
+  title,
+  description,
+  confirmLabel = 'Delete',
 }: BulkDeleteConfirmationDialogProps) {
+  const defaultTitle = lessonCount === 1 ? 'Delete lesson' : 'Delete selected lessons';
+  const defaultDescription =
+    lessonCount === 1 ? (
+      <>
+        Are you sure you want to delete this lesson? This cannot be undone and will permanently remove
+        the lesson and all associated data (attendance records, feedback, etc.).
+      </>
+    ) : (
+      <>
+        Are you sure you want to delete {lessonCount} lessons? This cannot be undone and will permanently
+        remove these lessons and all associated data (attendance records, feedback, etc.).
+      </>
+    );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete Selected Lessons</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete {lessonCount} {lessonCount === 1 ? 'lesson' : 'lessons'}? 
-            This action cannot be undone and will permanently remove {lessonCount === 1 ? 'the lesson' : 'these lessons'} 
-            and all associated data (attendance records, feedback, etc.).
-          </DialogDescription>
+          <DialogTitle>{title ?? defaultTitle}</DialogTitle>
+          <DialogDescription>{description ?? defaultDescription}</DialogDescription>
         </DialogHeader>
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -57,8 +76,9 @@ export function BulkDeleteConfirmationDialog({
             variant="destructive"
             onClick={onConfirm}
             isLoading={isLoading}
+            disabled={isLoading}
           >
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Deleting...' : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>
