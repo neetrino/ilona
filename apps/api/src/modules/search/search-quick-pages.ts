@@ -61,6 +61,14 @@ const ROWS: QuickPageRow[] = [
     synonyms: ['timetable'],
   },
   {
+    id: 'page-admin-daily-plan',
+    href: '/admin/daily-plan',
+    navKey: 'dailyPlan',
+    titleEn: 'Daily Plan',
+    roles: [UserRole.ADMIN, UserRole.MANAGER],
+    synonyms: ['lesson plan', 'teachers plans', 'branch plans'],
+  },
+  {
     id: 'page-admin-calendar',
     href: '/admin/calendar',
     navKey: 'calendar',
