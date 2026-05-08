@@ -23,6 +23,14 @@ export interface GroupScheduleEntry {
   notes?: string;
 }
 
+/** Sent with create/update group to materialize lessons in the calendar. */
+export interface GroupCalendarPlanDto {
+  dateFrom: string;
+  dateTo: string;
+  topic?: string;
+  description?: string;
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -35,7 +43,8 @@ export interface Group {
   centerId: string;
   teacherId?: string | null;
   substituteTeacherId?: string | null;
-  schedule?: GroupScheduleEntry[] | null;
+  /** Legacy array, or `{ weeklySlots, calendar }` when calendar generation is used. */
+  schedule?: GroupScheduleEntry[] | { weeklySlots: GroupScheduleEntry[]; calendar?: unknown } | null;
   center: {
     id: string;
     name: string;
@@ -86,6 +95,7 @@ export interface CreateGroupDto {
   teacherId?: string;
   substituteTeacherId?: string;
   schedule?: GroupScheduleEntry[];
+  calendarPlan?: GroupCalendarPlanDto;
   isActive?: boolean;
   iconKey?: string | null;
 }
@@ -98,6 +108,10 @@ export interface UpdateGroupDto {
   teacherId?: string;
   substituteTeacherId?: string | null;
   schedule?: GroupScheduleEntry[] | null;
+  /** Omit to leave unchanged; `null` clears calendar metadata (does not delete lessons). */
+  calendarPlan?: GroupCalendarPlanDto | null;
+  /** Required when the server responds with regeneration confirmation (HTTP 409). */
+  confirmReplaceGeneratedLessons?: boolean;
   isActive?: boolean;
   iconKey?: string | null;
 }

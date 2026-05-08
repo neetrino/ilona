@@ -220,6 +220,14 @@ export const LessonStatus: {
 export type LessonStatus = (typeof LessonStatus)[keyof typeof LessonStatus]
 
 
+export const LessonCreationSource: {
+  MANUAL: 'MANUAL',
+  GROUP_SCHEDULE: 'GROUP_SCHEDULE'
+};
+
+export type LessonCreationSource = (typeof LessonCreationSource)[keyof typeof LessonCreationSource]
+
+
 export const AbsenceType: {
   JUSTIFIED: 'JUSTIFIED',
   UNJUSTIFIED: 'UNJUSTIFIED'
@@ -352,6 +360,10 @@ export const RiskLabel: typeof $Enums.RiskLabel
 export type LessonStatus = $Enums.LessonStatus
 
 export const LessonStatus: typeof $Enums.LessonStatus
+
+export type LessonCreationSource = $Enums.LessonCreationSource
+
+export const LessonCreationSource: typeof $Enums.LessonCreationSource
 
 export type AbsenceType = $Enums.AbsenceType
 
@@ -16251,6 +16263,7 @@ export namespace Prisma {
     textSentAt: Date | null
     completedAt: Date | null
     notes: string | null
+    creationSource: $Enums.LessonCreationSource | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -16276,6 +16289,7 @@ export namespace Prisma {
     textSentAt: Date | null
     completedAt: Date | null
     notes: string | null
+    creationSource: $Enums.LessonCreationSource | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -16301,6 +16315,7 @@ export namespace Prisma {
     textSentAt: number
     completedAt: number
     notes: number
+    creationSource: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -16336,6 +16351,7 @@ export namespace Prisma {
     textSentAt?: true
     completedAt?: true
     notes?: true
+    creationSource?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -16361,6 +16377,7 @@ export namespace Prisma {
     textSentAt?: true
     completedAt?: true
     notes?: true
+    creationSource?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -16386,6 +16403,7 @@ export namespace Prisma {
     textSentAt?: true
     completedAt?: true
     notes?: true
+    creationSource?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -16498,6 +16516,7 @@ export namespace Prisma {
     textSentAt: Date | null
     completedAt: Date | null
     notes: string | null
+    creationSource: $Enums.LessonCreationSource
     createdAt: Date
     updatedAt: Date
     _count: LessonCountAggregateOutputType | null
@@ -16542,6 +16561,7 @@ export namespace Prisma {
     textSentAt?: boolean
     completedAt?: boolean
     notes?: boolean
+    creationSource?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     attendances?: boolean | Lesson$attendancesArgs<ExtArgs>
@@ -16575,6 +16595,7 @@ export namespace Prisma {
     textSentAt?: boolean
     completedAt?: boolean
     notes?: boolean
+    creationSource?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     group?: boolean | GroupDefaultArgs<ExtArgs>
@@ -16603,6 +16624,7 @@ export namespace Prisma {
     textSentAt?: boolean
     completedAt?: boolean
     notes?: boolean
+    creationSource?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -16658,6 +16680,7 @@ export namespace Prisma {
       textSentAt: Date | null
       completedAt: Date | null
       notes: string | null
+      creationSource: $Enums.LessonCreationSource
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["lesson"]>
@@ -17080,6 +17103,7 @@ export namespace Prisma {
     readonly textSentAt: FieldRef<"Lesson", 'DateTime'>
     readonly completedAt: FieldRef<"Lesson", 'DateTime'>
     readonly notes: FieldRef<"Lesson", 'String'>
+    readonly creationSource: FieldRef<"Lesson", 'LessonCreationSource'>
     readonly createdAt: FieldRef<"Lesson", 'DateTime'>
     readonly updatedAt: FieldRef<"Lesson", 'DateTime'>
   }
@@ -36473,6 +36497,7 @@ export namespace Prisma {
     textSentAt: 'textSentAt',
     completedAt: 'completedAt',
     notes: 'notes',
+    creationSource: 'creationSource',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -36968,6 +36993,20 @@ export namespace Prisma {
    * Reference to a field of type 'LessonStatus[]'
    */
   export type ListEnumLessonStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LessonStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'LessonCreationSource'
+   */
+  export type EnumLessonCreationSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LessonCreationSource'>
+    
+
+
+  /**
+   * Reference to a field of type 'LessonCreationSource[]'
+   */
+  export type ListEnumLessonCreationSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LessonCreationSource[]'>
     
 
 
@@ -38160,6 +38199,7 @@ export namespace Prisma {
     textSentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     completedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     notes?: StringNullableFilter<"Lesson"> | string | null
+    creationSource?: EnumLessonCreationSourceFilter<"Lesson"> | $Enums.LessonCreationSource
     createdAt?: DateTimeFilter<"Lesson"> | Date | string
     updatedAt?: DateTimeFilter<"Lesson"> | Date | string
     attendances?: AttendanceListRelationFilter
@@ -38192,6 +38232,7 @@ export namespace Prisma {
     textSentAt?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    creationSource?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     attendances?: AttendanceOrderByRelationAggregateInput
@@ -38227,6 +38268,7 @@ export namespace Prisma {
     textSentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     completedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     notes?: StringNullableFilter<"Lesson"> | string | null
+    creationSource?: EnumLessonCreationSourceFilter<"Lesson"> | $Enums.LessonCreationSource
     createdAt?: DateTimeFilter<"Lesson"> | Date | string
     updatedAt?: DateTimeFilter<"Lesson"> | Date | string
     attendances?: AttendanceListRelationFilter
@@ -38259,6 +38301,7 @@ export namespace Prisma {
     textSentAt?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    creationSource?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: LessonCountOrderByAggregateInput
@@ -38292,6 +38335,7 @@ export namespace Prisma {
     textSentAt?: DateTimeNullableWithAggregatesFilter<"Lesson"> | Date | string | null
     completedAt?: DateTimeNullableWithAggregatesFilter<"Lesson"> | Date | string | null
     notes?: StringNullableWithAggregatesFilter<"Lesson"> | string | null
+    creationSource?: EnumLessonCreationSourceWithAggregatesFilter<"Lesson"> | $Enums.LessonCreationSource
     createdAt?: DateTimeWithAggregatesFilter<"Lesson"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Lesson"> | Date | string
   }
@@ -41015,6 +41059,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
@@ -41047,6 +41092,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
@@ -41073,6 +41119,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
@@ -41105,6 +41152,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutLessonNestedInput
@@ -41134,6 +41182,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -41156,6 +41205,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41181,6 +41231,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44014,6 +44065,13 @@ export namespace Prisma {
     not?: NestedEnumLessonStatusFilter<$PrismaModel> | $Enums.LessonStatus
   }
 
+  export type EnumLessonCreationSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.LessonCreationSource | EnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.LessonCreationSource[] | ListEnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LessonCreationSource[] | ListEnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumLessonCreationSourceFilter<$PrismaModel> | $Enums.LessonCreationSource
+  }
+
   export type DailyPlanNullableRelationFilter = {
     is?: DailyPlanWhereInput | null
     isNot?: DailyPlanWhereInput | null
@@ -44040,6 +44098,7 @@ export namespace Prisma {
     textSentAt?: SortOrder
     completedAt?: SortOrder
     notes?: SortOrder
+    creationSource?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -44069,6 +44128,7 @@ export namespace Prisma {
     textSentAt?: SortOrder
     completedAt?: SortOrder
     notes?: SortOrder
+    creationSource?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -44094,6 +44154,7 @@ export namespace Prisma {
     textSentAt?: SortOrder
     completedAt?: SortOrder
     notes?: SortOrder
+    creationSource?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -44110,6 +44171,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumLessonStatusFilter<$PrismaModel>
     _max?: NestedEnumLessonStatusFilter<$PrismaModel>
+  }
+
+  export type EnumLessonCreationSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LessonCreationSource | EnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.LessonCreationSource[] | ListEnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LessonCreationSource[] | ListEnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumLessonCreationSourceWithAggregatesFilter<$PrismaModel> | $Enums.LessonCreationSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLessonCreationSourceFilter<$PrismaModel>
+    _max?: NestedEnumLessonCreationSourceFilter<$PrismaModel>
   }
 
   export type EnumAbsenceTypeNullableFilter<$PrismaModel = never> = {
@@ -47315,6 +47386,10 @@ export namespace Prisma {
     set?: $Enums.LessonStatus
   }
 
+  export type EnumLessonCreationSourceFieldUpdateOperationsInput = {
+    set?: $Enums.LessonCreationSource
+  }
+
   export type AttendanceUpdateManyWithoutLessonNestedInput = {
     create?: XOR<AttendanceCreateWithoutLessonInput, AttendanceUncheckedCreateWithoutLessonInput> | AttendanceCreateWithoutLessonInput[] | AttendanceUncheckedCreateWithoutLessonInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutLessonInput | AttendanceCreateOrConnectWithoutLessonInput[]
@@ -48583,6 +48658,13 @@ export namespace Prisma {
     not?: NestedEnumLessonStatusFilter<$PrismaModel> | $Enums.LessonStatus
   }
 
+  export type NestedEnumLessonCreationSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.LessonCreationSource | EnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.LessonCreationSource[] | ListEnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LessonCreationSource[] | ListEnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumLessonCreationSourceFilter<$PrismaModel> | $Enums.LessonCreationSource
+  }
+
   export type NestedEnumLessonStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.LessonStatus | EnumLessonStatusFieldRefInput<$PrismaModel>
     in?: $Enums.LessonStatus[] | ListEnumLessonStatusFieldRefInput<$PrismaModel>
@@ -48591,6 +48673,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumLessonStatusFilter<$PrismaModel>
     _max?: NestedEnumLessonStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumLessonCreationSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LessonCreationSource | EnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.LessonCreationSource[] | ListEnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LessonCreationSource[] | ListEnumLessonCreationSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumLessonCreationSourceWithAggregatesFilter<$PrismaModel> | $Enums.LessonCreationSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLessonCreationSourceFilter<$PrismaModel>
+    _max?: NestedEnumLessonCreationSourceFilter<$PrismaModel>
   }
 
   export type NestedEnumAbsenceTypeNullableFilter<$PrismaModel = never> = {
@@ -50429,6 +50521,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
@@ -50459,6 +50552,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
@@ -50901,6 +50995,7 @@ export namespace Prisma {
     textSentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     completedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     notes?: StringNullableFilter<"Lesson"> | string | null
+    creationSource?: EnumLessonCreationSourceFilter<"Lesson"> | $Enums.LessonCreationSource
     createdAt?: DateTimeFilter<"Lesson"> | Date | string
     updatedAt?: DateTimeFilter<"Lesson"> | Date | string
   }
@@ -51290,6 +51385,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
@@ -51320,6 +51416,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
@@ -51356,6 +51453,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
@@ -51386,6 +51484,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
@@ -54348,6 +54447,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     feedbacks?: FeedbackCreateNestedManyWithoutLessonInput
@@ -54379,6 +54479,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     feedbacks?: FeedbackUncheckedCreateNestedManyWithoutLessonInput
@@ -54540,6 +54641,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     feedbacks?: FeedbackUpdateManyWithoutLessonNestedInput
@@ -54571,6 +54673,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     feedbacks?: FeedbackUncheckedUpdateManyWithoutLessonNestedInput
@@ -54728,6 +54831,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
@@ -54759,6 +54863,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
@@ -54926,6 +55031,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
@@ -54957,6 +55063,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutLessonNestedInput
@@ -56184,6 +56291,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
@@ -56215,6 +56323,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
@@ -56390,6 +56499,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
@@ -56421,6 +56531,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutLessonNestedInput
@@ -56850,6 +56961,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceCreateNestedManyWithoutLessonInput
@@ -56881,6 +56993,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutLessonInput
@@ -57052,6 +57165,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
@@ -57083,6 +57197,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutLessonNestedInput
@@ -59011,6 +59126,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -59180,6 +59296,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
@@ -59210,6 +59327,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutLessonNestedInput
@@ -59238,6 +59356,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -59529,6 +59648,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -59553,6 +59673,7 @@ export namespace Prisma {
     textSentAt?: Date | string | null
     completedAt?: Date | string | null
     notes?: string | null
+    creationSource?: $Enums.LessonCreationSource
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -59937,6 +60058,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
@@ -59967,6 +60089,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutLessonNestedInput
@@ -59995,6 +60118,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -60017,6 +60141,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUpdateManyWithoutLessonNestedInput
@@ -60047,6 +60172,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutLessonNestedInput
@@ -60075,6 +60201,7 @@ export namespace Prisma {
     textSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    creationSource?: EnumLessonCreationSourceFieldUpdateOperationsInput | $Enums.LessonCreationSource
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

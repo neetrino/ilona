@@ -20,6 +20,7 @@ export type {
   GroupsResponse,
   GroupFilters,
   GroupScheduleEntry,
+  GroupCalendarPlanDto,
   GroupTeacherRef,
   CreateGroupDto,
   UpdateGroupDto,

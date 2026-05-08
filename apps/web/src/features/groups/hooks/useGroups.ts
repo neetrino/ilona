@@ -18,6 +18,7 @@ import type { Group, GroupFilters, CreateGroupDto, UpdateGroupDto, GroupsRespons
 import { chatKeys } from '../../chat/hooks/useChat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ApiError } from '@/shared/lib/api';
+import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 
 // Query keys
 export const groupKeys = {
@@ -143,6 +144,7 @@ export function useCreateGroup() {
     mutationFn: (data: CreateGroupDto) => createGroup(data),
     onSuccess: (group) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.all });
       // If a teacher is assigned, invalidate their my-groups cache
       if (group.teacherId) {
         queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
@@ -163,6 +165,7 @@ export function useUpdateGroup() {
     onSuccess: (group, { id, data }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.all });
       // If teacher assignment changed, invalidate my-groups cache and chat queries
       // This ensures both the old teacher (if removed) and new teacher (if assigned) see updates
       if (data.teacherId !== undefined) {

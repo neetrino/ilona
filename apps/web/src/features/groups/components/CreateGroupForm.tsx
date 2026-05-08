@@ -10,9 +10,10 @@ import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
-import { GroupScheduleEditor } from './GroupScheduleEditor';
+import { GroupCalendarScheduleSection } from './GroupCalendarScheduleSection';
 import { GroupIconPicker } from './GroupIconPicker';
 import type { GroupIconKey } from '@ilona/types';
+import { scheduleSlotsValidationError } from '../group-schedule-utils';
 
 const createGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters'),
@@ -31,10 +32,25 @@ interface CreateGroupFormProps {
   defaultCenterId?: string;
 }
 
+function defaultMonthDateRange(): { from: string; to: string } {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return {
+    from: start.toISOString().slice(0, 10),
+    to: end.toISOString().slice(0, 10),
+  };
+}
+
 export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateGroupFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
+  const [calendarEnabled, setCalendarEnabled] = useState(false);
+  const [dateFrom, setDateFrom] = useState(() => defaultMonthDateRange().from);
+  const [dateTo, setDateTo] = useState(() => defaultMonthDateRange().to);
+  const [lessonTopic, setLessonTopic] = useState('');
+  const [lessonDescription, setLessonDescription] = useState('');
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const createGroup = useCreateGroup();
 
@@ -90,6 +106,12 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         isActive: true,
       });
       setSchedule([]);
+      setCalendarEnabled(false);
+      const r = defaultMonthDateRange();
+      setDateFrom(r.from);
+      setDateTo(r.to);
+      setLessonTopic('');
+      setLessonDescription('');
       setIconKey(null);
       setErrorMessage(null);
       setSuccessMessage(null);
@@ -109,6 +131,30 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         return;
       }
 
+      if (calendarEnabled) {
+        if (!data.teacherId?.trim()) {
+          setErrorMessage('Select a main teacher to generate calendar lessons.');
+          return;
+        }
+        if (schedule.length === 0) {
+          setErrorMessage('Add at least one weekly time slot for calendar generation.');
+          return;
+        }
+        const slotErr = scheduleSlotsValidationError(schedule);
+        if (slotErr) {
+          setErrorMessage(slotErr);
+          return;
+        }
+        if (!dateFrom || !dateTo) {
+          setErrorMessage('Choose a start and end date for the calendar range.');
+          return;
+        }
+        if (dateTo < dateFrom) {
+          setErrorMessage('End date must be on or after the start date.');
+          return;
+        }
+      }
+
       const payload: CreateGroupDto = {
         name: data.name,
         level: data.level || undefined,
@@ -116,6 +162,14 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         teacherId: data.teacherId || undefined,
         substituteTeacherId: data.substituteTeacherId || undefined,
         schedule: schedule.length > 0 ? schedule : undefined,
+        calendarPlan: calendarEnabled
+          ? {
+              dateFrom,
+              dateTo,
+              topic: lessonTopic.trim() || undefined,
+              description: lessonDescription.trim() || undefined,
+            }
+          : undefined,
         isActive: data.isActive ?? true,
         ...(iconKey ? { iconKey } : {}),
       };
@@ -136,6 +190,12 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         isActive: true,
       });
       setSchedule([]);
+      setCalendarEnabled(false);
+      const r = defaultMonthDateRange();
+      setDateFrom(r.from);
+      setDateTo(r.to);
+      setLessonTopic('');
+      setLessonDescription('');
       setIconKey(null);
       setTimeout(() => {
         onOpenChange(false);
@@ -237,11 +297,13 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="teacherId">Main Teacher (Optional)</Label>
+            <Label htmlFor="teacherId">
+              Main Teacher {calendarEnabled ? <span className="text-red-500">*</span> : '(Optional)'}
+            </Label>
             <select
               id="teacherId"
               {...register('teacherId')}
-              disabled={isSubmitting || isLoadingTeachers}
+              disabled={isSubmitting || createGroup.isPending || isLoadingTeachers}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm ${
                 errors.teacherId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
@@ -266,10 +328,10 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
             <select
               id="substituteTeacherId"
               {...register('substituteTeacherId')}
-              disabled={isSubmitting || isLoadingTeachers}
+              disabled={isSubmitting || createGroup.isPending || isLoadingTeachers}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm ${
                 errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+              } ${isSubmitting || createGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
               <option value="">No substitute</option>
               {teachers
@@ -282,14 +344,21 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
             </select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Working hours (Schedule)</Label>
-            <GroupScheduleEditor
-              value={schedule}
-              onChange={setSchedule}
-              disabled={isSubmitting}
-            />
-          </div>
+          <GroupCalendarScheduleSection
+            schedule={schedule}
+            onScheduleChange={setSchedule}
+            calendarEnabled={calendarEnabled}
+            onCalendarEnabledChange={setCalendarEnabled}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            lessonTopic={lessonTopic}
+            onLessonTopicChange={setLessonTopic}
+            lessonDescription={lessonDescription}
+            onLessonDescriptionChange={setLessonDescription}
+            disabled={isSubmitting || createGroup.isPending}
+          />
 
           <div className="flex items-center gap-2">
             <input
@@ -298,7 +367,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               {...register('isActive')}
               defaultChecked={true}
               className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
-              disabled={isSubmitting}
+              disabled={isSubmitting || createGroup.isPending}
             />
             <Label htmlFor="isActive" className="font-normal cursor-pointer">
               Active (Group is currently active and accepting students)
@@ -310,16 +379,22 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
+              disabled={isSubmitting || createGroup.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || isLoadingCenters || isLoadingTeachers || centers.length === 0}
+              disabled={
+                isSubmitting ||
+                createGroup.isPending ||
+                isLoadingCenters ||
+                isLoadingTeachers ||
+                centers.length === 0
+              }
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isSubmitting ? 'Creating...' : 'Create Group'}
+              {isSubmitting || createGroup.isPending ? 'Creating...' : 'Create Group'}
             </Button>
           </DialogFooter>
         </form>

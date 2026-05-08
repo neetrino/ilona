@@ -4,6 +4,7 @@ import { Badge, ActionButtons } from '@/shared/components/ui';
 import type { Group, GroupScheduleEntry } from '../types';
 import { getGroupOccupancyMeta } from '../occupancy';
 import { GroupIconDisplay } from '../group-icon-registry';
+import { getGroupWeeklySlots } from '../group-schedule-utils';
 
 const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -40,7 +41,7 @@ export function GroupCard({
   const substituteName = group.substituteTeacher
     ? `${group.substituteTeacher.user.firstName} ${group.substituteTeacher.user.lastName}`
     : null;
-  const scheduleSummary = formatScheduleSummary(group.schedule ?? null);
+  const scheduleSummary = formatScheduleSummary(getGroupWeeklySlots(group.schedule));
   const studentCount = group._count?.students || 0;
   const occupancy = getGroupOccupancyMeta(studentCount);
   const dotColorClass =

@@ -13,6 +13,7 @@ import {
   MinLength,
   IsIn,
   ValidateIf,
+  IsDateString,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { GROUP_ICON_KEYS } from '@ilona/types';
@@ -32,6 +33,19 @@ export class GroupScheduleEntryDto {
   endTime!: string;
 
   @IsString() @IsOptional() @MaxLength(200) notes?: string;
+}
+
+/** Date range for generating concrete lessons into the calendar. */
+export class GroupCalendarPlanDto {
+  @IsDateString()
+  dateFrom!: string;
+
+  @IsDateString()
+  dateTo!: string;
+
+  @IsString() @IsOptional() @MaxLength(200) topic?: string;
+
+  @IsString() @IsOptional() @MaxLength(1000) description?: string;
 }
 
 export class CreateGroupDto {
@@ -67,6 +81,11 @@ export class CreateGroupDto {
   @Type(() => GroupScheduleEntryDto)
   @IsOptional()
   schedule?: GroupScheduleEntryDto[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => GroupCalendarPlanDto)
+  calendarPlan?: GroupCalendarPlanDto;
 
   @IsBoolean()
   @IsOptional()

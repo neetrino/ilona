@@ -250,6 +250,11 @@ model StudentGroupHistory {
   @@map("student_group_histories")
 }
 
+enum LessonCreationSource {
+  MANUAL
+  GROUP_SCHEDULE
+}
+
 model Lesson {
   id                 String       @id @default(cuid())
   groupId            String
@@ -272,6 +277,7 @@ model Lesson {
   textSentAt         DateTime?
   completedAt        DateTime?
   notes              String?
+  creationSource     LessonCreationSource @default(MANUAL)
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   attendances        Attendance[]

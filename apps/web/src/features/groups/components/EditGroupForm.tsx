@@ -8,11 +8,12 @@ import { useUpdateGroup, useGroup, type UpdateGroupDto } from '@/features/groups
 import type { GroupScheduleEntry } from '../types';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect } from 'react';
-import { getErrorMessage } from '@/shared/lib/api';
-import { GroupScheduleEditor } from './GroupScheduleEditor';
+import { useState, useEffect, Fragment } from 'react';
+import { ApiError, getErrorMessage } from '@/shared/lib/api';
+import { GroupCalendarScheduleSection } from './GroupCalendarScheduleSection';
 import { GroupIconPicker } from './GroupIconPicker';
 import { isGroupIconKey, type GroupIconKey } from '@ilona/types';
+import { normalizeGroupSchedulePayload, scheduleSlotsValidationError } from '../group-schedule-utils';
 
 const updateGroupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters').optional(),
@@ -26,6 +27,8 @@ const updateGroupSchema = z.object({
 
 type UpdateGroupFormData = z.infer<typeof updateGroupSchema>;
 
+const REGENERATE_CONFIRM_MESSAGE = 'GROUP_SCHEDULE_REGENERATION_CONFIRMATION_REQUIRED';
+
 interface EditGroupFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -36,6 +39,13 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
+  const [calendarEnabled, setCalendarEnabled] = useState(false);
+  const [hadCalendarOnLoad, setHadCalendarOnLoad] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [lessonTopic, setLessonTopic] = useState('');
+  const [lessonDescription, setLessonDescription] = useState('');
+  const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const updateGroup = useUpdateGroup();
   const { data: group, isLoading } = useGroup(groupId, open);
@@ -56,6 +66,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     formState: { errors, isSubmitting },
     reset,
     watch,
+    getValues,
   } = useForm<UpdateGroupFormData>({
     resolver: zodResolver(updateGroupSchema),
     defaultValues: {
@@ -82,7 +93,21 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         substituteTeacherId: group.substituteTeacherId || '',
         isActive: group.isActive,
       });
-      setSchedule(group.schedule ?? []);
+      const normalized = normalizeGroupSchedulePayload(group.schedule);
+      setSchedule(normalized.weeklySlots);
+      setHadCalendarOnLoad(!!normalized.calendar);
+      setCalendarEnabled(!!normalized.calendar);
+      if (normalized.calendar) {
+        setDateFrom(normalized.calendar.dateFrom);
+        setDateTo(normalized.calendar.dateTo);
+        setLessonTopic(normalized.calendar.topic ?? '');
+        setLessonDescription(normalized.calendar.description ?? '');
+      } else {
+        setDateFrom('');
+        setDateTo('');
+        setLessonTopic('');
+        setLessonDescription('');
+      }
       setIconKey(isGroupIconKey(group.iconKey) ? group.iconKey : null);
     }
   }, [group, reset]);
@@ -95,45 +120,108 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     }
   }, [open]);
 
-  const onSubmit = async (data: UpdateGroupFormData) => {
-    setErrorMessage(null);
-    
-    try {
-      if (
-        data.substituteTeacherId &&
-        data.teacherId &&
-        data.substituteTeacherId === data.teacherId
-      ) {
-        setErrorMessage('Substitute teacher cannot be the same as the main teacher');
+  const buildPayload = (
+    data: UpdateGroupFormData,
+    confirmReplaceGeneratedLessons: boolean,
+  ): UpdateGroupDto => {
+    let calendarPlan: UpdateGroupDto['calendarPlan'];
+    if (calendarEnabled) {
+      calendarPlan = {
+        dateFrom,
+        dateTo,
+        topic: lessonTopic.trim() || undefined,
+        description: lessonDescription.trim() || undefined,
+      };
+    } else if (hadCalendarOnLoad) {
+      calendarPlan = null;
+    } else {
+      calendarPlan = undefined;
+    }
+
+    return {
+      name: data.name,
+      level: data.level || undefined,
+      description: data.description || undefined,
+      centerId: data.centerId && data.centerId.trim() !== '' ? data.centerId : undefined,
+      teacherId: data.teacherId || undefined,
+      substituteTeacherId: data.substituteTeacherId ? data.substituteTeacherId : null,
+      schedule: schedule.length > 0 ? schedule : null,
+      calendarPlan,
+      ...(confirmReplaceGeneratedLessons ? { confirmReplaceGeneratedLessons: true } : {}),
+      isActive: data.isActive,
+      iconKey,
+    };
+  };
+
+  const persistGroup = async (data: UpdateGroupFormData, confirmReplace: boolean) => {
+    if (
+      data.substituteTeacherId &&
+      data.teacherId &&
+      data.substituteTeacherId === data.teacherId
+    ) {
+      setErrorMessage('Substitute teacher cannot be the same as the main teacher');
+      return;
+    }
+
+    if (calendarEnabled) {
+      if (!data.teacherId?.trim()) {
+        setErrorMessage('Select a main teacher to generate calendar lessons.');
         return;
       }
+      if (schedule.length === 0) {
+        setErrorMessage('Add at least one weekly time slot for calendar generation.');
+        return;
+      }
+      const slotErr = scheduleSlotsValidationError(schedule);
+      if (slotErr) {
+        setErrorMessage(slotErr);
+        return;
+      }
+      if (!dateFrom || !dateTo) {
+        setErrorMessage('Choose a start and end date for the calendar range.');
+        return;
+      }
+      if (dateTo < dateFrom) {
+        setErrorMessage('End date must be on or after the start date.');
+        return;
+      }
+    }
 
-      const payload: UpdateGroupDto = {
-        name: data.name,
-        level: data.level || undefined,
-        description: data.description || undefined,
-        // Only include centerId if it's not empty (centerId is required in DB, so we must provide it if changing)
-        centerId: data.centerId && data.centerId.trim() !== '' ? data.centerId : undefined,
-        teacherId: data.teacherId || undefined,
-        substituteTeacherId: data.substituteTeacherId ? data.substituteTeacherId : null,
-        schedule: schedule.length > 0 ? schedule : null,
-        isActive: data.isActive,
-        iconKey,
-      };
+    const payload = buildPayload(data, confirmReplace);
+    await updateGroup.mutateAsync({ id: groupId, data: payload });
+    setSuccessMessage('Group updated successfully!');
+    setErrorMessage(null);
+    setTimeout(() => {
+      onOpenChange(false);
+      setSuccessMessage(null);
+    }, 1500);
+  };
 
-      await updateGroup.mutateAsync({ id: groupId, data: payload });
-      
-      // Show success message
-      setSuccessMessage('Group updated successfully!');
-      setErrorMessage(null);
-      
-      // Close modal after a brief delay
-      setTimeout(() => {
-        onOpenChange(false);
-        setSuccessMessage(null);
-      }, 1500);
+  const onSubmit = async (data: UpdateGroupFormData) => {
+    setErrorMessage(null);
+    try {
+      await persistGroup(data, false);
     } catch (error: unknown) {
-      // Handle error
+      if (
+        error instanceof ApiError &&
+        error.statusCode === 409 &&
+        error.message === REGENERATE_CONFIRM_MESSAGE
+      ) {
+        setRegenerateDialogOpen(true);
+        return;
+      }
+      const message = getErrorMessage(error, 'Failed to update group. Please try again.');
+      setErrorMessage(message);
+      setSuccessMessage(null);
+    }
+  };
+
+  const onConfirmRegenerate = async () => {
+    setRegenerateDialogOpen(false);
+    setErrorMessage(null);
+    try {
+      await persistGroup(getValues(), true);
+    } catch (error: unknown) {
       const message = getErrorMessage(error, 'Failed to update group. Please try again.');
       setErrorMessage(message);
       setSuccessMessage(null);
@@ -154,6 +242,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
   }
 
   return (
+    <Fragment>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -252,14 +341,16 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="teacherId">Main Teacher (Optional)</Label>
+            <Label htmlFor="teacherId">
+              Main Teacher {calendarEnabled ? <span className="text-red-500">*</span> : '(Optional)'}
+            </Label>
             <select
               id="teacherId"
               {...register('teacherId')}
-              disabled={isSubmitting || isLoadingTeachers}
+              disabled={isSubmitting || updateGroup.isPending || isLoadingTeachers}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
                 errors.teacherId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+              } ${isSubmitting || updateGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
               <option value="">No teacher assigned</option>
               {teachers.map((teacher) => (
@@ -278,10 +369,10 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             <select
               id="substituteTeacherId"
               {...register('substituteTeacherId')}
-              disabled={isSubmitting || isLoadingTeachers}
+              disabled={isSubmitting || updateGroup.isPending || isLoadingTeachers}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
                 errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+              } ${isSubmitting || updateGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
               <option value="">No substitute</option>
               {teachers
@@ -294,14 +385,21 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             </select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Working hours (Schedule)</Label>
-            <GroupScheduleEditor
-              value={schedule}
-              onChange={setSchedule}
-              disabled={isSubmitting}
-            />
-          </div>
+          <GroupCalendarScheduleSection
+            schedule={schedule}
+            onScheduleChange={setSchedule}
+            calendarEnabled={calendarEnabled}
+            onCalendarEnabledChange={setCalendarEnabled}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            lessonTopic={lessonTopic}
+            onLessonTopicChange={setLessonTopic}
+            lessonDescription={lessonDescription}
+            onLessonDescriptionChange={setLessonDescription}
+            disabled={isSubmitting || updateGroup.isPending}
+          />
 
           <div className="flex items-center gap-2">
             <input
@@ -321,21 +419,49 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
+              disabled={isSubmitting || updateGroup.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || isLoadingCenters || isLoadingTeachers || centers.length === 0}
+              disabled={
+                isSubmitting ||
+                updateGroup.isPending ||
+                isLoadingCenters ||
+                isLoadingTeachers ||
+                centers.length === 0
+              }
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting || updateGroup.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+
+    <Dialog open={regenerateDialogOpen} onOpenChange={setRegenerateDialogOpen}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Replace auto-generated lessons?</DialogTitle>
+          <DialogDescription>
+            The calendar schedule changed in a way that requires replacing lessons previously generated from this
+            group. Lessons you added manually in the calendar are kept. Confirming will remove matching
+            auto-generated lessons in the affected date ranges and recreate them from the new settings.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button type="button" variant="ghost" onClick={() => setRegenerateDialogOpen(false)}>
+            Go back
+          </Button>
+          <Button type="button" className="bg-primary text-primary-foreground" onClick={onConfirmRegenerate}>
+            Replace and save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </Fragment>
   );
 }
 

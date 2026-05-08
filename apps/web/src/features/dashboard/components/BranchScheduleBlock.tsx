@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useGroups } from '@/features/groups/hooks/useGroups';
 import type { Group, GroupScheduleEntry } from '@/features/groups/types';
 import { GroupIconDisplay } from '@/features/groups';
+import { getGroupWeeklySlots } from '@/features/groups/group-schedule-utils';
 
 interface TodayEntry {
   group: Group;
@@ -18,7 +19,7 @@ function collectToday(groups: Group[]): TodayEntry[] {
   const list: TodayEntry[] = [];
   for (const group of groups) {
     if (!group.isActive) continue;
-    for (const entry of group.schedule ?? []) {
+    for (const entry of getGroupWeeklySlots(group.schedule)) {
       if (entry.dayOfWeek === todayJsDay) list.push({ group, entry });
     }
   }

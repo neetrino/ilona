@@ -20,6 +20,7 @@ import { fetchCenterDetails } from '../api/centers.api';
 import type { CenterDetails, CenterDetailTeacher } from '../types';
 import { ScheduleGrid } from '@/features/schedule/ScheduleGrid';
 import type { Group, GroupScheduleEntry } from '@/features/groups/types';
+import { normalizeGroupSchedulePayload } from '@/features/groups/group-schedule-utils';
 
 interface CenterDetailsModalProps {
   centerId: string | null;
@@ -46,33 +47,16 @@ function teacherName(t: CenterDetailTeacher | null): string {
   return userName(t?.user ?? null);
 }
 
-function isScheduleEntry(value: unknown): value is GroupScheduleEntry {
-  if (!value || typeof value !== 'object') return false;
-  const candidate = value as Partial<GroupScheduleEntry>;
-  return (
-    typeof candidate.dayOfWeek === 'number' &&
-    typeof candidate.startTime === 'string' &&
-    typeof candidate.endTime === 'string'
-  );
-}
-
-function parseScheduleEntries(rawSchedule: unknown): GroupScheduleEntry[] {
-  if (Array.isArray(rawSchedule)) {
-    return rawSchedule.filter(isScheduleEntry);
-  }
+function normalizeSchedule(rawSchedule: unknown): GroupScheduleEntry[] {
+  let raw = rawSchedule;
   if (typeof rawSchedule === 'string') {
     try {
-      const parsed = JSON.parse(rawSchedule) as unknown;
-      return Array.isArray(parsed) ? parsed.filter(isScheduleEntry) : [];
+      raw = JSON.parse(rawSchedule) as unknown;
     } catch {
       return [];
     }
   }
-  return [];
-}
-
-function normalizeSchedule(rawSchedule: unknown): GroupScheduleEntry[] {
-  const entries = parseScheduleEntries(rawSchedule);
+  const entries = normalizeGroupSchedulePayload(raw).weeklySlots;
   if (entries.length === 0) return [];
 
   return entries
@@ -376,8 +360,8 @@ function GroupsTab({ data }: { data: CenterDetails }) {
 
 function ScheduleTab({ data }: { data: CenterDetails }) {
   const scheduleGroups = data.groups
-    .map((group) => mapCenterGroupToScheduleGroup(data, group))
-    .filter((group) => (group.schedule?.length ?? 0) > 0);
+    .filter((g) => normalizeSchedule(g.schedule).length > 0)
+    .map((group) => mapCenterGroupToScheduleGroup(data, group));
 
   if (scheduleGroups.length === 0) {
     return (

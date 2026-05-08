@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { Group, GroupScheduleEntry } from '@/features/groups/types';
 import { GroupIconDisplay } from '@/features/groups';
+import { getGroupWeeklySlots } from '@/features/groups/group-schedule-utils';
 
 const DAY_LABELS = [
   'Monday',
@@ -59,7 +60,7 @@ export function ScheduleGrid({
 
     for (const group of groups) {
       if (!group.isActive) continue;
-      const schedule = group.schedule ?? [];
+      const schedule = getGroupWeeklySlots(group.schedule);
       for (const entry of schedule) {
         const dayIdx = toMondayIndex(entry.dayOfWeek);
         if (dayIdx < 0 || dayIdx > 6) continue;
