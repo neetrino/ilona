@@ -154,6 +154,7 @@ exports.Prisma.ManagerProfileScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   centerId: 'centerId',
+  isCurrentAssignment: 'isCurrentAssignment',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

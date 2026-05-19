@@ -7,6 +7,7 @@ export {
   useDeleteAvatar,
   useManagers,
   useCreateManager,
+  useUpdateManager,
   settingsKeys,
 } from './hooks';
 
@@ -19,4 +20,5 @@ export type {
   AppSettings,
   ManagerAccount,
   CreateManagerDto,
+  UpdateManagerDto,
 } from './types';

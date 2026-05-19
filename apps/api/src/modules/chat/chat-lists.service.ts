@@ -187,7 +187,10 @@ export class ChatListsService {
               },
               {
                 role: UserRole.MANAGER,
-                managerProfile: { centerId: branchCenterId },
+                managerProfile: {
+                  centerId: branchCenterId,
+                  isCurrentAssignment: true,
+                },
               },
             ],
           }

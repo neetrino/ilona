@@ -663,8 +663,12 @@ export class LeadsService {
     const previousCenterId = lead.centerId ?? null;
 
     const managerProfile = nextCenterId
-      ? await this.prisma.managerProfile.findUnique({
-          where: { centerId: nextCenterId },
+      ? await this.prisma.managerProfile.findFirst({
+          where: {
+            centerId: nextCenterId,
+            isCurrentAssignment: true,
+            user: { status: 'ACTIVE' },
+          },
           select: { userId: true },
         })
       : null;

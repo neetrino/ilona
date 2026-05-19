@@ -6,5 +6,6 @@ export {
   useDeleteAvatar,
   useManagers,
   useCreateManager,
+  useUpdateManager,
   settingsKeys,
 } from './useSettings';

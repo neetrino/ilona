@@ -71,11 +71,16 @@ export class ChatManagerScopeService {
       return this.isTeacherUserInBranch(userId, centerId);
     }
     if (u.role === UserRole.MANAGER) {
-      const mp = await this.prisma.managerProfile.findUnique({
-        where: { userId },
-        select: { centerId: true },
+      const mp = await this.prisma.managerProfile.findFirst({
+        where: {
+          userId,
+          centerId,
+          isCurrentAssignment: true,
+          user: { status: 'ACTIVE' },
+        },
+        select: { id: true },
       });
-      return mp?.centerId === centerId;
+      return Boolean(mp);
     }
     return false;
   }
@@ -123,8 +128,12 @@ export class ChatManagerScopeService {
    * Whether a manager may open/maintain a direct chat with the given user (branch only).
    */
   async canManagerDirectMessageUser(managerUserId: string, otherUserId: string): Promise<boolean> {
-    const mp = await this.prisma.managerProfile.findUnique({
-      where: { userId: managerUserId },
+    const mp = await this.prisma.managerProfile.findFirst({
+      where: {
+        userId: managerUserId,
+        isCurrentAssignment: true,
+        user: { status: 'ACTIVE' },
+      },
       select: { centerId: true },
     });
     if (!mp?.centerId) {

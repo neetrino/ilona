@@ -9,7 +9,7 @@ describe('LeadsService', () => {
   let service: LeadsService;
   let prisma: {
     crmLead: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
-    managerProfile: { findUnique: ReturnType<typeof vi.fn> };
+    managerProfile: { findFirst: ReturnType<typeof vi.fn> };
     crmLeadActivity: { create: ReturnType<typeof vi.fn> };
     user: { findMany: ReturnType<typeof vi.fn> };
     $transaction: ReturnType<typeof vi.fn>;
@@ -24,7 +24,7 @@ describe('LeadsService', () => {
         update: vi.fn(),
       },
       managerProfile: {
-        findUnique: vi.fn(),
+        findFirst: vi.fn(),
       },
       crmLeadActivity: { create: vi.fn() },
       user: { findMany: vi.fn().mockResolvedValue([]) },
@@ -144,7 +144,7 @@ describe('LeadsService', () => {
         activities: [],
         student: null,
       });
-      prisma.managerProfile.findUnique.mockResolvedValue({ userId: 'manager-1' });
+      prisma.managerProfile.findFirst.mockResolvedValue({ userId: 'manager-1' });
       prisma.crmLead.update.mockResolvedValue({
         id: 'lead-1',
         centerId: 'center-1',
@@ -158,8 +158,12 @@ describe('LeadsService', () => {
         { role: 'ADMIN' } as never,
       );
 
-      expect(prisma.managerProfile.findUnique).toHaveBeenCalledWith({
-        where: { centerId: 'center-1' },
+      expect(prisma.managerProfile.findFirst).toHaveBeenCalledWith({
+        where: {
+          centerId: 'center-1',
+          isCurrentAssignment: true,
+          user: { status: 'ACTIVE' },
+        },
         select: { userId: true },
       });
       expect(prisma.crmLead.update).toHaveBeenCalled();

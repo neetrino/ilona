@@ -74,7 +74,9 @@ export class StudentCrudService {
     }
 
     const managerProfile = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
-      SELECT "centerId" FROM "manager_profiles" WHERE "userId" = ${currentUserId} LIMIT 1
+      SELECT "centerId" FROM "manager_profiles"
+      WHERE "userId" = ${currentUserId} AND "isCurrentAssignment" = true
+      LIMIT 1
     `;
 
     const managerCenterId = managerProfile[0]?.centerId;
@@ -569,7 +571,9 @@ export class StudentCrudService {
 
     if (userRole === UserRole.MANAGER && currentUserId) {
       const managerProfile = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
-        SELECT "centerId" FROM "manager_profiles" WHERE "userId" = ${currentUserId} LIMIT 1
+        SELECT "centerId" FROM "manager_profiles"
+        WHERE "userId" = ${currentUserId} AND "isCurrentAssignment" = true
+        LIMIT 1
       `;
       const managerCenterId = managerProfile[0]?.centerId;
       if (!managerCenterId) {

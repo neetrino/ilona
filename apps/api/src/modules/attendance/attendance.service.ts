@@ -34,7 +34,9 @@ export class AttendanceService {
     }
 
     const managerProfile = await this.prisma.$queryRaw<Array<{ centerId: string }>>`
-      SELECT "centerId" FROM "manager_profiles" WHERE "userId" = ${userId} LIMIT 1
+      SELECT "centerId" FROM "manager_profiles"
+      WHERE "userId" = ${userId} AND "isCurrentAssignment" = true
+      LIMIT 1
     `;
 
     const managerCenterId = managerProfile[0]?.centerId;
@@ -1075,7 +1077,11 @@ export class AttendanceService {
 
     if (student.group?.centerId) {
       const managers = await this.prisma.managerProfile.findMany({
-        where: { centerId: student.group.centerId },
+        where: {
+          centerId: student.group.centerId,
+          isCurrentAssignment: true,
+          user: { status: 'ACTIVE' },
+        },
         select: { userId: true },
       });
       managers.forEach((m) => userIds.add(m.userId));
