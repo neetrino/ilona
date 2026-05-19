@@ -71,6 +71,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload): Promise<JwtPayload> {
     try {
+      if (payload.typ === 'refresh') {
+        throw new UnauthorizedException('Invalid token type');
+      }
+
       // Diagnostics: Log successful token extraction (dev only)
       this.logAuthDiagnostics('Token validated', {
         userId: payload.sub,

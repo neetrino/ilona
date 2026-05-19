@@ -136,7 +136,7 @@ describe('AuthService', () => {
 
   describe('refreshTokens', () => {
     it('should generate new tokens with valid refresh token', async () => {
-      const mockPayload = { sub: 'user-1', email: 'test@test.com', role: 'ADMIN' };
+      const mockPayload = { sub: 'user-1', email: 'test@test.com', role: 'ADMIN', typ: 'refresh' as const };
       
       mockJwtService.verifyAsync.mockResolvedValue(mockPayload);
       mockUsersService.findById.mockResolvedValue(mockUser);
@@ -158,8 +158,36 @@ describe('AuthService', () => {
       ).rejects.toThrow(UnauthorizedException);
     });
 
+    it('should throw UnauthorizedException if refresh token is an access token', async () => {
+      mockJwtService.verifyAsync.mockResolvedValue({
+        sub: 'user-1',
+        email: 'test@test.com',
+        role: 'ADMIN',
+        typ: 'access',
+      });
+
+      await expect(
+        authService.refreshTokens('access-token'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should reject legacy short-lived tokens without typ', async () => {
+      const now = Math.floor(Date.now() / 1000);
+      mockJwtService.verifyAsync.mockResolvedValue({
+        sub: 'user-1',
+        email: 'test@test.com',
+        role: 'ADMIN',
+        iat: now,
+        exp: now + 15 * 60,
+      });
+
+      await expect(
+        authService.refreshTokens('legacy-access-token'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
     it('should throw UnauthorizedException if user is not active', async () => {
-      const mockPayload = { sub: 'user-1', email: 'test@test.com', role: 'ADMIN' };
+      const mockPayload = { sub: 'user-1', email: 'test@test.com', role: 'ADMIN', typ: 'refresh' as const };
       
       mockJwtService.verifyAsync.mockResolvedValue(mockPayload);
       mockUsersService.findById.mockResolvedValue({
