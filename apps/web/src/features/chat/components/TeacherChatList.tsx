@@ -11,6 +11,7 @@ import { ApiError } from '@/shared/lib/api';
 import { formatMessagePreview } from '../utils';
 import { Badge } from '@/shared/components/ui/badge';
 import Image from 'next/image';
+import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { getGroupIconComponent } from '@/features/groups';
 
 interface TeacherChatListProps {
@@ -503,8 +504,8 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
             const isOnline = student.chatId
               ? isUserOnline(student.chatId, student.id)
               : false;
-            const studentName = `${student.firstName} ${student.lastName}`;
-            const initials = `${student.firstName[0]}${student.lastName[0]}`;
+            const studentName = formatDisplayName(student.firstName, student.lastName);
+            const initials = getInitialsFromParts(student.firstName, student.lastName);
 
             return (
               <button

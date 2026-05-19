@@ -7,19 +7,12 @@ import type { AdminChatAllUser } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import Image from 'next/image';
+import { getInitials } from '@/shared/components/ui/avatar';
 
 interface CreateGroupChatModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated: (chat: Chat) => void;
-}
-
-function getAvatar(name: string) {
-  const parts = name.trim().split(' ');
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-  return name[0]?.toUpperCase() || '?';
 }
 
 export function CreateGroupChatModal({
@@ -201,7 +194,7 @@ export function CreateGroupChatModal({
                           unoptimized
                         />
                       ) : (
-                        getAvatar(user.name)
+                        getInitials(user.name)
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

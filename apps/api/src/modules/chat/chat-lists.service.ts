@@ -2,6 +2,16 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, ChatType, UserRole } from '@ilona/database';
 
+function formatUserFullName(
+  firstName?: string | null,
+  lastName?: string | null,
+): string {
+  const parts = [firstName, lastName]
+    .map((part) => (part ?? '').trim())
+    .filter((part) => part.length > 0 && part.toLowerCase() !== 'undefined');
+  return parts.join(' ') || 'Unknown';
+}
+
 /**
  * Service responsible for chat-related list operations
  */
@@ -58,7 +68,7 @@ export class ChatListsService {
 
     return students.map((student) => ({
       id: student.user.id,
-      name: `${student.user.firstName} ${student.user.lastName}`,
+      name: formatUserFullName(student.user.firstName, student.user.lastName),
       phone: student.user.phone,
       avatarUrl: student.user.avatarUrl,
     }));
@@ -114,7 +124,7 @@ export class ChatListsService {
 
     return teachers.map((teacher) => ({
       id: teacher.user.id,
-      name: `${teacher.user.firstName} ${teacher.user.lastName}`,
+      name: formatUserFullName(teacher.user.firstName, teacher.user.lastName),
       phone: teacher.user.phone,
       avatarUrl: teacher.user.avatarUrl,
     }));
@@ -224,7 +234,7 @@ export class ChatListsService {
       id: u.id,
       firstName: u.firstName,
       lastName: u.lastName,
-      name: `${u.firstName} ${u.lastName}`,
+      name: formatUserFullName(u.firstName, u.lastName),
       email: u.email,
       phone: u.phone ?? undefined,
       avatarUrl: u.avatarUrl ?? undefined,
@@ -811,7 +821,7 @@ export class ChatListsService {
       id: adminUser.id,
       firstName: adminUser.firstName,
       lastName: adminUser.lastName,
-      name: `${adminUser.firstName} ${adminUser.lastName}`,
+      name: formatUserFullName(adminUser.firstName, adminUser.lastName),
       avatarUrl: adminUser.avatarUrl,
       chatId: existingChat?.id || null,
       lastMessage: existingChat?.messages[0] || null,
@@ -927,7 +937,7 @@ export class ChatListsService {
       id: adminUser.id,
       firstName: adminUser.firstName,
       lastName: adminUser.lastName,
-      name: `${adminUser.firstName} ${adminUser.lastName}`,
+      name: formatUserFullName(adminUser.firstName, adminUser.lastName),
       avatarUrl: adminUser.avatarUrl,
       chatId: existingChat?.id || null,
       lastMessage: existingChat?.messages[0] || null,

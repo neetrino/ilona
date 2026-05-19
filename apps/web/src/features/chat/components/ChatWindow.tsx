@@ -21,6 +21,7 @@ import { MessageNavigationControls } from './MessageNavigationControls';
 import { sendMessageHttp } from '../api/chat.api';
 import { formatTime, formatDateSeparator, shouldShowDateSeparator } from '../utils/chat-utils';
 import Image from 'next/image';
+import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -382,7 +383,9 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       return chat.name || chat.group?.name || 'Group Chat';
     }
     const other = getOtherParticipant();
-    return other ? `${other.user.firstName} ${other.user.lastName}` : 'Chat';
+    return other
+      ? formatDisplayName(other.user.firstName, other.user.lastName, 'Chat')
+      : 'Chat';
   };
 
   // Get avatar URL for chat header
@@ -400,7 +403,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     }
     const other = getOtherParticipant();
     if (!other) return '?';
-    return `${other.user.firstName[0] || ''}${other.user.lastName[0] || ''}` || '?';
+    return getInitialsFromParts(other.user.firstName, other.user.lastName);
   };
 
   // Get online status for direct chats
@@ -666,7 +669,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                       {message.sender?.avatarUrl ? (
                         <Image
                           src={message.sender.avatarUrl}
-                          alt={`${message.sender.firstName} ${message.sender.lastName}`}
+                          alt={formatDisplayName(
+                            message.sender.firstName,
+                            message.sender.lastName,
+                          )}
                           width={32}
                           height={32}
                           className="w-full h-full object-cover"
@@ -674,7 +680,12 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                         />
                       ) : (
                         <div className="w-full h-full bg-slate-300 flex items-center justify-center text-slate-600 text-sm font-medium">
-                          {message.sender?.firstName?.[0] || '?'}
+                          {message.sender
+                            ? getInitialsFromParts(
+                                message.sender.firstName,
+                                message.sender.lastName,
+                              )
+                            : '?'}
                         </div>
                       )}
                     </div>

@@ -46,8 +46,20 @@ export function formatCurrency(amount: number): string {
 /**
  * Get user initials from name
  */
-export function getInitials(firstName: string, lastName: string): string {
-  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+export function getInitials(firstName?: string | null, lastName?: string | null): string {
+  const first = (firstName ?? '').trim();
+  const last = (lastName ?? '').trim();
+  const invalid = (value: string) => value.toLowerCase() === 'undefined';
+  const safeFirst = invalid(first) ? '' : first;
+  const safeLast = invalid(last) ? '' : last;
+  if (safeFirst && safeLast) {
+    return `${safeFirst[0]}${safeLast[0]}`.toUpperCase();
+  }
+  const single = safeFirst || safeLast;
+  if (single) {
+    return single.slice(0, 2).toUpperCase();
+  }
+  return '?';
 }
 
 /**
