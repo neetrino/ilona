@@ -4,12 +4,52 @@ import * as React from 'react';
 import Image from 'next/image';
 import { cn } from '@/shared/lib/utils';
 
+const INVALID_NAME_PART = /^undefined$/i;
+
+function cleanNamePart(value?: string | null): string {
+  const part = (value ?? '').trim();
+  return INVALID_NAME_PART.test(part) ? '' : part;
+}
+
+/** Build display name from first/last without literal "undefined" segments. */
+export function formatDisplayName(
+  firstName?: string | null,
+  lastName?: string | null,
+  fallback = 'Unknown',
+): string {
+  const parts = [cleanNamePart(firstName), cleanNamePart(lastName)].filter(Boolean);
+  return parts.join(' ') || fallback;
+}
+
+/** Initials from first and last name (safe when names are missing). */
+export function getInitialsFromParts(
+  firstName?: string | null,
+  lastName?: string | null,
+): string {
+  const first = cleanNamePart(firstName);
+  const last = cleanNamePart(lastName);
+  if (first && last) {
+    return `${first[0]}${last[0]}`.toUpperCase();
+  }
+  const single = first || last;
+  if (single) {
+    return single.slice(0, 2).toUpperCase();
+  }
+  return '?';
+}
+
 export function getInitials(name: string): string {
-  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  const parts = (name || '')
+    .trim()
+    .split(/\s+/)
+    .filter((part) => part.length > 0 && !INVALID_NAME_PART.test(part));
   if (parts.length >= 2) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }
-  return (parts[0]?.[0] ?? '?').toUpperCase();
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return '?';
 }
 
 export interface AvatarProps {

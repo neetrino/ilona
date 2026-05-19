@@ -206,6 +206,7 @@ describe('ChatService', () => {
       expect(result.hasMore).toBe(true);
       expect(result.items).toHaveLength(50);
     });
+
   });
 
   describe('createDirectChat', () => {

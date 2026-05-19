@@ -96,13 +96,29 @@ export class AuthService {
   }
 
   async refreshTokens(refreshToken: string): Promise<AuthTokens> {
+    if (!refreshToken?.trim()) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
     try {
-      // Verify refresh token
       const payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken, {
         secret: this.configService.get<string>('jwt.secret'),
       });
 
-      // Find user
+      if (payload.typ === 'access') {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      if (payload.typ !== 'refresh') {
+        const issuedAt = payload.iat ?? 0;
+        const expiresAt = payload.exp ?? 0;
+        const lifetimeSec = expiresAt - issuedAt;
+        const isShortLived = lifetimeSec > 0 && lifetimeSec < 20 * 60;
+        if (isShortLived) {
+          throw new UnauthorizedException('Invalid refresh token');
+        }
+      }
+
       const user = await this.usersService.findById(payload.sub);
       if (!user || user.status !== 'ACTIVE') {
         throw new UnauthorizedException('Invalid token');
@@ -169,10 +185,10 @@ export class AuthService {
       }
 
       const [accessToken, refreshToken] = await Promise.all([
-        this.jwtService.signAsync(payload, {
+        this.jwtService.signAsync({ ...payload, typ: 'access' as const }, {
           expiresIn: accessExpiration,
         }),
-        this.jwtService.signAsync(payload, {
+        this.jwtService.signAsync({ ...payload, typ: 'refresh' as const }, {
           expiresIn: refreshExpiration,
         }),
       ]);

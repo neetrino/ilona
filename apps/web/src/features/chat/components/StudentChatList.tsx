@@ -10,12 +10,7 @@ import type { AssignedTeacher } from '@/features/students/api/students.api';
 import { cn } from '@/shared/lib/utils';
 import { formatMessagePreview } from '../utils';
 import Image from 'next/image';
-
-function getAvatarFromName(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.charAt(0).toUpperCase() || '?';
-}
+import { formatDisplayName, getInitials, getInitialsFromParts } from '@/shared/components/ui/avatar';
 
 type ListItem =
   | { type: 'chat'; chat: Chat }
@@ -101,13 +96,13 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
     // Direct chat - show other participant
     const otherParticipant = chat.participants.find((p) => p.userId !== user?.id);
     const name = otherParticipant
-      ? `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}`
+      ? formatDisplayName(otherParticipant.user.firstName, otherParticipant.user.lastName)
       : 'Unknown';
 
     return {
       name,
       avatar: otherParticipant
-        ? `${otherParticipant.user.firstName[0]}${otherParticipant.user.lastName[0]}`
+        ? getInitialsFromParts(otherParticipant.user.firstName, otherParticipant.user.lastName)
         : '?',
       avatarUrl: otherParticipant?.user.avatarUrl || null,
       isGroup: false,
@@ -245,7 +240,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                         />
                       ) : (
                         <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-primary">
-                          {getAvatarFromName(teacher.name)}
+                          {getInitials(teacher.name)}
                         </div>
                       )}
                     </div>

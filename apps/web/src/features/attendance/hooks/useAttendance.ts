@@ -18,6 +18,7 @@ import {
 import type { MarkAttendanceDto, BulkAttendanceDto, AbsenceType } from '../types';
 import { financeKeys } from '@/features/finance/hooks';
 import { studentKeys } from '@/features/students/hooks/useStudents';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 // Query keys
 export const attendanceKeys = {
@@ -110,10 +111,13 @@ export function useDeleteMyPlannedAbsence() {
 }
 
 export function useStaffPlannedAbsences(dateFrom: string, dateTo: string, enabled = true) {
+  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
+  const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
+
   return useQuery({
     queryKey: attendanceKeys.staffPlanned(dateFrom, dateTo),
     queryFn: () => fetchStaffPlannedAbsences(dateFrom, dateTo),
-    enabled: enabled && !!dateFrom && !!dateTo,
+    enabled: enabled && isAuthReady && !!dateFrom && !!dateTo,
     staleTime: 60 * 1000,
   });
 }

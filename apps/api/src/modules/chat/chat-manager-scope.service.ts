@@ -71,13 +71,30 @@ export class ChatManagerScopeService {
       return this.isTeacherUserInBranch(userId, centerId);
     }
     if (u.role === UserRole.MANAGER) {
-      const mp = await this.prisma.managerProfile.findUnique({
-        where: { userId },
-        select: { centerId: true },
+      const mp = await this.prisma.managerProfile.findFirst({
+        where: {
+          userId,
+          centerId,
+          isCurrentAssignment: true,
+          user: { status: 'ACTIVE' },
+        },
+        select: { id: true },
       });
-      return mp?.centerId === centerId;
+      return Boolean(mp);
     }
     return false;
+  }
+
+  /**
+   * Inactive users remain in participant lists for historical chats; they must not
+   * block read access for current branch managers.
+   */
+  private async isHistoricalChatParticipant(userId: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { status: true },
+    });
+    return user?.status !== 'ACTIVE';
   }
 
   async isChatInManagerBranch(
@@ -92,6 +109,9 @@ export class ChatManagerScopeService {
     if (chat.type === ChatType.GROUP && !chat.groupId) {
       const others = chat.participants.filter((p) => p.userId !== managerUserId);
       for (const p of others) {
+        if (await this.isHistoricalChatParticipant(p.userId)) {
+          continue;
+        }
         if (!(await this.isUserInManagerBranch(p.userId, centerId))) {
           return false;
         }
@@ -102,6 +122,9 @@ export class ChatManagerScopeService {
       const other = chat.participants.find((p) => p.userId !== managerUserId);
       if (!other) {
         return false;
+      }
+      if (await this.isHistoricalChatParticipant(other.userId)) {
+        return true;
       }
       return this.isUserInManagerBranch(other.userId, centerId);
     }
@@ -123,8 +146,12 @@ export class ChatManagerScopeService {
    * Whether a manager may open/maintain a direct chat with the given user (branch only).
    */
   async canManagerDirectMessageUser(managerUserId: string, otherUserId: string): Promise<boolean> {
-    const mp = await this.prisma.managerProfile.findUnique({
-      where: { userId: managerUserId },
+    const mp = await this.prisma.managerProfile.findFirst({
+      where: {
+        userId: managerUserId,
+        isCurrentAssignment: true,
+        user: { status: 'ACTIVE' },
+      },
       select: { centerId: true },
     });
     if (!mp?.centerId) {

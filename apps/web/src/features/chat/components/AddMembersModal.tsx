@@ -6,20 +6,13 @@ import type { Chat } from '../types';
 import type { AdminChatAllUser } from '../api/chat.api';
 import { cn } from '@/shared/lib/utils';
 import Image from 'next/image';
+import { getInitials } from '@/shared/components/ui/avatar';
 
 interface AddMembersModalProps {
   isOpen: boolean;
   onClose: () => void;
   chat: Chat;
   onMemberAdded?: (updatedChat: Chat) => void;
-}
-
-function getAvatar(name: string) {
-  const parts = name.trim().split(' ');
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-  return name[0]?.toUpperCase() || '?';
 }
 
 export function AddMembersModal({
@@ -144,7 +137,7 @@ export function AddMembersModal({
                           unoptimized
                         />
                       ) : (
-                        getAvatar(user.name)
+                        getInitials(user.name)
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

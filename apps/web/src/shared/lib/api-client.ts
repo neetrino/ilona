@@ -110,6 +110,11 @@ export class ApiClient {
     this.refreshFailed = false;
   }
 
+  markRefreshFailed() {
+    this.refreshFailed = true;
+    this.sessionExpiredCallback?.();
+  }
+
   private getToken(): string | null {
     // Try to get from Zustand store first (more reliable)
     if (this.tokenGetter) {
@@ -411,7 +416,9 @@ export class ApiClient {
             }
           }
           
-          // Refresh failed or token not available
+          if (this.refreshFailed) {
+            this.sessionExpiredCallback?.();
+          }
           this.processRequestQueue(false);
           this.isRefreshing = false;
           this.refreshPromise = null;
@@ -457,27 +464,26 @@ export class ApiClient {
           return false;
         }
 
-        const newTokens = await response.json();
-        
-        // Update tokens in localStorage (fallback)
-        if (typeof window !== 'undefined') {
-          try {
-            const stored = localStorage.getItem('ilona-auth');
-            if (stored) {
-              const data = JSON.parse(stored);
-              data.state.tokens = newTokens;
-              localStorage.setItem('ilona-auth', JSON.stringify(data));
-              // Verify token is actually available after update
-              await new Promise(resolve => setTimeout(resolve, 50));
-              const token = this.getToken();
-              if (token) {
-                this.processRequestQueue(true);
-                return true;
-              }
-            }
-          } catch {
-            this.processRequestQueue(false);
-            return false;
+        const newTokens = await response.json() as {
+          accessToken?: string;
+          refreshToken?: string;
+        };
+
+        if (
+          typeof newTokens.accessToken === 'string' &&
+          typeof newTokens.refreshToken === 'string'
+        ) {
+          const { applyRefreshedTokens } = await import(
+            '@/features/auth/store/auth.store'
+          );
+          applyRefreshedTokens({
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken,
+          });
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          if (this.getToken()) {
+            this.processRequestQueue(true);
+            return true;
           }
         }
 

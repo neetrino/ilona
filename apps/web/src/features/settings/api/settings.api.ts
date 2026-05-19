@@ -5,6 +5,7 @@ import type {
   ChangePasswordDto,
   ManagerAccount,
   CreateManagerDto,
+  UpdateManagerDto,
 } from '../types';
 
 /**
@@ -210,4 +211,14 @@ export async function fetchManagers(): Promise<ManagerAccount[]> {
  */
 export async function createManager(data: CreateManagerDto): Promise<ManagerAccount> {
   return api.post<ManagerAccount>('/users/managers', data);
+}
+
+/**
+ * Update manager account (Admin only)
+ */
+export async function updateManager(
+  id: string,
+  data: UpdateManagerDto,
+): Promise<ManagerAccount> {
+  return api.patch<ManagerAccount>(`/users/managers/${id}`, data);
 }

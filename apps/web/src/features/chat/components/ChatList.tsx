@@ -6,6 +6,7 @@ import { useChats, useSocket } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { formatMessagePreview } from '../utils';
 import Image from 'next/image';
 
@@ -68,13 +69,13 @@ export function ChatList({ onSelectChat }: ChatListProps) {
     // Direct chat - show other participant
     const otherParticipant = chat.participants.find((p) => p.userId !== user?.id);
     const name = otherParticipant
-      ? `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}`
+      ? formatDisplayName(otherParticipant.user.firstName, otherParticipant.user.lastName)
       : 'Unknown';
 
     return {
       name,
       avatar: otherParticipant
-        ? `${otherParticipant.user.firstName[0]}${otherParticipant.user.lastName[0]}`
+        ? getInitialsFromParts(otherParticipant.user.firstName, otherParticipant.user.lastName)
         : '?',
       avatarUrl: otherParticipant?.user.avatarUrl || null,
       isGroup: false,

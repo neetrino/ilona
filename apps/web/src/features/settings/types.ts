@@ -56,11 +56,27 @@ export interface ManagerAccount {
   createdAt: string;
   managerProfile?: {
     centerId: string;
+    isCurrentAssignment?: boolean;
     center?: {
       id: string;
       name: string;
     };
+    lastManaged?: {
+      centerId: string;
+      centerName: string;
+      managedAt: string;
+    } | null;
   };
+}
+
+export interface UpdateManagerDto {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+  centerId?: string;
+  status?: 'ACTIVE' | 'INACTIVE';
 }
 
 export interface CreateManagerDto {

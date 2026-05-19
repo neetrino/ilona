@@ -8,6 +8,7 @@ import { fetchGroupChat, createDirectChat } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { Badge } from '@/shared/components/ui/badge';
+import { getInitials } from '@/shared/components/ui/avatar';
 import Image from 'next/image';
 import { getGroupIconComponent } from '@/features/groups';
 
@@ -95,15 +96,6 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
     }
   };
 
-  // Get avatar initials
-  const getAvatar = (name: string) => {
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    }
-    return name[0]?.toUpperCase() || '?';
-  };
-
   // Render list items
   const renderStudents = () => {
     if (isLoading) {
@@ -155,7 +147,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               {student.avatarUrl ? (
                 <Image src={student.avatarUrl} alt={student.name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
               ) : (
-                getAvatar(student.name)
+                getInitials(student.name)
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -227,7 +219,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               {teacher.avatarUrl ? (
                 <Image src={teacher.avatarUrl} alt={teacher.name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
               ) : (
-                getAvatar(teacher.name)
+                getInitials(teacher.name)
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -314,7 +306,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             )}
           >
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-              {getAvatar(chat.name || 'Group')}
+              {getInitials(chat.name || 'Group')}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
@@ -347,7 +339,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               {GroupListIcon ? (
                 <GroupListIcon className="text-white" size={24} strokeWidth={1.75} aria-hidden />
               ) : (
-                getAvatar(group.name)
+                getInitials(group.name)
               )}
             </div>
             <div className="flex-1 min-w-0">

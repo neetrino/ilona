@@ -3,11 +3,14 @@ import { UserRole, UserStatus } from '@ilona/database';
 /**
  * JWT Payload structure used in authentication
  */
+export type JwtTokenType = 'access' | 'refresh';
+
 export interface JwtPayload {
   sub: string;
   email: string;
   role: UserRole;
   managerCenterId?: string | null;
+  typ?: JwtTokenType;
   iat?: number;
   exp?: number;
 }

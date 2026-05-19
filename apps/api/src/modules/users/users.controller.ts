@@ -7,6 +7,7 @@ import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateManagerDto } from './dto/create-manager.dto';
+import { UpdateManagerDto } from './dto/update-manager.dto';
 
 @ApiTags('users')
 @ApiBearerAuth('access-token')
@@ -34,14 +35,6 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Get user by ID (Admin only)' })
-  async findOne(@Param('id') id: string): Promise<unknown> {
-    return this.usersService.findById(id);
-  }
-
   @Get('managers/list')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -56,5 +49,21 @@ export class UsersController {
   @ApiOperation({ summary: 'Create manager (Admin only)' })
   async createManager(@Body() dto: CreateManagerDto): Promise<unknown> {
     return this.usersService.createManager(dto);
+  }
+
+  @Patch('managers/:id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update manager (Admin only)' })
+  async updateManager(@Param('id') id: string, @Body() dto: UpdateManagerDto): Promise<unknown> {
+    return this.usersService.updateManager(id, dto);
+  }
+
+  @Get(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get user by ID (Admin only)' })
+  async findOne(@Param('id') id: string): Promise<unknown> {
+    return this.usersService.findById(id);
   }
 }

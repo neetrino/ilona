@@ -16,8 +16,9 @@ import {
   updatePenalties,
   fetchManagers,
   createManager,
+  updateManager,
 } from '../api/settings.api';
-import type { UpdateProfileDto, ChangePasswordDto, CreateManagerDto } from '../types';
+import type { UpdateProfileDto, ChangePasswordDto, CreateManagerDto, UpdateManagerDto } from '../types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { teacherKeys } from '@/features/teachers';
 import { financeKeys } from '@/features/finance/hooks/useFinance';
@@ -269,6 +270,17 @@ export function useCreateManager() {
 
   return useMutation({
     mutationFn: (data: CreateManagerDto) => createManager(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.managers() });
+    },
+  });
+}
+
+export function useUpdateManager() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateManagerDto }) => updateManager(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: settingsKeys.managers() });
     },

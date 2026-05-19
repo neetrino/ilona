@@ -3,6 +3,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { api } from '@/shared/lib/api';
+import { ApiError } from '@/shared/lib/api-errors';
+import { isTokenExpired } from '@/shared/lib/jwt-utils';
 import { clearChatStateOnLogout } from '@/features/chat/store/chat.store';
 import type { User, AuthTokens, UserRole } from '@/types';
 
@@ -97,26 +99,14 @@ export const useAuthStore = create<AuthStore>()(
             { skipAuthRefresh: true }
           );
 
-          // Update tokens while preserving user and authentication state
-          set({ 
-            tokens: newTokens,
-            // Keep isAuthenticated true if we successfully refreshed
-            isAuthenticated: true,
-            sessionExpired: false, // Clear session expired state on successful refresh
-          });
+          applyRefreshedTokens(newTokens);
           return true;
         } catch (error) {
-          // If refresh failed with 401/403, the refresh token is invalid/expired
-          // Set session expired state but DON'T auto-logout (user can still interact)
-          if (error instanceof Error && 'statusCode' in error && (error as Error & { statusCode?: number }).statusCode === 401) {
+          if (error instanceof ApiError && (error.statusCode === 401 || error.statusCode === 403)) {
             console.warn('Refresh token is invalid, session expired');
-            set({ sessionExpired: true });
-          } else if (error instanceof Error && 'statusCode' in error && (error as Error & { statusCode?: number }).statusCode === 403) {
-            console.warn('Refresh token is forbidden, session expired');
-            set({ sessionExpired: true });
+            set({ ...initialState, isHydrated: true, sessionExpired: true });
+            api.markRefreshFailed();
           } else {
-            // For other errors (network issues), log but don't set session expired
-            // Might be temporary network issue
             console.warn('Token refresh failed:', error);
           }
           return false;
@@ -152,8 +142,11 @@ export const useAuthStore = create<AuthStore>()(
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
-        // Called when hydration is complete
         if (state) {
+          const refresh = state.tokens?.refreshToken;
+          if (refresh && isTokenExpired(refresh)) {
+            state.logout();
+          }
           state.setHydrated();
         }
       },
@@ -176,8 +169,17 @@ export function getDashboardPath(role: UserRole): string {
   }
 }
 
+/** Apply tokens from a successful refresh (keeps Zustand and localStorage in sync). */
+export function applyRefreshedTokens(tokens: AuthTokens): void {
+  useAuthStore.setState({
+    tokens,
+    isAuthenticated: true,
+    sessionExpired: false,
+  });
+  api.resetRefreshFailed();
+}
+
 // Initialize API client with token refresh callback and token getters
-// This should be called after the store is created (e.g., in QueryProvider)
 export function initializeApiClient() {
   if (typeof window === 'undefined') return;
   
@@ -215,4 +217,8 @@ export function initializeApiClient() {
     const store = useAuthStore.getState();
     store.setSessionExpired(true);
   });
+}
+
+if (typeof window !== 'undefined') {
+  initializeApiClient();
 }
