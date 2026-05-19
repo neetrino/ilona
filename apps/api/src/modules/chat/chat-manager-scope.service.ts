@@ -85,6 +85,18 @@ export class ChatManagerScopeService {
     return false;
   }
 
+  /**
+   * Inactive users remain in participant lists for historical chats; they must not
+   * block read access for current branch managers.
+   */
+  private async isHistoricalChatParticipant(userId: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { status: true },
+    });
+    return user?.status !== 'ACTIVE';
+  }
+
   async isChatInManagerBranch(
     chat: ChatScopeShape,
     managerUserId: string,
@@ -97,6 +109,9 @@ export class ChatManagerScopeService {
     if (chat.type === ChatType.GROUP && !chat.groupId) {
       const others = chat.participants.filter((p) => p.userId !== managerUserId);
       for (const p of others) {
+        if (await this.isHistoricalChatParticipant(p.userId)) {
+          continue;
+        }
         if (!(await this.isUserInManagerBranch(p.userId, centerId))) {
           return false;
         }
@@ -107,6 +122,9 @@ export class ChatManagerScopeService {
       const other = chat.participants.find((p) => p.userId !== managerUserId);
       if (!other) {
         return false;
+      }
+      if (await this.isHistoricalChatParticipant(other.userId)) {
+        return true;
       }
       return this.isUserInManagerBranch(other.userId, centerId);
     }

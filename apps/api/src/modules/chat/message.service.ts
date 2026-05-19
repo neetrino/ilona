@@ -33,6 +33,10 @@ import { effectiveLessonInstructorTeacherId } from '../../common/lesson-instruct
 import { ChatManagementService } from './chat-management.service';
 import { ChatAuthorizationService } from './chat-authorization.service';
 import { ChatManagerScopeService } from './chat-manager-scope.service';
+import {
+  chatSenderPublicSelect,
+  mapMessageWithSender,
+} from './chat-message-sender.util';
 import { JwtPayload } from '../../common/types/auth.types';
 
 /** Message response with optional navigation (e.g. for voice from calendar) */
@@ -184,13 +188,7 @@ export class MessageService {
       orderBy: { createdAt: 'desc' },
       include: {
         sender: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
-            role: true,
-          },
+          select: chatSenderPublicSelect,
         },
       },
     });
@@ -199,7 +197,7 @@ export class MessageService {
     const items = hasMore ? messages.slice(0, -1) : messages;
 
     return {
-      items: items.reverse(), // Return in chronological order
+      items: items.reverse().map(mapMessageWithSender), // chronological; keep inactive senders
       hasMore,
       nextCursor: hasMore ? items[items.length - 1]?.id : null,
     };
@@ -363,13 +361,7 @@ export class MessageService {
       },
       include: {
         sender: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
-            role: true,
-          },
+          select: chatSenderPublicSelect,
         },
       },
     });
@@ -448,7 +440,7 @@ export class MessageService {
 
     // Return message with navigation metadata for voice messages from calendar
     const response: SendMessageResponse = {
-      ...message,
+      ...mapMessageWithSender(message),
       ...(chat.groupId && {
         navigation: {
           conversationId: chat.id,
@@ -492,7 +484,7 @@ export class MessageService {
       throw new BadRequestException('Only text messages can be edited');
     }
 
-    return this.prisma.message.update({
+    const updated = await this.prisma.message.update({
       where: { id: messageId },
       data: {
         content: dto.content,
@@ -501,15 +493,12 @@ export class MessageService {
       },
       include: {
         sender: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
-          },
+          select: chatSenderPublicSelect,
         },
       },
     });
+
+    return mapMessageWithSender(updated);
   }
 
   /**

@@ -496,7 +496,10 @@
     "groups": "Խմբեր",
     "students": "Աշակերտներ",
     "teachers": "Իմ ուսուցիչներ",
-    "chats": "Զրույցներ"
+    "chats": "Զրույցներ",
+    "formerManager": "Նախկին Manager",
+    "inactiveManager": "Անակտիվ Manager",
+    "unknownUser": "Անհայտ օգտատեր"
   },
   "finance": {
     "title": "Ֆինանսներ",

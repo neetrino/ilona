@@ -496,7 +496,10 @@
     "groups": "Groups",
     "students": "Students",
     "teachers": "My Teachers",
-    "chats": "Chats"
+    "chats": "Chats",
+    "formerManager": "Former Manager",
+    "inactiveManager": "Inactive Manager",
+    "unknownUser": "Unknown user"
   },
   "finance": {
     "title": "Finance",
