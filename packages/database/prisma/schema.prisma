@@ -58,15 +58,19 @@ model Center {
 }
 
 model ManagerProfile {
-  id                   String   @id @default(cuid())
-  userId               String   @unique
-  centerId             String
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  centerId                String
   /// When false, the manager no longer operates this center; center data stays on Center.
-  isCurrentAssignment  Boolean  @default(true)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  center               Center   @relation(fields: [centerId], references: [id])
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isCurrentAssignment     Boolean   @default(true)
+  /// Last center this manager actively operated (set when assignment is released).
+  lastManagedCenterId     String?
+  lastManagedCenterName   String?
+  lastManagedAt           DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  center                  Center    @relation(fields: [centerId], references: [id])
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([centerId])
   @@index([centerId, isCurrentAssignment])

@@ -220,9 +220,24 @@ export class UsersService {
     }
 
     const rows = await this.prisma.$queryRaw<
-      Array<{ userId: string; centerId: string; centerName: string; isCurrentAssignment: boolean }>
+      Array<{
+        userId: string;
+        centerId: string;
+        centerName: string;
+        isCurrentAssignment: boolean;
+        lastManagedCenterId: string | null;
+        lastManagedCenterName: string | null;
+        lastManagedAt: Date | null;
+      }>
     >`
-      SELECT mp."userId", mp."centerId", mp."isCurrentAssignment", c."name" as "centerName"
+      SELECT
+        mp."userId",
+        mp."centerId",
+        mp."isCurrentAssignment",
+        mp."lastManagedCenterId",
+        mp."lastManagedCenterName",
+        mp."lastManagedAt",
+        c."name" as "centerName"
       FROM "manager_profiles" mp
       JOIN "centers" c ON c."id" = mp."centerId"
       WHERE mp."userId" IN (${Prisma.join(managerIds)})
@@ -241,6 +256,14 @@ export class UsersService {
                 id: profile.centerId,
                 name: profile.centerName,
               },
+              lastManaged:
+                profile.lastManagedAt && profile.lastManagedCenterId
+                  ? {
+                      centerId: profile.lastManagedCenterId,
+                      centerName: profile.lastManagedCenterName ?? profile.centerName,
+                      managedAt: profile.lastManagedAt.toISOString(),
+                    }
+                  : null,
             }
           : null,
       };
@@ -417,12 +440,18 @@ export class UsersService {
     const nextStatus = data.status ?? existing.status;
     const targetCenterId = data.centerId ?? existing.managerProfile?.centerId;
     const reactivating = nextStatus === 'ACTIVE' && existing.status !== 'ACTIVE';
+    const willRemainInactive = nextStatus !== 'ACTIVE';
     const centerChanged = Boolean(
       data.centerId && data.centerId !== existing.managerProfile?.centerId,
     );
     const shouldReleaseAssignment =
       (nextStatus !== 'ACTIVE' && existing.managerProfile?.isCurrentAssignment === true) ||
       (existing.status === 'ACTIVE' && nextStatus !== 'ACTIVE');
+    const shouldUpdatePendingCenter =
+      willRemainInactive &&
+      existing.status !== 'ACTIVE' &&
+      Boolean(data.centerId) &&
+      centerChanged;
     const shouldAssignProfile =
       nextStatus === 'ACTIVE' &&
       Boolean(targetCenterId) &&
@@ -430,6 +459,12 @@ export class UsersService {
         reactivating ||
         !existing.managerProfile ||
         existing.managerProfile.isCurrentAssignment === false);
+
+    if (reactivating && !targetCenterId) {
+      throw new BadRequestException(
+        'Please assign this Manager to a center before activating.',
+      );
+    }
 
     if (data.centerId) {
       const center = await this.prisma.center.findUnique({
@@ -444,10 +479,16 @@ export class UsersService {
       }
     }
 
-    if (shouldAssignProfile && targetCenterId) {
+    const pendingOrAssignCenterId = shouldUpdatePendingCenter
+      ? data.centerId
+      : shouldAssignProfile
+        ? targetCenterId
+        : undefined;
+
+    if (pendingOrAssignCenterId) {
       const otherCurrent = await this.prisma.managerProfile.findFirst({
         where: {
-          centerId: targetCenterId,
+          centerId: pendingOrAssignCenterId,
           ...currentManagerAssignmentWhere,
           userId: { not: managerId },
         },
@@ -480,14 +521,51 @@ export class UsersService {
 
     try {
       const manager =
-        shouldReleaseAssignment || shouldAssignProfile
+        shouldReleaseAssignment || shouldAssignProfile || shouldUpdatePendingCenter
           ? await this.prisma.$transaction(
               async (tx) => {
                 if (shouldReleaseAssignment) {
+                  const currentAssignment = await tx.managerProfile.findFirst({
+                    where: { userId: managerId, ...currentManagerAssignmentWhere },
+                    select: { centerId: true },
+                  });
+                  const releaseCenter = currentAssignment
+                    ? await tx.center.findUnique({
+                        where: { id: currentAssignment.centerId },
+                        select: { name: true },
+                      })
+                    : null;
+
                   await tx.managerProfile.updateMany({
                     where: { userId: managerId, ...currentManagerAssignmentWhere },
-                    data: { isCurrentAssignment: false },
+                    data: {
+                      isCurrentAssignment: false,
+                      ...(currentAssignment
+                        ? {
+                            lastManagedCenterId: currentAssignment.centerId,
+                            lastManagedCenterName: releaseCenter?.name ?? null,
+                            lastManagedAt: new Date(),
+                          }
+                        : {}),
+                    },
                   });
+                }
+
+                if (shouldUpdatePendingCenter && data.centerId) {
+                  if (existing.managerProfile) {
+                    await tx.managerProfile.update({
+                      where: { userId: managerId },
+                      data: { centerId: data.centerId },
+                    });
+                  } else {
+                    await tx.managerProfile.create({
+                      data: {
+                        userId: managerId,
+                        centerId: data.centerId,
+                        isCurrentAssignment: false,
+                      },
+                    });
+                  }
                 }
 
                 if (shouldAssignProfile && targetCenterId) {
@@ -543,6 +621,9 @@ export class UsersService {
         select: {
           centerId: true,
           isCurrentAssignment: true,
+          lastManagedCenterId: true,
+          lastManagedCenterName: true,
+          lastManagedAt: true,
           center: { select: { id: true, name: true } },
         },
       });
@@ -554,6 +635,15 @@ export class UsersService {
               centerId: profile.centerId,
               isCurrentAssignment: profile.isCurrentAssignment,
               center: profile.center,
+              lastManaged:
+                profile.lastManagedAt && profile.lastManagedCenterId
+                  ? {
+                      centerId: profile.lastManagedCenterId,
+                      centerName:
+                        profile.lastManagedCenterName ?? profile.center.name,
+                      managedAt: profile.lastManagedAt.toISOString(),
+                    }
+                  : null,
             }
           : null,
       };

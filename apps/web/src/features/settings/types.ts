@@ -61,6 +61,11 @@ export interface ManagerAccount {
       id: string;
       name: string;
     };
+    lastManaged?: {
+      centerId: string;
+      centerName: string;
+      managedAt: string;
+    } | null;
   };
 }
 

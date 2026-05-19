@@ -8,14 +8,7 @@ import { useCreateManager, useManagers, type ManagerAccount } from '@/features/s
 import { EditManagerForm } from '@/features/settings/components/EditManagerForm';
 import { InactiveManagersDialog } from '@/features/settings/components/InactiveManagersDialog';
 import { getErrorMessage } from '@/shared/lib/api';
-
-function isActiveCenterManager(manager: ManagerAccount): boolean {
-  return (
-    manager.status === 'ACTIVE' &&
-    manager.managerProfile?.isCurrentAssignment !== false &&
-    Boolean(manager.managerProfile?.centerId)
-  );
-}
+import { isActiveCenterManager } from '@/features/settings/utils/manager-display';
 
 export function ManagerTab() {
   const t = useTranslations('settings');

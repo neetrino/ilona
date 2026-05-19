@@ -6534,6 +6534,9 @@ export namespace Prisma {
     userId: string | null
     centerId: string | null
     isCurrentAssignment: boolean | null
+    lastManagedCenterId: string | null
+    lastManagedCenterName: string | null
+    lastManagedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6543,6 +6546,9 @@ export namespace Prisma {
     userId: string | null
     centerId: string | null
     isCurrentAssignment: boolean | null
+    lastManagedCenterId: string | null
+    lastManagedCenterName: string | null
+    lastManagedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6552,6 +6558,9 @@ export namespace Prisma {
     userId: number
     centerId: number
     isCurrentAssignment: number
+    lastManagedCenterId: number
+    lastManagedCenterName: number
+    lastManagedAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6563,6 +6572,9 @@ export namespace Prisma {
     userId?: true
     centerId?: true
     isCurrentAssignment?: true
+    lastManagedCenterId?: true
+    lastManagedCenterName?: true
+    lastManagedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6572,6 +6584,9 @@ export namespace Prisma {
     userId?: true
     centerId?: true
     isCurrentAssignment?: true
+    lastManagedCenterId?: true
+    lastManagedCenterName?: true
+    lastManagedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6581,6 +6596,9 @@ export namespace Prisma {
     userId?: true
     centerId?: true
     isCurrentAssignment?: true
+    lastManagedCenterId?: true
+    lastManagedCenterName?: true
+    lastManagedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -6663,6 +6681,9 @@ export namespace Prisma {
     userId: string
     centerId: string
     isCurrentAssignment: boolean
+    lastManagedCenterId: string | null
+    lastManagedCenterName: string | null
+    lastManagedAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: ManagerProfileCountAggregateOutputType | null
@@ -6689,6 +6710,9 @@ export namespace Prisma {
     userId?: boolean
     centerId?: boolean
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: boolean
+    lastManagedCenterName?: boolean
+    lastManagedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     center?: boolean | CenterDefaultArgs<ExtArgs>
@@ -6700,6 +6724,9 @@ export namespace Prisma {
     userId?: boolean
     centerId?: boolean
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: boolean
+    lastManagedCenterName?: boolean
+    lastManagedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     center?: boolean | CenterDefaultArgs<ExtArgs>
@@ -6711,6 +6738,9 @@ export namespace Prisma {
     userId?: boolean
     centerId?: boolean
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: boolean
+    lastManagedCenterName?: boolean
+    lastManagedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -6738,6 +6768,12 @@ export namespace Prisma {
        * When false, the manager no longer operates this center; center data stays on Center.
        */
       isCurrentAssignment: boolean
+      /**
+       * Last center this manager actively operated (set when assignment is released).
+       */
+      lastManagedCenterId: string | null
+      lastManagedCenterName: string | null
+      lastManagedAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["managerProfile"]>
@@ -7139,6 +7175,9 @@ export namespace Prisma {
     readonly userId: FieldRef<"ManagerProfile", 'String'>
     readonly centerId: FieldRef<"ManagerProfile", 'String'>
     readonly isCurrentAssignment: FieldRef<"ManagerProfile", 'Boolean'>
+    readonly lastManagedCenterId: FieldRef<"ManagerProfile", 'String'>
+    readonly lastManagedCenterName: FieldRef<"ManagerProfile", 'String'>
+    readonly lastManagedAt: FieldRef<"ManagerProfile", 'DateTime'>
     readonly createdAt: FieldRef<"ManagerProfile", 'DateTime'>
     readonly updatedAt: FieldRef<"ManagerProfile", 'DateTime'>
   }
@@ -36361,6 +36400,9 @@ export namespace Prisma {
     userId: 'userId',
     centerId: 'centerId',
     isCurrentAssignment: 'isCurrentAssignment',
+    lastManagedCenterId: 'lastManagedCenterId',
+    lastManagedCenterName: 'lastManagedCenterName',
+    lastManagedAt: 'lastManagedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -37411,6 +37453,9 @@ export namespace Prisma {
     userId?: StringFilter<"ManagerProfile"> | string
     centerId?: StringFilter<"ManagerProfile"> | string
     isCurrentAssignment?: BoolFilter<"ManagerProfile"> | boolean
+    lastManagedCenterId?: StringNullableFilter<"ManagerProfile"> | string | null
+    lastManagedCenterName?: StringNullableFilter<"ManagerProfile"> | string | null
+    lastManagedAt?: DateTimeNullableFilter<"ManagerProfile"> | Date | string | null
     createdAt?: DateTimeFilter<"ManagerProfile"> | Date | string
     updatedAt?: DateTimeFilter<"ManagerProfile"> | Date | string
     center?: XOR<CenterRelationFilter, CenterWhereInput>
@@ -37422,6 +37467,9 @@ export namespace Prisma {
     userId?: SortOrder
     centerId?: SortOrder
     isCurrentAssignment?: SortOrder
+    lastManagedCenterId?: SortOrderInput | SortOrder
+    lastManagedCenterName?: SortOrderInput | SortOrder
+    lastManagedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     center?: CenterOrderByWithRelationInput
@@ -37436,6 +37484,9 @@ export namespace Prisma {
     NOT?: ManagerProfileWhereInput | ManagerProfileWhereInput[]
     centerId?: StringFilter<"ManagerProfile"> | string
     isCurrentAssignment?: BoolFilter<"ManagerProfile"> | boolean
+    lastManagedCenterId?: StringNullableFilter<"ManagerProfile"> | string | null
+    lastManagedCenterName?: StringNullableFilter<"ManagerProfile"> | string | null
+    lastManagedAt?: DateTimeNullableFilter<"ManagerProfile"> | Date | string | null
     createdAt?: DateTimeFilter<"ManagerProfile"> | Date | string
     updatedAt?: DateTimeFilter<"ManagerProfile"> | Date | string
     center?: XOR<CenterRelationFilter, CenterWhereInput>
@@ -37447,6 +37498,9 @@ export namespace Prisma {
     userId?: SortOrder
     centerId?: SortOrder
     isCurrentAssignment?: SortOrder
+    lastManagedCenterId?: SortOrderInput | SortOrder
+    lastManagedCenterName?: SortOrderInput | SortOrder
+    lastManagedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ManagerProfileCountOrderByAggregateInput
@@ -37462,6 +37516,9 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"ManagerProfile"> | string
     centerId?: StringWithAggregatesFilter<"ManagerProfile"> | string
     isCurrentAssignment?: BoolWithAggregatesFilter<"ManagerProfile"> | boolean
+    lastManagedCenterId?: StringNullableWithAggregatesFilter<"ManagerProfile"> | string | null
+    lastManagedCenterName?: StringNullableWithAggregatesFilter<"ManagerProfile"> | string | null
+    lastManagedAt?: DateTimeNullableWithAggregatesFilter<"ManagerProfile"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ManagerProfile"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ManagerProfile"> | Date | string
   }
@@ -40223,6 +40280,9 @@ export namespace Prisma {
   export type ManagerProfileCreateInput = {
     id?: string
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: string | null
+    lastManagedCenterName?: string | null
+    lastManagedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     center: CenterCreateNestedOneWithoutManagerProfilesInput
@@ -40234,6 +40294,9 @@ export namespace Prisma {
     userId: string
     centerId: string
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: string | null
+    lastManagedCenterName?: string | null
+    lastManagedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40241,6 +40304,9 @@ export namespace Prisma {
   export type ManagerProfileUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     isCurrentAssignment?: BoolFieldUpdateOperationsInput | boolean
+    lastManagedCenterId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedCenterName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     center?: CenterUpdateOneRequiredWithoutManagerProfilesNestedInput
@@ -40252,6 +40318,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     centerId?: StringFieldUpdateOperationsInput | string
     isCurrentAssignment?: BoolFieldUpdateOperationsInput | boolean
+    lastManagedCenterId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedCenterName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40261,6 +40330,9 @@ export namespace Prisma {
     userId: string
     centerId: string
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: string | null
+    lastManagedCenterName?: string | null
+    lastManagedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40268,6 +40340,9 @@ export namespace Prisma {
   export type ManagerProfileUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     isCurrentAssignment?: BoolFieldUpdateOperationsInput | boolean
+    lastManagedCenterId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedCenterName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40277,6 +40352,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     centerId?: StringFieldUpdateOperationsInput | string
     isCurrentAssignment?: BoolFieldUpdateOperationsInput | boolean
+    lastManagedCenterId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedCenterName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43391,6 +43469,9 @@ export namespace Prisma {
     userId?: SortOrder
     centerId?: SortOrder
     isCurrentAssignment?: SortOrder
+    lastManagedCenterId?: SortOrder
+    lastManagedCenterName?: SortOrder
+    lastManagedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43400,6 +43481,9 @@ export namespace Prisma {
     userId?: SortOrder
     centerId?: SortOrder
     isCurrentAssignment?: SortOrder
+    lastManagedCenterId?: SortOrder
+    lastManagedCenterName?: SortOrder
+    lastManagedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43409,6 +43493,9 @@ export namespace Prisma {
     userId?: SortOrder
     centerId?: SortOrder
     isCurrentAssignment?: SortOrder
+    lastManagedCenterId?: SortOrder
+    lastManagedCenterName?: SortOrder
+    lastManagedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -49082,6 +49169,9 @@ export namespace Prisma {
   export type ManagerProfileCreateWithoutUserInput = {
     id?: string
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: string | null
+    lastManagedCenterName?: string | null
+    lastManagedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     center: CenterCreateNestedOneWithoutManagerProfilesInput
@@ -49091,6 +49181,9 @@ export namespace Prisma {
     id?: string
     centerId: string
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: string | null
+    lastManagedCenterName?: string | null
+    lastManagedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -49444,6 +49537,9 @@ export namespace Prisma {
   export type ManagerProfileUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     isCurrentAssignment?: BoolFieldUpdateOperationsInput | boolean
+    lastManagedCenterId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedCenterName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     center?: CenterUpdateOneRequiredWithoutManagerProfilesNestedInput
@@ -49453,6 +49549,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     centerId?: StringFieldUpdateOperationsInput | string
     isCurrentAssignment?: BoolFieldUpdateOperationsInput | boolean
+    lastManagedCenterId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedCenterName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49826,6 +49925,9 @@ export namespace Prisma {
   export type ManagerProfileCreateWithoutCenterInput = {
     id?: string
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: string | null
+    lastManagedCenterName?: string | null
+    lastManagedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutManagerProfileInput
@@ -49835,6 +49937,9 @@ export namespace Prisma {
     id?: string
     userId: string
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: string | null
+    lastManagedCenterName?: string | null
+    lastManagedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -50020,6 +50125,9 @@ export namespace Prisma {
     userId?: StringFilter<"ManagerProfile"> | string
     centerId?: StringFilter<"ManagerProfile"> | string
     isCurrentAssignment?: BoolFilter<"ManagerProfile"> | boolean
+    lastManagedCenterId?: StringNullableFilter<"ManagerProfile"> | string | null
+    lastManagedCenterName?: StringNullableFilter<"ManagerProfile"> | string | null
+    lastManagedAt?: DateTimeNullableFilter<"ManagerProfile"> | Date | string | null
     createdAt?: DateTimeFilter<"ManagerProfile"> | Date | string
     updatedAt?: DateTimeFilter<"ManagerProfile"> | Date | string
   }
@@ -58801,6 +58909,9 @@ export namespace Prisma {
     id?: string
     userId: string
     isCurrentAssignment?: boolean
+    lastManagedCenterId?: string | null
+    lastManagedCenterName?: string | null
+    lastManagedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -58991,6 +59102,9 @@ export namespace Prisma {
   export type ManagerProfileUpdateWithoutCenterInput = {
     id?: StringFieldUpdateOperationsInput | string
     isCurrentAssignment?: BoolFieldUpdateOperationsInput | boolean
+    lastManagedCenterId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedCenterName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutManagerProfileNestedInput
@@ -59000,6 +59114,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     isCurrentAssignment?: BoolFieldUpdateOperationsInput | boolean
+    lastManagedCenterId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedCenterName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -59008,6 +59125,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     isCurrentAssignment?: BoolFieldUpdateOperationsInput | boolean
+    lastManagedCenterId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedCenterName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastManagedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
