@@ -1,19 +1,52 @@
 import createMiddleware from 'next-intl/middleware';
-import { locales, defaultLocale } from './config/i18n';
+import { NextRequest, NextResponse } from 'next/server';
+import { locales, defaultLocale, Locale } from './config/i18n';
 
-export default createMiddleware({
+const intlMiddleware = createMiddleware({
   locales,
   defaultLocale,
   localePrefix: 'always',
-  localeDetection: true, // Enable automatic locale detection
+  localeDetection: true,
 });
 
+function isValidLocale(segment: string | undefined): segment is Locale {
+  return segment !== undefined && locales.includes(segment as Locale);
+}
+
+export default function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname === '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = `/home/${defaultLocale}`;
+    return NextResponse.redirect(url);
+  }
+
+  if (pathname === '/home' || pathname === '/home/') {
+    const url = request.nextUrl.clone();
+    url.pathname = `/home/${defaultLocale}`;
+    return NextResponse.redirect(url);
+  }
+
+  if (pathname.startsWith('/home/')) {
+    const locale = pathname.split('/')[2];
+    if (!isValidLocale(locale)) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/home/${defaultLocale}`;
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
+
+  if (pathname === `/${defaultLocale}` || pathname === '/hy') {
+    const url = request.nextUrl.clone();
+    url.pathname = `/home${pathname}`;
+    return NextResponse.redirect(url);
+  }
+
+  return intlMiddleware(request);
+}
+
 export const config = {
-  // Match all pathnames except for
-  // - API routes
-  // - Static files
-  // - Internal Next.js paths
   matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
 };
-
-

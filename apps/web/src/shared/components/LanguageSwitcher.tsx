@@ -7,6 +7,10 @@ import { locales, Locale } from '@/config/i18n';
 
 const LOCALE_STORAGE_KEY = 'preferred-locale';
 
+function isValidLocale(segment: string | undefined): segment is Locale {
+  return segment !== undefined && locales.includes(segment as Locale);
+}
+
 export function LanguageSwitcher() {
   const locale = useLocale() as Locale;
   const router = useRouter();
@@ -27,9 +31,10 @@ export function LanguageSwitcher() {
     // Save preference to localStorage
     localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
     
-    // Replace the locale in the current pathname
     const segments = pathname.split('/');
-    if (segments[1] && locales.includes(segments[1] as Locale)) {
+    if (segments[1] === 'home' && isValidLocale(segments[2])) {
+      segments[2] = newLocale;
+    } else if (isValidLocale(segments[1])) {
       segments[1] = newLocale;
     } else {
       segments.splice(1, 0, newLocale);

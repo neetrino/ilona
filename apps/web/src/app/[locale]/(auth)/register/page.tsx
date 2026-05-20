@@ -47,7 +47,7 @@ export default function RegisterPage() {
             <Link href={`/${locale}/login`}>{t('login')}</Link>
           </Button>
           <Button variant="ghost" asChild className="w-full">
-            <Link href={`/${locale}`}>{t('registerBackHome')}</Link>
+            <Link href={`/home/${locale}`}>{t('registerBackHome')}</Link>
           </Button>
         </div>
       </div>
