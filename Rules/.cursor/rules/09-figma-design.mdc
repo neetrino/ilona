@@ -1,13 +1,34 @@
 ---
-description: Figma → code — tokens, components, visual parity.
+description: Figma → code — mandatory responsive layout; tokens and visual parity.
 globs: ["**/*.tsx", "**/components/**", "**/styles/**", "**/ui/**"]
 alwaysApply: false
 ---
 
 # Figma and UI
 
-- Use **design tokens** (CSS variables / Tailwind theme) — avoid one-off hex in many places.
-- **Match layout and spacing** from specs; ask if design is ambiguous.
-- **Responsive** breakpoints as in design system.
-- **Accessibility**: semantic HTML, labels, focus states, contrast.
+**When the user shares a Figma link (or asks to implement a frame/section): treat responsive layout as mandatory — not optional.**
+
+## Responsive (required)
+
+- **Never copy Figma absolute positioning** (`absolute`, fixed `left`/`top`/`width` in px) into production UI. Rebuild with **flexbox/grid**, `relative` containers, and fluid spacing.
+- Use **relative units** where possible: `rem`, `%`, `max-w-*`, `clamp()`, `min-h-*`, responsive Tailwind (`sm:`, `md:`, `lg:`, `xl:`).
+- **Mobile-first**: default styles for small screens; add breakpoints for tablet/desktop. Collapse nav into menu/drawer when the design shows many links.
+- **Width**: `w-full` + `max-w-*` + horizontal padding (`px-3` … `px-8`), not a fixed Figma artboard width.
+- **Typography & spacing**: scale down on small screens (`text-sm` → `text-base`, tighter gaps).
+- **Images**: `next/image` with responsive `sizes`; avoid fixed dimensions that break on narrow viewports.
+- **Touch targets**: min ~44px height on interactive controls for mobile.
+- If Dev Mode gives a single desktop frame, **still** implement tablet/mobile behavior; ask only when the design is ambiguous.
+
+## Design fidelity
+
+- Use **design tokens** (CSS variables / Tailwind theme) — avoid scattering one-off hex; group brand colors in theme or local constants when reused.
+- **Match** colors, radius, typography, and spacing from the frame; map Figma fonts via `next/font` when specified.
+- **Accessibility**: semantic HTML, `aria-*` on menus/dialogs, focus states, contrast.
 - Prefer **existing UI primitives** in the repo over new ad-hoc styles.
+
+## Workflow
+
+1. `get_design_context` (or screenshot) for the linked `node-id`.
+2. Identify existing components/patterns in the codebase.
+3. Implement **responsive** layout first, then refine visual parity.
+4. Section-by-section landing pages: one component per Figma section; wire hash anchors (`#about`, etc.) for in-page nav.
