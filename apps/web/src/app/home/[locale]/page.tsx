@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
-import { HeroSection, HomeNavigation } from '@/features/home/components';
+import { AboutSection, HeroSection, HomeNavigation } from '@/features/home/components';
 import '@/features/home/styles/home.css';
 
 export default function HomePage() {
@@ -34,6 +34,7 @@ export default function HomePage() {
           <HeroSection />
         </main>
       </div>
+      <AboutSection />
     </div>
   );
 }
