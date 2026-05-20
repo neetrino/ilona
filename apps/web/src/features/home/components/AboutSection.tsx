@@ -22,16 +22,6 @@ export function AboutSection() {
               <span className="home-about-badge home-about-badge-since">
                 {t('aboutSectionSince')}
               </span>
-              <div className="home-about-tower">
-                <Image
-                  src="/home/about/big-ben.png"
-                  alt=""
-                  fill
-                  sizes="(max-width: 1023px) 85vw, 36vw"
-                  className="home-about-tower-img"
-                  priority={false}
-                />
-              </div>
               <span className="home-about-badge home-about-badge-years">
                 {t('aboutSectionYears')}
               </span>
@@ -44,6 +34,16 @@ export function AboutSection() {
                   className="object-contain"
                 />
               </div>
+            </div>
+            <div className="home-about-tower">
+              <Image
+                src="/home/about/big-ben.png"
+                alt=""
+                fill
+                sizes="(max-width: 1023px) 85vw, 36vw"
+                className="home-about-tower-img"
+                priority={false}
+              />
             </div>
           </div>
 

@@ -2,16 +2,22 @@
 
 /* Marketing home: single page scroll; sections grow with viewport (no inner scroll areas). */
 .home-page {
+  position: relative;
   overflow-x: clip;
   overflow-y: visible;
   min-height: 100dvh;
 }
 
-html:has(.home-page),
+/* Single viewport scrollbar: scroll on html only, not body + html. */
+html:has(.home-page) {
+  overflow-x: clip;
+  overflow-y: auto;
+}
+
 html:has(.home-page) body {
   height: auto;
   overflow-x: clip;
-  overflow-y: auto;
+  overflow-y: visible;
 }
 
 .home-page main,
@@ -450,6 +456,8 @@ html:has(.home-page) body {
 
 .home-about {
   position: relative;
+  z-index: 1;
+  isolation: isolate;
   overflow-x: clip;
   overflow-y: visible;
   background: #dde7ff;
@@ -460,9 +468,27 @@ html:has(.home-page) body {
   --home-about-badge-blue: #093394;
   /* Visual stage height cap — tower, flag, badges scale with this */
   --home-about-stage-h: clamp(18.5rem, 50vw, 24rem);
+  --home-about-tower-drop: 5rem;
+  --home-about-tower-scale: 1.32;
+  --home-about-tower-shift-x: -3.75rem;
+}
+
+/* Tower overflow sits under the page (white) floor, not clipped at the blue edge */
+.home-about::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 2;
+  height: clamp(10rem, 28vw, 22rem);
+  background: #fff;
+  pointer-events: none;
 }
 
 .home-about-shell {
+  position: relative;
+  z-index: 1;
   padding-top: clamp(2.75rem, 5vw, 4.75rem);
   padding-bottom: clamp(2.25rem, 6vw, 4.25rem);
 }
@@ -480,25 +506,31 @@ html:has(.home-page) body {
   width: min(100%, calc(var(--home-about-stage-h) * (536 / 520)));
   max-width: calc(var(--home-about-stage-h) * (536 / 520));
   margin-inline: auto;
+  overflow: visible;
 }
 
 .home-about-stage {
   position: relative;
+  z-index: 2;
   container-type: size;
   width: 100%;
   height: var(--home-about-stage-h);
   max-height: var(--home-about-stage-h);
   overflow: visible;
+  pointer-events: none;
 }
 
 .home-about-tower {
   position: absolute;
-  left: 4%;
-  top: -6%;
+  left: -8%;
+  bottom: calc(-1 * var(--home-about-tower-drop));
   z-index: 1;
-  width: 68%;
-  height: 108%;
+  width: 84%;
+  height: var(--home-about-stage-h);
   pointer-events: none;
+  transform: translateX(var(--home-about-tower-shift-x))
+    translateY(var(--home-about-tower-drop)) rotate(10deg) scale(var(--home-about-tower-scale));
+  transform-origin: left bottom;
 }
 
 .home-about-tower-img {
@@ -621,6 +653,17 @@ html:has(.home-page) body {
   color: var(--home-about-body);
 }
 
+/* Stacked layout — copy first, visual below */
+@media (max-width: 767px) {
+  .home-about-content {
+    order: 1;
+  }
+
+  .home-about-visual {
+    order: 2;
+  }
+}
+
 /* Phone */
 @media (max-width: 639px) {
   .home-about {
@@ -671,11 +714,26 @@ html:has(.home-page) body {
   .home-about-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: clamp(1rem, 2.5vw, 1.5rem);
-    align-items: center;
+    align-items: stretch;
   }
 
   .home-about-visual {
     margin-inline: 0;
+    align-self: stretch;
+  }
+
+  .home-about {
+    --home-about-tower-drop: 7rem;
+    --home-about-tower-shift-x: -4rem;
+  }
+
+  .home-about-tower {
+    left: -7%;
+    top: 0;
+    bottom: calc(-1 * clamp(2.25rem, 6vw, 4.25rem) - var(--home-about-tower-drop));
+    height: auto;
+    transform: translateX(var(--home-about-tower-shift-x))
+      translateY(var(--home-about-tower-drop)) rotate(10deg) scale(var(--home-about-tower-scale));
   }
 
   .home-about-content {
@@ -687,6 +745,9 @@ html:has(.home-page) body {
 @media (min-width: 1024px) {
   .home-about {
     --home-about-stage-h: clamp(22rem, 40vw, 34rem);
+    --home-about-tower-drop: 9rem;
+    --home-about-tower-scale: 1.42;
+    --home-about-tower-shift-x: -4.5rem;
   }
 
   .home-about-shell {
@@ -696,7 +757,7 @@ html:has(.home-page) body {
   .home-about-grid {
     grid-template-columns: minmax(0, 52.8%) minmax(0, 47.2%);
     column-gap: 0;
-    align-items: center;
+    align-items: stretch;
   }
 
   .home-about-visual {
@@ -704,13 +765,17 @@ html:has(.home-page) body {
     max-width: calc(var(--home-about-stage-h) * (536 / 520));
     margin-inline: 0;
     justify-self: start;
+    align-self: stretch;
   }
 
   .home-about-tower {
-    left: 0;
-    top: -8%;
-    width: 72%;
-    height: 112%;
+    left: -9%;
+    top: 0;
+    bottom: calc(-1 * clamp(2.5rem, 5vw, 4.25rem) - var(--home-about-tower-drop));
+    width: 90%;
+    height: auto;
+    transform: translateX(var(--home-about-tower-shift-x))
+      translateY(var(--home-about-tower-drop)) rotate(10deg) scale(var(--home-about-tower-scale));
   }
 
   .home-about-badge-since {
