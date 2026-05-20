@@ -9,6 +9,7 @@ import { homeBrandFont } from './home-navigation.font';
 import { HOME_NAV_ITEMS } from './home-navigation.types';
 import { HomeNavigationMobileMenu } from './HomeNavigationMobileMenu';
 import { useHomeMobileNav } from './use-home-mobile-nav';
+import { HomeShell, HOME_SHELL_INNER_X_CLASS } from './home-shell';
 
 function MenuIcon({ open }: { open: boolean }) {
   return (
@@ -47,13 +48,18 @@ export function HomeNavigation() {
   useHomeMobileNav(mobileOpen, closeMobile);
 
   return (
-    <header className="sticky top-0 z-50 w-full px-2 py-2 sm:px-3 sm:py-3 md:px-4 lg:px-4">
-      <div className="relative mx-auto w-full max-w-[1600px]">
+    <header className="sticky top-0 z-50 bg-white">
+      <HomeShell className="relative py-2 sm:py-3">
         <nav
           className="relative rounded-full border-b border-[#e5e7eb] bg-[#093394] shadow-sm"
           aria-label={t('navAriaLabel')}
         >
-          <div className="flex min-h-14 items-center justify-between gap-2 px-3 py-2 sm:min-h-[4.375rem] sm:gap-3 sm:px-4 md:px-5 lg:min-h-[4.625rem] lg:px-6">
+          <div
+            className={cn(
+              HOME_SHELL_INNER_X_CLASS,
+              'flex min-h-14 items-center justify-between gap-2 py-2 sm:min-h-[4.375rem] sm:gap-3 lg:min-h-[4.625rem]',
+            )}
+          >
             <Link
               href={homeBase}
               className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-[55%] sm:gap-3 lg:max-w-none lg:flex-none"
@@ -128,7 +134,7 @@ export function HomeNavigation() {
           navHref={navHref}
           registerHref={registerHref}
         />
-      </div>
+      </HomeShell>
     </header>
   );
 }

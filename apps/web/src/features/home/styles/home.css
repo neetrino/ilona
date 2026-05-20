@@ -1,0 +1,185 @@
+/* Hero — Figma Ilona-view 1470px frame (47:1447–47:1472) */
+
+.home-hero {
+  --home-ink: #093394;
+  --home-blue-cta: #1447e6;
+  --home-blue-cta-alt: #1548e6;
+  --home-text-muted: rgba(0, 0, 0, 0.52);
+  /* Visual bbox: x 732–1260, y 153–1026 on 1470×873 character column */
+  --home-hero-stage-ratio: 528 / 680;
+  --home-hero-stage-shift-x: -22%;
+  --home-hero-stage-shift-y: 18%;
+  --home-hero-char-width: 88%;
+  --home-hero-char-left: 17%;
+}
+
+.home-hero-grid {
+  display: grid;
+  width: 100%;
+  align-items: center;
+  gap: 2.5rem;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .home-hero-grid {
+    grid-template-columns: minmax(0, 51.2%) minmax(0, 41%);
+    justify-content: space-between;
+    column-gap: clamp(1rem, 3.5vw, 4.5rem);
+    row-gap: 0;
+  }
+}
+
+.home-hero-copy {
+  min-width: 0;
+  max-width: 62rem;
+}
+
+.home-hero-title {
+  font-size: clamp(2.75rem, 6.26vw, 5.75rem);
+  line-height: 1.108;
+  letter-spacing: 0.123px;
+  color: var(--home-ink);
+}
+
+.home-hero-description {
+  margin-top: clamp(1.5rem, 2.65vw, 2.4375rem); /* 39px @ 1470 */
+  max-width: 30.375rem; /* 486px */
+  font-size: 1rem;
+  line-height: 1.5rem;
+  letter-spacing: 0.0703px;
+  color: var(--home-text-muted);
+}
+
+.home-hero-actions {
+  margin-top: clamp(2rem, 6.26vw, 5.75rem); /* 92px @ 1470 */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem; /* ~20px between CTAs */
+}
+
+.home-hero-btn-register {
+  display: inline-flex;
+  height: 3.5rem; /* 56px */
+  min-width: 11.289rem; /* 180.63px */
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #fff;
+  padding-inline: 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.3125px;
+  color: var(--home-blue-cta);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.home-hero-btn-branch {
+  display: inline-flex;
+  height: 3.75rem; /* 60px */
+  min-width: 12.441rem; /* 199.05px */
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 2px solid var(--home-blue-cta);
+  background: rgba(255, 255, 255, 0.1);
+  padding-inline: 1.5rem;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: -0.3125px;
+  color: var(--home-blue-cta-alt);
+}
+
+.home-hero-visual {
+  min-width: 0;
+  width: 100%;
+  max-width: 32.75rem;
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .home-hero-visual {
+    margin-inline: 0 auto;
+    max-width: 100%;
+  }
+}
+
+.home-hero-stage {
+  position: relative;
+  width: 100%;
+  max-width: 32.75rem;
+  aspect-ratio: var(--home-hero-stage-ratio);
+  margin-inline: auto;
+  transform: translate(var(--home-hero-stage-shift-x), var(--home-hero-stage-shift-y));
+}
+
+@media (min-width: 1024px) {
+  .home-hero-stage {
+    max-width: none;
+    width: 100%;
+    height: clamp(22rem, 46vw, 42.5rem);
+    aspect-ratio: auto;
+    --home-hero-stage-shift-x: -27%;
+    --home-hero-stage-shift-y: 19%;
+  }
+}
+
+.home-hero-character {
+  position: absolute;
+  left: var(--home-hero-char-left);
+  top: -2%;
+  z-index: 3;
+  width: var(--home-hero-char-width);
+  height: 104%;
+  pointer-events: none;
+}
+
+.home-hero-flag-uk {
+  position: absolute;
+  left: 73%;
+  top: -16%;
+  z-index: 2;
+  width: 46%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.home-hero-flag-us {
+  position: absolute;
+  left: 9%;
+  top: 16%;
+  z-index: 1;
+  width: 46%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.home-hero-flag-uk img,
+.home-hero-flag-us img {
+  object-fit: cover;
+}
+
+.home-hero-character img {
+  object-fit: contain;
+  object-position: center bottom;
+  transform: scale(1.08);
+  transform-origin: center bottom;
+}
+
+@media (min-width: 1024px) {
+  .home-hero-character {
+    --home-hero-char-width: 92%;
+    --home-hero-char-left: 14%;
+  }
+
+  .home-hero-character img {
+    transform: scale(1.14);
+  }
+}

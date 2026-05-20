@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
-import { HomeNavigation } from '@/features/home/components';
+import { HeroSection, HomeNavigation } from '@/features/home/components';
 
 export default function HomePage() {
   const locale = useLocale();
@@ -26,8 +26,11 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-white">
       <HomeNavigation />
+      <main>
+        <HeroSection />
+      </main>
     </div>
   );
 }
