@@ -88,6 +88,7 @@ Full DoD/PR/release checklists: [`docs/reference/Check/Quality/project-quality-c
 | API | `07-api-design.mdc` |
 | Security | `08-security.mdc` |
 | Figma | `09-figma-design.mdc` |
+| Home landing responsive | `10-home-marketing-responsive.mdc` (always on) |
 | Testing | `10-testing.mdc` |
 | Docs | `11-documentation.mdc` |
 | Errors | `12-error-handling.mdc` |

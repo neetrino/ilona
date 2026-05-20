@@ -1,0 +1,43 @@
+---
+description: Home/marketing landing — one page scroll, breakpoints, HomeShell alignment, CSS cascade. Mandatory when editing /home or hero.
+globs: ["apps/web/src/features/home/**", "apps/web/src/app/home/**"]
+alwaysApply: true
+---
+
+# Home / marketing landing — responsive contract
+
+**Apply on every task** that touches `apps/web/src/app/home/**` or `apps/web/src/features/home/**`. Full doc: `docs/HOME_LANDING_RESPONSIVE.md`.
+
+## Single scroll (required)
+
+- The **whole site/page** scrolls once (`html`/`body` or `.home-page`) — **never** a fixed-height section with `overflow: auto|scroll` that creates an inner scrollbar when the viewport shrinks.
+- Sections use `height: auto`, `max-height: none`, `overflow: visible`. Clip horizontal bleed only: `overflow-x: clip` on `.home-page` / section if needed.
+- Visual stages use `min-height` + fluid sizing, not a fixed `height` that clips content.
+
+## Shared layout with header
+
+- Reuse **`HomeShell`** + **`HOME_SHELL_INNER_X_CLASS`** for header and every landing section so left/right edges align (`max-w-[1600px]`, same outer/inner padding).
+- Header over hero: `HomeNavigation overlay` + `--home-header-clearance` top padding on hero content (not a white bar pushing hero down).
+
+## Breakpoints (hero & new sections)
+
+| Range | Layout |
+|-------|--------|
+| **&lt; 640px** | Single column; full-width CTAs; phone-tuned flag/illustration positions |
+| **640–767px** | Single column, larger type/visual; CTAs row + wrap |
+| **768–1023px** | Two columns (copy \| visual) where the design is side-by-side |
+| **≥ 1024px** | Desktop grid per Figma |
+
+Use `clamp()`, `%`, and `minmax()` — not desktop-only px absolutes from Figma.
+
+## CSS cascade (flags / overlays)
+
+- **Base styles** = shared only (position, radius, z-index).
+- **Mobile/tablet** positions live in `@media (max-width: …)` blocks.
+- **Desktop** positions **only** inside `@media (min-width: 1024px)` — never after mobile queries, or mobile changes will not apply.
+
+## Figma workflow
+
+- Read frame via MCP; implement responsive layout first, then pixel-tune per breakpoint.
+- Assets in `public/home/` (no hotlinked Figma URLs).
+- See also `09-figma-design.mdc`.

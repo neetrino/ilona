@@ -18,11 +18,11 @@ export function HeroSection() {
   return (
     <section
       id="home"
-      className="home-hero overflow-x-hidden bg-white"
+      className="home-hero bg-white"
       aria-labelledby="home-hero-title"
     >
       <HomeShell
-        className="pb-10 pt-[var(--home-header-clearance)] sm:pb-14 md:pb-16 lg:pb-[5.5rem] lg:pt-[calc(var(--home-header-clearance)+clamp(1.5rem,4vw,3rem))]"
+        className="home-hero-shell pb-8 sm:pb-12 md:pb-16 lg:pb-[5.5rem]"
       >
         <div className={cn(HOME_SHELL_INNER_X_CLASS, 'home-hero-grid')}>
           <div className="home-hero-copy">
@@ -80,7 +80,7 @@ export function HeroSection() {
                   alt=""
                   fill
                   sizes="(max-width: 1023px) 72vw, 393px"
-                  className="object-contain object-top"
+                  className="object-contain object-bottom"
                   priority
                 />
               </div>

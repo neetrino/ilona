@@ -32,3 +32,4 @@ alwaysApply: false
 2. Identify existing components/patterns in the codebase.
 3. Implement **responsive** layout first, then refine visual parity.
 4. Section-by-section landing pages: one component per Figma section; wire hash anchors (`#about`, etc.) for in-page nav.
+5. Home `/home` pages: also follow **`10-home-marketing-responsive.mdc`** (single scroll, `HomeShell`, breakpoint table).

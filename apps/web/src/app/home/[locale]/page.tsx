@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { HeroSection, HomeNavigation } from '@/features/home/components';
+import '@/features/home/styles/home.css';
 
 export default function HomePage() {
   const locale = useLocale();
@@ -26,10 +27,10 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="relative">
+    <div className="home-page min-h-screen bg-white">
+      <div className="relative overflow-visible">
         <HomeNavigation overlay />
-        <main>
+        <main className="overflow-visible">
           <HeroSection />
         </main>
       </div>
