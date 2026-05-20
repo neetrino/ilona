@@ -27,10 +27,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <HomeNavigation />
-      <main>
-        <HeroSection />
-      </main>
+      <div className="relative">
+        <HomeNavigation overlay />
+        <main>
+          <HeroSection />
+        </main>
+      </div>
     </div>
   );
 }

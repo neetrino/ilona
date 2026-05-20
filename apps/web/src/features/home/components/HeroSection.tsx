@@ -22,7 +22,7 @@ export function HeroSection() {
       aria-labelledby="home-hero-title"
     >
       <HomeShell
-        className="pb-10 pt-4 sm:pb-14 sm:pt-5 md:pb-16 lg:pb-[5.5rem] lg:pt-[clamp(2rem,5vw,4.5rem)]"
+        className="pb-10 pt-[var(--home-header-clearance)] sm:pb-14 md:pb-16 lg:pb-[5.5rem] lg:pt-[calc(var(--home-header-clearance)+clamp(1.5rem,4vw,3rem))]"
       >
         <div className={cn(HOME_SHELL_INNER_X_CLASS, 'home-hero-grid')}>
           <div className="home-hero-copy">

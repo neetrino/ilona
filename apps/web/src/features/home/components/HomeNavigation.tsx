@@ -29,7 +29,12 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
-export function HomeNavigation() {
+interface HomeNavigationProps {
+  /** When true, nav floats over the hero (section 1) instead of pushing it down. */
+  overlay?: boolean;
+}
+
+export function HomeNavigation({ overlay = false }: HomeNavigationProps) {
   const t = useTranslations('home');
   const locale = useLocale();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -48,8 +53,15 @@ export function HomeNavigation() {
   useHomeMobileNav(mobileOpen, closeMobile);
 
   return (
-    <header className="sticky top-0 z-50 bg-white">
-      <HomeShell className="relative py-2 sm:py-3">
+    <header
+      className={cn(
+        'z-50',
+        overlay
+          ? 'pointer-events-none absolute inset-x-0 top-0 bg-transparent'
+          : 'sticky top-0 bg-white',
+      )}
+    >
+      <HomeShell className={cn('relative py-2 sm:py-3', overlay && 'pointer-events-auto')}>
         <nav
           className="relative rounded-full border-b border-[#e5e7eb] bg-[#093394] shadow-sm"
           aria-label={t('navAriaLabel')}

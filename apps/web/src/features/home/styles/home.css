@@ -1,6 +1,8 @@
 /* Hero — Figma Ilona-view 1470px frame (47:1447–47:1472) */
 
 .home-hero {
+  /* Clearance for overlay header (nav bar + shell padding) */
+  --home-header-clearance: clamp(5.25rem, 10.5vw, 6.875rem);
   --home-ink: #093394;
   --home-blue-cta: #1447e6;
   --home-blue-cta-alt: #1548e6;
@@ -9,8 +11,8 @@
   --home-hero-stage-ratio: 528 / 680;
   --home-hero-stage-shift-x: -22%;
   --home-hero-stage-shift-y: 18%;
-  --home-hero-char-width: 88%;
-  --home-hero-char-left: 17%;
+  --home-hero-char-width: 92%;
+  --home-hero-char-left: 15%;
 }
 
 .home-hero-grid {
@@ -133,7 +135,7 @@
   top: -2%;
   z-index: 3;
   width: var(--home-hero-char-width);
-  height: 104%;
+  height: 108%;
   pointer-events: none;
 }
 
@@ -169,17 +171,17 @@
 .home-hero-character img {
   object-fit: contain;
   object-position: center bottom;
-  transform: scale(1.08);
+  transform: scale(1.12);
   transform-origin: center bottom;
 }
 
 @media (min-width: 1024px) {
   .home-hero-character {
-    --home-hero-char-width: 92%;
-    --home-hero-char-left: 14%;
+    --home-hero-char-width: 96%;
+    --home-hero-char-left: 11%;
   }
 
   .home-hero-character img {
-    transform: scale(1.14);
+    transform: scale(1.18);
   }
 }
