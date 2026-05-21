@@ -72,7 +72,9 @@ async function fetchAllAssignedStudentsDirectory(): Promise<Student[]> {
 }
 
 export default function TeacherRecordingsPage() {
-  const t = useTranslations('nav');
+  const tNav = useTranslations('nav');
+  const t = useTranslations('recordings');
+  const tCommon = useTranslations('common');
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -163,10 +165,10 @@ export default function TeacherRecordingsPage() {
             `${student.user.firstName} ${student.user.lastName}`.trim() ||
             student.userId,
           groupId: student.group?.id ?? null,
-          groupName: student.group?.name ?? 'Ungrouped',
+          groupName: student.group?.name ?? t('ungrouped'),
         }))
         .sort((a, b) => a.fullName.localeCompare(b.fullName)),
-    [allStudents],
+    [allStudents, t],
   );
 
   const groupOptions = useMemo(() => {
@@ -178,11 +180,11 @@ export default function TeacherRecordingsPage() {
 
     const hasUngrouped = studentDirectory.some((student) => student.groupId === null);
     if (hasUngrouped) {
-      map.set('ungrouped', { id: 'ungrouped', name: 'Ungrouped' });
+      map.set('ungrouped', { id: 'ungrouped', name: t('ungrouped') });
     }
 
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [myGroups, studentDirectory]);
+  }, [myGroups, studentDirectory, t]);
 
   const groupMultiOptions = useMemo(
     () => groupOptions.map((group) => ({ id: group.id, label: group.name })),
@@ -282,40 +284,40 @@ export default function TeacherRecordingsPage() {
 
   return (
     <DashboardLayout
-      title={t('recordings')}
-      subtitle="All student voice recordings in a single searchable table"
+      title={tNav('recordings')}
+      subtitle={tNav('adminRecordingsSubtitle')}
     >
       <StudentPageStack>
       <StudentCard>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
-            label="Group"
+            label={tCommon('group')}
             options={groupMultiOptions}
             selectedIds={selectedGroupIds}
             onSelectionChange={setSelectedGroupIds}
-            placeholder="All groups"
-            searchPlaceholder="Search groups..."
-            emptyOptionsHint="No groups"
-            noResultsHint="No groups match"
+            placeholder={t('allGroups')}
+            searchPlaceholder={t('searchGroups')}
+            emptyOptionsHint={t('noGroups')}
+            noResultsHint={t('noGroupsMatch')}
             isLoading={isLoadingDirectory}
           />
         </div>
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
-            label="Student"
+            label={tCommon('searchTypeStudent')}
             options={studentMultiOptions}
             selectedIds={selectedStudentUserIds}
             onSelectionChange={setSelectedStudentUserIds}
-            placeholder="All students"
-            searchPlaceholder="Search students..."
-            emptyOptionsHint="No students"
-            noResultsHint="No students match"
+            placeholder={t('allStudents')}
+            searchPlaceholder={t('searchStudents')}
+            emptyOptionsHint={t('noStudents')}
+            noResultsHint={t('noStudentsMatch')}
             isLoading={isLoadingDirectory}
           />
         </div>
         <div>
-          <StudentFieldLabel htmlFor="recordings-from">From</StudentFieldLabel>
+          <StudentFieldLabel htmlFor="recordings-from">{tCommon('from')}</StudentFieldLabel>
           <StudentInput
             id="recordings-from"
             type="date"
@@ -325,7 +327,7 @@ export default function TeacherRecordingsPage() {
           />
         </div>
         <div>
-          <StudentFieldLabel htmlFor="recordings-to">To</StudentFieldLabel>
+          <StudentFieldLabel htmlFor="recordings-to">{tCommon('to')}</StudentFieldLabel>
           <StudentInput
             id="recordings-to"
             type="date"
@@ -338,26 +340,25 @@ export default function TeacherRecordingsPage() {
 
       <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end">
         <div className="min-w-0 flex-1">
-          <StudentFieldLabel htmlFor="recordings-search">Search</StudentFieldLabel>
+          <StudentFieldLabel htmlFor="recordings-search">{tCommon('search')}</StudentFieldLabel>
           <StudentInput
             id="recordings-search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Student, group, or file name..."
+            placeholder={t('searchPlaceholder')}
           />
         </div>
         <StudentGhostButton type="button" onClick={resetFilters} className="shrink-0">
-          Clear all
+          {t('clearAll')}
         </StudentGhostButton>
       </div>
       </StudentCard>
 
       <div className="text-sm text-[#8b8b90]">
-        {visibleRecordings.length} recording
-        {visibleRecordings.length !== 1 ? 's' : ''} found
+        {t('recordingsFound', { count: visibleRecordings.length })}
         {selectedRecordingIds.size > 0 && (
           <span className="ml-3 text-[#3b3b40] font-medium">
-            ({selectedRecordingIds.size} selected)
+            {t('selectedCount', { count: selectedRecordingIds.size })}
           </span>
         )}
       </div>
@@ -370,7 +371,7 @@ export default function TeacherRecordingsPage() {
                 <th className="w-12 px-4 py-3 text-left">
                   <input
                     type="checkbox"
-                    aria-label="Select all visible recordings"
+                    aria-label={t('selectAllVisible')}
                     className="w-4 h-4 rounded border-[rgba(14,14,16,0.07)] cursor-pointer"
                     checked={allVisibleSelected}
                     onChange={toggleAll}
@@ -378,16 +379,16 @@ export default function TeacherRecordingsPage() {
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
-                  Group
+                  {tCommon('group')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
-                  Student
+                  {tCommon('searchTypeStudent')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
-                  Date &amp; Time
+                  {t('dateTime')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
-                  Recording
+                  {t('recording')}
                 </th>
               </tr>
             </thead>
@@ -405,7 +406,7 @@ export default function TeacherRecordingsPage() {
               ) : visibleRecordings.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-10 text-center text-sm text-[#8b8b90]">
-                    No recordings found for the selected filters.
+                    {t('noRecordingsForFilters')}
                   </td>
                 </tr>
               ) : (
@@ -416,7 +417,7 @@ export default function TeacherRecordingsPage() {
                       <td className="px-4 py-3 align-middle">
                         <input
                           type="checkbox"
-                          aria-label={`Select recording ${recording.id}`}
+                          aria-label={t('selectRecording', { id: recording.id })}
                           className="w-4 h-4 rounded border-[rgba(14,14,16,0.07)] cursor-pointer"
                           checked={selectedRecordingIds.has(recording.id)}
                           onChange={() => toggleOne(recording.id)}
@@ -445,7 +446,7 @@ export default function TeacherRecordingsPage() {
                             onClick={() => setActiveRecordingId(recording.id)}
                             className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary border border-primary/20 hover:bg-primary/5 rounded-lg transition-colors"
                           >
-                            Play
+                            {t('play')}
                           </button>
                         )}
                       </td>

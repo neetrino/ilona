@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import type { CrmLead } from '@/features/crm/types';
+import { useTranslations } from 'next-intl';
+import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
+import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
 import { fetchLead, updateLead, addLeadComment } from '@/features/crm/api/crm.api';
 import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
 import { fetchCenters } from '@/features/centers/api/centers.api';
@@ -19,6 +21,10 @@ interface LeadDrawerProps {
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
+  const t = useTranslations('crm');
+  const tc = useTranslations('common');
+  const tr = useTranslations('roles');
+  const statusLabels = useCrmStatusLabels();
   const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN');
   const [comment, setComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
@@ -126,11 +132,13 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white shadow-xl flex flex-col">
       <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-        <h2 className="text-lg font-semibold text-slate-900">Lead details</h2>
+        <h2 className="text-lg font-semibold text-slate-900">{t('leadDetails')}</h2>
         <button
           type="button"
           onClick={onClose}
           className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
+          aria-label={tc('close')}
+          title={tc('close')}
         >
           ✕
         </button>
@@ -143,13 +151,13 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
             <div className="h-4 bg-slate-200 rounded w-1/2" />
           </div>
         ) : !lead ? (
-          <p className="text-slate-500">Lead not found.</p>
+          <p className="text-slate-500">{t('leadNotFound')}</p>
         ) : (
           <>
             {/* Voice player — top section */}
             {lead.attachments && lead.attachments.some((a) => a.type === 'VOICE_RECORDING') && (
               <div className="pb-4 border-b border-slate-200">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Voice recording</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">{t('voiceRecording')}</label>
                 <div className="space-y-2">
                   {lead.attachments
                     .filter((a) => a.type === 'VOICE_RECORDING')
@@ -167,16 +175,20 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
             )}
 
             <div className="text-xs text-slate-500">
-              Created {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : ''}
+              {t('created')}{' '}
+              {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : ''}
               {lead.updatedAt && (
-                <> · Updated {new Date(lead.updatedAt).toLocaleString()}</>
+                <>
+                  {' '}
+                  · {t('updated')} {new Date(lead.updatedAt).toLocaleString()}
+                </>
               )}
             </div>
 
             {/* Voice recording add-on for NEW leads — admin CRM only (managers use text create flow). */}
             {isAdmin && lead.status === 'NEW' && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Voice recording</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('voiceRecording')}</label>
                 <VoiceRecorder leadId={lead.id} onRecordingSaved={() => refetch()} />
               </div>
             )}
@@ -186,7 +198,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">First name</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('firstName')}</label>
                     <input
                       type="text"
                       value={form.firstName ?? ''}
@@ -196,7 +208,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Last name</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('lastName')}</label>
                     <input
                       type="text"
                       value={form.lastName ?? ''}
@@ -207,7 +219,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{tc('phone')}</label>
                   <input
                     type="tel"
                     inputMode="numeric"
@@ -220,7 +232,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('age')}</label>
                     <input
                       type="number"
                       min={0}
@@ -231,7 +243,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Level</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('level')}</label>
                     <select
                       value={form.levelId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, levelId: e.target.value }))}
@@ -246,7 +258,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Center</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('center')}</label>
                   <select
                     value={form.centerId ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value }))}
@@ -260,7 +272,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Teacher</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('teacher')}</label>
                   <select
                     value={form.teacherId ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value, groupId: '' }))}
@@ -268,15 +280,15 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">—</option>
-                    {teachers.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.user?.firstName} {t.user?.lastName}
+                    {teachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.user?.firstName} {teacher.user?.lastName}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Group</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('group')}</label>
                   <select
                     value={form.groupId ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value }))}
@@ -285,7 +297,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">
-                      {selectedTeacherId ? '—' : 'Select Teacher first'}
+                      {selectedTeacherId ? '—' : t('selectTeacherFirst')}
                     </option>
                     {groupsForSelectedTeacher.map((g) => (
                       <option key={g.id} value={g.id}>{g.name}</option>
@@ -293,7 +305,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{tc('notes')}</label>
                   <textarea
                     value={form.notes ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
@@ -305,11 +317,11 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
 
                 {/* Comment */}
                 <form onSubmit={handleAddComment} className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700">Add comment</label>
+                  <label className="block text-sm font-medium text-slate-700">{t('addComment')}</label>
                   <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Write a comment…"
+                    placeholder={t('writeCommentPlaceholder')}
                     rows={2}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
@@ -318,7 +330,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                     disabled={submittingComment || !comment.trim()}
                     className="rounded-lg bg-slate-200 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-300 disabled:opacity-50"
                   >
-                    {submittingComment ? 'Sending…' : 'Send'}
+                    {submittingComment ? t('sending') : t('send')}
                   </button>
                 </form>
               </>
@@ -327,9 +339,9 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
             {/* Approved / Transfer are mutually exclusive: show only one */}
             {(lead.teacherApprovedAt || lead.activities?.some((a) => a.type === 'TEACHER_APPROVED')) ? (
               <div className="rounded-lg border border-green-200 bg-green-50/80 p-4">
-                <h3 className="text-sm font-semibold text-green-900 mb-3">Approved</h3>
+                <h3 className="text-sm font-semibold text-green-900 mb-3">{t('approved')}</h3>
                 <p className="text-sm text-slate-700">
-                  Teacher approved this lead
+                  {t('teacherApprovedLead')}
                   {lead.teacherApprovedAt && (
                     <span className="text-slate-500 ml-1">
                       {new Date(lead.teacherApprovedAt).toLocaleString()}
@@ -344,7 +356,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
               </div>
             ) : (lead.transferFlag || lead.activities?.some((a) => a.type === 'TEACHER_TRANSFER')) ? (
               <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-4">
-                <h3 className="text-sm font-semibold text-amber-900 mb-3">Transfer info</h3>
+                <h3 className="text-sm font-semibold text-amber-900 mb-3">{t('transferInfo')}</h3>
                 <ul className="space-y-3">
                   {lead.activities
                     ?.filter((a) => a.type === 'TEACHER_TRANSFER')
@@ -354,7 +366,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                         ? `${a.actorUser.firstName} ${a.actorUser.lastName}`.trim()
                         : lead.teacher?.user
                           ? `${lead.teacher.user.firstName} ${lead.teacher.user.lastName}`.trim()
-                          : 'Teacher';
+                          : tr('teacher');
                       return (
                         <li key={a.id} className="text-sm text-slate-700 border-l-2 border-amber-300 pl-3 py-1.5">
                           <span className="font-medium text-slate-800">{teacherName}</span>
@@ -374,7 +386,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                           {lead.teacher.user.firstName} {lead.teacher.user.lastName}
                         </span>
                       ) : (
-                        <span className="font-medium text-slate-800">Teacher</span>
+                        <span className="font-medium text-slate-800">{tr('teacher')}</span>
                       )}
                       <p className="mt-1 text-slate-600">{lead.transferComment}</p>
                     </li>
@@ -386,19 +398,26 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
             {/* Activity timeline */}
             {lead.activities && lead.activities.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-slate-800 mb-2">Activity</h3>
+                <h3 className="text-sm font-medium text-slate-800 mb-2">{t('activity')}</h3>
                 <ul className="space-y-2">
                   {lead.activities.map((a) => (
                     <li key={a.id} className="text-sm text-slate-600 border-l-2 border-slate-200 pl-3 py-1">
-                      {a.type === 'STATUS_CHANGE' && a.payload && (
-                        <>Status: {(a.payload as { fromStatus?: string }).fromStatus} → {(a.payload as { toStatus?: string }).toStatus}</>
-                      )}
+                      {a.type === 'STATUS_CHANGE' && a.payload && (() => {
+                        const payload = a.payload as { fromStatus?: CrmLeadStatus; toStatus?: CrmLeadStatus };
+                        const from = payload.fromStatus
+                          ? (statusLabels[payload.fromStatus] ?? payload.fromStatus)
+                          : '';
+                        const to = payload.toStatus
+                          ? (statusLabels[payload.toStatus] ?? payload.toStatus)
+                          : '';
+                        return <>{t('activityStatusChange', { from, to })}</>;
+                      })()}
                       {a.type === 'COMMENT' && a.payload && (
-                        <>Comment: {(a.payload as { content?: string }).content}</>
+                        <>{t('activityComment', { content: (a.payload as { content?: string }).content ?? '' })}</>
                       )}
-                      {a.type === 'RECORDING_UPLOADED' && <>Voice recording added</>}
-                      {a.type === 'TEACHER_APPROVED' && <>Teacher approved</>}
-                      {a.type === 'TEACHER_TRANSFER' && <>Transfer requested</>}
+                      {a.type === 'RECORDING_UPLOADED' && <>{t('activityVoiceAdded')}</>}
+                      {a.type === 'TEACHER_APPROVED' && <>{t('activityTeacherApproved')}</>}
+                      {a.type === 'TEACHER_TRANSFER' && <>{t('activityTransferRequested')}</>}
                       <span className="text-slate-400 ml-1">
                         {new Date(a.createdAt).toLocaleString()}
                       </span>

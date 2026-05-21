@@ -3,32 +3,25 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateTeacher, useTeacher, type UpdateTeacherDto } from '@/features/teachers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCenters } from '@/features/centers';
 import { getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
 
-const updateTeacherSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
-  phone: z.string().optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
-  hourlyRate: z.number().min(0, 'Per Lesson Rate must be positive').optional(),
-  experienceYears: z.number().int().min(0, 'Experience must be positive').max(80, 'Experience is too large').optional(),
-  videoUrl: z
-    .string()
-    .trim()
-    .max(500, 'Video URL is too long')
-    .url('Enter a valid URL (https://...)')
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
-  centerIds: z.array(z.string()).optional(),
-  workingDays: z.array(z.string()).optional(),
-});
-
-type UpdateTeacherFormData = z.infer<typeof updateTeacherSchema>;
+type UpdateTeacherFormData = {
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  hourlyRate?: number;
+  experienceYears?: number;
+  videoUrl?: string;
+  centerIds?: string[];
+  workingDays?: string[];
+};
 
 interface EditTeacherFormProps {
   open: boolean;
@@ -37,6 +30,11 @@ interface EditTeacherFormProps {
 }
 
 export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFormProps) {
+  const t = useTranslations('teachers');
+  const tForm = useTranslations('teachers.form');
+  const tVal = useTranslations('teachers.validation');
+  const tCommon = useTranslations('common');
+  const tStatus = useTranslations('status');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const updateTeacher = useUpdateTeacher();
@@ -46,6 +44,35 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
   const { data: centersData } = useCenters({ isActive: true, take: 100 }, open);
   const centers = centersData?.items ?? [];
 
+  const updateTeacherSchema = useMemo(
+    () =>
+      z.object({
+        firstName: z.string().min(2, tVal('firstNameMin')).max(50, tVal('firstNameMax')),
+        lastName: z.string().min(2, tVal('lastNameMin')).max(50, tVal('lastNameMax')),
+        phone: z.string().optional(),
+        status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
+        hourlyRate: z.number().min(0, tVal('hourlyRateMin')).optional(),
+        experienceYears: z
+          .number()
+          .int(tVal('experienceInt'))
+          .min(0, tVal('experienceMin'))
+          .max(80, tVal('experienceMax'))
+          .optional(),
+        videoUrl: z
+          .string()
+          .trim()
+          .max(500, tVal('videoUrlMax'))
+          .url(tVal('videoUrlInvalid'))
+          .optional()
+          .or(z.literal('').transform(() => undefined)),
+        centerIds: z.array(z.string()).optional(),
+        workingDays: z.array(z.string()).optional(),
+      }),
+    [tVal],
+  );
+
+  const resolver = useMemo(() => zodResolver(updateTeacherSchema), [updateTeacherSchema]);
+
   const {
     register,
     handleSubmit,
@@ -54,7 +81,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
     setValue,
     watch,
   } = useForm<UpdateTeacherFormData>({
-    resolver: zodResolver(updateTeacherSchema),
+    resolver,
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -121,18 +148,15 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
 
       await updateTeacher.mutateAsync({ id: teacherId, data: payload });
       
-      // Show success message
-      setSuccessMessage('Teacher updated successfully!');
+      setSuccessMessage(tForm('updatedSuccess'));
       setErrorMessage(null);
       
-      // Close modal after a brief delay
       setTimeout(() => {
         onOpenChange(false);
         setSuccessMessage(null);
       }, 1500);
     } catch (error: unknown) {
-      // Handle error
-      const message = getErrorMessage(error, 'Failed to update teacher. Please try again.');
+      const message = getErrorMessage(error, tForm('failedUpdate'));
       setErrorMessage(message);
       setSuccessMessage(null);
     }
@@ -142,10 +166,8 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Teacher</DialogTitle>
-          <DialogDescription>
-            Update the teacher information below. All fields marked with * are required.
-          </DialogDescription>
+          <DialogTitle>{tForm('editTitle')}</DialogTitle>
+          <DialogDescription>{tForm('editDescription')}</DialogDescription>
         </DialogHeader>
 
         {isLoadingTeacher ? (
@@ -168,50 +190,50 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">
-                  First Name <span className="text-red-500">*</span>
+                  {tCommon('firstName')} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="firstName"
                   {...register('firstName')}
                   error={errors.firstName?.message}
-                  placeholder="John"
+                  placeholder={tForm('firstNamePlaceholder')}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="lastName">
-                  Last Name <span className="text-red-500">*</span>
+                  {tCommon('lastName')} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="lastName"
                   {...register('lastName')}
                   error={errors.lastName?.message}
-                  placeholder="Doe"
+                  placeholder={tForm('lastNamePlaceholder')}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{tCommon('phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
                 {...register('phone')}
                 error={errors.phone?.message}
-                placeholder="+1 (555) 123-4567"
+                placeholder={tForm('phonePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{tCommon('status')}</Label>
               <select
                 id="status"
                 {...register('status')}
                 className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-                <option value="SUSPENDED">Suspended</option>
+                <option value="ACTIVE">{tStatus('active')}</option>
+                <option value="INACTIVE">{tStatus('inactive')}</option>
+                <option value="SUSPENDED">{tStatus('suspended')}</option>
               </select>
               {errors.status && (
                 <p className="text-sm text-red-600">{errors.status.message}</p>
@@ -220,7 +242,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
 
             <div className="space-y-2">
               <Label htmlFor="hourlyRate">
-                Per Lesson Rate (֏) <span className="text-red-500">*</span>
+                {tForm('perLessonRate')} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="hourlyRate"
@@ -229,12 +251,12 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
                 min="0"
                 {...register('hourlyRate', { valueAsNumber: true })}
                 error={errors.hourlyRate?.message}
-                placeholder="5000"
+                placeholder={tForm('hourlyRatePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="experienceYears">Experience (years)</Label>
+              <Label htmlFor="experienceYears">{t('experienceYears')}</Label>
               <Input
                 id="experienceYears"
                 type="number"
@@ -243,28 +265,26 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
                 step="1"
                 {...register('experienceYears', { valueAsNumber: true })}
                 error={errors.experienceYears?.message}
-                placeholder="5"
+                placeholder={tForm('experiencePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="videoUrl">Public video URL</Label>
+              <Label htmlFor="videoUrl">{tForm('publicVideoUrl')}</Label>
               <Input
                 id="videoUrl"
                 type="url"
                 {...register('videoUrl')}
                 error={errors.videoUrl?.message}
-                placeholder="https://www.youtube.com/watch?v=..."
+                placeholder={tForm('videoUrlPlaceholder')}
               />
-              <p className="text-xs text-slate-500">
-                Optional. Shown on the teacher&apos;s public profile.
-              </p>
+              <p className="text-xs text-slate-500">{tForm('videoUrlHint')}</p>
             </div>
 
             <div className="space-y-2">
-              <Label>Centers (branches)</Label>
+              <Label>{tForm('centersBranches')}</Label>
               {centers.length === 0 ? (
-                <p className="text-xs text-slate-500">No centers available.</p>
+                <p className="text-xs text-slate-500">{tForm('noCentersAvailable')}</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {centers.map((center) => {
@@ -300,10 +320,10 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
                 }}
                 disabled={isSubmitting || updateTeacher.isPending}
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
               <Button type="submit" isLoading={isSubmitting || updateTeacher.isPending}>
-                {isSubmitting || updateTeacher.isPending ? 'Saving...' : 'Save Changes'}
+                {isSubmitting || updateTeacher.isPending ? tForm('saving') : tForm('saveChanges')}
               </Button>
             </DialogFooter>
           </form>
@@ -312,4 +332,3 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
     </Dialog>
   );
 }
-

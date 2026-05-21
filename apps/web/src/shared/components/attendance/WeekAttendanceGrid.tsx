@@ -16,6 +16,7 @@ import { Pencil, X } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import type { AbsenceType } from '@/features/attendance';
 import { formatDateString, formatDateDisplay, isToday } from '@/features/attendance/utils/dateUtils';
+import { useLocale, useTranslations } from 'next-intl';
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
@@ -64,6 +65,36 @@ export function WeekAttendanceGrid({
   onSaveSuccess,
   onSaveError,
 }: WeekAttendanceGridProps) {
+  const t = useTranslations('attendance');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
+
+  const getStatusLabel = (status: AttendanceStatus): string => {
+    switch (status) {
+      case 'present':
+        return t('present');
+      case 'absent_justified':
+        return t('absentJustifiedLegend');
+      case 'absent_unjustified':
+        return t('absentUnjustifiedLegend');
+      default:
+        return t('notMarked');
+    }
+  };
+
+  const getNextMarkLabel = (status: AttendanceStatus): string => {
+    switch (status) {
+      case 'not_marked':
+        return t('markPresentNext');
+      case 'present':
+        return t('markAbsentJustifiedNext');
+      case 'absent_justified':
+        return t('markAbsentUnjustifiedNext');
+      default:
+        return t('markNotMarkedNext');
+    }
+  };
+
   const [attendanceData, setAttendanceData] = useState<Record<string, Record<string, AttendanceCell>>>(
     initialAttendance
   );
@@ -369,7 +400,7 @@ export function WeekAttendanceGrid({
         setJustificationDialog({ studentId: studentsMissingJustification[0], dateStr });
         setSaveError((prev) => ({
           ...prev,
-          [dateStr]: 'Please add a justification comment for all justified absences before saving.',
+          [dateStr]: t('justificationBeforeSave'),
         }));
         return;
       }
@@ -408,7 +439,7 @@ export function WeekAttendanceGrid({
             });
           }, 3000);
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to save attendance';
+          const errorMessage = error instanceof Error ? error.message : t('failedToSaveAttendanceDefault');
           setSaveError((prev) => ({
             ...prev,
             [dateStr]: errorMessage,
@@ -420,7 +451,7 @@ export function WeekAttendanceGrid({
         }
       }
     },
-    [onDaySave, pendingChanges, attendanceData, lessonsByDate, onSaveSuccess, onSaveError]
+    [onDaySave, pendingChanges, attendanceData, lessonsByDate, onSaveSuccess, onSaveError, t]
   );
 
   // Handle save all dates with pending changes
@@ -494,9 +525,9 @@ export function WeekAttendanceGrid({
 
   // Format day header
   const formatDayHeader = (date: Date) => {
-    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+    const dayName = date.toLocaleDateString(locale, { weekday: 'short' });
     const dayNum = date.getDate();
-    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const month = date.toLocaleDateString(locale, { month: 'short' });
     return { dayName, dayNum, month };
   };
 
@@ -505,7 +536,7 @@ export function WeekAttendanceGrid({
       <div className="flex items-center justify-center p-12">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-          <p className="mt-4 text-sm text-slate-500">Loading attendance data...</p>
+          <p className="mt-4 text-sm text-slate-500">{t('loadingAttendanceData')}</p>
         </div>
       </div>
     );
@@ -546,29 +577,29 @@ export function WeekAttendanceGrid({
           {hasAnySaving ? (
             <>
               <div className="h-5 w-5 animate-spin rounded-full border-[3px] border-primary border-t-transparent"></div>
-              <span className="text-primary font-semibold text-base">Saving changes...</span>
+              <span className="text-primary font-semibold text-base">{t('savingChanges')}</span>
             </>
           ) : totalPendingChanges > 0 ? (
             <>
               <div className="h-4 w-4 rounded-full bg-amber-500 animate-pulse"></div>
               <div>
                 <span className="text-amber-800 font-bold text-base block">
-                  {totalPendingChanges} unsaved {totalPendingChanges === 1 ? 'change' : 'changes'}
+                  {t('unsavedChangesCount', { count: totalPendingChanges })}
                 </span>
-                <span className="text-amber-700 text-xs mt-0.5 block">Click "Save All" to save your changes</span>
+                <span className="text-amber-700 text-xs mt-0.5 block">{t('clickSaveAllHint')}</span>
               </div>
             </>
           ) : isEditMode ? (
-            <span className="text-primary font-semibold text-base">Editing mode enabled</span>
+            <span className="text-primary font-semibold text-base">{t('editingModeEnabled')}</span>
           ) : Object.keys(saveSuccess).length > 0 ? (
             <>
               <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
-              <span className="text-green-800 font-semibold text-base">All changes saved successfully</span>
+              <span className="text-green-800 font-semibold text-base">{t('allChangesSaved')}</span>
             </>
           ) : (
-            <span className="text-slate-600 text-sm">No unsaved changes</span>
+            <span className="text-slate-600 text-sm">{t('noUnsavedChanges')}</span>
           )}
         </div>
         <div className="flex items-center gap-3">
@@ -578,14 +609,16 @@ export function WeekAttendanceGrid({
             variant={isEditMode ? 'destructive' : 'outline'}
             className="h-9 w-9"
             onClick={isEditMode ? handleCancelEditMode : handleStartEditMode}
-            title={isEditMode ? 'Cancel editing' : 'Enable editing'}
-            aria-label={isEditMode ? 'Cancel editing' : 'Enable editing'}
+            title={isEditMode ? t('cancelEditing') : t('enableEditing')}
+            aria-label={isEditMode ? t('cancelEditing') : t('enableEditing')}
           >
             {isEditMode ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
           </Button>
           {Object.keys(saveError).length > 0 && (
             <span className="text-red-700 text-sm font-medium px-3 py-1 bg-red-100 rounded">
-              {Object.values(saveError)[0]} {Object.keys(saveError).length > 1 && `(+${Object.keys(saveError).length - 1} more)`}
+              {Object.values(saveError)[0]}{' '}
+              {Object.keys(saveError).length > 1 &&
+                t('errorsMore', { count: Object.keys(saveError).length - 1 })}
             </span>
           )}
           {isEditMode && (
@@ -595,7 +628,7 @@ export function WeekAttendanceGrid({
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
               size="lg"
             >
-              Confirm Changes
+              {t('confirmChanges')}
             </Button>
           )}
           {isEditMode && totalPendingChanges > 0 && !hasAnySaving && (
@@ -605,7 +638,7 @@ export function WeekAttendanceGrid({
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
               size="lg"
             >
-              Save All Changes
+              {t('saveAllChanges')}
             </Button>
           )}
         </div>
@@ -613,7 +646,7 @@ export function WeekAttendanceGrid({
 
       {missingJustificationCount > 0 && (
         <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
-          Add a required comment for each justified absence before saving ({missingJustificationCount} pending).
+          {t('justificationPending', { count: missingJustificationCount })}
         </div>
       )}
 
@@ -630,7 +663,7 @@ export function WeekAttendanceGrid({
                 {/* Student name column (frozen) */}
                 <th className="sticky left-0 z-30 bg-slate-100 border-b-2 border-r-2 border-slate-400 px-4 md:px-5 py-3 text-left text-sm font-bold text-slate-900 uppercase tracking-wide min-w-[180px] md:min-w-[220px] shadow-sm">
                   <div className="flex items-center gap-2">
-                    <span>Student</span>
+                    <span>{t('studentColumn')}</span>
                   </div>
                 </th>
                 {/* Day columns (Mon-Sun) */}
@@ -666,12 +699,12 @@ export function WeekAttendanceGrid({
                         </div>
                         {hasLessons && (
                           <div className="text-[10px] text-slate-500 mt-1">
-                            {dayLessons.length} {dayLessons.length === 1 ? 'session' : 'sessions'}
+                            {t('sessionsCount', { count: dayLessons.length })}
                           </div>
                         )}
                         {!hasLessons && (
                           <div className="text-[10px] text-slate-400 mt-1 italic">
-                            No sessions
+                            {t('noSessionsScheduled')}
                           </div>
                         )}
                         {hasDateChanges && !isDateSaving && (
@@ -686,7 +719,7 @@ export function WeekAttendanceGrid({
                               className="h-6 px-2 text-xs"
                               disabled={isDateSaving}
                             >
-                              Save
+                              {tCommon('save')}
                             </Button>
                           </div>
                         )}
@@ -746,14 +779,18 @@ export function WeekAttendanceGrid({
                           onClick={() => hasLessons && isEditMode && !isDateSaving && toggleCellStatus(student.id, date)}
                           tabIndex={hasLessons && isEditMode && !isDateSaving ? 0 : -1}
                           role="gridcell"
-                          aria-label={`${student.user.firstName} ${student.user.lastName} - ${formatDateDisplay(date)} - ${status === 'present' ? 'Present' : status === 'absent_justified' ? 'Absent Justified' : status === 'absent_unjustified' ? 'Absent Unjustified' : 'Not Marked'}`}
+                          aria-label={t('cellAria', {
+                            name: `${student.user.firstName} ${student.user.lastName}`,
+                            date: formatDateDisplay(date),
+                            status: getStatusLabel(status),
+                          })}
                           aria-disabled={!hasLessons || isDateSaving}
                           title={
                             hasLessons
                               ? isEditMode
-                                ? `Click to mark: ${status === 'not_marked' ? 'Present' : status === 'present' ? 'Absent (Justified)' : status === 'absent_justified' ? 'Absent (Unjustified)' : 'Not Marked'}`
-                                : 'Click pencil icon to enable editing'
-                              : 'No sessions scheduled'
+                                ? t('clickToMarkCycle', { next: getNextMarkLabel(status) })
+                                : t('clickPencilToEdit')
+                              : t('noSessionsScheduledTitle')
                           }
                         >
                           {hasLessons ? (
@@ -782,10 +819,10 @@ export function WeekAttendanceGrid({
                                     e.stopPropagation();
                                     setCommentPreviewDialog({ studentId: student.id, dateStr });
                                   }}
-                                  title="View justification comment"
-                                  aria-label="View justification comment"
+                                  title={t('viewJustificationComment')}
+                                  aria-label={t('viewJustificationComment')}
                                 >
-                                  NOTE
+                                  {t('noteBadge')}
                                 </button>
                               )}
                             </>
@@ -808,9 +845,9 @@ export function WeekAttendanceGrid({
       <Dialog open={!!justificationDialog} onOpenChange={(open) => !open && setJustificationDialog(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Justification comment required</DialogTitle>
+            <DialogTitle>{t('justificationRequired')}</DialogTitle>
             <DialogDescription>
-              Add a reason for marking this student as justified absent.
+              {t('addJustificationReason')}
             </DialogDescription>
           </DialogHeader>
           {justificationDialog && (
@@ -830,7 +867,7 @@ export function WeekAttendanceGrid({
                 onChange={(e) =>
                   updateDayNote(justificationDialog.studentId, justificationDialog.dateStr, e.target.value)
                 }
-                placeholder="Enter justification comment"
+                placeholder={t('justificationPlaceholder')}
                 maxLength={500}
                 autoFocus
               />
@@ -840,7 +877,7 @@ export function WeekAttendanceGrid({
                   ? attendanceData[firstLessonId]?.[justificationDialog.studentId]?.note?.trim()
                   : '';
                 return !note ? (
-                  <p className="text-xs text-red-600">This field is required for justified absence.</p>
+                  <p className="text-xs text-red-600">{t('justificationFieldRequired')}</p>
                 ) : null;
               })()}
             </div>
@@ -869,7 +906,7 @@ export function WeekAttendanceGrid({
                 })()
               }
             >
-              Save comment
+              {t('saveComment')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -878,9 +915,9 @@ export function WeekAttendanceGrid({
       <Dialog open={!!commentPreviewDialog} onOpenChange={(open) => !open && setCommentPreviewDialog(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Justification comment</DialogTitle>
+            <DialogTitle>{t('justificationCommentTitle')}</DialogTitle>
             <DialogDescription>
-              Comment saved for this justified absence.
+              {t('justificationSavedDescription')}
             </DialogDescription>
           </DialogHeader>
           {commentPreviewDialog && (
@@ -903,35 +940,35 @@ export function WeekAttendanceGrid({
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm bg-slate-100 rounded-lg px-5 py-4 border-2 border-slate-300">
-        <span className="font-bold text-slate-900 text-base">Legend:</span>
+        <span className="font-bold text-slate-900 text-base">{t('legend')}</span>
         <div className="flex items-center gap-2">
           <span className="w-6 h-6 bg-green-100 border-2 border-green-400 rounded-md text-green-800 flex items-center justify-center text-sm font-bold shadow-sm">
             ✓
           </span>
-          <span className="font-semibold text-slate-800">Present</span>
+          <span className="font-semibold text-slate-800">{t('present')}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-6 h-6 bg-amber-100 border-2 border-amber-400 rounded-md text-amber-800 flex items-center justify-center text-sm font-bold shadow-sm">
             J
           </span>
-          <span className="font-semibold text-slate-800">Absent (Justified)</span>
+          <span className="font-semibold text-slate-800">{t('absentJustifiedLegend')}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-6 h-6 bg-red-100 border-2 border-red-400 rounded-md text-red-800 flex items-center justify-center text-sm font-bold shadow-sm">
             ✗
           </span>
-          <span className="font-semibold text-slate-800">Absent (Unjustified)</span>
+          <span className="font-semibold text-slate-800">{t('absentUnjustifiedLegend')}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-6 h-6 bg-white border-2 border-slate-300 rounded-md shadow-sm"></span>
-          <span className="font-semibold text-slate-800">Not Marked</span>
+          <span className="font-semibold text-slate-800">{t('notMarked')}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-6 h-6 bg-white border-2 border-slate-300 rounded-md text-slate-400 flex items-center justify-center text-xs">—</span>
-          <span className="font-semibold text-slate-800">No Session</span>
+          <span className="font-semibold text-slate-800">{t('noSession')}</span>
         </div>
         <div className="ml-auto text-slate-600 text-xs md:text-sm hidden md:block">
-          <span className="font-medium">Tip:</span> Click any cell to mark attendance
+          <span className="font-medium">{t('legendTipLabel')}</span> {t('legendTip')}
         </div>
       </div>
     </div>

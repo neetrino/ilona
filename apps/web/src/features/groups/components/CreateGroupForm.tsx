@@ -3,27 +3,36 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useCreateGroup, type CreateGroupDto } from '@/features/groups';
 import type { GroupScheduleEntry } from '../types';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { GroupCalendarScheduleSection } from './GroupCalendarScheduleSection';
 import { GroupIconPicker } from './GroupIconPicker';
 import type { GroupIconKey } from '@ilona/types';
 import { defaultMonthDateRange, scheduleSlotsValidationError } from '../group-schedule-utils';
 
-const createGroupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters'),
-  level: z.string().max(50, 'Level must be at most 50 characters').optional().or(z.literal('')),
-  centerId: z.string().min(1, 'Please select a center'),
-  teacherId: z.string().optional().or(z.literal('')),
-  substituteTeacherId: z.string().optional().or(z.literal('')),
-});
+type CreateGroupFormData = {
+  name: string;
+  level?: string;
+  centerId: string;
+  teacherId?: string;
+  substituteTeacherId?: string;
+};
 
-type CreateGroupFormData = z.infer<typeof createGroupSchema>;
+function translateScheduleSlotError(
+  err: string | null,
+  tVal: (key: 'slotEndAfterStart' | 'slotDuration') => string,
+): string | null {
+  if (!err) return null;
+  if (err.includes('end time after')) return tVal('slotEndAfterStart');
+  if (err.includes('between 15 and 240')) return tVal('slotDuration');
+  return err;
+}
 
 interface CreateGroupFormProps {
   open: boolean;
@@ -32,6 +41,24 @@ interface CreateGroupFormProps {
 }
 
 export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateGroupFormProps) {
+  const tForm = useTranslations('groups.form');
+  const tVal = useTranslations('groups.validation');
+  const tCommon = useTranslations('common');
+
+  const createGroupSchema = useMemo(
+    () =>
+      z.object({
+        name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')),
+        level: z.string().max(50, tVal('levelMax')).optional().or(z.literal('')),
+        centerId: z.string().min(1, tVal('selectCenter')),
+        teacherId: z.string().optional().or(z.literal('')),
+        substituteTeacherId: z.string().optional().or(z.literal('')),
+      }),
+    [tVal],
+  );
+
+  const resolver = useMemo(() => zodResolver(createGroupSchema), [createGroupSchema]);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
@@ -58,7 +85,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
     setValue,
     watch,
   } = useForm<CreateGroupFormData>({
-    resolver: zodResolver(createGroupSchema),
+    resolver,
     defaultValues: {
       name: '',
       level: '',
@@ -108,26 +135,26 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         data.teacherId &&
         data.substituteTeacherId === data.teacherId
       ) {
-        setErrorMessage('Substitute teacher cannot be the same as the main teacher');
+        setErrorMessage(tForm('substituteSameAsMain'));
         return;
       }
 
       if (schedule.length > 0) {
         if (!data.teacherId?.trim()) {
-          setErrorMessage('Select a main teacher to generate calendar lessons.');
+          setErrorMessage(tForm('selectMainTeacherForCalendar'));
           return;
         }
-        const slotErr = scheduleSlotsValidationError(schedule);
+        const slotErr = translateScheduleSlotError(scheduleSlotsValidationError(schedule), tVal);
         if (slotErr) {
           setErrorMessage(slotErr);
           return;
         }
         if (!dateFrom || !dateTo) {
-          setErrorMessage('Choose a start and end date for the calendar range.');
+          setErrorMessage(tForm('chooseCalendarDateRange'));
           return;
         }
         if (dateTo < dateFrom) {
-          setErrorMessage('End date must be on or after the start date.');
+          setErrorMessage(tForm('endDateOnOrAfterStart'));
           return;
         }
       }
@@ -146,7 +173,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       await createGroup.mutateAsync(payload);
       
       // Show success message
-      setSuccessMessage('Group created successfully!');
+      setSuccessMessage(tForm('createdSuccess'));
       setErrorMessage(null);
       
       // Reset form and close modal after a brief delay
@@ -168,7 +195,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       }, 1500);
     } catch (error: unknown) {
       // Handle error
-      const message = getErrorMessage(error, 'Failed to create group. Please try again.');
+      const message = getErrorMessage(error, tForm('failedCreate'));
       setErrorMessage(message);
       setSuccessMessage(null);
     }
@@ -178,10 +205,8 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Group</DialogTitle>
-          <DialogDescription>
-            Fill in the information below to create a new group. Fields marked with * are required.
-          </DialogDescription>
+          <DialogTitle>{tForm('addTitle')}</DialogTitle>
+          <DialogDescription>{tForm('addDescription')}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -198,31 +223,31 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
 
           <div className="space-y-2">
             <Label htmlFor="name">
-              Group Name <span className="text-red-500">*</span>
+              {tForm('groupName')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
               {...register('name')}
               error={errors.name?.message}
-              placeholder="Beginner English A1"
+              placeholder={tForm('namePlaceholder')}
               disabled={isSubmitting}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="level">Level</Label>
+            <Label htmlFor="level">{tCommon('level')}</Label>
             <Input
               id="level"
               {...register('level')}
               error={errors.level?.message}
-              placeholder="A1, A2, B1, etc."
+              placeholder={tForm('levelPlaceholder')}
               disabled={isSubmitting}
             />
           </div>
 
           <div className="space-y-2">
-            <Label id="group-icon-label">Group Icon</Label>
-            <p className="text-xs text-slate-500">Optional — pick one icon for quick recognition in lists.</p>
+            <Label id="group-icon-label">{tForm('groupIcon')}</Label>
+            <p className="text-xs text-slate-500">{tForm('iconHintCreate')}</p>
             <GroupIconPicker
               value={iconKey}
               onChange={setIconKey}
@@ -233,7 +258,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
 
           <div className="space-y-2">
             <Label htmlFor="centerId">
-              Center <span className="text-red-500">*</span>
+              {tCommon('center')} <span className="text-red-500">*</span>
             </Label>
             <select
               id="centerId"
@@ -243,7 +268,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
                 errors.centerId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || isLoadingCenters || centers.length === 0 ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
-              <option value="">Select a center</option>
+              <option value="">{tForm('selectCenter')}</option>
               {centers.map((center) => (
                 <option key={center.id} value={center.id}>
                   {center.name}
@@ -254,16 +279,21 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               <p className="text-sm text-red-600">{errors.centerId.message}</p>
             )}
             {isLoadingCenters && (
-              <p className="text-sm text-slate-500">Loading centers...</p>
+              <p className="text-sm text-slate-500">{tForm('loadingCenters')}</p>
             )}
             {!isLoadingCenters && centers.length === 0 && (
-              <p className="text-sm text-amber-600">No active centers available. Please create a center first.</p>
+              <p className="text-sm text-amber-600">{tForm('noCentersAvailable')}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="teacherId">
-              Main Teacher {schedule.length > 0 ? <span className="text-red-500">*</span> : '(Optional)'}
+              {tForm('mainTeacher')}{' '}
+              {schedule.length > 0 ? (
+                <span className="text-red-500">*</span>
+              ) : (
+                tForm('optional')
+              )}
             </Label>
             <select
               id="teacherId"
@@ -273,7 +303,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
                 errors.teacherId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
-              <option value="">No teacher assigned</option>
+              <option value="">{tForm('noTeacherAssigned')}</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.id}>
                   {teacher.user.firstName} {teacher.user.lastName}
@@ -284,12 +314,12 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               <p className="text-sm text-red-600">{errors.teacherId.message}</p>
             )}
             {isLoadingTeachers && (
-              <p className="text-sm text-slate-500">Loading teachers...</p>
+              <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="substituteTeacherId">Substitute Teacher (Optional)</Label>
+            <Label htmlFor="substituteTeacherId">{tForm('substituteTeacherOptional')}</Label>
             <select
               id="substituteTeacherId"
               {...register('substituteTeacherId')}
@@ -298,7 +328,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
                 errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || createGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
-              <option value="">No substitute</option>
+              <option value="">{tForm('noSubstitute')}</option>
               {teachers
                 .filter((t) => t.id !== watchedTeacherId)
                 .map((teacher) => (
@@ -326,7 +356,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting || createGroup.isPending}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               type="submit"
@@ -339,7 +369,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               }
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isSubmitting || createGroup.isPending ? 'Creating...' : 'Create Group'}
+              {isSubmitting || createGroup.isPending ? tForm('creating') : tForm('createGroup')}
             </Button>
           </DialogFooter>
         </form>

@@ -78,6 +78,7 @@ export function LessonListTableBodyRow({
 }: LessonListTableBodyRowProps) {
   const router = useRouter();
   const t = useTranslations('calendar');
+  const tCommon = useTranslations('common');
 
   const actions = useMemo(() => getLessonActionsDerived(lesson), [lesson]);
   const actionMap = useMemo(() => {
@@ -88,7 +89,7 @@ export function LessonListTableBodyRow({
 
   const teacherName = lesson.teacher?.user
     ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
-    : 'Unknown';
+    : t('unknownTeacher');
 
   const getRowColor = () => {
     if (lesson.completionStatus === 'DONE') {
@@ -147,19 +148,19 @@ export function LessonListTableBodyRow({
       </td>
       <td className="px-4 py-3">
         <div>
-          <p className="font-semibold text-slate-800">{lesson.group?.name || 'Unknown Group'}</p>
+          <p className="font-semibold text-slate-800">{lesson.group?.name || t('unknownGroupName')}</p>
         </div>
       </td>
       <td className="px-4 py-3 align-middle text-center">
         <div className="flex min-h-[1.75rem] items-center justify-center">
           {lesson.completionStatus === 'DONE' && (
             <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">
-              Completed
+              {t('completed')}
             </Badge>
           )}
           {lesson.completionStatus === 'IN_PROCESS' && (
             <Badge variant="warning" className="bg-yellow-100 text-yellow-700 border-yellow-200">
-              In Process
+              {t('statusInProcess')}
             </Badge>
           )}
         </div>
@@ -182,7 +183,8 @@ export function LessonListTableBodyRow({
           <p className="text-sm text-slate-700">{teacherName}</p>
           {lesson.substituteTeacher?.user && (
             <p className="text-xs text-amber-800 mt-1">
-              Sub: {lesson.substituteTeacher.user.firstName} {lesson.substituteTeacher.user.lastName}
+              {t('substituteShort')} {lesson.substituteTeacher.user.firstName}{' '}
+              {lesson.substituteTeacher.user.lastName}
             </p>
           )}
         </td>
@@ -205,7 +207,7 @@ export function LessonListTableBodyRow({
               size="sm"
               onClick={() => onAssignSubstitute(lesson.id)}
               className="text-amber-700 hover:text-amber-800"
-              title="Assign substitute for this lesson"
+              title={t('assignSubstituteTitle')}
             >
               <Image
                 src="/icons/substitute-teacher.svg"
@@ -245,10 +247,10 @@ export function LessonListTableBodyRow({
               )}
               title={
                 lesson.status === 'COMPLETED'
-                  ? 'Lesson already completed'
+                  ? t('lessonAlreadyCompleted')
                   : isLocked
-                    ? 'This lesson is locked'
-                    : 'Mark lesson as completed'
+                    ? t('lessonLocked')
+                    : t('markLessonCompleted')
               }
             >
               {lesson.status === 'COMPLETED' ? (
@@ -265,7 +267,7 @@ export function LessonListTableBodyRow({
               onClick={() => onEdit(lesson.id)}
               disabled={isLocked}
               className={cn('text-slate-600 hover:text-slate-700', isLocked && 'opacity-50 cursor-not-allowed')}
-              title={isLocked ? 'This lesson is locked for editing' : 'Edit'}
+              title={isLocked ? t('lessonLockedEdit') : tCommon('edit')}
             >
               <Pencil className="w-4 h-4" />
             </Button>
@@ -277,7 +279,7 @@ export function LessonListTableBodyRow({
               onClick={() => onDelete(lesson.id)}
               disabled={isLocked}
               className={cn('text-red-600 hover:text-red-700', isLocked && 'opacity-75 cursor-not-allowed')}
-              title={isLocked ? 'This lesson is locked and cannot be deleted' : 'Delete'}
+              title={isLocked ? t('lessonLockedDelete') : tCommon('delete')}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path

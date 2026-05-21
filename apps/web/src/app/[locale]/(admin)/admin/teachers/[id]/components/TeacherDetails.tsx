@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Badge, Input, Label } from '@/shared/components/ui';
 import type { WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
 import type { Teacher } from '@/features/teachers';
@@ -22,6 +23,16 @@ interface TeacherDetailsProps {
   setValue: UseFormSetValue<UpdateTeacherFormData>;
 }
 
+const DAY_KEY_MAP: Record<string, string> = {
+  MON: 'monday',
+  TUE: 'tuesday',
+  WED: 'wednesday',
+  THU: 'thursday',
+  FRI: 'friday',
+  SAT: 'saturday',
+  SUN: 'sunday',
+};
+
 export function TeacherDetails({
   teacher,
   isEditMode,
@@ -32,26 +43,29 @@ export function TeacherDetails({
   watch,
   setValue,
 }: TeacherDetailsProps) {
+  const t = useTranslations('teachers');
+  const tc = useTranslations('common');
+  const na = t('notAvailable');
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Personal Information */}
       <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
-        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">Personal Information</h3>
+        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">{tc('personalInformation')}</h3>
         <div className="space-y-4">
           {isEditMode ? (
             <>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">{tc('phone')}</Label>
                 <Input
                   id="phone"
                   type="tel"
                   {...register('phone')}
                   error={errors?.phone?.message}
-                  placeholder="+1 (555) 123-4567"
+                  placeholder={t('phoneNumber')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="experienceYears">Experience (years)</Label>
+                <Label htmlFor="experienceYears">{t('experienceYears')}</Label>
                 <Input
                   id="experienceYears"
                   type="number"
@@ -67,117 +81,111 @@ export function TeacherDetails({
           ) : (
             <>
               <div>
-                <label className="text-sm font-medium text-[#8b8b90]">First Name</label>
+                <label className="text-sm font-medium text-[#8b8b90]">{tc('firstName')}</label>
                 <p className="text-[#3b3b40] mt-1">{firstName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-[#8b8b90]">Last Name</label>
+                <label className="text-sm font-medium text-[#8b8b90]">{tc('lastName')}</label>
                 <p className="text-[#3b3b40] mt-1">{lastName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-[#8b8b90]">Email</label>
-                <p className="text-[#3b3b40] mt-1">{teacher.user?.email || 'N/A'}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">{tc('email')}</label>
+                <p className="text-[#3b3b40] mt-1">{teacher.user?.email || na}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-[#8b8b90]">Phone</label>
-                <p className="text-[#3b3b40] mt-1">{teacher.user?.phone || 'N/A'}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">{tc('phone')}</label>
+                <p className="text-[#3b3b40] mt-1">{teacher.user?.phone || na}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-[#8b8b90]">Experience</label>
-                <p className="text-[#3b3b40] mt-1">{formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">{tc('experience')}</label>
+                <p className="text-[#3b3b40] mt-1">
+                  {formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}
+                </p>
               </div>
             </>
           )}
           <div>
-            <label className="text-sm font-medium text-[#8b8b90]">Member Since</label>
+            <label className="text-sm font-medium text-[#8b8b90]">{t('memberSince')}</label>
             <p className="text-[#3b3b40] mt-1">
-              {teacher.user?.createdAt 
-                ? new Date(teacher.user.createdAt).toLocaleDateString('en-US', {
+              {teacher.user?.createdAt
+                ? new Date(teacher.user.createdAt).toLocaleDateString(undefined, {
                     year: 'numeric',
                     month: 'long',
-                    day: 'numeric'
+                    day: 'numeric',
                   })
-                : 'N/A'}
+                : na}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Professional Information */}
       <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
-        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">Professional Information</h3>
+        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">{t('professionalInformation')}</h3>
         <div className="space-y-4">
           {isEditMode ? (
-            <>
-              <div className="space-y-2">
-                <Label>Working Days</Label>
-                <div className="flex flex-wrap gap-2">
-                  {DAYS_OF_WEEK.map((day) => {
-                    const watchedDays: string[] = watch('workingDays') || [];
-                    const isSelected = watchedDays.includes(day);
-                    return (
-                      <button
-                        key={day}
-                        type="button"
-                        onClick={() => {
-                          const currentDays: string[] = watch('workingDays') || [];
-                          const newDays: string[] = isSelected
-                            ? currentDays.filter((d) => d !== day)
-                            : [...currentDays, day];
-                          setValue('workingDays', newDays, { shouldDirty: true });
-                        }}
-                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                          isSelected
-                            ? 'bg-[#1010a3] text-white'
-                            : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-[#f6f6f7]'
-                        }`}
-                      >
-                        {day}
-                      </button>
-                    );
-                  })}
-                </div>
+            <div className="space-y-2">
+              <Label>{t('workingDays')}</Label>
+              <div className="flex flex-wrap gap-2">
+                {DAYS_OF_WEEK.map((day) => {
+                  const watchedDays: string[] = watch('workingDays') || [];
+                  const isSelected = watchedDays.includes(day);
+                  const dayKey = DAY_KEY_MAP[day];
+                  const label = dayKey ? t(dayKey as 'monday') : day;
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => {
+                        const currentDays: string[] = watch('workingDays') || [];
+                        const newDays: string[] = isSelected
+                          ? currentDays.filter((d) => d !== day)
+                          : [...currentDays, day];
+                        setValue('workingDays', newDays, { shouldDirty: true });
+                      }}
+                      className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                        isSelected
+                          ? 'bg-[#1010a3] text-white'
+                          : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-[#f6f6f7]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
-            </>
+            </div>
           ) : (
-            <>
-              {teacher.workingHours && (
-                <div>
-                  <label className="text-sm font-medium text-[#8b8b90] mb-2 block">Working Schedule</label>
-                  <div className="space-y-2">
-                    {(() => {
-                      // Handle both old and new formats
-                      let schedule: WeeklyScheduleType | null = null;
-                      if ('MON' in teacher.workingHours || 'TUE' in teacher.workingHours) {
-                        schedule = teacher.workingHours as WeeklyScheduleType;
-                      } else if ('start' in teacher.workingHours && 'end' in teacher.workingHours) {
-                        // Old format
-                        const oldHours = teacher.workingHours as { start: string; end: string };
-                        schedule = {};
-                        (teacher.workingDays || []).forEach((day) => {
-                          schedule![day as keyof WeeklyScheduleType] = [
-                            { start: oldHours.start, end: oldHours.end },
-                          ];
-                        });
-                      }
-                      
-                      if (!schedule || Object.keys(schedule).length === 0) {
-                        return <p className="text-[#8b8b90] text-sm italic">No working hours set</p>;
-                      }
-                      
-                      const DAY_LABELS: Record<string, string> = {
-                        MON: 'Monday',
-                        TUE: 'Tuesday',
-                        WED: 'Wednesday',
-                        THU: 'Thursday',
-                        FRI: 'Friday',
-                        SAT: 'Saturday',
-                        SUN: 'Sunday',
-                      };
-                      
-                      return Object.entries(schedule).map(([day, ranges]) => (
-                        <div key={day} className="border border-[rgba(14,14,16,0.07)] rounded-lg p-3 bg-[#fafafa]">
-                          <div className="font-medium text-[#3b3b40] mb-1">{DAY_LABELS[day] || day}</div>
+            teacher.workingHours && (
+              <div>
+                <label className="text-sm font-medium text-[#8b8b90] mb-2 block">{t('workingSchedule')}</label>
+                <div className="space-y-2">
+                  {(() => {
+                    let schedule: WeeklyScheduleType | null = null;
+                    if ('MON' in teacher.workingHours || 'TUE' in teacher.workingHours) {
+                      schedule = teacher.workingHours as WeeklyScheduleType;
+                    } else if ('start' in teacher.workingHours && 'end' in teacher.workingHours) {
+                      const oldHours = teacher.workingHours as { start: string; end: string };
+                      schedule = {};
+                      (teacher.workingDays || []).forEach((day) => {
+                        schedule![day as keyof WeeklyScheduleType] = [
+                          { start: oldHours.start, end: oldHours.end },
+                        ];
+                      });
+                    }
+
+                    if (!schedule || Object.keys(schedule).length === 0) {
+                      return <p className="text-[#8b8b90] text-sm italic">{t('noWorkingHours')}</p>;
+                    }
+
+                    return Object.entries(schedule).map(([day, ranges]) => {
+                      const dayKey = DAY_KEY_MAP[day];
+                      const dayLabel = dayKey ? t(dayKey as 'monday') : day;
+                      return (
+                        <div
+                          key={day}
+                          className="border border-[rgba(14,14,16,0.07)] rounded-lg p-3 bg-[#fafafa]"
+                        >
+                          <div className="font-medium text-[#3b3b40] mb-1">{dayLabel}</div>
                           <div className="flex flex-wrap gap-2">
                             {ranges.map((range, idx) => (
                               <Badge key={idx} variant="info">
@@ -186,16 +194,15 @@ export function TeacherDetails({
                             ))}
                           </div>
                         </div>
-                      ));
-                    })()}
-                  </div>
+                      );
+                    });
+                  })()}
                 </div>
-              )}
-            </>
+              </div>
+            )
           )}
         </div>
       </div>
     </div>
   );
 }
-

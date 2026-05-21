@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { StudentCard } from './StudentCard';
 import {
   getItemId,
@@ -30,10 +31,13 @@ export function StudentsBoard({
   onDeactivate,
   onCardClick,
 }: StudentsBoardProps) {
+  const t = useTranslations('students');
+  const tc = useTranslations('common');
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-[#8b8b90]">Loading students...</div>
+        <div className="text-[#8b8b90]">{t('loadingStudents')}</div>
       </div>
     );
   }
@@ -43,7 +47,7 @@ export function StudentsBoard({
   if (allCenters.length === 0 && (!studentsByCenter['unassigned'] || studentsByCenter['unassigned'].length === 0)) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-[#8b8b90]">No students found.</div>
+        <div className="text-[#8b8b90]">{t('noStudentsFound')}</div>
       </div>
     );
   }
@@ -69,7 +73,7 @@ export function StudentsBoard({
                 <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
                   <h3 className="font-semibold text-[#3b3b40]">{center.name}</h3>
                   <p className="text-sm text-[#8b8b90] mt-1">
-                    {centerStudents.length} {centerStudents.length === 1 ? 'student' : 'students'}
+                    {t('studentCount', { count: centerStudents.length })}
                   </p>
                 </div>
 
@@ -77,7 +81,7 @@ export function StudentsBoard({
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
                   {centerStudents.length === 0 ? (
                     <div className="text-center py-8 text-[#8b8b90] text-sm">
-                      No students
+                      {t('noStudentsInCenter')}
                     </div>
                   ) : (
                     centerStudents.map((item) => {
@@ -90,8 +94,8 @@ export function StudentsBoard({
                             <p className="font-medium text-[#3b3b40]">
                               {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
                             </p>
-                            <p className="text-xs text-[#8b8b90] mt-1">{item.phone ?? 'No phone'}</p>
-                            <span className="inline-block mt-2 text-xs text-amber-600 font-medium">Onboarding</span>
+                            <p className="text-xs text-[#8b8b90] mt-1">{item.phone ?? t('noPhone')}</p>
+                            <span className="inline-block mt-2 text-xs text-amber-600 font-medium">{tc('onboarding')}</span>
                           </div>
                         );
                       }
@@ -117,9 +121,9 @@ export function StudentsBoard({
           <div className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]">
             {/* Column Header */}
             <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
-              <h3 className="font-semibold text-[#3b3b40]">Unassigned</h3>
+              <h3 className="font-semibold text-[#3b3b40]">{tc('unassigned')}</h3>
               <p className="text-sm text-[#8b8b90] mt-1">
-                {studentsByCenter['unassigned'].length} {studentsByCenter['unassigned'].length === 1 ? 'student' : 'students'}
+                {t('studentCount', { count: studentsByCenter['unassigned'].length })}
               </p>
             </div>
 
@@ -135,8 +139,8 @@ export function StudentsBoard({
                       <p className="font-medium text-[#3b3b40]">
                         {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
                       </p>
-                      <p className="text-xs text-[#8b8b90] mt-1">{item.phone ?? 'No phone'}</p>
-                      <span className="inline-block mt-2 text-xs text-amber-600 font-medium">Onboarding</span>
+                      <p className="text-xs text-[#8b8b90] mt-1">{item.phone ?? t('noPhone')}</p>
+                      <span className="inline-block mt-2 text-xs text-amber-600 font-medium">{tc('onboarding')}</span>
                     </div>
                   );
                 }
@@ -160,7 +164,7 @@ export function StudentsBoard({
           return centerStudents.length > 0;
         }).length === 0 && (!studentsByCenter['unassigned'] || studentsByCenter['unassigned'].length === 0) && (
           <div className="flex items-center justify-center py-12 w-full">
-            <div className="text-[#8b8b90]">No students match your search</div>
+            <div className="text-[#8b8b90]">{t('noStudentsMatch')}</div>
           </div>
         )}
       </div>

@@ -36,15 +36,15 @@ function centerLabel(plan: DailyPlan): string {
   );
 }
 
-function contentSummary(plan: DailyPlan): string {
+function contentSummary(plan: DailyPlan, t: ReturnType<typeof useTranslations<'dailyPlanPage'>>): string {
   const n = plan.topics.length;
   if (n === 0) {
-    return 'No topics';
+    return t('noTopics');
   }
   if (n === 1) {
-    return plan.topics[0]?.title ?? '1 topic';
+    return plan.topics[0]?.title ?? t('oneTopic');
   }
-  return `${n} topics · ${plan.topics[0]?.title ?? ''}`.trim();
+  return `${t('topicsCount', { count: n })} · ${plan.topics[0]?.title ?? ''}`.trim();
 }
 
 function formatPlanDate(value: string): string {
@@ -72,7 +72,9 @@ function formatLessonSchedule(iso: string): string {
 }
 
 export default function AdminDailyPlanPage() {
-  const t = useTranslations('nav');
+  const tNav = useTranslations('nav');
+  const t = useTranslations('dailyPlanPage');
+  const tCommon = useTranslations('common');
   const { user } = useAuthStore();
   const managerCenterId =
     user?.role === 'MANAGER' ? user.managerCenterId : undefined;
@@ -126,23 +128,22 @@ export default function AdminDailyPlanPage() {
   const items = data?.items ?? [];
 
   const subtitle = managerMissingCenter
-    ? 'Your account needs a branch assignment to load daily plans'
+    ? t('subtitleNoBranch')
     : user?.role === 'MANAGER' && managerBranchName
-      ? `Daily plans for teachers at ${managerBranchName}`
-      : 'View daily plans submitted by teachers across all centers';
+      ? t('subtitleManager', { branch: managerBranchName })
+      : t('subtitleAll');
 
   return (
-    <DashboardLayout title={t('dailyPlan')} subtitle={subtitle}>
+    <DashboardLayout title={tNav('dailyPlan')} subtitle={subtitle}>
       <div className={cn(portalPageStackClass, 'max-w-7xl mx-auto w-full')}>
         {managerMissingCenter && (
           <div
             className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-10 text-center sm:px-8"
             role="alert"
           >
-            <p className="font-semibold text-amber-900">No branch assigned</p>
+            <p className="font-semibold text-amber-900">{t('noBranchTitle')}</p>
             <p className="mt-2 text-sm text-amber-800 max-w-lg mx-auto">
-              This manager account is not linked to a center in the system. Ask an
-              administrator to assign your branch, then reload this page.
+              {t('noBranchDescription')}
             </p>
           </div>
         )}
@@ -151,7 +152,7 @@ export default function AdminDailyPlanPage() {
         <div className="flex flex-col gap-4 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:p-5 shadow-sm">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-[#3b3b40]">From</span>
+              <span className="font-medium text-[#3b3b40]">{tCommon('from')}</span>
               <input
                 type="date"
                 value={dateFrom}
@@ -160,7 +161,7 @@ export default function AdminDailyPlanPage() {
               />
             </label>
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-[#3b3b40]">To</span>
+              <span className="font-medium text-[#3b3b40]">{tCommon('to')}</span>
               <input
                 type="date"
                 value={dateTo}
@@ -169,13 +170,13 @@ export default function AdminDailyPlanPage() {
               />
             </label>
             <label className="flex flex-col gap-1 text-sm sm:col-span-2 lg:col-span-2">
-              <span className="font-medium text-[#3b3b40]">Teacher</span>
+              <span className="font-medium text-[#3b3b40]">{tCommon('teacher')}</span>
               <select
                 value={teacherId}
                 onChange={(e) => setTeacherId(e.target.value)}
                 className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] bg-white px-3 text-[#3b3b40]"
               >
-                <option value="">All teachers</option>
+                <option value="">{t('allTeachers')}</option>
                 {teachers.map((teacher) => (
                   <option key={teacher.id} value={teacher.id}>
                     {teacher.user.firstName} {teacher.user.lastName}
@@ -185,12 +186,12 @@ export default function AdminDailyPlanPage() {
             </label>
           </div>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-[#3b3b40]">Search</span>
+            <span className="font-medium text-[#3b3b40]">{tCommon('search')}</span>
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Topic, resource title, or description…"
+              placeholder={t('searchPlaceholder')}
               className="h-10 w-full rounded-lg border border-[rgba(14,14,16,0.07)] px-3 text-[#3b3b40]"
             />
           </label>
@@ -199,7 +200,7 @@ export default function AdminDailyPlanPage() {
 
         {!managerMissingCenter && isError && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {error instanceof Error ? error.message : 'Failed to load daily plans'}
+            {error instanceof Error ? error.message : t('loadError')}
           </div>
         )}
 
@@ -209,7 +210,7 @@ export default function AdminDailyPlanPage() {
           </div>
         ) : !managerMissingCenter && items.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[rgba(14,14,16,0.07)] bg-white px-6 py-14 text-center text-[#3b3b40]">
-            No daily plans match your filters.
+            {t('empty')}
           </div>
         ) : !managerMissingCenter ? (
           <ul className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
@@ -241,7 +242,7 @@ export default function AdminDailyPlanPage() {
                     </div>
                     {lessonAt && (
                       <p className="mt-2 text-xs text-[#8b8b90]">
-                        Lesson · {lessonAt}
+                        {t('lessonPrefix')} · {lessonAt}
                       </p>
                     )}
                     <p className="mt-3 text-sm text-[#3b3b40] line-clamp-2">
@@ -257,10 +258,10 @@ export default function AdminDailyPlanPage() {
                           {' · '}
                         </span>
                       )}
-                      {contentSummary(plan)}
+                      {contentSummary(plan, t)}
                     </p>
                     <span className="mt-4 text-xs font-medium text-[#1010a3]">
-                      View details
+                      {t('viewDetails')}
                     </span>
                   </button>
                 </li>
@@ -271,8 +272,7 @@ export default function AdminDailyPlanPage() {
 
         {!managerMissingCenter && data && data.total > data.take && (
           <p className="text-center text-sm text-[#8b8b90]">
-            Showing {items.length} of {data.total} plans. Narrow the date range
-            or use search to find more.
+            {t('showingPartial', { shown: items.length, total: data.total })}
           </p>
         )}
       </div>

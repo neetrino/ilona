@@ -62,7 +62,7 @@ function ParticipationStyleTickBox({ checked }: { checked: boolean }) {
 }
 
 export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
-  const t = useTranslations('courses');
+  const t = useTranslations('calendar.feedback');
   const tCommon = useTranslations('common');
   const queryClient = useQueryClient();
   const { data: lesson, isLoading: isLoadingLesson } = useLesson(lessonId);
@@ -171,7 +171,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     if (!structured.level || structured.grammar.length === 0) {
       setSaveStatus((prev) => ({
         ...prev,
-        [studentId]: { success: false, error: 'Level and Grammar are required.' },
+        [studentId]: { success: false, error: t('levelGrammarRequired') },
       }));
       return;
     }
@@ -226,7 +226,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
         ...prev,
         [studentId]: {
           success: false,
-          error: t('errorSavingFeedback') || 'Failed to save feedback. Please try again.',
+          error: t('errorSavingFeedback'),
         },
       }));
     }
@@ -260,7 +260,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
             />
           </svg>
         </div>
-        <p className="font-medium text-slate-600">{t('noStudents') || 'Lesson not found'}</p>
+        <p className="font-medium text-slate-600">{t('lessonNotFound')}</p>
       </div>
     );
   }
@@ -320,7 +320,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
 
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-900">Level *</label>
+                  <label className="block text-sm font-bold text-slate-900">{t('levelLabel')}</label>
                   <div className="relative">
                     <select
                       value={structured.level}
@@ -333,7 +333,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                       }}
                       className={levelSelectClass(Boolean(structured.level))}
                     >
-                      <option value="">Select</option>
+                      <option value="">{t('select')}</option>
                       {LEVEL_OPTIONS.map((level) => (
                         <option key={level} value={level}>
                           {level}
@@ -349,7 +349,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                 </div>
 
                 <div className="space-y-2 md:min-w-0">
-                  <label className="block text-sm font-bold text-slate-900">Grammar * (multi-select)</label>
+                  <label className="block text-sm font-bold text-slate-900">{t('grammarLabel')}</label>
                   <MultiSelectChipsDropdown
                     options={grammarOptions}
                     selectedIds={grammarSelected}
@@ -363,9 +363,9 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                       }));
                       clearSaveStatusFor(student.id);
                     }}
-                    placeholder="Select"
+                    placeholder={t('select')}
                     hideSelectedLabelsInTrigger
-                    searchPlaceholder="Filter…"
+                    searchPlaceholder={t('filterPlaceholder')}
                     className={cn(
                       '[&_div[role=button]]:min-h-11 [&_div[role=button]]:rounded-xl [&_div[role=button]]:border-2 [&_div[role=button]]:focus-within:border-blue-500',
                       grammarSelected.size > 0
@@ -378,7 +378,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
 
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
                 <div className="space-y-3">
-                  <label className="block text-sm font-bold text-slate-900">Skills</label>
+                  <label className="block text-sm font-bold text-slate-900">{t('skillsLabel')}</label>
                   <div className="flex flex-wrap gap-5 text-sm text-slate-800">
                     <button
                       type="button"
@@ -400,7 +400,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                       }}
                     >
                       <ParticipationStyleTickBox checked={structured.speaking} />
-                      <span>speaking</span>
+                      <span>{t('speaking')}</span>
                     </button>
                     <button
                       type="button"
@@ -422,7 +422,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                       }}
                     >
                       <ParticipationStyleTickBox checked={structured.writing} />
-                      <span>writing</span>
+                      <span>{t('writing')}</span>
                     </button>
                   </div>
                   {showSkillsCommentArea ? (
@@ -436,7 +436,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                         }));
                         clearSaveStatusFor(student.id);
                       }}
-                      placeholder="Skills comment (optional)"
+                      placeholder={t('skillsCommentOptional')}
                       className={cn(fieldShell, 'min-h-[100px] resize-y')}
                     />
                   ) : (
@@ -445,7 +445,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-900">Comment</label>
+                  <label className="block text-sm font-bold text-slate-900">{t('commentLabel')}</label>
                   <textarea
                     rows={4}
                     value={structured.comment}
@@ -456,7 +456,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                       }));
                       clearSaveStatusFor(student.id);
                     }}
-                    placeholder="Optional comment"
+                    placeholder={t('optionalComment')}
                     className={cn(fieldShell, 'min-h-[100px] resize-y')}
                   />
                 </div>
@@ -478,7 +478,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                 >
                   <span className="flex items-center gap-2">
                     <ParticipationStyleTickBox checked={participationOpen} />
-                    <span className="text-sm font-bold text-slate-900">Participation</span>
+                    <span className="text-sm font-bold text-slate-900">{t('participation')}</span>
                   </span>
                   <svg
                     className={cn(
@@ -533,7 +533,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
 
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-900">Progress</label>
+                  <label className="block text-sm font-bold text-slate-900">{t('progress')}</label>
                   <textarea
                     rows={4}
                     value={structured.progress}
@@ -548,7 +548,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-900">Encouragement</label>
+                  <label className="block text-sm font-bold text-slate-900">{t('encouragement')}</label>
                   <textarea
                     rows={4}
                     value={structured.encouragement}
@@ -609,7 +609,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                       {tCommon('loading')}
                     </span>
                   ) : hasSavedFeedback ? (
-                    t('editFeedback') || 'Update Feedback'
+                    t('editFeedback')
                   ) : (
                     <span className="flex items-center gap-2">
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -637,7 +637,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
               />
             </svg>
           </div>
-          <p className="font-medium text-slate-600">{t('noStudents') || "No students in this lesson's group"}</p>
+          <p className="font-medium text-slate-600">{t('noStudentsInLesson')}</p>
         </div>
       )}
     </div>

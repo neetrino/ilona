@@ -2,6 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonDetailTabs } from '@/shared/components/calendar/LessonDetailTabs';
 import { AbsenceTab } from '@/shared/components/calendar/AbsenceTab';
@@ -15,6 +16,8 @@ import { useTeachers } from '@/features/teachers';
 import { SubstituteLessonModal } from '../components/SubstituteLessonModal';
 
 export default function AdminLessonDetailPage({ params }: { params: Promise<{ lessonId: string }> }) {
+  const t = useTranslations('calendar');
+  const tCommon = useTranslations('common');
   const resolvedParams = use(params);
   const router = useRouter();
   const pathname = usePathname();
@@ -52,7 +55,7 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
 
   if (isLoading) {
     return (
-      <DashboardLayout title="Loading..." subtitle="Loading lesson details...">
+      <DashboardLayout title={t('lessonLoadingTitle')} subtitle={t('lessonLoadingSubtitle')}>
         <div className="flex items-center justify-center p-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
@@ -62,9 +65,9 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
 
   if (!lesson) {
     return (
-      <DashboardLayout title="Lesson Not Found" subtitle="The lesson you're looking for doesn't exist.">
+      <DashboardLayout title={t('lessonNotFoundTitle')} subtitle={t('lessonNotFoundSubtitle')}>
         <div className="text-center p-12">
-          <Button onClick={() => router.back()}>Go Back</Button>
+          <Button onClick={() => router.back()}>{tCommon('goBack')}</Button>
         </div>
       </DashboardLayout>
     );
@@ -79,26 +82,26 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
 
   return (
     <DashboardLayout
-      title={`Lesson: ${lesson.group?.name || 'Unknown'}`}
+      title={t('lessonTitle', { name: lesson.group?.name || t('lessonUnknown') })}
       subtitle={`${new Date(lesson.scheduledAt).toLocaleDateString()} at ${new Date(lesson.scheduledAt).toLocaleTimeString()}`}
     >
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-[#3b3b40] space-y-1">
           {mainTeacherName && (
             <p>
-              <span className="font-medium text-[#1010a3]">Main teacher:</span> {mainTeacherName}
+              <span className="font-medium text-[#1010a3]">{t('mainTeacherLabel')}</span> {mainTeacherName}
             </p>
           )}
           {subTeacherName ? (
             <p className="text-amber-900 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 inline-block">
-              <span className="font-medium">Substitute (this day):</span> {subTeacherName}
+              <span className="font-medium">{t('substituteThisDay')}</span> {subTeacherName}
             </p>
           ) : (
-            <p className="text-[#8b8b90]">No substitute assigned for this lesson.</p>
+            <p className="text-[#8b8b90]">{t('noSubstituteForLesson')}</p>
           )}
         </div>
         <Button type="button" variant="outline" onClick={() => setSubstituteOpen(true)}>
-          Substitute teacher…
+          {t('substituteTeacherButton')}
         </Button>
       </div>
       <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] h-[calc(100vh-200px)] flex flex-col">

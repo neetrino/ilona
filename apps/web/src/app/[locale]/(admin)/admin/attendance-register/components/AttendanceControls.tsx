@@ -20,14 +20,6 @@ export type AbsenceFilterType =
   | 'not_marked'
   | 'no_session';
 
-const ABSENCE_FILTER_OPTIONS: { value: AbsenceFilterType; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'present', label: 'Present' },
-  { value: 'absent_justified', label: 'Absent (Justified)' },
-  { value: 'absent_unjustified', label: 'Absent (Unjustified)' },
-  { value: 'not_marked', label: 'Not Marked' },
-  { value: 'no_session', label: 'No Session' },
-];
 
 interface AttendanceControlsProps {
   viewMode: ViewMode;
@@ -70,6 +62,16 @@ export function AttendanceControls({
   onAbsenceFilterChange,
 }: AttendanceControlsProps) {
   const t = useTranslations('attendance');
+  const tc = useTranslations('common');
+
+  const absenceFilterOptions: { value: AbsenceFilterType; label: string }[] = [
+    { value: 'all', label: tc('all') },
+    { value: 'present', label: t('present') },
+    { value: 'absent_justified', label: t('absentJustifiedFilter') },
+    { value: 'absent_unjustified', label: t('absentUnjustifiedFilter') },
+    { value: 'not_marked', label: t('notMarked') },
+    { value: 'no_session', label: t('noSession') },
+  ];
   // Ensure selectedGroupIds is always an array to prevent undefined errors
   // If selectedGroupIds is not provided, fall back to selectedGroupId (single-select mode)
   const safeSelectedGroupIds = selectedGroupIds ?? (selectedGroupId ? [selectedGroupId] : []);
@@ -93,7 +95,7 @@ export function AttendanceControls({
   return (
     <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
       <div className="flex items-center justify-between mb-4">
-        <label className="block text-sm font-medium text-[#3b3b40]">View Mode</label>
+        <label className="block text-sm font-medium text-[#3b3b40]">{tc('viewMode')}</label>
         <ViewModeSelector
           value={viewMode}
           onChange={onViewModeChange}
@@ -119,7 +121,7 @@ export function AttendanceControls({
         <div>
           {viewMode === 'day' && (
             <>
-              <label className="block text-sm font-medium text-[#3b3b40] mb-2">Select Date</label>
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('selectDate')}</label>
               <input
                 type="date"
                 value={formatDateString(currentDate)}
@@ -132,7 +134,7 @@ export function AttendanceControls({
           )}
           {viewMode === 'week' && (
             <>
-              <label className="block text-sm font-medium text-[#3b3b40] mb-2">Week</label>
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('week')}</label>
               <div className="flex items-center gap-2">
                 <Button
                   onClick={onPrevious}
@@ -160,7 +162,7 @@ export function AttendanceControls({
           )}
           {viewMode === 'month' && (
             <>
-              <label className="block text-sm font-medium text-[#3b3b40] mb-2">Month</label>
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('month')}</label>
               <div className="flex items-center gap-2">
                 <Button
                   onClick={onPrevious}
@@ -202,7 +204,7 @@ export function AttendanceControls({
                 className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-[rgba(14,14,16,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.18)] transition-colors"
                 aria-label="Filter by absence type"
               >
-                {ABSENCE_FILTER_OPTIONS.map((opt) => (
+                {absenceFilterOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>

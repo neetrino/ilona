@@ -309,7 +309,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         }>('/storage/chat', formData);
 
         if (!uploadResponse.success || !uploadResponse.data) {
-          throw new Error('Failed to upload voice message');
+          throw new Error(tChat('uploadVoiceFailed'));
         }
 
         const { url: fileUrl, fileName, fileSize } = uploadResponse.data;
@@ -325,13 +325,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         setShowVoiceRecorder(false);
       } catch (error) {
         console.error('Failed to send voice message:', error);
-        const msg = error instanceof Error ? error.message : 'Failed to send voice message. Please try again.';
+        const msg = error instanceof Error ? error.message : tChat('sendVoiceFailed');
         alert(msg);
       } finally {
         setIsUploadingVoice(false);
       }
     },
-    [chat.id, addMessageToCache]
+    [chat.id, addMessageToCache, tChat]
   );
 
   // When switching chats, exit voice recorder and discard any recording
@@ -355,7 +355,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         }>('/storage/chat', formData);
 
         if (!uploadResponse.success || !uploadResponse.data) {
-          throw new Error('Failed to upload voice message');
+          throw new Error(tChat('uploadVoiceFailed'));
         }
 
         const { url: fileUrl, fileName, fileSize } = uploadResponse.data;
@@ -380,14 +380,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         setShowVoiceToTeacherRecorder(false);
       } catch (error) {
         console.error('Failed to send voice to teacher:', error);
-        const msg =
-          error instanceof Error ? error.message : 'Failed to send voice to teacher. Please try again.';
+        const msg = error instanceof Error ? error.message : tChat('sendVoiceToTeacherFailed');
         alert(msg);
       } finally {
         setIsUploadingVoiceToTeacher(false);
       }
     },
-    [teacherUserIdForVoice, chat.type, chat.id, otherParticipant?.userId, createDirectChat, addMessageToCache]
+    [teacherUserIdForVoice, chat.type, chat.id, otherParticipant?.userId, createDirectChat, addMessageToCache, tChat]
   );
 
   // Save draft on unmount - only save if user has typed something
@@ -415,12 +414,12 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   // Get chat title
   const getChatTitle = () => {
     if (chat.type === 'GROUP') {
-      return chat.name || chat.group?.name || 'Group Chat';
+      return chat.name || chat.group?.name || tChat('groupChat');
     }
     const other = getOtherParticipant();
     return other
-      ? formatDisplayName(other.user.firstName, other.user.lastName) || 'Chat'
-      : 'Chat';
+      ? formatDisplayName(other.user.firstName, other.user.lastName) || tChat('chatTitle')
+      : tChat('chatTitle');
   };
 
   // Get avatar URL for chat header
@@ -433,7 +432,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   // Get avatar initials for fallback
   const getChatAvatarInitials = () => {
     if (chat.type === 'GROUP') {
-      const name = chat.name || chat.group?.name || 'Group Chat';
+      const name = chat.name || chat.group?.name || tChat('groupChat');
       return name[0] || 'G';
     }
     const other = getOtherParticipant();
@@ -560,15 +559,18 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
           <h2 className={cn('font-semibold', ui.title)}>{getChatTitle()}</h2>
           {typingNames.length > 0 ? (
             <p className={cn('text-xs', ui.typing)}>
-              {typingNames.join(', ')} {typingNames.length === 1 ? 'is' : 'are'} typing...
+              {tChat('typing', {
+                names: typingNames.join(', '),
+                verb: typingNames.length === 1 ? tChat('typingOne') : tChat('typingMany'),
+              })}
             </p>
           ) : onlineStatus !== null ? (
             <p className={cn('text-xs', onlineStatus ? 'text-green-600' : ui.muted)}>
-              {onlineStatus ? 'Online' : 'Offline'}
+              {onlineStatus ? tChat('online') : tChat('offline')}
             </p>
           ) : (
             <p className={cn('text-xs', ui.muted)}>
-              {chat.participants.length} participants
+              {tChat('participantsCount', { count: chat.participants.length })}
             </p>
           )}
         </div>
@@ -583,12 +585,12 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                 'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
                 ui.ghostBtn,
               )}
-              title="Add members"
+              title={tChat('addMembers')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3z" />
               </svg>
-              <span className="hidden sm:inline">Add members</span>
+              <span className="hidden sm:inline">{tChat('addMembers')}</span>
             </button>
           )}
           {/* Vocabulary Button (Teachers only, Group chats only) */}
@@ -596,10 +598,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
             <button
               onClick={() => setShowVocabularyModal(true)}
               className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors flex items-center gap-1.5"
-              title="Send Vocabulary (Բdelays)"
+              title={tChat('sendVocabularyTitle')}
             >
               <span>📚</span>
-              <span className="hidden sm:inline">Vocabulary</span>
+              <span className="hidden sm:inline">{tChat('vocabulary')}</span>
             </button>
           )}
           {!isLoading && filteredMessages.length >= 2 && (
@@ -616,7 +618,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               'w-2 h-2 rounded-full',
               isConnected ? 'bg-green-500' : 'bg-red-500'
             )}
-            title={isConnected ? 'Connected' : 'Reconnecting...'}
+            title={isConnected ? tChat('connected') : tChat('reconnecting')}
           />
           <button className={cn('p-2', ui.iconBtn)}>
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -639,7 +641,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               disabled={isFetchingNextPage}
               className={ui.loadMore}
             >
-              {isFetchingNextPage ? 'Loading...' : 'Load earlier messages'}
+              {isFetchingNextPage ? tCommon('loading') : tChat('loadEarlierMessages')}
             </button>
           </div>
         )}
@@ -650,8 +652,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
           </div>
         ) : filteredMessages.length === 0 ? (
           <div className="text-center py-8">
-            <p className={ui.muted}>No messages yet</p>
-            <p className={cn('mt-1 text-sm', ui.subtle)}>Start the conversation!</p>
+            <p className={ui.muted}>{tChat('noMessagesYet')}</p>
+            <p className={cn('mt-1 text-sm', ui.subtle)}>{tChat('startConversation')}</p>
           </div>
         ) : (
             filteredMessages.map((message, index) => {
@@ -674,7 +676,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                 typeof (message.metadata as { substituteLabel?: unknown }).substituteLabel === 'string'
                   ? (message.metadata as { substituteLabel: string }).substituteLabel
                   : voiceSubstituteMeta
-                    ? 'Substitute teacher'
+                    ? tChat('substituteTeacherDefault')
                     : null;
 
             return (
@@ -744,8 +746,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                           'absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50',
                           isOwn ? '-right-1' : '-left-1'
                         )}
-                        title="Delete message"
-                        aria-label="Delete message"
+                        title={tChat('deleteMessage')}
+                        aria-label={tChat('deleteMessage')}
                       >
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -789,7 +791,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                         <div>
                           <div className="flex items-center gap-2 mb-2 pb-2 border-b border-purple-400/30">
                             <span className="text-lg">📚</span>
-                            <span className="font-semibold">Vocabulary (Բառdelays)</span>
+                            <span className="font-semibold">{tChat('vocabularyWords')}</span>
                           </div>
                           <p className="text-sm whitespace-pre-wrap break-words">
                             {message.content}
@@ -813,7 +815,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                         {formatTime(message.createdAt)}
                       </span>
                       {message.isEdited && (
-                        <span className={cn('text-xs', ui.subtle)}>(edited)</span>
+                        <span className={cn('text-xs', ui.subtle)}>{tChat('edited')}</span>
                       )}
                     </div>
                   </div>
@@ -837,12 +839,12 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               conversationId={chat.id}
             />
             {isUploadingVoice && (
-              <p className={cn('text-center text-sm', ui.muted)}>Uploading voice message...</p>
+              <p className={cn('text-center text-sm', ui.muted)}>{tChat('uploadingVoice')}</p>
             )}
           </div>
         ) : showVoiceToTeacherRecorder ? (
           <div className="space-y-2">
-            <p className={cn('text-sm font-medium', ui.body)}>Recording for your teacher</p>
+            <p className={cn('text-sm font-medium', ui.body)}>{tChat('recordingForTeacher')}</p>
             <VoiceRecorder
               variant={isPortalChatRole(user?.role) ? 'student' : 'default'}
               onRecorded={handleVoiceToTeacherRecorded}
@@ -850,7 +852,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               conversationId={chat.id}
             />
             {isUploadingVoiceToTeacher && (
-              <p className={cn('text-center text-sm', ui.muted)}>Sending voice to teacher...</p>
+              <p className={cn('text-center text-sm', ui.muted)}>{tChat('sendingVoiceToTeacher')}</p>
             )}
           </div>
         ) : (
@@ -861,7 +863,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
+              placeholder={tChat('typeMessage')}
               rows={1}
               className={ui.input}
               style={{ minHeight: '40px' }}
@@ -872,8 +874,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               type="button"
               onClick={() => setShowVoiceRecorder(true)}
               className={cn('flex-shrink-0 rounded-lg p-2 transition-colors', ui.ghostBtn)}
-              title="Record voice message"
-              aria-label="Record voice message"
+              title={tChat('recordVoiceMessage')}
+              aria-label={tChat('recordVoiceMessage')}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
@@ -887,14 +889,14 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                 type="button"
                 onClick={() => setShowVoiceToTeacherRecorder(true)}
                 className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg flex-shrink-0 bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors border border-amber-200"
-                title="Send voice message to your teacher (saved in Recordings)"
-                aria-label="Send voice to teacher"
+                title={tChat('sendVoiceToTeacherTitle')}
+                aria-label={tChat('sendVoiceToTeacherTitle')}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
                   <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
                 </svg>
-                <span className="text-xs font-medium hidden sm:inline">To teacher</span>
+                <span className="text-xs font-medium hidden sm:inline">{tChat('sendVoiceToTeacherShort')}</span>
               </button>
             )}
 

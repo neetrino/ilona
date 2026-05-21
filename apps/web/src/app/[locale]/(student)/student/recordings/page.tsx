@@ -29,22 +29,18 @@ import {
   StudentTh,
 } from '@/features/student-ui';
 
-const MONTH_OPTIONS = [
-  { value: 1, label: 'January' }, { value: 2, label: 'February' }, { value: 3, label: 'March' },
-  { value: 4, label: 'April' }, { value: 5, label: 'May' }, { value: 6, label: 'June' },
-  { value: 7, label: 'July' }, { value: 8, label: 'August' }, { value: 9, label: 'September' },
-  { value: 10, label: 'October' }, { value: 11, label: 'November' }, { value: 12, label: 'December' },
-];
-
 function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
 }
 
-function formatDuration(seconds: number): string {
+function formatDuration(
+  seconds: number,
+  t: (key: 'durationHours' | 'durationMinutes', values?: { hours?: number; minutes?: number }) => string,
+): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes} min`;
+  if (hours > 0) return t('durationHours', { hours, minutes });
+  return t('durationMinutes', { minutes });
 }
 
 function formatVoiceTimestamp(createdAt: string): string {
@@ -87,18 +83,19 @@ function VoiceToTeacherCard({
   isActive: boolean;
   onPlay: (id: string) => void;
 }) {
+  const t = useTranslations('recordings');
   const teacherName = recording.teacher
     ? `${recording.teacher.firstName} ${recording.teacher.lastName}`
-    : 'Teacher';
+    : t('teacherFallback');
 
   return (
     <StudentInnerCard>
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <StudentBadge variant="warning">Voice to teacher</StudentBadge>
+        <StudentBadge variant="warning">{t('voiceToTeacher')}</StudentBadge>
         <span className="text-xs text-[#8b8b90]">{formatVoiceTimestamp(recording.createdAt)}</span>
       </div>
       <p className="text-sm font-semibold text-[#1010a3]">{teacherName}</p>
-      <p className="mt-1 text-sm text-[#8b8b90]">{formatDuration(recording.duration)}</p>
+      <p className="mt-1 text-sm text-[#8b8b90]">{formatDuration(recording.duration, t)}</p>
       <div className="mt-3">
         <VoiceToTeacherPlayback recording={recording} isActive={isActive} onPlay={onPlay} />
       </div>
@@ -115,14 +112,15 @@ function VoiceToTeacherRow({
   isActive: boolean;
   onPlay: (id: string) => void;
 }) {
+  const t = useTranslations('recordings');
   const teacherName = recording.teacher
     ? `${recording.teacher.firstName} ${recording.teacher.lastName}`
-    : 'Teacher';
+    : t('teacherFallback');
 
   return (
     <StudentTableRow>
       <StudentTd>
-        <StudentBadge variant="warning">Voice to teacher</StudentBadge>
+        <StudentBadge variant="warning">{t('voiceToTeacher')}</StudentBadge>
       </StudentTd>
       <StudentTd className="whitespace-nowrap">
         <span className="text-[#3b3b40]">{formatVoiceTimestamp(recording.createdAt)}</span>
@@ -131,7 +129,7 @@ function VoiceToTeacherRow({
         <span className="font-medium text-[#1010a3]">{teacherName}</span>
       </StudentTd>
       <StudentTd>
-        <span className="text-[#8b8b90]">{formatDuration(recording.duration)}</span>
+        <span className="text-[#8b8b90]">{formatDuration(recording.duration, t)}</span>
       </StudentTd>
       <StudentTd>
         <VoiceToTeacherPlayback recording={recording} isActive={isActive} onPlay={onPlay} />
@@ -141,7 +139,9 @@ function VoiceToTeacherRow({
 }
 
 export default function StudentRecordingsPage() {
-  const t = useTranslations('nav');
+  const tNav = useTranslations('nav');
+  const t = useTranslations('recordings');
+  const tCommon = useTranslations('common');
   const now = useMemo(() => new Date(), []);
   const currentYear = now.getFullYear();
   const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
@@ -161,6 +161,15 @@ export default function StudentRecordingsPage() {
     queryKey: [...chatKeys.all, 'student', 'voice-to-teacher-recordings', apiFilters ?? 'all'],
     queryFn: () => fetchStudentVoiceToTeacherRecordings(apiFilters),
   });
+
+  const monthOptions = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => ({
+        value: i + 1,
+        label: tCommon(`months.${i + 1}` as 'months.1'),
+      })),
+    [tCommon],
+  );
 
   const yearOptions = useMemo(
     () => Array.from({ length: 5 }, (_, i) => currentYear - 2 + i),
@@ -183,27 +192,25 @@ export default function StudentRecordingsPage() {
 
   const emptyContent = hasDateFilter ? (
     <>
-      <p>No recordings found for selected date.</p>
+      <p>{t('noRecordingsForDate')}</p>
       <StudentGhostButton type="button" onClick={handleResetFilters} className="mt-3">
-        Clear filters and show all
+        {t('clearFiltersShowAll')}
       </StudentGhostButton>
     </>
   ) : (
     <>
-      <p>No voice messages to teacher yet.</p>
-      <p className="mt-1 text-xs">
-        Use &quot;Send Voice to Teacher&quot; in Chat to record and send a voice message.
-      </p>
+      <p>{t('noVoiceToTeacherYet')}</p>
+      <p className="mt-1 text-xs">{t('sendVoiceHint')}</p>
     </>
   );
 
   return (
-    <DashboardLayout title={t('recordings')} subtitle={t('recordingsSubtitle')}>
+    <DashboardLayout title={tNav('recordings')} subtitle={tNav('recordingsSubtitle')}>
       <StudentPageStack>
         <StudentCard>
           <StudentFilterGrid>
             <div>
-              <StudentFieldLabel>Year</StudentFieldLabel>
+              <StudentFieldLabel>{tCommon('year')}</StudentFieldLabel>
               <StudentSelect
                 value={filterYear === '' ? 'all' : filterYear}
                 onChange={(e) => {
@@ -213,14 +220,14 @@ export default function StudentRecordingsPage() {
                   setFilterDay('');
                 }}
               >
-                <option value="all">All years</option>
+                <option value="all">{t('allYears')}</option>
                 {yearOptions.map((y) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
               </StudentSelect>
             </div>
             <div>
-              <StudentFieldLabel>Month</StudentFieldLabel>
+              <StudentFieldLabel>{tCommon('month')}</StudentFieldLabel>
               <StudentSelect
                 value={filterMonth === '' ? 'all' : filterMonth}
                 onChange={(e) => {
@@ -230,14 +237,14 @@ export default function StudentRecordingsPage() {
                 }}
                 disabled={filterYear === ''}
               >
-                <option value="all">All months</option>
-                {MONTH_OPTIONS.map((m) => (
+                <option value="all">{t('allMonths')}</option>
+                {monthOptions.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </StudentSelect>
             </div>
             <div>
-              <StudentFieldLabel>Day</StudentFieldLabel>
+              <StudentFieldLabel>{tCommon('date')}</StudentFieldLabel>
               <StudentSelect
                 value={filterDay === '' ? 'all' : filterDay}
                 onChange={(e) => {
@@ -246,7 +253,7 @@ export default function StudentRecordingsPage() {
                 }}
                 disabled={filterYear === '' || filterMonth === ''}
               >
-                <option value="all">All days</option>
+                <option value="all">{t('allDays')}</option>
                 {dayOptions.map((d) => (
                   <option key={d} value={d}>{d}</option>
                 ))}
@@ -256,7 +263,7 @@ export default function StudentRecordingsPage() {
               <div>
                 <StudentFieldLabel>&nbsp;</StudentFieldLabel>
                 <StudentGhostButton type="button" onClick={handleResetFilters} className="w-full">
-                  Reset / All
+                  {t('resetAll')}
                 </StudentGhostButton>
               </div>
             ) : null}
@@ -264,15 +271,14 @@ export default function StudentRecordingsPage() {
         </StudentCard>
 
         <p className="text-sm text-[#8b8b90]">
-          {voiceToTeacherRecordings.length} recording
-          {voiceToTeacherRecordings.length !== 1 ? 's' : ''} available
+          {t('recordingsAvailable', { count: voiceToTeacherRecordings.length })}
         </p>
 
         <StudentCard noPadding>
           <div className="border-b border-[rgba(14,14,16,0.07)] p-5 sm:p-6">
             <StudentSectionHeader
-              title="Voice messages to teacher"
-              subtitle="Voice messages you sent to your teacher appear here with date and playback controls."
+              title={t('voiceMessagesTitle')}
+              subtitle={t('voiceMessagesSubtitle')}
             />
           </div>
 
@@ -299,11 +305,11 @@ export default function StudentRecordingsPage() {
             <StudentTableShell>
               <StudentTableHead>
                 <tr>
-                  <StudentTh>Type</StudentTh>
-                  <StudentTh>Date &amp; Time</StudentTh>
-                  <StudentTh>Teacher</StudentTh>
-                  <StudentTh>Duration</StudentTh>
-                  <StudentTh>Recording</StudentTh>
+                  <StudentTh>{t('type')}</StudentTh>
+                  <StudentTh>{t('dateTime')}</StudentTh>
+                  <StudentTh>{tCommon('teacher')}</StudentTh>
+                  <StudentTh>{t('duration')}</StudentTh>
+                  <StudentTh>{t('recording')}</StudentTh>
                 </tr>
               </StudentTableHead>
               <StudentTableBody>

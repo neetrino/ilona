@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { PasswordInput } from '@/shared/components/ui';
 import type { Group } from '@/features/groups';
@@ -56,6 +57,11 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   groupsForAssignmentFilter = [],
   idPrefix = '',
 }: StudentAccountFormFieldsCrmLeadLayoutProps) {
+  const t = useTranslations('students');
+  const tForm = useTranslations('students.form');
+  const tCrm = useTranslations('crm');
+  const tCommon = useTranslations('common');
+
   const p = (id: string) => (idPrefix ? `${idPrefix}-${id}` : id);
   const watchedCenterId = watch('centerId') || '';
   const effectiveCenterId = lockedCenterId || watchedCenterId || '';
@@ -64,7 +70,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   const watchedGroupId = watch('groupId') || '';
   const phoneDigits = (watch('phone') ?? '').replace(/\D/g, '');
   const parentPhoneDigits = (watch('parentPhone') ?? '').replace(/\D/g, '');
-  const selectedTeacher = teachers.find((t) => t.id === watchedTeacherId);
+  const selectedTeacher = teachers.find((te) => te.id === watchedTeacherId);
   const centerNamesFromTeacher = [
     ...new Set((selectedTeacher?.centerLinks ?? []).map((l) => l.center.name).filter(Boolean)),
   ];
@@ -75,11 +81,11 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
   const teachersScoped = useMemo(() => {
     if (!hasCenterScope) return [];
-    let list = teachers.filter((t) =>
-      teacherBelongsToCenter(t.id, effectiveCenterId, t.centerLinks, groupsForAssignmentFilter),
+    let list = teachers.filter((te) =>
+      teacherBelongsToCenter(te.id, effectiveCenterId, te.centerLinks, groupsForAssignmentFilter),
     );
-    if (watchedTeacherId && !list.some((t) => t.id === watchedTeacherId)) {
-      const current = teachers.find((t) => t.id === watchedTeacherId);
+    if (watchedTeacherId && !list.some((te) => te.id === watchedTeacherId)) {
+      const current = teachers.find((te) => te.id === watchedTeacherId);
       if (current) list = [current, ...list];
     }
     return list;
@@ -96,11 +102,11 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   return (
     <div className="space-y-6">
       <section className="space-y-3">
-        <h3 className={sectionTitle}>Basic Info</h3>
+        <h3 className={sectionTitle}>{tCrm('basicInfo')}</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor={p('firstName')} className="mb-1 block text-sm font-medium text-slate-700">
-              First name <span className="text-red-500">*</span>
+              {tCommon('firstName')} <span className="text-red-500">{tForm('requiredMark')}</span>
             </label>
             <input
               id={p('firstName')}
@@ -112,7 +118,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           </div>
           <div>
             <label htmlFor={p('lastName')} className="mb-1 block text-sm font-medium text-slate-700">
-              Last name <span className="text-red-500">*</span>
+              {tCommon('lastName')} <span className="text-red-500">{tForm('requiredMark')}</span>
             </label>
             <input
               id={p('lastName')}
@@ -125,7 +131,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
         </div>
         <div>
           <label htmlFor={p('phone')} className="mb-1 block text-sm font-medium text-slate-700">
-            Phone number
+            {tForm('phoneNumber')}
           </label>
           <input
             id={p('phone')}
@@ -144,11 +150,11 @@ export function StudentAccountFormFieldsCrmLeadLayout({
       </section>
 
       <section className="space-y-3">
-        <h3 className={sectionTitle}>Account</h3>
+        <h3 className={sectionTitle}>{tForm('account')}</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor={p('email')} className="mb-1 block text-sm font-medium text-slate-700">
-              Email <span className="text-red-500">*</span>
+              {tCommon('email')} <span className="text-red-500">{tForm('requiredMark')}</span>
             </label>
             <input
               id={p('email')}
@@ -161,7 +167,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           </div>
           <div>
             <label htmlFor={p('password')} className="mb-1 block text-sm font-medium text-slate-700">
-              Password <span className="text-red-500">*</span>
+              {tForm('password')} <span className="text-red-500">{tForm('requiredMark')}</span>
             </label>
             <PasswordInput
               id={p('password')}
@@ -175,28 +181,28 @@ export function StudentAccountFormFieldsCrmLeadLayout({
       </section>
 
       <section className="space-y-3">
-        <h3 className={sectionTitle}>Additional Info</h3>
+        <h3 className={sectionTitle}>{tCrm('additionalInfo')}</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor={p('manualAge')} className="mb-1 block text-sm font-medium text-slate-700">
-              Age
+              {tForm('ageYears')}
             </label>
             <input id={p('manualAge')} type="number" min={0} {...register('manualAge')} className={inputClass} disabled={isSubmitting} />
             {computedAge !== undefined && (
-              <p className="mt-1 text-xs text-slate-500">Effective age: {computedAge}</p>
+              <p className="mt-1 text-xs text-slate-500">{tForm('effectiveAge', { age: computedAge })}</p>
             )}
             {errors.manualAge && <p className="mt-1 text-sm text-red-600">{errors.manualAge.message}</p>}
           </div>
           <div>
             <label htmlFor={p('dateOfBirth')} className="mb-1 block text-sm font-medium text-slate-700">
-              Date of birth (mm/dd/yyyy)
+              {tCrm('dateOfBirth')}
             </label>
             <input id={p('dateOfBirth')} type="date" {...register('dateOfBirth')} className={inputClass} />
             {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth.message}</p>}
           </div>
           <div>
             <label htmlFor={p('firstLessonDate')} className="mb-1 block text-sm font-medium text-slate-700">
-              First lesson date (mm/dd/yyyy)
+              {tCrm('firstLessonDate')}
             </label>
             <input id={p('firstLessonDate')} type="date" {...register('firstLessonDate')} className={inputClass} />
             {errors.firstLessonDate && (
@@ -208,15 +214,15 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
       {showParentSection && (
         <section className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-          <p className={sectionTitle}>Parent details (under 18)</p>
+          <p className={sectionTitle}>{tCrm('parentDetailsUnder18')}</p>
           <div>
             <label htmlFor={p('parentName')} className="mb-1 block text-sm font-medium text-slate-700">
-              Parent name <span className="text-red-500">*</span>
+              {tCrm('parentName')} <span className="text-red-500">{tForm('requiredMark')}</span>
             </label>
             <input
               id={p('parentName')}
               type="text"
-              placeholder="John"
+              placeholder={tCrm('parentNamePlaceholder')}
               {...register('parentName')}
               className={inputClass}
             />
@@ -224,12 +230,12 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           </div>
           <div>
             <label htmlFor={p('parentSurname')} className="mb-1 block text-sm font-medium text-slate-700">
-              Parent surname
+              {tCrm('parentSurname')}
             </label>
             <input
               id={p('parentSurname')}
               type="text"
-              placeholder="Smith"
+              placeholder={tCrm('parentSurnamePlaceholder')}
               {...register('parentSurname')}
               className={inputClass}
             />
@@ -237,7 +243,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           </div>
           <div>
             <label htmlFor={p('parentPhone')} className="mb-1 block text-sm font-medium text-slate-700">
-              Parent phone <span className="text-red-500">*</span>
+              {tCrm('parentPhone')} <span className="text-red-500">{tForm('requiredMark')}</span>
             </label>
             <input
               id={p('parentPhone')}
@@ -250,7 +256,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
                   shouldDirty: true,
                 })
               }
-              placeholder="+374XXXXXXXX"
+              placeholder={tCrm('parentPhonePlaceholder')}
               className={inputClass}
               disabled={isSubmitting}
             />
@@ -258,13 +264,13 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           </div>
           <div>
             <label htmlFor={p('parentEmail')} className="mb-1 block text-sm font-medium text-slate-700">
-              Parent email <span className="text-red-500">*</span>
+              {tCrm('parentEmail')} <span className="text-red-500">{tForm('requiredMark')}</span>
             </label>
             <input
               id={p('parentEmail')}
               type="email"
               autoComplete="email"
-              placeholder="parent@example.com"
+              placeholder={tCrm('parentEmailPlaceholder')}
               {...register('parentEmail')}
               className={inputClass}
             />
@@ -272,12 +278,12 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           </div>
           <div>
             <label htmlFor={p('parentPassportInfo')} className="mb-1 block text-sm font-medium text-slate-700">
-              Parent passport details <span className="text-red-500">*</span>
+              {tCrm('parentPassport')} <span className="text-red-500">{tForm('requiredMark')}</span>
             </label>
             <input
               id={p('parentPassportInfo')}
               type="text"
-              placeholder="XX0000000"
+              placeholder={tCrm('passportPlaceholder')}
               {...register('parentPassportInfo')}
               className={inputClass}
             />
@@ -289,11 +295,11 @@ export function StudentAccountFormFieldsCrmLeadLayout({
       )}
 
       <section className="space-y-3">
-        <h3 className={sectionTitle}>Academic Info</h3>
+        <h3 className={sectionTitle}>{tCrm('academicInfo')}</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor={p('levelId')} className="mb-1 block text-sm font-medium text-slate-700">
-              Level
+              {tCommon('level')}
             </label>
             <select id={p('levelId')} {...register('levelId')} className={inputClass} disabled={isSubmitting}>
               <option value="">—</option>
@@ -307,7 +313,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           {showCenterSelect ? (
             <div>
               <label htmlFor={p('centerId')} className="mb-1 block text-sm font-medium text-slate-700">
-                Center
+                {tCommon('center')}
               </label>
               <select
                 id={p('centerId')}
@@ -331,7 +337,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             </div>
           ) : assignedCenterDisplay ? (
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">{tCommon('center')}</label>
               <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
                 {assignedCenterDisplay}
               </p>
@@ -339,7 +345,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           ) : null}
           <div>
             <label htmlFor={p('teacherId')} className="mb-1 block text-sm font-medium text-slate-700">
-              Teacher
+              {tCommon('teacher')}
             </label>
             <select
               id={p('teacherId')}
@@ -347,22 +353,26 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               className={inputClass}
               disabled={isLoadingTeachers || isSubmitting || !hasCenterScope}
             >
-              <option value="">{hasCenterScope ? 'Select teacher' : 'Select a center first'}</option>
-              {teachersScoped.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.user?.firstName} {t.user?.lastName}
+              <option value="">
+                {hasCenterScope ? t('selectTeacher') : tForm('selectCenterFirst')}
+              </option>
+              {teachersScoped.map((te) => (
+                <option key={te.id} value={te.id}>
+                  {te.user?.firstName} {te.user?.lastName}
                 </option>
               ))}
             </select>
             {errors.teacherId && <p className="mt-1 text-sm text-red-600">{errors.teacherId.message}</p>}
-            {isLoadingTeachers && <p className="mt-1 text-xs text-slate-500">Loading teachers…</p>}
+            {isLoadingTeachers && <p className="mt-1 text-xs text-slate-500">{t('loadingTeachers')}</p>}
             {watchedTeacherId && teacherCentersLabel ? (
-              <p className="mt-1 text-xs text-slate-500">Centers: {teacherCentersLabel}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                {tForm('teacherCenters')}: {teacherCentersLabel}
+              </p>
             ) : null}
           </div>
           <div>
             <label htmlFor={p('groupId')} className="mb-1 block text-sm font-medium text-slate-700">
-              Group
+              {tCommon('group')}
             </label>
             <select
               id={p('groupId')}
@@ -370,7 +380,9 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               className={inputClass}
               disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
             >
-              <option value="">{watchedTeacherId ? 'Select group' : 'Select a teacher first'}</option>
+              <option value="">
+                {watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst')}
+              </option>
               {groupsForTeacher.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.name}
@@ -380,7 +392,9 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             {errors.groupId && <p className="mt-1 text-sm text-red-600">{errors.groupId.message}</p>}
             {watchedGroupId ? (
               <p className="mt-1 text-xs text-slate-500">
-                Group location: {groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? '—'}
+                {tForm('groupLocation', {
+                  name: groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? '—',
+                })}
               </p>
             ) : null}
           </div>
@@ -388,10 +402,10 @@ export function StudentAccountFormFieldsCrmLeadLayout({
       </section>
 
       <section className="space-y-3">
-        <h3 className={sectionTitle}>Billing & preferences</h3>
+        <h3 className={sectionTitle}>{tForm('billingPreferences')}</h3>
         <div>
           <label htmlFor={p('monthlyFee')} className="mb-1 block text-sm font-medium text-slate-700">
-            Monthly fee (֏) <span className="text-red-500">*</span>
+            {t('monthlyFeeLabel')} (֏) <span className="text-red-500">{tForm('requiredMark')}</span>
           </label>
           <input
             id={p('monthlyFee')}
@@ -405,13 +419,13 @@ export function StudentAccountFormFieldsCrmLeadLayout({
         </div>
         <div>
           <label htmlFor={p('notes')} className="mb-1 block text-sm font-medium text-slate-700">
-            Notes
+            {tCommon('notes')}
           </label>
           <textarea
             id={p('notes')}
             rows={3}
             {...register('notes')}
-            placeholder="Additional notes about the student…"
+            placeholder={tForm('notesPlaceholder')}
             className={inputClass}
           />
           {errors.notes && <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>}
@@ -424,7 +438,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
           />
           <label htmlFor={p('receiveReports')} className="text-sm font-medium text-slate-700">
-            Receive progress reports via email
+            {t('receiveReportsOn')}
           </label>
         </div>
       </section>

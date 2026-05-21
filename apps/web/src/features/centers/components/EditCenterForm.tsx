@@ -3,25 +3,21 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateCenter, useCenter, type UpdateCenterDto } from '@/features/centers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 
-const updateCenterSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters').optional(),
-  address: z.string().max(255, 'Address must be at most 255 characters').optional().or(z.literal('')),
-  phone: z.string().max(50, 'Phone must be at most 50 characters').optional().or(z.literal('')),
-  email: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),
-  description: z.string().max(500, 'Description must be at most 500 characters').optional().or(z.literal('')),
-  colorHex: z.union([
-    z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Must be a valid hex color (e.g., #253046)'),
-    z.literal(''),
-  ]).optional().or(z.literal('')),
-  isActive: z.boolean().optional(),
-});
-
-type UpdateCenterFormData = z.infer<typeof updateCenterSchema>;
+type UpdateCenterFormData = {
+  name?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  description?: string;
+  colorHex?: string;
+  isActive?: boolean;
+};
 
 interface EditCenterFormProps {
   open: boolean;
@@ -30,6 +26,32 @@ interface EditCenterFormProps {
 }
 
 export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormProps) {
+  const tForm = useTranslations('centers.form');
+  const tVal = useTranslations('centers.validation');
+  const tCommon = useTranslations('common');
+
+  const updateCenterSchema = useMemo(
+    () =>
+      z.object({
+        name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')).optional(),
+        address: z.string().max(255, tVal('addressMax')).optional().or(z.literal('')),
+        phone: z.string().max(50, tVal('phoneMax')).optional().or(z.literal('')),
+        email: z.union([z.string().email(tVal('invalidEmail')), z.literal('')]).optional(),
+        description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
+        colorHex: z
+          .union([
+            z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, tVal('invalidHexColor')),
+            z.literal(''),
+          ])
+          .optional()
+          .or(z.literal('')),
+        isActive: z.boolean().optional(),
+      }),
+    [tVal],
+  );
+
+  const resolver = useMemo(() => zodResolver(updateCenterSchema), [updateCenterSchema]);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const updateCenter = useUpdateCenter();
@@ -43,7 +65,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
     watch,
     setValue,
   } = useForm<UpdateCenterFormData>({
-    resolver: zodResolver(updateCenterSchema),
+    resolver,
     defaultValues: {
       name: '',
       address: '',
@@ -95,7 +117,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
       await updateCenter.mutateAsync({ id: centerId, data: payload });
       
       // Show success message
-      setSuccessMessage('Center updated successfully!');
+      setSuccessMessage(tForm('updatedSuccess'));
       setErrorMessage(null);
       
       // Close modal after a brief delay
@@ -105,7 +127,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
       }, 1500);
     } catch (error: unknown) {
       // Handle error
-      const message = getErrorMessage(error, 'Failed to update center. Please try again.');
+      const message = getErrorMessage(error, tForm('failedUpdate'));
       setErrorMessage(message);
       setSuccessMessage(null);
     }
@@ -118,11 +140,11 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Center</DialogTitle>
-            <DialogDescription>Loading center information...</DialogDescription>
+            <DialogTitle>{tForm('editTitle')}</DialogTitle>
+            <DialogDescription>{tForm('loadingCenter')}</DialogDescription>
           </DialogHeader>
           <div className="flex items-center justify-center py-8">
-            <div className="text-slate-500">Loading...</div>
+            <div className="text-slate-500">{tCommon('loading')}</div>
           </div>
         </DialogContent>
       </Dialog>
@@ -133,10 +155,8 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Center</DialogTitle>
-          <DialogDescription>
-            Update the center information below. All changes will be saved immediately.
-          </DialogDescription>
+          <DialogTitle>{tForm('editTitle')}</DialogTitle>
+          <DialogDescription>{tForm('editDescription')}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -153,57 +173,57 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
 
           <div className="space-y-2">
             <Label htmlFor="name">
-              Center Name <span className="text-red-500">*</span>
+              {tForm('centerName')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
               {...register('name')}
               error={errors.name?.message}
-              placeholder="Main Branch"
+              placeholder={tForm('namePlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">{tForm('address')}</Label>
             <Input
               id="address"
               {...register('address')}
               error={errors.address?.message}
-              placeholder="123 Main Street, City, Country"
+              placeholder={tForm('addressPlaceholder')}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{tForm('phone')}</Label>
               <Input
                 id="phone"
                 {...register('phone')}
                 error={errors.phone?.message}
-                placeholder="+1234567890"
+                placeholder={tForm('phonePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{tForm('email')}</Label>
               <Input
                 id="email"
                 type="email"
                 {...register('email')}
                 error={errors.email?.message}
-                placeholder="center@example.com"
+                placeholder={tForm('emailPlaceholder')}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{tForm('description')}</Label>
             <textarea
               id="description"
               {...register('description')}
               rows={4}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-              placeholder="Additional information about this center..."
+              placeholder={tForm('descriptionPlaceholder')}
             />
             {errors.description && (
               <p className="text-sm text-red-600">{errors.description.message}</p>
@@ -211,7 +231,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="colorHex">Center Color</Label>
+            <Label htmlFor="colorHex">{tForm('centerColor')}</Label>
             <div className="flex items-center gap-3">
               <div className="relative">
                 <input
@@ -245,7 +265,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
                     }
                   }}
                   error={errors.colorHex?.message}
-                  placeholder="#253046"
+                  placeholder={tForm('colorPlaceholder')}
                   className="font-mono"
                 />
               </div>
@@ -261,13 +281,11 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
                   }}
                   className="text-sm"
                 >
-                  Reset to default
+                  {tForm('resetToDefault')}
                 </Button>
               )}
             </div>
-            <p className="text-sm text-slate-500">
-              Choose a color for this center's card in Board view. The header will use this color, and the body will use a lighter shade.
-            </p>
+            <p className="text-sm text-slate-500">{tForm('colorHint')}</p>
           </div>
 
           <div className="space-y-2">
@@ -279,11 +297,11 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
                 className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
               />
               <Label htmlFor="isActive" className="cursor-pointer">
-                Active Center
+                {tForm('activeCenter')}
               </Label>
             </div>
             <p className="text-sm text-slate-500">
-              {isActive ? 'This center is currently active and can be used for new groups.' : 'This center is inactive and cannot be used for new groups.'}
+              {isActive ? tForm('activeCenterHint') : tForm('inactiveCenterHint')}
             </p>
           </div>
 
@@ -294,14 +312,14 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting ? tForm('saving') : tForm('saveChanges')}
             </Button>
           </DialogFooter>
         </form>

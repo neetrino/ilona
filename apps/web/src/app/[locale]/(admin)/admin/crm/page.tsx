@@ -103,6 +103,7 @@ function sortLeadsByFilters(leads: CrmLead[], filters: CrmLeadFilters): CrmLead[
 
 export default function AdminCrmPage() {
   const t = useTranslations('nav');
+  const tCrm = useTranslations('crm');
   const user = useAuthStore((state) => state.user);
   const userRole = user?.role;
   const isHydrated = useAuthStore((state) => state.isHydrated);
@@ -184,7 +185,7 @@ export default function AdminCrmPage() {
       if (context?.previous) {
         queryClient.setQueryData(['crm-leads', authScopeKey, scopedFilters], context.previous);
       }
-      setStatusError('Failed to update status. Please try again.');
+      setStatusError(tCrm('failedUpdateStatus'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
@@ -220,7 +221,7 @@ export default function AdminCrmPage() {
       if (context?.previous) {
         queryClient.setQueryData(['crm-leads', authScopeKey, scopedFilters], context.previous);
       }
-      setStatusError('Failed to update branch. Please try again.');
+      setStatusError(tCrm('failedUpdateBranch'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
@@ -254,7 +255,7 @@ export default function AdminCrmPage() {
       if (context?.previous) {
         queryClient.setQueryData(['crm-leads', authScopeKey, scopedFilters], context.previous);
       }
-      setDeleteLeadError(getErrorMessage(err, 'Failed to delete lead. Please try again.'));
+      setDeleteLeadError(getErrorMessage(err, tCrm('failedDeleteLead')));
     },
     onSuccess: (_void, leadId) => {
       setLeadIdPendingDelete(null);
@@ -394,7 +395,7 @@ export default function AdminCrmPage() {
   };
 
   return (
-    <DashboardLayout title={t('crm')} subtitle="Lead management">
+    <DashboardLayout title={t('crm')} subtitle={tCrm('leadManagement')}>
       <CrmExclusiveAudioProvider>
         <div className="w-full min-w-0 space-y-4">
         {/* View toggle + Filters */}
@@ -410,7 +411,7 @@ export default function AdminCrmPage() {
                   : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-[#f6f6f7]'
               )}
             >
-              Board
+              {tCrm('viewBoard')}
             </button>
             <button
               type="button"
@@ -422,7 +423,7 @@ export default function AdminCrmPage() {
                   : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-[#f6f6f7]'
               )}
             >
-              List
+              {tCrm('viewList')}
             </button>
             {viewMode === 'board' && (
               <button
@@ -439,8 +440,8 @@ export default function AdminCrmPage() {
                   'rounded-lg p-1.5 text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] hover:text-[#1010a3]',
                   showArchiveColumn && 'bg-[#3b3b40] text-white hover:bg-[#3b3b40] hover:text-white'
                 )}
-                title={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
-                aria-label={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
+                title={showArchiveColumn ? tCrm('hideArchiveColumn') : tCrm('showArchiveColumn')}
+                aria-label={showArchiveColumn ? tCrm('hideArchiveColumn') : tCrm('showArchiveColumn')}
               >
                 {showArchiveColumn ? (
                   <Eye className="size-5" strokeWidth={2} aria-hidden />

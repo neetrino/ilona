@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import {
   Button,
   Input,
@@ -16,28 +17,20 @@ import {
   DialogFooter,
 } from '@/shared/components/ui';
 import { useCreateTeacher, type CreateTeacherDto } from '@/features/teachers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCenters } from '@/features/centers';
 
-const createTeacherSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(50, 'Password must be at most 50 characters'),
-  firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
-  phone: z.string().optional(),
-  hourlyRate: z.number().min(0, 'Per Lesson Rate must be positive'),
-  videoUrl: z
-    .string()
-    .trim()
-    .max(500, 'Video URL is too long')
-    .url('Enter a valid URL (https://...)')
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
-  centerIds: z.array(z.string()).optional(),
-});
-
-type CreateTeacherFormData = z.infer<typeof createTeacherSchema>;
+type CreateTeacherFormData = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  hourlyRate: number;
+  videoUrl?: string;
+  centerIds?: string[];
+};
 
 interface AddTeacherFormProps {
   open: boolean;
@@ -45,11 +38,37 @@ interface AddTeacherFormProps {
 }
 
 export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
+  const tForm = useTranslations('teachers.form');
+  const tVal = useTranslations('teachers.validation');
+  const tCommon = useTranslations('common');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const createTeacher = useCreateTeacher();
   const { data: centersData } = useCenters({ isActive: true, take: 100 });
   const centers = centersData?.items ?? [];
+
+  const createTeacherSchema = useMemo(
+    () =>
+      z.object({
+        email: z.string().email(tVal('invalidEmail')),
+        password: z.string().min(6, tVal('passwordMin')).max(50, tVal('passwordMax')),
+        firstName: z.string().min(2, tVal('firstNameMin')).max(50, tVal('firstNameMax')),
+        lastName: z.string().min(2, tVal('lastNameMin')).max(50, tVal('lastNameMax')),
+        phone: z.string().optional(),
+        hourlyRate: z.number().min(0, tVal('hourlyRateMin')),
+        videoUrl: z
+          .string()
+          .trim()
+          .max(500, tVal('videoUrlMax'))
+          .url(tVal('videoUrlInvalid'))
+          .optional()
+          .or(z.literal('').transform(() => undefined)),
+        centerIds: z.array(z.string()).optional(),
+      }),
+    [tVal],
+  );
+
+  const resolver = useMemo(() => zodResolver(createTeacherSchema), [createTeacherSchema]);
 
   const {
     register,
@@ -59,7 +78,7 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
     setValue,
     watch,
   } = useForm<CreateTeacherFormData>({
-    resolver: zodResolver(createTeacherSchema),
+    resolver,
     defaultValues: {
       email: '',
       password: '',
@@ -81,7 +100,6 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
     setValue('centerIds', next, { shouldDirty: true });
   };
 
-  // Reset form when dialog closes
   useEffect(() => {
     if (!open) {
       reset();
@@ -107,19 +125,16 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
 
       await createTeacher.mutateAsync(payload);
       
-      // Show success message
-      setSuccessMessage('Teacher created successfully!');
+      setSuccessMessage(tForm('createdSuccess'));
       setErrorMessage(null);
       
-      // Reset form and close modal after a brief delay
       reset();
       setTimeout(() => {
         onOpenChange(false);
         setSuccessMessage(null);
       }, 1500);
     } catch (error: unknown) {
-      // Handle error
-      const message = getErrorMessage(error, 'Failed to create teacher. Please try again.');
+      const message = getErrorMessage(error, tForm('failedCreate'));
       setErrorMessage(message);
       setSuccessMessage(null);
     }
@@ -129,10 +144,8 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Teacher</DialogTitle>
-          <DialogDescription>
-            Fill in the information below to create a new teacher account. All fields marked with * are required.
-          </DialogDescription>
+          <DialogTitle>{tForm('addTitle')}</DialogTitle>
+          <DialogDescription>{tForm('addDescription')}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -150,68 +163,68 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">
-                First Name <span className="text-red-500">*</span>
+                {tCommon('firstName')} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="firstName"
                 {...register('firstName')}
                 error={errors.firstName?.message}
-                placeholder="John"
+                placeholder={tForm('firstNamePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="lastName">
-                Last Name <span className="text-red-500">*</span>
+                {tCommon('lastName')} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="lastName"
                 {...register('lastName')}
                 error={errors.lastName?.message}
-                placeholder="Doe"
+                placeholder={tForm('lastNamePlaceholder')}
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email">
-              Email <span className="text-red-500">*</span>
+              {tCommon('email')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
               type="email"
               {...register('email')}
               error={errors.email?.message}
-              placeholder="john.doe@example.com"
+              placeholder={tForm('emailPlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="password">
-              Password <span className="text-red-500">*</span>
+              {tForm('password')} <span className="text-red-500">*</span>
             </Label>
             <PasswordInput
               id="password"
               {...register('password')}
               error={errors.password?.message}
-              placeholder="••••••••"
+              placeholder={tForm('passwordPlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">{tCommon('phone')}</Label>
             <Input
               id="phone"
               type="tel"
               {...register('phone')}
               error={errors.phone?.message}
-              placeholder="+1 (555) 123-4567"
+              placeholder={tForm('phonePlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="hourlyRate">
-              Per Lesson Rate (֏) <span className="text-red-500">*</span>
+              {tForm('perLessonRate')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="hourlyRate"
@@ -220,28 +233,26 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
               min="0"
               {...register('hourlyRate', { valueAsNumber: true })}
               error={errors.hourlyRate?.message}
-              placeholder="5000"
+              placeholder={tForm('hourlyRatePlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="videoUrl">Public video URL</Label>
+            <Label htmlFor="videoUrl">{tForm('publicVideoUrl')}</Label>
             <Input
               id="videoUrl"
               type="url"
               {...register('videoUrl')}
               error={errors.videoUrl?.message}
-              placeholder="https://www.youtube.com/watch?v=..."
+              placeholder={tForm('videoUrlPlaceholder')}
             />
-            <p className="text-xs text-slate-500">
-              Optional. Shown on the teacher&apos;s public profile so students can preview their teaching style.
-            </p>
+            <p className="text-xs text-slate-500">{tForm('videoUrlHintAdd')}</p>
           </div>
 
           <div className="space-y-2">
-            <Label>Centers (branches)</Label>
+            <Label>{tForm('centersBranches')}</Label>
             {centers.length === 0 ? (
-              <p className="text-xs text-slate-500">No centers available.</p>
+              <p className="text-xs text-slate-500">{tForm('noCentersAvailable')}</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {centers.map((center) => {
@@ -263,9 +274,7 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
                 })}
               </div>
             )}
-            <p className="text-xs text-slate-500">
-              Select all branches this teacher belongs to. They will be visible in those centers.
-            </p>
+            <p className="text-xs text-slate-500">{tForm('centersBranchesHint')}</p>
           </div>
 
           <DialogFooter>
@@ -280,10 +289,10 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
               }}
               disabled={isSubmitting || createTeacher.isPending}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" isLoading={isSubmitting || createTeacher.isPending}>
-              {isSubmitting || createTeacher.isPending ? 'Creating...' : 'Create Teacher'}
+              {isSubmitting || createTeacher.isPending ? tForm('creating') : tForm('createTeacher')}
             </Button>
           </DialogFooter>
         </form>
@@ -291,4 +300,3 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
     </Dialog>
   );
 }
-

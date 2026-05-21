@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { StatCard, Button } from '@/shared/components/ui';
 import {
   CreateCenterForm,
@@ -29,6 +30,7 @@ export function CentersTab({
   updateUrl,
   searchParams,
 }: CentersTabProps) {
+  const t = useTranslations('groups');
   const {
     centers,
     totalCenters,
@@ -113,7 +115,7 @@ export function CentersTab({
       setDeactivateCenter(null);
       setDeactivateError(null);
     } catch (err: unknown) {
-      const message = getErrorMessage(err, 'Failed to deactivate center. Please try again.');
+      const message = getErrorMessage(err, t('failedDeactivateCenter'));
       setDeactivateError(message);
     }
   };
@@ -123,18 +125,18 @@ export function CentersTab({
       {/* Centers Stats Grid */}
       <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         <StatCard
-          title="Total Centers"
+          title={t('totalCenters')}
           value={totalCenters}
         />
         <StatCard
-          title="Active Centers"
+          title={t('activeCenters')}
           value={activeCenters || totalCenters}
-          change={{ value: 'Currently active', type: 'positive' }}
+          change={{ value: t('currentlyActive'), type: 'positive' }}
         />
         <StatCard
-          title="Total Groups"
+          title={t('totalGroups')}
           value={centers.reduce((sum, c) => sum + (c._count?.groups || 0), 0)}
-          change={{ value: 'across all centers', type: 'neutral' }}
+          change={{ value: t('acrossAllCenters'), type: 'neutral' }}
         />
       </div>
 
@@ -146,7 +148,7 @@ export function CentersTab({
           </svg>
           <input
             type="search"
-            placeholder="Search centers by name or address..."
+            placeholder={t('searchCentersPlaceholder')}
             value={centerSearchQuery}
             onChange={onSearchChange}
             className="w-full pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
@@ -156,19 +158,19 @@ export function CentersTab({
           className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"
           onClick={() => setCreateCenterOpen(true)}
         >
-          + Add Center
+          + {t('addCenter')}
         </Button>
       </div>
 
       <div className="w-full overflow-x-auto">
         {isLoadingCenters ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-[#8b8b90]">Loading centers...</div>
+            <div className="text-[#8b8b90]">{t('loadingCenters')}</div>
           </div>
         ) : centers.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-[#8b8b90]">
-              {centerSearchQuery ? 'No centers match your search' : 'No centers found'}
+              {centerSearchQuery ? t('noCentersMatch') : t('noCentersFound')}
             </div>
           </div>
         ) : (

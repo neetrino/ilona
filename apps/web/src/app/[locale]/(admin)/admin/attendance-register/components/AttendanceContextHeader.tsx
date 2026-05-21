@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { formatDateDisplay } from '@/features/attendance/utils/dateUtils';
 import type { Group } from '@/features/groups';
 
@@ -24,6 +25,10 @@ export function AttendanceContextHeader({
   hasUnsavedChanges,
   isCurrentDateToday,
 }: AttendanceContextHeaderProps) {
+  const t = useTranslations('attendance');
+  const tCommon = useTranslations('common');
+  const tStudents = useTranslations('students');
+
   return (
     <div className="mb-6 pb-4 border-b-2 border-[rgba(14,14,16,0.07)]">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -33,8 +38,10 @@ export function AttendanceContextHeader({
               <svg className="w-5 h-5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              <span className="text-xs font-semibold text-[#8b8b90] uppercase tracking-wide">Group:</span>
-              <span className="text-xl font-bold text-[#1010a3]">{group?.name || 'N/A'}</span>
+              <span className="text-xs font-semibold text-[#8b8b90] uppercase tracking-wide">
+                {t('registerGroupLabel')}
+              </span>
+              <span className="text-xl font-bold text-[#1010a3]">{group?.name || tStudents('notAvailable')}</span>
               {group?.level && (
                 <span className="text-sm font-medium text-[#3b3b40]">({group.level})</span>
               )}
@@ -45,36 +52,31 @@ export function AttendanceContextHeader({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-xs font-semibold text-[#8b8b90] uppercase tracking-wide">
-                {viewMode === 'week' ? 'Week:' : 'Date:'}
+                {viewMode === 'week' ? t('registerWeekLabel') : t('registerDateLabel')}
               </span>
               <span className="text-xl font-bold text-[#1010a3]">
-                {viewMode === 'week' ? weekRange : date ? formatDateDisplay(date) : 'N/A'}
+                {viewMode === 'week' ? weekRange : date ? formatDateDisplay(date) : tStudents('notAvailable')}
               </span>
               {isCurrentDateToday && viewMode === 'day' && (
-                <span className="px-2 py-0.5 text-xs font-semibold bg-[#1010a3]/20 text-[#1010a3] rounded-full">Today</span>
+                <span className="px-2 py-0.5 text-xs font-semibold bg-[#1010a3]/20 text-[#1010a3] rounded-full">
+                  {tCommon('today')}
+                </span>
               )}
             </div>
           </div>
           <div className="flex items-center gap-4 text-sm text-[#3b3b40]">
-            <span>
-              <span className="font-semibold">{lessonsCount}</span> {lessonsCount === 1 ? 'session' : 'sessions'}
-            </span>
+            <span>{t('sessionsCount', { count: lessonsCount })}</span>
             <span>•</span>
-            <span>
-              <span className="font-semibold">{studentsCount}</span> {studentsCount === 1 ? 'student' : 'students'}
-            </span>
+            <span>{t('studentsCount', { count: studentsCount })}</span>
           </div>
         </div>
         {hasUnsavedChanges && (
           <div className="flex items-center gap-2 px-4 py-2 bg-amber-100 border-2 border-amber-400 rounded-lg">
             <div className="h-2 w-2 rounded-full bg-amber-600 animate-pulse"></div>
-            <span className="text-sm font-semibold text-amber-800">Unsaved Changes</span>
+            <span className="text-sm font-semibold text-amber-800">{tCommon('unsavedChanges')}</span>
           </div>
         )}
       </div>
     </div>
   );
 }
-
-
-

@@ -5,7 +5,8 @@ import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import type { CrmLeadStatus } from '@/features/crm/types';
-import { STATUS_LABELS } from '@/features/crm/types';
+import { useTranslations } from 'next-intl';
+import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
 
 type DropdownPosition = { top: number; left: number; width: number };
 
@@ -36,11 +37,14 @@ export function CrmStatusSelector({
   options,
   onChange,
   disabled = false,
-  disabledHint = 'Status cannot be changed after payment',
+  disabledHint,
   className,
   id,
   portaledMenuRef,
 }: CrmStatusSelectorProps) {
+  const t = useTranslations('crm');
+  const statusLabels = useCrmStatusLabels();
+  const resolvedDisabledHint = disabledHint ?? t('statusLockedAfterPayment');
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<DropdownPosition | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -109,9 +113,9 @@ export function CrmStatusSelector({
     setOpen(false);
   };
 
-  const displayValue = value ? (STATUS_LABELS[value] ?? value) : '—';
-  const triggerTitle = disabled ? disabledHint : 'Change status';
-  const triggerAria = disabled ? disabledHint : 'Change status';
+  const displayValue = value ? (statusLabels[value] ?? value) : '—';
+  const triggerTitle = disabled ? resolvedDisabledHint : t('changeStatus');
+  const triggerAria = disabled ? resolvedDisabledHint : t('changeStatus');
 
   return (
     <div className={cn('relative', className)}>
@@ -161,7 +165,7 @@ export function CrmStatusSelector({
                   value === status && 'bg-primary/10 font-medium text-primary'
                 )}
               >
-                {STATUS_LABELS[status] ?? status}
+                {statusLabels[status] ?? status}
               </button>
             ))}
           </div>,

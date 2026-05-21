@@ -157,7 +157,9 @@ function parseStoredFilters(): StoredFilters {
 }
 
 export default function AdminRecordingPage() {
-  const t = useTranslations('nav');
+  const tNav = useTranslations('nav');
+  const t = useTranslations('recordings');
+  const tCommon = useTranslations('common');
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -241,10 +243,10 @@ export default function AdminRecordingPage() {
             `${student.user.firstName} ${student.user.lastName}`.trim() ||
             student.userId,
           groupId: student.group?.id ?? null,
-          groupName: student.group?.name ?? 'Ungrouped',
+          groupName: student.group?.name ?? t('ungrouped'),
         }))
         .sort((a, b) => a.fullName.localeCompare(b.fullName)),
-    [allStudents],
+    [allStudents, t],
   );
 
   const groupOptions = useMemo(() => {
@@ -253,9 +255,9 @@ export default function AdminRecordingPage() {
       map.set(group.id, { id: group.id, name: group.name });
     });
     const hasUngrouped = studentDirectory.some((s) => s.groupId === null);
-    if (hasUngrouped) map.set('ungrouped', { id: 'ungrouped', name: 'Ungrouped' });
+    if (hasUngrouped) map.set('ungrouped', { id: 'ungrouped', name: t('ungrouped') });
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [allGroups, studentDirectory]);
+  }, [allGroups, studentDirectory, t]);
 
   const groupMultiOptions = useMemo(
     () => groupOptions.map((g) => ({ id: g.id, label: g.name })),
@@ -525,24 +527,24 @@ export default function AdminRecordingPage() {
 
   return (
     <DashboardLayout
-      title={t('recordings')}
-      subtitle="All student voice recordings in a single searchable table"
+      title={tNav('recordings')}
+      subtitle={tNav('adminRecordingsSubtitle')}
     >
       <div className={portalPageStackClass}>
       {/* Filters */}
       <div className="mb-2 grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))]">
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
-            label="Group"
+            label={tCommon('group')}
             options={groupMultiOptions}
             selectedIds={selectedGroupIds}
             onSelectionChange={setSelectedGroupIds}
             showSelectedChipsOnlyWhenOpen
             hideSelectedLabelsInTrigger
-            placeholder="All groups"
-            searchPlaceholder="Search groups…"
-            emptyOptionsHint="No groups"
-            noResultsHint="No groups match"
+            placeholder={t('allGroups')}
+            searchPlaceholder={t('searchGroups')}
+            emptyOptionsHint={t('noGroups')}
+            noResultsHint={t('noGroupsMatch')}
             isLoading={isLoadingDirectory}
             maxChipsHeightClassName="max-h-28"
           />
@@ -550,24 +552,20 @@ export default function AdminRecordingPage() {
 
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
-            label="Student"
+            label={tCommon('searchTypeStudent')}
             options={studentMultiOptions}
             selectedIds={selectedStudentUserIds}
             onSelectionChange={setSelectedStudentUserIds}
             showSelectedChipsOnlyWhenOpen
             hideSelectedLabelsInTrigger
             placeholder={
-              selectedGroupIds.size === 0
-                ? 'All students'
-                : 'Students in selected groups'
+              selectedGroupIds.size === 0 ? t('allStudents') : t('studentsInSelectedGroups')
             }
-            searchPlaceholder="Search students…"
+            searchPlaceholder={t('searchStudents')}
             emptyOptionsHint={
-              selectedGroupIds.size === 0
-                ? 'No students'
-                : 'No students in selected groups'
+              selectedGroupIds.size === 0 ? t('noStudents') : t('noStudentsInGroups')
             }
-            noResultsHint="No students match"
+            noResultsHint={t('noStudentsMatch')}
             isLoading={isLoadingDirectory}
             maxChipsHeightClassName="max-h-28"
           />
@@ -578,7 +576,7 @@ export default function AdminRecordingPage() {
             htmlFor="rec-date-from"
             className="block text-sm font-medium text-[#3b3b40] mb-1.5"
           >
-            From
+            {tCommon('from')}
           </label>
           <input
             id="rec-date-from"
@@ -595,7 +593,7 @@ export default function AdminRecordingPage() {
             htmlFor="rec-date-to"
             className="block text-sm font-medium text-[#3b3b40] mb-1.5"
           >
-            To
+            {tCommon('to')}
           </label>
           <input
             id="rec-date-to"
@@ -614,13 +612,13 @@ export default function AdminRecordingPage() {
             htmlFor="rec-search"
             className="block text-sm font-medium text-[#3b3b40] mb-1.5"
           >
-            Search
+            {tCommon('search')}
           </label>
           <input
             id="rec-search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Student, group, or file name…"
+            placeholder={t('searchPlaceholder')}
             className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
@@ -629,16 +627,15 @@ export default function AdminRecordingPage() {
           onClick={clearAllFilters}
           className="h-11 px-4 bg-[#f6f6f7] hover:bg-[#f6f6f7] text-[#3b3b40] text-sm font-medium rounded-lg border border-[rgba(14,14,16,0.07)] transition-colors"
         >
-          Clear all
+          {t('clearAll')}
         </button>
       </div>
 
       <div className="mb-3 text-sm text-[#8b8b90]">
-        {visibleRecordings.length} student
-        {visibleRecordings.length !== 1 ? 's' : ''} shown
+        {t('studentsShown', { count: visibleRecordings.length })}
         {selectedRecordingIds.size > 0 && (
           <span className="ml-3 text-[#3b3b40] font-medium">
-            ({selectedRecordingIds.size} selected)
+            {t('selectedCount', { count: selectedRecordingIds.size })}
           </span>
         )}
       </div>
@@ -652,7 +649,7 @@ export default function AdminRecordingPage() {
                 <th className="w-12 px-4 py-3 text-left">
                   <input
                     type="checkbox"
-                    aria-label="Select all visible recordings"
+                    aria-label={t('selectAllVisible')}
                     className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer"
                     checked={allVisibleSelected}
                     onChange={toggleAll}
@@ -663,16 +660,16 @@ export default function AdminRecordingPage() {
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
-                  Group
+                  {tCommon('group')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
-                  Student
+                  {tCommon('searchTypeStudent')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
-                  Date &amp; Time
+                  {t('dateTime')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
-                  Recording
+                  {t('recording')}
                 </th>
               </tr>
             </thead>
@@ -704,8 +701,8 @@ export default function AdminRecordingPage() {
                     className="px-4 py-10 text-center text-sm text-[#8b8b90]"
                   >
                     {studentDirectory.length === 0
-                      ? 'No students in the directory yet.'
-                      : 'No students found for the selected filters.'}
+                      ? t('noStudentsInDirectory')
+                      : t('noStudentsForFilters')}
                   </td>
                 </tr>
               ) : (
@@ -722,7 +719,7 @@ export default function AdminRecordingPage() {
                       <td className="px-4 py-3 align-middle">
                         <input
                           type="checkbox"
-                          aria-label={`Select recording for ${row.studentFullName}`}
+                          aria-label={t('selectRecordingFor', { name: row.studentFullName })}
                           className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer"
                           checked={
                             recordingId !== null &&
@@ -761,7 +758,7 @@ export default function AdminRecordingPage() {
                       <td className="px-4 py-3 align-middle">
                         {!recording ? (
                           <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
-                            No voice recorded
+                            {t('noVoiceRecorded')}
                           </span>
                         ) : isActive ? (
                           <VoiceMessagePlayer
@@ -794,7 +791,7 @@ export default function AdminRecordingPage() {
                                 d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                               />
                             </svg>
-                            Play
+                            {t('play')}
                           </button>
                         )}
                       </td>

@@ -210,7 +210,6 @@ export default function StudentsPage() {
           lifecycleFilterOptions={lifecycleFilterOptions}
           isLoadingTeachers={!teachersData}
           isDeleting={deleteStudent.isPending || isLoading}
-          t={t}
           now={now}
         />
 

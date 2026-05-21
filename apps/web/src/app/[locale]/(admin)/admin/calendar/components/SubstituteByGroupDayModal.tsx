@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,8 @@ export function SubstituteByGroupDayModal({
   groupsLoading,
   teacherOptions,
 }: SubstituteByGroupDayModalProps) {
+  const t = useTranslations('calendar');
+  const tCommon = useTranslations('common');
   const setSubstitute = useSetSubstituteByGroupDay();
   const [date, setDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [groupId, setGroupId] = useState<string>('');
@@ -54,14 +57,12 @@ export function SubstituteByGroupDayModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Substitute by group &amp; day</DialogTitle>
+          <DialogTitle>{t('substituteByGroupDay')}</DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-[#3b3b40]">
-          Applies to all non-cancelled lessons for the selected group on that calendar day (UTC date).
-        </p>
+        <p className="text-sm text-[#3b3b40]">{t('substituteByGroupDayHint')}</p>
         <div className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="sub-day-date">Date</Label>
+            <Label htmlFor="sub-day-date">{tCommon('date')}</Label>
             <input
               id="sub-day-date"
               type="date"
@@ -71,7 +72,7 @@ export function SubstituteByGroupDayModal({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sub-day-group">Group</Label>
+            <Label htmlFor="sub-day-group">{t('group')}</Label>
             <select
               id="sub-day-group"
               className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
@@ -79,7 +80,7 @@ export function SubstituteByGroupDayModal({
               onChange={(e) => setGroupId(e.target.value)}
               disabled={groupsLoading}
             >
-              <option value="">{groupsLoading ? 'Loading groups…' : 'Select group'}</option>
+              <option value="">{groupsLoading ? t('loadingGroups') : t('selectGroup')}</option>
               {groups.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.name}
@@ -89,14 +90,14 @@ export function SubstituteByGroupDayModal({
             </select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sub-day-teacher">Substitute teacher</Label>
+            <Label htmlFor="sub-day-teacher">{t('substituteTeacher')}</Label>
             <select
               id="sub-day-teacher"
               className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
               value={substituteTeacherId}
               onChange={(e) => setSubstituteTeacherId(e.target.value)}
             >
-              <option value="">None (clear substitute for that day)</option>
+              <option value="">{t('noneClearSubstitute')}</option>
               {teacherOptions
                 .filter((t) => !selectedGroup?.teacherId || t.id !== selectedGroup.teacherId)
                 .map((t) => (
@@ -109,10 +110,10 @@ export function SubstituteByGroupDayModal({
         </div>
         <DialogFooter>
           <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button type="button" onClick={handleSubmit} disabled={setSubstitute.isPending || !groupId || !date}>
-            Apply
+            {t('apply')}
           </Button>
         </DialogFooter>
       </DialogContent>

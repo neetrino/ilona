@@ -22,6 +22,7 @@ import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGri
 import { useTeachers } from '@/features/teachers';
 import { CalendarFilters } from './components/CalendarFilters';
 import { SubstituteLessonModal } from './components/SubstituteLessonModal';
+import { useTranslations } from 'next-intl';
 
 // Helper to get week dates
 function getWeekDates(date: Date): Date[] {
@@ -103,6 +104,8 @@ export default function CalendarPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations('calendar');
+  const tLessons = useTranslations('lessons');
   
   // Initialize view mode from URL query params, with fallback to 'list'
   const [viewMode, setViewMode] = useState<'week' | 'month' | 'list'>(() => {
@@ -372,12 +375,12 @@ export default function CalendarPage() {
       setPendingBulkDeleteIds([]);
       showDeleteNotice(
         'success',
-        n === 1 ? 'Lesson deleted successfully.' : `${n} lessons deleted successfully.`,
+        n === 1 ? t('lessonDeletedSuccess') : t('lessonsDeletedSuccess', { count: n }),
       );
     } catch (err: unknown) {
-      setBulkDeleteError(getErrorMessage(err, 'Failed to delete lessons. Please try again.'));
+      setBulkDeleteError(getErrorMessage(err, t('failedDeleteLessons')));
     }
-  }, [deleteLessonsBulk, pendingBulkDeleteIds, showDeleteNotice]);
+  }, [deleteLessonsBulk, pendingBulkDeleteIds, showDeleteNotice, t]);
 
   const handleSingleDeleteClick = useCallback((lessonId: string) => {
     setSingleDeleteError(null);
@@ -400,11 +403,11 @@ export default function CalendarPage() {
       await deleteLesson.mutateAsync(pendingSingleDeleteId);
       setIsSingleDeleteDialogOpen(false);
       setPendingSingleDeleteId(null);
-      showDeleteNotice('success', 'Lesson deleted successfully.');
+      showDeleteNotice('success', t('lessonDeletedSuccess'));
     } catch (err: unknown) {
-      setSingleDeleteError(getErrorMessage(err, 'Failed to delete lesson. Please try again.'));
+      setSingleDeleteError(getErrorMessage(err, t('failedDeleteLesson')));
     }
-  }, [deleteLesson, pendingSingleDeleteId, showDeleteNotice]);
+  }, [deleteLesson, pendingSingleDeleteId, showDeleteNotice, t]);
 
   const singleDeleteLesson = pendingSingleDeleteId
     ? lessons.find((l) => l.id === pendingSingleDeleteId)
@@ -447,8 +450,8 @@ export default function CalendarPage() {
 
   return (
     <DashboardLayout 
-      title="Lesson Calendar" 
-      subtitle="Schedule and manage lessons across all groups."
+      title={t('adminTitle')} 
+      subtitle={t('adminSubtitle')}
     >
       <div className={portalPageStackClass}>
         {/* Filters */}
@@ -466,26 +469,26 @@ export default function CalendarPage() {
         {/* Stats Grid */}
         <div className="grid w-full min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
           <StatCard
-            title="Total Lessons"
+            title={t('statsTotalLessons')}
             value={stats?.total || 0}
           />
           <StatCard
-            title="Completed"
+            title={t('statsCompleted')}
             value={stats?.completed || 0}
-            change={{ value: `${stats?.completionRate || 0}%`, type: 'positive' }}
+            change={{ value: t('statsCompletionRate', { value: stats?.completionRate || 0 }), type: 'positive' }}
           />
           <StatCard
-            title="Scheduled"
+            title={t('statsScheduled')}
             value={stats?.scheduled || 0}
-            change={{ value: 'Upcoming', type: 'neutral' }}
+            change={{ value: t('statsUpcoming'), type: 'neutral' }}
           />
           <StatCard
-            title="In Progress"
+            title={t('statsInProgress')}
             value={stats?.inProgress || 0}
-            change={{ value: 'Live now', type: 'warning' }}
+            change={{ value: t('statsLiveNow'), type: 'warning' }}
           />
           <StatCard
-            title="Cancelled/Missed"
+            title={t('statsCancelledMissed')}
             value={(stats?.cancelled || 0) + (stats?.missed || 0)}
           />
         </div>
@@ -516,7 +519,7 @@ export default function CalendarPage() {
               onClick={goToToday}
               className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg"
             >
-              Today
+              {t('today')}
             </button>
           </div>
 
@@ -534,7 +537,7 @@ export default function CalendarPage() {
                 )}
                 aria-pressed={viewMode === 'list'}
               >
-                List
+                {t('list')}
               </button>
               <button
                 type="button"
@@ -548,7 +551,7 @@ export default function CalendarPage() {
                 )}
                 aria-pressed={viewMode === 'week'}
               >
-                Week
+                {t('week')}
               </button>
               <button
                 type="button"
@@ -562,7 +565,7 @@ export default function CalendarPage() {
                 )}
                 aria-pressed={viewMode === 'month'}
               >
-                Month
+                {t('month')}
               </button>
             </div>
             <Button
@@ -571,7 +574,7 @@ export default function CalendarPage() {
               onClick={() => handleAddLessonOpenChange(true)}
               className="font-semibold shadow-sm"
             >
-              + Add Lesson
+              + {tLessons('addLesson')}
             </Button>
           </div>
         </div>
@@ -621,7 +624,7 @@ export default function CalendarPage() {
                       </div>
                     ) : dayLessons.length === 0 ? (
                       <p className="text-xs text-[#8b8b90] text-center py-4">
-                        {searchQuery || selectedTeacherId ? 'No lessons match filters' : 'No lessons'}
+                        {searchQuery || selectedTeacherId ? t('noLessonsMatchFiltersShort') : t('noLessons')}
                       </p>
                     ) : (
                       <div className="space-y-2">
@@ -653,11 +656,11 @@ export default function CalendarPage() {
                                 {formatTime(lesson.scheduledAt)}
                               </p>
                               <p className="text-[#3b3b40] truncate">
-                                {lesson.group?.name || 'Unknown'}
+                                {lesson.group?.name || t('lessonUnknown')}
                               </p>
                               {lesson.substituteTeacher?.user && (
-                                <p className="text-amber-800 truncate mt-0.5" title="Substitute teacher">
-                                  Sub: {lesson.substituteTeacher.user.firstName}{' '}
+                                <p className="text-amber-800 truncate mt-0.5" title={t('substituteTeacherTitle')}>
+                                  {t('substituteShort')} {lesson.substituteTeacher.user.firstName}{' '}
                                   {lesson.substituteTeacher.user.lastName}
                                 </p>
                               )}
@@ -695,9 +698,9 @@ export default function CalendarPage() {
                       : 'px-3 py-2.5 text-sm',
                   )}
                 >
-                  {formatTime(lesson.scheduledAt)} · {lesson.group?.name ?? 'Unknown'}
+                  {formatTime(lesson.scheduledAt)} · {lesson.group?.name ?? t('lessonUnknown')}
                   {lesson.substituteTeacher?.user
-                    ? ` · Sub ${lesson.substituteTeacher.user.firstName[0]}.`
+                    ? ` · ${t('substituteShort')} ${lesson.substituteTeacher.user.firstName[0]}.`
                     : ''}
                 </button>
               )}
@@ -721,7 +724,7 @@ export default function CalendarPage() {
             ) : lessons.length === 0 ? (
               <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-8 text-center">
                 <p className="text-[#8b8b90]">
-                  {searchQuery || selectedTeacherId ? 'No lessons match the current filters' : 'No lessons found'}
+                  {searchQuery || selectedTeacherId ? t('noLessonsMatchFilters') : t('noLessonsFound')}
                 </p>
               </div>
             ) : (
@@ -780,23 +783,18 @@ export default function CalendarPage() {
         lessonCount={1}
         isLoading={deleteLesson.isPending}
         error={singleDeleteError}
-        title="Delete this lesson?"
+        title={t('deleteThisLessonTitle')}
         description={
           singleDeleteLesson ? (
-            <>
-              Permanently delete the lesson for{' '}
-              <span className="font-semibold text-[#1010a3]">
-                {singleDeleteLesson.group?.name ?? 'Unknown group'}
-              </span>{' '}
-              scheduled{' '}
-              {new Date(singleDeleteLesson.scheduledAt).toLocaleString(undefined, {
+            t('deleteLessonPermanentFor', {
+              group: singleDeleteLesson.group?.name ?? t('unknownGroup'),
+              datetime: new Date(singleDeleteLesson.scheduledAt).toLocaleString(undefined, {
                 dateStyle: 'medium',
                 timeStyle: 'short',
-              })}
-              ? This cannot be undone (attendance, feedback, and related data will be removed).
-            </>
+              }),
+            })
           ) : (
-            'Permanently delete this lesson? This cannot be undone.'
+            t('deleteLessonPermanent')
           )
         }
       />

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import { Input, Label, PasswordInput } from '@/shared/components/ui';
 import type { CreateStudentFormData } from '../student-account-form.schema';
@@ -62,10 +63,14 @@ export function StudentAccountFormFields({
   assignedCenterDisplay = null,
   idPrefix = '',
 }: StudentAccountFormFieldsProps) {
+  const t = useTranslations('students');
+  const tForm = useTranslations('students.form');
+  const tCommon = useTranslations('common');
+
   const p = (id: string) => (idPrefix ? `${idPrefix}-${id}` : id);
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
-  const selectedTeacher = teachers.find((t) => t.id === watchedTeacherId);
+  const selectedTeacher = teachers.find((te) => te.id === watchedTeacherId);
   const centerNamesFromTeacher = [
     ...new Set(
       (selectedTeacher?.centerLinks ?? []).map((l) => l.center.name).filter(Boolean),
@@ -83,68 +88,68 @@ export function StudentAccountFormFields({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor={p('firstName')}>
-            First Name <span className="text-red-500">*</span>
+            {tCommon('firstName')} <span className="text-red-500">{tForm('requiredMark')}</span>
           </Label>
           <Input
             id={p('firstName')}
             {...register('firstName')}
             error={errors.firstName?.message}
-            placeholder="John"
+            placeholder={tForm('firstNamePlaceholder')}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor={p('lastName')}>
-            Last Name <span className="text-red-500">*</span>
+            {tCommon('lastName')} <span className="text-red-500">{tForm('requiredMark')}</span>
           </Label>
           <Input
             id={p('lastName')}
             {...register('lastName')}
             error={errors.lastName?.message}
-            placeholder="Doe"
+            placeholder={tForm('lastNamePlaceholder')}
           />
         </div>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor={p('email')}>
-          Email <span className="text-red-500">*</span>
+          {tForm('email')} <span className="text-red-500">{tForm('requiredMark')}</span>
         </Label>
         <Input
           id={p('email')}
           type="email"
           {...register('email')}
           error={errors.email?.message}
-          placeholder="john.doe@example.com"
+          placeholder={tForm('emailPlaceholder')}
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor={p('password')}>
-          Password <span className="text-red-500">*</span>
+          {tForm('password')} <span className="text-red-500">{tForm('requiredMark')}</span>
         </Label>
         <PasswordInput
           id={p('password')}
           {...register('password')}
           error={errors.password?.message}
-          placeholder="••••••••"
+          placeholder={tForm('passwordPlaceholder')}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={p('phone')}>Phone</Label>
+        <Label htmlFor={p('phone')}>{tCommon('phone')}</Label>
         <Input
           id={p('phone')}
           type="tel"
           {...register('phone')}
           error={errors.phone?.message}
-          placeholder="+1 (555) 123-4567"
+          placeholder={t('phonePlaceholder')}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor={p('manualAge')}>Age (years)</Label>
+          <Label htmlFor={p('manualAge')}>{tForm('ageYears')}</Label>
           <Input
             id={p('manualAge')}
             type="number"
@@ -152,21 +157,23 @@ export function StudentAccountFormFields({
             {...register('manualAge')}
             error={errors.manualAge?.message}
           />
-          <p className="text-xs text-slate-500">Use if date of birth is unknown</p>
+          <p className="text-xs text-slate-500">{tForm('useIfDobUnknown')}</p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor={p('dateOfBirth')}>Date of Birth</Label>
+          <Label htmlFor={p('dateOfBirth')}>{t('dateOfBirth')}</Label>
           <Input
             id={p('dateOfBirth')}
             type="date"
             {...register('dateOfBirth')}
             error={errors.dateOfBirth?.message}
           />
-          {computedAge !== undefined && <p className="text-xs text-slate-500">Effective age: {computedAge}</p>}
+          {computedAge !== undefined && (
+            <p className="text-xs text-slate-500">{tForm('ageHint', { age: computedAge })}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={p('firstLessonDate')}>First Lesson Date</Label>
+          <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
           <Input
             id={p('firstLessonDate')}
             type="date"
@@ -175,17 +182,16 @@ export function StudentAccountFormFields({
           />
         </div>
       </div>
-      <p className="text-xs text-slate-500">Provide date of birth or age (1–120).</p>
 
       <div className="space-y-2">
-        <Label htmlFor={p('levelId')}>Level (optional)</Label>
+        <Label htmlFor={p('levelId')}>{tForm('levelOptional')}</Label>
         <select
           id={p('levelId')}
           {...register('levelId')}
           className={selectClassName}
           disabled={isSubmitting}
         >
-          <option value="">Any level</option>
+          <option value="">{tForm('anyLevel')}</option>
           {LEVEL_FILTER_OPTIONS.map((l) => (
             <option key={l} value={l}>
               {l}
@@ -196,14 +202,14 @@ export function StudentAccountFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor={p('teacherId')}>Teacher</Label>
+          <Label htmlFor={p('teacherId')}>{t('teacher')}</Label>
           <select
             id={p('teacherId')}
             {...register('teacherId')}
             className={selectClassName}
             disabled={isLoadingTeachers || isSubmitting}
           >
-            <option value="">Select a teacher</option>
+            <option value="">{t('selectTeacher')}</option>
             {teachers.map((teacher) => (
               <option key={teacher.id} value={teacher.id}>
                 {teacher.user?.firstName ?? ''} {teacher.user?.lastName ?? ''}
@@ -212,21 +218,25 @@ export function StudentAccountFormFields({
             ))}
           </select>
           {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
-          {isLoadingTeachers && <p className="text-sm text-slate-500">Loading teachers...</p>}
+          {isLoadingTeachers && <p className="text-sm text-slate-500">{t('loadingTeachers')}</p>}
           {watchedTeacherId && teacherCentersLabel ? (
-            <p className="text-xs text-slate-500">Centers: {teacherCentersLabel}</p>
+            <p className="text-xs text-slate-500">
+              {tForm('teacherCenters')}: {teacherCentersLabel}
+            </p>
           ) : null}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={p('groupId')}>Group</Label>
+          <Label htmlFor={p('groupId')}>{t('group')}</Label>
           <select
             id={p('groupId')}
             {...register('groupId')}
             className={selectClassName}
             disabled={isLoadingGroups || !watchedTeacherId}
           >
-            <option value="">{watchedTeacherId ? 'No group assigned' : 'Select Teacher first'}</option>
+            <option value="">
+              {watchedTeacherId ? tCommon('notAssigned') : t('selectTeacherFirst')}
+            </option>
             {groupsForTeacher.map((group) => (
               <option key={group.id} value={group.id}>
                 {group.name} {group.level ? `(${group.level})` : ''}
@@ -236,8 +246,8 @@ export function StudentAccountFormFields({
           {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}
           {watchedGroupId ? (
             <p className="text-xs text-slate-500">
-              Group location:{' '}
-              {groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? '—'}
+              {tCommon('center')}:{' '}
+              {groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? t('notAvailable')}
             </p>
           ) : null}
         </div>
@@ -245,14 +255,14 @@ export function StudentAccountFormFields({
 
       {showCenterSelect ? (
         <div className="space-y-2">
-          <Label htmlFor={p('centerId')}>Center</Label>
+          <Label htmlFor={p('centerId')}>{tCommon('center')}</Label>
           <select
             id={p('centerId')}
             {...register('centerId')}
             className={selectClassName}
             disabled={isLoadingCenters || isSubmitting}
           >
-            <option value="">Not assigned</option>
+            <option value="">{tCommon('notAssigned')}</option>
             {centers.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -263,7 +273,7 @@ export function StudentAccountFormFields({
         </div>
       ) : assignedCenterDisplay ? (
         <div className="space-y-2">
-          <Label>Center</Label>
+          <Label>{tCommon('center')}</Label>
           <p className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-slate-700">
             {assignedCenterDisplay}
           </p>
@@ -272,7 +282,7 @@ export function StudentAccountFormFields({
 
       <div className="space-y-2">
         <Label htmlFor={p('monthlyFee')}>
-          Monthly Fee (֏) <span className="text-red-500">*</span>
+          {t('monthlyFeeLabel')} (֏) <span className="text-red-500">{tForm('requiredMark')}</span>
         </Label>
         <Input
           id={p('monthlyFee')}
@@ -288,50 +298,50 @@ export function StudentAccountFormFields({
       {showParentSection && (
         <div className="border-t pt-4 transition-all duration-300 ease-in-out">
           <h3 className="text-sm font-semibold text-slate-800 mb-2">
-            Parent/Guardian Information
-            <span className="text-red-500 ml-1">*</span>
+            {tCommon('parentInformation')}
+            <span className="text-red-500 ml-1">{tForm('requiredMark')}</span>
           </h3>
-          <p className="text-xs text-slate-500 mb-4">Required for students under 18 years of age</p>
+          <p className="text-xs text-slate-500 mb-4">{tForm('parentDetailsSection')}</p>
 
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor={p('parentName')}>
-                Parent/Guardian Name <span className="text-red-500">*</span>
+                {t('parentName')} <span className="text-red-500">{tForm('requiredMark')}</span>
               </Label>
               <Input
                 id={p('parentName')}
                 {...register('parentName')}
                 error={errors.parentName?.message}
-                placeholder="Jane Doe"
+                placeholder={tForm('firstNamePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={p('parentSurname')}>Parent/Guardian Surname</Label>
+              <Label htmlFor={p('parentSurname')}>{tCommon('lastName')}</Label>
               <Input
                 id={p('parentSurname')}
                 {...register('parentSurname')}
                 error={errors.parentSurname?.message}
-                placeholder="Doe"
+                placeholder={tForm('lastNamePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor={p('parentPhone')}>
-                Parent/Guardian Phone <span className="text-red-500">*</span>
+                {t('parentPhone')} <span className="text-red-500">{tForm('requiredMark')}</span>
               </Label>
               <Input
                 id={p('parentPhone')}
                 type="tel"
                 {...register('parentPhone')}
                 error={errors.parentPhone?.message}
-                placeholder="+1 (555) 123-4567"
+                placeholder={t('phonePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor={p('parentEmail')}>
-                Parent/Guardian Email <span className="text-red-500">*</span>
+                {t('parentEmail')} <span className="text-red-500">{tForm('requiredMark')}</span>
               </Label>
               <Input
                 id={p('parentEmail')}
@@ -339,19 +349,19 @@ export function StudentAccountFormFields({
                 autoComplete="email"
                 {...register('parentEmail')}
                 error={errors.parentEmail?.message}
-                placeholder="parent@example.com"
+                placeholder={tForm('emailPlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor={p('parentPassportInfo')}>
-                Parent Passport Information <span className="text-red-500">*</span>
+                {tForm('parentPassportInfo')} <span className="text-red-500">{tForm('requiredMark')}</span>
               </Label>
               <Input
                 id={p('parentPassportInfo')}
                 {...register('parentPassportInfo')}
                 error={errors.parentPassportInfo?.message}
-                placeholder="Passport number / ID"
+                placeholder={tForm('parentPassportInfo')}
               />
             </div>
           </div>
@@ -359,13 +369,13 @@ export function StudentAccountFormFields({
       )}
 
       <div className="space-y-2">
-        <Label htmlFor={p('notes')}>Notes</Label>
+        <Label htmlFor={p('notes')}>{t('notes')}</Label>
         <textarea
           id={p('notes')}
           {...register('notes')}
           rows={4}
           className={selectClassName}
-          placeholder="Additional notes about the student..."
+          placeholder={t('notes')}
         />
         {errors.notes && <p className="text-sm text-red-600">{errors.notes.message}</p>}
       </div>
@@ -378,7 +388,7 @@ export function StudentAccountFormFields({
           className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
         />
         <Label htmlFor={p('receiveReports')} className="text-sm font-normal cursor-pointer">
-          Receive progress reports via email
+          {t('receiveReportsOn')}
         </Label>
       </div>
     </div>

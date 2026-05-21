@@ -22,10 +22,11 @@ import { useAdminAnalyticsUrl, type AdminAnalyticsTab } from './use-admin-analyt
 import { useAdminPaymentsTimeFilter } from './use-payments-time-filter';
 
 function RiskBadge({ level }: { level: 'LOW' | 'MEDIUM' | 'HIGH' }) {
+  const t = useTranslations('analytics');
   const styles = {
-    LOW: { bg: 'bg-green-100', text: 'text-green-700', label: 'Low Risk' },
-    MEDIUM: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Medium Risk' },
-    HIGH: { bg: 'bg-red-100', text: 'text-red-700', label: 'High Risk' },
+    LOW: { bg: 'bg-green-100', text: 'text-green-700', label: t('lowRisk') },
+    MEDIUM: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: t('mediumRisk') },
+    HIGH: { bg: 'bg-red-100', text: 'text-red-700', label: t('highRisk') },
   };
   const style = styles[level];
   return (
@@ -64,6 +65,8 @@ function ProgressBar({
 }
 
 function StudentRiskRow({ student }: { student: StudentRisk }) {
+  const t = useTranslations('analytics');
+
   return (
     <tr
       className={cn(
@@ -79,7 +82,7 @@ function StudentRiskRow({ student }: { student: StudentRisk }) {
       </td>
       <td className="px-4 py-3">
         <span className="text-sm text-[#3b3b40]">
-          {student.group?.name || 'No group'}
+          {student.group?.name || t('noGroup')}
         </span>
       </td>
       <td className="px-4 py-3 text-center">
@@ -122,6 +125,7 @@ function StudentRiskRow({ student }: { student: StudentRisk }) {
 export default function AdminAnalyticsPage() {
   const tCommon = useTranslations('common');
   const t = useTranslations('analytics');
+  const tFinance = useTranslations('finance');
   const analyticsUrl = useAdminAnalyticsUrl();
   const { activeTab, setActiveTab } = analyticsUrl;
   const {
@@ -199,25 +203,25 @@ export default function AdminAnalyticsPage() {
         <div className={portalPageStackClass}>
           <div className="grid w-full min-w-0 grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
             <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
-              <p className="text-sm text-[#8b8b90]">Records (30d)</p>
+              <p className="text-sm text-[#8b8b90]">{t('records30d')}</p>
               <p className="text-2xl font-bold text-[#1010a3]">
                 {attendance?.summary.total ?? 0}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
-              <p className="text-sm text-[#8b8b90]">Present</p>
+              <p className="text-sm text-[#8b8b90]">{t('present')}</p>
               <p className="text-2xl font-bold text-green-600">
                 {attendance?.summary.present ?? 0}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
-              <p className="text-sm text-[#8b8b90]">Unjustified</p>
+              <p className="text-sm text-[#8b8b90]">{t('unjustifiedShort')}</p>
               <p className="text-2xl font-bold text-red-600">
                 {attendance?.summary.absentUnjustified ?? 0}
               </p>
             </div>
             <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
-              <p className="text-sm text-[#8b8b90]">Rate</p>
+              <p className="text-sm text-[#8b8b90]">{tCommon('rate')}</p>
               <p className="text-2xl font-bold text-[#1010a3]">
                 {attendance?.summary.attendanceRate ?? 0}%
               </p>
@@ -228,7 +232,7 @@ export default function AdminAnalyticsPage() {
             teachers={teachers}
             isLoading={isLoadingTeachers || isLoadingAttendance}
             metric="absenceMarkedRate"
-            metricLabel="Attendance Marking Rate"
+            metricLabel={t('attendanceMarkingRate')}
           />
         </div>
       )}
@@ -250,13 +254,13 @@ export default function AdminAnalyticsPage() {
           </div>
           <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-              <p className="text-sm text-green-600">Total Income</p>
+              <p className="text-sm text-green-600">{tCommon('totalIncome')}</p>
               <p className="text-2xl font-bold text-green-700">
                 {formatCurrency(totalIncome)}
               </p>
             </div>
             <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-              <p className="text-sm text-red-600">Total Expenses</p>
+              <p className="text-sm text-red-600">{tCommon('totalExpensesLabel')}</p>
               <p className="text-2xl font-bold text-red-700">
                 {formatCurrency(totalExpenses)}
               </p>
@@ -275,7 +279,7 @@ export default function AdminAnalyticsPage() {
                   totalProfit >= 0 ? 'text-blue-600' : 'text-orange-600',
                 )}
               >
-                Net Profit
+                {tFinance('netProfit')}
               </p>
               <p
                 className={cn(
@@ -290,7 +294,7 @@ export default function AdminAnalyticsPage() {
 
           <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] overflow-hidden">
             <div className="p-4 border-b border-[rgba(14,14,16,0.07)]">
-              <h3 className="font-semibold text-[#3b3b40]">Breakdown</h3>
+              <h3 className="font-semibold text-[#3b3b40]">{tCommon('breakdown')}</h3>
             </div>
             <div className="w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
               <table className="w-full">

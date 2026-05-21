@@ -9,6 +9,7 @@ import {
   type MouseEvent,
 } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { getRecordingPlayUrl } from '@/features/crm/api/crm.api';
 import { cn } from '@/shared/lib/utils';
 import { useCrmExclusiveAudio } from './CrmExclusiveAudioContext';
@@ -32,6 +33,7 @@ export function LeadCardVoiceInline({
   r2Key,
   className,
 }: LeadCardVoiceInlineProps) {
+  const t = useTranslations('crm');
   const src = useMemo(() => getRecordingPlayUrl(r2Key), [r2Key]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -134,12 +136,12 @@ export function LeadCardVoiceInline({
     <div
       className={cn('min-w-0', className)}
       role="group"
-      aria-label="Voice note playback"
+      aria-label={t('voiceNotePlayback')}
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
     >
       <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-        Voice
+        {t('voiceSection')}
       </p>
       <div className="flex min-w-0 items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1.5 sm:gap-2.5 sm:px-3 sm:py-2">
         <audio ref={audioRef} src={src} preload="metadata" className="hidden" />
@@ -150,7 +152,7 @@ export function LeadCardVoiceInline({
             'shrink-0 rounded-md p-0.5 text-slate-900 transition-opacity hover:opacity-70',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1'
           )}
-          aria-label={isPlaying ? 'Pause voice note' : 'Play voice note'}
+          aria-label={isPlaying ? t('pauseVoiceNote') : t('playVoiceNote')}
         >
           {isPlaying ? (
             <svg
@@ -183,7 +185,7 @@ export function LeadCardVoiceInline({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(progress * 100)}
-          aria-label="Playback position"
+          aria-label={t('playbackPosition')}
           className="relative h-0.5 min-w-0 flex-1 cursor-pointer rounded-full bg-slate-300"
           onClick={onTrackClick}
           onKeyDown={(e) => {
@@ -212,7 +214,7 @@ export function LeadCardVoiceInline({
             'shrink-0 rounded-md p-0.5 text-slate-900 transition-opacity hover:opacity-70',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1'
           )}
-          aria-label={muted ? 'Unmute' : 'Mute'}
+          aria-label={muted ? t('unmute') : t('mute')}
         >
           {muted ? (
             <VolumeX className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { List, LayoutGrid } from 'lucide-react';
 import { Button, FilterDropdown } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
@@ -30,7 +31,6 @@ interface StudentsFiltersProps {
   lifecycleFilterOptions: Array<{ id: string; label: string }>;
   isLoadingTeachers: boolean;
   isDeleting: boolean;
-  t: (key: string) => string;
   now: Date;
 }
 
@@ -60,9 +60,12 @@ export function StudentsFilters({
   lifecycleFilterOptions,
   isLoadingTeachers,
   isDeleting,
-  t,
   now,
 }: StudentsFiltersProps) {
+  const t = useTranslations('students');
+  const tc = useTranslations('common');
+  const monthKeys = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+
   return (
     <div className="w-full min-w-0 space-y-4">
       <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -84,7 +87,7 @@ export function StudentsFilters({
             onClick={onBulkDelete}
             disabled={isDeleting}
           >
-            Delete All ({selectedStudentIds.size})
+            {t('deleteAll', { count: selectedStudentIds.size })}
           </Button>
         )}
         {/* View Mode Toggle */}
@@ -101,7 +104,7 @@ export function StudentsFilters({
             aria-pressed={viewMode === 'list'}
           >
             <List className="w-4 h-4" />
-            List
+            {t('listView')}
           </button>
           <button
             onClick={() => onViewModeChange('board')}
@@ -115,7 +118,7 @@ export function StudentsFilters({
             aria-pressed={viewMode === 'board'}
           >
             <LayoutGrid className="w-4 h-4" />
-            Board
+            {t('boardView')}
           </button>
         </div>
         <Button 
@@ -129,59 +132,50 @@ export function StudentsFilters({
       {/* Filters */}
       <div className="grid w-full min-w-0 grid-cols-1 gap-3 items-end sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
         <FilterDropdown
-          label="Status"
+          label={t('statusFilter')}
           options={statusFilterOptions}
           selectedIds={selectedStatusIds}
           onSelectionChange={onStatusChange}
-          placeholder="All Statuses"
+          placeholder={t('allStatuses')}
         />
         <FilterDropdown
-          label="Lifecycle"
+          label={t('lifecycleFilter')}
           options={lifecycleFilterOptions}
           selectedIds={selectedLifecycleIds}
           onSelectionChange={onLifecycleChange}
-          placeholder="All"
+          placeholder={tc('all')}
         />
         <FilterDropdown
-          label="Teacher"
+          label={tc('teacher')}
           options={teacherFilterOptions}
           selectedIds={selectedTeacherIds}
           onSelectionChange={onTeacherChange}
-          placeholder="All Teachers"
+          placeholder={t('allTeachers')}
           isLoading={isLoadingTeachers}
         />
         <FilterDropdown
-          label="Group"
+          label={tc('group')}
           options={groupFilterOptions}
           selectedIds={selectedGroupIds}
           onSelectionChange={onGroupChange}
-          placeholder="All Groups"
+          placeholder={t('allGroups')}
         />
-        {/* Month Filter */}
         <div className="relative">
-          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">Month</label>
+          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">{tc('month')}</label>
           <select
             value={selectedMonth}
             onChange={(e) => onMonthChange(Number(e.target.value))}
             className="w-full h-12 px-4 text-left text-sm bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.12)] transition-colors appearance-none"
           >
-            <option value={1}>January</option>
-            <option value={2}>February</option>
-            <option value={3}>March</option>
-            <option value={4}>April</option>
-            <option value={5}>May</option>
-            <option value={6}>June</option>
-            <option value={7}>July</option>
-            <option value={8}>August</option>
-            <option value={9}>September</option>
-            <option value={10}>October</option>
-            <option value={11}>November</option>
-            <option value={12}>December</option>
+            {monthKeys.map((m) => (
+              <option key={m} value={m}>
+                {tc(`months.${m}`)}
+              </option>
+            ))}
           </select>
         </div>
-        {/* Year Filter */}
         <div className="relative">
-          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">Year</label>
+          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">{tc('year')}</label>
           <select
             value={selectedYear}
             onChange={(e) => onYearChange(Number(e.target.value))}

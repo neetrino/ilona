@@ -3,24 +3,20 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useCreateCenter, type CreateCenterDto } from '@/features/centers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 
-const createCenterSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters'),
-  address: z.string().max(255, 'Address must be at most 255 characters').optional().or(z.literal('')),
-  phone: z.string().max(50, 'Phone must be at most 50 characters').optional().or(z.literal('')),
-  email: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),
-  description: z.string().max(500, 'Description must be at most 500 characters').optional().or(z.literal('')),
-  colorHex: z.union([
-    z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Must be a valid hex color (e.g., #253046)'),
-    z.literal(''),
-  ]).optional().or(z.literal('')),
-});
-
-type CreateCenterFormData = z.infer<typeof createCenterSchema>;
+type CreateCenterFormData = {
+  name: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  description?: string;
+  colorHex?: string;
+};
 
 interface CreateCenterFormProps {
   open: boolean;
@@ -28,6 +24,31 @@ interface CreateCenterFormProps {
 }
 
 export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) {
+  const tForm = useTranslations('centers.form');
+  const tVal = useTranslations('centers.validation');
+  const tCommon = useTranslations('common');
+
+  const createCenterSchema = useMemo(
+    () =>
+      z.object({
+        name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')),
+        address: z.string().max(255, tVal('addressMax')).optional().or(z.literal('')),
+        phone: z.string().max(50, tVal('phoneMax')).optional().or(z.literal('')),
+        email: z.union([z.string().email(tVal('invalidEmail')), z.literal('')]).optional(),
+        description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
+        colorHex: z
+          .union([
+            z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, tVal('invalidHexColor')),
+            z.literal(''),
+          ])
+          .optional()
+          .or(z.literal('')),
+      }),
+    [tVal],
+  );
+
+  const resolver = useMemo(() => zodResolver(createCenterSchema), [createCenterSchema]);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const createCenter = useCreateCenter();
@@ -40,7 +61,7 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
     watch,
     setValue,
   } = useForm<CreateCenterFormData>({
-    resolver: zodResolver(createCenterSchema),
+    resolver,
     defaultValues: {
       name: '',
       address: '',
@@ -76,7 +97,7 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
       await createCenter.mutateAsync(payload);
       
       // Show success message
-      setSuccessMessage('Center created successfully!');
+      setSuccessMessage(tForm('createdSuccess'));
       setErrorMessage(null);
       
       // Reset form and close modal after a brief delay
@@ -87,7 +108,7 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
       }, 1500);
     } catch (error: unknown) {
       // Handle error
-      const message = getErrorMessage(error, 'Failed to create center. Please try again.');
+      const message = getErrorMessage(error, tForm('failedCreate'));
       setErrorMessage(message);
       setSuccessMessage(null);
     }
@@ -97,10 +118,8 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Center</DialogTitle>
-          <DialogDescription>
-            Fill in the information below to create a new center/branch. Fields marked with * are required.
-          </DialogDescription>
+          <DialogTitle>{tForm('addTitle')}</DialogTitle>
+          <DialogDescription>{tForm('addDescription')}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -117,57 +136,57 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
 
           <div className="space-y-2">
             <Label htmlFor="name">
-              Center Name <span className="text-red-500">*</span>
+              {tForm('centerName')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
               {...register('name')}
               error={errors.name?.message}
-              placeholder="Main Branch"
+              placeholder={tForm('namePlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">{tForm('address')}</Label>
             <Input
               id="address"
               {...register('address')}
               error={errors.address?.message}
-              placeholder="123 Main Street, City, Country"
+              placeholder={tForm('addressPlaceholder')}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{tForm('phone')}</Label>
               <Input
                 id="phone"
                 {...register('phone')}
                 error={errors.phone?.message}
-                placeholder="+1234567890"
+                placeholder={tForm('phonePlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{tForm('email')}</Label>
               <Input
                 id="email"
                 type="email"
                 {...register('email')}
                 error={errors.email?.message}
-                placeholder="center@example.com"
+                placeholder={tForm('emailPlaceholder')}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{tForm('description')}</Label>
             <textarea
               id="description"
               {...register('description')}
               rows={4}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-              placeholder="Additional information about this center..."
+              placeholder={tForm('descriptionPlaceholder')}
             />
             {errors.description && (
               <p className="text-sm text-red-600">{errors.description.message}</p>
@@ -175,7 +194,7 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="colorHex">Center Color (Optional)</Label>
+            <Label htmlFor="colorHex">{tForm('centerColorOptional')}</Label>
             <div className="flex items-center gap-3">
               <div className="relative">
                 <input
@@ -209,14 +228,12 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
                     }
                   }}
                   error={errors.colorHex?.message}
-                  placeholder="#253046"
+                  placeholder={tForm('colorPlaceholder')}
                   className="font-mono"
                 />
               </div>
             </div>
-            <p className="text-sm text-slate-500">
-              Choose a color for this center's card in Board view. The header will use this color, and the body will use a lighter shade.
-            </p>
+            <p className="text-sm text-slate-500">{tForm('colorHint')}</p>
           </div>
 
           <DialogFooter>
@@ -226,14 +243,14 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              {isSubmitting ? 'Creating...' : 'Create Center'}
+              {isSubmitting ? tForm('creating') : tForm('createCenter')}
             </Button>
           </DialogFooter>
         </form>

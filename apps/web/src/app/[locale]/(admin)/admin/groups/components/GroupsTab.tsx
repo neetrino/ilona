@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { List, LayoutGrid } from 'lucide-react';
 import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
@@ -29,9 +29,10 @@ interface SelectAllCheckboxProps {
   indeterminate: boolean;
   onChange: () => void;
   disabled?: boolean;
+  ariaLabel: string;
 }
 
-function SelectAllCheckbox({ checked, indeterminate, onChange, disabled }: SelectAllCheckboxProps) {
+function SelectAllCheckbox({ checked, indeterminate, onChange, disabled, ariaLabel }: SelectAllCheckboxProps) {
   const checkboxRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -49,9 +50,17 @@ function SelectAllCheckbox({ checked, indeterminate, onChange, disabled }: Selec
       onChange={onChange}
       onClick={(e) => e.stopPropagation()}
       disabled={disabled}
-      aria-label="Select all"
+      aria-label={ariaLabel}
     />
   );
+}
+
+function getOccupancyLabelKey(
+  status: ReturnType<typeof getGroupOccupancyMeta>['status']
+): 'occupancyFull' | 'occupancyFilling' | 'occupancyRed' {
+  if (status === 'full') return 'occupancyFull';
+  if (status === 'filling') return 'occupancyFilling';
+  return 'occupancyRed';
 }
 
 interface GroupsTabProps {
@@ -81,6 +90,8 @@ export function GroupsTab({
   selectedCenterId = null,
 }: GroupsTabProps) {
   const locale = useLocale();
+  const t = useTranslations('groups');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
   /** Captured at open; optimistic updates must not change dialog copy */
@@ -166,7 +177,7 @@ export function GroupsTab({
       setStatusDialog(null);
     } catch (err: unknown) {
       setStatusDialogError(
-        getErrorMessage(err, 'Could not update group status. Please try again.')
+        getErrorMessage(err, t('statusUpdateFailed'))
       );
     }
   };
@@ -291,7 +302,7 @@ export function GroupsTab({
   const selectedStudentId = searchParams.get('studentId');
   const { data: studentsGroupData } = useGroup(studentsGroupId ?? '', !!studentsGroupId);
   const studentsModalGroupName =
-    groups.find((g) => g.id === studentsGroupId)?.name ?? studentsGroupData?.name ?? 'Group';
+    groups.find((g) => g.id === studentsGroupId)?.name ?? studentsGroupData?.name ?? t('groupFallback');
 
   const openStudentsModal = (groupId: string) => {
     updateUrl({ studentsGroup: groupId, studentId: null });
@@ -318,165 +329,186 @@ export function GroupsTab({
     return allCenters.filter((c) => c.name.toLowerCase().includes(q));
   }, [allCenters, searchQuery]);
 
-  const groupColumns = [
-    {
-      key: 'checkbox',
-      header: (
-        <SelectAllCheckbox
-          checked={allGroupsSelected}
-          indeterminate={someGroupsSelected}
-          onChange={handleSelectAllGroups}
-          disabled={deleteGroup.isPending || isLoading}
-        />
-      ),
-      render: (group: Group) => (
-        <input
-          type="checkbox"
-          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          checked={selectedGroupIds.has(group.id)}
-          onChange={() => handleToggleSelectGroup(group.id)}
-          onClick={(e) => e.stopPropagation()}
-          disabled={deleteGroup.isPending || isLoading}
-          aria-label={`Select ${group.name}`}
-        />
-      ),
-      className: '!pl-4 !pr-2 w-12',
-    },
-    {
-      key: 'center',
-      header: 'Center',
-      render: (group: Group) => (
-        <span className="text-[#3b3b40]">{group.center?.name || '—'}</span>
-      ),
-    },
-    {
-      key: 'name',
-      header: 'Group',
-      render: (group: Group) => (
-        <div className="flex items-start gap-2.5">
-          <span className="mt-0.5 shrink-0" aria-hidden>
-            <GroupIconDisplay iconKey={group.iconKey} size={22} />
-          </span>
-          <div className="min-w-0">
-            <p className="font-semibold text-[#3b3b40]">{group.name}</p>
-            <p className="text-sm text-[#8b8b90]">{group.description || 'No description'}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'level',
-      header: 'Level',
-      render: (group: Group) => (
-        group.level ? (
-          <Badge variant="info">{group.level}</Badge>
-        ) : (
-          <span className="text-[#8b8b90]">—</span>
-        )
-      ),
-    },
-    {
-      key: 'teacher',
-      header: 'Teacher',
-      render: (group: Group) => {
-        if (!group.teacher) {
-          return <span className="text-amber-600 text-sm">Not assigned</span>;
-        }
-        const firstName = group.teacher.user?.firstName || '';
-        const lastName = group.teacher.user?.lastName || '';
-        const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
-        return (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#f1f1f2] flex items-center justify-center text-[#3b3b40] text-sm font-medium">
-              {initials}
+  const groupColumns = useMemo(
+    () => [
+      {
+        key: 'checkbox',
+        header: (
+          <SelectAllCheckbox
+            checked={allGroupsSelected}
+            indeterminate={someGroupsSelected}
+            onChange={handleSelectAllGroups}
+            disabled={deleteGroup.isPending || isLoading}
+            ariaLabel={t('selectAll')}
+          />
+        ),
+        render: (group: Group) => (
+          <input
+            type="checkbox"
+            className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            checked={selectedGroupIds.has(group.id)}
+            onChange={() => handleToggleSelectGroup(group.id)}
+            onClick={(e) => e.stopPropagation()}
+            disabled={deleteGroup.isPending || isLoading}
+            aria-label={t('selectGroupAria', { name: group.name })}
+          />
+        ),
+        className: '!pl-4 !pr-2 w-12',
+      },
+      {
+        key: 'center',
+        header: tCommon('center'),
+        render: (group: Group) => (
+          <span className="text-[#3b3b40]">{group.center?.name || '—'}</span>
+        ),
+      },
+      {
+        key: 'name',
+        header: tCommon('group'),
+        render: (group: Group) => (
+          <div className="flex items-start gap-2.5">
+            <span className="mt-0.5 shrink-0" aria-hidden>
+              <GroupIconDisplay iconKey={group.iconKey} size={22} />
+            </span>
+            <div className="min-w-0">
+              <p className="font-semibold text-[#3b3b40]">{group.name}</p>
+              <p className="text-sm text-[#8b8b90]">{group.description || t('noDescription')}</p>
             </div>
-            <span className="text-[#3b3b40]">{firstName} {lastName}</span>
           </div>
-        );
+        ),
       },
-    },
-    {
-      key: 'students',
-      header: 'Students',
-      className: 'text-center',
-      render: (group: Group) => {
-        const count = group._count?.students || 0;
-        return (
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => openStudentsModal(group.id)}
-              className="underline decoration-[#8b8b90] underline-offset-2 hover:decoration-[#1010a3] hover:text-[#1010a3] font-medium text-[#3b3b40] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded inline"
-              title="View students in this group"
-            >
-              {count}/{group.maxStudents}
-            </button>
-          </div>
-        );
+      {
+        key: 'level',
+        header: tCommon('level'),
+        render: (group: Group) => (
+          group.level ? (
+            <Badge variant="info">{group.level}</Badge>
+          ) : (
+            <span className="text-[#8b8b90]">—</span>
+          )
+        ),
       },
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      className: 'text-center',
-      render: (group: Group) => {
-        const count = group._count?.students || 0;
-        const occupancy = getGroupOccupancyMeta(count);
-        const dotColorClass =
-          occupancy.status === 'full'
-            ? 'bg-green-500'
-            : occupancy.status === 'filling'
-              ? 'bg-yellow-500'
-              : 'bg-red-500';
+      {
+        key: 'teacher',
+        header: tCommon('teacher'),
+        render: (group: Group) => {
+          if (!group.teacher) {
+            return <span className="text-amber-600 text-sm">{tCommon('notAssigned')}</span>;
+          }
+          const firstName = group.teacher.user?.firstName || '';
+          const lastName = group.teacher.user?.lastName || '';
+          const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
+          return (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#f1f1f2] flex items-center justify-center text-[#3b3b40] text-sm font-medium">
+                {initials}
+              </div>
+              <span className="text-[#3b3b40]">{firstName} {lastName}</span>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'students',
+        header: t('studentsCount'),
+        className: 'text-center',
+        render: (group: Group) => {
+          const count = group._count?.students || 0;
+          return (
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => openStudentsModal(group.id)}
+                className="underline decoration-[#8b8b90] underline-offset-2 hover:decoration-[#1010a3] hover:text-[#1010a3] font-medium text-[#3b3b40] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded inline"
+                title={t('viewStudentsInGroup')}
+              >
+                {count}/{group.maxStudents}
+              </button>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'status',
+        header: tCommon('status'),
+        className: 'text-center',
+        render: (group: Group) => {
+          const count = group._count?.students || 0;
+          const occupancy = getGroupOccupancyMeta(count);
+          const dotColorClass =
+            occupancy.status === 'full'
+              ? 'bg-green-500'
+              : occupancy.status === 'filling'
+                ? 'bg-yellow-500'
+                : 'bg-red-500';
 
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <span
-              className={cn('inline-flex h-2.5 w-2.5 rounded-full', dotColorClass)}
-              aria-hidden="true"
-            />
-            <span className="text-sm font-medium text-[#3b3b40]">{occupancy.label}</span>
-          </div>
-        );
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <span
+                className={cn('inline-flex h-2.5 w-2.5 rounded-full', dotColorClass)}
+                aria-hidden="true"
+              />
+              <span className="text-sm font-medium text-[#3b3b40]">
+                {t(getOccupancyLabelKey(occupancy.status))}
+              </span>
+            </div>
+          );
+        },
       },
-    },
-    {
-      key: 'actions',
-      header: 'Actions',
-      render: (group: Group) => (
-        <ActionButtons
-          onEdit={() => handleEditGroupIdChange(group.id)}
-          onDisable={() => openGroupStatusDialog(group.id, group.isActive)}
-          onDelete={() => handleDeleteClick(group.id)}
-          isActive={group.isActive}
-          disableDisabled={isGroupStatusTogglePending}
-          ariaLabels={{
-            edit: 'Edit group',
-            disable: group.isActive ? 'Deactivate group' : 'Activate group',
-            delete: 'Delete group',
-          }}
-          titles={{
-            edit: 'Edit group',
-            disable: group.isActive ? 'Deactivate group' : 'Activate group',
-            delete: 'Delete group',
-          }}
-        />
-      ),
-    },
-  ];
+      {
+        key: 'actions',
+        header: tCommon('actions'),
+        render: (group: Group) => (
+          <ActionButtons
+            onEdit={() => handleEditGroupIdChange(group.id)}
+            onDisable={() => openGroupStatusDialog(group.id, group.isActive)}
+            onDelete={() => handleDeleteClick(group.id)}
+            isActive={group.isActive}
+            disableDisabled={isGroupStatusTogglePending}
+            ariaLabels={{
+              edit: t('editGroup'),
+              disable: group.isActive ? t('deactivateGroup') : t('activateGroup'),
+              delete: t('deleteGroup'),
+            }}
+            titles={{
+              edit: t('editGroup'),
+              disable: group.isActive ? t('deactivateGroup') : t('activateGroup'),
+              delete: t('deleteGroup'),
+            }}
+          />
+        ),
+      },
+    ],
+    [
+      allGroupsSelected,
+      someGroupsSelected,
+      handleSelectAllGroups,
+      deleteGroup.isPending,
+      isLoading,
+      selectedGroupIds,
+      handleToggleSelectGroup,
+      t,
+      tCommon,
+      openStudentsModal,
+      handleEditGroupIdChange,
+      openGroupStatusDialog,
+      handleDeleteClick,
+      isGroupStatusTogglePending,
+    ]
+  );
 
   return (
     <div className="space-y-6">
       {selectedCenterId && viewMode === 'list' && (
         <nav
           className="flex flex-wrap items-center gap-2 text-sm text-[#3b3b40]"
-          aria-label="Breadcrumb"
+          aria-label={t('breadcrumb')}
         >
           <Link
             href={`/${locale}/admin/groups`}
             className="font-medium text-[#1010a3] hover:text-[#1010a3]/80 hover:underline"
           >
-            Centers
+            {t('centers')}
           </Link>
           <span className="text-[#8b8b90]" aria-hidden>
             /
@@ -487,7 +519,7 @@ export function GroupsTab({
           <span className="text-[#8b8b90]" aria-hidden>
             /
           </span>
-          <span className="text-[#8b8b90]">Groups</span>
+          <span className="text-[#8b8b90]">{t('groupsLabel')}</span>
         </nav>
       )}
 
@@ -495,34 +527,34 @@ export function GroupsTab({
       <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
         {showBoardCenterPicker ? (
           <>
-            <StatCard title="Centers" value={allCenters.length} />
+            <StatCard title={t('centers')} value={allCenters.length} />
             <StatCard
-              title="Total Groups"
+              title={t('totalGroups')}
               value={totalGroupsAcrossCenters}
-              change={{ value: 'Across all centers', type: 'neutral' }}
+              change={{ value: t('acrossAllCenters'), type: 'neutral' }}
             />
-            <StatCard title="Students Enrolled" value="—" change={{ value: 'Open a center', type: 'neutral' }} />
-            <StatCard title="Avg Group Size" value="—" change={{ value: 'Per-center view', type: 'neutral' }} />
+            <StatCard title={t('studentsEnrolled')} value="—" change={{ value: t('openACenter'), type: 'neutral' }} />
+            <StatCard title={t('avgGroupSize')} value="—" change={{ value: t('perCenterView'), type: 'neutral' }} />
           </>
         ) : (
           <>
             <StatCard
-              title="Total Groups"
+              title={t('totalGroups')}
               value={totalGroups}
             />
             <StatCard
-              title="Active Groups"
+              title={t('activeGroups')}
               value={activeGroups || totalGroups}
-              change={{ value: 'Currently running', type: 'positive' }}
+              change={{ value: t('currentlyRunning'), type: 'positive' }}
             />
             <StatCard
-              title="Students Enrolled"
+              title={t('studentsEnrolled')}
               value={totalStudentsInGroups}
             />
             <StatCard
-              title="Avg Group Size"
+              title={t('avgGroupSize')}
               value={averageGroupSize}
-              change={{ value: 'students per group', type: 'neutral' }}
+              change={{ value: t('studentsPerGroup'), type: 'neutral' }}
             />
           </>
         )}
@@ -538,8 +570,8 @@ export function GroupsTab({
             type="search"
             placeholder={
               viewMode === 'board' && !activeCenterId
-                ? 'Search branches by name...'
-                : 'Search groups by name...'
+                ? t('searchBranchesPlaceholder')
+                : t('searchGroupsPlaceholder')
             }
             value={searchQuery}
             onChange={onSearchChange}
@@ -552,7 +584,7 @@ export function GroupsTab({
             onClick={handleBulkDeleteGroupsClick}
             disabled={deleteGroup.isPending || isLoading}
           >
-            Delete All ({selectedGroupIds.size})
+            {t('deleteAll', { count: selectedGroupIds.size })}
           </Button>
         )}
         <div className="inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
@@ -574,7 +606,7 @@ export function GroupsTab({
             aria-pressed={viewMode === 'list'}
           >
             <List className="w-4 h-4" />
-            List
+            {t('listView')}
           </button>
           <button
             onClick={() => {
@@ -593,7 +625,7 @@ export function GroupsTab({
             aria-pressed={viewMode === 'board'}
           >
             <LayoutGrid className="w-4 h-4" />
-            Board
+            {t('boardView')}
           </button>
         </div>
 
@@ -601,7 +633,7 @@ export function GroupsTab({
           className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"
           onClick={() => handleCreateGroupOpenChange(true)}
         >
-          + Add Group
+          {t('addGroupButton')}
         </Button>
       </div>
 
@@ -610,15 +642,15 @@ export function GroupsTab({
         <div className="mb-6 overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.07)]/90 bg-white shadow-sm">
           <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
             {isLoadingBranchTabs ? (
-              <div className="py-4 text-sm text-[#8b8b90]">Loading branches...</div>
+              <div className="py-4 text-sm text-[#8b8b90]">{t('loadingBranches')}</div>
             ) : allCenters.length === 0 ? (
-              <div className="py-4 text-sm text-[#8b8b90]">No branches found. Create a center first.</div>
+              <div className="py-4 text-sm text-[#8b8b90]">{t('noBranchesCreateCenter')}</div>
             ) : (
               <div className="overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <nav
                   className="flex min-w-max items-center gap-2.5"
                   role="tablist"
-                  aria-label="Branches"
+                  aria-label={t('branches')}
                 >
                   {centersForBranchTabs.map((center) => {
                     const count = center._count?.groups ?? 0;
@@ -689,26 +721,26 @@ export function GroupsTab({
               </div>
             )}
             {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
-              <p className="py-4 text-sm text-[#8b8b90]">No branches match your search.</p>
+              <p className="py-4 text-sm text-[#8b8b90]">{t('noBranchesMatch')}</p>
             )}
           </div>
 
           <div
             className="p-4 sm:p-5"
             role="tabpanel"
-            aria-label={activeBranchTabId ? 'Groups for selected branch' : 'Select a branch'}
+            aria-label={activeBranchTabId ? t('tabpanelGroupsForBranch') : t('tabpanelSelectBranch')}
           >
             {showBoardCenterPicker ? (
               <div className="rounded-lg border border-dashed border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60 py-12 text-center">
                 <p className="text-sm text-[#8b8b90]">
-                  Select a branch tab above — groups will appear here.
+                  {t('selectBranchHint')}
                 </p>
               </div>
             ) : isLoading ? (
-              <div className="flex justify-center py-12 text-sm text-[#8b8b90]">Loading groups…</div>
+              <div className="flex justify-center py-12 text-sm text-[#8b8b90]">{t('loadingGroups')}</div>
             ) : groups.length === 0 ? (
               <div className="flex justify-center py-12 text-sm text-[#8b8b90]">
-                {searchQuery ? 'No groups match your search' : 'No groups in this branch'}
+                {searchQuery ? t('noGroupsMatch') : t('noGroupsInBranch')}
               </div>
             ) : (
               <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -742,13 +774,17 @@ export function GroupsTab({
             data={groups}
             keyExtractor={(group) => group.id}
             isLoading={isLoading}
-            emptyMessage={searchQuery ? "No groups match your search" : "No groups found"}
+            emptyMessage={searchQuery ? t('noGroupsMatch') : t('noGroupsFound')}
           />
 
           {/* Pagination */}
           <div className="flex items-center justify-between text-sm text-[#8b8b90]">
             <span>
-              Showing {Math.min(page * pageSize + 1, totalGroups)}-{Math.min((page + 1) * pageSize, totalGroups)} of {totalGroups} groups
+              {t('showingGroups', {
+                start: Math.min(page * pageSize + 1, totalGroups),
+                end: Math.min((page + 1) * pageSize, totalGroups),
+                total: totalGroups,
+              })}
             </span>
             <div className="flex items-center gap-2">
               <button 
@@ -763,7 +799,7 @@ export function GroupsTab({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <span>Page {page + 1} of {totalPages || 1}</span>
+              <span>{t('pageOf', { current: page + 1, total: totalPages || 1 })}</span>
               <button 
                 className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50"
                 disabled={page >= totalPages - 1}
@@ -826,11 +862,11 @@ export function GroupsTab({
           }
         }}
         onConfirm={handleBulkDeleteGroupsConfirm}
-        itemName={selectedGroupIds.size > 0 ? `${selectedGroupIds.size} ${selectedGroupIds.size === 1 ? 'group' : 'groups'}` : undefined}
+        itemName={selectedGroupIds.size > 0 ? `${selectedGroupIds.size} ${selectedGroupIds.size === 1 ? t('groupWord') : t('groupsWord')}` : undefined}
         isLoading={deleteGroup.isPending}
         error={bulkDeleteError || undefined}
         itemType="group"
-        title="Delete Groups"
+        title={t('deleteGroupsTitle')}
       />
 
       <GroupStudentsModal
@@ -853,9 +889,9 @@ export function GroupsTab({
       {bulkDeleteSuccess && (
         <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
           <p className="text-sm text-green-600 font-medium">
-            {deletedCount > 0 
-              ? `${deletedCount} ${deletedCount === 1 ? 'group' : 'groups'} deleted successfully!`
-              : 'Groups deleted successfully!'}
+            {deletedCount > 0
+              ? t('groupDeletedCount', { count: deletedCount })
+              : t('groupsDeletedSuccess')}
           </p>
         </div>
       )}

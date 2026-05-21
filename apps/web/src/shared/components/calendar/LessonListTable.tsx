@@ -60,6 +60,8 @@ export function LessonListTable({
 }: LessonListTableProps) {
   const locale = useLocale();
   const tCal = useTranslations('calendar');
+  const tCommon = useTranslations('common');
+  const tActions = useTranslations('calendar.lessonActions');
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
   const [sectionedListPage, setSectionedListPage] = useState(1);
   const { user } = useAuthStore();
@@ -232,8 +234,8 @@ export function LessonListTable({
         <div className="px-6 py-3 bg-blue-50 border-b border-slate-200 flex items-center justify-between gap-4">
           <span className="text-sm font-medium text-blue-900">
             {selectedLessons.size === 0
-              ? 'Select lessons with the checkboxes to delete multiple at once.'
-              : `${selectedLessons.size} lesson${selectedLessons.size !== 1 ? 's' : ''} selected`}
+              ? tCal('bulkSelectHint')
+              : tCal('lessonsSelected', { count: selectedLessons.size })}
           </span>
           <Button
             variant="destructive"
@@ -241,7 +243,7 @@ export function LessonListTable({
             onClick={handleBulkDelete}
             disabled={bulkDeleteDisabled}
           >
-            Delete selected
+            {tCal('deleteSelected')}
           </Button>
         </div>
       )}
@@ -258,8 +260,12 @@ export function LessonListTable({
                   onCheckedChange={handleSelectAll}
                 />
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Lesson Name</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[120px]">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
+                {tCal('columnLessonName')}
+              </th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[120px]">
+                {tCommon('status')}
+              </th>
               {sectionedCalendarList && (
                 <th className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase min-w-[7rem]">
                   {tCal('scheduleCategoryColumn')}
@@ -276,13 +282,13 @@ export function LessonListTable({
                     )}
                     aria-label={
                       sortBy !== 'scheduledAt'
-                        ? 'Sort by Date & Time'
+                        ? tCal('sortByDateTime')
                         : sortOrder === 'asc'
-                          ? 'Sorted by Date & Time ascending. Click to sort descending.'
-                          : 'Sorted by Date & Time descending. Click to sort ascending.'
+                          ? tCal('sortByDateTimeAsc')
+                          : tCal('sortByDateTimeDesc')
                     }
                   >
-                    <span>Date & Time</span>
+                    <span>{tCal('columnDateTime')}</span>
                     <span className="flex-shrink-0">
                       {sortBy === 'scheduledAt' ? (
                         sortOrder === 'asc' ? (
@@ -296,18 +302,32 @@ export function LessonListTable({
                     </span>
                   </button>
                 ) : (
-                  'Date & Time'
+                  tCal('columnDateTime')
                 )}
               </th>
               {!hideTeacherColumn && (
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Teacher</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
+                  {tCommon('teacher')}
+                </th>
               )}
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Absence</th>
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Feedbacks</th>
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Voice</th>
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Text</th>
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Daily Plan</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Actions</th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('absenceLabel')}
+              </th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('feedbackLabel')}
+              </th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('voiceLabel')}
+              </th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('textLabel')}
+              </th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('dailyPlanLabel')}
+              </th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">
+                {tCommon('actions')}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
