@@ -562,14 +562,14 @@ html:has(.home-page) body {
 }
 
 .home-about-badge-since {
-  left: 2%;
+  left: 18%;
   top: 8%;
   background: var(--home-about-badge-red);
   transform: rotate(-12deg);
 }
 
 .home-about-badge-years {
-  right: 18%;
+  right: 6%;
   top: 42%;
   background: var(--home-about-badge-blue);
   transform: rotate(12deg);
@@ -676,28 +676,45 @@ html:has(.home-page) body {
   .home-about-visual {
     order: 2;
   }
+
+  .home-about {
+    --home-about-flag-shift-x: 0cqw;
+    --home-about-flag-shift-y: 46cqh;
+    --home-about-flag-scale: 1.34;
+  }
+
+  .home-about-flag {
+    left: 20%;
+    width: 76%;
+    height: 68%;
+    transform-origin: 20% 88%;
+  }
 }
 
 /* Phone */
 @media (max-width: 639px) {
   .home-about {
     --home-about-stage-h: clamp(16.5rem, 58vw, 20rem);
+    --home-about-flag-shift-x: -2cqw;
+    --home-about-flag-shift-y: 42cqh;
+    --home-about-flag-scale: 1.24;
   }
 
   .home-about-badge-since {
-    left: 0;
+    left: 16%;
     top: 4%;
   }
 
   .home-about-badge-years {
-    right: 8%;
+    right: 0;
     top: 38%;
   }
 
   .home-about-flag {
-    left: 24%;
-    width: 90%;
-    height: 74%;
+    left: 14%;
+    width: 70%;
+    height: 64%;
+    transform-origin: 16% 88%;
   }
 
   .home-about-stats {
@@ -799,12 +816,12 @@ html:has(.home-page) body {
   }
 
   .home-about-badge-since {
-    left: 6%;
+    left: 22%;
     top: 10%;
   }
 
   .home-about-badge-years {
-    right: 22%;
+    right: 10%;
     top: 44%;
   }
 
