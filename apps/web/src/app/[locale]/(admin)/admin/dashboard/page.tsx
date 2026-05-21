@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
   return (
     <DashboardLayout title={t('title')} subtitle={subtitle} promoBanner={promoBanner}>
       <div className={portalPageStackClass}>
-        <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-[clamp(0.75rem,1.5vw,1.5rem)] sm:grid-cols-2 lg:grid-cols-3">
           <StatCard
             title={t('totalTeachers')}
             value={stats?.teachers.total || 0}
@@ -82,12 +82,12 @@ export default function AdminDashboardPage() {
 
         {!isManager && <RevenueBlock />}
 
-        <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-[clamp(0.75rem,1.5vw,1.5rem)] lg:grid-cols-2">
           <UnpaidStudentsBlock />
           <AtRiskStudentsBlock />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-[clamp(0.75rem,1.5vw,1.5rem)] lg:grid-cols-2">
           <GroupsWithCapacityBlock centerId={managerCenterId} />
           <BranchScheduleBlock centerId={managerCenterId} />
         </div>

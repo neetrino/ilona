@@ -18,8 +18,8 @@ export function CRMFilters({
   groups,
 }: CRMFiltersProps) {
   return (
-    <div className="flex flex-wrap items-end gap-4">
-      <div className="min-w-[200px]">
+    <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] items-end">
+      <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">Search</label>
         <input
           type="search"

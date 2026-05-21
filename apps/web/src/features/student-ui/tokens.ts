@@ -8,18 +8,13 @@ export const studentColors = {
   shell: '#ececec',
 } as const;
 
-export const studentCardClass =
-  'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6';
-
-export const studentInnerCardClass =
-  'rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4';
-
-export const studentPageStackClass = 'flex w-full min-w-0 flex-col gap-5 lg:gap-6';
-
-export const studentSectionTitleClass =
-  'text-base font-semibold tracking-tight text-[#1010a3]';
-
-export const studentSectionSubtitleClass = 'mt-1 text-xs text-[#8b8b90]';
+export {
+  portalCardClass as studentCardClass,
+  portalInnerCardClass as studentInnerCardClass,
+  portalPageStackClass as studentPageStackClass,
+  portalSectionTitleClass as studentSectionTitleClass,
+  portalSectionSubtitleClass as studentSectionSubtitleClass,
+} from '@/shared/lib/portal-responsive';
 
 export const studentLabelClass = 'mb-1.5 block text-xs font-medium tracking-wide text-[#8b8b90]';
 

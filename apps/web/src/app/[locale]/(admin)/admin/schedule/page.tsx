@@ -122,6 +122,7 @@ export default function AdminSchedulePage() {
       title={t('schedule')}
       subtitle="Weekly and monthly schedule for upcoming lessons"
     >
+      <div className="w-full min-w-0">
       <ScheduleBoard
         lessons={lessons}
         isLoading={isLoading || isLessonsLoading}
@@ -172,6 +173,7 @@ export default function AdminSchedulePage() {
         onPeriodNavigate={onPeriodNavigate}
         onGoToToday={() => setCurrentDate(new Date())}
       />
+      </div>
     </DashboardLayout>
   );
 }

@@ -396,7 +396,7 @@ export default function AdminCrmPage() {
   return (
     <DashboardLayout title={t('crm')} subtitle="Lead management">
       <CrmExclusiveAudioProvider>
-        <div className="space-y-4">
+        <div className="w-full min-w-0 space-y-4">
         {/* View toggle + Filters */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -499,9 +499,10 @@ export default function AdminCrmPage() {
         )}
 
         {isLoading && viewMode === 'board' && (
+          <div className="w-full min-w-0 overflow-x-auto pb-1">
           <div
-            className="grid gap-4 pb-4 w-full min-w-0"
-            style={{ gridTemplateColumns: `repeat(${boardColumnStatuses.length}, minmax(160px, 1fr))` }}
+            className="grid gap-3 pb-4 w-max min-w-full sm:gap-4"
+            style={{ gridTemplateColumns: `repeat(${boardColumnStatuses.length}, minmax(min(11rem,42vw), 1fr))` }}
           >
             {boardColumnStatuses.map((s) => (
               <div
@@ -516,6 +517,7 @@ export default function AdminCrmPage() {
                 </div>
               </div>
             ))}
+          </div>
           </div>
         )}
         </div>

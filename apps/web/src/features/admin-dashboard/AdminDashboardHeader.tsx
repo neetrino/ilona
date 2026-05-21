@@ -25,8 +25,8 @@ export function AdminDashboardHeader({
   const firstName = user?.firstName ?? tNav('user');
   const isSubpage = Boolean(pageTitle);
   return (
-    <header className="shrink-0 bg-[#ececec] px-3 py-3 sm:px-6 lg:px-8">
-      <div className="w-full min-w-0 rounded-[2rem] border border-[rgba(14,14,16,0.07)] bg-white px-3 py-4 sm:rounded-[4rem] sm:px-5 sm:py-5">
+    <header className="shrink-0 bg-[#ececec] px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.5rem,1vw,0.75rem)]">
+      <div className="w-full min-w-0 rounded-[1.5rem] border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.75rem,1.5vw,1.25rem)] sm:rounded-[2rem] lg:rounded-[4rem]">
         <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {onMenuClick ? (

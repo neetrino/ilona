@@ -86,7 +86,7 @@ export function FinanceFilters({
                 onSalaryStatusChange(e.target.value as SalaryStatus | '');
               }
             }}
-            className="pl-4 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] appearance-none cursor-pointer min-w-[160px]"
+            className="w-full min-w-0 pl-4 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] appearance-none cursor-pointer sm:min-w-[9rem] sm:w-auto"
           >
             <option value="">All statuses</option>
             {activeTab === 'payments' ? (

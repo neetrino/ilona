@@ -44,10 +44,10 @@ export function TeachersFilters({
   isUpdating = false,
 }: TeachersFiltersProps) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-end gap-4">
+    <div className="space-y-4 w-full min-w-0">
+      <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
       {/* Search and Status - equal width in one row */}
-      <div className="grid grid-cols-2 gap-4 flex-1 min-w-0">
+      <div className="grid grid-cols-1 gap-3 flex-1 min-w-0 sm:grid-cols-2 sm:gap-4">
       {/* Search by Keywords */}
       <div className="min-w-0">
         <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
@@ -107,7 +107,7 @@ export function TeachersFilters({
       </div>
 
       {/* View Mode Toggle */}
-      <div className="flex-shrink-0 inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
+      <div className="inline-flex w-full shrink-0 rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm sm:w-auto">
         <button
           onClick={() => onViewModeChange('list')}
           className={cn(
@@ -139,9 +139,9 @@ export function TeachersFilters({
       </div>
 
       {/* Add Teacher Button */}
-      <div className="flex-shrink-0">
+      <div className="w-full shrink-0 sm:w-auto">
         <Button 
-          className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1010a3] px-6 py-3 font-medium text-white hover:bg-[#1010a3]/90 sm:w-auto"
           onClick={onAddTeacher}
           disabled={isDeleting}
         >

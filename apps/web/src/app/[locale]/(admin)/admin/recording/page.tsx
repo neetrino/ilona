@@ -528,8 +528,9 @@ export default function AdminRecordingPage() {
       title={t('recordings')}
       subtitle="All student voice recordings in a single searchable table"
     >
+      <div className={portalPageStackClass}>
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+      <div className="mb-2 grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))]">
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
             label="Group"
@@ -804,6 +805,7 @@ export default function AdminRecordingPage() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </DashboardLayout>
   );

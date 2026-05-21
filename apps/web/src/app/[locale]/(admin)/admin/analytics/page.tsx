@@ -175,7 +175,7 @@ export default function AdminAnalyticsPage() {
 
   return (
     <DashboardLayout title={t('title')} subtitle={t('adminSubtitle')}>
-      <div className="flex border-b border-[rgba(14,14,16,0.07)] mb-6 overflow-x-auto">
+      <div className="mb-6 flex w-full min-w-0 overflow-x-auto border-b border-[rgba(14,14,16,0.07)] [-webkit-overflow-scrolling:touch]">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -197,7 +197,7 @@ export default function AdminAnalyticsPage() {
 
       {activeTab === 'attendance' && (
         <div className={portalPageStackClass}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid w-full min-w-0 grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
             <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
               <p className="text-sm text-[#8b8b90]">Records (30d)</p>
               <p className="text-2xl font-bold text-[#1010a3]">
@@ -248,7 +248,7 @@ export default function AdminAnalyticsPage() {
               }}
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             <div className="bg-green-50 border border-green-200 rounded-xl p-4">
               <p className="text-sm text-green-600">Total Income</p>
               <p className="text-2xl font-bold text-green-700">
@@ -292,7 +292,7 @@ export default function AdminAnalyticsPage() {
             <div className="p-4 border-b border-[rgba(14,14,16,0.07)]">
               <h3 className="font-semibold text-[#3b3b40]">Breakdown</h3>
             </div>
-            <div className="overflow-x-auto">
+            <div className="w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
               <table className="w-full">
                 <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
                   <tr>
@@ -411,7 +411,7 @@ export default function AdminAnalyticsPage() {
               </span>
             </div>
           </div>
-          <div className="overflow-x-auto">
+          <div className="w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
             <table className="w-full">
               <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
                 <tr>

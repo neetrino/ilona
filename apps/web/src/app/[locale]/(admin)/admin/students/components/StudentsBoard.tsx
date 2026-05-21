@@ -49,8 +49,8 @@ export function StudentsBoard({
   }
 
   return (
-    <div className="w-full overflow-x-auto">
-      <div className="flex gap-4 pb-4 min-w-max">
+    <div className="w-full min-w-0 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
+      <div className="flex gap-3 pb-4 sm:gap-4">
         {/* Center Columns */}
         {allCenters
           .filter((center) => {
@@ -63,7 +63,7 @@ export function StudentsBoard({
             return (
               <div
                 key={center.id}
-                className="flex-shrink-0 w-80 bg-[#fafafa] rounded-xl border border-[rgba(14,14,16,0.07)] flex flex-col"
+                className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]"
               >
                 {/* Column Header */}
                 <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
@@ -114,7 +114,7 @@ export function StudentsBoard({
         
         {/* Unassigned Students Column */}
         {studentsByCenter['unassigned'] && studentsByCenter['unassigned'].length > 0 && (
-          <div className="flex-shrink-0 w-80 bg-[#fafafa] rounded-xl border border-[rgba(14,14,16,0.07)] flex flex-col">
+          <div className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]">
             {/* Column Header */}
             <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
               <h3 className="font-semibold text-[#3b3b40]">Unassigned</h3>

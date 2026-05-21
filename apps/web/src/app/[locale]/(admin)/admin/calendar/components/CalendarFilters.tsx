@@ -49,9 +49,9 @@ export function CalendarFilters({
   };
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
       {/* Search Input */}
-      <div className="flex-1 relative">
+      <div className="relative min-w-0 flex-1">
         <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
@@ -76,12 +76,12 @@ export function CalendarFilters({
       </div>
 
       {/* Teacher Filter */}
-      <div className="relative">
+      <div className="relative w-full shrink-0 sm:w-auto">
         <select
           value={selectedTeacherId}
           onChange={(e) => onTeacherChange(e.target.value)}
           disabled={isLoadingTeachers}
-          className="pl-4 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] appearance-none cursor-pointer min-w-[180px] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full min-w-0 pl-4 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] appearance-none cursor-pointer sm:min-w-[9rem] sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="">All teachers</option>
           {teacherOptions.map((teacher) => (

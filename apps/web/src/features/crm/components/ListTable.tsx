@@ -23,7 +23,8 @@ export function ListTable({
 }: ListTableProps) {
   if (isLoading) {
     return (
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="w-full min-w-0 overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
@@ -60,12 +61,14 @@ export function ListTable({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="w-full min-w-0 overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-200">
         <thead className="bg-slate-50">
           <tr>
@@ -150,6 +153,7 @@ export function ListTable({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

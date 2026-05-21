@@ -212,7 +212,7 @@ export default function AdminDailyPlanPage() {
             No daily plans match your filters.
           </div>
         ) : !managerMissingCenter ? (
-          <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
             {items.map((plan) => {
               const name = `${plan.teacher.user.firstName} ${plan.teacher.user.lastName}`;
               const lessonAt = plan.lesson?.scheduledAt

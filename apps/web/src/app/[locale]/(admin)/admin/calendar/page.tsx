@@ -464,7 +464,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid w-full min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
           <StatCard
             title="Total Lessons"
             value={stats?.total || 0}
@@ -491,8 +491,8 @@ export default function CalendarPage() {
         </div>
 
         {/* Calendar Controls */}
-        <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
-          <div className="flex items-center gap-4">
+        <div className="flex w-full min-w-0 flex-col gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-4">
             <button
               onClick={goToPreviousWeek}
               className="p-2 rounded-lg hover:bg-[#f6f6f7]"
@@ -578,7 +578,8 @@ export default function CalendarPage() {
 
         {/* Week View */}
         {viewMode === 'week' && (
-          <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] overflow-hidden">
+          <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
+            <div className="min-w-[42rem]">
             {/* Day Headers */}
             <div className="grid grid-cols-7 border-b border-[rgba(14,14,16,0.07)]">
               {weekDates.map((date, i) => (
@@ -669,11 +670,14 @@ export default function CalendarPage() {
                 );
               })}
             </div>
+            </div>
           </div>
         )}
 
         {viewMode === 'month' && (
-          <div className="h-[min(70vh,720px)] overflow-hidden bg-white rounded-xl border border-[rgba(14,14,16,0.07)] min-h-0">
+          <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
+          <div className="min-w-[36rem]">
+          <div className="h-[min(70vh,720px)] min-h-0 overflow-hidden">
             <CalendarMonthGrid<Lesson>
               monthDates={monthDates}
               getLessonsForDay={(k) => lessonsByDate[k] ?? []}
@@ -698,6 +702,8 @@ export default function CalendarPage() {
                 </button>
               )}
             />
+          </div>
+          </div>
           </div>
         )}
 

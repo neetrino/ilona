@@ -2,7 +2,7 @@
 export const STUDENT_SHELL_BG = 'bg-[#ececec]';
 
 export const STUDENT_MAIN_PADDING =
-  'px-3 py-4 sm:px-5 sm:py-5 md:px-6 lg:px-8';
+  'px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.75rem,1.5vw,1.25rem)]';
 
 /** Breakpoint where the docked sidebar is shown (matches Tailwind `lg`). */
 export const STUDENT_SIDEBAR_DESKTOP_CLASS = 'hidden lg:flex shrink-0';

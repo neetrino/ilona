@@ -95,16 +95,20 @@ export function DataTable<T>({
   }
 
   return (
-    <div className={cn(outerChrome)}>
+    <div className={cn('w-full min-w-0', outerChrome)}>
       <div
         className={cn(
-          'w-full',
-          disableHorizontalScroll ? 'overflow-x-hidden' : 'overflow-x-auto',
+          'w-full min-w-0',
+          disableHorizontalScroll ? 'overflow-x-hidden' : 'overflow-x-auto [-webkit-overflow-scrolling:touch]',
           containerClassName,
         )}
       >
         <table
-          className={cn('w-full table-auto', !disableHorizontalScroll && 'min-w-max', tableClassName)}
+          className={cn(
+            'table-auto',
+            disableHorizontalScroll ? 'w-full' : 'w-max min-w-full',
+            tableClassName,
+          )}
         >
           <thead>
             <tr className={headRowClass}>

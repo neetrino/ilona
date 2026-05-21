@@ -104,7 +104,8 @@ export function StudentsList({
 
   return (
     <>
-      {/* Students Table */}
+      {/* Students Table — scroll inside card so columns never overlap */}
+      <div className="w-full min-w-0">
       <DataTable
         columns={studentColumns}
         data={students}
@@ -119,9 +120,8 @@ export function StudentsList({
         sortOrder={sortOrder}
         onSort={onSort}
         compact
-        disableHorizontalScroll
-        tableClassName="table-fixed"
       />
+      </div>
 
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-[#8b8b90]">

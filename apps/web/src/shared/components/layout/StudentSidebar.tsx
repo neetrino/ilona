@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { StudentLogoutControl } from './StudentLogoutControl';
+import { PortalSidebarCollapseToggle } from './PortalSidebarCollapseToggle';
 import { StudentSidebarNavIcon } from './StudentSidebarNavIcon';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -162,7 +163,7 @@ export function StudentSidebar({
           ? 'w-full py-2 pl-2 pr-2'
           : cn(
               'h-screen py-3 pl-3 pr-2 sm:pl-4 sm:pr-3',
-              collapsed ? 'w-[5.5rem]' : 'w-[16.5rem] sm:w-[17rem]',
+              collapsed ? 'w-[4.5rem]' : 'w-[clamp(11.5rem,14vw,17rem)]',
             ),
       )}
     >
@@ -170,8 +171,10 @@ export function StudentSidebar({
         {/* Brand */}
         <div
           className={cn(
-            'flex shrink-0 items-center gap-3 border-b border-transparent px-4 pb-2 pt-5',
-            !showLabels && 'justify-center px-2',
+            'flex shrink-0 border-b border-transparent pb-2 pt-5',
+            showLabels
+              ? 'items-center gap-3 px-4'
+              : 'flex-col items-center gap-2 px-2',
           )}
         >
           <div className="relative h-[3.25rem] w-[3.25rem] shrink-0 overflow-hidden rounded-full">
@@ -209,22 +212,12 @@ export function StudentSidebar({
               </svg>
             </button>
           ) : null}
-          {onToggle && showLabels && !isDrawer ? (
-            <button
-              type="button"
-              onClick={onToggle}
-              className="ml-auto shrink-0 rounded-lg p-1.5 text-[#8b8b90] hover:bg-[#f6f6f7]"
-              aria-label="Toggle sidebar"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
+          {onToggle && !isDrawer ? (
+            <PortalSidebarCollapseToggle
+              collapsed={collapsed}
+              onToggle={onToggle}
+              className={showLabels ? 'ml-auto' : undefined}
+            />
           ) : null}
         </div>
 
@@ -253,18 +246,6 @@ export function StudentSidebar({
           />
         </div>
 
-        {onToggle && !showLabels && !isDrawer ? (
-          <button
-            type="button"
-            onClick={onToggle}
-            className="mx-auto mb-4 rounded-lg p-2 text-[#8b8b90] hover:bg-[#f6f6f7]"
-            aria-label="Expand sidebar"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7" />
-            </svg>
-          </button>
-        ) : null}
       </aside>
     </div>
   );

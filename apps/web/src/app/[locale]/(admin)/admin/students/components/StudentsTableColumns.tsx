@@ -250,7 +250,7 @@ function RegisterDateCell({
         type="button"
         onClick={() => !disabled && setEditing(true)}
         disabled={disabled || saving}
-        className={displayText === '—' ? 'text-[#8b8b90] hover:text-[#3b3b40]' : 'text-[#3b3b40] hover:text-[#1010a3]'}
+        className={`whitespace-nowrap ${displayText === '—' ? 'text-[#8b8b90] hover:text-[#3b3b40]' : 'text-[#3b3b40] hover:text-[#1010a3]'}`}
         title={displayText === '—' ? 'Set register date' : 'Edit register date'}
       >
         {displayText}
@@ -332,13 +332,13 @@ export function createStudentsTableColumns({
           />
         );
       },
-      className: '!pl-2 !pr-1 !w-[36px] !min-w-[36px]',
+      className: '!w-9 !min-w-9 !max-w-9 shrink-0 !pl-2 !pr-1',
     },
     {
       key: 'student',
       header: 'STUDENT',
       sortable: true,
-      className: '!pl-0 !pr-2 !w-[21%] align-top',
+      className: '!min-w-[14rem] !pl-0 !pr-2 align-top',
       render: (row: TeacherAssignedItem) => {
         const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
@@ -382,7 +382,7 @@ export function createStudentsTableColumns({
     {
       key: 'center',
       header: 'CENTER',
-      className: '!w-[14%] align-top',
+      className: '!min-w-[9.5rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
@@ -406,7 +406,7 @@ export function createStudentsTableColumns({
     {
       key: 'teacher',
       header: 'TEACHER',
-      className: '!w-[14%] align-top',
+      className: '!min-w-[9.5rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
@@ -436,7 +436,7 @@ export function createStudentsTableColumns({
     {
       key: 'group',
       header: 'GROUP',
-      className: '!w-[14%] align-top',
+      className: '!min-w-[9.5rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
@@ -468,7 +468,7 @@ export function createStudentsTableColumns({
       key: 'register',
       header: 'REGISTER',
       sortable: true,
-      className: 'text-left !w-[11%] align-top',
+      className: '!min-w-[7rem] whitespace-nowrap text-left align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         return (
@@ -485,7 +485,7 @@ export function createStudentsTableColumns({
       key: 'monthlyFee',
       header: 'MONTHLY FEE',
       sortable: true,
-      className: 'text-center !w-[10%] align-top',
+      className: '!min-w-[6.5rem] whitespace-nowrap text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
@@ -500,7 +500,7 @@ export function createStudentsTableColumns({
       key: 'absence',
       header: 'ABSENCE',
       sortable: true,
-      className: 'text-center !w-[7%] align-top',
+      className: '!min-w-[5rem] whitespace-nowrap text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
@@ -520,7 +520,7 @@ export function createStudentsTableColumns({
     {
       key: 'actions',
       header: 'ACTIONS',
-      className: '!w-[160px] !min-w-[160px] !max-w-[160px] !px-2 !py-3 text-center align-top',
+      className: '!min-w-[10.5rem] shrink-0 !px-2 !py-3 text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (

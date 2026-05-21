@@ -1,10 +1,24 @@
 /** Portal design tokens (Student / Teacher / Admin dashboards). */
 export {
-  studentCardClass as portalCardClass,
-  studentInnerCardClass as portalInnerCardClass,
-  studentPageStackClass as portalPageStackClass,
-  studentSectionTitleClass as portalSectionTitleClass,
-  studentSectionSubtitleClass as portalSectionSubtitleClass,
+  portalCardClass,
+  portalInnerCardClass,
+  portalPageStackClass,
+  portalSectionTitleClass,
+  portalSectionSubtitleClass,
+  portalFilterBarClass,
+  portalFilterActionsClass,
+  portalToolbarClass,
+  portalTableScrollClass,
+  portalKanbanScrollClass,
+  portalKanbanColumnClass,
+  portalStatsGridClass,
+  portalStatsGrid2Class,
+  portalFilterGridClass,
+  portalFilterGridDenseClass,
+  portalSelectMinClass,
+} from '@/shared/lib/portal-responsive';
+
+export {
   studentLabelClass as portalLabelClass,
   studentInputClass as portalInputClass,
   studentSelectClass as portalSelectClass,

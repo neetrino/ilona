@@ -64,9 +64,9 @@ export function StudentsFilters({
   now,
 }: StudentsFiltersProps) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="flex-1 relative">
+    <div className="w-full min-w-0 space-y-4">
+      <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative min-w-0 flex-1">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -88,7 +88,7 @@ export function StudentsFilters({
           </Button>
         )}
         {/* View Mode Toggle */}
-        <div className="inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
+        <div className="inline-flex w-full shrink-0 rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm sm:w-auto">
           <button
             onClick={() => onViewModeChange('list')}
             className={cn(
@@ -119,7 +119,7 @@ export function StudentsFilters({
           </button>
         </div>
         <Button 
-          className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"
+          className="w-full shrink-0 rounded-xl bg-[#1010a3] px-6 py-3 font-medium text-white hover:bg-[#1010a3]/90 sm:w-auto"
           onClick={onAddStudent}
         >
           + {t('addStudent')}
@@ -127,7 +127,7 @@ export function StudentsFilters({
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-3 items-end sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
         <FilterDropdown
           label="Status"
           options={statusFilterOptions}

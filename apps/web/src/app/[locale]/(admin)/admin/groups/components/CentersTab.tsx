@@ -121,7 +121,7 @@ export function CentersTab({
   return (
     <div className="space-y-6">
       {/* Centers Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         <StatCard
           title="Total Centers"
           value={totalCenters}
@@ -172,7 +172,7 @@ export function CentersTab({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))]">
             {centers.map((center) => (
               <CenterCard
                 key={center.id}

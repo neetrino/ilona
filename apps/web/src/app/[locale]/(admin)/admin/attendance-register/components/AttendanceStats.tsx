@@ -11,7 +11,7 @@ interface AttendanceStatsProps {
 
 export function AttendanceStats({ stats }: AttendanceStatsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid w-full min-w-0 grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
       <div className="bg-white rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
         <div className="text-sm text-[#3b3b40]">Total Sessions</div>
         <div className="text-2xl font-bold text-[#1010a3] mt-1">{stats.total}</div>
