@@ -125,7 +125,7 @@ export function AttendanceControls({
                 value={formatDateString(currentDate)}
                 onChange={(e) => onDateChange(e.target.value)}
                 max={getTodayDate()}
-                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
+                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-[rgba(14,14,16,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.18)] transition-colors"
                 disabled={safeSelectedGroupIds.length === 0}
               />
             </>
@@ -143,7 +143,7 @@ export function AttendanceControls({
                 >
                   ←
                 </Button>
-                <div className="flex-1 text-center px-3 py-2 border border-slate-300 rounded-lg bg-[#fafafa] text-sm font-medium">
+                <div className="flex-1 text-center px-3 py-2 border border-[rgba(14,14,16,0.12)] rounded-lg bg-[#fafafa] text-sm font-medium">
                   {formatWeekRange(currentDate)}
                 </div>
                 <Button
@@ -171,7 +171,7 @@ export function AttendanceControls({
                 >
                   ←
                 </Button>
-                <div className="flex-1 text-center px-3 py-2 border border-slate-300 rounded-lg bg-[#fafafa] text-sm font-medium">
+                <div className="flex-1 text-center px-3 py-2 border border-[rgba(14,14,16,0.12)] rounded-lg bg-[#fafafa] text-sm font-medium">
                   {formatMonthDisplay(currentDate)}
                 </div>
                 <Button
@@ -199,7 +199,7 @@ export function AttendanceControls({
                 value={absenceFilter}
                 onChange={(e) => onAbsenceFilterChange(e.target.value as AbsenceFilterType)}
                 disabled={safeSelectedGroupIds.length === 0}
-                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
+                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-[rgba(14,14,16,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.18)] transition-colors"
                 aria-label="Filter by absence type"
               >
                 {ABSENCE_FILTER_OPTIONS.map((opt) => (

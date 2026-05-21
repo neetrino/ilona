@@ -101,7 +101,7 @@ export default function SettingsPage() {
                 <div className="flex justify-end pt-2">
                   <Button
                     type="submit"
-                    className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6"
+                    className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6"
                     disabled={updateProfile.isPending}
                   >
                     {updateProfile.isPending ? t('saving') : t('saveChanges')}
@@ -153,7 +153,7 @@ export default function SettingsPage() {
                 <div className="pt-2 flex justify-end">
                   <Button
                     type="submit"
-                    className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6"
+                    className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6"
                     disabled={changePassword.isPending}
                   >
                     {changePassword.isPending ? t('updating') : t('updatePassword')}

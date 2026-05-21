@@ -87,7 +87,7 @@ export function GroupStudentsModal({
                             <button
                               type="button"
                               onClick={() => onStudentSelect(student.id)}
-                              className="underline decoration-slate-400 underline-offset-2 hover:decoration-primary hover:text-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded"
+                              className="underline decoration-[#8b8b90] underline-offset-2 hover:decoration-[#1010a3] hover:text-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded"
                               title="Open student details"
                             >
                               {student.user.firstName} {student.user.lastName}

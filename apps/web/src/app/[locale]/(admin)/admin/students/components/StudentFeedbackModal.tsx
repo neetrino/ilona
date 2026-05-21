@@ -82,7 +82,7 @@ export function StudentFeedbackModal({
         {!student ? (
           open && studentIdFromUrl ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-[rgba(14,14,16,0.07)] border-t-slate-600" />
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-[rgba(14,14,16,0.07)] border-t-[#1010a3]" />
               <span className="sr-only">Loading student…</span>
             </div>
           ) : (
@@ -93,11 +93,11 @@ export function StudentFeedbackModal({
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <span className="font-medium text-[#8b8b90]">Student</span>
-                <p className="text-slate-900 font-medium">{studentName}</p>
+                <p className="text-[#1010a3] font-medium">{studentName}</p>
               </div>
               <div>
                 <span className="font-medium text-[#8b8b90]">Teacher</span>
-                <p className="text-slate-900 font-medium">
+                <p className="text-[#1010a3] font-medium">
                   {teacherName ?? (student.teacherId ? 'Assigned (no feedback yet)' : 'Not assigned')}
                 </p>
               </div>
@@ -105,7 +105,7 @@ export function StudentFeedbackModal({
 
             {isLoading && (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-10 w-10 border-2 border-[rgba(14,14,16,0.07)] border-t-slate-600" />
+                <div className="animate-spin rounded-full h-10 w-10 border-2 border-[rgba(14,14,16,0.07)] border-t-[#1010a3]" />
                 <span className="sr-only">Loading feedback…</span>
               </div>
             )}

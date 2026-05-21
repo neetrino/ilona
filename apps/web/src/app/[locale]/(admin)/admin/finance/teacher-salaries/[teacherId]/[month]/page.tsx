@@ -222,7 +222,7 @@ export default function SalaryBreakdownPage() {
           checked={selectedLessonIds.has(lesson.lessonId)}
           onChange={(e) => handleSelectOne(lesson.lessonId, e.target.checked)}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoading}
           aria-label={`Select lesson ${lesson.lessonName}`}
         />
@@ -236,7 +236,7 @@ export default function SalaryBreakdownPage() {
         return (
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-[#3b3b40]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f1f2] text-sm font-semibold text-[#3b3b40]">
                 {teacherInitials}
               </div>
               {isSub ? <TeacherSubstituteBadge /> : null}

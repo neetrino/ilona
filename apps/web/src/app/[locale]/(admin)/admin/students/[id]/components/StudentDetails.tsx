@@ -181,7 +181,7 @@ export function StudentDetails({
                     type="checkbox"
                     id="receiveReports"
                     {...register('receiveReports')}
-                    className="w-4 h-4 rounded border-slate-300"
+                    className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)]"
                   />
                   Receive Reports
                 </Label>

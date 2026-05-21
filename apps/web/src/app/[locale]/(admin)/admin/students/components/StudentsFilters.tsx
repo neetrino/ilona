@@ -88,14 +88,14 @@ export function StudentsFilters({
           </Button>
         )}
         {/* View Mode Toggle */}
-        <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
+        <div className="inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
           <button
             onClick={() => onViewModeChange('list')}
             className={cn(
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
               'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
               viewMode === 'list'
-                ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                ? 'bg-[#1010a3] text-white shadow-md'
                 : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
             )}
             aria-pressed={viewMode === 'list'}
@@ -109,7 +109,7 @@ export function StudentsFilters({
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
               'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
               viewMode === 'board'
-                ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                ? 'bg-[#1010a3] text-white shadow-md'
                 : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
             )}
             aria-pressed={viewMode === 'board'}
@@ -119,7 +119,7 @@ export function StudentsFilters({
           </button>
         </div>
         <Button 
-          className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6 py-3 rounded-xl font-medium"
+          className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"
           onClick={onAddStudent}
         >
           + {t('addStudent')}
@@ -163,7 +163,7 @@ export function StudentsFilters({
           <select
             value={selectedMonth}
             onChange={(e) => onMonthChange(Number(e.target.value))}
-            className="w-full h-12 px-4 text-left text-sm bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
+            className="w-full h-12 px-4 text-left text-sm bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.12)] transition-colors appearance-none"
           >
             <option value={1}>January</option>
             <option value={2}>February</option>
@@ -185,7 +185,7 @@ export function StudentsFilters({
           <select
             value={selectedYear}
             onChange={(e) => onYearChange(Number(e.target.value))}
-            className="w-full h-12 px-4 text-left text-sm bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
+            className="w-full h-12 px-4 text-left text-sm bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.12)] transition-colors appearance-none"
           >
             {Array.from({ length: 5 }, (_, i) => {
               const year = now.getFullYear() - 2 + i;

@@ -105,7 +105,7 @@ export function MonthView({
       {selectedDayForMonthView && (
         <>
           {showSingleView ? (
-            <div className="bg-white rounded-xl border-2 border-slate-300 p-6 shadow-sm">
+            <div className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
               <AttendanceContextHeader
                 group={group || null}
                 date={new Date(selectedDayForMonthView)}
@@ -149,7 +149,7 @@ export function MonthView({
                 });
 
                 return (
-                  <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-slate-300 p-6 shadow-sm">
+                  <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
                     <AttendanceContextHeader
                       group={selectedGroup}
                       date={new Date(selectedDayForMonthView)}

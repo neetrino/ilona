@@ -81,7 +81,7 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
           <div className="pt-4 flex justify-end">
             <Button 
               type="submit" 
-              className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6"
+              className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6"
               disabled={isSaving}
             >
               {isSaving ? t('updating') : t('updatePassword')}

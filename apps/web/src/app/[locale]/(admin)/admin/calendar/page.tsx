@@ -521,7 +521,7 @@ export default function CalendarPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
+            <div className="inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
               <button
                 type="button"
                 onClick={() => updateViewModeInUrl('list')}
@@ -529,7 +529,7 @@ export default function CalendarPage() {
                   'px-4 py-2 text-sm font-semibold rounded-md transition-all',
                   'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'list'
-                    ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                    ? 'bg-[#1010a3] text-white shadow-md'
                     : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'list'}
@@ -543,7 +543,7 @@ export default function CalendarPage() {
                   'px-4 py-2 text-sm font-semibold rounded-md transition-all',
                   'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'week'
-                    ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                    ? 'bg-[#1010a3] text-white shadow-md'
                     : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'week'}
@@ -557,7 +557,7 @@ export default function CalendarPage() {
                   'px-4 py-2 text-sm font-semibold rounded-md transition-all',
                   'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'month'
-                    ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                    ? 'bg-[#1010a3] text-white shadow-md'
                     : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'month'}
@@ -615,8 +615,8 @@ export default function CalendarPage() {
                   >
                     {isLoading ? (
                       <div className="animate-pulse space-y-2">
-                        <div className="h-16 bg-slate-200 rounded-lg" />
-                        <div className="h-16 bg-slate-200 rounded-lg" />
+                        <div className="h-16 bg-[#f1f1f2] rounded-lg" />
+                        <div className="h-16 bg-[#f1f1f2] rounded-lg" />
                       </div>
                     ) : dayLessons.length === 0 ? (
                       <p className="text-xs text-[#8b8b90] text-center py-4">
@@ -638,7 +638,7 @@ export default function CalendarPage() {
                             } else if (lesson.status === 'IN_PROGRESS') {
                               return 'bg-amber-50 border-amber-500';
                             } else if (lesson.status === 'CANCELLED' || lesson.status === 'MISSED') {
-                              return 'bg-[#f6f6f7] border-slate-400';
+                              return 'bg-[#f6f6f7] border-[rgba(14,14,16,0.18)]';
                             }
                             return 'bg-blue-50 border-blue-500';
                           };
@@ -707,9 +707,9 @@ export default function CalendarPage() {
             {isLoading ? (
               <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-8">
                 <div className="animate-pulse space-y-4">
-                  <div className="h-12 bg-slate-200 rounded-lg" />
-                  <div className="h-12 bg-slate-200 rounded-lg" />
-                  <div className="h-12 bg-slate-200 rounded-lg" />
+                  <div className="h-12 bg-[#f1f1f2] rounded-lg" />
+                  <div className="h-12 bg-[#f1f1f2] rounded-lg" />
+                  <div className="h-12 bg-[#f1f1f2] rounded-lg" />
                 </div>
               </div>
             ) : lessons.length === 0 ? (
@@ -779,7 +779,7 @@ export default function CalendarPage() {
           singleDeleteLesson ? (
             <>
               Permanently delete the lesson for{' '}
-              <span className="font-semibold text-slate-900">
+              <span className="font-semibold text-[#1010a3]">
                 {singleDeleteLesson.group?.name ?? 'Unknown group'}
               </span>{' '}
               scheduled{' '}

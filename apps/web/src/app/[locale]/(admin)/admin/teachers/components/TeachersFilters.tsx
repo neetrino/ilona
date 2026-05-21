@@ -107,14 +107,14 @@ export function TeachersFilters({
       </div>
 
       {/* View Mode Toggle */}
-      <div className="flex-shrink-0 inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
+      <div className="flex-shrink-0 inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
         <button
           onClick={() => onViewModeChange('list')}
           className={cn(
             'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
             'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
             viewMode === 'list'
-              ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+              ? 'bg-[#1010a3] text-white shadow-md'
               : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
           )}
           aria-pressed={viewMode === 'list'}
@@ -128,7 +128,7 @@ export function TeachersFilters({
             'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
             'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
             viewMode === 'board'
-              ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+              ? 'bg-[#1010a3] text-white shadow-md'
               : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
           )}
           aria-pressed={viewMode === 'board'}
@@ -141,7 +141,7 @@ export function TeachersFilters({
       {/* Add Teacher Button */}
       <div className="flex-shrink-0">
         <Button 
-          className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6 py-3 rounded-lg font-medium flex items-center gap-2"
+          className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2"
           onClick={onAddTeacher}
           disabled={isDeleting}
         >

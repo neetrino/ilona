@@ -122,7 +122,7 @@ export function getPaymentColumns({
             render: (payment: Payment) => (
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 checked={selectedPaymentIds.has(payment.id)}
                 onChange={() => onToggleSelectPayment(payment.id)}
                 onClick={(e) => e.stopPropagation()}
@@ -142,7 +142,7 @@ export function getPaymentColumns({
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-[#3b3b40] font-semibold">
+            <div className="w-10 h-10 rounded-full bg-[#f1f1f2] flex items-center justify-center text-[#3b3b40] font-semibold">
               {initials}
             </div>
             <div>
@@ -296,7 +296,7 @@ export function getSalaryColumns({
           checked={selectedSalaryIds.has(salary.id)}
           onChange={(e) => onSelectOne(salary.id, e.target.checked)}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoadingSalaries}
           aria-label={`Select salary for ${salary.teacher?.user?.firstName} ${salary.teacher?.user?.lastName}`}
         />
@@ -312,7 +312,7 @@ export function getSalaryColumns({
         const email = salary.teacher?.user?.email || '';
         return (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-[#3b3b40] font-semibold shrink-0">
+            <div className="w-10 h-10 rounded-full bg-[#f1f1f2] flex items-center justify-center text-[#3b3b40] font-semibold shrink-0">
               {initials}
             </div>
             <div className="min-w-0">

@@ -171,7 +171,7 @@ export function ManagerTab() {
             <button
               type="submit"
               disabled={!canSubmit || createManager.isPending}
-              className="h-10 px-4 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-10 px-4 rounded-xl bg-[#1010a3] text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createManager.isPending ? t('saving') : t('createManager')}
             </button>
@@ -192,7 +192,7 @@ export function ManagerTab() {
             <Archive className="h-4 w-4 text-[#8b8b90]" aria-hidden />
             <span className="hidden sm:inline">{t('inactiveManagers')}</span>
             {inactiveCount > 0 && (
-              <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-slate-200 text-xs font-semibold text-[#3b3b40] inline-flex items-center justify-center">
+              <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-[#f1f1f2] text-xs font-semibold text-[#3b3b40] inline-flex items-center justify-center">
                 {inactiveCount}
               </span>
             )}

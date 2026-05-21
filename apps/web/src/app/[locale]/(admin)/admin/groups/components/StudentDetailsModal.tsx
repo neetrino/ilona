@@ -56,7 +56,7 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
         ) : (
           <div className="space-y-6">
             <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
-              <h3 className="text-sm font-semibold text-slate-900 mb-2">Student Information</h3>
+              <h3 className="text-sm font-semibold text-[#1010a3] mb-2">Student Information</h3>
               <InfoRow label="First Name" value={student.user.firstName || '—'} />
               <InfoRow label="Last Name" value={student.user.lastName || '—'} />
               <InfoRow label="Age" value={age ?? '—'} />
@@ -66,7 +66,7 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
 
             {isUnder18 && (
               <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
-                <h3 className="text-sm font-semibold text-slate-900 mb-2">Parent Information</h3>
+                <h3 className="text-sm font-semibold text-[#1010a3] mb-2">Parent Information</h3>
                 <InfoRow label="Parent Name" value={student.parentName || '—'} />
                 <InfoRow label="Parent Phone Number" value={student.parentPhone || '—'} />
                 <InfoRow label="Parent Passport Information" value={student.parentPassportInfo || '—'} />
@@ -74,7 +74,7 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
             )}
 
             <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">Group History</h3>
+              <h3 className="text-sm font-semibold text-[#1010a3] mb-3">Group History</h3>
               {groupHistory.length === 0 ? (
                 <p className="text-sm text-[#8b8b90]">No group history found.</p>
               ) : (

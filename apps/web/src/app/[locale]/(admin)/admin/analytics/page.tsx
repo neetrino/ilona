@@ -54,7 +54,7 @@ function ProgressBar({
     red: 'bg-red-500',
   };
   return (
-    <div className="w-full bg-slate-200 rounded-full h-2">
+    <div className="w-full bg-[#f1f1f2] rounded-full h-2">
       <div
         className={cn('h-2 rounded-full transition-all', colors[color])}
         style={{ width: `${Math.min(value, 100)}%` }}
@@ -184,7 +184,7 @@ export default function AdminAnalyticsPage() {
               'px-4 py-3 text-sm font-medium transition-colors relative whitespace-nowrap',
               activeTab === tab.id
                 ? 'text-blue-600'
-                : 'text-[#3b3b40] hover:text-slate-900',
+                : 'text-[#3b3b40] hover:text-[#1010a3]',
             )}
           >
             {tab.label}
@@ -200,7 +200,7 @@ export default function AdminAnalyticsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
               <p className="text-sm text-[#8b8b90]">Records (30d)</p>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-2xl font-bold text-[#1010a3]">
                 {attendance?.summary.total ?? 0}
               </p>
             </div>
@@ -218,7 +218,7 @@ export default function AdminAnalyticsPage() {
             </div>
             <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
               <p className="text-sm text-[#8b8b90]">Rate</p>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-2xl font-bold text-[#1010a3]">
                 {attendance?.summary.attendanceRate ?? 0}%
               </p>
             </div>

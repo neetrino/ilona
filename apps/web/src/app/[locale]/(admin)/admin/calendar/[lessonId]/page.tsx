@@ -86,7 +86,7 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
         <div className="text-sm text-[#3b3b40] space-y-1">
           {mainTeacherName && (
             <p>
-              <span className="font-medium text-slate-900">Main teacher:</span> {mainTeacherName}
+              <span className="font-medium text-[#1010a3]">Main teacher:</span> {mainTeacherName}
             </p>
           )}
           {subTeacherName ? (

@@ -31,7 +31,7 @@ export function MonthViewCalendar({
   return (
     <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">
+        <h3 className="text-lg font-semibold text-[#1010a3] mb-2">
           {selectedGroup?.name || 'N/A'} - {formatMonthDisplay(currentDate)}
         </h3>
         {hasUnsavedChanges && (
@@ -65,13 +65,13 @@ export function MonthViewCalendar({
               className={cn(
                 'p-3 border-2 rounded-lg text-center transition-all min-h-[80px]',
                 !isInCurrentMonth && 'opacity-40',
-                isSelected && 'border-[#1010a3] bg-[#f0f0fc] ring-2 ring-primary',
-                !isSelected && hasLessons && 'border-slate-300 hover:border-[#1010a3]/40 hover:bg-[#f0f0fc]',
+                isSelected && 'border-[#1010a3] bg-[#f0f0fc] ring-2 ring-[#1010a3]',
+                !isSelected && hasLessons && 'border-[rgba(14,14,16,0.12)] hover:border-[#1010a3]/40 hover:bg-[#f0f0fc]',
                 !hasLessons && 'border-[rgba(14,14,16,0.07)] bg-[#fafafa] cursor-not-allowed',
                 isTodayDate && !isSelected && 'border-[#1010a3]/30 bg-[#f0f0fc]'
               )}
             >
-              <div className="text-sm font-semibold text-slate-900 mb-1">
+              <div className="text-sm font-semibold text-[#1010a3] mb-1">
                 {date.getDate()}
                 {isTodayDate && (
                   <span className="ml-1 text-xs text-[#1010a3] font-bold">Today</span>

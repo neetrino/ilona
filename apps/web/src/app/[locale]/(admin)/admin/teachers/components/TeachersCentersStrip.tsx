@@ -24,7 +24,7 @@ export function TeachersCentersStrip({
   }
 
   return (
-    <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-slate-50/70 to-white px-3 pt-3">
+    <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
       <div className="overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <nav className="flex min-w-max items-center gap-2.5" role="tablist" aria-label="Centers">
           {centers.map((center) => {
@@ -46,11 +46,11 @@ export function TeachersCentersStrip({
                 onClick={() => onSelectCenter(center.id)}
                 className={cn(
                   'group inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm transition-all duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/60 focus-visible:ring-offset-2',
                   'active:scale-[0.985]',
                   isActive
                     ? 'shadow-[0_4px_14px_rgba(15,23,42,0.14)]'
-                    : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:-translate-y-px hover:border-slate-300 hover:bg-[#fafafa] hover:text-[#3b3b40] hover:shadow-sm'
+                    : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:-translate-y-px hover:border-[rgba(14,14,16,0.12)] hover:bg-[#fafafa] hover:text-[#3b3b40] hover:shadow-sm'
                 )}
                 style={
                   isActive
@@ -72,7 +72,7 @@ export function TeachersCentersStrip({
                 <span
                   className={cn(
                     'inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
-                    isActive ? 'shadow-sm' : 'group-hover:bg-slate-200 group-hover:text-[#3b3b40]'
+                    isActive ? 'shadow-sm' : 'group-hover:bg-[#f6f6f7] group-hover:text-[#3b3b40]'
                   )}
                   style={
                     isActive
@@ -101,11 +101,11 @@ export function TeachersCentersStrip({
               onClick={() => onSelectCenter('unassigned')}
               className={cn(
                 'group inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm transition-all duration-200',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/60 focus-visible:ring-offset-2',
                 'active:scale-[0.985]',
                 activeCenterTabId === 'unassigned'
-                  ? 'border-slate-800 bg-slate-800 text-white shadow-[0_4px_14px_rgba(15,23,42,0.14)]'
-                  : 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#3b3b40] hover:-translate-y-px hover:border-slate-300 hover:bg-slate-200 hover:shadow-sm'
+                  ? 'border-[#1010a3] bg-[#1010a3] text-white shadow-[0_4px_14px_rgba(15,23,42,0.14)]'
+                  : 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#3b3b40] hover:-translate-y-px hover:border-[rgba(14,14,16,0.12)] hover:bg-[#f6f6f7] hover:shadow-sm'
               )}
             >
               <span className="max-w-[12rem] truncate font-semibold tracking-[0.01em] sm:max-w-[14rem]">
@@ -116,7 +116,7 @@ export function TeachersCentersStrip({
                   'inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
                   activeCenterTabId === 'unassigned'
                     ? 'bg-white/20 text-white'
-                    : 'bg-slate-300 text-[#3b3b40]'
+                    : 'bg-[#e8e8ec] text-[#3b3b40]'
                 )}
               >
                 {teachersByCenter.unassigned?.length || 0}

@@ -128,8 +128,8 @@ export function TeacherDetails({
                         }}
                         className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                           isSelected
-                            ? 'bg-primary text-[#1010a3]-foreground'
-                            : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-slate-200'
+                            ? 'bg-[#1010a3] text-white'
+                            : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-[#f6f6f7]'
                         }`}
                       >
                         {day}

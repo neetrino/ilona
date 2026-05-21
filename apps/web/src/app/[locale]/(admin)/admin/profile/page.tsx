@@ -158,7 +158,7 @@ export default function AdminProfilePage() {
               />
             ) : null}
             <div 
-              className={`w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold ${avatarUrl ? 'hidden' : ''}`}
+              className={`w-20 h-20 rounded-full bg-[#1010a3] flex items-center justify-center text-white text-2xl font-bold ${avatarUrl ? 'hidden' : ''}`}
             >
               {initials}
             </div>
@@ -265,7 +265,7 @@ export default function AdminProfilePage() {
           <div className="pt-4 flex justify-end">
             <Button 
               type="submit" 
-              className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6"
+              className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6"
               disabled={isSaving}
             >
               {isSaving ? t('saving') : t('saveChanges')}

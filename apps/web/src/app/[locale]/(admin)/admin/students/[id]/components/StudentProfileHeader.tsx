@@ -37,7 +37,7 @@ export function StudentProfileHeader({
           src={avatarUrl}
           name={`${firstName} ${lastName}`.trim() || 'Student'}
           size="xl"
-          className={avatarUrl ? '' : 'bg-primary text-white'}
+          className={avatarUrl ? '' : 'bg-[#1010a3] text-white'}
         />
         <div className="flex-1">
           {isEditMode ? (

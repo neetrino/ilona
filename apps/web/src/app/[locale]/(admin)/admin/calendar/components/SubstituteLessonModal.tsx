@@ -79,16 +79,16 @@ export function SubstituteLessonModal({
         ) : (
           <div className="space-y-4">
             <p className="text-sm text-[#3b3b40]">
-              <span className="font-medium text-slate-900">Group:</span> {lesson.group?.name ?? '—'}
+              <span className="font-medium text-[#1010a3]">Group:</span> {lesson.group?.name ?? '—'}
             </p>
             <p className="text-sm text-[#3b3b40]">
-              <span className="font-medium text-slate-900">Main teacher:</span> {mainName}
+              <span className="font-medium text-[#1010a3]">Main teacher:</span> {mainName}
             </p>
             <div className="space-y-2">
               <Label htmlFor="substitute-select">Substitute for this class only</Label>
               <select
                 id="substitute-select"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
                 value={selectedId}
                 onChange={(e) => setSelectedId(e.target.value)}
               >

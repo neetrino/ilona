@@ -406,8 +406,8 @@ export default function AdminCrmPage() {
               className={cn(
                 'rounded-lg px-3 py-1.5 text-sm font-medium',
                 viewMode === 'board'
-                  ? 'bg-primary text-white'
-                  : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-slate-200'
+                  ? 'bg-[#1010a3] text-white'
+                  : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-[#f6f6f7]'
               )}
             >
               Board
@@ -418,8 +418,8 @@ export default function AdminCrmPage() {
               className={cn(
                 'rounded-lg px-3 py-1.5 text-sm font-medium',
                 viewMode === 'list'
-                  ? 'bg-primary text-white'
-                  : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-slate-200'
+                  ? 'bg-[#1010a3] text-white'
+                  : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-[#f6f6f7]'
               )}
             >
               List
@@ -436,8 +436,8 @@ export default function AdminCrmPage() {
                   window.history.replaceState(null, '', url.pathname + url.search || '');
                 }}
                 className={cn(
-                  'rounded-lg p-1.5 text-[#3b3b40] transition-colors hover:bg-slate-200 hover:text-slate-900',
-                  showArchiveColumn && 'bg-slate-700 text-white hover:bg-slate-600 hover:text-white'
+                  'rounded-lg p-1.5 text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] hover:text-[#1010a3]',
+                  showArchiveColumn && 'bg-[#3b3b40] text-white hover:bg-[#3b3b40] hover:text-white'
                 )}
                 title={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
                 aria-label={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
@@ -508,11 +508,11 @@ export default function AdminCrmPage() {
                 key={s}
                 className="min-w-0 w-full rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/50 p-3 animate-pulse"
               >
-                <div className="h-6 bg-slate-200 rounded w-24 mb-4" />
+                <div className="h-6 bg-[#f1f1f2] rounded w-24 mb-4" />
                 <div className="space-y-2">
-                  <div className="h-20 bg-slate-200 rounded" />
-                  <div className="h-20 bg-slate-200 rounded" />
-                  <div className="h-20 bg-slate-200 rounded" />
+                  <div className="h-20 bg-[#f1f1f2] rounded" />
+                  <div className="h-20 bg-[#f1f1f2] rounded" />
+                  <div className="h-20 bg-[#f1f1f2] rounded" />
                 </div>
               </div>
             ))}

@@ -231,7 +231,7 @@ function RegisterDateCell({
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           disabled={saving}
-          className="w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3] disabled:opacity-50"
+          className="w-full rounded border border-[rgba(14,14,16,0.12)] px-2 py-1 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3] disabled:opacity-50"
         />
         {error && (
           <p className="absolute mt-0.5 text-xs text-red-600">{error}</p>
@@ -250,7 +250,7 @@ function RegisterDateCell({
         type="button"
         onClick={() => !disabled && setEditing(true)}
         disabled={disabled || saving}
-        className={displayText === '—' ? 'text-[#8b8b90] hover:text-[#3b3b40]' : 'text-[#3b3b40] hover:text-slate-900'}
+        className={displayText === '—' ? 'text-[#8b8b90] hover:text-[#3b3b40]' : 'text-[#3b3b40] hover:text-[#1010a3]'}
         title={displayText === '—' ? 'Set register date' : 'Edit register date'}
       >
         {displayText}
@@ -323,7 +323,7 @@ export function createStudentsTableColumns({
         return (
           <input
             type="checkbox"
-            className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             checked={selectedStudentIds.has(getItemId(row))}
             onChange={() => onToggleSelect(getItemId(row))}
             onClick={(e) => e.stopPropagation()}
@@ -530,7 +530,7 @@ export function createStudentsTableColumns({
         const student = row;
         const isActive = student.user?.status === 'ACTIVE';
         const btnClass =
-          'p-1.5 text-slate-900 hover:text-[#3b3b40] hover:bg-[#fafafa] rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
+          'p-1.5 text-[#1010a3] hover:text-[#3b3b40] hover:bg-[#fafafa] rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
 
         return (
           <div

@@ -44,7 +44,7 @@ function SelectAllCheckbox({ checked, indeterminate, onChange, disabled }: Selec
     <input
       ref={checkboxRef}
       type="checkbox"
-      className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       checked={checked}
       onChange={onChange}
       onClick={(e) => e.stopPropagation()}
@@ -332,7 +332,7 @@ export function GroupsTab({
       render: (group: Group) => (
         <input
           type="checkbox"
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           checked={selectedGroupIds.has(group.id)}
           onChange={() => handleToggleSelectGroup(group.id)}
           onClick={(e) => e.stopPropagation()}
@@ -387,7 +387,7 @@ export function GroupsTab({
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[#3b3b40] text-sm font-medium">
+            <div className="w-8 h-8 rounded-full bg-[#f1f1f2] flex items-center justify-center text-[#3b3b40] text-sm font-medium">
               {initials}
             </div>
             <span className="text-[#3b3b40]">{firstName} {lastName}</span>
@@ -406,7 +406,7 @@ export function GroupsTab({
             <button
               type="button"
               onClick={() => openStudentsModal(group.id)}
-              className="underline decoration-slate-400 underline-offset-2 hover:decoration-primary hover:text-[#1010a3] font-medium text-[#3b3b40] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded inline"
+              className="underline decoration-[#8b8b90] underline-offset-2 hover:decoration-[#1010a3] hover:text-[#1010a3] font-medium text-[#3b3b40] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded inline"
               title="View students in this group"
             >
               {count}/{group.maxStudents}
@@ -478,13 +478,13 @@ export function GroupsTab({
           >
             Centers
           </Link>
-          <span className="text-slate-300" aria-hidden>
+          <span className="text-[#8b8b90]" aria-hidden>
             /
           </span>
           <span className="font-medium text-[#3b3b40]">
             {drillDownCenter?.name ?? '…'}
           </span>
-          <span className="text-slate-300" aria-hidden>
+          <span className="text-[#8b8b90]" aria-hidden>
             /
           </span>
           <span className="text-[#8b8b90]">Groups</span>
@@ -555,7 +555,7 @@ export function GroupsTab({
             Delete All ({selectedGroupIds.size})
           </Button>
         )}
-        <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
+        <div className="inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
           <button
             onClick={() => {
               setViewMode('list');
@@ -568,7 +568,7 @@ export function GroupsTab({
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
               'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
               viewMode === 'list'
-                ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                ? 'bg-[#1010a3] text-white shadow-md'
                 : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
             )}
             aria-pressed={viewMode === 'list'}
@@ -587,7 +587,7 @@ export function GroupsTab({
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
               'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
               viewMode === 'board'
-                ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                ? 'bg-[#1010a3] text-white shadow-md'
                 : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
             )}
             aria-pressed={viewMode === 'board'}
@@ -598,7 +598,7 @@ export function GroupsTab({
         </div>
 
         <Button 
-          className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6 py-3 rounded-xl font-medium"
+          className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"
           onClick={() => handleCreateGroupOpenChange(true)}
         >
           + Add Group
@@ -608,7 +608,7 @@ export function GroupsTab({
       {/* Board: branch tabs + groups directly underneath */}
       {viewMode === 'board' && (
         <div className="mb-6 overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.07)]/90 bg-white shadow-sm">
-          <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-slate-50/70 to-white px-3 pt-3">
+          <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
             {isLoadingBranchTabs ? (
               <div className="py-4 text-sm text-[#8b8b90]">Loading branches...</div>
             ) : allCenters.length === 0 ? (
@@ -638,11 +638,11 @@ export function GroupsTab({
                         onClick={() => handleBranchTabClick(center.id)}
                         className={cn(
                           'group inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm transition-all duration-200',
-                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
+                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/60 focus-visible:ring-offset-2',
                           'active:scale-[0.985]',
                           isActive
                             ? 'shadow-[0_4px_14px_rgba(15,23,42,0.14)]'
-                            : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:-translate-y-px hover:border-slate-300 hover:bg-[#fafafa] hover:text-[#3b3b40] hover:shadow-sm'
+                            : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:-translate-y-px hover:border-[rgba(14,14,16,0.12)] hover:bg-[#fafafa] hover:text-[#3b3b40] hover:shadow-sm'
                         )}
                         style={
                           isActive
@@ -666,7 +666,7 @@ export function GroupsTab({
                             'inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
                             isActive
                               ? 'shadow-sm'
-                              : 'group-hover:bg-slate-200 group-hover:text-[#3b3b40]'
+                              : 'group-hover:bg-[#f6f6f7] group-hover:text-[#3b3b40]'
                           )}
                           style={
                             isActive

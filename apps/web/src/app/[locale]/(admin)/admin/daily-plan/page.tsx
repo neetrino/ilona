@@ -230,7 +230,7 @@ export default function AdminDailyPlanPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-semibold text-slate-900">{name}</p>
+                        <p className="font-semibold text-[#1010a3]">{name}</p>
                         <p className="text-xs text-[#8b8b90] mt-0.5">
                           {centerLabel(plan)}
                         </p>

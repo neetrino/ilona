@@ -153,7 +153,7 @@ export function CentersTab({
           />
         </div>
         <Button 
-          className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6 py-3 rounded-xl font-medium"
+          className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"
           onClick={() => setCreateCenterOpen(true)}
         >
           + Add Center

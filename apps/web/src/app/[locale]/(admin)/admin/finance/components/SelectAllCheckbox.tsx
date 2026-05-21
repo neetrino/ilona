@@ -27,7 +27,7 @@ export function SelectAllCheckbox({
     <input
       ref={checkboxRef}
       type="checkbox"
-      className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       checked={checked}
       onChange={onChange}
       onClick={(e) => e.stopPropagation()}

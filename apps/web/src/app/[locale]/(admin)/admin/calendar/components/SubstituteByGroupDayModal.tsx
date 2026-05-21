@@ -65,7 +65,7 @@ export function SubstituteByGroupDayModal({
             <input
               id="sub-day-date"
               type="date"
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
@@ -74,7 +74,7 @@ export function SubstituteByGroupDayModal({
             <Label htmlFor="sub-day-group">Group</Label>
             <select
               id="sub-day-group"
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
               value={groupId}
               onChange={(e) => setGroupId(e.target.value)}
               disabled={groupsLoading}
@@ -92,7 +92,7 @@ export function SubstituteByGroupDayModal({
             <Label htmlFor="sub-day-teacher">Substitute teacher</Label>
             <select
               id="sub-day-teacher"
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
               value={substituteTeacherId}
               onChange={(e) => setSubstituteTeacherId(e.target.value)}
             >

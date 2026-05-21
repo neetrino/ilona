@@ -626,7 +626,7 @@ export default function AdminRecordingPage() {
         <button
           type="button"
           onClick={clearAllFilters}
-          className="h-11 px-4 bg-[#f6f6f7] hover:bg-slate-200 text-[#3b3b40] text-sm font-medium rounded-lg border border-[rgba(14,14,16,0.07)] transition-colors"
+          className="h-11 px-4 bg-[#f6f6f7] hover:bg-[#f6f6f7] text-[#3b3b40] text-sm font-medium rounded-lg border border-[rgba(14,14,16,0.07)] transition-colors"
         >
           Clear all
         </button>
@@ -652,7 +652,7 @@ export default function AdminRecordingPage() {
                   <input
                     type="checkbox"
                     aria-label="Select all visible recordings"
-                    className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                    className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer"
                     checked={allVisibleSelected}
                     onChange={toggleAll}
                     disabled={
@@ -722,7 +722,7 @@ export default function AdminRecordingPage() {
                         <input
                           type="checkbox"
                           aria-label={`Select recording for ${row.studentFullName}`}
-                          className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer"
                           checked={
                             recordingId !== null &&
                             selectedRecordingIds.has(recordingId)
@@ -772,7 +772,7 @@ export default function AdminRecordingPage() {
                           <button
                             type="button"
                             onClick={() => setActiveRecordingId(recording.id)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#1010a3] border border-[#1010a3]/20 hover:bg-primary/5 rounded-lg transition-colors"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#1010a3] border border-[#1010a3]/20 hover:bg-[#1010a3]/5 rounded-lg transition-colors"
                           >
                             <svg
                               className="w-4 h-4"
