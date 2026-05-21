@@ -471,6 +471,8 @@ html:has(.home-page) body {
   --home-about-tower-drop: 5rem;
   --home-about-tower-scale: 1.32;
   --home-about-tower-shift-x: -3.75rem;
+  /* Copy column nudge from inline end — 0 on stacked layouts */
+  --home-about-content-shift-end: 0;
 }
 
 /* Tower overflow sits under the page (white) floor, not clipped at the blue edge */
@@ -583,6 +585,8 @@ html:has(.home-page) body {
 .home-about-content {
   min-width: 0;
   max-width: 34rem;
+  width: 100%;
+  margin-inline-end: var(--home-about-content-shift-end);
 }
 
 .home-about-eyebrow {
@@ -657,6 +661,9 @@ html:has(.home-page) body {
 @media (max-width: 767px) {
   .home-about-content {
     order: 1;
+    margin-inline: auto;
+    margin-inline-end: auto;
+    max-width: 34rem;
   }
 
   .home-about-visual {
@@ -703,6 +710,8 @@ html:has(.home-page) body {
 
   .home-about-content {
     max-width: none;
+    margin-inline: auto;
+    margin-inline-end: auto;
   }
 }
 
@@ -738,12 +747,16 @@ html:has(.home-page) body {
 
   .home-about-content {
     max-width: none;
+    margin-inline: auto;
+    margin-inline-end: auto;
+    justify-self: center;
   }
 }
 
 /* Desktop — Figma 1152px inner @ 1470: visual ~52.8%, copy ~47.2% */
 @media (min-width: 1024px) {
   .home-about {
+    --home-about-content-shift-end: 20%;
     --home-about-stage-h: clamp(22rem, 40vw, 34rem);
     --home-about-tower-drop: 9rem;
     --home-about-tower-scale: 1.42;
@@ -797,8 +810,10 @@ html:has(.home-page) body {
 
   .home-about-content {
     max-width: 32rem;
+    width: min(100%, 32rem);
     justify-self: end;
-    width: 100%;
+    margin-inline-start: auto;
+    margin-inline-end: var(--home-about-content-shift-end);
   }
 
   .home-about-stat-card {
