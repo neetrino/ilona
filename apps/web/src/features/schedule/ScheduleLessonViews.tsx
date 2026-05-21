@@ -9,6 +9,9 @@ import {
   scheduleDateKeyFromIso,
 } from '@/features/schedule/schedule-dates';
 import { cn } from '@/shared/lib/utils';
+import { studentScheduleTable } from '@/features/student-ui/tokens';
+
+type ScheduleUiVariant = 'default' | 'student';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const SCHEDULE_START_HOUR = 9;
@@ -23,6 +26,7 @@ interface WeekLessonGridProps {
    * strictly future start = blue (schedule pages for all roles).
    */
   highlightPastLessonCards?: boolean;
+  theme?: ScheduleUiVariant;
 }
 
 interface MonthLessonGridProps {
@@ -35,6 +39,7 @@ interface MonthLessonGridProps {
    * strictly future start = blue (schedule pages for all roles).
    */
   highlightPastLessonCards?: boolean;
+  theme?: ScheduleUiVariant;
 }
 
 function formatTime(dateString: string): string {
@@ -64,14 +69,15 @@ const FUTURE_LESSON_CARD_CLASSES = 'border-blue-200 bg-blue-50';
 
 function lessonCardTone(
   lesson: Lesson,
-  options: { highlightPastLessonCards: boolean; referenceTime: Date },
+  options: { highlightPastLessonCards: boolean; referenceTime: Date; variant: ScheduleUiVariant },
 ): string {
+  const isStudent = options.variant === 'student';
   if (lesson.status === 'CANCELLED' || lesson.status === 'MISSED') {
-    return 'border-slate-200 bg-slate-100';
+    return isStudent ? studentScheduleTable.mutedCard : 'border-slate-200 bg-slate-100';
   }
   if (options.highlightPastLessonCards) {
     if (isLessonStartStrictlyInFuture(lesson.scheduledAt, options.referenceTime)) {
-      return FUTURE_LESSON_CARD_CLASSES;
+      return isStudent ? studentScheduleTable.futureCard : FUTURE_LESSON_CARD_CLASSES;
     }
     if (lesson.status === 'COMPLETED') return PAST_LESSON_CARD_CLASSES;
     if (lesson.status === 'IN_PROGRESS') return 'border-amber-200 bg-amber-50';
@@ -79,7 +85,7 @@ function lessonCardTone(
   }
   if (lesson.status === 'COMPLETED') return PAST_LESSON_CARD_CLASSES;
   if (lesson.status === 'IN_PROGRESS') return 'border-amber-200 bg-amber-50';
-  return 'border-primary/15 bg-primary/5';
+  return isStudent ? studentScheduleTable.defaultCard : 'border-primary/15 bg-primary/5';
 }
 
 function LessonCard({
@@ -87,11 +93,13 @@ function LessonCard({
   variant = 'cell',
   highlightPastLessonCards = false,
   referenceTime,
+  uiVariant = 'default',
 }: {
   lesson: Lesson;
   variant?: 'cell' | 'dialog';
   highlightPastLessonCards?: boolean;
   referenceTime: Date;
+  uiVariant?: ScheduleUiVariant;
 }) {
   const compact = variant === 'cell';
   const teacherName = `${lesson.teacher?.user?.firstName ?? ''} ${lesson.teacher?.user?.lastName ?? ''}`.trim() || 'No teacher';
@@ -102,18 +110,43 @@ function LessonCard({
 
   return (
     <div
-      className={`rounded-md border leading-tight ${lessonCardTone(lesson, { highlightPastLessonCards, referenceTime })} ${compact ? 'px-1.5 py-0.5 text-[9px] sm:px-1.5 sm:py-1 sm:text-[10px]' : 'px-2.5 py-2 text-sm'}`}
+      className={`rounded-md border leading-tight ${lessonCardTone(lesson, { highlightPastLessonCards, referenceTime, variant: uiVariant })} ${compact ? 'px-1.5 py-0.5 text-[9px] sm:px-1.5 sm:py-1 sm:text-[10px]' : 'px-2.5 py-2 text-sm'}`}
     >
-      <div className="font-semibold text-slate-800 truncate" title={lesson.group?.name}>
+      <div
+        className={cn(
+          'truncate font-semibold',
+          uiVariant === 'student' ? studentScheduleTable.lessonTitle : 'text-slate-800',
+        )}
+        title={lesson.group?.name}
+      >
         {lesson.group?.name ?? 'Unknown group'}
         {lesson.group?.level ? (
-          <span className="text-slate-500 font-normal"> · {lesson.group.level}</span>
+          <span
+            className={cn(
+              'font-normal',
+              uiVariant === 'student' ? studentScheduleTable.lessonMeta : 'text-slate-500',
+            )}
+          >
+            {' '}
+            · {lesson.group.level}
+          </span>
         ) : null}
       </div>
-      <div className="text-slate-600 truncate" title={teacherName}>
+      <div
+        className={cn(
+          'truncate',
+          uiVariant === 'student' ? studentScheduleTable.lessonSub : 'text-slate-600',
+        )}
+        title={teacherName}
+      >
         {teacherName}
       </div>
-      <div className="text-slate-500 truncate font-medium">
+      <div
+        className={cn(
+          'truncate font-medium',
+          uiVariant === 'student' ? studentScheduleTable.lessonMeta : 'text-slate-500',
+        )}
+      >
         {timeLabel}
       </div>
     </div>
@@ -125,7 +158,9 @@ export function WeekLessonGrid({
   lessons,
   isLoading,
   highlightPastLessonCards = false,
+  theme = 'default',
 }: WeekLessonGridProps) {
+  const isStudent = theme === 'student';
   const referenceTime = new Date();
   const { slots, cells, totalLessons } = useMemo(() => {
     const groupedByDay = weekDates.map((date) => {
@@ -164,12 +199,26 @@ export function WeekLessonGrid({
   }, [lessons, weekDates]);
 
   if (isLoading) {
-    return <div className="p-8 text-center text-slate-500">Loading schedule...</div>;
+    return (
+      <div
+        className={cn(
+          'p-8 text-center',
+          isStudent ? studentScheduleTable.emptyText : 'text-slate-500',
+        )}
+      >
+        Loading schedule...
+      </div>
+    );
   }
 
   if (totalLessons === 0) {
     return (
-      <div className="h-full p-10 text-center text-sm text-slate-500 flex items-center justify-center">
+      <div
+        className={cn(
+          'flex h-full items-center justify-center p-10 text-center text-sm',
+          isStudent ? studentScheduleTable.emptyText : 'text-slate-500',
+        )}
+      >
         No lessons available.
       </div>
     );
@@ -180,13 +229,25 @@ export function WeekLessonGrid({
       <table className="w-full h-full border-collapse table-fixed">
         <thead>
           <tr>
-            <th className="w-16 border-b-2 border-r-2 border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold uppercase text-slate-500 text-left">
+            <th
+              className={cn(
+                'w-16 border-b-2 border-r-2 px-2 py-1 text-left text-[10px] font-semibold uppercase',
+                isStudent
+                  ? `${studentScheduleTable.border} ${studentScheduleTable.headBg} ${studentScheduleTable.headText}`
+                  : 'border-slate-200 bg-slate-50 text-slate-500',
+              )}
+            >
               Time
             </th>
             {DAY_LABELS.map((day) => (
               <th
                 key={day}
-                className="border-b-2 border-r-2 last:border-r-0 border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold uppercase text-slate-500 text-center"
+                className={cn(
+                  'border-b-2 border-r-2 px-2 py-1 text-center text-[10px] font-semibold uppercase last:border-r-0',
+                  isStudent
+                    ? `${studentScheduleTable.border} ${studentScheduleTable.headBg} ${studentScheduleTable.headText}`
+                    : 'border-slate-200 bg-slate-50 text-slate-500',
+                )}
               >
                 {day}
               </th>
@@ -196,7 +257,14 @@ export function WeekLessonGrid({
         <tbody>
           {slots.map((slot) => (
             <tr key={slot} className="align-top">
-              <td className="h-8 border-b-2 border-r-2 border-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+              <td
+                className={cn(
+                  'h-8 border-b-2 border-r-2 px-1.5 py-0.5 text-[10px] font-semibold',
+                  isStudent
+                    ? `${studentScheduleTable.border} ${studentScheduleTable.cellText}`
+                    : 'border-slate-200 text-slate-500',
+                )}
+              >
                 {formatMinutesToLabel(slot)}
               </td>
               {DAY_LABELS.map((_, dayIdx) => {
@@ -208,7 +276,10 @@ export function WeekLessonGrid({
                 return (
                   <td
                     key={key}
-                    className="h-8 border-b-2 border-r-2 last:border-r-0 border-slate-200 px-0.5 py-0.5 align-top"
+                    className={cn(
+                      'h-8 border-b-2 border-r-2 px-0.5 py-0.5 align-top last:border-r-0',
+                      isStudent ? studentScheduleTable.border : 'border-slate-200',
+                    )}
                   >
                     <div className="space-y-0.5">
                       {items.map((lesson) => (
@@ -217,6 +288,7 @@ export function WeekLessonGrid({
                           lesson={lesson}
                           highlightPastLessonCards={highlightPastLessonCards}
                           referenceTime={referenceTime}
+                          uiVariant={theme}
                         />
                       ))}
                     </div>
@@ -237,6 +309,7 @@ export function MonthLessonGrid({
   isLoading,
   className,
   highlightPastLessonCards = false,
+  theme = 'default',
 }: MonthLessonGridProps) {
   const referenceTime = new Date();
   const totalInMonth = useMemo(
@@ -248,7 +321,8 @@ export function MonthLessonGrid({
     return (
       <div
         className={cn(
-          'flex h-full min-h-0 flex-1 flex-col items-center justify-center rounded-b-[inherit] p-10 text-center text-sm text-slate-500',
+          'flex h-full min-h-0 flex-1 flex-col items-center justify-center rounded-b-[inherit] p-10 text-center text-sm',
+          theme === 'student' ? studentScheduleTable.emptyText : 'text-slate-500',
           className,
         )}
       >
@@ -259,16 +333,18 @@ export function MonthLessonGrid({
 
   return (
     <CalendarMonthGrid<Lesson>
+      theme={theme}
       monthDates={monthDates}
       getLessonsForDay={(k) => lessonsByDate[k] ?? []}
       getLessonKey={(l) => l.id}
       getSortTime={(l) => new Date(l.scheduledAt).getTime()}
-      renderLesson={({ lesson, variant }) => (
+      renderLesson={({ lesson, variant: cardVariant }) => (
         <LessonCard
           lesson={lesson}
-          variant={variant}
+          variant={cardVariant}
           highlightPastLessonCards={highlightPastLessonCards}
           referenceTime={referenceTime}
+          uiVariant={theme}
         />
       )}
       isLoading={isLoading}

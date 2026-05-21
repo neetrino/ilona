@@ -36,6 +36,8 @@ export type CalendarMonthGridProps<T> = {
   isLoading?: boolean;
   maxVisibleOverride?: number;
   highlightToday?: boolean;
+  /** Student schedule board color system */
+  theme?: 'default' | 'student';
   className?: string;
   scrollAreaClassName?: string;
 };
@@ -64,9 +66,11 @@ export function CalendarMonthGrid<T>({
   isLoading,
   maxVisibleOverride,
   highlightToday = true,
+  theme = 'default',
   className,
   scrollAreaClassName,
 }: CalendarMonthGridProps<T>) {
+  const isStudent = theme === 'student';
   const maxFromViewport = useMaxVisibleInCell(maxVisibleOverride);
   const [dayDialog, setDayDialog] = useState<DayDialogState<T> | null>(null);
 
@@ -88,11 +92,21 @@ export function CalendarMonthGrid<T>({
           className,
         )}
       >
-        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/90">
+        <div
+          className={cn(
+            'grid grid-cols-7 border-b',
+            isStudent
+              ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7]'
+              : 'border-slate-200 bg-slate-50/90',
+          )}
+        >
           {DAY_LABELS.map((day) => (
             <div
               key={day}
-              className="px-0.5 py-1.5 text-center text-[10px] font-semibold uppercase leading-none tracking-wide text-slate-500 sm:px-1.5 sm:py-2 sm:text-xs"
+              className={cn(
+                'px-0.5 py-1.5 text-center text-[10px] font-semibold uppercase leading-none tracking-wide sm:px-1.5 sm:py-2 sm:text-xs',
+                isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+              )}
             >
               {day}
             </div>
@@ -113,7 +127,12 @@ export function CalendarMonthGrid<T>({
                 {Array.from({ length: 7 }, (_, d) => (
                   <div
                     key={d}
-                    className="min-h-[3.5rem] animate-pulse rounded-md border border-slate-100/80 bg-slate-100/60 sm:min-h-[4.5rem] lg:min-h-[5.5rem]"
+                    className={cn(
+                      'min-h-[3.5rem] animate-pulse rounded-md border sm:min-h-[4.5rem] lg:min-h-[5.5rem]',
+                      isStudent
+                        ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7]/80'
+                        : 'border-slate-100/80 bg-slate-100/60',
+                    )}
                   />
                 ))}
               </div>
@@ -133,11 +152,21 @@ export function CalendarMonthGrid<T>({
         )}
       >
         <div className="shrink-0">
-          <div className="grid min-w-0 grid-cols-7 border-b border-slate-200 bg-slate-50/90">
+          <div
+            className={cn(
+              'grid min-w-0 grid-cols-7 border-b',
+              isStudent
+                ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7]'
+                : 'border-slate-200 bg-slate-50/90',
+            )}
+          >
             {DAY_LABELS.map((day) => (
               <div
                 key={day}
-                className="px-0.5 py-1.5 text-center text-[10px] font-semibold uppercase leading-none tracking-wide text-slate-500 sm:px-1.5 sm:py-2.5 sm:text-xs"
+                className={cn(
+                  'px-0.5 py-1.5 text-center text-[10px] font-semibold uppercase leading-none tracking-wide sm:px-1.5 sm:py-2.5 sm:text-xs',
+                  isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+                )}
               >
                 {day}
               </div>
@@ -155,14 +184,22 @@ export function CalendarMonthGrid<T>({
             {monthDates.map((week, weekIndex) => (
               <div
                 key={weekIndex}
-                className="grid min-w-0 grid-cols-7 border-b border-slate-100 last:border-b-0"
+                className={cn(
+                  'grid min-w-0 grid-cols-7 border-b last:border-b-0',
+                  isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100',
+                )}
               >
                 {week.map((date, dayIndex) => {
                   if (!date) {
                     return (
                       <div
                         key={dayIndex}
-                        className="min-h-[3.5rem] min-w-0 border-r border-slate-100/80 bg-slate-50/50 last:border-r-0 sm:min-h-[4.5rem] lg:min-h-[5.5rem]"
+                        className={cn(
+                          'min-h-[3.5rem] min-w-0 border-r last:border-r-0 sm:min-h-[4.5rem] lg:min-h-[5.5rem]',
+                          isStudent
+                            ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80'
+                            : 'border-slate-100/80 bg-slate-50/50',
+                        )}
                         aria-hidden
                       />
                     );
@@ -180,18 +217,28 @@ export function CalendarMonthGrid<T>({
                     <div
                       key={dayIndex}
                       className={cn(
-                        'group/cell box-border min-h-0 min-w-0 max-w-full border-r border-slate-100/80 p-0.5 last:border-r-0',
+                        'group/cell box-border min-h-0 min-w-0 max-w-full border-r p-0.5 last:border-r-0',
+                        isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100/80',
                         'sm:p-1 lg:p-1.5',
                         'min-h-[3.5rem] sm:min-h-[4.5rem] lg:min-h-[5.5rem]',
                         'flex min-w-0 flex-col',
-                        showToday && 'bg-sky-50/90 ring-1 ring-inset ring-sky-200/60',
+                        showToday &&
+                          (isStudent
+                            ? 'bg-[#ddecff]/50 ring-1 ring-inset ring-[#1010a3]/20'
+                            : 'bg-sky-50/90 ring-1 ring-inset ring-sky-200/60'),
                         !showToday && 'bg-white/70',
                       )}
                     >
                       <p
                         className={cn(
                           'shrink-0 text-[10px] font-bold tabular-nums sm:text-xs',
-                          showToday ? 'text-sky-700' : 'text-slate-700',
+                          showToday
+                            ? isStudent
+                              ? 'text-[#1010a3]'
+                              : 'text-sky-700'
+                            : isStudent
+                              ? 'text-[#3b3b40]'
+                              : 'text-slate-700',
                         )}
                       >
                         {date.getDate()}
@@ -216,7 +263,12 @@ export function CalendarMonthGrid<T>({
                               onClick={() =>
                                 setDayDialog({ date, lessons: dayLessons })
                               }
-                              className="w-full max-w-full truncate rounded border border-slate-200/90 bg-slate-50/90 px-1 py-0.5 text-left text-[9px] font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-100/90 sm:text-[10px]"
+                              className={cn(
+                                'w-full max-w-full truncate rounded border px-1 py-0.5 text-left text-[9px] font-medium transition sm:text-[10px]',
+                                isStudent
+                                  ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#1010a3] hover:bg-[#ddecff]/60'
+                                  : 'border-slate-200/90 bg-slate-50/90 text-slate-600 hover:border-slate-300 hover:bg-slate-100/90',
+                              )}
                               aria-label={`View ${hidden} more lesson${hidden === 1 ? '' : 's'} for ${date.toDateString()}`}
                             >
                               +{hidden} more
@@ -243,8 +295,18 @@ export function CalendarMonthGrid<T>({
       >
         {dayDialog && (
           <DialogContent className="max-h-[min(80vh,540px)] gap-0 overflow-hidden p-0 sm:max-w-md">
-            <DialogHeader className="border-b border-slate-100 p-4 pb-3 sm:p-5">
-              <DialogTitle className="pr-6 text-left text-base font-semibold sm:text-lg">
+            <DialogHeader
+              className={cn(
+                'border-b p-4 pb-3 sm:p-5',
+                isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100',
+              )}
+            >
+              <DialogTitle
+                className={cn(
+                  'pr-6 text-left text-base font-semibold sm:text-lg',
+                  isStudent && 'text-[#1010a3]',
+                )}
+              >
                 {dayDialog.date.toLocaleDateString(undefined, {
                   weekday: 'long',
                   month: 'long',

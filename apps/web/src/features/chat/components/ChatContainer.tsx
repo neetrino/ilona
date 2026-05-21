@@ -13,6 +13,7 @@ import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { fetchChat } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import { getChatTheme } from '../lib/chat-theme';
 
 interface ChatContainerProps {
   emptyTitle?: string;
@@ -40,6 +41,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const isInitialMount = useRef(true);
   const isStudent = user?.role === 'STUDENT';
   const isTeacher = user?.role === 'TEACHER';
+  const ui = getChatTheme(isStudent ? 'student' : 'default');
 
   // Get returnTo from query params
   const returnToParam = searchParams.get('returnTo');
@@ -232,18 +234,12 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const contentHeight = isFullScreen ? 'h-[calc(100vh-73px)]' : 'h-[calc(100%-73px)]';
 
   return (
-    <div className={cn(containerHeight, "bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col", className)}>
+    <div className={cn(containerHeight, ui.shell, 'overflow-hidden flex flex-col', className)}>
       {/* Back Button Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white flex-shrink-0">
+      <div className={cn('flex items-center justify-between p-4 border-b flex-shrink-0', ui.border, ui.headerBg)}>
         <button
           onClick={handleBackToPrevious}
-          className={cn(
-            'flex items-center gap-2 px-4 py-2',
-            'text-slate-700 hover:text-slate-900',
-            'hover:bg-slate-100 rounded-lg',
-            'transition-colors',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
-          )}
+          className={cn('flex items-center gap-2 px-4 py-2 transition-colors', ui.backBtn)}
           aria-label="Back to previous page"
         >
           <svg
@@ -261,7 +257,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
           </svg>
           <span className="font-medium">Back</span>
         </button>
-        <h2 className="text-lg font-semibold text-slate-800">Chat</h2>
+        <h2 className={cn('text-lg font-semibold', ui.title)}>Chat</h2>
         <div className="w-20" /> {/* Spacer for centering */}
       </div>
 
@@ -269,7 +265,8 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
         {/* Chat List */}
         <div
           className={cn(
-            'w-full lg:w-80 border-r border-slate-200 flex-shrink-0',
+            'w-full lg:w-80 border-r flex-shrink-0',
+            ui.border,
             !isMobileListVisible && 'hidden lg:block'
           )}
         >
@@ -292,11 +289,16 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
           {activeChat ? (
             <ChatWindow chat={activeChat} onBack={handleBack} />
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-slate-50">
+            <div className={cn('flex-1 flex items-center justify-center', ui.messagesBg)}>
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-slate-200 rounded-full flex items-center justify-center">
+                <div
+                  className={cn(
+                    'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full',
+                    ui.emptyIcon,
+                  )}
+                >
                   <svg
-                    className="w-8 h-8 text-slate-400"
+                    className="h-8 w-8"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -309,10 +311,10 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
                     />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                <h3 className={cn('mb-1 text-lg font-semibold', ui.title)}>
                   {emptyTitle || 'Select a chat'}
                 </h3>
-                <p className="text-sm text-slate-500">
+                <p className={cn('text-sm', ui.muted)}>
                   {emptyDescription || 'Choose a conversation from the list to start messaging'}
                 </p>
               </div>
@@ -326,6 +328,8 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
 
 export function ChatContainer(props: ChatContainerProps) {
   const [mounted, setMounted] = useState(false);
+  const { user } = useAuthStore();
+  const loadingUi = getChatTheme(user?.role === 'STUDENT' ? 'student' : 'default');
 
   useEffect(() => {
     setMounted(true);
@@ -333,9 +337,11 @@ export function ChatContainer(props: ChatContainerProps) {
 
   if (!mounted) {
     return (
-      <div className={cn("h-[calc(100vh-200px)] bg-white rounded-2xl border border-slate-200 overflow-hidden", props.className)}>
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div
+        className={cn('h-[calc(100vh-200px)] overflow-hidden', loadingUi.shell, props.className)}
+      >
+        <div className="flex h-full items-center justify-center">
+          <div className={cn('h-8 w-8 animate-spin rounded-full', loadingUi.spinner)} />
         </div>
       </div>
     );

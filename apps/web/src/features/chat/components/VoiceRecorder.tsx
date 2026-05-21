@@ -2,14 +2,22 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/shared/lib/utils';
+import { getChatTheme, type ChatUiVariant } from '../lib/chat-theme';
 
 interface VoiceRecorderProps {
+  variant?: ChatUiVariant;
   onRecorded: (file: File, durationSec: number, mimeType: string) => void;
   onCancel: () => void;
   conversationId: string;
 }
 
-export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversationId }: VoiceRecorderProps) {
+export function VoiceRecorder({
+  variant = 'default',
+  onRecorded,
+  onCancel,
+  conversationId: _conversationId,
+}: VoiceRecorderProps) {
+  const ui = getChatTheme(variant);
   const [isRecording, setIsRecording] = useState(false);
   const [durationSec, setDurationSec] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -387,7 +395,7 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
   };
 
   return (
-    <div className="p-4 bg-white border-t border-slate-200">
+    <div className={cn('border-t bg-white p-4', ui.border)}>
       <div className="flex items-center gap-3">
         {/* Record button */}
         {!isRecording && !recordedBlob && (
@@ -407,7 +415,10 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
           <>
             <button
               onClick={stopRecording}
-              className="p-3 bg-slate-600 text-white rounded-full hover:bg-slate-700 transition-colors flex-shrink-0"
+              className={cn(
+                'flex-shrink-0 rounded-full p-3 text-white transition-colors',
+                variant === 'student' ? 'bg-[#3b3b40] hover:bg-[#1010a3]' : 'bg-slate-600 hover:bg-slate-700',
+              )}
               title="Stop recording"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -417,14 +428,14 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-slate-700">
+                <span className={cn('text-sm font-medium', ui.body)}>
                   Recording... {formatDuration(durationSec)}
                 </span>
               </div>
               {/* Microphone level meter */}
               <div className="mt-1 flex items-center gap-2">
-                <span className="text-xs text-slate-500">Mic level:</span>
-                <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <span className={cn('text-xs', ui.muted)}>Mic level:</span>
+                <div className={cn('h-2 flex-1 overflow-hidden rounded-full', ui.skeleton)}>
                   <div
                     className={cn(
                       'h-full transition-all duration-100',
@@ -433,7 +444,7 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
                     style={{ width: `${Math.min(100, micLevel)}%` }}
                   />
                 </div>
-                <span className="text-xs text-slate-500 w-8 text-right">{micLevel}%</span>
+                <span className={cn('w-8 text-right text-xs', ui.muted)}>{micLevel}%</span>
               </div>
             </div>
           </>
@@ -457,14 +468,14 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
                   }}
                 />
               )}
-              <span className="text-sm text-slate-600">{formatDuration(durationSec)}</span>
+              <span className={cn('text-sm', ui.body)}>{formatDuration(durationSec)}</span>
             </div>
 
             {/* Action buttons */}
             <div className="flex items-center gap-2">
               <button
                 onClick={onCancel}
-                className="px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors text-sm"
+                className={cn('rounded-lg px-4 py-2 text-sm transition-colors', ui.ghostBtn)}
               >
                 Cancel
               </button>
@@ -473,9 +484,7 @@ export function VoiceRecorder({ onRecorded, onCancel, conversationId: _conversat
                 disabled={!canSend}
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  canSend
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                  canSend ? ui.primaryBtn : ui.primaryBtnDisabled
                 )}
               >
                 Send

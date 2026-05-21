@@ -28,6 +28,15 @@ export function FloatingChatWidget() {
     return null;
   }
 
+  const isStudent = user?.role === 'STUDENT';
+  const fabBg = isStudent ? 'bg-[#1010a3]' : 'bg-primary';
+  const fabShadow = isStudent
+    ? 'shadow-lg shadow-[#1010a3]/25 hover:shadow-xl hover:shadow-[#1010a3]/35'
+    : 'shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40';
+  const fabFocus = isStudent
+    ? 'focus:ring-[#1010a3] focus:ring-offset-2'
+    : 'focus:ring-primary focus:ring-offset-2';
+
   const handleChatClick = () => {
     if (!user?.role) return;
 
@@ -55,17 +64,16 @@ export function FloatingChatWidget() {
         onClick={handleChatClick}
         className={cn(
           'fixed z-50',
-          'bottom-6 right-2',
-          'w-14 h-14 sm:w-16 sm:h-16',
-          'rounded-full',
-          'bg-primary',
-          'text-white shadow-lg shadow-primary/30',
-          'flex items-center justify-center',
-          'hover:shadow-xl hover:shadow-primary/40',
+          'bottom-6 right-3 sm:right-6',
+          'flex h-14 w-14 items-center justify-center sm:h-16 sm:w-16',
+          'rounded-full text-white',
+          fabBg,
+          fabShadow,
           'transition-all duration-200',
           'hover:scale-110 active:scale-95',
-          'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-          'md:hover:scale-105'
+          'focus:outline-none focus:ring-2',
+          fabFocus,
+          'md:hover:scale-105',
         )}
         aria-label="Open chat"
       >
@@ -88,7 +96,7 @@ export function FloatingChatWidget() {
             className={cn(
               'absolute -top-1 -right-1',
               'min-w-[20px] h-5 px-1.5',
-              'bg-red-500 text-white',
+              isStudent ? 'bg-[#ff2e23] text-white' : 'bg-red-500 text-white',
               'text-xs font-semibold',
               'rounded-full',
               'flex items-center justify-center',

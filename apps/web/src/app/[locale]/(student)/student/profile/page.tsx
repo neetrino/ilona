@@ -4,6 +4,16 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
+import {
+  StudentAlert,
+  StudentCard,
+  StudentFieldLabel,
+  StudentGhostButton,
+  StudentInput,
+  StudentPageStack,
+  StudentPrimaryButton,
+  StudentSectionHeader,
+} from '@/features/student-ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useUploadAvatar, useDeleteAvatar, useUpdateProfile } from '@/features/settings/hooks/useSettings';
 import Image from 'next/image';
@@ -120,23 +130,18 @@ export default function StudentProfilePage() {
       title={t('profile')} 
       subtitle={t('profileInformation')}
     >
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('profileInformation') ?? 'Profile Information'}</h2>
-        
-        {/* Success/Error Messages */}
+      <StudentPageStack>
+      <StudentCard>
+        <StudentSectionHeader title={t('profileInformation') ?? 'Profile Information'} />
+
         {uploadSuccess && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
-            <p className="text-sm text-green-600">{uploadSuccess}</p>
-          </div>
+          <StudentAlert variant="success" className="mb-4">{uploadSuccess}</StudentAlert>
         )}
         {uploadError && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-            <p className="text-sm text-red-600">{uploadError}</p>
-          </div>
+          <StudentAlert variant="danger" className="mb-4">{uploadError}</StudentAlert>
         )}
-        
-        {/* Avatar */}
-        <div className="mb-8 flex flex-col items-start gap-4 border-b border-slate-200 pb-8 sm:flex-row sm:items-center sm:gap-6">
+
+        <div className="mb-8 flex flex-col items-start gap-4 border-b border-[rgba(14,14,16,0.07)] pb-8 sm:flex-row sm:items-center sm:gap-6">
           <div className="relative">
             {avatarUrl ? (
               <Image
@@ -144,7 +149,7 @@ export default function StudentProfilePage() {
                 alt={`${user?.firstName} ${user?.lastName}`}
                 width={80}
                 height={80}
-                className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
+                className="h-20 w-20 rounded-full border-2 border-[rgba(14,14,16,0.07)] object-cover"
                 unoptimized
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -154,15 +159,15 @@ export default function StudentProfilePage() {
                 }}
               />
             ) : null}
-            <div 
-              className={`w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold ${avatarUrl ? 'hidden' : ''}`}
+            <div
+              className={`flex h-20 w-20 items-center justify-center rounded-full bg-[#1010a3] text-2xl font-bold text-white ${avatarUrl ? 'hidden' : ''}`}
             >
               {initials}
             </div>
           </div>
           <div>
-            <h3 className="font-medium text-slate-800">{user?.firstName} {user?.lastName}</h3>
-            <p className="text-sm text-slate-500">{user?.email}</p>
+            <h3 className="font-medium text-[#1010a3]">{user?.firstName} {user?.lastName}</h3>
+            <p className="text-sm text-[#8b8b90]">{user?.email}</p>
             <div className="flex gap-2 mt-2">
               <input
                 ref={fileInputRef}
@@ -180,18 +185,17 @@ export default function StudentProfilePage() {
                 {uploadAvatarMutation.isPending ? (t('uploading') ?? 'Uploading...') : (t('uploadPhoto') ?? 'Upload Photo')}
               </Button>
               {avatarUrl && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-red-600"
+                <StudentGhostButton
+                  type="button"
+                  className="min-h-9 text-[#b42318]"
                   onClick={handleRemoveAvatar}
                   disabled={deleteAvatarMutation.isPending}
                 >
                   {deleteAvatarMutation.isPending ? (t('removing') ?? 'Removing...') : (t('remove') ?? 'Remove')}
-                </Button>
+                </StudentGhostButton>
               )}
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="mt-1 text-xs text-[#8b8b90]">
               {t('imageFormats') ?? 'JPG, PNG, WEBP, GIF up to 5MB'}
             </p>
           </div>
@@ -200,66 +204,49 @@ export default function StudentProfilePage() {
         <form onSubmit={handleSaveProfile} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('firstName') ?? 'First Name'}
-              </label>
-              <input
+              <StudentFieldLabel>{t('firstName') ?? 'First Name'}</StudentFieldLabel>
+              <StudentInput
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('lastName') ?? 'Last Name'}
-              </label>
-              <input
+              <StudentFieldLabel>{t('lastName') ?? 'Last Name'}</StudentFieldLabel>
+              <StudentInput
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              {t('emailAddress') ?? 'Email Address'}
-            </label>
-            <input
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-            />
-            <p className="text-xs text-slate-500 mt-1">{t('contactAdminToChangeEmail') ?? 'Contact admin to change email'}</p>
+            <StudentFieldLabel>{t('emailAddress') ?? 'Email Address'}</StudentFieldLabel>
+            <StudentInput type="email" value={user?.email || ''} disabled className="bg-[#f6f6f7] text-[#8b8b90]" />
+            <p className="mt-1 text-xs text-[#8b8b90]">
+              {t('contactAdminToChangeEmail') ?? 'Contact admin to change email'}
+            </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              {t('phoneNumber') ?? 'Phone Number'}
-            </label>
-            <input
+            <StudentFieldLabel>{t('phoneNumber') ?? 'Phone Number'}</StudentFieldLabel>
+            <StudentInput
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1 234 567 8900"
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
 
           <div className="flex justify-stretch pt-4 sm:justify-end">
-            <Button 
-              type="submit" 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
-              disabled={isSaving}
-            >
+            <StudentPrimaryButton type="submit" disabled={isSaving}>
               {isSaving ? (t('saving') ?? 'Saving...') : (t('saveChanges') ?? 'Save Changes')}
-            </Button>
+            </StudentPrimaryButton>
           </div>
         </form>
-      </div>
+      </StudentCard>
+      </StudentPageStack>
     </DashboardLayout>
   );
 }

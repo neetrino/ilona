@@ -25,6 +25,11 @@ import {
   useCreateMyPlannedAbsence,
   useDeleteMyPlannedAbsence,
 } from '@/features/attendance';
+import {
+  studentGhostButtonClass,
+  studentInputClass,
+  studentPrimaryButtonClass,
+} from '@/features/student-ui/tokens';
 
 interface StudentAbsenceCalendarProps {
   calendarData: StudentCalendarMonth | undefined;
@@ -237,7 +242,7 @@ export function StudentAbsenceCalendar({
       'p-3 sm:p-4 border-2 rounded-lg text-center transition-all min-h-[88px] sm:min-h-[100px] flex flex-col items-center justify-center gap-1';
 
     if (!hasClass) {
-      return cn(base, 'border-transparent bg-slate-50/40 opacity-40 cursor-default');
+      return cn(base, 'border-transparent bg-[#fafafa] opacity-40 cursor-default');
     }
 
     switch (kind) {
@@ -270,7 +275,7 @@ export function StudentAbsenceCalendar({
       case 'pastUnmarked':
         return cn(
           base,
-          'border-slate-300 bg-slate-100 cursor-pointer hover:bg-slate-200/60',
+          'border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] cursor-pointer hover:bg-[#fafafa]',
         );
       default:
         return cn(base, 'cursor-default');
@@ -306,13 +311,13 @@ export function StudentAbsenceCalendar({
       return <div className="w-2 h-2 rounded-full bg-orange-500" />;
     }
     if (kind === 'pastUnmarked') {
-      return <div className="w-2 h-2 rounded-full bg-slate-400" />;
+      return <div className="w-2 h-2 rounded-full bg-[#8b8b90]" />;
     }
     return null;
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+    <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="flex items-center justify-center sm:justify-start gap-4">
           <Button
@@ -321,10 +326,11 @@ export function StudentAbsenceCalendar({
             onClick={handlePreviousMonth}
             disabled={isLoading}
             type="button"
+            className={studentGhostButtonClass}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-xl font-semibold text-slate-900 min-w-[180px] sm:min-w-[200px] text-center">
+          <h2 className="min-w-[180px] text-center text-xl font-semibold tracking-tight text-[#1010a3] sm:min-w-[200px]">
             {formatMonthDisplay(currentMonth)}
           </h2>
           <Button
@@ -333,18 +339,25 @@ export function StudentAbsenceCalendar({
             onClick={handleNextMonth}
             disabled={isLoading}
             type="button"
+            className={studentGhostButtonClass}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <Button variant="outline" onClick={handleToday} disabled={isLoading} type="button" className="self-center sm:self-auto">
+        <Button
+          variant="outline"
+          onClick={handleToday}
+          disabled={isLoading}
+          type="button"
+          className={cn('self-center sm:self-auto', studentGhostButtonClass)}
+        >
           {tCommon('today')}
         </Button>
       </div>
 
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
-          <div key={idx} className="text-center text-xs sm:text-sm font-semibold text-slate-700 py-2">
+          <div key={idx} className="py-2 text-center text-xs font-semibold text-[#8b8b90] sm:text-sm">
             {day}
           </div>
         ))}
@@ -366,20 +379,20 @@ export function StudentAbsenceCalendar({
                 dayCellClass(date),
                 !isInCurrentMonth && hasClass && 'opacity-60',
                 !isInCurrentMonth && !hasClass && 'opacity-30',
-                isTodayDate && 'shadow-[inset_0_0_0_2px_rgba(59,130,246,0.35)]'
+                isTodayDate && 'shadow-[inset_0_0_0_2px_rgba(16,16,163,0.35)]'
               )}
             >
-              <span className="text-sm font-semibold text-slate-900">{date.getDate()}</span>
+              <span className="text-sm font-semibold text-[#3b3b40]">{date.getDate()}</span>
               {dayDot(date)}
               {hasClass && lessonsOnDay.length > 1 && (
-                <span className="text-[10px] text-slate-500">{lessonsOnDay.length}</span>
+                <span className="text-[10px] text-[#8b8b90]">{lessonsOnDay.length}</span>
               )}
             </button>
           );
         })}
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-600">
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-[#3b3b40] sm:text-sm">
         <div className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-sm border-2 border-green-500 shrink-0" />
           <span>{t('legendClassDay')}</span>
@@ -397,19 +410,19 @@ export function StudentAbsenceCalendar({
           <span>{t('plannedAbsence')}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-slate-400 shrink-0" />
+          <span className="h-3 w-3 shrink-0 rounded-full bg-[#8b8b90]" />
           <span>{t('legendNotMarked')}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-slate-300 shrink-0 opacity-50" />
+          <span className="h-3 w-3 shrink-0 rounded-full bg-[#f1f1f2] opacity-80" />
           <span>{t('noLesson')}</span>
         </div>
       </div>
 
       <Dialog open={!!selectedDate} onOpenChange={closeDialog}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto rounded-3xl border border-[rgba(14,14,16,0.07)]">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-[#1010a3]">
               {selectedDate &&
                 new Date(selectedDate).toLocaleDateString(undefined, {
                   weekday: 'long',
@@ -423,15 +436,18 @@ export function StudentAbsenceCalendar({
           {selectedAnalysis?.hasClass && selectedLessons.length > 0 && (
             <div className="space-y-4 mt-2">
               <div className="space-y-3">
-                <p className="text-sm font-medium text-slate-700">{t('scheduledSessions')}</p>
+                <p className="text-sm font-medium text-[#1010a3]">{t('scheduledSessions')}</p>
                 {selectedLessons.map((lesson) => {
                   const att = attendanceByLessonId.get(lesson.id);
                   const lessonTime = new Date(lesson.scheduledAt);
                   const ended = lessonTime <= now;
                   return (
-                    <div key={lesson.id} className="p-3 border border-slate-200 rounded-lg bg-slate-50/50">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="font-semibold text-slate-900">{lesson.group.name}</span>
+                    <div
+                      key={lesson.id}
+                      className="rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-3"
+                    >
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <span className="font-semibold text-[#3b3b40]">{lesson.group.name}</span>
                         {!ended && (
                           <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
                             {t('upcoming')}
@@ -448,40 +464,40 @@ export function StudentAbsenceCalendar({
                           </span>
                         )}
                         {ended && !att && (
-                          <span className="text-xs font-medium text-slate-600 bg-slate-200 px-2 py-0.5 rounded-full">
+                          <span className="rounded-full bg-[#f6f6f7] px-2 py-0.5 text-xs font-medium text-[#8b8b90]">
                             {t('legendNotMarked')}
                           </span>
                         )}
                       </div>
-                      {lesson.topic && <p className="text-sm text-slate-600">{lesson.topic}</p>}
-                      <p className="text-xs text-slate-500 mt-1">
+                      {lesson.topic && <p className="text-sm text-[#3b3b40]">{lesson.topic}</p>}
+                      <p className="mt-1 text-xs text-[#8b8b90]">
                         {lessonTime.toLocaleTimeString(undefined, {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
                       </p>
                       {att && !att.isPresent && att.absenceType && (
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="mt-1 text-xs text-[#8b8b90]">
                           {att.absenceType === 'JUSTIFIED' ? t('justified') : t('unjustified')}
                         </p>
                       )}
-                      {att?.note && <p className="text-xs text-slate-600 mt-1">{att.note}</p>}
+                      {att?.note && <p className="mt-1 text-xs text-[#3b3b40]">{att.note}</p>}
                     </div>
                   );
                 })}
               </div>
 
               {selectedAnalysis.canReportAbsence && (
-                <div className="border-t border-slate-200 pt-4 space-y-3">
-                  <p className="text-sm font-medium text-slate-800">{t('reportFutureAbsence')}</p>
+                <div className="space-y-3 border-t border-[rgba(14,14,16,0.07)] pt-4">
+                  <p className="text-sm font-medium text-[#1010a3]">{t('reportFutureAbsence')}</p>
                   {selectedPlanned && (
                     <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
                       {t('plannedAbsenceNote')}: {selectedPlanned.comment}
                     </p>
                   )}
-                  <label className="block text-xs font-medium text-slate-600">{t('commentOrReason')}</label>
+                  <label className="block text-xs font-medium text-[#8b8b90]">{t('commentOrReason')}</label>
                   <textarea
-                    className="w-full min-h-[88px] rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className={cn(studentInputClass, 'min-h-[88px] resize-y py-2')}
                     value={commentDraft}
                     onChange={(e) => setCommentDraft(e.target.value)}
                     placeholder={t('plannedAbsencePlaceholder')}
@@ -493,6 +509,7 @@ export function StudentAbsenceCalendar({
                       type="button"
                       onClick={handleSubmitPlanned}
                       disabled={createPlanned.isPending || deletePlanned.isPending}
+                      className={studentPrimaryButtonClass}
                     >
                       {selectedPlanned ? t('updatePlannedAbsence') : t('savePlannedAbsence')}
                     </Button>
@@ -502,6 +519,7 @@ export function StudentAbsenceCalendar({
                         variant="outline"
                         onClick={handleDeletePlanned}
                         disabled={createPlanned.isPending || deletePlanned.isPending}
+                        className={studentGhostButtonClass}
                       >
                         {t('cancelPlannedAbsence')}
                       </Button>
@@ -511,7 +529,9 @@ export function StudentAbsenceCalendar({
               )}
 
               {!selectedAnalysis.canReportAbsence && (
-                <p className="text-xs text-slate-500 border-t border-slate-100 pt-3">{t('pastDayReadOnly')}</p>
+                <p className="border-t border-[rgba(14,14,16,0.07)] pt-3 text-xs text-[#8b8b90]">
+                  {t('pastDayReadOnly')}
+                </p>
               )}
             </div>
           )}

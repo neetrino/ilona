@@ -15,6 +15,12 @@ import {
   getWeekDateRangeForApi,
   getWeekDates,
 } from '@/features/schedule/schedule-dates';
+import {
+  StudentCard,
+  StudentFieldLabel,
+  StudentPageStack,
+  StudentSelect,
+} from '@/features/student-ui';
 
 function centersFromStudentProfile(profile: Student): { id: string; name: string }[] {
   const map = new Map<string, string>();
@@ -119,58 +125,59 @@ export default function StudentSchedulePage() {
       title={t('schedule')}
       subtitle="Weekly and monthly schedule for upcoming lessons"
     >
-      <ScheduleBoard
-        lessons={lessons}
-        isLoading={!isAuthReady || isProfileLoading || (hasGroup && isLessonsLoading)}
-        highlightPastLessonCards
-        topBar={(
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
-            {hasGroup ? (
-              <div className="md:w-72">
-                <label
-                  htmlFor="schedule-center-student"
-                  className="mb-1.5 block text-sm font-medium text-slate-600"
-                >
-                  Center
-                </label>
-                <select
-                  id="schedule-center-student"
-                  value={centerId}
-                  onChange={(e) => setCenterId(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
-                >
-                  <option value="">All centers</option>
-                  {profileCenters.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name || c.id}
-                    </option>
-                  ))}
-                </select>
+      <StudentPageStack>
+        <ScheduleBoard
+          variant="student"
+          lessons={lessons}
+          isLoading={!isAuthReady || isProfileLoading || (hasGroup && isLessonsLoading)}
+          highlightPastLessonCards
+          topBar={(
+            <StudentCard className="mb-0">
+              <div className="flex flex-col gap-4 md:flex-row md:items-end">
+                {hasGroup ? (
+                  <div className="w-full md:max-w-xs">
+                    <StudentFieldLabel htmlFor="schedule-center-student">
+                      Center
+                    </StudentFieldLabel>
+                    <StudentSelect
+                      id="schedule-center-student"
+                      value={centerId}
+                      onChange={(e) => setCenterId(e.target.value)}
+                    >
+                      <option value="">All centers</option>
+                      {profileCenters.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name || c.id}
+                        </option>
+                      ))}
+                    </StudentSelect>
+                  </div>
+                ) : null}
+                <p className="flex-1 text-sm text-[#8b8b90]">
+                  {profile && !hasGroup
+                    ? 'You are not assigned to a class group yet. When you are, your schedule will appear here.'
+                    : `Showing 1 active group${
+                        effectiveCenterId
+                          ? ` in ${
+                              profileCenters.find((c) => c.id === effectiveCenterId)?.name
+                              ?? 'selected center'
+                            }`
+                          : ''
+                      }.`}
+                </p>
               </div>
-            ) : null}
-            <div className="flex-1 text-sm text-slate-500">
-              {profile && !hasGroup
-                ? 'You are not assigned to a class group yet. When you are, your schedule will appear here.'
-                : `Showing 1 active group${
-                    effectiveCenterId
-                      ? ` in ${
-                          profileCenters.find((c) => c.id === effectiveCenterId)?.name
-                          ?? 'selected center'
-                        }`
-                      : ''
-                  }.`}
-            </div>
-          </div>
-        )}
-        managerBranchName={null}
-        weekDates={weekDates}
-        monthDates={monthDates}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        periodLabel={periodLabel}
-        onPeriodNavigate={onPeriodNavigate}
-        onGoToToday={() => setCurrentDate(new Date())}
-      />
+            </StudentCard>
+          )}
+          managerBranchName={null}
+          weekDates={weekDates}
+          monthDates={monthDates}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          periodLabel={periodLabel}
+          onPeriodNavigate={onPeriodNavigate}
+          onGoToToday={() => setCurrentDate(new Date())}
+        />
+      </StudentPageStack>
     </DashboardLayout>
   );
 }

@@ -29,6 +29,7 @@ import {
   getInitialsFromParts,
 } from '../utils/chat-utils';
 import Image from 'next/image';
+import { getChatTheme } from '../lib/chat-theme';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -79,6 +80,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const isGroupChat = chat.type === 'GROUP';
   const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
   const isStudent = user?.role === 'STUDENT';
+  const ui = getChatTheme(isStudent ? 'student' : 'default');
 
   // Resolve teacher user id for "Send Voice to Teacher" (Student only): ONLY in direct 1:1 chat with assigned teacher
   const getOtherParticipantForVoice = () => {
@@ -501,14 +503,11 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-slate-200 flex items-center gap-3">
+      <div className={cn('flex items-center gap-3 border-b p-4', ui.border, ui.headerBg)}>
         {/* Back button (mobile) */}
         {onBack && (
-          <button
-            onClick={onBack}
-            className="lg:hidden p-2 -ml-2 hover:bg-slate-100 rounded-lg"
-          >
-            <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button onClick={onBack} className={cn('lg:hidden -ml-2 p-2', ui.iconBtn)}>
+            <svg className={cn('h-5 w-5', ui.body)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -531,7 +530,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                 'w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold',
                 chat.type === 'GROUP'
                   ? 'bg-gradient-to-br from-purple-500 to-purple-600'
-                  : 'bg-primary'
+                  : ui.avatar,
               )}
             >
               {getChatAvatarInitials()}
@@ -541,17 +540,17 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
 
         {/* Title */}
         <div className="flex-1">
-          <h2 className="font-semibold text-slate-800">{getChatTitle()}</h2>
+          <h2 className={cn('font-semibold', ui.title)}>{getChatTitle()}</h2>
           {typingNames.length > 0 ? (
-            <p className="text-xs text-primary">
+            <p className={cn('text-xs', ui.typing)}>
               {typingNames.join(', ')} {typingNames.length === 1 ? 'is' : 'are'} typing...
             </p>
           ) : onlineStatus !== null ? (
-            <p className={cn('text-xs', onlineStatus ? 'text-green-600' : 'text-slate-500')}>
+            <p className={cn('text-xs', onlineStatus ? 'text-green-600' : ui.muted)}>
               {onlineStatus ? 'Online' : 'Offline'}
             </p>
           ) : (
-            <p className="text-xs text-slate-500">
+            <p className={cn('text-xs', ui.muted)}>
               {chat.participants.length} participants
             </p>
           )}
@@ -563,7 +562,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
           {isAdminOrManager && isGroupChat && (
             <button
               onClick={() => setShowAddMembersModal(true)}
-              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+              className={cn(
+                'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
+                ui.ghostBtn,
+              )}
               title="Add members"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -585,6 +587,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
           )}
           {!isLoading && filteredMessages.length >= 2 && (
             <MessageNavigationControls
+              variant={isStudent ? 'student' : 'default'}
               onPrevious={goToPrevious}
               onNext={goToNext}
               canGoPrevious={canGoPrevious}
@@ -598,8 +601,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
             )}
             title={isConnected ? 'Connected' : 'Reconnecting...'}
           />
-          <button className="p-2 hover:bg-slate-100 rounded-lg">
-            <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button className={cn('p-2', ui.iconBtn)}>
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
             </svg>
           </button>
@@ -607,14 +610,17 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       </div>
 
       {/* Messages */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+      <div
+        ref={messagesContainerRef}
+        className={cn('flex-1 space-y-4 overflow-y-auto p-4', ui.messagesBg)}
+      >
         {/* Load more button */}
         {hasNextPage && (
           <div className="text-center">
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="text-sm text-primary hover:text-primary/90"
+              className={ui.loadMore}
             >
               {isFetchingNextPage ? 'Loading...' : 'Load earlier messages'}
             </button>
@@ -623,12 +629,12 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className={cn('h-8 w-8 animate-spin rounded-full', ui.spinner)} />
           </div>
         ) : filteredMessages.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-slate-500">No messages yet</p>
-            <p className="text-sm text-slate-400 mt-1">Start the conversation!</p>
+            <p className={ui.muted}>No messages yet</p>
+            <p className={cn('mt-1 text-sm', ui.subtle)}>Start the conversation!</p>
           </div>
         ) : (
             filteredMessages.map((message, index) => {
@@ -660,14 +666,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                 ref={(el) => registerMessageElement(message.id, el)}
                 className={cn(
                   'rounded-lg scroll-mt-8',
-                  focusedMessageId === message.id &&
-                    'ring-2 ring-primary/40 ring-offset-2 ring-offset-slate-50'
+                  focusedMessageId === message.id && ui.focusMessage
                 )}
               >
                 {/* Date separator */}
                 {showDateSeparator && (
                   <div className="flex items-center justify-center my-4">
-                    <span className="px-3 py-1 bg-white rounded-full text-xs text-slate-500 shadow-sm">
+                    <span className={cn('rounded-full px-3 py-1 text-xs', ui.datePill)}>
                       {formatDateSeparator(message.createdAt)}
                     </span>
                   </div>
@@ -693,7 +698,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                           unoptimized
                         />
                       ) : (
-                        <div className="w-full h-full bg-slate-300 flex items-center justify-center text-slate-600 text-sm font-medium">
+                        <div
+                          className={cn(
+                            'flex h-full w-full items-center justify-center text-sm font-medium',
+                            ui.skeleton,
+                            ui.body,
+                          )}
+                        >
                           {message.sender
                             ? getInitialsFromParts(
                                 message.sender.firstName,
@@ -728,8 +739,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                     )}
                     {/* Sender name (group chats) */}
                     {!isOwn && chat.type === 'GROUP' && (
-                      <p className="text-xs text-slate-500 mb-1 ml-1">
-                        <span className={senderDisplay.isInactive ? 'text-slate-600 italic' : ''}>
+                      <p className={cn('mb-1 ml-1 text-xs', ui.muted)}>
+                        <span className={senderDisplay.isInactive ? 'italic opacity-80' : ''}>
                           {senderDisplay.name}
                         </span>
                         {substituteVoiceLabel ? (
@@ -749,8 +760,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                         isVocabulary
                           ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg border-2 border-purple-300'
                           : isOwn
-                            ? 'bg-primary text-primary-foreground rounded-br-md'
-                            : 'bg-white text-slate-800 rounded-bl-md shadow-sm'
+                            ? ui.ownBubble
+                            : ui.otherBubble
                       )}
                     >
                       {message.type === 'VOICE' && message.fileUrl ? (
@@ -783,11 +794,11 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                         isOwn ? 'justify-end mr-1' : 'justify-start ml-1'
                       )}
                     >
-                      <span className="text-xs text-slate-400">
+                      <span className={cn('text-xs', ui.subtle)}>
                         {formatTime(message.createdAt)}
                       </span>
                       {message.isEdited && (
-                        <span className="text-xs text-slate-400">(edited)</span>
+                        <span className={cn('text-xs', ui.subtle)}>(edited)</span>
                       )}
                     </div>
                   </div>
@@ -801,28 +812,30 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-slate-200 bg-white">
+      <div className={cn('border-t p-4', ui.border, ui.headerBg)}>
         {showVoiceRecorder ? (
           <div className="space-y-2">
             <VoiceRecorder
+              variant={isStudent ? 'student' : 'default'}
               onRecorded={handleVoiceRecorded}
               onCancel={() => setShowVoiceRecorder(false)}
               conversationId={chat.id}
             />
             {isUploadingVoice && (
-              <p className="text-sm text-slate-500 text-center">Uploading voice message...</p>
+              <p className={cn('text-center text-sm', ui.muted)}>Uploading voice message...</p>
             )}
           </div>
         ) : showVoiceToTeacherRecorder ? (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">Recording for your teacher</p>
+            <p className={cn('text-sm font-medium', ui.body)}>Recording for your teacher</p>
             <VoiceRecorder
+              variant={isStudent ? 'student' : 'default'}
               onRecorded={handleVoiceToTeacherRecorded}
               onCancel={() => setShowVoiceToTeacherRecorder(false)}
               conversationId={chat.id}
             />
             {isUploadingVoiceToTeacher && (
-              <p className="text-sm text-slate-500 text-center">Sending voice to teacher...</p>
+              <p className={cn('text-center text-sm', ui.muted)}>Sending voice to teacher...</p>
             )}
           </div>
         ) : (
@@ -835,7 +848,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               rows={1}
-              className="flex-1 px-4 py-2 bg-slate-100 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 overflow-x-hidden"
+              className={ui.input}
               style={{ minHeight: '40px' }}
             />
 
@@ -843,7 +856,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
             <button
               type="button"
               onClick={() => setShowVoiceRecorder(true)}
-              className="p-2 rounded-lg flex-shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+              className={cn('flex-shrink-0 rounded-lg p-2 transition-colors', ui.ghostBtn)}
               title="Record voice message"
               aria-label="Record voice message"
             >
@@ -875,10 +888,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               onClick={handleSend}
               disabled={!inputValue.trim()}
               className={cn(
-                'p-2 rounded-lg flex-shrink-0 transition-colors',
-                inputValue.trim()
-                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                  : 'bg-slate-100 text-slate-400'
+                'flex-shrink-0 rounded-lg p-2 transition-colors',
+                inputValue.trim() ? ui.primaryBtn : ui.primaryBtnDisabled,
               )}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

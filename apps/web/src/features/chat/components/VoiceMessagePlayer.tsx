@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { getProxiedFileUrl } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getChatTheme } from '../lib/chat-theme';
 
 const PLAYBACK_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 type PlaybackSpeed = (typeof PLAYBACK_SPEED_OPTIONS)[number];
@@ -62,6 +63,7 @@ export function VoiceMessagePlayer({
   fileName: _fileName,
 }: VoiceMessagePlayerProps) {
   const { user } = useAuthStore();
+  const ui = getChatTheme(user?.role === 'STUDENT' ? 'student' : 'default');
   const userId = user?.id ?? null;
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -409,16 +411,27 @@ export function VoiceMessagePlayer({
             type="button"
             onClick={isPlaying ? handlePauseClick : handlePlayClick}
             disabled={isLoading}
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 touch-manipulation"
+            className={cn(
+              'flex h-10 w-10 flex-shrink-0 touch-manipulation items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-50',
+              ui.voicePlayCircle,
+            )}
             title={isPlaying ? 'Pause' : 'Play'}
             aria-label={isPlaying ? 'Pause' : 'Play'}
           >
             {isPlaying ? (
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg
+                className={cn('h-5 w-5', ui.voicePlayIcon)}
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
               </svg>
             ) : (
-              <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <svg
+                className={cn('ml-0.5 h-5 w-5', ui.voicePlayIcon)}
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -439,11 +452,20 @@ export function VoiceMessagePlayer({
               onPointerCancel={handleProgressPointerCancel}
               onKeyDown={handleProgressKeyDown}
             >
-              <div className="h-2 bg-slate-200 rounded-full overflow-hidden pointer-events-none">
+              <div
+                className={cn(
+                  'pointer-events-none h-2 overflow-hidden rounded-full',
+                  ui.skeleton,
+                )}
+              >
                 <div
                   className={cn(
-                    'h-full bg-primary rounded-full group-focus-within:ring-2 group-focus-within:ring-primary/40',
-                    !isScrubbing && 'transition-[width] duration-75 ease-linear'
+                    'h-full rounded-full group-focus-within:ring-2',
+                    ui.avatar,
+                    user?.role === 'STUDENT'
+                      ? 'group-focus-within:ring-[#1010a3]/30'
+                      : 'group-focus-within:ring-primary/40',
+                    !isScrubbing && 'transition-[width] duration-75 ease-linear',
                   )}
                   style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
                 />
@@ -453,7 +475,7 @@ export function VoiceMessagePlayer({
         </div>
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded pointer-events-none">
-            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className={cn('h-4 w-4 animate-spin rounded-full', ui.spinner)} />
           </div>
         )}
       </div>
@@ -467,7 +489,12 @@ export function VoiceMessagePlayer({
         {formatSpeedLabel(playbackSpeed)}
       </button>
       {totalLabelSec > 0 ? (
-        <span className="text-sm font-semibold flex-shrink-0 text-slate-500 tabular-nums whitespace-nowrap">
+        <span
+          className={cn(
+            'flex-shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums',
+            ui.muted,
+          )}
+        >
           {formatDuration(currentTimeSec)} / {formatDuration(totalLabelSec)}
         </span>
       ) : null}

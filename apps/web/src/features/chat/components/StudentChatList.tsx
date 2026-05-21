@@ -8,6 +8,7 @@ import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import type { Chat } from '../types';
 import type { AssignedTeacher } from '@/features/students/api/students.api';
 import { cn } from '@/shared/lib/utils';
+import { getChatTheme } from '../lib/chat-theme';
 import { formatMessagePreview } from '../utils';
 import Image from 'next/image';
 import { formatDisplayName, getInitials, getInitialsFromParts } from '@/shared/components/ui/avatar';
@@ -21,6 +22,7 @@ interface StudentChatListProps {
 }
 
 export function StudentChatList({ onSelectChat }: StudentChatListProps) {
+  const ui = getChatTheme('student');
   const { user } = useAuthStore();
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
@@ -141,9 +143,9 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-slate-200">
+      <div className={cn('p-4 border-b', ui.border)}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-800">Messages</h2>
+          <h2 className={cn('text-lg font-semibold', ui.title)}>Messages</h2>
           {/* Connection status */}
           <div
             className={cn(
@@ -166,7 +168,12 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
 
         {/* Search */}
         <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className={cn('absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2', ui.muted)}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -174,7 +181,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
             placeholder="Search chats..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className={ui.searchInput}
           />
         </div>
       </div>
@@ -185,25 +192,30 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center gap-3 animate-pulse">
-                <div className="w-12 h-12 bg-slate-200 rounded-full" />
+                <div className={cn('h-12 w-12 rounded-full', ui.skeleton)} />
                 <div className="flex-1">
-                  <div className="h-4 bg-slate-200 rounded w-24 mb-2" />
-                  <div className="h-3 bg-slate-200 rounded w-40" />
+                  <div className={cn('mb-2 h-4 w-24 rounded', ui.skeleton)} />
+                  <div className={cn('h-3 w-40 rounded', ui.skeleton)} />
                 </div>
               </div>
             ))}
           </div>
           ) : listItems.length === 0 ? (
             <div className="p-8 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 bg-slate-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div
+                className={cn(
+                  'mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full',
+                  ui.emptyIcon,
+                )}
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-slate-700 mb-1">
+              <p className={cn('mb-1 text-sm font-medium', ui.body)}>
                 {searchQuery ? 'No chats found' : 'No chats yet'}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className={cn('text-xs', ui.muted)}>
                 {searchQuery
                   ? 'Try a different search term'
                   : 'Your conversations will appear here'}
@@ -224,8 +236,9 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                     }}
                     disabled={isCreating}
                     className={cn(
-                      'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
-                      isCreating && 'opacity-60 cursor-wait'
+                      'flex w-full items-start gap-3 p-4 text-left transition-colors',
+                      ui.listHover,
+                      isCreating && 'cursor-wait opacity-60',
                     )}
                   >
                     <div className="relative">
@@ -239,16 +252,21 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                           unoptimized
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-primary">
+                        <div
+                          className={cn(
+                            'flex h-12 w-12 items-center justify-center rounded-full font-semibold text-white',
+                            ui.avatar,
+                          )}
+                        >
                           {getInitials(teacher.name)}
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-medium truncate text-slate-700">{teacher.name}</h3>
+                        <h3 className={cn('truncate font-medium', ui.body)}>{teacher.name}</h3>
                       </div>
-                      <p className="text-sm text-slate-500 truncate">
+                      <p className={cn('truncate text-sm', ui.muted)}>
                         {isCreating ? 'Opening chat...' : 'My Teacher — tap to message'}
                       </p>
                     </div>
@@ -269,8 +287,9 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                   key={chat.id}
                   onClick={() => onSelectChat(chat)}
                   className={cn(
-                    'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
-                    isActive && 'bg-primary/10 hover:bg-primary/10'
+                    'flex w-full items-start gap-3 p-4 text-left transition-colors',
+                    ui.listHover,
+                    isActive && ui.listActive,
                   )}
                 >
                   <div className="relative">
@@ -289,7 +308,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                           'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold',
                           info.isGroup
                             ? 'bg-gradient-to-br from-purple-500 to-purple-600'
-                            : 'bg-primary'
+                            : ui.avatar,
                         )}
                       >
                         {info.avatar}
@@ -304,27 +323,32 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                     <div className="flex items-center justify-between mb-1">
                       <h3
                         className={cn(
-                          'font-medium truncate',
-                          hasUnread ? 'text-slate-900' : 'text-slate-700'
+                          'truncate font-medium',
+                          hasUnread ? 'text-[#1010a3]' : ui.body,
                         )}
                       >
                         {info.name}
                       </h3>
-                      <span className="text-xs text-slate-500 flex-shrink-0">
+                      <span className={cn('flex-shrink-0 text-xs', ui.muted)}>
                         {formatTime(chat.lastMessage?.createdAt || chat.updatedAt)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <p
                         className={cn(
-                          'text-sm truncate',
-                          hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500'
+                          'truncate text-sm',
+                          hasUnread ? 'font-medium text-[#3b3b40]' : ui.muted,
                         )}
                       >
                         {formatMessagePreview(chat.lastMessage)}
                       </p>
                       {hasUnread && (
-                        <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
+                        <span
+                          className={cn(
+                            'ml-2 flex-shrink-0 rounded-full px-2 py-0.5 text-xs',
+                            ui.unreadBadge,
+                          )}
+                        >
                           {chat.unreadCount}
                         </span>
                       )}
