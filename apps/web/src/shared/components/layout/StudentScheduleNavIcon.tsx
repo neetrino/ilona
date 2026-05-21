@@ -12,6 +12,9 @@ import {
 /** Figma node 44:442 — Group 20×19px (Ilona-view) */
 const FIGMA_GROUP = { width: 20, height: 19 } as const;
 
+/** Schedule glyph is visually heavier — slightly smaller than other nav icons */
+const SCHEDULE_ICON_VISUAL_SCALE = 0.9;
+
 const INACTIVE_COLOR = '#7777C9';
 const ACTIVE_COLOR = '#1010A3';
 
@@ -72,7 +75,9 @@ function ScheduleLayers({ color, scale }: { color: string; scale: number }) {
 export function StudentScheduleNavIcon({ active }: StudentScheduleNavIconProps) {
   const color = active ? ACTIVE_COLOR : INACTIVE_COLOR;
   const slotPx = active ? STUDENT_SIDEBAR_ICON_ACTIVE_INNER_PX : STUDENT_SIDEBAR_ICON_SLOT_PX;
-  const scale = scaleToFitSquareSlot(slotPx, FIGMA_GROUP.width, FIGMA_GROUP.height);
+  const scale =
+    scaleToFitSquareSlot(slotPx, FIGMA_GROUP.width, FIGMA_GROUP.height) *
+    SCHEDULE_ICON_VISUAL_SCALE;
   const layers = <ScheduleLayers color={color} scale={scale} />;
 
   if (active) {

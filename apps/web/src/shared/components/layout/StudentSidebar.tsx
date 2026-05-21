@@ -57,11 +57,11 @@ function NavLink({
       title={collapsed ? label : undefined}
       onClick={onNavigate}
       className={cn(
-        'flex h-12 w-full items-center transition-colors',
+        'flex min-h-12 w-full items-center gap-1 transition-colors',
         active
-          ? 'rounded-[3.375rem] bg-[#1010a3] px-1.5'
-          : 'rounded-[0.875rem] px-3 hover:bg-[#f6f6f7]',
-        collapsed && 'justify-center px-1.5',
+          ? 'rounded-[3.375rem] bg-[#1010a3] py-1 pl-1.5 pr-3'
+          : 'rounded-[0.875rem] px-3 py-1 hover:bg-[#f6f6f7]',
+        collapsed && 'h-12 justify-center px-1.5 py-0',
       )}
     >
       <span className={NAV_ICON_COLUMN_CLASS}>
@@ -71,14 +71,14 @@ function NavLink({
         <>
           <span
             className={cn(
-              'ml-2 min-w-0 truncate text-sm italic',
+              'min-w-0 flex-1 overflow-visible pr-0.5 text-sm italic leading-snug',
               active ? 'font-semibold text-white' : 'font-medium text-[#787878]',
             )}
           >
             {label}
           </span>
           {item.badge != null && item.badge > 0 ? (
-            <span className="ml-auto shrink-0 rounded-full bg-black/[0.04] px-2 text-base font-medium italic leading-none text-[#bcbcbc]">
+            <span className="shrink-0 rounded-full bg-black/[0.04] px-2 text-base font-medium italic leading-none text-[#bcbcbc]">
               {item.badge}
             </span>
           ) : null}
@@ -157,14 +157,14 @@ export function StudentSidebar({
       className={cn(
         'flex h-full shrink-0 flex-col bg-[#ececec]',
         isDrawer
-          ? 'w-full py-2 pl-2 pr-1'
+          ? 'w-full py-2 pl-2 pr-2'
           : cn(
-              'h-screen py-3 pl-3 pr-1 sm:pl-4',
-              collapsed ? 'w-[5.5rem]' : 'w-[15.75rem] sm:w-[16.25rem]',
+              'h-screen py-3 pl-3 pr-2 sm:pl-4 sm:pr-3',
+              collapsed ? 'w-[5.5rem]' : 'w-[16.5rem] sm:w-[17rem]',
             ),
       )}
     >
-      <aside className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-[2rem] bg-white">
+      <aside className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto overflow-x-visible rounded-[2rem] bg-white">
         {/* Brand */}
         <div
           className={cn(
@@ -211,7 +211,7 @@ export function StudentSidebar({
 
         <nav
           className={cn(
-            'flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-4',
+            'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto px-3 py-4 pr-3.5',
             NAV_LIST_GAP_CLASS,
           )}
         >

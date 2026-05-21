@@ -1,6 +1,7 @@
 'use client';
 
-import { PublicAssetImage } from '@/shared/components/ui';
+import { Avatar, PublicAssetImage } from '@/shared/components/ui';
+import { formatDisplayName } from '@/shared/components/ui/avatar';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
@@ -34,6 +35,7 @@ export function StudentDashboardHeader({
   };
 
   const displayName = `${user?.firstName ?? ''} ${user?.lastName?.charAt(0) ?? ''}.`.trim();
+  const profileName = formatDisplayName(user?.firstName, user?.lastName, displayName || tNav('user'));
   const firstName = user?.firstName ?? tNav('user');
   const isSubpage = Boolean(pageTitle);
 
@@ -138,10 +140,13 @@ export function StudentDashboardHeader({
                 onClick={handleProfileClick}
                 className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-[#1010a3] py-0.5 pl-0.5 pr-2 text-left text-white sm:h-9 sm:gap-2 sm:pr-3"
               >
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#fbd7c2] to-[#f3a679] text-[0.625rem] font-semibold sm:text-xs">
-                  {user?.firstName?.[0]}
-                  {user?.lastName?.[0]}
-                </span>
+                <Avatar
+                  src={user?.avatarUrl}
+                  name={profileName}
+                  size="sm"
+                  alt={profileName}
+                  className="h-7 w-7 shrink-0 bg-gradient-to-br from-[#fbd7c2] to-[#f3a679] text-[0.625rem] font-semibold text-white ring-2 ring-white/25 sm:h-8 sm:w-8 sm:text-xs"
+                />
                 <span className="hidden min-w-0 max-w-[5.5rem] whitespace-nowrap min-[480px]:block sm:max-w-[7rem]">
                   <span className="block truncate text-[0.6875rem] font-medium leading-tight sm:text-xs">
                     {displayName}
