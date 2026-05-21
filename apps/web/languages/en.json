@@ -557,7 +557,11 @@
     "chats": "Chats",
     "formerManager": "Former Manager",
     "inactiveManager": "Inactive Manager",
-    "unknownUser": "Unknown user"
+    "unknownUser": "Unknown user",
+    "deleteMessageTitle": "Delete message?",
+    "deleteMessageDescription": "Are you sure you want to delete this message? This action cannot be undone.",
+    "deleteMessageFailed": "Failed to delete message. Please try again.",
+    "deleting": "Deleting..."
   },
   "finance": {
     "title": "Finance",

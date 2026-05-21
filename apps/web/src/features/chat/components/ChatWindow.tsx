@@ -13,6 +13,7 @@ import {
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import { DeleteConfirmationDialog } from '@/shared/components/ui';
 import { api } from '@/shared/lib/api';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 import { VoiceRecorder } from './VoiceRecorder';
@@ -40,6 +41,7 @@ interface ChatWindowProps {
 
 export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const { user } = useAuthStore();
   const senderLabels = useMemo(
     () => ({
@@ -66,7 +68,9 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const [showVocabularyModal, setShowVocabularyModal] = useState(false);
   const [showAddMembersModal, setShowAddMembersModal] = useState(false);
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
-  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
+  const [messageIdToDelete, setMessageIdToDelete] = useState<string | null>(null);
+  const [deleteMessageError, setDeleteMessageError] = useState<string | null>(null);
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [showVoiceToTeacherRecorder, setShowVoiceToTeacherRecorder] = useState(false);
   const [isUploadingVoice, setIsUploadingVoice] = useState(false);
@@ -257,24 +261,37 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     ta.style.overflowY = h >= MAX_TEXTAREA_HEIGHT ? 'auto' : 'hidden';
   }, [inputValue]);
 
-  // Handle delete message
-  const handleDeleteMessage = async (messageId: string) => {
-    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
-      return;
-    }
+  const handleOpenDeleteMessage = (messageId: string) => {
+    setDeleteMessageError(null);
+    setMessageIdToDelete(messageId);
+  };
 
-    setDeletingMessageId(messageId);
+  const handleDeleteMessageDialogOpenChange = (open: boolean) => {
+    if (!open && !isDeletingMessage) {
+      setMessageIdToDelete(null);
+      setDeleteMessageError(null);
+    }
+  };
+
+  const handleConfirmDeleteMessage = async () => {
+    if (!messageIdToDelete || isDeletingMessage) return;
+
+    const messageId = messageIdToDelete;
+    setDeleteMessageError(null);
+    setIsDeletingMessage(true);
     try {
       const result = await deleteMessage(messageId);
       if (!result.success) {
         console.error('Failed to delete message:', result.error);
-        alert('Failed to delete message. Please try again.');
+        setDeleteMessageError(tChat('deleteMessageFailed'));
+        return;
       }
+      setMessageIdToDelete(null);
     } catch (error) {
       console.error('Failed to delete message:', error);
-      alert('Failed to delete message. Please try again.');
+      setDeleteMessageError(tChat('deleteMessageFailed'));
     } finally {
-      setDeletingMessageId(null);
+      setIsDeletingMessage(false);
     }
   };
 
@@ -720,21 +737,19 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                     {/* Delete button (only for own messages) */}
                     {isOwn && (
                       <button
-                        onClick={() => handleDeleteMessage(message.id)}
-                        disabled={deletingMessageId === message.id}
+                        type="button"
+                        onClick={() => handleOpenDeleteMessage(message.id)}
+                        disabled={isDeletingMessage && messageIdToDelete === message.id}
                         className={cn(
                           'absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50',
                           isOwn ? '-right-1' : '-left-1'
                         )}
                         title="Delete message"
+                        aria-label="Delete message"
                       >
-                        {deletingMessageId === message.id ? (
-                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        )}
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                       </button>
                     )}
                     {/* Sender name (group chats) */}
@@ -914,6 +929,19 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         onClose={() => setShowAddMembersModal(false)}
         chat={chat}
         onMemberAdded={onChatUpdated}
+      />
+
+      <DeleteConfirmationDialog
+        open={messageIdToDelete !== null}
+        onOpenChange={handleDeleteMessageDialogOpenChange}
+        onConfirm={handleConfirmDeleteMessage}
+        title={tChat('deleteMessageTitle')}
+        description={tChat('deleteMessageDescription')}
+        isLoading={isDeletingMessage}
+        error={deleteMessageError}
+        confirmLabel={tCommon('delete')}
+        cancelLabel={tCommon('cancel')}
+        loadingLabel={tChat('deleting')}
       />
     </div>
   );

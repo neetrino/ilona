@@ -557,7 +557,11 @@
     "chats": "Զրույցներ",
     "formerManager": "Նախկին Manager",
     "inactiveManager": "Անակտիվ Manager",
-    "unknownUser": "Անհայտ օգտատեր"
+    "unknownUser": "Անհայտ օգտատեր",
+    "deleteMessageTitle": "Ջնջե՞լ հաղորդագրությունը",
+    "deleteMessageDescription": "Վստա՞հ եք, որ ցանկանում եք ջնջել այս հաղորդագրությունը։ Այս գործողությունը չի կարող հետարկվել։",
+    "deleteMessageFailed": "Հաղորդագրությունը ջնջել չհաջողվեց։ Խնդրում ենք կրկին փորձել։",
+    "deleting": "Ջնջվում է..."
   },
   "finance": {
     "title": "Ֆինանսներ",
