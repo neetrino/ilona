@@ -38,7 +38,7 @@ export default function StudentAbsencePage() {
       subtitle={t('scheduleAndAbsenceSubtitle')}
     >
       {/* Statistics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:grid-cols-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">

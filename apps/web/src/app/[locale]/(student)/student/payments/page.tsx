@@ -205,9 +205,9 @@ export default function StudentPaymentsPage() {
 
       {/* Next Payment Alert - only show when summary is fresh to avoid wrong amount */}
       {showSummaryReady && summary?.nextPayment && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -222,7 +222,7 @@ export default function StudentPaymentsPage() {
                 </p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <p className="text-2xl font-bold text-blue-800">{formatCurrency(summary.nextPayment.amount)}</p>
             </div>
           </div>
@@ -232,9 +232,9 @@ export default function StudentPaymentsPage() {
       {/* Payments List */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         {/* Filter */}
-        <div className="p-4 border-b border-slate-200">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-500">{t('filter')}:</span>
+        <div className="border-b border-slate-200 p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-full shrink-0 text-sm text-slate-500 sm:w-auto">{t('filter')}:</span>
             {(['all', 'PENDING', 'PAID', 'OVERDUE'] as FilterStatus[]).map((status) => (
               <button
                 key={status}

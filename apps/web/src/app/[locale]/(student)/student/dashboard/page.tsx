@@ -39,7 +39,7 @@ export default function StudentDashboardPage() {
 
   return (
     <DashboardLayout title="" variant="student">
-      <div className="mx-auto flex w-full max-w-[90rem] flex-col gap-5 lg:gap-6">
+      <div className="flex w-full min-w-0 flex-col gap-5 lg:gap-6">
         <StudentDashboardHero
           streakDays={stats?.attendance?.currentStreak ?? 0}
           levelLabel={levelLabel}

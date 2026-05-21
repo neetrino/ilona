@@ -58,7 +58,7 @@ export function ScheduleBoard({
   return (
     <>
       {topBar}
-      <div className="flex h-[calc(100vh-260px)] min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:min-h-[min(75vh,36rem)] lg:h-[calc(100vh-260px)] lg:min-h-0">
         <div className="relative flex flex-col gap-3 border-b border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
             <button
@@ -69,7 +69,7 @@ export function ScheduleBoard({
             >
               ←
             </button>
-            <div className="min-w-[180px] text-center text-sm font-semibold text-slate-800">
+            <div className="min-w-0 flex-1 text-center text-sm font-semibold text-slate-800 sm:min-w-[10rem] sm:flex-none">
               {periodLabel}
             </div>
             <button

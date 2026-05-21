@@ -47,8 +47,10 @@ function ProgressRing({ value }: { value: number }) {
 function SkillRow({ label, rate, barClass }: { label: string; rate: number; barClass: string }) {
   const clamped = Math.max(0, Math.min(100, Math.round(rate)));
   return (
-    <div className="flex items-center gap-3">
-      <span className="w-28 shrink-0 text-[0.8125rem] font-medium text-[#1010a3]">{label}</span>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:flex-nowrap">
+      <span className="w-full shrink-0 text-[0.8125rem] font-medium text-[#1010a3] min-[400px]:w-auto sm:min-w-[6.5rem] md:min-w-[7rem]">
+        {label}
+      </span>
       <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[#f1f1f2]">
         <div className={`h-full rounded-full ${barClass}`} style={{ width: `${clamped}%` }} />
       </div>

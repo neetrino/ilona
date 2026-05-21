@@ -41,6 +41,79 @@ function formatVoiceTimestamp(createdAt: string): string {
   });
 }
 
+function VoiceToTeacherPlayback({
+  recording,
+  isActive,
+  onPlay,
+}: {
+  recording: VoiceToTeacherRecording;
+  isActive: boolean;
+  onPlay: (id: string) => void;
+}) {
+  if (isActive) {
+    return (
+      <VoiceMessagePlayer
+        fileUrl={recording.fileUrl}
+        duration={recording.duration}
+        fileName={recording.fileName}
+      />
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => onPlay(recording.id)}
+      className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-primary/20 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
+    >
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+        />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      Play
+    </button>
+  );
+}
+
+function VoiceToTeacherCard({
+  recording,
+  isActive,
+  onPlay,
+}: {
+  recording: VoiceToTeacherRecording;
+  isActive: boolean;
+  onPlay: (id: string) => void;
+}) {
+  const teacherName = recording.teacher
+    ? `${recording.teacher.firstName} ${recording.teacher.lastName}`
+    : 'Teacher';
+
+  return (
+    <article className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
+          Voice to teacher
+        </span>
+        <span className="text-xs text-slate-500">{formatVoiceTimestamp(recording.createdAt)}</span>
+      </div>
+      <p className="text-sm font-medium text-slate-800">{teacherName}</p>
+      <p className="mt-1 text-sm text-slate-600">{formatDuration(recording.duration)}</p>
+      <div className="mt-3">
+        <VoiceToTeacherPlayback recording={recording} isActive={isActive} onPlay={onPlay} />
+      </div>
+    </article>
+  );
+}
+
 function VoiceToTeacherRow({
   recording,
   isActive,
@@ -55,7 +128,7 @@ function VoiceToTeacherRow({
     : 'Teacher';
 
   return (
-    <tr className="hover:bg-slate-50/60 transition-colors">
+    <tr className="transition-colors hover:bg-slate-50/60">
       <td className="px-4 py-3 align-middle">
         <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
           Voice to teacher
@@ -71,35 +144,7 @@ function VoiceToTeacherRow({
         <span className="text-sm text-slate-600">{formatDuration(recording.duration)}</span>
       </td>
       <td className="px-4 py-3 align-middle">
-        {isActive ? (
-          <VoiceMessagePlayer
-            fileUrl={recording.fileUrl}
-            duration={recording.duration}
-            fileName={recording.fileName}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => onPlay(recording.id)}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary border border-primary/20 hover:bg-primary/5 rounded-lg transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            Play
-          </button>
-        )}
+        <VoiceToTeacherPlayback recording={recording} isActive={isActive} onPlay={onPlay} />
       </td>
     </tr>
   );
@@ -231,9 +276,48 @@ export default function StudentRecordingsPage() {
         </p>
       </section>
 
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="space-y-3 p-4 md:hidden">
+          {isLoadingVoiceToTeacher ? (
+            Array.from({ length: 3 }).map((_, idx) => (
+              <div key={`mobile-skeleton-${idx}`} className="h-28 animate-pulse rounded-xl bg-slate-100" />
+            ))
+          ) : voiceToTeacherRecordings.length === 0 ? (
+            <div className="py-8 text-center text-sm text-slate-600">
+              {hasDateFilter ? (
+                <>
+                  <p>No recordings found for selected date.</p>
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="mt-3 text-sm font-medium text-amber-700 underline hover:text-amber-800"
+                  >
+                    Clear filters and show all
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p>No voice messages to teacher yet.</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Use &quot;Send Voice to Teacher&quot; in Chat to record and send a voice message.
+                  </p>
+                </>
+              )}
+            </div>
+          ) : (
+            voiceToTeacherRecordings.map((recording) => (
+              <VoiceToTeacherCard
+                key={recording.id}
+                recording={recording}
+                isActive={activeRecordingId === recording.id}
+                onPlay={setActiveRecordingId}
+              />
+            ))
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto md:block">
+          <table className="w-full min-w-[40rem]">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Type</th>

@@ -43,16 +43,19 @@ function NavLink({
   active,
   collapsed,
   label,
+  onNavigate,
 }: {
   item: NavEntry;
   active: boolean;
   collapsed: boolean;
   label: string;
+  onNavigate?: () => void;
 }) {
   return (
     <Link
       href={item.href}
       title={collapsed ? label : undefined}
+      onClick={onNavigate}
       className={cn(
         'flex h-12 w-full items-center transition-colors',
         active
@@ -88,14 +91,26 @@ function NavLink({
 interface StudentSidebarProps {
   collapsed?: boolean;
   onToggle?: () => void;
+  /** Called after navigation (e.g. close mobile drawer). */
+  onNavigate?: () => void;
+  /** Docked desktop sidebar vs mobile drawer panel. */
+  layout?: 'dock' | 'drawer';
 }
 
-export function StudentSidebar({ collapsed = false, onToggle }: StudentSidebarProps) {
+export function StudentSidebar({
+  collapsed = false,
+  onToggle,
+  onNavigate,
+  layout = 'dock',
+}: StudentSidebarProps) {
   const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations('nav');
   const { data: logoData } = useLogo();
   const { data: dashboard } = useMyDashboard();
+
+  const isDrawer = layout === 'drawer';
+  const showLabels = isDrawer || !collapsed;
 
   const scheduleBadge = useMemo(
     () => countWeekLessons(dashboard?.upcomingLessons ?? []),
@@ -140,8 +155,13 @@ export function StudentSidebar({ collapsed = false, onToggle }: StudentSidebarPr
   return (
     <div
       className={cn(
-        'flex h-screen shrink-0 flex-col bg-[#ececec] py-3 pl-3 pr-1 sm:pl-4',
-        collapsed ? 'w-[5.5rem]' : 'w-[15.75rem] sm:w-[16.25rem]',
+        'flex h-full shrink-0 flex-col bg-[#ececec]',
+        isDrawer
+          ? 'w-full py-2 pl-2 pr-1'
+          : cn(
+              'h-screen py-3 pl-3 pr-1 sm:pl-4',
+              collapsed ? 'w-[5.5rem]' : 'w-[15.75rem] sm:w-[16.25rem]',
+            ),
       )}
     >
       <aside className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-[2rem] bg-white">
@@ -149,7 +169,7 @@ export function StudentSidebar({ collapsed = false, onToggle }: StudentSidebarPr
         <div
           className={cn(
             'flex shrink-0 items-center gap-3 border-b border-transparent px-4 pb-2 pt-5',
-            collapsed && 'justify-center px-2',
+            !showLabels && 'justify-center px-2',
           )}
         >
           <div className="relative h-[3.25rem] w-[3.25rem] shrink-0 overflow-hidden rounded-full">
@@ -165,12 +185,12 @@ export function StudentSidebar({ collapsed = false, onToggle }: StudentSidebarPr
               }}
             />
           </div>
-          {!collapsed ? (
+          {showLabels ? (
             <p className="min-w-0 flex-1 text-sm font-semibold leading-snug tracking-tight text-[#242427]">
               {t('brandName')}
             </p>
           ) : null}
-          {onToggle && !collapsed ? (
+          {onToggle && showLabels && !isDrawer ? (
             <button
               type="button"
               onClick={onToggle}
@@ -200,13 +220,14 @@ export function StudentSidebar({ collapsed = false, onToggle }: StudentSidebarPr
               key={item.href}
               item={{ ...item, href: withLocale(item.href) }}
               active={isActive(item.href)}
-              collapsed={collapsed}
+              collapsed={!showLabels}
               label={t(item.labelKey)}
+              onNavigate={onNavigate}
             />
           ))}
         </nav>
 
-        {onToggle && collapsed ? (
+        {onToggle && !showLabels && !isDrawer ? (
           <button
             type="button"
             onClick={onToggle}

@@ -136,7 +136,7 @@ export default function StudentProfilePage() {
         )}
         
         {/* Avatar */}
-        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-200">
+        <div className="mb-8 flex flex-col items-start gap-4 border-b border-slate-200 pb-8 sm:flex-row sm:items-center sm:gap-6">
           <div className="relative">
             {avatarUrl ? (
               <Image
@@ -198,7 +198,7 @@ export default function StudentProfilePage() {
         </div>
 
         <form onSubmit={handleSaveProfile} className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 {t('firstName') ?? 'First Name'}
@@ -249,7 +249,7 @@ export default function StudentProfilePage() {
             />
           </div>
 
-          <div className="pt-4 flex justify-end">
+          <div className="flex justify-stretch pt-4 sm:justify-end">
             <Button 
               type="submit" 
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"

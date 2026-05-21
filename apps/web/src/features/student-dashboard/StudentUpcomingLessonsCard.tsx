@@ -147,7 +147,7 @@ export function StudentUpcomingLessonsCard({
             {t('upcoming.scheduledCount', { count: weekCount })}
           </p>
         </div>
-        <div className="inline-flex h-[2.125rem] items-center rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1">
+        <div className="inline-flex h-[2.125rem] max-w-full flex-wrap items-center rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1">
           {filters.map(({ key, label }) => (
             <button
               key={key}
