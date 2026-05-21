@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { PublicAssetImage } from '@/shared/components/ui';
+import { StudentLogoutControl } from './StudentLogoutControl';
 import { StudentSidebarNavIcon } from './StudentSidebarNavIcon';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -106,6 +107,7 @@ export function StudentSidebar({
   const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations('nav');
+  const tCommon = useTranslations('common');
   const { data: logoData } = useLogo();
   const { data: dashboard } = useMyDashboard();
 
@@ -190,6 +192,23 @@ export function StudentSidebar({
               {t('brandName')}
             </p>
           ) : null}
+          {isDrawer ? (
+            <button
+              type="button"
+              onClick={onNavigate}
+              className="ml-auto shrink-0 rounded-lg p-1.5 text-[#8b8b90] transition-colors hover:bg-[#f6f6f7] hover:text-[#242427]"
+              aria-label={tCommon('close')}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          ) : null}
           {onToggle && showLabels && !isDrawer ? (
             <button
               type="button"
@@ -226,6 +245,13 @@ export function StudentSidebar({
             />
           ))}
         </nav>
+
+        <div className="shrink-0 px-4 pb-5 pt-2 lg:hidden">
+          <StudentLogoutControl
+            variant="sidebar"
+            onAfterLogout={onNavigate}
+          />
+        </div>
 
         {onToggle && !showLabels && !isDrawer ? (
           <button

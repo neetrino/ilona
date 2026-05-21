@@ -125,7 +125,11 @@ export function StudentDashboardHeader({
                 </svg>
               </button>
 
-              <StudentLogoutControl roleDetail={level ?? undefined} />
+              <StudentLogoutControl
+                variant="header"
+                roleDetail={level ?? undefined}
+                className="hidden lg:inline-flex"
+              />
             </div>
           </div>
         </div>

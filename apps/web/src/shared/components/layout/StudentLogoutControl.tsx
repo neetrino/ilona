@@ -28,14 +28,17 @@ function LogoutIcon({ className }: { className?: string }) {
 }
 
 type StudentLogoutControlProps = {
+  variant?: 'header' | 'sidebar';
   className?: string;
-  /** Shown under the name (e.g. group level). */
   roleDetail?: string;
+  onAfterLogout?: () => void;
 };
 
 export function StudentLogoutControl({
+  variant = 'header',
   className,
   roleDetail,
+  onAfterLogout,
 }: StudentLogoutControlProps) {
   const logout = useLogout();
   const router = useRouter();
@@ -54,21 +57,66 @@ export function StudentLogoutControl({
   const displayLabel =
     `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() ||
     tDash('studentRole');
-  const roleLine = roleDetail
-    ? `${tDash('studentRole')} · ${roleDetail}`
-    : tDash('studentRole');
+  const roleLine =
+    roleDetail != null && roleDetail !== ''
+      ? `${tDash('studentRole')} · ${roleDetail}`
+      : tDash('studentRole');
 
   const handleLogout = () => {
+    onAfterLogout?.();
     logout();
     router.replace('/');
   };
 
   const profileHref = `/${locale}/student/profile`;
 
+  const pillSizes =
+    'inline-flex h-11 shrink-0 items-center rounded-full bg-[#1010a3] text-white sm:h-12';
+
+  if (variant === 'sidebar') {
+    const sidebarLabel = shortName || displayLabel || tDash('studentRole');
+
+    return (
+      <div
+        className={cn(
+          'flex w-full min-h-[3.25rem] items-center gap-3 rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-4 py-2.5',
+          className,
+        )}
+      >
+        <Link
+          href={profileHref}
+          onClick={onAfterLogout}
+          className="flex min-w-0 flex-1 items-center gap-3 transition-opacity hover:opacity-80"
+        >
+          <Avatar
+            src={user?.avatarUrl}
+            name={profileName}
+            size="sm"
+            alt={profileName}
+            className="h-10 w-10 shrink-0 border-2 border-white bg-gradient-to-br from-[#fbd7c2] to-[#f3a679] text-sm font-semibold text-white shadow-sm"
+          />
+          <p className="min-w-0 flex-1 truncate text-sm font-semibold tracking-tight text-[#242427]">
+            {sidebarLabel}
+          </p>
+        </Link>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="shrink-0 rounded-lg p-3 text-[#8b8b90] transition-colors hover:bg-[#f1f1f2] hover:text-[#3b3b40] sm:p-3.5"
+          title={tAuth('logout')}
+          aria-label={tAuth('logout')}
+        >
+          <LogoutIcon className="h-6 w-6 sm:h-7 sm:w-7" />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
-        'inline-flex h-11 shrink-0 items-center gap-0.5 rounded-full bg-[#1010a3] py-0.5 pl-0.5 pr-1 text-white sm:h-12 sm:pr-2',
+        pillSizes,
+        'items-center gap-0.5 py-0.5 pl-0.5 pr-1 sm:pr-2',
         className,
       )}
     >
