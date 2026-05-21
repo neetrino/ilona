@@ -4,6 +4,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import {
+  StudentCard,
+  StudentFieldLabel,
+  StudentGhostButton,
+  StudentInput,
+  StudentPageStack,
+  studentTableHeadClass,
+} from '@/features/student-ui';
+import { cn } from '@/shared/lib/utils';
 import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import {
@@ -276,7 +285,9 @@ export default function TeacherRecordingsPage() {
       title={t('recordings')}
       subtitle="All student voice recordings in a single searchable table"
     >
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+      <StudentPageStack>
+      <StudentCard>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
             label="Group"
@@ -304,53 +315,44 @@ export default function TeacherRecordingsPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
-            From
-          </label>
-          <input
+          <StudentFieldLabel htmlFor="recordings-from">From</StudentFieldLabel>
+          <StudentInput
+            id="recordings-from"
             type="date"
             value={dateFrom}
             max={dateTo || undefined}
             onChange={(event) => setDateFrom(event.target.value)}
-            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
-            To
-          </label>
-          <input
+          <StudentFieldLabel htmlFor="recordings-to">To</StudentFieldLabel>
+          <StudentInput
+            id="recordings-to"
             type="date"
             value={dateTo}
             min={dateFrom || undefined}
             onChange={(event) => setDateTo(event.target.value)}
-            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
-            Search
-          </label>
-          <input
+      <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end">
+        <div className="min-w-0 flex-1">
+          <StudentFieldLabel htmlFor="recordings-search">Search</StudentFieldLabel>
+          <StudentInput
+            id="recordings-search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Student, group, or file name..."
-            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
-        <button
-          type="button"
-          onClick={resetFilters}
-          className="h-11 px-4 bg-[#f6f6f7] hover:bg-[#f1f1f2] text-[#3b3b40] text-sm font-medium rounded-lg border border-[rgba(14,14,16,0.07)] transition-colors"
-        >
+        <StudentGhostButton type="button" onClick={resetFilters} className="shrink-0">
           Clear all
-        </button>
+        </StudentGhostButton>
       </div>
+      </StudentCard>
 
-      <div className="mb-3 text-sm text-[#8b8b90]">
+      <div className="text-sm text-[#8b8b90]">
         {visibleRecordings.length} recording
         {visibleRecordings.length !== 1 ? 's' : ''} found
         {selectedRecordingIds.size > 0 && (
@@ -360,10 +362,10 @@ export default function TeacherRecordingsPage() {
         )}
       </div>
 
-      <div className="bg-white border border-[rgba(14,14,16,0.07)] rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
+      <StudentCard noPadding>
+        <div className="min-w-0 overflow-x-auto">
+          <table className="w-full min-w-[48rem] text-sm">
+            <thead className={cn(studentTableHeadClass, 'border-b border-[rgba(14,14,16,0.07)]')}>
               <tr>
                 <th className="w-12 px-4 py-3 text-left">
                   <input
@@ -454,7 +456,8 @@ export default function TeacherRecordingsPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </StudentCard>
+      </StudentPageStack>
     </DashboardLayout>
   );
 }

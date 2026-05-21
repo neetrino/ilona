@@ -279,7 +279,7 @@
     "notes": {
       "title": "Իմ նոթերը",
       "pinned": "Կապված է ձեր {level} ուղու հետ",
-      "pinnedDefault": "Կապված է ձեր ուսումնական ուղու հետ",
+      "pinnedDefault": "Կապված է ձեր դասավանդության վահանակին",
       "placeholder": "Գրեք մտքը այսօրվա դասից…",
       "placeholderLegacy": "Արագ հիշեցում…",
       "save": "Պահել",
@@ -289,6 +289,45 @@
       "empty": "Դեռ նոթեր չկան։",
       "emptyLegacy": "Դեռ նոթեր չկան։ Ավելացրեք վերևից։",
       "hint": "Սեղմեք «Արված»՝ հեռացնելու համար"
+    },
+    "teacherStats": {
+      "todayLessons": "Այսօրվա դասեր",
+      "todayLessonsCaption": "Նախատեսված այսօր",
+      "completed": "{count} ավարտված",
+      "students": "Ընդամենը աշակերտներ",
+      "studentsCaption": "Ձեր խմբերում",
+      "groups": "{count} խումբ",
+      "pending": "Սպասող դասեր",
+      "pendingCaption": "Դեռ նախատեսված այսօր",
+      "upcoming": "Առաջիկա",
+      "allDone": "Ամեն ինչ պատրաստ է",
+      "vocabulary": "Բառապաշար ուղարկված",
+      "vocabularyCaption": "Բառապաշարով դասեր",
+      "sendNow": "Ուղարկել հիմա",
+      "myGroups": "Իմ խմբերը"
+    },
+    "teacherLessons": {
+      "title": "Այսօրվա դասեր",
+      "subtitle": "{count, plural, one {այսօր # դաս} other {այսօր # դաս}}",
+      "empty": "Այսօր դասեր չեն նախատեսվել",
+      "untitledLesson": "Անվերնագիր դաս",
+      "students": "աշակերտ",
+      "startLesson": "Սկսել",
+      "completeLesson": "Ավարտել",
+      "viewLesson": "Դիտել"
+    },
+    "teacherTips": {
+      "feedbackTitle": "Աշակերտի կարծիք",
+      "feedbackBody": "Յուրաքանչյուր դասից հետո տրամադրեք կարծիք՝ առաջընթացը հետևելու և ծնողներին տեղեկացնելու համար։",
+      "vocabularyTitle": "Ուղարկել բառապաշարը",
+      "vocabularyBody": "Դասից հետո կիսվեք այսօրվա բառապաշարով՝ աշակերտները նոր բառերը կրկնելու համար։"
+    },
+    "teacherHero": {
+      "titleAccent": "ձեր դասերն ու խմբերը՝ մեկ տեղում։",
+      "description": "{students} աշակերտ · {groups} խումբ · այսօր {lessons}։",
+      "completedToday": "Այսօր արդեն {count} ավարտված դաս։",
+      "viewSchedule": "Դիտել ժամանակացույցը",
+      "openDailyPlan": "Օրական պլան"
     },
     "banner": {
       "adminTitle": "Սովորեք արդյունավետ մեզ հետ",

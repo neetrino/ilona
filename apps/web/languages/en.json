@@ -279,7 +279,7 @@
     "notes": {
       "title": "My Notes",
       "pinned": "Pinned to your {level} track",
-      "pinnedDefault": "Pinned to your learning track",
+      "pinnedDefault": "Pinned to your teaching dashboard",
       "placeholder": "Capture a thought from today's lesson…",
       "placeholderLegacy": "Jot down a quick reminder...",
       "save": "Save",
@@ -289,6 +289,45 @@
       "empty": "No notes yet. Capture a thought above.",
       "emptyLegacy": "No notes yet. Add one above to keep it on your dashboard.",
       "hint": "Click \"Done\" to remove a note"
+    },
+    "teacherStats": {
+      "todayLessons": "Today's lessons",
+      "todayLessonsCaption": "Scheduled for today",
+      "completed": "{count} completed",
+      "students": "Total students",
+      "studentsCaption": "Across your assigned groups",
+      "groups": "{count} groups",
+      "pending": "Pending lessons",
+      "pendingCaption": "Still scheduled today",
+      "upcoming": "Upcoming",
+      "allDone": "All done",
+      "vocabulary": "Vocabulary sent",
+      "vocabularyCaption": "Lessons with vocabulary shared",
+      "sendNow": "Send now",
+      "myGroups": "My groups"
+    },
+    "teacherLessons": {
+      "title": "Today's lessons",
+      "subtitle": "{count, plural, one {# lesson today} other {# lessons today}}",
+      "empty": "No lessons scheduled for today",
+      "untitledLesson": "Untitled lesson",
+      "students": "students",
+      "startLesson": "Start",
+      "completeLesson": "Complete",
+      "viewLesson": "View"
+    },
+    "teacherTips": {
+      "feedbackTitle": "Student feedback",
+      "feedbackBody": "Provide feedback after each lesson to track progress and keep parents informed.",
+      "vocabularyTitle": "Send vocabulary",
+      "vocabularyBody": "Share today's vocabulary with your groups after each lesson so students can review new words."
+    },
+    "teacherHero": {
+      "titleAccent": "your classes, your way.",
+      "description": "{students} students across {groups} groups · {lessons} on your plate today.",
+      "completedToday": "{count} lessons already completed today.",
+      "viewSchedule": "View schedule",
+      "openDailyPlan": "Daily plan"
     },
     "banner": {
       "adminTitle": "Learn effectively with us",

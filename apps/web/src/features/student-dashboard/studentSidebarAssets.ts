@@ -3,6 +3,7 @@ export const STUDENT_SIDEBAR_ASSETS = {
   brandLogo: '/student-sidebar/brand-logo.png',
   iconDashboard: '/student-sidebar/icon-dashboard.svg',
   iconSchedule: '/student-sidebar/icon-schedule.svg',
+  iconCalendar: '/student-sidebar/icon-calendar.svg',
   iconRecordings: '/student-sidebar/icon-recordings.svg',
   iconFeedbacks: '/student-sidebar/icon-feedbacks.svg',
   iconTeachers: '/student-sidebar/icon-teachers.svg',

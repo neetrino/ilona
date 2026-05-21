@@ -1,18 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   useCreateTeacherNote,
   useDeleteTeacherNote,
   useMyTeacherNotes,
 } from './hooks';
 import type { TeacherNote } from './types';
-import {
-  StudentCard,
-  StudentInput,
-  StudentPrimaryButton,
-  StudentSectionHeader,
-} from '@/features/student-ui';
+import { StudentCard, StudentInput, StudentPrimaryButton, StudentSectionHeader } from '@/features/student-ui';
 
 const ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-2', 'rotate-2', 'rotate-0'];
 
@@ -25,9 +21,31 @@ interface NoteCardProps {
   index: number;
   onDelete: (id: string) => void;
   isDeleting: boolean;
+  variant: 'default' | 'dashboard';
 }
 
-function NoteCard({ note, index, onDelete, isDeleting }: NoteCardProps) {
+function NoteCard({ note, index, onDelete, isDeleting, variant }: NoteCardProps) {
+  if (variant === 'dashboard') {
+    return (
+      <div className="relative border-t border-dashed border-[rgba(14,14,16,0.07)] py-4 first:border-t-0 first:pt-0">
+        <span className="absolute left-0 top-5 h-2 w-2 rounded bg-[#1010a3]" aria-hidden />
+        <div className="flex flex-col gap-3 pl-4 sm:flex-row sm:items-start sm:justify-between">
+          <p className="min-w-0 flex-1 text-[0.8125rem] leading-relaxed text-[#1010a3]">
+            {note.content}
+          </p>
+          <button
+            type="button"
+            onClick={() => onDelete(note.id)}
+            disabled={isDeleting}
+            className="shrink-0 rounded-full bg-[#b4e288] px-4 py-2 text-[0.8125rem] font-semibold text-[#146e23] hover:bg-[#a3d97a] disabled:opacity-50"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`relative rounded-lg bg-[#ffeb8c] p-4 shadow-sm transform ${noteRotation(index)} transition-transform hover:rotate-0`}
@@ -48,7 +66,12 @@ function NoteCard({ note, index, onDelete, isDeleting }: NoteCardProps) {
   );
 }
 
-export function NotesBlock() {
+type NotesBlockProps = {
+  variant?: 'default' | 'dashboard';
+};
+
+export function NotesBlock({ variant = 'default' }: NotesBlockProps) {
+  const t = useTranslations('dashboard.notes');
   const [draft, setDraft] = useState('');
   const { data: notes = [], isLoading } = useMyTeacherNotes();
   const create = useCreateTeacherNote();
@@ -61,12 +84,61 @@ export function NotesBlock() {
     setDraft('');
   };
 
+  if (variant === 'dashboard') {
+    return (
+      <section className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#fff8ca] p-5 sm:p-6 lg:p-8">
+        <header className="mb-5">
+          <h2 className="text-base font-semibold text-[#5e2d00]">{t('title')}</h2>
+          <p className="mt-1 text-xs text-[#8b8b90]">{t('pinnedDefault')}</p>
+        </header>
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row">
+          <input
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                void handleAdd();
+              }
+            }}
+            placeholder={t('placeholder')}
+            className="h-10 min-w-0 flex-1 rounded-full border-0 bg-[#fffdee] px-4 text-sm text-[#1010a3] placeholder:text-[#757575] focus:outline-none focus:ring-2 focus:ring-[#bd9100]/40"
+          />
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!draft.trim() || create.isPending}
+            className="h-10 shrink-0 rounded-full bg-[rgba(189,145,0,0.5)] px-6 text-[0.8125rem] font-semibold text-[#5e2d00] disabled:opacity-50"
+          >
+            {create.isPending ? t('saving') : t('save')}
+          </button>
+        </div>
+        {isLoading ? (
+          <p className="text-sm text-[#8b8b90]">{t('loading')}</p>
+        ) : notes.length === 0 ? (
+          <p className="text-sm text-[#8b8b90]">{t('empty')}</p>
+        ) : (
+          <div className="max-h-[15rem] overflow-y-auto pr-1">
+            {notes.map((note, idx) => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                index={idx}
+                onDelete={(id) => remove.mutate(id)}
+                isDeleting={remove.isPending}
+                variant="dashboard"
+              />
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
+
   return (
     <StudentCard>
-      <StudentSectionHeader
-        title="Notes"
-        subtitle='Click "Done" to remove a note'
-      />
+      <StudentSectionHeader title="Notes" subtitle='Click "Done" to remove a note' />
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <StudentInput
           type="text"
@@ -105,6 +177,7 @@ export function NotesBlock() {
               index={idx}
               onDelete={(id) => remove.mutate(id)}
               isDeleting={remove.isPending}
+              variant="default"
             />
           ))}
         </div>
