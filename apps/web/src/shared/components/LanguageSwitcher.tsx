@@ -64,7 +64,7 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
       aria-label="Select language"
       className={cn(
         'inline-flex shrink-0 items-center gap-0.5 rounded-full border border-[rgba(14,14,16,0.07)]',
-        isCompact ? 'h-9 bg-[#f3f3f4] p-0.5' : 'gap-1 bg-slate-100 p-1',
+        isCompact ? 'h-11 bg-[#f3f3f4] p-0.5 sm:h-12' : 'gap-1 bg-slate-100 p-1',
       )}
     >
       <button

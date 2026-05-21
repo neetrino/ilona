@@ -1,10 +1,9 @@
 'use client';
 
-import { Avatar, PublicAssetImage } from '@/shared/components/ui';
-import { formatDisplayName } from '@/shared/components/ui/avatar';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { PublicAssetImage } from '@/shared/components/ui';
+import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
+import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { GlobalSearchBar } from '@/features/search/components/GlobalSearchBar';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMyDashboard } from '@/features/students';
@@ -23,26 +22,17 @@ export function StudentDashboardHeader({
 }: StudentDashboardHeaderProps) {
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
-  const locale = useLocale();
-  const router = useRouter();
   const { user } = useAuthStore();
   const { data: dashboard } = useMyDashboard();
   const streak = dashboard?.statistics?.attendance?.currentStreak ?? 0;
   const level = dashboard?.student?.group?.level;
-
-  const handleProfileClick = () => {
-    router.push(`/${locale}/student/profile`);
-  };
-
-  const displayName = `${user?.firstName ?? ''} ${user?.lastName?.charAt(0) ?? ''}.`.trim();
-  const profileName = formatDisplayName(user?.firstName, user?.lastName, displayName || tNav('user'));
   const firstName = user?.firstName ?? tNav('user');
   const isSubpage = Boolean(pageTitle);
 
   return (
     <header className="shrink-0 bg-[#ececec] px-3 py-3 sm:px-6 lg:px-8">
-      <div className="w-full min-w-0 rounded-[2rem] border border-[rgba(14,14,16,0.07)] bg-white px-3 py-2.5 sm:rounded-[4rem] sm:px-4 sm:py-2.5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-3">
+      <div className="w-full min-w-0 rounded-[2rem] border border-[rgba(14,14,16,0.07)] bg-white px-3 py-4 sm:rounded-[4rem] sm:px-5 sm:py-5">
+        <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {onMenuClick ? (
               <button
@@ -92,12 +82,12 @@ export function StudentDashboardHeader({
             <div className="min-w-0 flex-1">
               <GlobalSearchBar
                 className="w-full max-w-none"
-                inputClassName="h-9 rounded-[2.125rem] border-transparent bg-[#f3f3f4] text-sm"
+                inputClassName="h-11 rounded-[2.125rem] border-transparent bg-[#f3f3f4] text-sm sm:h-12"
               />
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
-              <div className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full bg-[#ffeb8c] px-2.5 text-xs sm:gap-1.5 sm:px-3 sm:text-sm">
+              <div className="inline-flex h-11 shrink-0 items-center gap-1 rounded-full bg-[#ffeb8c] px-2.5 text-xs sm:h-12 sm:gap-1.5 sm:px-3.5 sm:text-sm">
                 <PublicAssetImage
                   src={STUDENT_DASHBOARD_ASSETS.fireIcon}
                   alt=""
@@ -115,7 +105,7 @@ export function StudentDashboardHeader({
 
               <button
                 type="button"
-                className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1010a3] text-white sm:h-9 sm:w-9"
+                className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#1010a3] text-white sm:h-12 sm:w-12"
                 aria-label={tNav('settings')}
               >
                 <span className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-[#ff2e23] sm:right-1 sm:top-1 sm:h-2.5 sm:w-2.5" />
@@ -135,28 +125,7 @@ export function StudentDashboardHeader({
                 </svg>
               </button>
 
-              <button
-                type="button"
-                onClick={handleProfileClick}
-                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-[#1010a3] py-0.5 pl-0.5 pr-2 text-left text-white sm:h-9 sm:gap-2 sm:pr-3"
-              >
-                <Avatar
-                  src={user?.avatarUrl}
-                  name={profileName}
-                  size="sm"
-                  alt={profileName}
-                  className="h-7 w-7 shrink-0 bg-gradient-to-br from-[#fbd7c2] to-[#f3a679] text-[0.625rem] font-semibold text-white ring-2 ring-white/25 sm:h-8 sm:w-8 sm:text-xs"
-                />
-                <span className="hidden min-w-0 max-w-[5.5rem] whitespace-nowrap min-[480px]:block sm:max-w-[7rem]">
-                  <span className="block truncate text-[0.6875rem] font-medium leading-tight sm:text-xs">
-                    {displayName}
-                  </span>
-                  <span className="block truncate text-[0.5625rem] leading-tight text-white/70 sm:text-[0.65625rem]">
-                    {t('studentRole')}
-                    {level ? ` · ${level}` : ''}
-                  </span>
-                </span>
-              </button>
+              <StudentLogoutControl roleDetail={level ?? undefined} />
             </div>
           </div>
         </div>

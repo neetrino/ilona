@@ -1,5 +1,6 @@
 export { Sidebar } from './Sidebar';
 export { StudentSidebar } from './StudentSidebar';
+export { StudentLogoutControl } from './StudentLogoutControl';
 export { StudentSidebarNavIcon } from './StudentSidebarNavIcon';
 export { StudentScheduleNavIcon } from './StudentScheduleNavIcon';
 export {
