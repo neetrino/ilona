@@ -3,6 +3,15 @@
 import * as React from 'react';
 import { cn } from '@/shared/lib/utils';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { usePortalShell } from '@/shared/context/portal-shell-context';
+import {
+  portalSpinnerClass,
+  portalTableBodyClass,
+  portalTableChromeClass,
+  portalTableHeadCellClass,
+  portalTableHeadRowClass,
+  portalTableRowClass,
+} from '@/shared/lib/portal-theme';
 
 interface Column<T> {
   key: string;
@@ -46,130 +55,172 @@ export function DataTable<T>({
   disableHorizontalScroll = false,
   embedInParentCard = false,
 }: DataTableProps<T>) {
+  const isPortal = usePortalShell();
+
+  const outerChrome = embedInParentCard
+    ? 'overflow-hidden'
+    : isPortal
+      ? portalTableChromeClass
+      : 'overflow-hidden rounded-2xl border border-slate-200 bg-white';
+
+  const headRowClass = isPortal ? portalTableHeadRowClass : 'border-b border-slate-100';
+  const headCellBase = isPortal
+    ? portalTableHeadCellClass
+    : 'text-xs font-semibold uppercase tracking-wider text-slate-500';
+  const bodyClass = isPortal ? portalTableBodyClass : 'divide-y divide-slate-100';
+  const rowHoverClass = isPortal ? portalTableRowClass : 'transition-colors hover:bg-slate-50';
+  const emptyCellClass = isPortal ? 'text-[#8b8b90]' : 'text-slate-500';
+  const sortBtnHover = isPortal ? 'hover:bg-[#fafafa]' : 'hover:bg-slate-50';
+  const sortBtnFocus = isPortal
+    ? 'focus:ring-[#1010a3]/20'
+    : 'focus:ring-slate-400 focus:ring-offset-1';
+  const sortActiveText = isPortal ? 'text-[#1010a3]' : 'text-slate-700';
+  const sortIconActive = isPortal ? 'text-[#3b3b40]' : 'text-slate-600';
+  const sortIconMuted = isPortal ? 'text-[#8b8b90]' : 'text-slate-400';
+
   if (isLoading) {
     return (
-      <div
-        className={cn(
-          'p-12',
-          embedInParentCard ? '' : 'bg-white rounded-2xl border border-slate-200'
-        )}
-      >
+      <div className={cn('p-12', embedInParentCard ? '' : outerChrome)}>
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div
+            className={
+              isPortal
+                ? portalSpinnerClass
+                : 'h-8 w-8 animate-spin rounded-full border-b-2 border-primary'
+            }
+          />
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      className={cn(
-        embedInParentCard ? 'overflow-hidden' : 'bg-white rounded-2xl border border-slate-200 overflow-hidden'
-      )}
-    >
-      <div className={cn('w-full', disableHorizontalScroll ? 'overflow-x-hidden' : 'overflow-x-auto', containerClassName)}>
-        <table className={cn('w-full table-auto', !disableHorizontalScroll && 'min-w-max', tableClassName)}>
-        <thead>
-          <tr className="border-b border-slate-100">
-            {columns.map((column) => {
-              const isSorted = sortBy === column.key;
-              const isAscending = isSorted && sortOrder === 'asc';
-              const _isDescending = isSorted && sortOrder === 'desc';
-              
-              // Extract header text for aria-label (handle both string and ReactNode)
-              const headerText = typeof column.header === 'string' 
-                ? column.header 
-                : column.key.charAt(0).toUpperCase() + column.key.slice(1).replace(/([A-Z])/g, ' $1');
-              
-              // Determine alignment from className
-              const isCenter = column.className?.includes('text-center');
-              const isRight = column.className?.includes('text-right');
-              const headerAlignment = isRight ? 'text-right' : isCenter ? 'text-center' : 'text-left';
-              const headerJustify = isRight ? 'justify-end' : isCenter ? 'justify-center' : 'justify-start';
-              
-              return (
-                <th
-                  key={column.key}
-                  className={cn(
-                    compact ? 'px-3 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider' : 'px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider',
-                    column.className, // Apply column className to header for width/padding consistency
-                    headerAlignment // Apply alignment last to ensure it takes precedence
-                  )}
-                >
-                  {column.sortable && onSort ? (
-                    <button
-                      type="button"
-                      onClick={() => onSort(column.key)}
-                      className={cn(
-                        'flex items-center gap-1.5 w-full text-xs font-semibold uppercase hover:bg-slate-50 rounded-md px-0 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
-                        isSorted && 'text-slate-700',
-                        headerJustify
-                      )}
-                      aria-label={
-                        !isSorted
-                          ? `Sort by ${headerText}`
-                          : isAscending
-                          ? `Sorted by ${headerText} ascending. Click to sort descending.`
-                          : `Sorted by ${headerText} descending. Click to sort ascending.`
-                      }
-                    >
-                      <span>{column.header}</span>
-                      <span className="flex-shrink-0">
-                        {isSorted ? (
-                          isAscending ? (
-                            <ArrowUp className="w-3.5 h-3.5 text-slate-600" aria-hidden="true" />
-                          ) : (
-                            <ArrowDown className="w-3.5 h-3.5 text-slate-600" aria-hidden="true" />
-                          )
-                        ) : (
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+    <div className={cn(outerChrome)}>
+      <div
+        className={cn(
+          'w-full',
+          disableHorizontalScroll ? 'overflow-x-hidden' : 'overflow-x-auto',
+          containerClassName,
+        )}
+      >
+        <table
+          className={cn('w-full table-auto', !disableHorizontalScroll && 'min-w-max', tableClassName)}
+        >
+          <thead>
+            <tr className={headRowClass}>
+              {columns.map((column) => {
+                const isSorted = sortBy === column.key;
+                const isAscending = isSorted && sortOrder === 'asc';
+
+                const headerText =
+                  typeof column.header === 'string'
+                    ? column.header
+                    : column.key.charAt(0).toUpperCase() +
+                      column.key.slice(1).replace(/([A-Z])/g, ' $1');
+
+                const isCenter = column.className?.includes('text-center');
+                const isRight = column.className?.includes('text-right');
+                const headerAlignment = isRight
+                  ? 'text-right'
+                  : isCenter
+                    ? 'text-center'
+                    : 'text-left';
+                const headerJustify = isRight
+                  ? 'justify-end'
+                  : isCenter
+                    ? 'justify-center'
+                    : 'justify-start';
+
+                return (
+                  <th
+                    key={column.key}
+                    className={cn(
+                      compact ? 'px-3 py-3' : 'px-4 py-3 sm:px-6 sm:py-4',
+                      headCellBase,
+                      column.className,
+                      headerAlignment,
+                    )}
+                  >
+                    {column.sortable && onSort ? (
+                      <button
+                        type="button"
+                        onClick={() => onSort(column.key)}
+                        className={cn(
+                          'flex w-full items-center gap-1.5 rounded-md px-0 py-0.5 text-xs font-semibold uppercase transition-colors focus:outline-none focus:ring-2',
+                          sortBtnHover,
+                          sortBtnFocus,
+                          isSorted && sortActiveText,
+                          headerJustify,
                         )}
-                      </span>
-                    </button>
-                  ) : (
-                    <div className={cn(
-                      'flex items-center gap-1.5 text-xs font-semibold uppercase',
-                      headerJustify
-                    )}>
-                      {column.header}
-                    </div>
-                  )}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {data.length === 0 ? (
-            <tr>
-              <td colSpan={columns.length} className="px-6 py-12 text-center text-slate-500">
-                {emptyMessage}
-              </td>
+                        aria-label={
+                          !isSorted
+                            ? `Sort by ${headerText}`
+                            : isAscending
+                              ? `Sorted by ${headerText} ascending. Click to sort descending.`
+                              : `Sorted by ${headerText} descending. Click to sort ascending.`
+                        }
+                      >
+                        <span>{column.header}</span>
+                        <span className="flex-shrink-0">
+                          {isSorted ? (
+                            isAscending ? (
+                              <ArrowUp className={cn('h-3.5 w-3.5', sortIconActive)} aria-hidden />
+                            ) : (
+                              <ArrowDown className={cn('h-3.5 w-3.5', sortIconActive)} aria-hidden />
+                            )
+                          ) : (
+                            <ArrowUpDown className={cn('h-3.5 w-3.5', sortIconMuted)} aria-hidden />
+                          )}
+                        </span>
+                      </button>
+                    ) : (
+                      <div
+                        className={cn(
+                          'flex items-center gap-1.5 text-xs font-semibold uppercase',
+                          headerJustify,
+                        )}
+                      >
+                        {column.header}
+                      </div>
+                    )}
+                  </th>
+                );
+              })}
             </tr>
-          ) : (
-            data.map((item, index) => (
-              <tr
-                key={keyExtractor(item)}
-                onClick={() => onRowClick?.(item)}
-                className={cn(
-                  'hover:bg-slate-50 transition-colors',
-                  onRowClick && 'cursor-pointer'
-                )}
-              >
-                {columns.map((column) => (
-                  <td key={column.key} className={cn(compact ? 'px-3 py-3' : 'px-6 py-4', column.className)}>
-                    {column.render
-                      ? column.render(item, index)
-                      : (item as Record<string, unknown>)[column.key] as React.ReactNode}
-                  </td>
-                ))}
+          </thead>
+          <tbody className={bodyClass}>
+            {data.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className={cn('px-6 py-12 text-center text-sm', emptyCellClass)}
+                >
+                  {emptyMessage}
+                </td>
               </tr>
-            ))
-          )}
-        </tbody>
+            ) : (
+              data.map((item, index) => (
+                <tr
+                  key={keyExtractor(item)}
+                  onClick={() => onRowClick?.(item)}
+                  className={cn(rowHoverClass, onRowClick && 'cursor-pointer')}
+                >
+                  {columns.map((column) => (
+                    <td
+                      key={column.key}
+                      className={cn(compact ? 'px-3 py-3' : 'px-4 py-3 sm:px-6 sm:py-4', column.className)}
+                    >
+                      {column.render
+                        ? column.render(item, index)
+                        : ((item as Record<string, unknown>)[column.key] as React.ReactNode)}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
         </table>
       </div>
     </div>
   );
 }
-

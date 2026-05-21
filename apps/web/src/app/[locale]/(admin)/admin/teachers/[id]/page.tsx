@@ -140,7 +140,7 @@ export default function TeacherProfilePage() {
     return (
       <DashboardLayout title={t('teacherProfile')} subtitle={t('loadingTeacherInfo')}>
         <div className="flex min-h-[400px] items-center justify-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#1010a3]" />
         </div>
       </DashboardLayout>
     );
@@ -225,7 +225,7 @@ export default function TeacherProfilePage() {
         subtitle={t('loadingTeacherInfo')}
       >
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1010a3]"></div>
         </div>
       </DashboardLayout>
     );
@@ -246,8 +246,8 @@ export default function TeacherProfilePage() {
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">Teacher Not Found</h3>
-              <p className="text-sm text-slate-500 mb-4">
+              <h3 className="font-semibold text-[#3b3b40] mb-2">Teacher Not Found</h3>
+              <p className="text-sm text-[#8b8b90] mb-4">
                 {error 
                   ? 'Failed to load teacher information. Please try again later.'
                   : 'The teacher you are looking for does not exist or has been removed.'}
@@ -294,7 +294,7 @@ export default function TeacherProfilePage() {
             <Button 
               type="button"
               onClick={() => setIsEditMode(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -351,7 +351,7 @@ export default function TeacherProfilePage() {
 
         {/* Edit Mode Actions */}
         {isEditMode && (
-          <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-4 pt-4 border-t border-[rgba(14,14,16,0.07)]">
             <Button
               type="button"
               variant="outline"
@@ -362,7 +362,7 @@ export default function TeacherProfilePage() {
             </Button>
             <Button
               type="submit"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground"
               disabled={updateTeacher.isPending || !isDirty}
               isLoading={updateTeacher.isPending}
             >

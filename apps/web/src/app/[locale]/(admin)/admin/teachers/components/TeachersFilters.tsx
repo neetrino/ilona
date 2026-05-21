@@ -50,12 +50,12 @@ export function TeachersFilters({
       <div className="grid grid-cols-2 gap-4 flex-1 min-w-0">
       {/* Search by Keywords */}
       <div className="min-w-0">
-        <label className="block text-sm font-medium text-slate-500 mb-1.5">
+        <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
           Search by Keywords
         </label>
         <div className="relative">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -72,21 +72,21 @@ export function TeachersFilters({
             placeholder="Search teachers by name, email or group..."
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full h-12 pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-12 pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
       </div>
 
       {/* Status Filter */}
       <div className="min-w-0">
-        <label className="block text-sm font-medium text-slate-500 mb-1.5">
+        <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
           Status
         </label>
         <div className="relative">
           <select
             value={selectedStatus}
             onChange={(e) => onStatusChange(e.target.value as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '')}
-            className="w-full h-12 pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer"
+            className="w-full h-12 pl-4 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] appearance-none cursor-pointer"
           >
             <option value="">All statuses</option>
             <option value="ACTIVE">{tStatus('active')}</option>
@@ -94,7 +94,7 @@ export function TeachersFilters({
             <option value="SUSPENDED">{tStatus('suspended')}</option>
           </select>
           <svg 
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" 
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90] pointer-events-none" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -112,10 +112,10 @@ export function TeachersFilters({
           onClick={() => onViewModeChange('list')}
           className={cn(
             'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+            'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
             viewMode === 'list'
-              ? 'bg-primary text-primary-foreground shadow-md'
-              : 'text-slate-700 hover:bg-slate-100'
+              ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+              : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
           )}
           aria-pressed={viewMode === 'list'}
         >
@@ -126,10 +126,10 @@ export function TeachersFilters({
           onClick={() => onViewModeChange('board')}
           className={cn(
             'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+            'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
             viewMode === 'board'
-              ? 'bg-primary text-primary-foreground shadow-md'
-              : 'text-slate-700 hover:bg-slate-100'
+              ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+              : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
           )}
           aria-pressed={viewMode === 'board'}
         >
@@ -141,7 +141,7 @@ export function TeachersFilters({
       {/* Add Teacher Button */}
       <div className="flex-shrink-0">
         <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium flex items-center gap-2"
+          className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6 py-3 rounded-lg font-medium flex items-center gap-2"
           onClick={onAddTeacher}
           disabled={isDeleting}
         >
@@ -165,7 +165,7 @@ export function TeachersFilters({
 
       {/* Pagination - shown only in list view */}
       {viewMode === 'list' && onPageChange && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-[#8b8b90]">
           <span>
             {t('showing', {
               start: page * PAGE_SIZE + 1,
@@ -175,7 +175,7 @@ export function TeachersFilters({
           </span>
           <div className="flex items-center gap-2">
             <button 
-              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
+              className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50" 
               disabled={page === 0 || isDeleting || isUpdating}
               onClick={() => onPageChange(Math.max(0, page - 1))}
             >
@@ -185,7 +185,7 @@ export function TeachersFilters({
             </button>
             <span>{t('page', { current: page + 1, total: totalPages })}</span>
             <button 
-              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+              className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50"
               disabled={page >= totalPages - 1 || isDeleting || isUpdating}
               onClick={() => onPageChange(page + 1)}
             >

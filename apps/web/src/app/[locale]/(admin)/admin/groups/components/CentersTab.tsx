@@ -141,7 +141,7 @@ export function CentersTab({
       {/* Centers Filters & Actions */}
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -149,11 +149,11 @@ export function CentersTab({
             placeholder="Search centers by name or address..."
             value={centerSearchQuery}
             onChange={onSearchChange}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
         <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium"
+          className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6 py-3 rounded-xl font-medium"
           onClick={() => setCreateCenterOpen(true)}
         >
           + Add Center
@@ -163,11 +163,11 @@ export function CentersTab({
       <div className="w-full overflow-x-auto">
         {isLoadingCenters ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-slate-500">Loading centers...</div>
+            <div className="text-[#8b8b90]">Loading centers...</div>
           </div>
         ) : centers.length === 0 ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-slate-500">
+            <div className="text-[#8b8b90]">
               {centerSearchQuery ? 'No centers match your search' : 'No centers found'}
             </div>
           </div>

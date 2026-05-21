@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useGroups } from '@/features/groups/hooks/useGroups';
 import type { Group } from '@/features/groups/types';
 import { GroupIconDisplay } from '@/features/groups';
+import { PortalDashboardSection } from '@/features/student-ui';
 
 interface CapacityRow {
   group: Group;
@@ -34,36 +34,34 @@ export function GroupsWithCapacityBlock({ centerId }: { centerId?: string }) {
   const rows = useMemo(() => toRows(data?.items ?? []), [data?.items]);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6">
-      <header className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">{t('groupsWithCapacity')}</h2>
-        <Link href={`/${locale}/admin/groups`} className="text-sm text-blue-600 hover:underline">
-          {t('viewAll')}
-        </Link>
-      </header>
+    <PortalDashboardSection
+      title={t('groupsWithCapacity')}
+      viewAllHref={`/${locale}/admin/groups`}
+      viewAllLabel={t('viewAll')}
+    >
       {isLoading ? (
-        <p className="text-sm text-slate-400">{t('loading')}</p>
+        <p className="text-sm text-[#8b8b90]">{t('loading')}</p>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-slate-500">{t('noCapacity')}</p>
+        <p className="text-sm text-[#8b8b90]">{t('noCapacity')}</p>
       ) : (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-[rgba(14,14,16,0.07)]">
           {rows.map(({ group, occupied, free }) => (
-            <li key={group.id} className="flex items-center justify-between py-2">
+            <li key={group.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
               <div className="min-w-0 flex-1">
                 <div className="flex min-w-0 items-center gap-2">
-                  <GroupIconDisplay iconKey={group.iconKey} size={18} className="shrink-0 text-slate-600" />
-                  <p className="truncate text-sm font-medium text-slate-800">{group.name}</p>
+                  <GroupIconDisplay iconKey={group.iconKey} size={18} className="shrink-0 text-[#8b8b90]" />
+                  <p className="truncate text-sm font-medium text-[#1010a3]">{group.name}</p>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#8b8b90]">
                   {group.center.name}
                   {group.level ? ` · ${group.level}` : ''}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-emerald-600">
+                <p className="text-sm font-semibold text-[#0d6b42]">
                   {t('freeSeats', { count: free })}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#8b8b90]">
                   {occupied}/{group.maxStudents}
                 </p>
               </div>
@@ -71,6 +69,6 @@ export function GroupsWithCapacityBlock({ centerId }: { centerId?: string }) {
           ))}
         </ul>
       )}
-    </section>
+    </PortalDashboardSection>
   );
 }

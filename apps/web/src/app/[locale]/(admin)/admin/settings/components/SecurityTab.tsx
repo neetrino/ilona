@@ -34,12 +34,12 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('changePassword')}</h2>
+      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+        <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">{t('changePassword')}</h2>
         
         <form onSubmit={handleChangePassword} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('currentPassword')}
             </label>
             <input
@@ -47,12 +47,12 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
               autoComplete="current-password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('newPassword')}
             </label>
             <input
@@ -60,13 +60,13 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
               autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
             />
-            <p className="text-xs text-slate-500 mt-1">{t('minimum8Characters')}</p>
+            <p className="text-xs text-[#8b8b90] mt-1">{t('minimum8Characters')}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('confirmNewPassword')}
             </label>
             <input
@@ -74,14 +74,14 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
               autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
             />
           </div>
 
           <div className="pt-4 flex justify-end">
             <Button 
               type="submit" 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
+              className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6"
               disabled={isSaving}
             >
               {isSaving ? t('updating') : t('updatePassword')}
@@ -90,12 +90,12 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
         </form>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">{t('sessions')}</h2>
-        <p className="text-sm text-slate-500 mb-4">
+      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+        <h2 className="text-lg font-semibold text-[#3b3b40] mb-4">{t('sessions')}</h2>
+        <p className="text-sm text-[#8b8b90] mb-4">
           {t('manageActiveSessions')}
         </p>
-        <div className="p-4 bg-slate-50 rounded-xl flex items-center justify-between">
+        <div className="p-4 bg-[#fafafa] rounded-xl flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,8 +103,8 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
               </svg>
             </div>
             <div>
-              <p className="font-medium text-slate-800">{t('currentSession')}</p>
-              <p className="text-xs text-slate-500">{t('thisDevice')} • {t('activeNow')}</p>
+              <p className="font-medium text-[#3b3b40]">{t('currentSession')}</p>
+              <p className="text-xs text-[#8b8b90]">{t('thisDevice')} • {t('activeNow')}</p>
             </div>
           </div>
           <Badge variant="success">{t('active')}</Badge>

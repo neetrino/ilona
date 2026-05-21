@@ -75,13 +75,13 @@ export function SubstituteLessonModal({
           <DialogTitle>Substitute teacher (this lesson)</DialogTitle>
         </DialogHeader>
         {isLoading || !lesson ? (
-          <p className="text-sm text-slate-600">Loading lesson…</p>
+          <p className="text-sm text-[#3b3b40]">Loading lesson…</p>
         ) : (
           <div className="space-y-4">
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-[#3b3b40]">
               <span className="font-medium text-slate-900">Group:</span> {lesson.group?.name ?? '—'}
             </p>
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-[#3b3b40]">
               <span className="font-medium text-slate-900">Main teacher:</span> {mainName}
             </p>
             <div className="space-y-2">

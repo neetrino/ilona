@@ -29,7 +29,7 @@ export function MonthViewCalendar({
   const monthDates = getMonthDates(currentDate);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-slate-900 mb-2">
           {selectedGroup?.name || 'N/A'} - {formatMonthDisplay(currentDate)}
@@ -44,7 +44,7 @@ export function MonthViewCalendar({
       <div className="grid grid-cols-7 gap-2">
         {/* Week day headers */}
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-          <div key={day} className="text-center text-sm font-semibold text-slate-700 py-2">
+          <div key={day} className="text-center text-sm font-semibold text-[#3b3b40] py-2">
             {day}
           </div>
         ))}
@@ -65,20 +65,20 @@ export function MonthViewCalendar({
               className={cn(
                 'p-3 border-2 rounded-lg text-center transition-all min-h-[80px]',
                 !isInCurrentMonth && 'opacity-40',
-                isSelected && 'border-primary bg-primary/10 ring-2 ring-primary',
-                !isSelected && hasLessons && 'border-slate-300 hover:border-primary/40 hover:bg-primary/10',
-                !hasLessons && 'border-slate-200 bg-slate-50 cursor-not-allowed',
-                isTodayDate && !isSelected && 'border-primary/30 bg-primary/10'
+                isSelected && 'border-[#1010a3] bg-[#f0f0fc] ring-2 ring-primary',
+                !isSelected && hasLessons && 'border-slate-300 hover:border-[#1010a3]/40 hover:bg-[#f0f0fc]',
+                !hasLessons && 'border-[rgba(14,14,16,0.07)] bg-[#fafafa] cursor-not-allowed',
+                isTodayDate && !isSelected && 'border-[#1010a3]/30 bg-[#f0f0fc]'
               )}
             >
               <div className="text-sm font-semibold text-slate-900 mb-1">
                 {date.getDate()}
                 {isTodayDate && (
-                  <span className="ml-1 text-xs text-primary font-bold">Today</span>
+                  <span className="ml-1 text-xs text-[#1010a3] font-bold">Today</span>
                 )}
               </div>
               {hasLessons && (
-                <div className="text-xs text-slate-600 mt-1">
+                <div className="text-xs text-[#3b3b40] mt-1">
                   {dayLessons.length} {dayLessons.length === 1 ? 'session' : 'sessions'}
                 </div>
               )}
@@ -87,8 +87,8 @@ export function MonthViewCalendar({
         })}
       </div>
       {selectedDayForMonthView && (
-        <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-          <p className="text-sm text-slate-600 mb-2">
+        <div className="mt-4 p-4 bg-[#fafafa] rounded-lg border border-[rgba(14,14,16,0.07)]">
+          <p className="text-sm text-[#3b3b40] mb-2">
             Click a day above to view and edit attendance, or select a different day.
           </p>
         </div>

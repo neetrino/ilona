@@ -33,16 +33,16 @@ export function StudentAttendance({ student }: StudentAttendanceProps) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <h3 className="text-lg font-semibold text-slate-800 mb-4">Recent Attendance</h3>
+    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+      <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">Recent Attendance</h3>
       <div className="space-y-3">
         {student.attendances.slice(0, 5).map((attendance) => (
-          <div key={attendance.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+          <div key={attendance.id} className="flex items-center justify-between p-3 bg-[#fafafa] rounded-lg">
             <div>
-              <p className="font-medium text-slate-800">
+              <p className="font-medium text-[#3b3b40]">
                 {attendance.lesson?.topic || 'Lesson'}
               </p>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-[#8b8b90]">
                 {attendance.lesson?.scheduledAt 
                   ? new Date(attendance.lesson.scheduledAt).toLocaleDateString()
                   : 'N/A'}
@@ -52,10 +52,10 @@ export function StudentAttendance({ student }: StudentAttendanceProps) {
               {attendance.isPresent ? 'PRESENT' : (attendance.absenceType || 'ABSENT')}
             </Badge>
             {!attendance.isPresent && attendance.note && (
-              <p className="mt-1 text-xs text-slate-600 max-w-[280px] text-right">{attendance.note}</p>
+              <p className="mt-1 text-xs text-[#3b3b40] max-w-[280px] text-right">{attendance.note}</p>
             )}
             {!attendance.isPresent && attendance.markedBy && (
-              <p className="mt-1 text-xs text-slate-500 max-w-[280px] text-right">
+              <p className="mt-1 text-xs text-[#8b8b90] max-w-[280px] text-right">
                 By: {attendance.markedBy.firstName} {attendance.markedBy.lastName}
               </p>
             )}

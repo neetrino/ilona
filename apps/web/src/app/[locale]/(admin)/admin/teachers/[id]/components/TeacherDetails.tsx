@@ -35,8 +35,8 @@ export function TeacherDetails({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Personal Information */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Personal Information</h3>
+      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">Personal Information</h3>
         <div className="space-y-4">
           {isEditMode ? (
             <>
@@ -67,30 +67,30 @@ export function TeacherDetails({
           ) : (
             <>
               <div>
-                <label className="text-sm font-medium text-slate-500">First Name</label>
-                <p className="text-slate-800 mt-1">{firstName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">First Name</label>
+                <p className="text-[#3b3b40] mt-1">{firstName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Last Name</label>
-                <p className="text-slate-800 mt-1">{lastName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">Last Name</label>
+                <p className="text-[#3b3b40] mt-1">{lastName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Email</label>
-                <p className="text-slate-800 mt-1">{teacher.user?.email || 'N/A'}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">Email</label>
+                <p className="text-[#3b3b40] mt-1">{teacher.user?.email || 'N/A'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Phone</label>
-                <p className="text-slate-800 mt-1">{teacher.user?.phone || 'N/A'}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">Phone</label>
+                <p className="text-[#3b3b40] mt-1">{teacher.user?.phone || 'N/A'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Experience</label>
-                <p className="text-slate-800 mt-1">{formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">Experience</label>
+                <p className="text-[#3b3b40] mt-1">{formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}</p>
               </div>
             </>
           )}
           <div>
-            <label className="text-sm font-medium text-slate-500">Member Since</label>
-            <p className="text-slate-800 mt-1">
+            <label className="text-sm font-medium text-[#8b8b90]">Member Since</label>
+            <p className="text-[#3b3b40] mt-1">
               {teacher.user?.createdAt 
                 ? new Date(teacher.user.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -104,8 +104,8 @@ export function TeacherDetails({
       </div>
 
       {/* Professional Information */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Professional Information</h3>
+      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">Professional Information</h3>
         <div className="space-y-4">
           {isEditMode ? (
             <>
@@ -128,8 +128,8 @@ export function TeacherDetails({
                         }}
                         className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                           isSelected
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            ? 'bg-primary text-[#1010a3]-foreground'
+                            : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-slate-200'
                         }`}
                       >
                         {day}
@@ -143,7 +143,7 @@ export function TeacherDetails({
             <>
               {teacher.workingHours && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500 mb-2 block">Working Schedule</label>
+                  <label className="text-sm font-medium text-[#8b8b90] mb-2 block">Working Schedule</label>
                   <div className="space-y-2">
                     {(() => {
                       // Handle both old and new formats
@@ -162,7 +162,7 @@ export function TeacherDetails({
                       }
                       
                       if (!schedule || Object.keys(schedule).length === 0) {
-                        return <p className="text-slate-400 text-sm italic">No working hours set</p>;
+                        return <p className="text-[#8b8b90] text-sm italic">No working hours set</p>;
                       }
                       
                       const DAY_LABELS: Record<string, string> = {
@@ -176,8 +176,8 @@ export function TeacherDetails({
                       };
                       
                       return Object.entries(schedule).map(([day, ranges]) => (
-                        <div key={day} className="border border-slate-200 rounded-lg p-3 bg-slate-50">
-                          <div className="font-medium text-slate-700 mb-1">{DAY_LABELS[day] || day}</div>
+                        <div key={day} className="border border-[rgba(14,14,16,0.07)] rounded-lg p-3 bg-[#fafafa]">
+                          <div className="font-medium text-[#3b3b40] mb-1">{DAY_LABELS[day] || day}</div>
                           <div className="flex flex-wrap gap-2">
                             {ranges.map((range, idx) => (
                               <Badge key={idx} variant="info">

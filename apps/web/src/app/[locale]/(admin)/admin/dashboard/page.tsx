@@ -15,6 +15,7 @@ import {
 } from '@/features/dashboard';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PlannedAbsencesStaffBlock } from '@/features/attendance';
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { fetchCenter } from '@/features/centers/api/centers.api';
 
 export default function AdminDashboardPage() {
@@ -65,10 +66,8 @@ export default function AdminDashboardPage() {
 
   return (
     <DashboardLayout title={t('title')} subtitle={subtitle} promoBanner={promoBanner}>
-      <div className="space-y-6">
-        <div
-          className="grid grid-cols-1 gap-6 md:grid-cols-3"
-        >
+      <div className={portalPageStackClass}>
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           <StatCard
             title={t('totalTeachers')}
             value={stats?.teachers.total || 0}
@@ -83,12 +82,12 @@ export default function AdminDashboardPage() {
 
         {!isManager && <RevenueBlock />}
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6">
           <UnpaidStudentsBlock />
           <AtRiskStudentsBlock />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6">
           <GroupsWithCapacityBlock centerId={managerCenterId} />
           <BranchScheduleBlock centerId={managerCenterId} />
         </div>

@@ -83,7 +83,7 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
       subtitle={`${new Date(lesson.scheduledAt).toLocaleDateString()} at ${new Date(lesson.scheduledAt).toLocaleTimeString()}`}
     >
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-slate-700 space-y-1">
+        <div className="text-sm text-[#3b3b40] space-y-1">
           {mainTeacherName && (
             <p>
               <span className="font-medium text-slate-900">Main teacher:</span> {mainTeacherName}
@@ -94,14 +94,14 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
               <span className="font-medium">Substitute (this day):</span> {subTeacherName}
             </p>
           ) : (
-            <p className="text-slate-500">No substitute assigned for this lesson.</p>
+            <p className="text-[#8b8b90]">No substitute assigned for this lesson.</p>
           )}
         </div>
         <Button type="button" variant="outline" onClick={() => setSubstituteOpen(true)}>
           Substitute teacher…
         </Button>
       </div>
-      <div className="bg-white rounded-xl border border-slate-200 h-[calc(100vh-200px)] flex flex-col">
+      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] h-[calc(100vh-200px)] flex flex-col">
         <LessonDetailTabs
           lesson={lesson}
           activeTab={activeTab}

@@ -39,9 +39,9 @@ function getStatusBadge(status: DayStatus): { label: string; className: string }
     case 'absent_unjustified':
       return { label: 'U', className: 'bg-red-100 text-red-700 border-red-200' };
     case 'not_marked':
-      return { label: '—', className: 'bg-slate-100 text-slate-600 border-slate-200' };
+      return { label: '—', className: 'bg-[#f6f6f7] text-[#3b3b40] border-[rgba(14,14,16,0.07)]' };
     default:
-      return { label: '•', className: 'bg-slate-50 text-slate-400 border-slate-200' };
+      return { label: '•', className: 'bg-[#fafafa] text-[#8b8b90] border-[rgba(14,14,16,0.07)]' };
   }
 }
 
@@ -61,20 +61,20 @@ export function UnifiedWeekTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-[rgba(14,14,16,0.07)] bg-white">
       <table className="w-full min-w-[920px] border-collapse">
         <thead>
           <tr>
-            <th className="border-b border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs font-semibold uppercase text-slate-500">
+            <th className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-3 py-2 text-left text-xs font-semibold uppercase text-[#8b8b90]">
               Student
             </th>
-            <th className="border-b border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs font-semibold uppercase text-slate-500">
+            <th className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-3 py-2 text-left text-xs font-semibold uppercase text-[#8b8b90]">
               Group
             </th>
             {weekDates.map((date) => (
               <th
                 key={date.toISOString()}
-                className="border-b border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs font-semibold uppercase text-slate-500"
+                className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-3 py-2 text-center text-xs font-semibold uppercase text-[#8b8b90]"
               >
                 {date.toLocaleDateString('en-US', { weekday: 'short' })}
               </th>
@@ -91,9 +91,9 @@ export function UnifiedWeekTable({
               : `${student.user.firstName} ${student.user.lastName}`;
 
             return (
-              <tr key={studentId} className="border-b border-slate-100">
-                <td className="px-3 py-2 text-sm font-medium text-slate-800">{fullName}</td>
-                <td className="px-3 py-2 text-sm text-slate-600">{groupName}</td>
+              <tr key={studentId} className="border-b border-[rgba(14,14,16,0.07)]">
+                <td className="px-3 py-2 text-sm font-medium text-[#3b3b40]">{fullName}</td>
+                <td className="px-3 py-2 text-sm text-[#3b3b40]">{groupName}</td>
                 {weekDates.map((date) => {
                   const dateKey = getDateKey(date);
                   const dayLessons = lessonsByDate.get(dateKey) ?? [];

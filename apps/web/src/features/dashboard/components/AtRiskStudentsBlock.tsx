@@ -5,11 +5,12 @@ import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useStudentRisk } from '@/features/analytics/hooks/useAnalytics';
+import { PortalDashboardSection } from '@/features/student-ui';
 
 const RISK_TONE: Record<'HIGH' | 'MEDIUM' | 'LOW', string> = {
-  HIGH: 'bg-red-50 text-red-700 border-red-200',
-  MEDIUM: 'bg-amber-50 text-amber-700 border-amber-200',
-  LOW: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  HIGH: 'border-[#ffc9c4] bg-[#ffe5e3] text-[#ff2e23]',
+  MEDIUM: 'border-[#ffe08a] bg-[#ffeb8c] text-[#3a2f00]',
+  LOW: 'border-[#b8e8d4] bg-[#d9f4e8] text-[#0d6b42]',
 };
 
 export function AtRiskStudentsBlock() {
@@ -24,29 +25,27 @@ export function AtRiskStudentsBlock() {
   }, [data]);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6">
-      <header className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">{t('atRiskStudents')}</h2>
-        <Link href={`/${locale}/admin/analytics`} className="text-sm text-blue-600 hover:underline">
-          {t('viewAll')}
-        </Link>
-      </header>
+    <PortalDashboardSection
+      title={t('atRiskStudents')}
+      viewAllHref={`/${locale}/admin/analytics`}
+      viewAllLabel={t('viewAll')}
+    >
       {isLoading ? (
-        <p className="text-sm text-slate-400">{t('loading')}</p>
+        <p className="text-sm text-[#8b8b90]">{t('loading')}</p>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-slate-500">{t('noAtRisk')}</p>
+        <p className="text-sm text-[#8b8b90]">{t('noAtRisk')}</p>
       ) : (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-[rgba(14,14,16,0.07)]">
           {rows.map((risk) => (
-            <li key={risk.id} className="flex items-center justify-between py-2">
-              <div>
+            <li key={risk.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+              <div className="min-w-0">
                 <Link
                   href={`/${locale}/admin/students/${risk.id}`}
-                  className="text-sm font-medium text-slate-800 hover:text-blue-600"
+                  className="text-sm font-medium text-[#1010a3] transition-opacity hover:opacity-80"
                 >
                   {risk.name}
                 </Link>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#8b8b90]">
                   {risk.group?.name ?? t('noGroup')} · {risk.attendanceRate}%
                 </p>
               </div>
@@ -59,6 +58,6 @@ export function AtRiskStudentsBlock() {
           ))}
         </ul>
       )}
-    </section>
+    </PortalDashboardSection>
   );
 }

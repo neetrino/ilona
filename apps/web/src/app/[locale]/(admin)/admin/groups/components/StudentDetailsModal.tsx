@@ -23,9 +23,9 @@ function formatDate(value?: string | null): string {
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-2 border-b border-slate-100 last:border-0">
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className="text-sm text-slate-800 font-medium break-words">{value}</p>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-2 border-b border-[rgba(14,14,16,0.07)] last:border-0">
+      <p className="text-sm text-[#8b8b90]">{label}</p>
+      <p className="text-sm text-[#3b3b40] font-medium break-words">{value}</p>
     </div>
   );
 }
@@ -46,16 +46,16 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
         </DialogHeader>
 
         {isLoading ? (
-          <div className="py-8 text-center text-slate-500">Loading student details...</div>
+          <div className="py-8 text-center text-[#8b8b90]">Loading student details...</div>
         ) : isError ? (
           <div className="py-8 text-center text-red-600">
             {error instanceof Error ? error.message : 'Failed to load student details.'}
           </div>
         ) : !student ? (
-          <div className="py-8 text-center text-slate-500">Student details are not available.</div>
+          <div className="py-8 text-center text-[#8b8b90]">Student details are not available.</div>
         ) : (
           <div className="space-y-6">
-            <section className="rounded-lg border border-slate-200 p-4">
+            <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
               <h3 className="text-sm font-semibold text-slate-900 mb-2">Student Information</h3>
               <InfoRow label="First Name" value={student.user.firstName || '—'} />
               <InfoRow label="Last Name" value={student.user.lastName || '—'} />
@@ -65,7 +65,7 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
             </section>
 
             {isUnder18 && (
-              <section className="rounded-lg border border-slate-200 p-4">
+              <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
                 <h3 className="text-sm font-semibold text-slate-900 mb-2">Parent Information</h3>
                 <InfoRow label="Parent Name" value={student.parentName || '—'} />
                 <InfoRow label="Parent Phone Number" value={student.parentPhone || '—'} />
@@ -73,19 +73,19 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
               </section>
             )}
 
-            <section className="rounded-lg border border-slate-200 p-4">
+            <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
               <h3 className="text-sm font-semibold text-slate-900 mb-3">Group History</h3>
               {groupHistory.length === 0 ? (
-                <p className="text-sm text-slate-500">No group history found.</p>
+                <p className="text-sm text-[#8b8b90]">No group history found.</p>
               ) : (
                 <ul className="space-y-2">
                   {groupHistory.map((entry) => (
-                    <li key={entry.id} className="rounded-md border border-slate-100 px-3 py-2">
-                      <p className="text-sm font-medium text-slate-800">
+                    <li key={entry.id} className="rounded-md border border-[rgba(14,14,16,0.07)] px-3 py-2">
+                      <p className="text-sm font-medium text-[#3b3b40]">
                         {entry.group.name}
                         {entry.group.level ? ` (${entry.group.level})` : ''}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-[#8b8b90]">
                         {formatDate(entry.joinedAt)} - {entry.leftAt ? formatDate(entry.leftAt) : 'Present'}
                       </p>
                     </li>

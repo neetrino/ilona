@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
@@ -574,7 +575,7 @@ export default function AdminRecordingPage() {
         <div>
           <label
             htmlFor="rec-date-from"
-            className="block text-sm font-medium text-slate-600 mb-1.5"
+            className="block text-sm font-medium text-[#3b3b40] mb-1.5"
           >
             From
           </label>
@@ -584,14 +585,14 @@ export default function AdminRecordingPage() {
             value={dateFrom}
             max={dateTo || undefined}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
 
         <div>
           <label
             htmlFor="rec-date-to"
-            className="block text-sm font-medium text-slate-600 mb-1.5"
+            className="block text-sm font-medium text-[#3b3b40] mb-1.5"
           >
             To
           </label>
@@ -601,7 +602,7 @@ export default function AdminRecordingPage() {
             value={dateTo}
             min={dateFrom || undefined}
             onChange={(e) => setDateTo(e.target.value)}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
       </div>
@@ -610,7 +611,7 @@ export default function AdminRecordingPage() {
         <div className="flex-1">
           <label
             htmlFor="rec-search"
-            className="block text-sm font-medium text-slate-600 mb-1.5"
+            className="block text-sm font-medium text-[#3b3b40] mb-1.5"
           >
             Search
           </label>
@@ -619,33 +620,33 @@ export default function AdminRecordingPage() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Student, group, or file name…"
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
         <button
           type="button"
           onClick={clearAllFilters}
-          className="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg border border-slate-200 transition-colors"
+          className="h-11 px-4 bg-[#f6f6f7] hover:bg-slate-200 text-[#3b3b40] text-sm font-medium rounded-lg border border-[rgba(14,14,16,0.07)] transition-colors"
         >
           Clear all
         </button>
       </div>
 
-      <div className="mb-3 text-sm text-slate-500">
+      <div className="mb-3 text-sm text-[#8b8b90]">
         {visibleRecordings.length} student
         {visibleRecordings.length !== 1 ? 's' : ''} shown
         {selectedRecordingIds.size > 0 && (
-          <span className="ml-3 text-slate-700 font-medium">
+          <span className="ml-3 text-[#3b3b40] font-medium">
             ({selectedRecordingIds.size} selected)
           </span>
         )}
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div className="bg-white border border-[rgba(14,14,16,0.07)] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
               <tr>
                 <th className="w-12 px-4 py-3 text-left">
                   <input
@@ -660,38 +661,38 @@ export default function AdminRecordingPage() {
                     }
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   Group
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   Student
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   Date &amp; Time
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   Recording
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[rgba(14,14,16,0.07)]">
               {isLoading || isLoadingDirectory ? (
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={`skeleton-${idx}`}>
                     <td className="px-4 py-4">
-                      <div className="h-4 w-4 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-4 w-4 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                     <td className="px-4 py-4">
-                      <div className="h-4 w-24 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-4 w-24 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                     <td className="px-4 py-4">
-                      <div className="h-4 w-32 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-4 w-32 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                     <td className="px-4 py-4">
-                      <div className="h-4 w-28 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-4 w-28 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                     <td className="px-4 py-4">
-                      <div className="h-8 w-48 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-8 w-48 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                   </tr>
                 ))
@@ -699,7 +700,7 @@ export default function AdminRecordingPage() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-4 py-10 text-center text-sm text-slate-500"
+                    className="px-4 py-10 text-center text-sm text-[#8b8b90]"
                   >
                     {studentDirectory.length === 0
                       ? 'No students in the directory yet.'
@@ -715,7 +716,7 @@ export default function AdminRecordingPage() {
                   return (
                     <tr
                       key={row.studentUserId}
-                      className="hover:bg-slate-50/60 transition-colors"
+                      className="hover:bg-[#fafafa]/60 transition-colors"
                     >
                       <td className="px-4 py-3 align-middle">
                         <input
@@ -733,27 +734,27 @@ export default function AdminRecordingPage() {
                         />
                       </td>
                       <td className="px-4 py-3 align-middle">
-                        <span className="text-sm text-slate-700">
+                        <span className="text-sm text-[#3b3b40]">
                           {row.groupName}
                         </span>
                       </td>
                       <td className="px-4 py-3 align-middle">
-                        <span className="text-sm font-medium text-slate-800">
+                        <span className="text-sm font-medium text-[#3b3b40]">
                           {row.studentFullName}
                         </span>
                       </td>
                       <td className="px-4 py-3 align-middle whitespace-nowrap">
                         {recording ? (
                           <>
-                            <div className="text-sm text-slate-700">
+                            <div className="text-sm text-[#3b3b40]">
                               {formatDateTime(recording.createdAt)}
                             </div>
-                            <div className="text-xs text-slate-400">
+                            <div className="text-xs text-[#8b8b90]">
                               {formatIsoDay(recording.createdAt)}
                             </div>
                           </>
                         ) : (
-                          <span className="text-sm text-slate-400">-</span>
+                          <span className="text-sm text-[#8b8b90]">-</span>
                         )}
                       </td>
                       <td className="px-4 py-3 align-middle">
@@ -771,7 +772,7 @@ export default function AdminRecordingPage() {
                           <button
                             type="button"
                             onClick={() => setActiveRecordingId(recording.id)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary border border-primary/20 hover:bg-primary/5 rounded-lg transition-colors"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#1010a3] border border-[#1010a3]/20 hover:bg-primary/5 rounded-lg transition-colors"
                           >
                             <svg
                               className="w-4 h-4"

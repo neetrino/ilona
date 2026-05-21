@@ -1,4 +1,5 @@
 export * from './tokens';
+export * from './PortalDashboardSection';
 export * from './PortalDashboardStatCard';
 export * from './StudentCard';
 export * from './StudentStates';

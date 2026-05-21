@@ -23,7 +23,7 @@ export function TeacherBranchDisplay({
     return (
       <span
         className={cn(
-          'text-slate-400 italic',
+          'text-[#8b8b90] italic',
           density === 'compact' ? 'text-xs' : 'text-xs sm:text-sm'
         )}
       >
@@ -37,7 +37,7 @@ export function TeacherBranchDisplay({
     return (
       <span
         className={cn(
-          'text-slate-700',
+          'text-[#3b3b40]',
           density === 'compact' ? 'text-sm' : 'text-xs sm:text-sm'
         )}
         title={name}

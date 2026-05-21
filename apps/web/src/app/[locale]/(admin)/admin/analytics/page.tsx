@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -66,24 +67,24 @@ function StudentRiskRow({ student }: { student: StudentRisk }) {
   return (
     <tr
       className={cn(
-        'hover:bg-slate-50',
+        'hover:bg-[#fafafa]',
         student.riskLevel === 'HIGH' && 'bg-red-50',
       )}
     >
       <td className="px-4 py-3">
         <div>
-          <p className="font-medium text-slate-800">{student.name}</p>
-          <p className="text-xs text-slate-500">{student.email}</p>
+          <p className="font-medium text-[#3b3b40]">{student.name}</p>
+          <p className="text-xs text-[#8b8b90]">{student.email}</p>
         </div>
       </td>
       <td className="px-4 py-3">
-        <span className="text-sm text-slate-600">
+        <span className="text-sm text-[#3b3b40]">
           {student.group?.name || 'No group'}
         </span>
       </td>
       <td className="px-4 py-3 text-center">
         <span className="font-semibold">{student.present}</span>
-        <span className="text-slate-400">/{student.totalLessons}</span>
+        <span className="text-[#8b8b90]">/{student.totalLessons}</span>
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
@@ -174,7 +175,7 @@ export default function AdminAnalyticsPage() {
 
   return (
     <DashboardLayout title={t('title')} subtitle={t('adminSubtitle')}>
-      <div className="flex border-b border-slate-200 mb-6 overflow-x-auto">
+      <div className="flex border-b border-[rgba(14,14,16,0.07)] mb-6 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -183,7 +184,7 @@ export default function AdminAnalyticsPage() {
               'px-4 py-3 text-sm font-medium transition-colors relative whitespace-nowrap',
               activeTab === tab.id
                 ? 'text-blue-600'
-                : 'text-slate-600 hover:text-slate-900',
+                : 'text-[#3b3b40] hover:text-slate-900',
             )}
           >
             {tab.label}
@@ -195,28 +196,28 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {activeTab === 'attendance' && (
-        <div className="space-y-6">
+        <div className={portalPageStackClass}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
-              <p className="text-sm text-slate-500">Records (30d)</p>
+            <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+              <p className="text-sm text-[#8b8b90]">Records (30d)</p>
               <p className="text-2xl font-bold text-slate-900">
                 {attendance?.summary.total ?? 0}
               </p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
-              <p className="text-sm text-slate-500">Present</p>
+            <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+              <p className="text-sm text-[#8b8b90]">Present</p>
               <p className="text-2xl font-bold text-green-600">
                 {attendance?.summary.present ?? 0}
               </p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
-              <p className="text-sm text-slate-500">Unjustified</p>
+            <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+              <p className="text-sm text-[#8b8b90]">Unjustified</p>
               <p className="text-2xl font-bold text-red-600">
                 {attendance?.summary.absentUnjustified ?? 0}
               </p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
-              <p className="text-sm text-slate-500">Rate</p>
+            <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+              <p className="text-sm text-[#8b8b90]">Rate</p>
               <p className="text-2xl font-bold text-slate-900">
                 {attendance?.summary.attendanceRate ?? 0}%
               </p>
@@ -233,9 +234,9 @@ export default function AdminAnalyticsPage() {
       )}
 
       {activeTab === 'payments' && (
-        <div className="space-y-6">
+        <div className={portalPageStackClass}>
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-600">
+            <p className="mb-2 text-sm font-medium text-[#3b3b40]">
               {t('paymentsTimeFilterLabel')}
             </p>
             <AnalyticsTimeFilterBar
@@ -287,37 +288,37 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="p-4 border-b border-slate-200">
-              <h3 className="font-semibold text-slate-800">Breakdown</h3>
+          <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] overflow-hidden">
+            <div className="p-4 border-b border-[rgba(14,14,16,0.07)]">
+              <h3 className="font-semibold text-[#3b3b40]">Breakdown</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-50 border-b border-slate-200">
+                <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                    <th className="px-4 py-3 text-left text-sm font-medium text-[#3b3b40]">
                       {t('periodColumn')}
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-600">
+                    <th className="px-4 py-3 text-right text-sm font-medium text-[#3b3b40]">
                       Income
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-600">
+                    <th className="px-4 py-3 text-right text-sm font-medium text-[#3b3b40]">
                       Expenses
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-600">
+                    <th className="px-4 py-3 text-right text-sm font-medium text-[#3b3b40]">
                       Profit
                     </th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">
+                    <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">
                       # Payments
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[rgba(14,14,16,0.07)]">
                   {isLoadingRevenue ? (
                     <tr>
                       <td
                         colSpan={5}
-                        className="px-4 py-8 text-center text-slate-500"
+                        className="px-4 py-8 text-center text-[#8b8b90]"
                       >
                         {tCommon('loading')}
                       </td>
@@ -326,15 +327,15 @@ export default function AdminAnalyticsPage() {
                     <tr>
                       <td
                         colSpan={5}
-                        className="px-4 py-8 text-center text-slate-500"
+                        className="px-4 py-8 text-center text-[#8b8b90]"
                       >
                         No data available
                       </td>
                     </tr>
                   ) : (
                     revenue.map((r) => (
-                      <tr key={r.month} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 font-medium text-slate-800">
+                      <tr key={r.month} className="hover:bg-[#fafafa]">
+                        <td className="px-4 py-3 font-medium text-[#3b3b40]">
                           {r.monthName}
                         </td>
                         <td className="px-4 py-3 text-right text-green-600 font-medium">
@@ -353,7 +354,7 @@ export default function AdminAnalyticsPage() {
                         >
                           {formatCurrency(r.profit)}
                         </td>
-                        <td className="px-4 py-3 text-center text-slate-600">
+                        <td className="px-4 py-3 text-center text-[#3b3b40]">
                           {r.paymentsCount}
                         </td>
                       </tr>
@@ -385,13 +386,13 @@ export default function AdminAnalyticsPage() {
       )}
 
       {activeTab === 'risk' && (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between flex-wrap gap-3">
+        <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] overflow-hidden">
+          <div className="p-4 border-b border-[rgba(14,14,16,0.07)] flex items-center justify-between flex-wrap gap-3">
             <div>
-              <h3 className="font-semibold text-slate-800">
+              <h3 className="font-semibold text-[#3b3b40]">
                 Student Risk Analysis
               </h3>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-[#8b8b90]">
                 Students sorted by risk level
               </p>
             </div>
@@ -412,34 +413,34 @@ export default function AdminAnalyticsPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-[#3b3b40]">
                     Student
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-[#3b3b40]">
                     Group
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">
+                  <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">
                     Attendance
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-[#3b3b40]">
                     Rate
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">
+                  <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">
                     Unjustified
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">
+                  <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">
                     Risk Level
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[rgba(14,14,16,0.07)]">
                 {isLoadingStudents ? (
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-4 py-8 text-center text-slate-500"
+                      className="px-4 py-8 text-center text-[#8b8b90]"
                     >
                       {tCommon('loading')}
                     </td>
@@ -448,7 +449,7 @@ export default function AdminAnalyticsPage() {
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-4 py-8 text-center text-slate-500"
+                      className="px-4 py-8 text-center text-[#8b8b90]"
                     >
                       No students found
                     </td>

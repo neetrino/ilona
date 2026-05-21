@@ -96,14 +96,14 @@ export function createTeachersTableColumns({
             />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className={cn("font-semibold text-slate-800", !isActive && "text-slate-500")}>
+                <p className={cn("font-semibold text-[#3b3b40]", !isActive && "text-[#8b8b90]")}>
                   {firstName} {lastName}
                 </p>
                 {!isActive && (
-                  <span className="text-xs text-slate-400 font-normal">({tStatus('inactive')})</span>
+                  <span className="text-xs text-[#8b8b90] font-normal">({tStatus('inactive')})</span>
                 )}
               </div>
-              <p className={cn("text-sm text-slate-500", !isActive && "text-slate-400")}>{phone}</p>
+              <p className={cn("text-sm text-[#8b8b90]", !isActive && "text-[#8b8b90]")}>{phone}</p>
             </div>
           </div>
         );
@@ -207,7 +207,7 @@ export function createTeachersTableColumns({
             : fallback;
         return (
           <div className="flex w-full items-center justify-center">
-            <span className="text-slate-700 font-medium text-center">
+            <span className="text-[#3b3b40] font-medium text-center">
               {formatLessonRate(rate)}
             </span>
           </div>

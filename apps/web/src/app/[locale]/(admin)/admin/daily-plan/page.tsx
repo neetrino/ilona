@@ -1,5 +1,7 @@
 'use client';
 
+import { cn } from '@/shared/lib/utils';
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -9,7 +11,6 @@ import { useTeachers } from '@/features/teachers';
 import { useDailyPlans } from '@/features/daily-plan';
 import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
-import { cn } from '@/shared/lib/utils';
 
 function defaultDateRangeStrings(): { from: string; to: string } {
   const to = new Date();
@@ -132,7 +133,7 @@ export default function AdminDailyPlanPage() {
 
   return (
     <DashboardLayout title={t('dailyPlan')} subtitle={subtitle}>
-      <div className="space-y-6 max-w-7xl mx-auto w-full">
+      <div className={cn(portalPageStackClass, 'max-w-7xl mx-auto w-full')}>
         {managerMissingCenter && (
           <div
             className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-10 text-center sm:px-8"
@@ -147,32 +148,32 @@ export default function AdminDailyPlanPage() {
         )}
 
         {!managerMissingCenter && (
-        <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col gap-4 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:p-5 shadow-sm">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-slate-700">From</span>
+              <span className="font-medium text-[#3b3b40]">From</span>
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="h-10 rounded-lg border border-slate-200 px-3 text-slate-800"
+                className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] px-3 text-[#3b3b40]"
               />
             </label>
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-slate-700">To</span>
+              <span className="font-medium text-[#3b3b40]">To</span>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="h-10 rounded-lg border border-slate-200 px-3 text-slate-800"
+                className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] px-3 text-[#3b3b40]"
               />
             </label>
             <label className="flex flex-col gap-1 text-sm sm:col-span-2 lg:col-span-2">
-              <span className="font-medium text-slate-700">Teacher</span>
+              <span className="font-medium text-[#3b3b40]">Teacher</span>
               <select
                 value={teacherId}
                 onChange={(e) => setTeacherId(e.target.value)}
-                className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-slate-800"
+                className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] bg-white px-3 text-[#3b3b40]"
               >
                 <option value="">All teachers</option>
                 {teachers.map((teacher) => (
@@ -184,13 +185,13 @@ export default function AdminDailyPlanPage() {
             </label>
           </div>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-slate-700">Search</span>
+            <span className="font-medium text-[#3b3b40]">Search</span>
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Topic, resource title, or description…"
-              className="h-10 w-full rounded-lg border border-slate-200 px-3 text-slate-800"
+              className="h-10 w-full rounded-lg border border-[rgba(14,14,16,0.07)] px-3 text-[#3b3b40]"
             />
           </label>
         </div>
@@ -204,10 +205,10 @@ export default function AdminDailyPlanPage() {
 
         {!managerMissingCenter && isLoading ? (
           <div className="flex justify-center py-16">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#1010a3] border-t-transparent" />
           </div>
         ) : !managerMissingCenter && items.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-14 text-center text-slate-600">
+          <div className="rounded-xl border border-dashed border-[rgba(14,14,16,0.07)] bg-white px-6 py-14 text-center text-[#3b3b40]">
             No daily plans match your filters.
           </div>
         ) : !managerMissingCenter ? (
@@ -223,42 +224,42 @@ export default function AdminDailyPlanPage() {
                     type="button"
                     onClick={() => setViewing(plan)}
                     className={cn(
-                      'flex h-full w-full flex-col rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-primary/40 hover:shadow-md',
+                      'flex h-full w-full flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 text-left shadow-sm transition hover:border-[#1010a3]/40 hover:shadow-md',
                       'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
                     )}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="font-semibold text-slate-900">{name}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-xs text-[#8b8b90] mt-0.5">
                           {centerLabel(plan)}
                         </p>
                       </div>
-                      <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                      <span className="shrink-0 rounded-full bg-[#f0f0fc] px-2.5 py-0.5 text-xs font-medium text-[#1010a3]">
                         {formatPlanDate(plan.date)}
                       </span>
                     </div>
                     {lessonAt && (
-                      <p className="mt-2 text-xs text-slate-500">
+                      <p className="mt-2 text-xs text-[#8b8b90]">
                         Lesson · {lessonAt}
                       </p>
                     )}
-                    <p className="mt-3 text-sm text-slate-600 line-clamp-2">
+                    <p className="mt-3 text-sm text-[#3b3b40] line-clamp-2">
                       {plan.group?.name && (
-                        <span className="font-medium text-slate-700">
+                        <span className="font-medium text-[#3b3b40]">
                           {plan.group.name}
                           {' · '}
                         </span>
                       )}
                       {!plan.group?.name && plan.lesson?.group?.name && (
-                        <span className="font-medium text-slate-700">
+                        <span className="font-medium text-[#3b3b40]">
                           {plan.lesson.group.name}
                           {' · '}
                         </span>
                       )}
                       {contentSummary(plan)}
                     </p>
-                    <span className="mt-4 text-xs font-medium text-primary">
+                    <span className="mt-4 text-xs font-medium text-[#1010a3]">
                       View details
                     </span>
                   </button>
@@ -269,7 +270,7 @@ export default function AdminDailyPlanPage() {
         ) : null}
 
         {!managerMissingCenter && data && data.total > data.take && (
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-[#8b8b90]">
             Showing {items.length} of {data.total} plans. Narrow the date range
             or use search to find more.
           </p>

@@ -35,8 +35,8 @@ export default function AdminLayout({
   // Show loading while hydrating or checking auth
   if (!isHydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
       </div>
     );
   }
@@ -44,8 +44,8 @@ export default function AdminLayout({
   // Show loading while redirecting
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'MANAGER')) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
       </div>
     );
   }

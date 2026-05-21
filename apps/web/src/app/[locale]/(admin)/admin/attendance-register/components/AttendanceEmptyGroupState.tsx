@@ -12,9 +12,9 @@ export function AttendanceEmptyGroupState({
   const isNoGroups = variant === 'no_groups';
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
-      <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-        <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-12 text-center">
+      <div className="w-16 h-16 mx-auto mb-4 bg-[#f6f6f7] rounded-full flex items-center justify-center">
+        <svg className="w-8 h-8 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -23,10 +23,10 @@ export function AttendanceEmptyGroupState({
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-slate-800 mb-1">
+      <h3 className="text-lg font-semibold text-[#3b3b40] mb-1">
         {isNoGroups ? t('noGroupsAssignedYet') : t('selectGroup')}
       </h3>
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-[#8b8b90]">
         {isNoGroups ? t('noGroupsAssignedDescription') : t('selectGroupsToViewAttendance')}
       </p>
     </div>

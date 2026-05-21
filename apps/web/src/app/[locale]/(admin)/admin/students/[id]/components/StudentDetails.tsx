@@ -45,8 +45,8 @@ export function StudentDetails({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Personal Information */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Personal Information</h3>
+      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">Personal Information</h3>
         <div className="space-y-4">
           {isEditMode ? (
             <div className="space-y-2">
@@ -62,24 +62,24 @@ export function StudentDetails({
           ) : (
             <>
               <div>
-                <label className="text-sm font-medium text-slate-500">First Name</label>
-                <p className="text-slate-800 mt-1">{firstName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">First Name</label>
+                <p className="text-[#3b3b40] mt-1">{firstName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Last Name</label>
-                <p className="text-slate-800 mt-1">{lastName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">Last Name</label>
+                <p className="text-[#3b3b40] mt-1">{lastName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Email</label>
-                <p className="text-slate-800 mt-1">{student.user?.email || 'N/A'}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">Email</label>
+                <p className="text-[#3b3b40] mt-1">{student.user?.email || 'N/A'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Phone</label>
-                <p className="text-slate-800 mt-1">{student.user?.phone || 'N/A'}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">Phone</label>
+                <p className="text-[#3b3b40] mt-1">{student.user?.phone || 'N/A'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Member Since</label>
-                <p className="text-slate-800 mt-1">
+                <label className="text-sm font-medium text-[#8b8b90]">Member Since</label>
+                <p className="text-[#3b3b40] mt-1">
                   {student.user?.createdAt 
                     ? new Date(student.user.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -95,8 +95,8 @@ export function StudentDetails({
       </div>
 
       {/* Group & Parent Information */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Group & Parent Information</h3>
+      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">Group & Parent Information</h3>
         <div className="space-y-4">
           {isEditMode ? (
             <>
@@ -123,7 +123,7 @@ export function StudentDetails({
                     <p className="text-sm text-red-600">{errors.teacherId.message}</p>
                   )}
                   {isLoadingTeachers && (
-                    <p className="text-sm text-slate-500">Loading teachers...</p>
+                    <p className="text-sm text-[#8b8b90]">Loading teachers...</p>
                   )}
                 </div>
 
@@ -190,50 +190,50 @@ export function StudentDetails({
           ) : (
             <>
               <div>
-                <label className="text-sm font-medium text-slate-500">Group</label>
-                <div className="text-slate-800 mt-1">
+                <label className="text-sm font-medium text-[#8b8b90]">Group</label>
+                <div className="text-[#3b3b40] mt-1">
                   {student.group ? (
                     <div className="flex items-center gap-2">
                       <Badge variant="info">{student.group.name}</Badge>
                       {student.group.level && (
-                        <span className="text-sm text-slate-500">{student.group.level}</span>
+                        <span className="text-sm text-[#8b8b90]">{student.group.level}</span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-slate-400">Not assigned</span>
+                    <span className="text-[#8b8b90]">Not assigned</span>
                   )}
                 </div>
               </div>
               {student.group?.center && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Center</label>
-                  <p className="text-slate-800 mt-1">{student.group.center.name}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">Center</label>
+                  <p className="text-[#3b3b40] mt-1">{student.group.center.name}</p>
                 </div>
               )}
               {student.teacher && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Teacher</label>
-                  <p className="text-slate-800 mt-1">
+                  <label className="text-sm font-medium text-[#8b8b90]">Teacher</label>
+                  <p className="text-[#3b3b40] mt-1">
                     {student.teacher.user.firstName} {student.teacher.user.lastName}
                   </p>
                 </div>
               )}
               {student.parentName && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Parent Name</label>
-                  <p className="text-slate-800 mt-1">{student.parentName}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">Parent Name</label>
+                  <p className="text-[#3b3b40] mt-1">{student.parentName}</p>
                 </div>
               )}
               {student.parentPhone && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Parent Phone</label>
-                  <p className="text-slate-800 mt-1">{student.parentPhone}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">Parent Phone</label>
+                  <p className="text-[#3b3b40] mt-1">{student.parentPhone}</p>
                 </div>
               )}
               {student.parentEmail && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Parent Email</label>
-                  <p className="text-slate-800 mt-1">{student.parentEmail}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">Parent Email</label>
+                  <p className="text-[#3b3b40] mt-1">{student.parentEmail}</p>
                 </div>
               )}
             </>

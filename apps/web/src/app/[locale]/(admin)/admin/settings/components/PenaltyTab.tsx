@@ -112,25 +112,25 @@ export function PenaltyTab() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <p className="text-slate-500">{tCommon('loading')}</p>
+      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+        <p className="text-[#8b8b90]">{tCommon('loading')}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6">
-      <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('penaltyAmounts')}</h2>
+    <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+      <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">{t('penaltyAmounts')}</h2>
       
       <form onSubmit={handleSave} className="space-y-6">
         <div className="space-y-4">
-          <p className="text-sm text-slate-600 mb-4">
+          <p className="text-sm text-[#3b3b40] mb-4">
             {t('penaltyAmountsDescription')}
           </p>
 
           {/* Absence Penalty */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyAbsenceAmd')}
             </label>
             <div className="relative">
@@ -140,15 +140,15 @@ export function PenaltyTab() {
                 step="1"
                 value={formValues.penaltyAbsenceAmd}
                 onChange={(e) => handleInputChange('penaltyAbsenceAmd', e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
             </div>
           </div>
 
           {/* Feedback Penalty */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyFeedbackAmd')}
             </label>
             <div className="relative">
@@ -158,15 +158,15 @@ export function PenaltyTab() {
                 step="1"
                 value={formValues.penaltyFeedbackAmd}
                 onChange={(e) => handleInputChange('penaltyFeedbackAmd', e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
             </div>
           </div>
 
           {/* Voice Penalty */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyVoiceAmd')}
             </label>
             <div className="relative">
@@ -176,15 +176,15 @@ export function PenaltyTab() {
                 step="1"
                 value={formValues.penaltyVoiceAmd}
                 onChange={(e) => handleInputChange('penaltyVoiceAmd', e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
             </div>
           </div>
 
           {/* Text Penalty */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyTextAmd')}
             </label>
             <div className="relative">
@@ -194,15 +194,15 @@ export function PenaltyTab() {
                 step="1"
                 value={formValues.penaltyTextAmd}
                 onChange={(e) => handleInputChange('penaltyTextAmd', e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
             </div>
           </div>
 
           {/* Daily Plan Penalty */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyDailyPlanAmd')}
             </label>
             <div className="relative">
@@ -212,11 +212,11 @@ export function PenaltyTab() {
                 step="1"
                 value={formValues.penaltyDailyPlanAmd}
                 onChange={(e) => handleInputChange('penaltyDailyPlanAmd', e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">֏</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
             </div>
-            <p className="mt-1 text-xs text-slate-500">{t('penaltyDailyPlanAmdHint')}</p>
+            <p className="mt-1 text-xs text-[#8b8b90]">{t('penaltyDailyPlanAmdHint')}</p>
           </div>
 
           {error && (
@@ -229,7 +229,7 @@ export function PenaltyTab() {
         <div className="pt-4 flex justify-end">
           <Button 
             type="submit" 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
+            className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6"
             disabled={!isValid || isSaving}
           >
             {isSaving ? t('saving') : tCommon('save')}

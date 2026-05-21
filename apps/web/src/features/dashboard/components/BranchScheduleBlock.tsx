@@ -8,6 +8,7 @@ import { useGroups } from '@/features/groups/hooks/useGroups';
 import type { Group, GroupScheduleEntry } from '@/features/groups/types';
 import { GroupIconDisplay } from '@/features/groups';
 import { getGroupWeeklySlots } from '@/features/groups/group-schedule-utils';
+import { PortalDashboardSection } from '@/features/student-ui';
 
 interface TodayEntry {
   group: Group;
@@ -33,35 +34,36 @@ export function BranchScheduleBlock({ centerId }: { centerId?: string }) {
   const today = useMemo(() => collectToday(data?.items ?? []).slice(0, 8), [data?.items]);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6">
-      <header className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">{t('branchSchedule')}</h2>
-        <Link href={`/${locale}/admin/schedule`} className="text-sm text-blue-600 hover:underline">
-          {t('viewSchedule')}
-        </Link>
-      </header>
+    <PortalDashboardSection
+      title={t('branchSchedule')}
+      viewAllHref={`/${locale}/admin/schedule`}
+      viewAllLabel={t('viewSchedule')}
+    >
       {isLoading ? (
-        <p className="text-sm text-slate-400">{t('loading')}</p>
+        <p className="text-sm text-[#8b8b90]">{t('loading')}</p>
       ) : today.length === 0 ? (
-        <p className="text-sm text-slate-500">{t('noLessonsToday')}</p>
+        <p className="text-sm text-[#8b8b90]">{t('noLessonsToday')}</p>
       ) : (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-[rgba(14,14,16,0.07)]">
           {today.map(({ group, entry }) => {
             const teacherName = group.teacher
               ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`
               : t('noTeacher');
             return (
-              <li key={`${group.id}-${entry.startTime}`} className="flex items-center justify-between py-2">
+              <li
+                key={`${group.id}-${entry.startTime}`}
+                className="flex flex-wrap items-center justify-between gap-2 py-2"
+              >
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 items-center gap-2">
-                    <GroupIconDisplay iconKey={group.iconKey} size={18} className="shrink-0 text-slate-600" />
-                    <p className="truncate text-sm font-medium text-slate-800">{group.name}</p>
+                    <GroupIconDisplay iconKey={group.iconKey} size={18} className="shrink-0 text-[#8b8b90]" />
+                    <p className="truncate text-sm font-medium text-[#1010a3]">{group.name}</p>
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[#8b8b90]">
                     {group.center.name} · {teacherName}
                   </p>
                 </div>
-                <p className="text-sm font-semibold text-slate-700">
+                <p className="text-sm font-semibold text-[#3b3b40]">
                   {entry.startTime} — {entry.endTime}
                 </p>
               </li>
@@ -69,6 +71,6 @@ export function BranchScheduleBlock({ centerId }: { centerId?: string }) {
           })}
         </ul>
       )}
-    </section>
+    </PortalDashboardSection>
   );
 }

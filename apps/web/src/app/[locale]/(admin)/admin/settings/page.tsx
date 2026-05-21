@@ -76,18 +76,18 @@ export default function SettingsPage() {
         title={t('title')}
         subtitle={t('subtitle')}
       >
-        <div className="flex gap-6">
+        <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:gap-6">
           <SettingsSidebar
             activeTab="security"
             onTabChange={() => {}}
             allowedTabs={['security']}
           />
-          <div className="flex-1 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-6">Login</h2>
+          <div className="min-w-0 flex-1 space-y-6">
+            <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+              <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">Login</h2>
               <form onSubmit={handleUpdateLogin} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                     {t('emailAddress')}
                   </label>
                   <input
@@ -95,13 +95,13 @@ export default function SettingsPage() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
                   />
                 </div>
                 <div className="flex justify-end pt-2">
                   <Button
                     type="submit"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
+                    className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6"
                     disabled={updateProfile.isPending}
                   >
                     {updateProfile.isPending ? t('saving') : t('saveChanges')}
@@ -110,11 +110,11 @@ export default function SettingsPage() {
               </form>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('changePassword')}</h2>
+            <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+              <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">{t('changePassword')}</h2>
               <form onSubmit={handleChangePassword} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                     {t('currentPassword')}
                   </label>
                   <input
@@ -122,11 +122,11 @@ export default function SettingsPage() {
                     autoComplete="current-password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                     {t('newPassword')}
                   </label>
                   <input
@@ -134,12 +134,12 @@ export default function SettingsPage() {
                     autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
                   />
-                  <p className="text-xs text-slate-500 mt-1">{t('minimum8Characters')}</p>
+                  <p className="text-xs text-[#8b8b90] mt-1">{t('minimum8Characters')}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                     {t('confirmNewPassword')}
                   </label>
                   <input
@@ -147,13 +147,13 @@ export default function SettingsPage() {
                     autoComplete="new-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
                   />
                 </div>
                 <div className="pt-2 flex justify-end">
                   <Button
                     type="submit"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
+                    className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6"
                     disabled={changePassword.isPending}
                   >
                     {changePassword.isPending ? t('updating') : t('updatePassword')}
@@ -172,7 +172,7 @@ export default function SettingsPage() {
       title={t('title')} 
       subtitle={t('subtitle')}
     >
-      <div className="flex gap-6">
+      <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:gap-6">
         {/* Sidebar */}
         <SettingsSidebar
           activeTab={activeTab}
@@ -180,7 +180,7 @@ export default function SettingsPage() {
         />
 
         {/* Content */}
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           {activeTab === 'security' && (
             <SecurityTab isSaving={isSaving} onSave={setIsSaving} />
           )}

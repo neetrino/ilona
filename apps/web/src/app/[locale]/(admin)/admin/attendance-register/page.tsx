@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useMemo, useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -117,7 +118,7 @@ export default function AdminAttendanceRegisterPage() {
 
   return (
     <DashboardLayout title={t('attendanceRegister')} subtitle={t('subtitle')}>
-      <div className="space-y-6">
+      <div className={portalPageStackClass}>
         {/* Save messages */}
         <SaveMessages saveMessages={saveMessages} />
 

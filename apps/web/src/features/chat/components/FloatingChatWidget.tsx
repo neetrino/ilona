@@ -28,7 +28,11 @@ export function FloatingChatWidget() {
     return null;
   }
 
-  const isPortalShell = user?.role === 'STUDENT' || user?.role === 'TEACHER';
+  const isAdminRoute = /\/admin(\/|$)/.test(pathname.replace(/^\/[a-z]{2}\//, '/'));
+  const isPortalShell =
+    user?.role === 'STUDENT' ||
+    user?.role === 'TEACHER' ||
+    ((user?.role === 'ADMIN' || user?.role === 'MANAGER') && isAdminRoute);
   const fabBg = isPortalShell ? 'bg-[#1010a3]' : 'bg-primary';
   const fabShadow = isPortalShell
     ? 'shadow-lg shadow-[#1010a3]/25 hover:shadow-xl hover:shadow-[#1010a3]/35'

@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
 import { useState } from 'react';
@@ -113,7 +114,7 @@ export default function TeachersPage() {
       title={t('title')} 
       subtitle={t('subtitle')}
     >
-      <div className="space-y-6">
+      <div className={portalPageStackClass}>
         {/* Search, Filter & Actions Bar */}
         <TeachersFilters
           searchQuery={searchQuery}

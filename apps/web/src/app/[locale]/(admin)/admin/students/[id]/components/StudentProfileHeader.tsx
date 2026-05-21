@@ -31,7 +31,7 @@ export function StudentProfileHeader({
   const avatarUrl = student.user?.avatarUrl;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
       <div className="flex items-start gap-6">
         <Avatar
           src={avatarUrl}
@@ -83,17 +83,17 @@ export function StudentProfileHeader({
           ) : (
             <>
               <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl font-bold text-slate-800">
+                <h2 className="text-2xl font-bold text-[#3b3b40]">
                   {firstName} {lastName}
                 </h2>
                 <Badge variant={student.user?.status === 'ACTIVE' ? 'success' : 'warning'}>
                   {student.user?.status || 'UNKNOWN'}
                 </Badge>
               </div>
-              <p className="text-slate-500 mb-4">{student.user?.email || ''}</p>
+              <p className="text-[#8b8b90] mb-4">{student.user?.email || ''}</p>
               <div className="flex flex-wrap gap-4 text-sm">
                 {student.user?.phone && (
-                  <div className="flex items-center gap-2 text-slate-600">
+                  <div className="flex items-center gap-2 text-[#3b3b40]">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
@@ -101,7 +101,7 @@ export function StudentProfileHeader({
                   </div>
                 )}
                 {student.user?.lastLoginAt && (
-                  <div className="flex items-center gap-2 text-slate-600">
+                  <div className="flex items-center gap-2 text-[#3b3b40]">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>

@@ -1,6 +1,7 @@
 export { Sidebar } from './Sidebar';
 export { StudentSidebar } from './StudentSidebar';
 export { TeacherSidebar } from './TeacherSidebar';
+export { AdminSidebar } from './AdminSidebar';
 export { StudentLogoutControl } from './StudentLogoutControl';
 export { StudentSidebarNavIcon } from './StudentSidebarNavIcon';
 export { StudentScheduleNavIcon } from './StudentScheduleNavIcon';

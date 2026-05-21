@@ -124,13 +124,13 @@ export function StudentsList({
       />
 
       {/* Pagination */}
-      <div className="flex items-center justify-between text-sm text-slate-500">
+      <div className="flex items-center justify-between text-sm text-[#8b8b90]">
         <span>
           Showing {Math.min(page * pageSize + 1, totalStudents)}-{Math.min((page + 1) * pageSize, totalStudents)} of {totalStudents} students
         </span>
         <div className="flex items-center gap-2">
           <button 
-            className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
+            className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50" 
             disabled={page === 0 || isDeleting || isUpdating}
             onClick={() => onPageChange(Math.max(0, page - 1))}
           >
@@ -140,7 +140,7 @@ export function StudentsList({
           </button>
           <span>Page {page + 1} of {totalPages || 1}</span>
           <button 
-            className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+            className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50"
             disabled={page >= totalPages - 1 || isDeleting || isUpdating}
             onClick={() => onPageChange(page + 1)}
           >

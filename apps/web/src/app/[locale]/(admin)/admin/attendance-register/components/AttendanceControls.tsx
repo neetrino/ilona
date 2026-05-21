@@ -91,9 +91,9 @@ export function AttendanceControls({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
       <div className="flex items-center justify-between mb-4">
-        <label className="block text-sm font-medium text-slate-700">View Mode</label>
+        <label className="block text-sm font-medium text-[#3b3b40]">View Mode</label>
         <ViewModeSelector
           value={viewMode}
           onChange={onViewModeChange}
@@ -119,20 +119,20 @@ export function AttendanceControls({
         <div>
           {viewMode === 'day' && (
             <>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Select Date</label>
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">Select Date</label>
               <input
                 type="date"
                 value={formatDateString(currentDate)}
                 onChange={(e) => onDateChange(e.target.value)}
                 max={getTodayDate()}
-                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
+                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
                 disabled={safeSelectedGroupIds.length === 0}
               />
             </>
           )}
           {viewMode === 'week' && (
             <>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Week</label>
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">Week</label>
               <div className="flex items-center gap-2">
                 <Button
                   onClick={onPrevious}
@@ -143,7 +143,7 @@ export function AttendanceControls({
                 >
                   ←
                 </Button>
-                <div className="flex-1 text-center px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-sm font-medium">
+                <div className="flex-1 text-center px-3 py-2 border border-slate-300 rounded-lg bg-[#fafafa] text-sm font-medium">
                   {formatWeekRange(currentDate)}
                 </div>
                 <Button
@@ -160,7 +160,7 @@ export function AttendanceControls({
           )}
           {viewMode === 'month' && (
             <>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Month</label>
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">Month</label>
               <div className="flex items-center gap-2">
                 <Button
                   onClick={onPrevious}
@@ -171,7 +171,7 @@ export function AttendanceControls({
                 >
                   ←
                 </Button>
-                <div className="flex-1 text-center px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-sm font-medium">
+                <div className="flex-1 text-center px-3 py-2 border border-slate-300 rounded-lg bg-[#fafafa] text-sm font-medium">
                   {formatMonthDisplay(currentDate)}
                 </div>
                 <Button
@@ -192,14 +192,14 @@ export function AttendanceControls({
         <div className="flex items-end">
           {showAbsenceTypeFilter && onAbsenceFilterChange ? (
             <div className="w-full">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                 Filter by type
               </label>
               <select
                 value={absenceFilter}
                 onChange={(e) => onAbsenceFilterChange(e.target.value as AbsenceFilterType)}
                 disabled={safeSelectedGroupIds.length === 0}
-                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
+                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
                 aria-label="Filter by absence type"
               >
                 {ABSENCE_FILTER_OPTIONS.map((opt) => (

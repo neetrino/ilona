@@ -45,7 +45,7 @@ export function TeachersBoard({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-slate-500">Loading teachers...</div>
+        <div className="text-[#8b8b90]">Loading teachers...</div>
       </div>
     );
   }
@@ -53,13 +53,13 @@ export function TeachersBoard({
   if (sortedCenters.length === 0 && !hasUnassigned) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-slate-500">No teachers found.</div>
+        <div className="text-[#8b8b90]">No teachers found.</div>
       </div>
     );
   }
 
   return (
-    <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
+    <div className="mb-6 overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.07)]/90 bg-white shadow-sm">
       <TeachersCentersStrip
         centers={sortedCenters}
         teachersByCenter={teachersByCenter}
@@ -76,14 +76,14 @@ export function TeachersBoard({
         sortedCenters.every((center) => (teachersByCenter[center.id] || []).length === 0) &&
         !hasUnassigned ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-slate-500">No teachers match your search</div>
+            <div className="text-[#8b8b90]">No teachers match your search</div>
           </div>
         ) : !activeCenterTabId ? (
-          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/60 py-12 text-center">
-            <p className="text-sm text-slate-500">No centers found.</p>
+          <div className="rounded-lg border border-dashed border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60 py-12 text-center">
+            <p className="text-sm text-[#8b8b90]">No centers found.</p>
           </div>
         ) : selectedTeachers.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-sm text-slate-500">
+          <div className="flex items-center justify-center py-12 text-sm text-[#8b8b90]">
             {activeCenterTabId === 'unassigned' ? 'No unassigned teachers' : 'No teachers in this center'}
           </div>
         ) : (

@@ -20,8 +20,8 @@ export function StudentNotes({
   register,
 }: StudentNotesProps) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <h3 className="text-lg font-semibold text-slate-800 mb-4">Notes</h3>
+    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+      <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">Notes</h3>
       {isEditMode ? (
         <div className="space-y-2">
           <textarea
@@ -35,7 +35,7 @@ export function StudentNotes({
           )}
         </div>
       ) : (
-        <p className="text-slate-700 whitespace-pre-wrap">{student.notes || 'No notes'}</p>
+        <p className="text-[#3b3b40] whitespace-pre-wrap">{student.notes || 'No notes'}</p>
       )}
     </div>
   );

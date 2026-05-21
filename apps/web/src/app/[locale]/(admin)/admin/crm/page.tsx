@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -406,7 +407,7 @@ export default function AdminCrmPage() {
                 'rounded-lg px-3 py-1.5 text-sm font-medium',
                 viewMode === 'board'
                   ? 'bg-primary text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-slate-200'
               )}
             >
               Board
@@ -418,7 +419,7 @@ export default function AdminCrmPage() {
                 'rounded-lg px-3 py-1.5 text-sm font-medium',
                 viewMode === 'list'
                   ? 'bg-primary text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-slate-200'
               )}
             >
               List
@@ -435,7 +436,7 @@ export default function AdminCrmPage() {
                   window.history.replaceState(null, '', url.pathname + url.search || '');
                 }}
                 className={cn(
-                  'rounded-lg p-1.5 text-slate-700 transition-colors hover:bg-slate-200 hover:text-slate-900',
+                  'rounded-lg p-1.5 text-[#3b3b40] transition-colors hover:bg-slate-200 hover:text-slate-900',
                   showArchiveColumn && 'bg-slate-700 text-white hover:bg-slate-600 hover:text-white'
                 )}
                 title={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
@@ -505,7 +506,7 @@ export default function AdminCrmPage() {
             {boardColumnStatuses.map((s) => (
               <div
                 key={s}
-                className="min-w-0 w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 animate-pulse"
+                className="min-w-0 w-full rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/50 p-3 animate-pulse"
               >
                 <div className="h-6 bg-slate-200 rounded w-24 mb-4" />
                 <div className="space-y-2">

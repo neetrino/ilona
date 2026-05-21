@@ -123,8 +123,8 @@ export default function AdminProfilePage() {
       title={t('profile')} 
       subtitle={t('profileInformation')}
     >
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('profileInformation')}</h2>
+      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+        <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">{t('profileInformation')}</h2>
         
         {/* Success/Error Messages */}
         {uploadSuccess && (
@@ -139,7 +139,7 @@ export default function AdminProfilePage() {
         )}
         
         {/* Avatar */}
-        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-200">
+        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-[rgba(14,14,16,0.07)]">
           <div className="relative">
             {avatarUrl ? (
               <Image
@@ -147,7 +147,7 @@ export default function AdminProfilePage() {
                 alt={`${user?.firstName} ${user?.lastName}`}
                 width={80}
                 height={80}
-                className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
+                className="w-20 h-20 rounded-full object-cover border-2 border-[rgba(14,14,16,0.07)]"
                 unoptimized
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -164,8 +164,8 @@ export default function AdminProfilePage() {
             </div>
           </div>
           <div>
-            <h3 className="font-medium text-slate-800">{user?.firstName} {user?.lastName}</h3>
-            <p className="text-sm text-slate-500">{user?.email}</p>
+            <h3 className="font-medium text-[#3b3b40]">{user?.firstName} {user?.lastName}</h3>
+            <p className="text-sm text-[#8b8b90]">{user?.email}</p>
             <div className="flex gap-2 mt-2">
               <input
                 ref={fileInputRef}
@@ -194,7 +194,7 @@ export default function AdminProfilePage() {
                 </Button>
               )}
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-[#8b8b90] mt-1">
               {t('imageFormats') ?? 'JPG, PNG, WEBP, GIF up to 5MB'}
             </p>
           </div>
@@ -203,44 +203,44 @@ export default function AdminProfilePage() {
         <form onSubmit={handleSaveProfile} className="space-y-6">
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                 {t('firstName')}
               </label>
               <input
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                 {t('lastName')}
               </label>
               <input
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('emailAddress')}
             </label>
             <input
               type="email"
               value={user?.email || ''}
               disabled
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl bg-[#fafafa] text-[#8b8b90]"
             />
-            <p className="text-xs text-slate-500 mt-1">{t('contactAdminToChangeEmail')}</p>
+            <p className="text-xs text-[#8b8b90] mt-1">{t('contactAdminToChangeEmail')}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('phoneNumber')}
             </label>
             <input
@@ -248,24 +248,24 @@ export default function AdminProfilePage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1 234 567 8900"
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {tCommon('status')}
             </label>
             <div className="flex items-center gap-2">
               <Badge variant="info">{user?.role || 'ADMIN'}</Badge>
-              <span className="text-sm text-slate-500">{t('assignedBySystem')}</span>
+              <span className="text-sm text-[#8b8b90]">{t('assignedBySystem')}</span>
             </div>
           </div>
 
           <div className="pt-4 flex justify-end">
             <Button 
               type="submit" 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
+              className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6"
               disabled={isSaving}
             >
               {isSaving ? t('saving') : t('saveChanges')}

@@ -67,7 +67,7 @@ export function StudentsFilters({
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -75,7 +75,7 @@ export function StudentsFilters({
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
         {selectedStudentIds.size > 0 && (
@@ -93,10 +93,10 @@ export function StudentsFilters({
             onClick={() => onViewModeChange('list')}
             className={cn(
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+              'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
               viewMode === 'list'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-slate-700 hover:bg-slate-100'
+                ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
             )}
             aria-pressed={viewMode === 'list'}
           >
@@ -107,10 +107,10 @@ export function StudentsFilters({
             onClick={() => onViewModeChange('board')}
             className={cn(
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+              'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
               viewMode === 'board'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-slate-700 hover:bg-slate-100'
+                ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
             )}
             aria-pressed={viewMode === 'board'}
           >
@@ -119,7 +119,7 @@ export function StudentsFilters({
           </button>
         </div>
         <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium"
+          className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6 py-3 rounded-xl font-medium"
           onClick={onAddStudent}
         >
           + {t('addStudent')}
@@ -159,11 +159,11 @@ export function StudentsFilters({
         />
         {/* Month Filter */}
         <div className="relative">
-          <label className="block text-sm font-medium text-slate-500 mb-1.5">Month</label>
+          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">Month</label>
           <select
             value={selectedMonth}
             onChange={(e) => onMonthChange(Number(e.target.value))}
-            className="w-full h-12 px-4 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
+            className="w-full h-12 px-4 text-left text-sm bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
           >
             <option value={1}>January</option>
             <option value={2}>February</option>
@@ -181,11 +181,11 @@ export function StudentsFilters({
         </div>
         {/* Year Filter */}
         <div className="relative">
-          <label className="block text-sm font-medium text-slate-500 mb-1.5">Year</label>
+          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">Year</label>
           <select
             value={selectedYear}
             onChange={(e) => onYearChange(Number(e.target.value))}
-            className="w-full h-12 px-4 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
+            className="w-full h-12 px-4 text-left text-sm bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
           >
             {Array.from({ length: 5 }, (_, i) => {
               const year = now.getFullYear() - 2 + i;

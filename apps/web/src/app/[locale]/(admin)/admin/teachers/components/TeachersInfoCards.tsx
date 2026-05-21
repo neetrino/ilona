@@ -15,7 +15,7 @@ export function TeachersInfoCards({ filteredTeachers, totalLessons, locale, t }:
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
         <div className="flex items-start gap-4">
           <div className="p-3 bg-amber-50 rounded-xl">
             <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,12 +23,12 @@ export function TeachersInfoCards({ filteredTeachers, totalLessons, locale, t }:
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-slate-800 mb-2">{t('salaryCalculation')}</h3>
-            <p className="text-sm text-slate-500 leading-relaxed">
+            <h3 className="font-semibold text-[#3b3b40] mb-2">{t('salaryCalculation')}</h3>
+            <p className="text-sm text-[#8b8b90] leading-relaxed">
               {t('salaryDescription')}
             </p>
             <button 
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#1010a3] hover:text-[#1010a3]/90"
               onClick={() => router.push(`/${locale}/admin/finance`)}
             >
               {t('viewSalaries')}
@@ -40,22 +40,22 @@ export function TeachersInfoCards({ filteredTeachers, totalLessons, locale, t }:
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-primary/10 rounded-xl">
-            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="p-3 bg-[#f0f0fc] rounded-xl">
+            <svg className="w-6 h-6 text-[#1010a3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-slate-800 mb-2">{t('staffWorkload')}</h3>
-            <p className="text-sm text-slate-500 leading-relaxed">
+            <h3 className="font-semibold text-[#3b3b40] mb-2">{t('staffWorkload')}</h3>
+            <p className="text-sm text-[#8b8b90] leading-relaxed">
               {filteredTeachers.length > 0 
                 ? t('workloadDescription', { avg: Math.round(totalLessons / filteredTeachers.length) })
                 : t('workloadNoTeachers')}
             </p>
             <button 
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/90"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#1010a3] hover:text-[#1010a3]/90"
               onClick={() => router.push(`/${locale}/admin/analytics`)}
             >
               {t('viewAnalytics')}

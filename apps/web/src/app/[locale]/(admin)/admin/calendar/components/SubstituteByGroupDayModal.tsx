@@ -56,7 +56,7 @@ export function SubstituteByGroupDayModal({
         <DialogHeader>
           <DialogTitle>Substitute by group &amp; day</DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-[#3b3b40]">
           Applies to all non-cancelled lessons for the selected group on that calendar day (UTC date).
         </p>
         <div className="space-y-3">

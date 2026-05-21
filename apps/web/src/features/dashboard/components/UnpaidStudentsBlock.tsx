@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { usePayments } from '@/features/finance';
 import { formatCurrency } from '@/shared/lib/utils';
+import { PortalDashboardSection } from '@/features/student-ui';
 import type { Payment } from '@/features/finance/types';
 
 interface AggregatedDebt {
@@ -50,35 +51,35 @@ export function UnpaidStudentsBlock() {
   }, [data?.items, pendingData?.items]);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6">
-      <header className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">{t('unpaidStudents')}</h2>
-        <Link href={`/${locale}/admin/finance`} className="text-sm text-blue-600 hover:underline">
-          {t('viewAll')}
-        </Link>
-      </header>
+    <PortalDashboardSection
+      title={t('unpaidStudents')}
+      viewAllHref={`/${locale}/admin/finance`}
+      viewAllLabel={t('viewAll')}
+    >
       {isLoading ? (
-        <p className="text-sm text-slate-400">{t('loading')}</p>
+        <p className="text-sm text-[#8b8b90]">{t('loading')}</p>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-slate-500">{t('noUnpaid')}</p>
+        <p className="text-sm text-[#8b8b90]">{t('noUnpaid')}</p>
       ) : (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-[rgba(14,14,16,0.07)]">
           {rows.map((row) => (
-            <li key={row.studentId} className="flex items-center justify-between py-2">
-              <div>
+            <li key={row.studentId} className="flex flex-wrap items-center justify-between gap-2 py-2">
+              <div className="min-w-0">
                 <Link
                   href={`/${locale}/admin/students/${row.studentId}`}
-                  className="text-sm font-medium text-slate-800 hover:text-blue-600"
+                  className="text-sm font-medium text-[#1010a3] transition-opacity hover:opacity-80"
                 >
                   {row.fullName}
                 </Link>
-                {row.groupName && <p className="text-xs text-slate-500">{row.groupName}</p>}
+                {row.groupName ? (
+                  <p className="text-xs text-[#8b8b90]">{row.groupName}</p>
+                ) : null}
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-red-600">
+                <p className="text-sm font-semibold text-[#ff2e23]">
                   {formatCurrency(row.totalAmount)}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#8b8b90]">
                   {row.overdueCount > 0
                     ? t('overdueCount', { count: row.overdueCount })
                     : t('pendingCount', { count: row.pendingCount })}
@@ -88,6 +89,6 @@ export function UnpaidStudentsBlock() {
           ))}
         </ul>
       )}
-    </section>
+    </PortalDashboardSection>
   );
 }

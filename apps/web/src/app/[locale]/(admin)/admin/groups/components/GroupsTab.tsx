@@ -346,7 +346,7 @@ export function GroupsTab({
       key: 'center',
       header: 'Center',
       render: (group: Group) => (
-        <span className="text-slate-700">{group.center?.name || '—'}</span>
+        <span className="text-[#3b3b40]">{group.center?.name || '—'}</span>
       ),
     },
     {
@@ -358,8 +358,8 @@ export function GroupsTab({
             <GroupIconDisplay iconKey={group.iconKey} size={22} />
           </span>
           <div className="min-w-0">
-            <p className="font-semibold text-slate-800">{group.name}</p>
-            <p className="text-sm text-slate-500">{group.description || 'No description'}</p>
+            <p className="font-semibold text-[#3b3b40]">{group.name}</p>
+            <p className="text-sm text-[#8b8b90]">{group.description || 'No description'}</p>
           </div>
         </div>
       ),
@@ -371,7 +371,7 @@ export function GroupsTab({
         group.level ? (
           <Badge variant="info">{group.level}</Badge>
         ) : (
-          <span className="text-slate-400">—</span>
+          <span className="text-[#8b8b90]">—</span>
         )
       ),
     },
@@ -387,10 +387,10 @@ export function GroupsTab({
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 text-sm font-medium">
+            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[#3b3b40] text-sm font-medium">
               {initials}
             </div>
-            <span className="text-slate-700">{firstName} {lastName}</span>
+            <span className="text-[#3b3b40]">{firstName} {lastName}</span>
           </div>
         );
       },
@@ -406,7 +406,7 @@ export function GroupsTab({
             <button
               type="button"
               onClick={() => openStudentsModal(group.id)}
-              className="underline decoration-slate-400 underline-offset-2 hover:decoration-primary hover:text-primary font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 rounded inline"
+              className="underline decoration-slate-400 underline-offset-2 hover:decoration-primary hover:text-[#1010a3] font-medium text-[#3b3b40] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded inline"
               title="View students in this group"
             >
               {count}/{group.maxStudents}
@@ -435,7 +435,7 @@ export function GroupsTab({
               className={cn('inline-flex h-2.5 w-2.5 rounded-full', dotColorClass)}
               aria-hidden="true"
             />
-            <span className="text-sm font-medium text-slate-700">{occupancy.label}</span>
+            <span className="text-sm font-medium text-[#3b3b40]">{occupancy.label}</span>
           </div>
         );
       },
@@ -469,25 +469,25 @@ export function GroupsTab({
     <div className="space-y-6">
       {selectedCenterId && viewMode === 'list' && (
         <nav
-          className="flex flex-wrap items-center gap-2 text-sm text-slate-600"
+          className="flex flex-wrap items-center gap-2 text-sm text-[#3b3b40]"
           aria-label="Breadcrumb"
         >
           <Link
             href={`/${locale}/admin/groups`}
-            className="font-medium text-primary hover:text-primary/80 hover:underline"
+            className="font-medium text-[#1010a3] hover:text-[#1010a3]/80 hover:underline"
           >
             Centers
           </Link>
           <span className="text-slate-300" aria-hidden>
             /
           </span>
-          <span className="font-medium text-slate-800">
+          <span className="font-medium text-[#3b3b40]">
             {drillDownCenter?.name ?? '…'}
           </span>
           <span className="text-slate-300" aria-hidden>
             /
           </span>
-          <span className="text-slate-500">Groups</span>
+          <span className="text-[#8b8b90]">Groups</span>
         </nav>
       )}
 
@@ -531,7 +531,7 @@ export function GroupsTab({
       {/* Filters & Actions — above branch tabs so group search sits right above the panel */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex-1 relative min-w-[200px]">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -543,7 +543,7 @@ export function GroupsTab({
             }
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
         {selectedGroupIds.size > 0 && (
@@ -566,10 +566,10 @@ export function GroupsTab({
             }}
             className={cn(
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+              'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
               viewMode === 'list'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-slate-700 hover:bg-slate-100'
+                ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
             )}
             aria-pressed={viewMode === 'list'}
           >
@@ -585,10 +585,10 @@ export function GroupsTab({
             }}
             className={cn(
               'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+              'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
               viewMode === 'board'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-slate-700 hover:bg-slate-100'
+                ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
             )}
             aria-pressed={viewMode === 'board'}
           >
@@ -598,7 +598,7 @@ export function GroupsTab({
         </div>
 
         <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium"
+          className="bg-primary hover:bg-primary/90 text-[#1010a3]-foreground px-6 py-3 rounded-xl font-medium"
           onClick={() => handleCreateGroupOpenChange(true)}
         >
           + Add Group
@@ -607,12 +607,12 @@ export function GroupsTab({
 
       {/* Board: branch tabs + groups directly underneath */}
       {viewMode === 'board' && (
-        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
-          <div className="border-b border-slate-200 bg-gradient-to-b from-slate-50/70 to-white px-3 pt-3">
+        <div className="mb-6 overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.07)]/90 bg-white shadow-sm">
+          <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-slate-50/70 to-white px-3 pt-3">
             {isLoadingBranchTabs ? (
-              <div className="py-4 text-sm text-slate-500">Loading branches...</div>
+              <div className="py-4 text-sm text-[#8b8b90]">Loading branches...</div>
             ) : allCenters.length === 0 ? (
-              <div className="py-4 text-sm text-slate-500">No branches found. Create a center first.</div>
+              <div className="py-4 text-sm text-[#8b8b90]">No branches found. Create a center first.</div>
             ) : (
               <div className="overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <nav
@@ -642,7 +642,7 @@ export function GroupsTab({
                           'active:scale-[0.985]',
                           isActive
                             ? 'shadow-[0_4px_14px_rgba(15,23,42,0.14)]'
-                            : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-px hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 hover:shadow-sm'
+                            : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:-translate-y-px hover:border-slate-300 hover:bg-[#fafafa] hover:text-[#3b3b40] hover:shadow-sm'
                         )}
                         style={
                           isActive
@@ -666,7 +666,7 @@ export function GroupsTab({
                             'inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
                             isActive
                               ? 'shadow-sm'
-                              : 'group-hover:bg-slate-200 group-hover:text-slate-700'
+                              : 'group-hover:bg-slate-200 group-hover:text-[#3b3b40]'
                           )}
                           style={
                             isActive
@@ -689,7 +689,7 @@ export function GroupsTab({
               </div>
             )}
             {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
-              <p className="py-4 text-sm text-slate-500">No branches match your search.</p>
+              <p className="py-4 text-sm text-[#8b8b90]">No branches match your search.</p>
             )}
           </div>
 
@@ -699,15 +699,15 @@ export function GroupsTab({
             aria-label={activeBranchTabId ? 'Groups for selected branch' : 'Select a branch'}
           >
             {showBoardCenterPicker ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/60 py-12 text-center">
-                <p className="text-sm text-slate-500">
+              <div className="rounded-lg border border-dashed border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60 py-12 text-center">
+                <p className="text-sm text-[#8b8b90]">
                   Select a branch tab above — groups will appear here.
                 </p>
               </div>
             ) : isLoading ? (
-              <div className="flex justify-center py-12 text-sm text-slate-500">Loading groups…</div>
+              <div className="flex justify-center py-12 text-sm text-[#8b8b90]">Loading groups…</div>
             ) : groups.length === 0 ? (
-              <div className="flex justify-center py-12 text-sm text-slate-500">
+              <div className="flex justify-center py-12 text-sm text-[#8b8b90]">
                 {searchQuery ? 'No groups match your search' : 'No groups in this branch'}
               </div>
             ) : (
@@ -746,13 +746,13 @@ export function GroupsTab({
           />
 
           {/* Pagination */}
-          <div className="flex items-center justify-between text-sm text-slate-500">
+          <div className="flex items-center justify-between text-sm text-[#8b8b90]">
             <span>
               Showing {Math.min(page * pageSize + 1, totalGroups)}-{Math.min((page + 1) * pageSize, totalGroups)} of {totalGroups} groups
             </span>
             <div className="flex items-center gap-2">
               <button 
-                className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
+                className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50" 
                 disabled={page === 0}
                 onClick={() => {
                   setPage(p => Math.max(0, p - 1));
@@ -765,7 +765,7 @@ export function GroupsTab({
               </button>
               <span>Page {page + 1} of {totalPages || 1}</span>
               <button 
-                className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+                className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50"
                 disabled={page >= totalPages - 1}
                 onClick={() => {
                   setPage(p => p + 1);

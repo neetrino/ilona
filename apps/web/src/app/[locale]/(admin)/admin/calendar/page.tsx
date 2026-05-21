@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useMemo, useEffect, useCallback, startTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -449,9 +450,9 @@ export default function CalendarPage() {
       title="Lesson Calendar" 
       subtitle="Schedule and manage lessons across all groups."
     >
-      <div className="space-y-6">
+      <div className={portalPageStackClass}>
         {/* Filters */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200">
+        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
           <CalendarFilters
             searchQuery={searchQuery}
             selectedTeacherId={selectedTeacherId}
@@ -490,24 +491,24 @@ export default function CalendarPage() {
         </div>
 
         {/* Calendar Controls */}
-        <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200">
+        <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
           <div className="flex items-center gap-4">
             <button
               onClick={goToPreviousWeek}
-              className="p-2 rounded-lg hover:bg-slate-100"
+              className="p-2 rounded-lg hover:bg-[#f6f6f7]"
             >
-              <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h2 className="text-lg font-semibold text-slate-800">
+            <h2 className="text-lg font-semibold text-[#3b3b40]">
               {viewMode === 'month' ? monthHeader : weekHeader}
             </h2>
             <button
               onClick={goToNextWeek}
-              className="p-2 rounded-lg hover:bg-slate-100"
+              className="p-2 rounded-lg hover:bg-[#f6f6f7]"
             >
-              <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -526,10 +527,10 @@ export default function CalendarPage() {
                 onClick={() => updateViewModeInUrl('list')}
                 className={cn(
                   'px-4 py-2 text-sm font-semibold rounded-md transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'list'
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'list'}
               >
@@ -540,10 +541,10 @@ export default function CalendarPage() {
                 onClick={() => updateViewModeInUrl('week')}
                 className={cn(
                   'px-4 py-2 text-sm font-semibold rounded-md transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'week'
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'week'}
               >
@@ -554,10 +555,10 @@ export default function CalendarPage() {
                 onClick={() => updateViewModeInUrl('month')}
                 className={cn(
                   'px-4 py-2 text-sm font-semibold rounded-md transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'month'
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-primary text-[#1010a3]-foreground shadow-md'
+                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'month'}
               >
@@ -577,21 +578,21 @@ export default function CalendarPage() {
 
         {/* Week View */}
         {viewMode === 'week' && (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] overflow-hidden">
             {/* Day Headers */}
-            <div className="grid grid-cols-7 border-b border-slate-200">
+            <div className="grid grid-cols-7 border-b border-[rgba(14,14,16,0.07)]">
               {weekDates.map((date, i) => (
                 <div 
                   key={i}
-                  className={`p-3 text-center border-r last:border-r-0 border-slate-200 ${
+                  className={`p-3 text-center border-r last:border-r-0 border-[rgba(14,14,16,0.07)] ${
                     isToday(date) ? 'bg-blue-50' : ''
                   }`}
                 >
-                  <p className="text-xs text-slate-500 uppercase">
+                  <p className="text-xs text-[#8b8b90] uppercase">
                     {date.toLocaleDateString('en-US', { weekday: 'short' })}
                   </p>
                   <p className={`text-lg font-semibold ${
-                    isToday(date) ? 'text-blue-600' : 'text-slate-800'
+                    isToday(date) ? 'text-blue-600' : 'text-[#3b3b40]'
                   }`}>
                     {date.getDate()}
                   </p>
@@ -608,7 +609,7 @@ export default function CalendarPage() {
                 return (
                   <div 
                     key={i}
-                    className={`p-2 border-r last:border-r-0 border-slate-200 ${
+                    className={`p-2 border-r last:border-r-0 border-[rgba(14,14,16,0.07)] ${
                       isToday(date) ? 'bg-blue-50/50' : ''
                     }`}
                   >
@@ -618,7 +619,7 @@ export default function CalendarPage() {
                         <div className="h-16 bg-slate-200 rounded-lg" />
                       </div>
                     ) : dayLessons.length === 0 ? (
-                      <p className="text-xs text-slate-400 text-center py-4">
+                      <p className="text-xs text-[#8b8b90] text-center py-4">
                         {searchQuery || selectedTeacherId ? 'No lessons match filters' : 'No lessons'}
                       </p>
                     ) : (
@@ -637,7 +638,7 @@ export default function CalendarPage() {
                             } else if (lesson.status === 'IN_PROGRESS') {
                               return 'bg-amber-50 border-amber-500';
                             } else if (lesson.status === 'CANCELLED' || lesson.status === 'MISSED') {
-                              return 'bg-slate-100 border-slate-400';
+                              return 'bg-[#f6f6f7] border-slate-400';
                             }
                             return 'bg-blue-50 border-blue-500';
                           };
@@ -647,10 +648,10 @@ export default function CalendarPage() {
                               key={lesson.id}
                               className={`p-2 rounded-lg text-xs border-l-4 ${getLessonColor()}`}
                             >
-                              <p className="font-medium text-slate-800 truncate">
+                              <p className="font-medium text-[#3b3b40] truncate">
                                 {formatTime(lesson.scheduledAt)}
                               </p>
-                              <p className="text-slate-600 truncate">
+                              <p className="text-[#3b3b40] truncate">
                                 {lesson.group?.name || 'Unknown'}
                               </p>
                               {lesson.substituteTeacher?.user && (
@@ -672,7 +673,7 @@ export default function CalendarPage() {
         )}
 
         {viewMode === 'month' && (
-          <div className="h-[min(70vh,720px)] overflow-hidden bg-white rounded-xl border border-slate-200 min-h-0">
+          <div className="h-[min(70vh,720px)] overflow-hidden bg-white rounded-xl border border-[rgba(14,14,16,0.07)] min-h-0">
             <CalendarMonthGrid<Lesson>
               monthDates={monthDates}
               getLessonsForDay={(k) => lessonsByDate[k] ?? []}
@@ -684,7 +685,7 @@ export default function CalendarPage() {
                   type="button"
                   onClick={() => router.push(`/admin/calendar/${lesson.id}`)}
                   className={cn(
-                    'w-full min-w-0 max-w-full truncate rounded border border-blue-100/90 bg-blue-50/90 text-left text-slate-800 transition hover:border-blue-200 hover:bg-blue-100/80',
+                    'w-full min-w-0 max-w-full truncate rounded border border-blue-100/90 bg-blue-50/90 text-left text-[#3b3b40] transition hover:border-blue-200 hover:bg-blue-100/80',
                     variant === 'cell'
                       ? 'px-1.5 py-0.5 text-[9px] leading-tight sm:px-2 sm:py-1 sm:text-[10px] sm:leading-tight'
                       : 'px-3 py-2.5 text-sm',
@@ -704,7 +705,7 @@ export default function CalendarPage() {
         {viewMode === 'list' && (
           <>
             {isLoading ? (
-              <div className="bg-white rounded-xl border border-slate-200 p-8">
+              <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-8">
                 <div className="animate-pulse space-y-4">
                   <div className="h-12 bg-slate-200 rounded-lg" />
                   <div className="h-12 bg-slate-200 rounded-lg" />
@@ -712,8 +713,8 @@ export default function CalendarPage() {
                 </div>
               </div>
             ) : lessons.length === 0 ? (
-              <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-                <p className="text-slate-500">
+              <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-8 text-center">
+                <p className="text-[#8b8b90]">
                   {searchQuery || selectedTeacherId ? 'No lessons match the current filters' : 'No lessons found'}
                 </p>
               </div>

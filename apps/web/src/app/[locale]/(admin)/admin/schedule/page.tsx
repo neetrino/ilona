@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -131,7 +132,7 @@ export default function AdminSchedulePage() {
               <div className="md:w-72">
                 <label
                   htmlFor="schedule-center"
-                  className="mb-1.5 block text-sm font-medium text-slate-600"
+                  className="mb-1.5 block text-sm font-medium text-[#3b3b40]"
                 >
                   Center
                 </label>
@@ -139,7 +140,7 @@ export default function AdminSchedulePage() {
                   id="schedule-center"
                   value={centerId}
                   onChange={(e) => setCenterId(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                  className="h-11 w-full rounded-lg border border-[rgba(14,14,16,0.07)] bg-white px-3 focus:border-[#1010a3] focus:ring-2 focus:ring-[#1010a3]/20 focus:outline-none"
                 >
                   <option value="">All centers</option>
                   {visibleCenters.map((c) => (
@@ -150,7 +151,7 @@ export default function AdminSchedulePage() {
                 </select>
               </div>
             )}
-            <div className="flex-1 text-sm text-slate-500">
+            <div className="flex-1 text-sm text-[#8b8b90]">
               Showing {groups.length} active group{groups.length !== 1 ? 's' : ''}
               {effectiveCenterId
                 ? ` in ${

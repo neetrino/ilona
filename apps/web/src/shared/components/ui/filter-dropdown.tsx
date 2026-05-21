@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/shared/lib/utils';
+import { usePortalShell } from '@/shared/context/portal-shell-context';
+import { portalLabelClass, portalInputClass } from '@/shared/lib/portal-theme';
 
 export interface FilterOption {
   id: string;
@@ -29,6 +31,7 @@ export function FilterDropdown({
   error = null,
   className,
 }: FilterDropdownProps) {
+  const isPortal = usePortalShell();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -68,8 +71,8 @@ export function FilterDropdown({
   };
 
   return (
-    <div className={cn('relative', className)} ref={dropdownRef}>
-      <label className="block text-sm font-medium text-slate-500 mb-1.5">
+    <div className={cn('relative min-w-0', className)} ref={dropdownRef}>
+      <label className={isPortal ? portalLabelClass : 'mb-1.5 block text-sm font-medium text-slate-500'}>
         {label}
       </label>
       <div className="relative">
@@ -78,23 +81,35 @@ export function FilterDropdown({
           onClick={() => setIsOpen(!isOpen)}
           disabled={isLoading}
           className={cn(
-            'w-full h-12 px-4 flex items-center justify-between text-left bg-white border border-slate-200 rounded-lg',
-            'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-            'hover:border-slate-300 transition-colors'
+            isPortal
+              ? cn(portalInputClass, 'flex items-center justify-between text-left')
+              : cn(
+                  'flex h-12 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 text-left',
+                  'hover:border-slate-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
+                ),
+            'disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
           )}
         >
-          <div className="flex items-center justify-between">
-            <span className={cn(
-              'text-sm',
-              selectedIds.size === 0 ? 'text-slate-400' : 'text-slate-800'
-            )}>
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+            <span
+              className={cn(
+                'truncate text-sm',
+                isPortal
+                  ? selectedIds.size === 0
+                    ? 'text-[#8b8b90]'
+                    : 'text-[#3b3b40]'
+                  : selectedIds.size === 0
+                    ? 'text-slate-400'
+                    : 'text-slate-800',
+              )}
+            >
               {isLoading ? 'Loading...' : getDisplayText()}
             </span>
             <svg
               className={cn(
-                'w-4 h-4 text-slate-500 transition-transform',
-                isOpen && 'transform rotate-180'
+                'h-4 w-4 shrink-0 transition-transform',
+                isPortal ? 'text-[#8b8b90]' : 'text-slate-500',
+                isOpen && 'rotate-180',
               )}
               fill="none"
               stroke="currentColor"
@@ -111,11 +126,20 @@ export function FilterDropdown({
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+          <div
+            className={cn(
+              'absolute z-50 mt-1 max-h-60 w-full overflow-auto shadow-lg',
+              isPortal
+                ? 'rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white'
+                : 'rounded-lg border border-slate-200 bg-white',
+            )}
+          >
             {error ? (
-              <div className="p-3 text-sm text-red-600">{error}</div>
+              <div className="p-3 text-sm text-[#ff2e23]">{error}</div>
             ) : options.length === 0 ? (
-              <div className="p-3 text-sm text-slate-500">No options available</div>
+              <div className={cn('p-3 text-sm', isPortal ? 'text-[#8b8b90]' : 'text-slate-500')}>
+                No options available
+              </div>
             ) : (
               <div className="py-1">
                 {options.map((option) => {
@@ -124,18 +148,31 @@ export function FilterDropdown({
                     <label
                       key={option.id}
                       className={cn(
-                        'flex items-center px-4 py-2 cursor-pointer hover:bg-slate-50 transition-colors',
-                        isSelected && 'bg-primary/10'
+                        'flex cursor-pointer items-center px-4 py-2 transition-colors',
+                        isPortal ? 'hover:bg-[#fafafa]' : 'hover:bg-slate-50',
+                        isSelected && (isPortal ? 'bg-[#f0f0fc]' : 'bg-primary/10'),
                       )}
                     >
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleToggle(option.id)}
-                        className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                        className={cn(
+                          'h-4 w-4 cursor-pointer rounded',
+                          isPortal
+                            ? 'border-[rgba(14,14,16,0.07)] text-[#1010a3] focus:ring-[#1010a3]/20 focus:ring-offset-0'
+                            : 'border-slate-300 text-primary focus:ring-primary focus:ring-offset-0',
+                        )}
                         onClick={(e) => e.stopPropagation()}
                       />
-                      <span className="ml-3 text-sm text-slate-700">{option.label}</span>
+                      <span
+                        className={cn(
+                          'ml-3 text-sm',
+                          isPortal ? 'text-[#3b3b40]' : 'text-slate-700',
+                        )}
+                      >
+                        {option.label}
+                      </span>
                     </label>
                   );
                 })}

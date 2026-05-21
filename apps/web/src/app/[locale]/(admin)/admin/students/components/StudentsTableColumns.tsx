@@ -231,7 +231,7 @@ function RegisterDateCell({
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           disabled={saving}
-          className="w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+          className="w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3] disabled:opacity-50"
         />
         {error && (
           <p className="absolute mt-0.5 text-xs text-red-600">{error}</p>
@@ -250,7 +250,7 @@ function RegisterDateCell({
         type="button"
         onClick={() => !disabled && setEditing(true)}
         disabled={disabled || saving}
-        className={displayText === '—' ? 'text-slate-400 hover:text-slate-600' : 'text-slate-700 hover:text-slate-900'}
+        className={displayText === '—' ? 'text-[#8b8b90] hover:text-[#3b3b40]' : 'text-[#3b3b40] hover:text-slate-900'}
         title={displayText === '—' ? 'Set register date' : 'Edit register date'}
       >
         {displayText}
@@ -361,7 +361,7 @@ export function createStudentsTableColumns({
               )}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-slate-800 leading-tight break-words">
+              <p className="font-semibold text-[#3b3b40] leading-tight break-words">
                 {firstName} {lastName}
               </p>
               <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
@@ -372,7 +372,7 @@ export function createStudentsTableColumns({
                     {riskBadge.label}
                   </span>
                 )}
-                <span className="text-sm text-slate-500">{phone}</span>
+                <span className="text-sm text-[#8b8b90]">{phone}</span>
               </div>
             </div>
           </div>
@@ -384,7 +384,7 @@ export function createStudentsTableColumns({
       header: 'CENTER',
       className: '!w-[14%] align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
         const manualCenterId = row.centerId ?? null;
         return (
@@ -408,7 +408,7 @@ export function createStudentsTableColumns({
       header: 'TEACHER',
       className: '!w-[14%] align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
         const teacherOptionsForRow = buildTeacherOptionsForRow(
           manualCenterId,
@@ -438,7 +438,7 @@ export function createStudentsTableColumns({
       header: 'GROUP',
       className: '!w-[14%] align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
         const teacherId = row.teacherId || null;
         const groupOptionsForRow = buildGroupOptionsForRow(
@@ -470,7 +470,7 @@ export function createStudentsTableColumns({
       sortable: true,
       className: 'text-left !w-[11%] align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         return (
           <RegisterDateCell
             studentId={row.id}
@@ -487,11 +487,11 @@ export function createStudentsTableColumns({
       sortable: true,
       className: 'text-center !w-[10%] align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
         return (
           <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-            <span className="text-slate-700 font-medium whitespace-nowrap">{formatCurrency(fee)}</span>
+            <span className="text-[#3b3b40] font-medium whitespace-nowrap">{formatCurrency(fee)}</span>
           </div>
         );
       },
@@ -505,14 +505,14 @@ export function createStudentsTableColumns({
         if (isOnboardingItem(row)) {
           return (
             <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-              <span className="text-slate-400">—</span>
+              <span className="text-[#8b8b90]">—</span>
             </div>
           );
         }
         const absencesThisMonth = row.attendanceSummary?.absences ?? 0;
         return (
           <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-            <span className="text-slate-700 font-medium">{absencesThisMonth}</span>
+            <span className="text-[#3b3b40] font-medium">{absencesThisMonth}</span>
           </div>
         );
       },
@@ -524,13 +524,13 @@ export function createStudentsTableColumns({
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
-            <span className="text-slate-400 text-xs" onClick={(e) => e.stopPropagation()}>Onboarding</span>
+            <span className="text-[#8b8b90] text-xs" onClick={(e) => e.stopPropagation()}>Onboarding</span>
           );
         }
         const student = row;
         const isActive = student.user?.status === 'ACTIVE';
         const btnClass =
-          'p-1.5 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
+          'p-1.5 text-slate-900 hover:text-[#3b3b40] hover:bg-[#fafafa] rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
 
         return (
           <div

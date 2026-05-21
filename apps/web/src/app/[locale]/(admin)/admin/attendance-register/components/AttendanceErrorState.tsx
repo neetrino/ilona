@@ -9,7 +9,7 @@ export function AttendanceErrorState() {
         </svg>
       </div>
       <p className="text-sm font-medium text-red-600 mb-1">Error loading attendance data</p>
-      <p className="text-xs text-slate-500">Please try again or contact support if the problem persists</p>
+      <p className="text-xs text-[#8b8b90]">Please try again or contact support if the problem persists</p>
     </div>
   );
 }
