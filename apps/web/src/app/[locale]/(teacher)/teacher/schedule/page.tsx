@@ -8,6 +8,7 @@ import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import type { Group } from '@/features/groups/types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ScheduleBoard } from '@/features/schedule/ScheduleBoard';
+import { StudentFieldLabel, StudentSelect } from '@/features/student-ui';
 import { useScheduleViewMode } from '@/features/schedule/useScheduleViewMode';
 import {
   formatScheduleDate,
@@ -124,23 +125,18 @@ export default function TeacherSchedulePage() {
       subtitle="Weekly and monthly schedule for upcoming lessons"
     >
       <ScheduleBoard
+        variant="student"
         lessons={lessons}
         isLoading={!isAuthReady || isGroupsLoading || isLessonsLoading}
         highlightPastLessonCards
         topBar={(
           <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
-            <div className="md:w-72">
-              <label
-                htmlFor="schedule-center-teacher"
-                className="mb-1.5 block text-sm font-medium text-slate-600"
-              >
-                Center
-              </label>
-              <select
+            <div className="w-full md:max-w-xs">
+              <StudentFieldLabel htmlFor="schedule-center-teacher">Center</StudentFieldLabel>
+              <StudentSelect
                 id="schedule-center-teacher"
                 value={centerId}
                 onChange={(e) => setCenterId(e.target.value)}
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               >
                 <option value="">All centers</option>
                 {visibleCenters.map((c) => (
@@ -148,9 +144,9 @@ export default function TeacherSchedulePage() {
                     {c.name || c.id}
                   </option>
                 ))}
-              </select>
+              </StudentSelect>
             </div>
-            <div className="flex-1 text-sm text-slate-500">
+            <div className="min-w-0 flex-1 text-sm text-[#8b8b90]">
               Showing {visibleGroups.length} active group{visibleGroups.length !== 1 ? 's' : ''}
               {effectiveCenterId
                 ? ` in ${

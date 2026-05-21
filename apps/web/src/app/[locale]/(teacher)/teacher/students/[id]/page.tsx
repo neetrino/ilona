@@ -85,10 +85,10 @@ export default function TeacherStudentProfilePage() {
               )}
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">
+              <h3 className="font-semibold text-[#1010a3] mb-2">
                 {isForbidden ? 'Access Denied' : isNotFound ? 'Student Not Found' : 'Error Loading Student'}
               </h3>
-              <p className="text-sm text-slate-500 mb-4">
+              <p className="text-sm text-[#8b8b90] mb-4">
                 {isForbidden
                   ? 'You do not have permission to view this student. You can only view profiles of students assigned to you.'
                   : isNotFound
@@ -136,7 +136,7 @@ export default function TeacherStudentProfilePage() {
         </div>
 
         {/* Profile Header */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
           <div className="flex items-start gap-6">
             {avatarUrl ? (
               <Image
@@ -154,7 +154,7 @@ export default function TeacherStudentProfilePage() {
             )}
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl font-bold text-slate-800">
+                <h2 className="text-2xl font-bold text-[#1010a3]">
                   {firstName} {lastName}
                 </h2>
                 <Badge variant={student.user?.status === 'ACTIVE' ? 'success' : 'warning'}>
@@ -163,7 +163,7 @@ export default function TeacherStudentProfilePage() {
               </div>
               <div className="flex flex-wrap gap-4 text-sm">
                 {student.user?.lastLoginAt && (
-                  <div className="flex items-center gap-2 text-slate-600">
+                  <div className="flex items-center gap-2 text-[#8b8b90]">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -177,20 +177,20 @@ export default function TeacherStudentProfilePage() {
 
         {/* Learning info (sensitive personal data hidden for teachers) */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-4 text-lg font-semibold text-slate-800">Basic Info</h3>
+          <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+            <h3 className="mb-4 text-lg font-semibold text-[#1010a3]">Basic Info</h3>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-500">First Name</label>
-                <p className="mt-1 text-slate-800">{firstName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">First Name</label>
+                <p className="mt-1 text-[#1010a3]">{firstName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Last Name</label>
-                <p className="mt-1 text-slate-800">{lastName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">Last Name</label>
+                <p className="mt-1 text-[#1010a3]">{lastName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Member Since</label>
-                <p className="mt-1 text-slate-800">
+                <label className="text-sm font-medium text-[#8b8b90]">Member Since</label>
+                <p className="mt-1 text-[#1010a3]">
                   {student.user?.createdAt
                     ? new Date(student.user.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -203,34 +203,34 @@ export default function TeacherStudentProfilePage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-4 text-lg font-semibold text-slate-800">Learning</h3>
+          <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+            <h3 className="mb-4 text-lg font-semibold text-[#1010a3]">Learning</h3>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-500">Group</label>
-                <div className="mt-1 text-slate-800">
+                <label className="text-sm font-medium text-[#8b8b90]">Group</label>
+                <div className="mt-1 text-[#1010a3]">
                   {student.group ? (
                     <div className="flex items-center gap-2">
                       <Badge variant="info">{student.group.name}</Badge>
                       {student.group.level && (
-                        <span className="text-sm text-slate-500">{student.group.level}</span>
+                        <span className="text-sm text-[#8b8b90]">{student.group.level}</span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-slate-400">Not assigned</span>
+                    <span className="text-[#8b8b90]">Not assigned</span>
                   )}
                 </div>
               </div>
               {student.group?.center && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Center</label>
-                  <p className="mt-1 text-slate-800">{student.group.center.name}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">Center</label>
+                  <p className="mt-1 text-[#1010a3]">{student.group.center.name}</p>
                 </div>
               )}
               {student.teacher && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Teacher</label>
-                  <p className="mt-1 text-slate-800">
+                  <label className="text-sm font-medium text-[#8b8b90]">Teacher</label>
+                  <p className="mt-1 text-[#1010a3]">
                     {student.teacher.user.firstName} {student.teacher.user.lastName}
                   </p>
                 </div>
@@ -241,9 +241,9 @@ export default function TeacherStudentProfilePage() {
 
         {/* Notes */}
         {student.notes && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Notes</h3>
-            <p className="text-slate-700 whitespace-pre-wrap">{student.notes}</p>
+          <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+            <h3 className="text-lg font-semibold text-[#1010a3] mb-4">Notes</h3>
+            <p className="text-[#3b3b40] whitespace-pre-wrap">{student.notes}</p>
           </div>
         )}
       </div>

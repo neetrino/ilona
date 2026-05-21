@@ -9,6 +9,7 @@ import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import Image from 'next/image';
 import { StudentSidebar } from './StudentSidebar';
+import { TeacherSidebar } from './TeacherSidebar';
 
 interface NavItem {
   label: string;
@@ -201,6 +202,10 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
   if (userRole === 'STUDENT') {
     return <StudentSidebar collapsed={collapsed} onToggle={onToggle} />;
+  }
+
+  if (userRole === 'TEACHER') {
+    return <TeacherSidebar collapsed={collapsed} onToggle={onToggle} />;
   }
 
   const navItems = getNavItems(userRole, t);

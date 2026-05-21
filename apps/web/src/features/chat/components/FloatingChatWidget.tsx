@@ -28,12 +28,12 @@ export function FloatingChatWidget() {
     return null;
   }
 
-  const isStudent = user?.role === 'STUDENT';
-  const fabBg = isStudent ? 'bg-[#1010a3]' : 'bg-primary';
-  const fabShadow = isStudent
+  const isPortalShell = user?.role === 'STUDENT' || user?.role === 'TEACHER';
+  const fabBg = isPortalShell ? 'bg-[#1010a3]' : 'bg-primary';
+  const fabShadow = isPortalShell
     ? 'shadow-lg shadow-[#1010a3]/25 hover:shadow-xl hover:shadow-[#1010a3]/35'
     : 'shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40';
-  const fabFocus = isStudent
+  const fabFocus = isPortalShell
     ? 'focus:ring-[#1010a3] focus:ring-offset-2'
     : 'focus:ring-primary focus:ring-offset-2';
 
@@ -96,7 +96,7 @@ export function FloatingChatWidget() {
             className={cn(
               'absolute -top-1 -right-1',
               'min-w-[20px] h-5 px-1.5',
-              isStudent ? 'bg-[#ff2e23] text-white' : 'bg-red-500 text-white',
+              isPortalShell ? 'bg-[#ff2e23] text-white' : 'bg-red-500 text-white',
               'text-xs font-semibold',
               'rounded-full',
               'flex items-center justify-center',

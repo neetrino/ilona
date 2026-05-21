@@ -24,7 +24,7 @@ function StatusBadge({ status }: { status: LessonStatus }) {
     IN_PROGRESS: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'In Progress' },
     COMPLETED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
     CANCELLED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelled' },
-    MISSED: { bg: 'bg-slate-100', text: 'text-slate-700', label: 'Missed' },
+    MISSED: { bg: 'bg-[#f6f6f7]', text: 'text-[#3b3b40]', label: 'Missed' },
   };
 
   const style = styles[status] || styles.SCHEDULED;
@@ -68,7 +68,7 @@ function LessonCard({
     <div
       className={cn(
         'p-4 bg-white rounded-xl border transition-all',
-        isActive ? 'border-yellow-300 ring-2 ring-yellow-100' : 'border-slate-200 hover:border-slate-300'
+        isActive ? 'border-yellow-300 ring-2 ring-yellow-100' : 'border-[rgba(14,14,16,0.07)] hover:border-[rgba(14,14,16,0.07)]'
       )}
     >
       <div className="flex items-start justify-between mb-3">
@@ -77,23 +77,23 @@ function LessonCard({
             {time.split(':')[0]}
           </div>
           <div>
-            <p className="font-semibold text-slate-800">{time}</p>
-            <p className="text-sm text-slate-500">{lesson.duration} min</p>
+            <p className="font-semibold text-[#1010a3]">{time}</p>
+            <p className="text-sm text-[#8b8b90]">{lesson.duration} min</p>
           </div>
         </div>
         <StatusBadge status={lesson.status} />
       </div>
 
       <div className="mb-3">
-        <h3 className="font-semibold text-slate-800 mb-1">{lesson.group?.name || 'Unknown Group'}</h3>
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <span className="px-2 py-0.5 bg-slate-100 rounded text-slate-600">
+        <h3 className="font-semibold text-[#1010a3] mb-1">{lesson.group?.name || 'Unknown Group'}</h3>
+        <div className="flex items-center gap-2 text-sm text-[#8b8b90]">
+          <span className="px-2 py-0.5 bg-[#f6f6f7] rounded text-[#8b8b90]">
             {lesson.group?.level || 'N/A'}
           </span>
           <span>{lesson.group?._count?.students || 0} students</span>
         </div>
         {lesson.topic && (
-          <p className="text-sm text-slate-600 mt-2">
+          <p className="text-sm text-[#8b8b90] mt-2">
             <span className="font-medium">Topic:</span> {lesson.topic}
           </p>
         )}
@@ -101,8 +101,8 @@ function LessonCard({
 
       {/* Checklist for completed lessons */}
       {lesson.status === 'COMPLETED' && (
-        <div className="mb-3 p-3 bg-slate-50 rounded-lg">
-          <p className="text-xs font-medium text-slate-600 mb-2">Lesson Checklist</p>
+        <div className="mb-3 p-3 bg-[#fafafa] rounded-lg">
+          <p className="text-xs font-medium text-[#8b8b90] mb-2">Lesson Checklist</p>
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-sm">
               {lesson._count?.attendances ? (
@@ -110,7 +110,7 @@ function LessonCard({
               ) : (
                 <span className="text-red-500">✗</span>
               )}
-              <span className={lesson._count?.attendances ? 'text-slate-700' : 'text-red-600'}>
+              <span className={lesson._count?.attendances ? 'text-[#3b3b40]' : 'text-red-600'}>
                 Attendance marked
               </span>
             </div>
@@ -120,7 +120,7 @@ function LessonCard({
               ) : (
                 <span className="text-red-500">✗</span>
               )}
-              <span className={lesson.vocabularySent ? 'text-slate-700' : 'text-red-600'}>
+              <span className={lesson.vocabularySent ? 'text-[#3b3b40]' : 'text-red-600'}>
                 Vocabulary sent
               </span>
             </div>
@@ -283,14 +283,14 @@ export default function TeacherDailyPlanPage() {
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           {/* View Toggle */}
-          <div className="flex bg-slate-100 p-1 rounded-lg">
+          <div className="flex bg-[#f6f6f7] p-1 rounded-lg">
             <button
               onClick={() => updateViewModeInUrl('today')}
               className={cn(
                 'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                 viewMode === 'today'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-[#1010a3] shadow-sm'
+                  : 'text-[#8b8b90] hover:text-[#1010a3]'
               )}
             >
               Today
@@ -300,8 +300,8 @@ export default function TeacherDailyPlanPage() {
               className={cn(
                 'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                 viewMode === 'week'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-[#1010a3] shadow-sm'
+                  : 'text-[#8b8b90] hover:text-[#1010a3]'
               )}
             >
               This Week
@@ -312,15 +312,15 @@ export default function TeacherDailyPlanPage() {
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-primary" />
-              <span className="text-slate-600">{stats.scheduled} scheduled</span>
+              <span className="text-[#8b8b90]">{stats.scheduled} scheduled</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span className="text-slate-600">{stats.inProgress} in progress</span>
+              <span className="text-[#8b8b90]">{stats.inProgress} in progress</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-slate-600">{stats.completed} completed</span>
+              <span className="text-[#8b8b90]">{stats.completed} completed</span>
             </div>
             {stats.vocabularyPending > 0 && (
               <div className="flex items-center gap-1.5 px-2 py-1 bg-red-100 rounded-full">
@@ -332,7 +332,7 @@ export default function TeacherDailyPlanPage() {
         </div>
 
         {/* Date Display */}
-        <p className="text-slate-600">
+        <p className="text-[#8b8b90]">
           {viewMode === 'today'
             ? displayDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
             : formatWeekRange(currentDate)}
@@ -347,8 +347,8 @@ export default function TeacherDailyPlanPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-slate-800 mb-2">Failed to load lessons</h3>
-          <p className="text-sm text-slate-500 mb-4">
+          <h3 className="text-lg font-semibold text-[#1010a3] mb-2">Failed to load lessons</h3>
+          <p className="text-sm text-[#8b8b90] mb-4">
             {error instanceof Error ? error.message : 'An error occurred while loading your lessons.'}
           </p>
           <button
@@ -367,28 +367,28 @@ export default function TeacherDailyPlanPage() {
       ) : isLoading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 bg-white rounded-xl border border-slate-200 animate-pulse">
+            <div key={i} className="p-4 bg-white rounded-xl border border-[rgba(14,14,16,0.07)] animate-pulse">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-slate-200 rounded-lg" />
+                <div className="w-12 h-12 bg-[#f1f1f2] rounded-lg" />
                 <div className="flex-1">
-                  <div className="h-4 bg-slate-200 rounded w-20 mb-2" />
-                  <div className="h-3 bg-slate-200 rounded w-16" />
+                  <div className="h-4 bg-[#f1f1f2] rounded w-20 mb-2" />
+                  <div className="h-3 bg-[#f1f1f2] rounded w-16" />
                 </div>
               </div>
-              <div className="h-4 bg-slate-200 rounded w-40 mb-2" />
-              <div className="h-3 bg-slate-200 rounded w-24" />
+              <div className="h-4 bg-[#f1f1f2] rounded w-40 mb-2" />
+              <div className="h-3 bg-[#f1f1f2] rounded w-24" />
             </div>
           ))}
         </div>
       ) : sortedLessons.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
-          <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center py-12 bg-white rounded-xl border border-[rgba(14,14,16,0.07)]">
+          <div className="w-16 h-16 mx-auto mb-4 bg-[#f6f6f7] rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-slate-800 mb-1">No lessons {viewMode === 'today' ? 'today' : 'this week'}</h3>
-          <p className="text-sm text-slate-500">Enjoy your free time!</p>
+          <h3 className="text-lg font-semibold text-[#1010a3] mb-1">No lessons {viewMode === 'today' ? 'today' : 'this week'}</h3>
+          <p className="text-sm text-[#8b8b90]">Enjoy your free time!</p>
         </div>
       ) : viewMode === 'today' ? (
         <div className="space-y-4">
@@ -409,7 +409,7 @@ export default function TeacherDailyPlanPage() {
         <div className="space-y-6">
           {Object.entries(lessonsByDate).map(([date, dateLessons]) => (
             <div key={date}>
-              <h3 className="text-sm font-semibold text-slate-600 mb-3">{date}</h3>
+              <h3 className="text-sm font-semibold text-[#8b8b90] mb-3">{date}</h3>
               <div className="space-y-4">
                 {dateLessons.map((lesson) => (
                   <LessonCard

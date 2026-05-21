@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useStaffPlannedAbsences } from '../hooks/useAttendance';
+import { StudentCard, StudentInnerCard, StudentSectionHeader } from '@/features/student-ui';
 
 export function PlannedAbsencesStaffBlock() {
   const t = useTranslations('attendance');
@@ -18,31 +19,30 @@ export function PlannedAbsencesStaffBlock() {
   const { data = [], isLoading } = useStaffPlannedAbsences(dateFrom, dateTo, true);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <h3 className="font-semibold text-slate-800 mb-4">{t('plannedAbsencesStaffTitle')}</h3>
+    <StudentCard>
+      <StudentSectionHeader title={t('plannedAbsencesStaffTitle')} />
       {isLoading ? (
         <div className="space-y-2">
-          <div className="h-10 bg-slate-100 rounded animate-pulse" />
-          <div className="h-10 bg-slate-100 rounded animate-pulse" />
+          <div className="h-10 animate-pulse rounded-lg bg-[#f1f1f2]" />
+          <div className="h-10 animate-pulse rounded-lg bg-[#f1f1f2]" />
         </div>
       ) : data.length === 0 ? (
-        <p className="text-sm text-slate-500">{t('plannedAbsencesStaffEmpty')}</p>
+        <p className="text-sm text-[#8b8b90]">{t('plannedAbsencesStaffEmpty')}</p>
       ) : (
-        <ul className="space-y-3 max-h-64 overflow-y-auto">
+        <ul className="max-h-64 space-y-3 overflow-y-auto">
           {data.map((row) => (
-            <li
-              key={row.id}
-              className="text-sm border border-slate-100 rounded-lg p-3 bg-slate-50/80"
-            >
-              <div className="font-medium text-slate-900">{row.student.name}</div>
-              <div className="text-slate-600 text-xs mt-0.5">
-                {row.student.group?.name ?? '—'} · {row.date}
-              </div>
-              <p className="text-slate-700 mt-2 whitespace-pre-wrap">{row.comment}</p>
+            <li key={row.id}>
+              <StudentInnerCard className="text-sm">
+                <div className="font-medium text-[#1010a3]">{row.student.name}</div>
+                <div className="mt-0.5 text-xs text-[#8b8b90]">
+                  {row.student.group?.name ?? '—'} · {row.date}
+                </div>
+                <p className="mt-2 whitespace-pre-wrap text-[#3b3b40]">{row.comment}</p>
+              </StudentInnerCard>
             </li>
           ))}
         </ul>
       )}
-    </div>
+    </StudentCard>
   );
 }

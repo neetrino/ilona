@@ -54,13 +54,14 @@ export function StudentLogoutControl({
     tNav('user'),
   );
   const shortName = `${user?.firstName ?? ''} ${user?.lastName?.charAt(0) ?? ''}.`.trim();
+  const isTeacher = user?.role === 'TEACHER';
+  const roleLabel = isTeacher ? tDash('teacherRole') : tDash('studentRole');
   const displayLabel =
-    `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() ||
-    tDash('studentRole');
+    `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() || roleLabel;
   const roleLine =
     roleDetail != null && roleDetail !== ''
-      ? `${tDash('studentRole')} · ${roleDetail}`
-      : tDash('studentRole');
+      ? `${roleLabel} · ${roleDetail}`
+      : roleLabel;
 
   const handleLogout = () => {
     onAfterLogout?.();
@@ -68,13 +69,16 @@ export function StudentLogoutControl({
     router.replace('/');
   };
 
-  const profileHref = `/${locale}/student/profile`;
+  const profileHref =
+    user?.role === 'TEACHER'
+      ? `/${locale}/teacher/profile`
+      : `/${locale}/student/profile`;
 
   const pillSizes =
     'inline-flex h-11 shrink-0 items-center rounded-full bg-[#1010a3] text-white sm:h-12';
 
   if (variant === 'sidebar') {
-    const sidebarLabel = shortName || displayLabel || tDash('studentRole');
+    const sidebarLabel = shortName || displayLabel || roleLabel;
 
     return (
       <div

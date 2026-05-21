@@ -134,8 +134,8 @@ export default function TeacherProfilePage() {
       title={t('profile')} 
       subtitle={t('profileInformation')}
     >
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('profileInformation')}</h2>
+      <div className="bg-white rounded-2xl border border-[rgba(14,14,16,0.07)] p-6">
+        <h2 className="text-lg font-semibold text-[#1010a3] mb-6">{t('profileInformation')}</h2>
         
         {/* Success/Error Messages */}
         {uploadSuccess && (
@@ -150,7 +150,7 @@ export default function TeacherProfilePage() {
         )}
         
         {/* Avatar */}
-        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-200">
+        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-[rgba(14,14,16,0.07)]">
           <div className="relative">
             {avatarUrl ? (
               <Image
@@ -158,7 +158,7 @@ export default function TeacherProfilePage() {
                 alt={`${user?.firstName} ${user?.lastName}`}
                 width={80}
                 height={80}
-                className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
+                className="w-20 h-20 rounded-full object-cover border-2 border-[rgba(14,14,16,0.07)]"
                 unoptimized
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -175,8 +175,8 @@ export default function TeacherProfilePage() {
             </div>
           </div>
           <div>
-            <h3 className="font-medium text-slate-800">{user?.firstName} {user?.lastName}</h3>
-            <p className="text-sm text-slate-500">{user?.email}</p>
+            <h3 className="font-medium text-[#1010a3]">{user?.firstName} {user?.lastName}</h3>
+            <p className="text-sm text-[#8b8b90]">{user?.email}</p>
             <Badge variant="info" className="mt-2">{tRoles('teacher')}</Badge>
             <div className="flex gap-2 mt-2">
               <input
@@ -206,7 +206,7 @@ export default function TeacherProfilePage() {
                 </Button>
               )}
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-[#8b8b90] mt-1">
               {t('imageFormats') ?? 'JPG, PNG, WEBP, GIF up to 5MB'}
             </p>
           </div>
@@ -215,43 +215,43 @@ export default function TeacherProfilePage() {
         <form onSubmit={handleSaveProfile} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                 {t('firstName')}
               </label>
               <input
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                 {t('lastName')}
               </label>
               <input
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('emailAddress')}
             </label>
             <input
               type="email"
               value={user?.email || ''}
               disabled
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-500"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-lg bg-[#fafafa] text-[#8b8b90]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('phoneNumber')}
             </label>
             <input
@@ -259,12 +259,12 @@ export default function TeacherProfilePage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+380 XX XXX XXXX"
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('introVideoUrl')}
             </label>
             <input
@@ -272,15 +272,15 @@ export default function TeacherProfilePage() {
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
               placeholder={t('introVideoUrlPlaceholder')}
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-[#8b8b90]">
               {t('introVideoUrlHint')}
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('experience')}
             </label>
             <input
@@ -291,15 +291,15 @@ export default function TeacherProfilePage() {
               value={experienceYears}
               onChange={(e) => setExperienceYears(Math.max(0, Math.trunc(Number(e.target.value || 0))))}
               placeholder="5"
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-[#8b8b90]">
               {formatExperienceLabel(experienceYears)}
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('bio')}
             </label>
             <textarea
@@ -307,7 +307,7 @@ export default function TeacherProfilePage() {
               onChange={(e) => setBio(e.target.value)}
               placeholder={t('bioPlaceholder')}
               rows={3}
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
             />
           </div>
 

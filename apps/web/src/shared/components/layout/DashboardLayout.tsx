@@ -4,16 +4,18 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { StudentSidebar } from './StudentSidebar';
+import { TeacherSidebar } from './TeacherSidebar';
 import { Header } from './Header';
 import { StudentDashboardHeader } from '@/features/student-dashboard';
+import { TeacherDashboardHeader } from '@/features/teacher-dashboard';
 import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { cn } from '@/shared/lib/utils';
 import {
-  STUDENT_MAIN_PADDING,
-  STUDENT_SHELL_BG,
-  STUDENT_SIDEBAR_DESKTOP_CLASS,
-  STUDENT_MOBILE_NAV_WIDTH,
+  PORTAL_MAIN_PADDING,
+  PORTAL_MOBILE_NAV_WIDTH,
+  PORTAL_SHELL_BG,
+  PORTAL_SIDEBAR_DESKTOP_CLASS,
 } from './student-layout';
 
 interface DashboardLayoutProps {
@@ -23,8 +25,8 @@ interface DashboardLayoutProps {
   headerContent?: React.ReactNode;
   /** Optional compact promo banner rendered below the header, above page content */
   promoBanner?: React.ReactNode;
-  /** Student dashboard uses custom header and page background from Figma */
-  variant?: 'default' | 'student';
+  /** Student/teacher dashboards use the Figma portal shell */
+  variant?: 'default' | 'student' | 'teacher';
 }
 
 export function DashboardLayout({
@@ -40,8 +42,13 @@ export function DashboardLayout({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  const isStudent = variant === 'student' || user?.role === 'STUDENT';
-  const isDashboardHome = isStudent && !title;
+  const role = user?.role;
+  const isStudentPortal =
+    variant === 'student' || (variant === 'default' && role === 'STUDENT');
+  const isTeacherPortal =
+    variant === 'teacher' || (variant === 'default' && role === 'TEACHER');
+  const isPortalShell = isStudentPortal || isTeacherPortal;
+  const isDashboardHome = isPortalShell && !title;
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -56,23 +63,37 @@ export function DashboardLayout({
     };
   }, [mobileNavOpen]);
 
-  const mainPadding = isStudent ? STUDENT_MAIN_PADDING : 'p-8';
+  const mainPadding = isPortalShell ? PORTAL_MAIN_PADDING : 'p-8';
+
+  const portalSidebar = isStudentPortal ? (
+    <StudentSidebar
+      collapsed={sidebarCollapsed}
+      onToggle={() => setSidebarCollapsed((c) => !c)}
+      layout="dock"
+    />
+  ) : (
+    <TeacherSidebar
+      collapsed={sidebarCollapsed}
+      onToggle={() => setSidebarCollapsed((c) => !c)}
+      layout="dock"
+    />
+  );
+
+  const drawerSidebar = isStudentPortal ? (
+    <StudentSidebar layout="drawer" onNavigate={() => setMobileNavOpen(false)} />
+  ) : (
+    <TeacherSidebar layout="drawer" onNavigate={() => setMobileNavOpen(false)} />
+  );
 
   return (
     <div
       className={cn(
         'flex h-screen min-h-0 w-full max-w-[100vw] overflow-hidden',
-        isStudent ? STUDENT_SHELL_BG : 'bg-slate-50',
+        isPortalShell ? PORTAL_SHELL_BG : 'bg-slate-50',
       )}
     >
-      {isStudent ? (
-        <div className={STUDENT_SIDEBAR_DESKTOP_CLASS}>
-          <StudentSidebar
-            collapsed={sidebarCollapsed}
-            onToggle={() => setSidebarCollapsed((c) => !c)}
-            layout="dock"
-          />
-        </div>
+      {isPortalShell ? (
+        <div className={PORTAL_SIDEBAR_DESKTOP_CLASS}>{portalSidebar}</div>
       ) : (
         <Sidebar
           collapsed={sidebarCollapsed}
@@ -80,7 +101,7 @@ export function DashboardLayout({
         />
       )}
 
-      {isStudent && mobileNavOpen ? (
+      {isPortalShell && mobileNavOpen ? (
         <>
           <button
             type="button"
@@ -90,19 +111,22 @@ export function DashboardLayout({
           />
           <div
             className="fixed inset-y-0 left-0 z-[60] flex lg:hidden"
-            style={{ width: STUDENT_MOBILE_NAV_WIDTH }}
+            style={{ width: PORTAL_MOBILE_NAV_WIDTH }}
           >
-            <StudentSidebar
-              layout="drawer"
-              onNavigate={() => setMobileNavOpen(false)}
-            />
+            {drawerSidebar}
           </div>
         </>
       ) : null}
 
       <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        {isStudent ? (
+        {isStudentPortal ? (
           <StudentDashboardHeader
+            pageTitle={isDashboardHome ? undefined : title}
+            pageSubtitle={isDashboardHome ? undefined : subtitle}
+            onMenuClick={() => setMobileNavOpen(true)}
+          />
+        ) : isTeacherPortal ? (
+          <TeacherDashboardHeader
             pageTitle={isDashboardHome ? undefined : title}
             pageSubtitle={isDashboardHome ? undefined : subtitle}
             onMenuClick={() => setMobileNavOpen(true)}

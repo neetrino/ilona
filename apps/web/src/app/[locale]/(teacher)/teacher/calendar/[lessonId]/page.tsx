@@ -63,7 +63,7 @@ export default function TeacherLessonDetailPage({ params }: { params: Promise<{ 
       title={`Lesson: ${lesson.group?.name || 'Unknown'}`}
       subtitle={`${new Date(lesson.scheduledAt).toLocaleDateString()} at ${new Date(lesson.scheduledAt).toLocaleTimeString()}`}
     >
-      <div className="bg-white rounded-xl border border-slate-200 h-[calc(100vh-200px)] flex flex-col">
+      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] h-[calc(100vh-200px)] flex flex-col">
         <LessonDetailTabs lesson={lesson} activeTab={activeTab} onTabChange={handleTabChange}>
           {{
             absence: <AbsenceTab lessonId={resolvedParams.lessonId} />,

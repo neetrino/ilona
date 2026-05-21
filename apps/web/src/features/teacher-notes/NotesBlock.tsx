@@ -7,6 +7,12 @@ import {
   useMyTeacherNotes,
 } from './hooks';
 import type { TeacherNote } from './types';
+import {
+  StudentCard,
+  StudentInput,
+  StudentPrimaryButton,
+  StudentSectionHeader,
+} from '@/features/student-ui';
 
 const ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-2', 'rotate-2', 'rotate-0'];
 
@@ -24,16 +30,16 @@ interface NoteCardProps {
 function NoteCard({ note, index, onDelete, isDeleting }: NoteCardProps) {
   return (
     <div
-      className={`relative rounded-lg bg-amber-100 p-4 shadow-sm transform ${noteRotation(index)} hover:rotate-0 transition-transform`}
+      className={`relative rounded-lg bg-[#ffeb8c] p-4 shadow-sm transform ${noteRotation(index)} transition-transform hover:rotate-0`}
     >
-      <p className="whitespace-pre-wrap text-sm text-slate-800">{note.content}</p>
-      <div className="mt-3 flex items-center justify-between text-xs text-slate-600">
+      <p className="whitespace-pre-wrap text-sm text-[#3a2f00]">{note.content}</p>
+      <div className="mt-3 flex items-center justify-between text-xs text-[#8b4a00]">
         <span>{new Date(note.createdAt).toLocaleDateString()}</span>
         <button
           type="button"
           onClick={() => onDelete(note.id)}
           disabled={isDeleting}
-          className="rounded-md bg-amber-200 px-2 py-0.5 font-medium text-amber-900 hover:bg-amber-300 disabled:opacity-50"
+          className="rounded-md bg-[#1010a3] px-2 py-0.5 font-medium text-white hover:opacity-90 disabled:opacity-50"
         >
           Done
         </button>
@@ -56,13 +62,13 @@ export function NotesBlock() {
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6">
-      <header className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">Notes</h2>
-        <span className="text-xs text-slate-500">Click “Done” to remove a note</span>
-      </header>
-      <div className="mb-4 flex gap-2">
-        <input
+    <StudentCard>
+      <StudentSectionHeader
+        title="Notes"
+        subtitle='Click "Done" to remove a note'
+      />
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+        <StudentInput
           type="text"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -73,21 +79,23 @@ export function NotesBlock() {
             }
           }}
           placeholder="Jot down a quick reminder…"
-          className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-200"
+          className="flex-1"
         />
-        <button
+        <StudentPrimaryButton
           type="button"
           onClick={handleAdd}
           disabled={!draft.trim() || create.isPending}
-          className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 disabled:opacity-50"
+          className="shrink-0"
         >
           Add
-        </button>
+        </StudentPrimaryButton>
       </div>
       {isLoading ? (
-        <p className="text-sm text-slate-400">Loading…</p>
+        <p className="text-sm text-[#8b8b90]">Loading…</p>
       ) : notes.length === 0 ? (
-        <p className="text-sm text-slate-500">No notes yet. Add one above to keep it on your dashboard.</p>
+        <p className="text-sm text-[#8b8b90]">
+          No notes yet. Add one above to keep it on your dashboard.
+        </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {notes.map((note, idx) => (
@@ -101,6 +109,6 @@ export function NotesBlock() {
           ))}
         </div>
       )}
-    </section>
+    </StudentCard>
   );
 }

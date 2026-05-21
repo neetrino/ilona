@@ -110,3 +110,12 @@ const defaultTheme: ChatThemeTokens = {
 export function getChatTheme(variant: ChatUiVariant): ChatThemeTokens {
   return variant === 'student' ? studentTheme : defaultTheme;
 }
+
+/** Student and teacher portals share the same chat visual system. */
+export function isPortalChatRole(role?: string): boolean {
+  return role === 'STUDENT' || role === 'TEACHER';
+}
+
+export function getChatThemeForRole(role?: string): ChatThemeTokens {
+  return getChatTheme(isPortalChatRole(role) ? 'student' : 'default');
+}

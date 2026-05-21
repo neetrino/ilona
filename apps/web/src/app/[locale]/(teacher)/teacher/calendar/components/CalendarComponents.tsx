@@ -7,7 +7,7 @@ export function StatusDot({ status }: { status: string }) {
     IN_PROGRESS: 'bg-yellow-500',
     COMPLETED: 'bg-green-500',
     CANCELLED: 'bg-red-500',
-    MISSED: 'bg-slate-400',
+    MISSED: 'bg-[#8b8b90]',
   };
   
   return <span className={cn('w-2 h-2 rounded-full inline-block', colors[status] || colors.SCHEDULED)} />;
@@ -87,7 +87,7 @@ export function LessonBlock({
         )}
       </div>
       <p className="truncate font-medium">{lesson.group?.name}</p>
-      {lesson.topic && <p className="truncate text-slate-500">{lesson.topic}</p>}
+      {lesson.topic && <p className="truncate text-[#8b8b90]">{lesson.topic}</p>}
     </div>
   );
 }

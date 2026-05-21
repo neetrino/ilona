@@ -304,7 +304,7 @@ export default function TeacherRecordingsPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">
+          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
             From
           </label>
           <input
@@ -312,11 +312,11 @@ export default function TeacherRecordingsPage() {
             value={dateFrom}
             max={dateTo || undefined}
             onChange={(event) => setDateFrom(event.target.value)}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">
+          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
             To
           </label>
           <input
@@ -324,85 +324,85 @@ export default function TeacherRecordingsPage() {
             value={dateTo}
             min={dateFrom || undefined}
             onChange={(event) => setDateTo(event.target.value)}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
       </div>
 
       <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">
+          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
             Search
           </label>
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Student, group, or file name..."
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
         <button
           type="button"
           onClick={resetFilters}
-          className="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg border border-slate-200 transition-colors"
+          className="h-11 px-4 bg-[#f6f6f7] hover:bg-[#f1f1f2] text-[#3b3b40] text-sm font-medium rounded-lg border border-[rgba(14,14,16,0.07)] transition-colors"
         >
           Clear all
         </button>
       </div>
 
-      <div className="mb-3 text-sm text-slate-500">
+      <div className="mb-3 text-sm text-[#8b8b90]">
         {visibleRecordings.length} recording
         {visibleRecordings.length !== 1 ? 's' : ''} found
         {selectedRecordingIds.size > 0 && (
-          <span className="ml-3 text-slate-700 font-medium">
+          <span className="ml-3 text-[#3b3b40] font-medium">
             ({selectedRecordingIds.size} selected)
           </span>
         )}
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div className="bg-white border border-[rgba(14,14,16,0.07)] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
               <tr>
                 <th className="w-12 px-4 py-3 text-left">
                   <input
                     type="checkbox"
                     aria-label="Select all visible recordings"
-                    className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                    className="w-4 h-4 rounded border-[rgba(14,14,16,0.07)] cursor-pointer"
                     checked={allVisibleSelected}
                     onChange={toggleAll}
                     disabled={visibleRecordings.length === 0}
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   Group
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   Student
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   Date &amp; Time
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   Recording
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[rgba(14,14,16,0.07)]">
               {isLoading || isLoadingDirectory ? (
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={`skeleton-${idx}`}>
-                    <td className="px-4 py-4"><div className="h-4 w-4 bg-slate-100 animate-pulse rounded" /></td>
-                    <td className="px-4 py-4"><div className="h-4 w-24 bg-slate-100 animate-pulse rounded" /></td>
-                    <td className="px-4 py-4"><div className="h-4 w-32 bg-slate-100 animate-pulse rounded" /></td>
-                    <td className="px-4 py-4"><div className="h-4 w-28 bg-slate-100 animate-pulse rounded" /></td>
-                    <td className="px-4 py-4"><div className="h-8 w-48 bg-slate-100 animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-4 bg-[#f6f6f7] animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-24 bg-[#f6f6f7] animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-32 bg-[#f6f6f7] animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-28 bg-[#f6f6f7] animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-8 w-48 bg-[#f6f6f7] animate-pulse rounded" /></td>
                   </tr>
                 ))
               ) : visibleRecordings.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-500">
+                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-[#8b8b90]">
                     No recordings found for the selected filters.
                   </td>
                 </tr>
@@ -410,25 +410,25 @@ export default function TeacherRecordingsPage() {
                 visibleRecordings.map((recording) => {
                   const isActive = activeRecordingId === recording.id;
                   return (
-                    <tr key={recording.id} className="hover:bg-slate-50/60 transition-colors">
+                    <tr key={recording.id} className="hover:bg-[#fafafa]/60 transition-colors">
                       <td className="px-4 py-3 align-middle">
                         <input
                           type="checkbox"
                           aria-label={`Select recording ${recording.id}`}
-                          className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                          className="w-4 h-4 rounded border-[rgba(14,14,16,0.07)] cursor-pointer"
                           checked={selectedRecordingIds.has(recording.id)}
                           onChange={() => toggleOne(recording.id)}
                         />
                       </td>
-                      <td className="px-4 py-3 align-middle text-sm text-slate-700">
+                      <td className="px-4 py-3 align-middle text-sm text-[#3b3b40]">
                         {recording.group.name}
                       </td>
-                      <td className="px-4 py-3 align-middle text-sm font-medium text-slate-800">
+                      <td className="px-4 py-3 align-middle text-sm font-medium text-[#1010a3]">
                         {getStudentFullName(recording)}
                       </td>
                       <td className="px-4 py-3 align-middle whitespace-nowrap">
-                        <div className="text-sm text-slate-700">{formatDateTime(recording.createdAt)}</div>
-                        <div className="text-xs text-slate-400">{formatIsoDay(recording.createdAt)}</div>
+                        <div className="text-sm text-[#3b3b40]">{formatDateTime(recording.createdAt)}</div>
+                        <div className="text-xs text-[#8b8b90]">{formatIsoDay(recording.createdAt)}</div>
                       </td>
                       <td className="px-4 py-3 align-middle">
                         {isActive ? (

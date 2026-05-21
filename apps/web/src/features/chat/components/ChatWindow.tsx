@@ -30,7 +30,7 @@ import {
   getInitialsFromParts,
 } from '../utils/chat-utils';
 import Image from 'next/image';
-import { getChatTheme } from '../lib/chat-theme';
+import { getChatThemeForRole, isPortalChatRole } from '../lib/chat-theme';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -84,7 +84,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const isGroupChat = chat.type === 'GROUP';
   const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
   const isStudent = user?.role === 'STUDENT';
-  const ui = getChatTheme(isStudent ? 'student' : 'default');
+  const ui = getChatThemeForRole(user?.role);
 
   // Resolve teacher user id for "Send Voice to Teacher" (Student only): ONLY in direct 1:1 chat with assigned teacher
   const getOtherParticipantForVoice = () => {
@@ -604,7 +604,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
           )}
           {!isLoading && filteredMessages.length >= 2 && (
             <MessageNavigationControls
-              variant={isStudent ? 'student' : 'default'}
+              variant={isPortalChatRole(user?.role) ? 'student' : 'default'}
               onPrevious={goToPrevious}
               onNext={goToNext}
               canGoPrevious={canGoPrevious}
@@ -831,7 +831,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         {showVoiceRecorder ? (
           <div className="space-y-2">
             <VoiceRecorder
-              variant={isStudent ? 'student' : 'default'}
+              variant={isPortalChatRole(user?.role) ? 'student' : 'default'}
               onRecorded={handleVoiceRecorded}
               onCancel={() => setShowVoiceRecorder(false)}
               conversationId={chat.id}
@@ -844,7 +844,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
           <div className="space-y-2">
             <p className={cn('text-sm font-medium', ui.body)}>Recording for your teacher</p>
             <VoiceRecorder
-              variant={isStudent ? 'student' : 'default'}
+              variant={isPortalChatRole(user?.role) ? 'student' : 'default'}
               onRecorded={handleVoiceToTeacherRecorded}
               onCancel={() => setShowVoiceToTeacherRecorder(false)}
               conversationId={chat.id}

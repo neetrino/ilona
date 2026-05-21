@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { getProxiedFileUrl } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { getChatTheme } from '../lib/chat-theme';
+import { getChatThemeForRole } from '../lib/chat-theme';
 
 const PLAYBACK_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 type PlaybackSpeed = (typeof PLAYBACK_SPEED_OPTIONS)[number];
@@ -63,7 +63,7 @@ export function VoiceMessagePlayer({
   fileName: _fileName,
 }: VoiceMessagePlayerProps) {
   const { user } = useAuthStore();
-  const ui = getChatTheme(user?.role === 'STUDENT' ? 'student' : 'default');
+  const ui = getChatThemeForRole(user?.role);
   const userId = user?.id ?? null;
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

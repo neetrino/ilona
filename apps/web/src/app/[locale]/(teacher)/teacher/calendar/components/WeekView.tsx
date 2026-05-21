@@ -23,14 +23,14 @@ export function WeekView({
 }: WeekViewProps) {
   if (isLoading) {
     return (
-      <div className="p-8 text-center text-slate-500">
+      <div className="p-8 text-center text-[#8b8b90]">
         {t?.('loading') || 'Loading...'}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-7 divide-x divide-slate-200">
+    <div className="grid grid-cols-7 divide-x divide-[rgba(14,14,16,0.07)]">
       {weekDates.map((date, index) => {
         const dateKey = date.toISOString().split('T')[0];
         const dayLessons = lessonsByDate[dateKey] || [];
@@ -39,13 +39,13 @@ export function WeekView({
         return (
           <div key={index} className="min-h-[400px]">
             <div className={cn(
-              'p-3 border-b border-slate-200 text-center',
+              'p-3 border-b border-[rgba(14,14,16,0.07)] text-center',
               isToday && 'bg-blue-50'
             )}>
-              <p className="text-xs text-slate-500">{DAYS[index]}</p>
+              <p className="text-xs text-[#8b8b90]">{DAYS[index]}</p>
               <p className={cn(
                 'text-lg font-semibold',
-                isToday ? 'text-blue-600' : 'text-slate-800'
+                isToday ? 'text-blue-600' : 'text-[#1010a3]'
               )}>
                 {date.getDate()}
               </p>
@@ -62,7 +62,7 @@ export function WeekView({
                   />
                 ))}
               {dayLessons.length === 0 && (
-                <p className="text-xs text-slate-400 text-center py-4">
+                <p className="text-xs text-[#8b8b90] text-center py-4">
                   {t?.('noLessons') || 'No lessons'}
                 </p>
               )}

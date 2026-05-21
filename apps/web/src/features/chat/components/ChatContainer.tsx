@@ -13,7 +13,7 @@ import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { fetchChat } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
-import { getChatTheme } from '../lib/chat-theme';
+import { getChatThemeForRole } from '../lib/chat-theme';
 
 interface ChatContainerProps {
   emptyTitle?: string;
@@ -41,7 +41,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const isInitialMount = useRef(true);
   const isStudent = user?.role === 'STUDENT';
   const isTeacher = user?.role === 'TEACHER';
-  const ui = getChatTheme(isStudent ? 'student' : 'default');
+  const ui = getChatThemeForRole(user?.role);
 
   // Get returnTo from query params
   const returnToParam = searchParams.get('returnTo');
@@ -329,7 +329,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
 export function ChatContainer(props: ChatContainerProps) {
   const [mounted, setMounted] = useState(false);
   const { user } = useAuthStore();
-  const loadingUi = getChatTheme(user?.role === 'STUDENT' ? 'student' : 'default');
+  const loadingUi = getChatThemeForRole(user?.role);
 
   useEffect(() => {
     setMounted(true);
