@@ -10,8 +10,14 @@ import type { GlobalSearchResult, GlobalSearchResultType } from '../types/search
 import { getErrorMessage } from '@/shared/lib/api';
 import { isGlobalSearchPageNavKey } from '../nav-keys';
 import { normalizeSearchQuery } from '../utils/normalize-search-query';
+import { cn } from '@/shared/lib/utils';
 
 const DEBOUNCE_MS = 300;
+
+type GlobalSearchBarProps = {
+  className?: string;
+  inputClassName?: string;
+};
 
 const TYPE_KEYS: Record<GlobalSearchResultType, string> = {
   student: 'searchTypeStudent',
@@ -24,7 +30,7 @@ const TYPE_KEYS: Record<GlobalSearchResultType, string> = {
   page: 'searchTypePage',
 };
 
-export function GlobalSearchBar() {
+export function GlobalSearchBar({ className, inputClassName }: GlobalSearchBarProps = {}) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -91,7 +97,7 @@ export function GlobalSearchBar() {
   );
 
   return (
-    <div ref={containerRef} className="relative w-64">
+    <div ref={containerRef} className={cn('relative w-64 min-w-0', className)}>
       <svg
         className="pointer-events-none absolute left-3 top-1/2 z-[1] h-4 w-4 -translate-y-1/2 text-slate-400"
         fill="none"
@@ -112,7 +118,7 @@ export function GlobalSearchBar() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setOpen(true)}
-        className="border-slate-200 bg-slate-50 pl-10 focus:bg-white"
+        className={cn('w-full min-w-0 border-slate-200 bg-slate-50 pl-10 focus:bg-white', inputClassName)}
         autoComplete="off"
         aria-autocomplete="list"
         aria-expanded={open}

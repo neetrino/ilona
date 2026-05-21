@@ -5,6 +5,7 @@ export { Input } from './input';
 export { PasswordInput } from './password-input';
 export { Label } from './label';
 export { StatCard } from './stat-card';
+export { PublicAssetImage } from './public-asset-image';
 export { DataTable } from './data-table';
 export { Badge } from './badge';
 export { Checkbox } from './checkbox';

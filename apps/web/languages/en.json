@@ -147,6 +147,7 @@
     "absence": "Absence",
     "reports": "Reports",
     "ilonaEducational": "Ilona Educational",
+    "brandName": "Ilona English Centre",
     "center": "Center",
     "user": "User"
   },
@@ -155,6 +156,10 @@
     "welcome": "Welcome, {name}!",
     "overview": "Overview of your organization's performance and key metrics.",
     "myLearning": "My Learning",
+    "titleMy": "My",
+    "titleLearning": "Learning",
+    "greeting": "Hello, {name} 👋",
+    "studentRole": "Student",
     "welcomeStudent": "Hello {name}, you are our next success story.",
     "attendanceRate": "Attendance Rate",
     "streak": "Streak",
@@ -230,6 +235,59 @@
     "upcomingLessonsSubtitle": "Your next class, at a glance.",
     "noUpcomingLessons": "No upcoming lessons scheduled.",
     "nextLessonTeacherLabel": "Teacher",
+    "hero": {
+      "weekLabel": "Your {day} · Week {week}",
+      "titleAccent": "every single day.",
+      "streakDescription": "You're on a {count}-day streak — keep learning toward your {level} goals.",
+      "continueLearning": "Continue Learning",
+      "resumeLesson": "Resume \"{topic}\""
+    },
+    "stats": {
+      "attendanceLabel": "Attendance · last 30 days",
+      "lessonsLabel": "Total lessons completed",
+      "paymentLabel": "Next payment due",
+      "sessionsAttended": "{present} of {total} scheduled sessions attended",
+      "lessonsRemaining": "{remaining} lessons remaining",
+      "paymentCaption": "Monthly subscription",
+      "daysLeft": "in {count}d"
+    },
+    "lessonDetails": "Details",
+    "filters": {
+      "today": "Today",
+      "week": "Week",
+      "month": "Month"
+    },
+    "upcoming": {
+      "scheduledCount": "{count} sessions scheduled this week"
+    },
+    "progress": {
+      "track": "{level} track",
+      "trackDefault": "Your learning track",
+      "studyProgress": "Study progress",
+      "learningActivity": "Learning activity",
+      "last7Weeks": "last 7 weeks"
+    },
+    "payment": {
+      "pendingLabel": "Payment Pending",
+      "planLabel": "Month {month}/{year} plan",
+      "due": "Due",
+      "payNow": "Pay Now",
+      "count": "{count} payments"
+    },
+    "notes": {
+      "title": "My Notes",
+      "pinned": "Pinned to your {level} track",
+      "pinnedDefault": "Pinned to your learning track",
+      "placeholder": "Capture a thought from today's lesson…",
+      "placeholderLegacy": "Jot down a quick reminder...",
+      "save": "Save",
+      "add": "Add",
+      "saving": "Saving...",
+      "loading": "Loading notes...",
+      "empty": "No notes yet. Capture a thought above.",
+      "emptyLegacy": "No notes yet. Add one above to keep it on your dashboard.",
+      "hint": "Click \"Done\" to remove a note"
+    },
     "banner": {
       "adminTitle": "Learn effectively with us",
       "adminSubtitle": "Stay on top of students, teachers, and schedules from one place.",

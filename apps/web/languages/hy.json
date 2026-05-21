@@ -147,6 +147,7 @@
     "absence": "Բացակայություն",
     "reports": "Հաշվետվություններ",
     "ilonaEducational": "Ilona Educational",
+    "brandName": "Ilona English Centre",
     "center": "Կենտրոն",
     "user": "Օգտատեր"
   },
@@ -155,6 +156,10 @@
     "welcome": "Բարի վերադարձ, {name}",
     "overview": "Ձեր կազմակերպության արդյունավետության և հիմնական ցուցանիշների ակնարկ:",
     "myLearning": "Իմ ուսուցում",
+    "titleMy": "Իմ",
+    "titleLearning": "ուսուցում",
+    "greeting": "Ողջույն, {name} 👋",
+    "studentRole": "Աշակերտ",
     "welcomeStudent": "Ողջույն, {name}, դու մեր հաջորդ հաջողության պատմությունն ես։",
     "attendanceRate": "Հաճախելիության տոկոս",
     "streak": "Շարք",
@@ -230,6 +235,59 @@
     "upcomingLessonsSubtitle": "Ձեր հաջորդ դասը՝ մեկ հայացքով։",
     "noUpcomingLessons": "Առաջիկա դասեր պլանավորված չեն։",
     "nextLessonTeacherLabel": "Ուսուցիչ",
+    "hero": {
+      "weekLabel": "Ձեր {day} · {week} շաբաթ",
+      "titleAccent": "ամեն օր։",
+      "streakDescription": "Դուք {count} օրվա շարքում եք — շարունակեք ուսումնադասությունը դեպի {level} նպատակներ։",
+      "continueLearning": "Շարունակել ուսումը",
+      "resumeLesson": "Շարունակել «{topic}»"
+    },
+    "stats": {
+      "attendanceLabel": "Հաճախելիություն · վերջին 30 օր",
+      "lessonsLabel": "Ավարտված դասեր",
+      "paymentLabel": "Հաջորդ վճարում",
+      "sessionsAttended": "{present} / {total} նախատեսված դաս",
+      "lessonsRemaining": "{remaining} դաս մնաց",
+      "paymentCaption": "Ամսական բաժանորդագրություն",
+      "daysLeft": "{count} օրում"
+    },
+    "lessonDetails": "Մանրամասներ",
+    "filters": {
+      "today": "Այսօր",
+      "week": "Շաբաթ",
+      "month": "Ամիս"
+    },
+    "upcoming": {
+      "scheduledCount": "Այս շաբաթ {count} դաս է պլանավորված"
+    },
+    "progress": {
+      "track": "{level} մակարդակ",
+      "trackDefault": "Ձեր ուսումնական ուղին",
+      "studyProgress": "Ուսումնական առաջընթաց",
+      "learningActivity": "Ուսումնական ակտիվություն",
+      "last7Weeks": "վերջին 7 շաբաթ"
+    },
+    "payment": {
+      "pendingLabel": "Սպասվող վճարում",
+      "planLabel": "{month}/{year} պլան",
+      "due": "Վճարման ժամկետ",
+      "payNow": "Վճարել հիմա",
+      "count": "{count} վճարում"
+    },
+    "notes": {
+      "title": "Իմ նոթերը",
+      "pinned": "Կապված է ձեր {level} ուղու հետ",
+      "pinnedDefault": "Կապված է ձեր ուսումնական ուղու հետ",
+      "placeholder": "Գրեք մտքը այսօրվա դասից…",
+      "placeholderLegacy": "Արագ հիշեցում…",
+      "save": "Պահել",
+      "add": "Ավելացնել",
+      "saving": "Պահվում է…",
+      "loading": "Բեռնվում է…",
+      "empty": "Դեռ նոթեր չկան։",
+      "emptyLegacy": "Դեռ նոթեր չկան։ Ավելացրեք վերևից։",
+      "hint": "Սեղմեք «Արված»՝ հեռացնելու համար"
+    },
     "banner": {
       "adminTitle": "Սովորեք արդյունավետ մեզ հետ",
       "adminSubtitle": "Վերահսկեք աշակերտներին, ուսուցիչներին և ժամանակացույցը մեկ վահանակից։",

@@ -1,4 +1,11 @@
 export { Sidebar } from './Sidebar';
+export { StudentSidebar } from './StudentSidebar';
+export { StudentSidebarNavIcon } from './StudentSidebarNavIcon';
+export { StudentScheduleNavIcon } from './StudentScheduleNavIcon';
+export {
+  STUDENT_SIDEBAR_ICON_SLOT_CLASS,
+  STUDENT_SIDEBAR_ICON_SLOT_PX,
+} from './studentSidebarIconStyles';
 export { Header } from './Header';
 export { DashboardLayout } from './DashboardLayout';
 export { DashboardPromoBanner } from './DashboardPromoBanner';

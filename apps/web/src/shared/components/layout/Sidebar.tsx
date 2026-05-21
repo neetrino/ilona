@@ -8,6 +8,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import Image from 'next/image';
+import { StudentSidebar } from './StudentSidebar';
 
 interface NavItem {
   label: string;
@@ -197,6 +198,10 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const t = useTranslations('nav');
   const userRole = user?.role || 'STUDENT';
   const { data: logoData } = useLogo();
+
+  if (userRole === 'STUDENT') {
+    return <StudentSidebar collapsed={collapsed} onToggle={onToggle} />;
+  }
 
   const navItems = getNavItems(userRole, t);
   const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.png';
