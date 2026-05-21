@@ -38,10 +38,10 @@ export function StudentDashboardHeader({
               <button
                 type="button"
                 onClick={onMenuClick}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#1010a3] hover:bg-[#f6f6f7] lg:hidden"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#1010a3] hover:bg-[#f6f6f7] lg:hidden"
                 aria-label="Open navigation menu"
               >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
