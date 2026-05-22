@@ -32,6 +32,7 @@ type SystemSettingsWithOptionalPenalties = SystemSettings & {
   penaltyVoiceAmd?: Prisma.Decimal | number;
   penaltyTextAmd?: Prisma.Decimal | number;
   penaltyDailyPlanAmd?: Prisma.Decimal | number;
+  dashboardBannerUrl?: string | null;
 };
 
 @Injectable()
@@ -255,6 +256,59 @@ export class SettingsService {
     } catch (error) {
       this.logger.error(
         `Failed to update logo key: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get dashboard banner key (stored in dashboardBannerUrl column).
+   * Handles backward compatibility with old URL format.
+   */
+  async getDashboardBannerKey(): Promise<{ dashboardBannerKey: string | null }> {
+    try {
+      const settings = await this.getSystemSettings();
+      const storedValue = (settings as SystemSettingsWithOptionalPenalties).dashboardBannerUrl;
+      const dashboardBannerKey = this.extractKeyFromUrl(storedValue ?? null);
+      return { dashboardBannerKey };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get dashboard banner key: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      this.logger.warn('Returning null dashboard banner key due to error');
+      return { dashboardBannerKey: null };
+    }
+  }
+
+  /**
+   * Update dashboard banner key (stored in dashboardBannerUrl column).
+   * Stores the storage key, not a URL.
+   */
+  async updateDashboardBannerKey(dashboardBannerKey: string | null): Promise<void> {
+    try {
+      const settings = await this.prisma.systemSettings.findFirst();
+
+      if (!settings) {
+        await this.prisma.systemSettings.create({
+          data: {
+            dashboardBannerUrl: dashboardBannerKey,
+          } as unknown as SystemSettingsCreateData,
+        });
+      } else {
+        await this.prisma.systemSettings.update({
+          where: { id: settings.id },
+          data: {
+            dashboardBannerUrl: dashboardBannerKey,
+          } as unknown as SystemSettingsUpdateData,
+        });
+      }
+
+      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
+    } catch (error) {
+      this.logger.error(
+        `Failed to update dashboard banner key: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error.stack : undefined,
       );
       throw error;

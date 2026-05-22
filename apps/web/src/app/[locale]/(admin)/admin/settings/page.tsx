@@ -10,6 +10,7 @@ import { NotificationsTab } from './components/NotificationsTab';
 import { SystemTab } from './components/SystemTab';
 import { PenaltyTab } from './components/PenaltyTab';
 import { ManagerTab } from '@/app/[locale]/(admin)/admin/settings/components/ManagerTab';
+import { DashboardBannerTab } from './components/DashboardBannerTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChangePassword, useUpdateProfile } from '@/features/settings';
 import { Button } from '@/shared/components/ui';
@@ -199,6 +200,10 @@ export default function SettingsPage() {
 
           {activeTab === 'manager' && (
             <ManagerTab />
+          )}
+
+          {activeTab === 'dashboard-banner' && (
+            <DashboardBannerTab />
           )}
         </div>
       </div>

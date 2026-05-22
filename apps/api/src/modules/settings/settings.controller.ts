@@ -36,6 +36,12 @@ const MAX_LOGO_SIZE = 5 * 1024 * 1024; // 5MB
 // Note: SVG can be image/svg+xml or image/svg
 const LOGO_TYPES = /^image\/(png|jpeg|jpg|webp|svg(\+xml)?)$/i;
 
+// Max file size: 5MB for dashboard banner
+const MAX_DASHBOARD_BANNER_SIZE = 5 * 1024 * 1024; // 5MB
+
+// Allowed MIME types for dashboard banner
+const DASHBOARD_BANNER_TYPES = /^image\/(png|jpeg|jpg|webp|svg(\+xml)?)$/i;
+
 @ApiTags('settings')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -259,6 +265,217 @@ export class SettingsController {
         `Failed to delete logo: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw new InternalServerErrorException('Failed to delete logo. Please try again later.');
+    }
+  }
+
+  /**
+   * Get dashboard banner URL (public - accessible to all)
+   */
+  @Get('dashboard-banner')
+  @Public()
+  @ApiOperation({ summary: 'Get dashboard banner URL (public - all roles)' })
+  async getDashboardBanner() {
+    try {
+      const { dashboardBannerKey } = await this.settingsService.getDashboardBannerKey();
+      const cacheBuster = dashboardBannerKey
+        ? encodeURIComponent(dashboardBannerKey.split('/').pop() || dashboardBannerKey)
+        : '';
+
+      return {
+        bannerUrl: dashboardBannerKey
+          ? `/api/settings/dashboard-banner/image?v=${cacheBuster}`
+          : null,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get dashboard banner: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Failed to retrieve dashboard banner. Please try again later.');
+    }
+  }
+
+  /**
+   * Serve dashboard banner image (public - accessible to all)
+   */
+  @Get('dashboard-banner/image')
+  @Public()
+  @ApiOperation({ summary: 'Serve dashboard banner image (public - all roles)' })
+  async getDashboardBannerImage(@Res() res: Response) {
+    try {
+      const { dashboardBannerKey } = await this.settingsService.getDashboardBannerKey();
+
+      if (!dashboardBannerKey) {
+        throw new NotFoundException('Dashboard banner not found');
+      }
+
+      const fileBuffer = await this.storageService.getFile(dashboardBannerKey);
+      if (!fileBuffer) {
+        throw new NotFoundException('Dashboard banner file not found in storage');
+      }
+
+      const ext = path.extname(dashboardBannerKey).toLowerCase();
+      const contentTypeMap: Record<string, string> = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+      };
+      const contentType = contentTypeMap[ext] || 'image/png';
+
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=86400, must-revalidate');
+      res.send(fileBuffer);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      this.logger.error(
+        `Failed to serve dashboard banner image: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Failed to serve dashboard banner. Please try again later.');
+    }
+  }
+
+  /**
+   * Upload dashboard banner image (Admin only)
+   */
+  @Post('dashboard-banner')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Upload dashboard banner image (Admin only)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadDashboardBanner(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: MAX_DASHBOARD_BANNER_SIZE }),
+          new FileTypeValidator({ fileType: DASHBOARD_BANNER_TYPES }),
+        ],
+        exceptionFactory: (error) => {
+          if (error.includes('File is too large')) {
+            throw new PayloadTooLargeException(
+              `File size exceeds the maximum allowed size of ${MAX_DASHBOARD_BANNER_SIZE / 1024 / 1024}MB`,
+            );
+          }
+          if (error.includes('File type')) {
+            throw new UnsupportedMediaTypeException(
+              'Invalid file type. Only PNG, JPG, WEBP, and SVG images are allowed.',
+            );
+          }
+          throw new BadRequestException(`File validation failed: ${error}`);
+        },
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
+
+    if (!file.buffer || file.buffer.length === 0) {
+      throw new BadRequestException('File is empty');
+    }
+
+    try {
+      const { dashboardBannerKey: currentBannerKey } =
+        await this.settingsService.getDashboardBannerKey();
+
+      const result = await this.storageService.upload(
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+        'settings',
+      );
+
+      await this.settingsService.updateDashboardBannerKey(result.key);
+
+      if (currentBannerKey && currentBannerKey !== result.key) {
+        try {
+          await this.storageService.delete(currentBannerKey);
+        } catch (deleteError) {
+          this.logger.warn(
+            `Failed to delete previous dashboard banner file: ${deleteError instanceof Error ? deleteError.message : String(deleteError)}`,
+          );
+        }
+      }
+
+      const cacheBuster = encodeURIComponent(result.key.split('/').pop() || result.key);
+      return {
+        success: true,
+        data: {
+          bannerUrl: `/api/settings/dashboard-banner/image?v=${cacheBuster}`,
+          key: result.key,
+          mimeType: result.mimeType,
+          fileSize: result.fileSize,
+        },
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to upload dashboard banner: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+
+      if (
+        error instanceof BadRequestException ||
+        error instanceof PayloadTooLargeException ||
+        error instanceof UnsupportedMediaTypeException
+      ) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Failed to upload dashboard banner. Please try again later.',
+      );
+    }
+  }
+
+  /**
+   * Delete dashboard banner image (Admin only)
+   */
+  @Post('dashboard-banner/delete')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Delete dashboard banner image (Admin only)' })
+  async deleteDashboardBanner() {
+    try {
+      const { dashboardBannerKey } = await this.settingsService.getDashboardBannerKey();
+      if (dashboardBannerKey) {
+        try {
+          await this.storageService.delete(dashboardBannerKey);
+        } catch (deleteError) {
+          this.logger.warn(
+            `Failed to delete dashboard banner file from storage: ${deleteError instanceof Error ? deleteError.message : String(deleteError)}`,
+          );
+        }
+      }
+
+      await this.settingsService.updateDashboardBannerKey(null);
+
+      return {
+        success: true,
+        message: 'Dashboard banner deleted successfully',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete dashboard banner: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new InternalServerErrorException(
+        'Failed to delete dashboard banner. Please try again later.',
+      );
     }
   }
 

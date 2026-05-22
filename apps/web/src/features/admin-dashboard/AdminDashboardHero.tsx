@@ -6,6 +6,8 @@ import { PublicAssetImage } from '@/shared/components/ui';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import { useDashboardBanner } from '@/features/settings';
+import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 
 type AdminDashboardHeroProps = {
   isManager: boolean;
@@ -19,6 +21,12 @@ export function AdminDashboardHero({
   const locale = useLocale();
   const { user } = useAuthStore();
   const basePath = getAdminPortalBasePath(user?.role);
+  const { data: dashboardBannerData } = useDashboardBanner();
+  const customBannerUrl = getFullApiUrl(dashboardBannerData?.bannerUrl);
+  const bannerImageSrc = customBannerUrl ?? STUDENT_DASHBOARD_ASSETS.heroIllustration;
+  const bannerImageClass = customBannerUrl
+    ? 'h-full w-full object-contain'
+    : 'h-auto w-full -translate-x-2 translate-y-2 scale-[1.08] rotate-90 object-contain sm:-translate-x-6 sm:translate-y-4 sm:scale-[1.2] lg:translate-x-0 lg:translate-y-8 lg:scale-[1.6]';
 
   return (
     <section className="relative min-h-[20rem] overflow-hidden rounded-[1.75rem] bg-[#1010a3] text-white sm:min-h-[22rem] lg:min-h-[24rem]">
@@ -61,11 +69,11 @@ export function AdminDashboardHero({
 
         <div className="relative mx-auto w-full max-w-[16rem] shrink-0 sm:max-w-[18rem] lg:mx-0 lg:ml-auto lg:max-w-[22rem] lg:pl-10">
           <PublicAssetImage
-            src={STUDENT_DASHBOARD_ASSETS.heroIllustration}
+            src={bannerImageSrc}
             alt=""
             width={460}
             height={445}
-            className="h-auto w-full -translate-x-2 translate-y-2 scale-[1.08] rotate-90 object-contain sm:-translate-x-6 sm:translate-y-4 sm:scale-[1.2] lg:translate-x-0 lg:translate-y-8 lg:scale-[1.6]"
+            className={bannerImageClass}
             priority
           />
         </div>

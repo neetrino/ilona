@@ -501,6 +501,7 @@ model SystemSettings {
   paymentDueDays           Int      @default(5)
   lessonReminderHours      Int      @default(24)
   logoUrl                  String?
+  dashboardBannerUrl       String?
   absencePercent           Int      @default(25)
   feedbacksPercent         Int      @default(25)
   voicePercent             Int      @default(25)

@@ -2,7 +2,13 @@
 
 import { useTranslations } from 'next-intl';
 
-type SettingsTab = 'security' | 'notifications' | 'system' | 'penalty' | 'manager';
+type SettingsTab =
+  | 'security'
+  | 'notifications'
+  | 'system'
+  | 'penalty'
+  | 'manager'
+  | 'dashboard-banner';
 
 interface SettingsSidebarProps {
   activeTab: SettingsTab;
@@ -57,6 +63,15 @@ export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: Setting
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5V4H2v16h5m10 0v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4m10 0H7M9 8h6m-6 4h6" />
+        </svg>
+      ),
+    },
+    {
+      id: 'dashboard-banner',
+      label: t('dashboardBannerTab'),
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a2 2 0 012-2h12a2 2 0 012 2v14l-4-3-4 3-4-3-4 3V5z" />
         </svg>
       ),
     },
