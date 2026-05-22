@@ -139,11 +139,11 @@ export function CrmStatusSelector({
         }}
         disabled={disabled}
         className={cn(
-          'w-full min-h-11 inline-flex items-center justify-between gap-2 py-2 text-sm font-medium text-[#2f2f35]',
+          'w-full min-h-11 inline-flex items-center justify-between gap-2 !border-2 !border-slate-300 !bg-slate-50/40 py-2 text-sm font-semibold text-slate-800 shadow-sm',
           DROPDOWN_TRIGGER_BASE_CLASS,
           DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
           DROPDOWN_TRIGGER_DISABLED_CLASS,
-          open && 'border-[#1010a3]/35 shadow-[0_8px_20px_rgba(16,16,163,0.12)]',
+          open && '!border-[#1010a3]/55 !bg-white shadow-[0_10px_24px_rgba(16,16,163,0.16)]',
           disabled && 'opacity-60'
         )}
         title={triggerTitle}
