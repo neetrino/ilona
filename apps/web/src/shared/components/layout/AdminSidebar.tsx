@@ -149,7 +149,7 @@ function getAdminNavEntries(role: string): NavEntry[] {
     { labelKey: 'finance', href: '/admin/finance', icon: { type: 'sidebar', icon: 'iconPayments' } },
     ...tail.slice(0, 2),
     { labelKey: 'analytics', href: '/admin/analytics', icon: { type: 'sidebar', icon: 'iconAnalytics' } },
-    tail[2]!,
+    tail[2],
   ];
 }
 
@@ -217,7 +217,7 @@ export function AdminSidebar({
               fill
               className="object-cover"
               onError={(e) => {
-                const target = e.target as HTMLImageElement;
+                const target = e.currentTarget;
                 if (target.src.includes('student-sidebar')) return;
                 target.src = STUDENT_SIDEBAR_ASSETS.brandLogo;
               }}

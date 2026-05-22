@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { formatCurrency } from '@/shared/lib/utils';
 import { STUDENT_DASHBOARD_ASSETS } from './assets';

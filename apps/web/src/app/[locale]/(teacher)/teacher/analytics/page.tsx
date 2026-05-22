@@ -12,7 +12,7 @@ import {
   toYmd,
   type TimeFilterMode,
 } from '@/shared/lib/analytics-time-range';
-import { cn, formatCurrency } from '@/shared/lib/utils';
+import { formatCurrency } from '@/shared/lib/utils';
 import {
   StudentCard,
   StudentPageStack,

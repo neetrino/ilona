@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { StudentLogoutControl } from './StudentLogoutControl';
 import { PortalSidebarCollapseToggle } from './PortalSidebarCollapseToggle';
@@ -109,10 +108,7 @@ export function TeacherSidebar({
     { labelKey: 'settings', href: '/teacher/settings', icon: 'iconSettings' },
   ];
 
-  const navItems = useMemo(
-    () => [...primaryNav, ...secondaryNav],
-    [],
-  );
+  const navItems = [...primaryNav, ...secondaryNav];
 
   const isActive = (href: string) => {
     const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}\//, '/');

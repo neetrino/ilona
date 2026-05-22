@@ -1,6 +1,5 @@
 'use client';
 
-import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';

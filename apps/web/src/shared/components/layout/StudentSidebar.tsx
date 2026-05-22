@@ -143,10 +143,7 @@ export function StudentSidebar({
     { labelKey: 'settings', href: '/student/settings', icon: 'iconSettings' },
   ];
 
-  const navItems = useMemo(
-    () => [...primaryNav, ...secondaryNav],
-    [scheduleBadge],
-  );
+  const navItems = [...primaryNav, ...secondaryNav];
 
   const isActive = (href: string) => {
     const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}\//, '/');

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -155,10 +155,10 @@ export function GroupsTab({
     handleBulkDeleteGroupsConfirm,
   } = useGroupsManagement(viewMode, searchQuery, page, selectedCenterId, boardTabCenterId);
 
-  const openGroupStatusDialog = (groupId: string, wasActive: boolean) => {
+  const openGroupStatusDialog = useCallback((groupId: string, wasActive: boolean) => {
     setStatusDialogError(null);
     setStatusDialog({ groupId, wasActive });
-  };
+  }, []);
 
   const closeGroupStatusDialog = (open: boolean) => {
     if (!open) {
@@ -248,7 +248,7 @@ export function GroupsTab({
   }, [searchParams, editGroupId, setEditGroupId]);
 
   // Update URL when editGroupId changes (but not from URL sync)
-  const handleEditGroupIdChange = (id: string | null) => {
+  const handleEditGroupIdChange = useCallback((id: string | null) => {
     if (id === null) {
       // We're closing - set ref to prevent effect from reopening
       isClosingRef.current = true;
@@ -264,7 +264,7 @@ export function GroupsTab({
       setEditGroupId(id);
       updateUrl({ editGroup: id });
     }
-  };
+  }, [setEditGroupId, updateUrl]);
 
   // Sync createGroupOpen from URL so create modal survives refresh
   useEffect(() => {
@@ -303,9 +303,9 @@ export function GroupsTab({
   const studentsModalGroupName =
     groups.find((g) => g.id === studentsGroupId)?.name ?? studentsGroupData?.name ?? t('groupFallback');
 
-  const openStudentsModal = (groupId: string) => {
+  const openStudentsModal = useCallback((groupId: string) => {
     updateUrl({ studentsGroup: groupId, studentId: null });
-  };
+  }, [updateUrl]);
   const openStudentDetails = (studentId: string) => {
     updateUrl({ studentId });
   };

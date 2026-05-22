@@ -1,6 +1,5 @@
 'use client';
 
-import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useEffect, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
