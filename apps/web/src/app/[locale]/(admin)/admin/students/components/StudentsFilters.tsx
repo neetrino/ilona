@@ -1,10 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { List, LayoutGrid } from 'lucide-react';
-import { Button, FilterDropdown } from '@/shared/components/ui';
+import { Button, FilterDropdown, ListBoardViewToggle } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
-import { cn } from '@/shared/lib/utils';
 
 interface StudentsFiltersProps {
   searchQuery: string;
@@ -99,37 +97,13 @@ export function StudentsFilters({
             {t('deleteAll', { count: selectedStudentIds.size })}
           </Button>
         )}
-        {/* View Mode Toggle */}
-        <div className="inline-flex w-full shrink-0 rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm sm:w-auto">
-          <button
-            onClick={() => onViewModeChange('list')}
-            className={cn(
-              'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-              viewMode === 'list'
-                ? 'bg-[#1010a3] text-white shadow-md'
-                : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
-            )}
-            aria-pressed={viewMode === 'list'}
-          >
-            <List className="w-4 h-4" />
-            {t('listView')}
-          </button>
-          <button
-            onClick={() => onViewModeChange('board')}
-            className={cn(
-              'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-              viewMode === 'board'
-                ? 'bg-[#1010a3] text-white shadow-md'
-                : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
-            )}
-            aria-pressed={viewMode === 'board'}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            {t('boardView')}
-          </button>
-        </div>
+        <ListBoardViewToggle
+          value={viewMode}
+          onChange={onViewModeChange}
+          listLabel={t('listView')}
+          boardLabel={t('boardView')}
+          className="w-full shrink-0 sm:w-auto"
+        />
         <Button 
           className="w-full shrink-0 rounded-xl bg-[#1010a3] px-6 py-3 font-medium text-white hover:bg-[#1010a3]/90 sm:w-auto"
           onClick={onAddStudent}

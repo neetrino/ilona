@@ -4,8 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { List, LayoutGrid } from 'lucide-react';
-import { StatCard, DataTable, Badge, Button, ActionButtons } from '@/shared/components/ui';
+import { StatCard, DataTable, Badge, Button, ActionButtons, ListBoardViewToggle } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { getContrastColor, lightenColor } from '@/shared/lib/utils';
 import {
@@ -587,47 +586,26 @@ export function GroupsTab({
             {t('deleteAll', { count: selectedGroupIds.size })}
           </Button>
         )}
-        <div className="inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
-          <button
-            onClick={() => {
+        <ListBoardViewToggle
+          value={viewMode}
+          onChange={(mode) => {
+            if (mode === 'list') {
               setViewMode('list');
               setPage(0);
               setSelectedGroupIds(new Set());
               setBoardTabCenterId(null);
               updateUrl({ view: 'list', branch: null });
-            }}
-            className={cn(
-              'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-              viewMode === 'list'
-                ? 'bg-[#1010a3] text-white shadow-md'
-                : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
-            )}
-            aria-pressed={viewMode === 'list'}
-          >
-            <List className="w-4 h-4" />
-            {t('listView')}
-          </button>
-          <button
-            onClick={() => {
-              setViewMode('board');
-              updateViewModeInUrl('board');
-              setPage(0);
-              setSelectedGroupIds(new Set());
-            }}
-            className={cn(
-              'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-              viewMode === 'board'
-                ? 'bg-[#1010a3] text-white shadow-md'
-                : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
-            )}
-            aria-pressed={viewMode === 'board'}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            {t('boardView')}
-          </button>
-        </div>
+              return;
+            }
+
+            setViewMode('board');
+            updateViewModeInUrl('board');
+            setPage(0);
+            setSelectedGroupIds(new Set());
+          }}
+          listLabel={t('listView')}
+          boardLabel={t('boardView')}
+        />
 
         <Button 
           className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"

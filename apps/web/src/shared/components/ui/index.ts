@@ -10,6 +10,7 @@ export { DataTable } from './data-table';
 export { Badge } from './badge';
 export { Checkbox } from './checkbox';
 export { FilterDropdown } from './filter-dropdown';
+export { ListBoardViewToggle } from './list-board-view-toggle';
 export { ActionButtons } from './action-buttons';
 export type { ActionButtonsProps } from './action-buttons';
 export {

@@ -2,10 +2,11 @@
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { ListBoardViewToggle } from '@/shared/components/ui';
 import {
   fetchLeads,
   changeLeadStatus,
@@ -44,6 +45,7 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
 
 const ARCHIVE_PARAM = 'archive';
 const EDIT_LEAD_PARAM = 'editLead';
+const VIEW_PARAM = 'view';
 
 function normalize(value?: unknown): string {
   if (value === null || value === undefined) {
@@ -102,6 +104,8 @@ function sortLeadsByFilters(leads: CrmLead[], filters: CrmLeadFilters): CrmLead[
 }
 
 export default function AdminCrmPage() {
+  const router = useRouter();
+  const pathname = usePathname();
   const t = useTranslations('nav');
   const tCrm = useTranslations('crm');
   const user = useAuthStore((state) => state.user);
@@ -115,7 +119,13 @@ export default function AdminCrmPage() {
   const authScopeKey = `${userRole ?? 'UNKNOWN'}:${user?.id ?? 'anonymous'}:${managerCenterId ?? 'all-centers'}`;
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
-  const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
+  const [viewMode, setViewMode] = useState<'board' | 'list'>(() => {
+    const modeFromUrl = searchParams.get(VIEW_PARAM);
+    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
+      return modeFromUrl;
+    }
+    return 'board';
+  });
   const [showArchiveColumn, setShowArchiveColumn] = useState(
     () => searchParams.get(ARCHIVE_PARAM) === '1'
   );
@@ -137,6 +147,27 @@ export default function AdminCrmPage() {
   useEffect(() => {
     setEditLeadId(searchParams.get(EDIT_LEAD_PARAM));
   }, [searchParams]);
+
+  // Restore view mode from URL after refresh/navigation
+  useEffect(() => {
+    const modeFromUrl = searchParams.get(VIEW_PARAM);
+    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
+      setViewMode(modeFromUrl);
+      return;
+    }
+    setViewMode('board');
+  }, [searchParams]);
+
+  const updateViewModeInUrl = (mode: 'board' | 'list') => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode === 'list') {
+      params.set(VIEW_PARAM, 'list');
+    } else {
+      params.delete(VIEW_PARAM);
+    }
+    const url = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(url, { scroll: false });
+  };
 
   const queryClient = useQueryClient();
   const scopedFilters = useMemo<CrmLeadFilters>(() => filters, [filters]);
@@ -401,30 +432,15 @@ export default function AdminCrmPage() {
         {/* View toggle + Filters */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setViewMode('board')}
-              className={cn(
-                'rounded-lg px-3 py-1.5 text-sm font-medium',
-                viewMode === 'board'
-                  ? 'bg-[#1010a3] text-white'
-                  : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-[#f6f6f7]'
-              )}
-            >
-              {tCrm('viewBoard')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={cn(
-                'rounded-lg px-3 py-1.5 text-sm font-medium',
-                viewMode === 'list'
-                  ? 'bg-[#1010a3] text-white'
-                  : 'bg-[#f6f6f7] text-[#3b3b40] hover:bg-[#f6f6f7]'
-              )}
-            >
-              {tCrm('viewList')}
-            </button>
+            <ListBoardViewToggle
+              value={viewMode}
+              onChange={(mode) => {
+                setViewMode(mode);
+                updateViewModeInUrl(mode);
+              }}
+              listLabel={tCrm('viewList')}
+              boardLabel={tCrm('viewBoard')}
+            />
             {viewMode === 'board' && (
               <button
                 type="button"

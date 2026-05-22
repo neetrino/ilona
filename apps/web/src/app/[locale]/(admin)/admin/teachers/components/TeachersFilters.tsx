@@ -1,9 +1,7 @@
 'use client';
 
-import { List, LayoutGrid } from 'lucide-react';
-import { Button } from '@/shared/components/ui';
+import { Button, ListBoardViewToggle } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
-import { cn } from '@/shared/lib/utils';
 import type { useTranslations } from 'next-intl';
 
 interface TeachersFiltersProps {
@@ -100,37 +98,13 @@ export function TeachersFilters({
 
       </div>
 
-      {/* View Mode Toggle */}
-      <div className="inline-flex w-full shrink-0 rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm sm:w-auto">
-        <button
-          onClick={() => onViewModeChange('list')}
-          className={cn(
-            'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-            'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-            viewMode === 'list'
-              ? 'bg-[#1010a3] text-white shadow-md'
-              : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
-          )}
-          aria-pressed={viewMode === 'list'}
-        >
-          <List className="w-4 h-4" />
-          List
-        </button>
-        <button
-          onClick={() => onViewModeChange('board')}
-          className={cn(
-            'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-            'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-            viewMode === 'board'
-              ? 'bg-[#1010a3] text-white shadow-md'
-              : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
-          )}
-          aria-pressed={viewMode === 'board'}
-        >
-          <LayoutGrid className="w-4 h-4" />
-          Board
-        </button>
-      </div>
+      <ListBoardViewToggle
+        value={viewMode}
+        onChange={onViewModeChange}
+        listLabel="List"
+        boardLabel="Board"
+        className="w-full shrink-0 sm:w-auto"
+      />
 
       {/* Add Teacher Button */}
       <div className="w-full shrink-0 sm:w-auto">
