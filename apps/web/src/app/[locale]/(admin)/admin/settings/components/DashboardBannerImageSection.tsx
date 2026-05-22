@@ -20,6 +20,26 @@ const ALLOWED_TYPES = [
   'image/svg+xml',
   'image/svg',
 ] as const;
+const SAFE_IMAGE_PROTOCOLS = new Set(['http:', 'https:']);
+
+const isSafeImageSrc = (source: string | null | undefined): source is string => {
+  if (!source) return false;
+
+  const normalizedSource = source.trim();
+  if (!normalizedSource) return false;
+
+  if (normalizedSource.startsWith('blob:')) return true;
+  if (normalizedSource.startsWith('/')) {
+    return !normalizedSource.startsWith('//');
+  }
+
+  try {
+    const parsedUrl = new URL(normalizedSource);
+    return SAFE_IMAGE_PROTOCOLS.has(parsedUrl.protocol);
+  } catch {
+    return false;
+  }
+};
 
 export function DashboardBannerImageSection() {
   const t = useTranslations('settings');
@@ -38,7 +58,11 @@ export function DashboardBannerImageSection() {
     [bannerData?.bannerUrl],
   );
 
-  const displayImageSrc = previewUrl ?? activeBannerUrl ?? STUDENT_DASHBOARD_ASSETS.heroIllustration;
+  const displayImageSrc = useMemo(() => {
+    if (isSafeImageSrc(previewUrl)) return previewUrl;
+    if (isSafeImageSrc(activeBannerUrl)) return activeBannerUrl;
+    return STUDENT_DASHBOARD_ASSETS.heroIllustration;
+  }, [previewUrl, activeBannerUrl]);
 
   useEffect(() => {
     return () => {
