@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/shared/lib/utils';
+import { DatePickerInput } from './date-picker-input';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
@@ -7,6 +8,24 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, error, ...props }, ref) => {
+    if (type === 'date') {
+      return (
+        <div className="w-full">
+          <DatePickerInput
+            ref={ref}
+            className={cn(
+              'border-input bg-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              error && 'border-destructive focus-visible:ring-destructive',
+              className
+            )}
+            {...props}
+          />
+          {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
+        </div>
+      );
+    }
+
     return (
       <div className="w-full">
         <input

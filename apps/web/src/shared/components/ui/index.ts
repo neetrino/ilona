@@ -2,6 +2,7 @@ export { Avatar, getInitials, getInitialsFromParts, formatDisplayName } from './
 export { Button } from './button';
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
 export { Input } from './input';
+export { DatePickerInput } from './date-picker-input';
 export { PasswordInput } from './password-input';
 export { Label } from './label';
 export { StatCard } from './stat-card';

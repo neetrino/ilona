@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { type TimeFilterMode } from '@/shared/lib/analytics-time-range';
+import { DatePickerInput } from '@/shared/components/ui';
 
 type ApplyAction = {
   onApply: () => void;
@@ -106,8 +107,7 @@ export function AnalyticsTimeFilterBar({
             >
               {t('timeFilterSelectDay')}
             </span>
-            <input
-              type="date"
+            <DatePickerInput
               className={cn(
                 'rounded-[0.875rem] border bg-white px-2 py-1.5',
                 isStudent
@@ -115,7 +115,7 @@ export function AnalyticsTimeFilterBar({
                   : 'rounded-md border-slate-200 text-slate-800',
               )}
               value={dayYmd}
-              onChange={(e) => onDayYmdChange(e.target.value)}
+              onValueChange={onDayYmdChange}
             />
           </label>
         )}
@@ -129,8 +129,7 @@ export function AnalyticsTimeFilterBar({
             >
               {t('timeFilterSelectWeek')}
             </span>
-            <input
-              type="date"
+            <DatePickerInput
               className={cn(
                 'rounded-[0.875rem] border bg-white px-2 py-1.5',
                 isStudent
@@ -138,7 +137,7 @@ export function AnalyticsTimeFilterBar({
                   : 'rounded-md border-slate-200 text-slate-800',
               )}
               value={weekAnchorYmd}
-              onChange={(e) => onWeekAnchorYmdChange(e.target.value)}
+              onValueChange={onWeekAnchorYmdChange}
             />
           </label>
         )}
@@ -152,8 +151,7 @@ export function AnalyticsTimeFilterBar({
             >
               {t('timeFilterFrom')}
             </span>
-            <input
-              type="date"
+            <DatePickerInput
               className={cn(
                 'rounded-[0.875rem] border bg-white px-2 py-1.5',
                 isStudent
@@ -161,7 +159,7 @@ export function AnalyticsTimeFilterBar({
                   : 'rounded-md border-slate-200 text-slate-800',
               )}
               value={customFromYmd}
-              onChange={(e) => onCustomFromYmd(e.target.value)}
+              onValueChange={onCustomFromYmd}
             />
             <span
               className={cn(
@@ -171,8 +169,7 @@ export function AnalyticsTimeFilterBar({
             >
               {t('timeFilterTo')}
             </span>
-            <input
-              type="date"
+            <DatePickerInput
               className={cn(
                 'rounded-[0.875rem] border bg-white px-2 py-1.5',
                 isStudent
@@ -180,7 +177,7 @@ export function AnalyticsTimeFilterBar({
                   : 'rounded-md border-slate-200 text-slate-800',
               )}
               value={customToYmd}
-              onChange={(e) => onCustomToYmd(e.target.value)}
+              onValueChange={onCustomToYmd}
             />
           </div>
         )}

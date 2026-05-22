@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { DatePickerInput } from '@/shared/components/ui';
 import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import { fetchGroups } from '@/features/groups/api/groups.api';
@@ -578,12 +579,11 @@ export default function AdminRecordingPage() {
           >
             {tCommon('from')}
           </label>
-          <input
+          <DatePickerInput
             id="rec-date-from"
-            type="date"
             value={dateFrom}
             max={dateTo || undefined}
-            onChange={(e) => setDateFrom(e.target.value)}
+            onValueChange={setDateFrom}
             className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
@@ -595,12 +595,11 @@ export default function AdminRecordingPage() {
           >
             {tCommon('to')}
           </label>
-          <input
+          <DatePickerInput
             id="rec-date-to"
-            type="date"
             value={dateTo}
             min={dateFrom || undefined}
-            onChange={(e) => setDateTo(e.target.value)}
+            onValueChange={setDateTo}
             className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>

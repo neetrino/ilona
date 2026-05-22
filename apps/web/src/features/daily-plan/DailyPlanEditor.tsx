@@ -7,6 +7,7 @@ import {
   useUpdateDailyPlan,
 } from './hooks';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
+import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import type {
   DailyPlan,
   DailyPlanResourceKind,
@@ -284,11 +285,10 @@ export function DailyPlanEditor({
               >
                 Date
               </label>
-              <input
+              <DatePickerInput
                 id="dp-date"
-                type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onValueChange={setDate}
                 disabled={readOnly}
                 className="h-10 w-full px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />

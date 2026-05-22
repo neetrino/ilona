@@ -3,6 +3,7 @@
 import type { ReactNode, SelectHTMLAttributes, InputHTMLAttributes } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { studentLabelClass, studentInputClass, studentSelectClass } from './tokens';
+import { DatePickerInput } from '@/shared/components/ui';
 
 export function StudentFieldLabel({
   htmlFor,
@@ -21,9 +22,13 @@ export function StudentFieldLabel({
 }
 
 export function StudentInput({
+  type,
   className,
   ...props
 }: InputHTMLAttributes<HTMLInputElement>) {
+  if (type === 'date') {
+    return <DatePickerInput className={cn(studentInputClass, className)} {...props} />;
+  }
   return <input className={cn(studentInputClass, className)} {...props} />;
 }
 

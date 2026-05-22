@@ -10,6 +10,7 @@ import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
+import { DatePickerInput } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { PaidRegistrationModal } from './PaidRegistrationModal';
@@ -334,11 +335,10 @@ export function EditLeadModal({
                   <label className="mb-1 block text-sm font-medium text-slate-700">
                     {t('dateOfBirth')}
                   </label>
-                  <input
-                    type="date"
+                  <DatePickerInput
                     value={form.dateOfBirth ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, dateOfBirth: e.target.value || undefined }))
+                    onValueChange={(nextValue) =>
+                      setForm((f) => ({ ...f, dateOfBirth: nextValue || undefined }))
                     }
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
@@ -347,11 +347,10 @@ export function EditLeadModal({
                   <label className="mb-1 block text-sm font-medium text-slate-700">
                     {t('firstLessonDate')}
                   </label>
-                  <input
-                    type="date"
+                  <DatePickerInput
                     value={form.firstLessonDate ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, firstLessonDate: e.target.value || undefined }))
+                    onValueChange={(nextValue) =>
+                      setForm((f) => ({ ...f, firstLessonDate: nextValue || undefined }))
                     }
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />

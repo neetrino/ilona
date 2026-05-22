@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { DatePickerInput } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
@@ -154,19 +155,17 @@ export default function AdminDailyPlanPage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-[#3b3b40]">{tCommon('from')}</span>
-              <input
-                type="date"
+              <DatePickerInput
                 value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
+                onValueChange={setDateFrom}
                 className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] px-3 text-[#3b3b40]"
               />
             </label>
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-[#3b3b40]">{tCommon('to')}</span>
-              <input
-                type="date"
+              <DatePickerInput
                 value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
+                onValueChange={setDateTo}
                 className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] px-3 text-[#3b3b40]"
               />
             </label>

@@ -1,5 +1,6 @@
 import { ViewModeSelector } from '@/shared/components/attendance';
 import { Button } from '@/shared/components/ui/button';
+import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import { MultiSelectGroupDropdown } from '@/shared/components/ui/multi-select-group-dropdown';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useTranslations } from 'next-intl';
@@ -123,10 +124,9 @@ export function AttendanceControls({
           {viewMode === 'day' && (
             <>
               <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('selectDate')}</label>
-              <input
-                type="date"
+              <DatePickerInput
                 value={formatDateString(currentDate)}
-                onChange={(e) => onDateChange(e.target.value)}
+                onValueChange={onDateChange}
                 max={getTodayDate()}
                 className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-[rgba(14,14,16,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.18)] transition-colors"
                 disabled={safeSelectedGroupIds.length === 0}

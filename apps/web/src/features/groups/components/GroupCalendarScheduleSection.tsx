@@ -1,6 +1,7 @@
 'use client';
 
 import { Label } from '@/shared/components/ui';
+import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import type { GroupScheduleEntry } from '../types';
 import { GroupScheduleEditor } from './GroupScheduleEditor';
 import { scheduleSlotsValidationError } from '../group-schedule-utils';
@@ -39,22 +40,20 @@ export function GroupCalendarScheduleSection({
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
           <Label htmlFor="schedule-date-from">Start date</Label>
-          <input
+          <DatePickerInput
             id="schedule-date-from"
-            type="date"
             value={dateFrom}
-            onChange={(e) => onDateFromChange(e.target.value)}
+            onValueChange={onDateFromChange}
             disabled={disabled}
             className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
           />
         </div>
         <div className="space-y-1">
           <Label htmlFor="schedule-date-to">End date</Label>
-          <input
+          <DatePickerInput
             id="schedule-date-to"
-            type="date"
             value={dateTo}
-            onChange={(e) => onDateToChange(e.target.value)}
+            onValueChange={onDateToChange}
             disabled={disabled}
             className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
           />

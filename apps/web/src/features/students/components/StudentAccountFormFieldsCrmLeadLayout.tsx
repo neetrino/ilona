@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { PasswordInput } from '@/shared/components/ui';
+import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import type { Group } from '@/features/groups';
 import type { CreateStudentFormData } from '../student-account-form.schema';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
@@ -198,14 +199,14 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <label htmlFor={p('dateOfBirth')} className="mb-1 block text-sm font-medium text-slate-700">
               {tCrm('dateOfBirth')}
             </label>
-            <input id={p('dateOfBirth')} type="date" {...register('dateOfBirth')} className={inputClass} />
+            <DatePickerInput id={p('dateOfBirth')} {...register('dateOfBirth')} className={inputClass} />
             {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth.message}</p>}
           </div>
           <div>
             <label htmlFor={p('firstLessonDate')} className="mb-1 block text-sm font-medium text-slate-700">
               {tCrm('firstLessonDate')}
             </label>
-            <input id={p('firstLessonDate')} type="date" {...register('firstLessonDate')} className={inputClass} />
+            <DatePickerInput id={p('firstLessonDate')} {...register('firstLessonDate')} className={inputClass} />
             {errors.firstLessonDate && (
               <p className="mt-1 text-sm text-red-600">{errors.firstLessonDate.message}</p>
             )}

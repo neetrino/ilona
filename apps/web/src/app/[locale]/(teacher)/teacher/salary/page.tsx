@@ -8,6 +8,7 @@ import { useMyLessons } from '@/features/lessons';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { Eye, X } from 'lucide-react';
 import {
+  DatePickerInput,
   Dialog,
   DialogContent,
   DialogHeader,
@@ -202,17 +203,15 @@ export default function TeacherSalaryPage() {
         {preset === 'custom' && (
           <div className="flex flex-wrap items-center gap-2">
             <label className="text-sm text-[#8b8b90]">{tCommon('from')}</label>
-            <input
-              type="date"
+            <DatePickerInput
               value={customFrom}
-              onChange={(e) => setCustomFrom(e.target.value)}
+              onValueChange={setCustomFrom}
               className="rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
             />
             <label className="text-sm text-[#8b8b90]">{tCommon('to')}</label>
-            <input
-              type="date"
+            <DatePickerInput
               value={customTo}
-              onChange={(e) => setCustomTo(e.target.value)}
+              onValueChange={setCustomTo}
               className="rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
             />
           </div>

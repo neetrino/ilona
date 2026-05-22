@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
+import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import { Label } from '@/shared/components/ui/label';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useSetSubstituteByGroupDay } from '@/features/lessons';
@@ -64,12 +65,11 @@ export function SubstituteByGroupDayModal({
         <div className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="sub-day-date">{tCommon('date')}</Label>
-            <input
+            <DatePickerInput
               id="sub-day-date"
-              type="date"
               className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onValueChange={setDate}
             />
           </div>
           <div className="space-y-2">

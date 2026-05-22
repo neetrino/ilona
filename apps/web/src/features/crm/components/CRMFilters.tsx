@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import type { CrmLeadFilters } from '@/features/crm/types';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { DatePickerInput } from '@/shared/components/ui';
 
 interface CRMFiltersProps {
   filters: CrmLeadFilters;
@@ -81,24 +82,20 @@ export function CRMFilters({
       </div>
       <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateFrom')}</label>
-        <input
-          type="date"
+        <DatePickerInput
+          id="crm-filter-date-from"
           value={filters.dateFrom ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, dateFrom: e.target.value || undefined })
-          }
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          placeholder={t('dateFrom')}
+          onValueChange={(nextDate) => onFiltersChange({ ...filters, dateFrom: nextDate || undefined })}
         />
       </div>
       <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateTo')}</label>
-        <input
-          type="date"
+        <DatePickerInput
+          id="crm-filter-date-to"
           value={filters.dateTo ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, dateTo: e.target.value || undefined })
-          }
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          placeholder={t('dateTo')}
+          onValueChange={(nextDate) => onFiltersChange({ ...filters, dateTo: nextDate || undefined })}
         />
       </div>
     </div>
