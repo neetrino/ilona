@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui';
 import {
@@ -49,7 +49,6 @@ export function DashboardBannerImageSection() {
   const deleteMutation = useDeleteDashboardBanner();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -59,18 +58,9 @@ export function DashboardBannerImageSection() {
   );
 
   const displayImageSrc = useMemo(() => {
-    if (isSafeImageSrc(previewUrl)) return previewUrl;
     if (isSafeImageSrc(activeBannerUrl)) return activeBannerUrl;
     return STUDENT_DASHBOARD_ASSETS.heroIllustration;
-  }, [previewUrl, activeBannerUrl]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl?.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
+  }, [activeBannerUrl]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -90,10 +80,6 @@ export function DashboardBannerImageSection() {
     }
 
     setSelectedFile(file);
-    if (previewUrl?.startsWith('blob:')) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleSave = async () => {
@@ -104,10 +90,6 @@ export function DashboardBannerImageSection() {
     try {
       await uploadMutation.mutateAsync(selectedFile);
       setSelectedFile(null);
-      if (previewUrl?.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
-      setPreviewUrl(null);
       setSuccessMessage(t('dashboardBannerSavedSuccess'));
     } catch (error) {
       setErrorMessage(
@@ -126,10 +108,6 @@ export function DashboardBannerImageSection() {
     try {
       await deleteMutation.mutateAsync();
       setSelectedFile(null);
-      if (previewUrl?.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
-      setPreviewUrl(null);
       setSuccessMessage(t('dashboardBannerResetSuccess'));
     } catch (error) {
       setErrorMessage(
