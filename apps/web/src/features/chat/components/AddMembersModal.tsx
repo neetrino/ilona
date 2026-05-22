@@ -53,7 +53,7 @@ export function AddMembersModal({
         onMemberAdded(updated);
       }
       // Keep modal open so admin can add more members
-    } catch (_e) {
+    } catch {
       // Error shown via mutation state / inline
     }
   };

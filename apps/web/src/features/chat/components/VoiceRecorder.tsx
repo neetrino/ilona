@@ -253,7 +253,7 @@ export function VoiceRecorder({
         if (recorder.state !== 'inactive' && 'requestData' in recorder && typeof (recorder as MediaRecorder & { requestData: () => void }).requestData === 'function') {
           try {
             (recorder as MediaRecorder & { requestData: () => void }).requestData();
-          } catch (e) {
+          } catch {
             // Ignore if not supported
           }
         }

@@ -77,7 +77,7 @@ export function CreateGroupChatModal({
       });
       onCreated(chat);
       onClose();
-    } catch (_e) {
+    } catch {
       // Error shown via mutation state
     }
   };

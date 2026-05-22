@@ -289,12 +289,10 @@ export function onSocketEvent<K extends keyof SocketEvents>(
   event: K,
   handler: EventHandler<SocketEvents[K]>
 ): () => void {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-  socket?.on(event, handler as any);
+  socket?.on(event as never, handler as never);
 
   // Return unsubscribe function
   return () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-    socket?.off(event, handler as any);
+    socket?.off(event as never, handler as never);
   };
 }
