@@ -40,6 +40,8 @@ interface LessonListTableProps {
    * Used for teacher and admin calendar list.
    */
   sectionedCalendarList?: boolean;
+  /** Controls Schedule column visibility in sectioned calendar list tables. */
+  showScheduleColumn?: boolean;
 }
 
 export function LessonListTable({
@@ -57,6 +59,7 @@ export function LessonListTable({
   onSort,
   showBulkBarWhenEmpty = false,
   sectionedCalendarList = false,
+  showScheduleColumn = true,
 }: LessonListTableProps) {
   const locale = useLocale();
   const tCal = useTranslations('calendar');
@@ -216,7 +219,7 @@ export function LessonListTable({
   }
 
   const tableColSpan =
-    10 + (sectionedCalendarList ? 1 : 0) + (hideTeacherColumn ? 0 : 1);
+    10 + (sectionedCalendarList && showScheduleColumn ? 1 : 0) + (hideTeacherColumn ? 0 : 1);
 
   const allSelected = sectionedCalendarList
     ? sectionedPageLessonIds.length > 0 && sectionedPageLessonIds.every((id) => selectedLessons.has(id))
@@ -276,7 +279,7 @@ export function LessonListTable({
               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[120px]">
                 {tCommon('status')}
               </th>
-              {sectionedCalendarList && (
+              {sectionedCalendarList && showScheduleColumn && (
                 <th className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase min-w-[7rem]">
                   {tCal('scheduleCategoryColumn')}
                 </th>
@@ -385,7 +388,7 @@ export function LessonListTable({
                       onEdit={onEdit}
                       onDelete={onDelete}
                       onAssignSubstitute={onAssignSubstitute}
-                      scheduleCategory={row.category}
+                      scheduleCategory={showScheduleColumn ? row.category : undefined}
                       scheduleCategoryLabels={scheduleCategoryLabels}
                     />,
                   );

@@ -735,6 +735,7 @@ export default function CalendarPage() {
                 sortOrder={sortOrder}
                 onSort={handleSort}
                 sectionedCalendarList
+                showScheduleColumn={false}
                 onBulkDelete={handleBulkDeleteClick}
                 onObligationClick={(lessonId, obligation) => {
                   router.push(`/admin/calendar/${lessonId}?tab=${obligation}`);
