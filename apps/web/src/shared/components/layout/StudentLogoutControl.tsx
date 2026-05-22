@@ -54,8 +54,13 @@ export function StudentLogoutControl({
     tNav('user'),
   );
   const shortName = `${user?.firstName ?? ''} ${user?.lastName?.charAt(0) ?? ''}.`.trim();
-  const isTeacher = user?.role === 'TEACHER';
-  const roleLabel = isTeacher ? tDash('teacherRole') : tDash('studentRole');
+  const roleLabelByRole: Record<'ADMIN' | 'MANAGER' | 'TEACHER' | 'STUDENT', string> = {
+    ADMIN: 'Admin',
+    MANAGER: 'Manager',
+    TEACHER: tDash('teacherRole'),
+    STUDENT: tDash('studentRole'),
+  };
+  const roleLabel = user?.role ? roleLabelByRole[user.role] : tNav('user');
   const displayLabel =
     `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() || roleLabel;
   const roleLine =
@@ -69,10 +74,15 @@ export function StudentLogoutControl({
     router.replace('/');
   };
 
-  const profileHref =
-    user?.role === 'TEACHER'
-      ? `/${locale}/teacher/profile`
-      : `/${locale}/student/profile`;
+  const roleProfilePrefixByRole: Record<'ADMIN' | 'MANAGER' | 'TEACHER' | 'STUDENT', string> = {
+    ADMIN: 'admin',
+    MANAGER: 'manager',
+    TEACHER: 'teacher',
+    STUDENT: 'student',
+  };
+  const profileHref = user?.role
+    ? `/${locale}/${roleProfilePrefixByRole[user.role]}/profile`
+    : `/${locale}/student/profile`;
 
   const pillSizes =
     'inline-flex h-11 shrink-0 items-center rounded-full bg-[#1010a3] text-white sm:h-12';
