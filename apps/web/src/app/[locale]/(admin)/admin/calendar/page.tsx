@@ -22,7 +22,9 @@ import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGri
 import { useTeachers } from '@/features/teachers';
 import { CalendarFilters } from './components/CalendarFilters';
 import { SubstituteLessonModal } from './components/SubstituteLessonModal';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 // Helper to get week dates
 function getWeekDates(date: Date): Date[] {
@@ -106,6 +108,9 @@ export default function CalendarPage() {
   const searchParams = useSearchParams();
   const t = useTranslations('calendar');
   const tLessons = useTranslations('lessons');
+  const locale = useLocale();
+  const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
   
   // Initialize view mode from URL query params, with fallback to 'list'
   const [viewMode, setViewMode] = useState<'week' | 'month' | 'list'>(() => {
@@ -690,7 +695,7 @@ export default function CalendarPage() {
               renderLesson={({ lesson, variant }) => (
                 <button
                   type="button"
-                  onClick={() => router.push(`/admin/calendar/${lesson.id}`)}
+                  onClick={() => router.push(`/${locale}${portalBasePath}/calendar/${lesson.id}`)}
                   className={cn(
                     'w-full min-w-0 max-w-full truncate rounded border border-blue-100/90 bg-blue-50/90 text-left text-[#3b3b40] transition hover:border-blue-200 hover:bg-blue-100/80',
                     variant === 'cell'
@@ -738,7 +743,7 @@ export default function CalendarPage() {
                 showScheduleColumn={false}
                 onBulkDelete={handleBulkDeleteClick}
                 onObligationClick={(lessonId, obligation) => {
-                  router.push(`/admin/calendar/${lessonId}?tab=${obligation}`);
+                  router.push(`/${locale}${portalBasePath}/calendar/${lessonId}?tab=${obligation}`);
                 }}
                 onDelete={handleSingleDeleteClick}
                 onAssignSubstitute={(lessonId) => {

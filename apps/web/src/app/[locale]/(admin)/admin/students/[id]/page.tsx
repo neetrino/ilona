@@ -17,6 +17,8 @@ import { StudentNotes } from './components/StudentNotes';
 import { StudentAttendance } from './components/StudentAttendance';
 import { updateStudentSchema, type UpdateStudentFormData } from './schemas';
 import type { UserStatus } from '@/types';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 export default function StudentProfilePage() {
   const t = useTranslations('students');
@@ -25,6 +27,8 @@ export default function StudentProfilePage() {
   const router = useRouter();
   const studentId = params.id as string;
   const locale = params.locale as string;
+  const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
   const [isEditMode, setIsEditMode] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -256,7 +260,7 @@ export default function StudentProfilePage() {
               </p>
               <Button 
                 variant="outline" 
-                onClick={() => router.push(`/${locale}/admin/students`)}
+                onClick={() => router.push(`/${locale}${portalBasePath}/students`)}
               >
                 Back to Students
               </Button>
@@ -285,7 +289,7 @@ export default function StudentProfilePage() {
           <Button 
             variant="ghost" 
             type="button"
-            onClick={() => handleNavigation(`/${locale}/admin/students`)}
+            onClick={() => handleNavigation(`/${locale}${portalBasePath}/students`)}
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

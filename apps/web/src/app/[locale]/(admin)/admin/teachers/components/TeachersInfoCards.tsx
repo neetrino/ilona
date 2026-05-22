@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import type { useTranslations } from 'next-intl';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 interface TeachersInfoCardsProps {
   filteredTeachers: Array<{ _count?: { lessons?: number } }>;
@@ -12,6 +14,8 @@ interface TeachersInfoCardsProps {
 
 export function TeachersInfoCards({ filteredTeachers, totalLessons, locale, t }: TeachersInfoCardsProps) {
   const router = useRouter();
+  const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -29,7 +33,7 @@ export function TeachersInfoCards({ filteredTeachers, totalLessons, locale, t }:
             </p>
             <button 
               className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#1010a3] hover:text-[#1010a3]/90"
-              onClick={() => router.push(`/${locale}/admin/finance`)}
+              onClick={() => router.push(`/${locale}${portalBasePath}/finance`)}
             >
               {t('viewSalaries')}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +60,7 @@ export function TeachersInfoCards({ filteredTeachers, totalLessons, locale, t }:
             </p>
             <button 
               className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#1010a3] hover:text-[#1010a3]/90"
-              onClick={() => router.push(`/${locale}/admin/analytics`)}
+              onClick={() => router.push(`/${locale}${portalBasePath}/analytics`)}
             >
               {t('viewAnalytics')}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

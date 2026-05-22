@@ -8,6 +8,8 @@ import { usePayments } from '@/features/finance';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { formatCurrency } from '@/shared/lib/utils';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import type { Payment } from '@/features/finance/types';
 
 interface AggregatedDebt {
@@ -43,6 +45,8 @@ function aggregate(items: Payment[]): AggregatedDebt[] {
 export function UnpaidStudentsBlock() {
   const t = useTranslations('dashboard');
   const { locale } = useParams<{ locale: string }>();
+  const { user } = useAuthStore();
+  const basePath = getAdminPortalBasePath(user?.role);
   const { data, isLoading } = usePayments({ status: 'OVERDUE', take: 25 });
   const { data: pendingData } = usePayments({ status: 'PENDING', take: 25 });
 
@@ -58,7 +62,7 @@ export function UnpaidStudentsBlock() {
           {t('unpaidStudents')}
         </h2>
         <Link
-          href={`/${locale}/admin/finance`}
+          href={`/${locale}${basePath}/finance`}
           className="inline-flex h-9 items-center rounded-full border border-[#1010a3]/20 bg-white px-4 text-sm font-medium text-[#1010a3] transition-colors hover:bg-[#ececff]"
         >
           {t('viewAll')}
@@ -87,7 +91,7 @@ export function UnpaidStudentsBlock() {
                 </div>
                 <div className="min-w-0">
                   <Link
-                    href={`/${locale}/admin/students/${row.studentId}`}
+                    href={`/${locale}${basePath}/students/${row.studentId}`}
                     className="text-sm font-semibold text-[#1010a3] transition-opacity hover:opacity-80"
                   >
                     {row.fullName}

@@ -7,6 +7,7 @@ import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
+import { toRolePortalPath } from '@/shared/lib/role-routes';
 import Image from 'next/image';
 import { StudentSidebar } from './StudentSidebar';
 import { TeacherSidebar } from './TeacherSidebar';
@@ -156,7 +157,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('calendar'), href: '/admin/calendar', icon: icons.calendar },
         { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
         { label: t('settings'), href: '/admin/settings', icon: icons.settings },
-      ];
+      ].map((item) => ({ ...item, href: toRolePortalPath(item.href, 'MANAGER') }));
     case 'TEACHER':
       return [
         { label: t('dashboard'), href: '/teacher/dashboard', icon: icons.dashboard },

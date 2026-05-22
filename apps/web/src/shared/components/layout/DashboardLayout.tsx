@@ -14,6 +14,7 @@ import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PortalShellProvider } from '@/shared/context/portal-shell-context';
 import { cn } from '@/shared/lib/utils';
+import { isAdminPortalPath } from '@/shared/lib/role-routes';
 import {
   PORTAL_MAIN_PADDING,
   PORTAL_MOBILE_NAV_WIDTH,
@@ -46,7 +47,7 @@ export function DashboardLayout({
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const role = user?.role;
-  const isAdminRoute = /\/admin(\/|$)/.test(pathname.replace(/^\/[a-z]{2}\//, '/'));
+  const isAdminRoute = isAdminPortalPath(pathname.replace(/^\/[a-z]{2}\//, '/'));
   const isStudentPortal =
     variant === 'student' || (variant === 'default' && role === 'STUDENT');
   const isTeacherPortal =

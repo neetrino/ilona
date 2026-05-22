@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 type AdminDashboardHeroProps = {
   isManager: boolean;
@@ -15,6 +17,8 @@ export function AdminDashboardHero({
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
   const locale = useLocale();
+  const { user } = useAuthStore();
+  const basePath = getAdminPortalBasePath(user?.role);
 
   return (
     <section className="relative min-h-[20rem] overflow-hidden rounded-[1.75rem] bg-[#1010a3] text-white sm:min-h-[22rem] lg:min-h-[24rem]">
@@ -32,7 +36,7 @@ export function AdminDashboardHero({
 
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href={`/${locale}/admin/students`}
+              href={`/${locale}${basePath}/students`}
               className="inline-flex h-10 items-center gap-2 rounded-full bg-white pl-4 pr-1.5 text-[0.8125rem] font-medium text-[#1010a3] transition-opacity hover:opacity-90"
             >
               {tNav('students')}
@@ -47,7 +51,7 @@ export function AdminDashboardHero({
               </span>
             </Link>
             <Link
-              href={`/${locale}/admin/teachers`}
+              href={`/${locale}${basePath}/teachers`}
               className="inline-flex h-10 items-center rounded-full border border-white/70 px-4 text-[0.8125rem] text-[#f7f7f5] transition-colors hover:bg-white/10"
             >
               {tNav('teachers')}

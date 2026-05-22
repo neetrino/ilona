@@ -13,6 +13,7 @@ import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
+import { toRolePortalPath } from '@/shared/lib/role-routes';
 import {
   STUDENT_SIDEBAR_ASSETS,
   type StudentSidebarIconKey,
@@ -136,10 +137,10 @@ function getAdminNavEntries(role: string): NavEntry[] {
   ];
 
   if (role === 'MANAGER') {
-    return [
-      ...core,
-      ...tail,
-    ];
+    return [...core, ...tail].map((item) => ({
+      ...item,
+      href: toRolePortalPath(item.href, 'MANAGER'),
+    }));
   }
 
   return [

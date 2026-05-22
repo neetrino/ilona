@@ -9,6 +9,8 @@ import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { portalInnerCardClass, portalPrimaryButtonClass } from '@/shared/lib/portal-theme';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { useStudent, useStudentStatistics } from '../hooks/useStudents';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import type { StudentLifecycleStatus } from '../types';
 import {
   Building2,
@@ -78,6 +80,8 @@ function formatLifecycle(status: StudentLifecycleStatus | undefined): string {
 }
 
 export function StudentDetailsModal({ studentId, open, onClose, locale }: StudentDetailsModalProps) {
+  const { user } = useAuthStore();
+  const basePath = getAdminPortalBasePath(user?.role);
   const t = useTranslations('students');
   const tTeachers = useTranslations('teachers');
   const tCommon = useTranslations('common');
@@ -387,7 +391,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
           )}
 
           <div className="flex flex-wrap items-center gap-3 border-t border-[rgba(14,14,16,0.07)] pt-4">
-            <Link href={`/${locale}/admin/students/${student.id}`} className={portalPrimaryButtonClass} onClick={() => onClose()}>
+            <Link href={`/${locale}${basePath}/students/${student.id}`} className={portalPrimaryButtonClass} onClick={() => onClose()}>
               {t('openFullProfile')}
             </Link>
             {student.receiveReports ? (

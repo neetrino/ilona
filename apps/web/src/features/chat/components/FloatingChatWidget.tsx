@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChats } from '@/features/chat/hooks';
 import { cn } from '@/shared/lib/utils';
+import { getAdminPortalBasePath, isAdminPortalPath } from '@/shared/lib/role-routes';
 
 export function FloatingChatWidget() {
   const pathname = usePathname();
@@ -28,7 +29,7 @@ export function FloatingChatWidget() {
     return null;
   }
 
-  const isAdminRoute = /\/admin(\/|$)/.test(pathname.replace(/^\/[a-z]{2}\//, '/'));
+  const isAdminRoute = isAdminPortalPath(pathname.replace(/^\/[a-z]{2}\//, '/'));
   const isPortalShell =
     user?.role === 'STUDENT' ||
     user?.role === 'TEACHER' ||
@@ -50,9 +51,10 @@ export function FloatingChatWidget() {
       : pathname;
     const returnTo = encodeURIComponent(currentPath);
 
-    // Admin and Manager share the same /admin/chat shell (not /manager/chat).
     const roleSegment =
-      user.role === 'ADMIN' || user.role === 'MANAGER' ? 'admin' : user.role.toLowerCase();
+      user.role === 'ADMIN' || user.role === 'MANAGER'
+        ? getAdminPortalBasePath(user.role).slice(1)
+        : user.role.toLowerCase();
 
     // Navigate to chat route with returnTo parameter
     // CRITICAL: Do NOT include conversationId/chatId to prevent auto-selection

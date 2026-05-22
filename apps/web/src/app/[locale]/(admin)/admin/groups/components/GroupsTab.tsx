@@ -22,6 +22,8 @@ import { getErrorMessage } from '@/shared/lib/api';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
 import { GroupStudentsModal } from './GroupStudentsModal';
 import { StudentDetailsModal } from './StudentDetailsModal';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 interface SelectAllCheckboxProps {
   checked: boolean;
@@ -92,6 +94,8 @@ export function GroupsTab({
   const t = useTranslations('groups');
   const tCommon = useTranslations('common');
   const router = useRouter();
+  const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
   const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
   /** Captured at open; optimistic updates must not change dialog copy */
   const [statusDialog, setStatusDialog] = useState<{
@@ -217,7 +221,7 @@ export function GroupsTab({
     if (selectedCenterId) {
       const next = new URLSearchParams(searchParams.toString());
       next.delete('view');
-      router.push(`/${locale}/admin/groups/${centerId}?${next.toString()}`);
+      router.push(`/${locale}${portalBasePath}/groups/${centerId}?${next.toString()}`);
     } else {
       setBoardTabCenterId(centerId);
       updateUrl({ branch: centerId });
@@ -504,7 +508,7 @@ export function GroupsTab({
           aria-label={t('breadcrumb')}
         >
           <Link
-            href={`/${locale}/admin/groups`}
+            href={`/${locale}${portalBasePath}/groups`}
             className="font-medium text-[#1010a3] hover:text-[#1010a3]/80 hover:underline"
           >
             {t('centers')}

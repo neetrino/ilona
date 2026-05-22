@@ -10,6 +10,8 @@ import { GroupIconDisplay } from '@/features/groups';
 import { getGroupWeeklySlots } from '@/features/groups/group-schedule-utils';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 interface TodayEntry {
   group: Group;
@@ -30,6 +32,7 @@ function collectToday(groups: Group[]): TodayEntry[] {
 
 type LessonRowProps = {
   locale: string;
+  basePath: string;
   group: Group;
   entry: GroupScheduleEntry;
   teacherName: string;
@@ -61,6 +64,7 @@ function LessonHeader({
 
 function LessonRow({
   locale,
+  basePath,
   group,
   entry,
   teacherName,
@@ -88,7 +92,7 @@ function LessonRow({
         </p>
       </div>
       <Link
-        href={`/${locale}/admin/schedule`}
+        href={`/${locale}${basePath}/schedule`}
         className="ml-auto inline-flex h-11 items-center rounded-full bg-[#d9d9f4] pl-4 pr-1.5 text-sm font-semibold text-[#1010a3] transition-colors hover:bg-[#ccccf2]"
       >
         {detailsLabel}
@@ -109,6 +113,8 @@ function LessonRow({
 export function BranchScheduleBlock({ centerId }: { centerId?: string }) {
   const t = useTranslations('dashboard');
   const { locale } = useParams<{ locale: string }>();
+  const { user } = useAuthStore();
+  const basePath = getAdminPortalBasePath(user?.role);
   const { data, isLoading } = useGroups({ centerId, take: 100 });
   const today = useMemo(() => collectToday(data?.items ?? []).slice(0, 8), [data?.items]);
   const dayLabel = new Date().toLocaleDateString(locale, { weekday: 'short' });
@@ -134,6 +140,7 @@ export function BranchScheduleBlock({ centerId }: { centerId?: string }) {
               <LessonRow
                 key={`${group.id}-${entry.startTime}`}
                 locale={locale}
+                basePath={basePath}
                 group={group}
                 entry={entry}
                 teacherName={teacherName}

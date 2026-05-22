@@ -9,6 +9,8 @@ import type { Group } from '@/features/groups/types';
 import { GroupIconDisplay } from '@/features/groups';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 interface CapacityRow {
   group: Group;
@@ -32,6 +34,8 @@ function toRows(groups: Group[]): CapacityRow[] {
 export function GroupsWithCapacityBlock({ centerId }: { centerId?: string }) {
   const t = useTranslations('dashboard');
   const { locale } = useParams<{ locale: string }>();
+  const { user } = useAuthStore();
+  const basePath = getAdminPortalBasePath(user?.role);
   const { data, isLoading } = useGroups({ centerId, take: 100 });
   const rows = useMemo(() => toRows(data?.items ?? []), [data?.items]);
 
@@ -42,7 +46,7 @@ export function GroupsWithCapacityBlock({ centerId }: { centerId?: string }) {
           {t('groupsWithCapacity')}
         </h2>
         <Link
-          href={`/${locale}/admin/groups`}
+          href={`/${locale}${basePath}/groups`}
           className="inline-flex h-9 items-center rounded-full border border-[#1010a3]/20 bg-white px-4 text-sm font-medium text-[#1010a3] transition-colors hover:bg-[#ececff]"
         >
           {t('viewAll')}

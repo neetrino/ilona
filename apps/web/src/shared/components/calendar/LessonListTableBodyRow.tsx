@@ -15,6 +15,7 @@ import type { TeacherCalendarRowCategory } from '@/shared/lib/calendar/teacher-c
 import type { ScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/calendar/lesson-action-states';
 import { CalendarListActionPill } from '@/shared/components/calendar/CalendarListActionPill';
+import { isAdminPortalPath } from '@/shared/lib/role-routes';
 
 function formatTime(dateStr: string, locale: string): string {
   const date = new Date(dateStr);
@@ -112,8 +113,9 @@ export function LessonListTableBodyRow({
 
   const handleView = (lessonId: string) => {
     const currentPath = window.location.pathname;
-    if (currentPath.includes('/admin/')) {
-      router.push(`/admin/calendar/${lessonId}`);
+    if (isAdminPortalPath(currentPath.replace(/^\/[a-z]{2}\//, '/'))) {
+      const portalRoot = currentPath.includes('/manager/') ? '/manager' : '/admin';
+      router.push(`${portalRoot}/calendar/${lessonId}`);
     } else if (currentPath.includes('/teacher/')) {
       router.push(`/teacher/calendar/${lessonId}`);
     } else {

@@ -7,6 +7,8 @@ import { useTranslations } from 'next-intl';
 import { useStudentRisk } from '@/features/analytics/hooks/useAnalytics';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 const RISK_TONE: Record<'HIGH' | 'MEDIUM' | 'LOW', string> = {
   HIGH: 'border-[#ffc9c4] bg-[#ffe5e3] text-[#ff2e23]',
@@ -17,6 +19,8 @@ const RISK_TONE: Record<'HIGH' | 'MEDIUM' | 'LOW', string> = {
 export function AtRiskStudentsBlock() {
   const t = useTranslations('dashboard');
   const { locale } = useParams<{ locale: string }>();
+  const { user } = useAuthStore();
+  const basePath = getAdminPortalBasePath(user?.role);
   const { data, isLoading } = useStudentRisk();
 
   const rows = useMemo(() => {
@@ -32,7 +36,7 @@ export function AtRiskStudentsBlock() {
           {t('atRiskStudents')}
         </h2>
         <Link
-          href={`/${locale}/admin/analytics`}
+          href={`/${locale}${basePath}/analytics`}
           className="inline-flex h-9 items-center rounded-full border border-[#1010a3]/20 bg-white px-4 text-sm font-medium text-[#1010a3] transition-colors hover:bg-[#ececff]"
         >
           {t('viewAll')}
@@ -61,7 +65,7 @@ export function AtRiskStudentsBlock() {
                 </div>
                 <div className="min-w-0">
                   <Link
-                    href={`/${locale}/admin/students/${risk.id}`}
+                    href={`/${locale}${basePath}/students/${risk.id}`}
                     className="text-sm font-semibold text-[#1010a3] transition-opacity hover:opacity-80"
                   >
                     {risk.name}

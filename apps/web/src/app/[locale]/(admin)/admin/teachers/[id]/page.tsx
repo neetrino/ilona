@@ -14,6 +14,8 @@ import { TeacherDetails } from './components/TeacherDetails';
 import { updateTeacherSchema, type UpdateTeacherFormData } from './schemas';
 import type { UserStatus } from '@/types';
 import { getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 export default function TeacherProfilePage() {
   const t = useTranslations('teachers');
@@ -22,6 +24,8 @@ export default function TeacherProfilePage() {
   const router = useRouter();
   const teacherId = params.id as string;
   const locale = params.locale as string;
+  const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
   const [isEditMode, setIsEditMode] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -255,7 +259,7 @@ export default function TeacherProfilePage() {
               </p>
               <Button 
                 variant="outline" 
-                onClick={() => router.push(`/${locale}/admin/teachers`)}
+                onClick={() => router.push(`/${locale}${portalBasePath}/teachers`)}
               >
                 Back to Teachers
               </Button>
@@ -284,7 +288,7 @@ export default function TeacherProfilePage() {
           <Button 
             variant="ghost" 
             type="button"
-            onClick={() => handleNavigation(`/${locale}/admin/teachers`)}
+            onClick={() => handleNavigation(`/${locale}${portalBasePath}/teachers`)}
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
