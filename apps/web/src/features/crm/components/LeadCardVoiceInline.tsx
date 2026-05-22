@@ -8,7 +8,7 @@ import {
   useState,
   type MouseEvent,
 } from 'react';
-import { Mic } from 'lucide-react';
+import { Mic, Pause, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { getRecordingPlayUrl } from '@/features/crm/api/crm.api';
 import { cn } from '@/shared/lib/utils';
@@ -173,30 +173,15 @@ export function LeadCardVoiceInline({
           type="button"
           onClick={toggle}
           className={cn(
-            'shrink-0 rounded-full bg-white p-2 text-[#2329b8] shadow-sm transition-opacity hover:opacity-85',
+            'group shrink-0 rounded-full border border-white/70 bg-gradient-to-b from-white to-indigo-50 p-2 text-[#1f2797] shadow-[0_6px_16px_rgba(10,14,110,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:from-white hover:to-indigo-100 hover:shadow-[0_10px_20px_rgba(10,14,110,0.42)] active:translate-y-0',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-[#2329b8]',
           )}
           aria-label={isPlaying ? t('pauseVoiceNote') : t('playVoiceNote')}
         >
           {isPlaying ? (
-            <svg
-              viewBox="0 0 14 16"
-              className="h-4 w-4"
-              fill="currentColor"
-              aria-hidden
-            >
-              <rect x="1" y="1" width="4" height="14" rx="0.5" />
-              <rect x="9" y="1" width="4" height="14" rx="0.5" />
-            </svg>
+            <Pause className="h-4 w-4 fill-current" strokeWidth={2.5} aria-hidden />
           ) : (
-            <svg
-              viewBox="0 0 14 16"
-              className="h-4 w-4"
-              fill="currentColor"
-              aria-hidden
-            >
-              <polygon points="0,0 14,8 0,16" />
-            </svg>
+            <Play className="h-4 w-4 fill-current pl-[1px]" strokeWidth={2.3} aria-hidden />
           )}
         </button>
         <div
