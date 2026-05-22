@@ -1805,7 +1805,7 @@
     "substituteTeacherTitle": "Փոխարինող ուսուցիչ",
     "columnLessonName": "Դասի անուն",
     "columnDateTime": "Ամսաթիվ և ժամ",
-    "bulkSelectHint": "Նշեք դասերը վանդակներով՝ միանգամից մի քանիսը ջնջելու համար։",
+    "bulkSelectHint": "Նշեք մեկ կամ ավելի դաս, որպեսզի հայտնվի խմբային ջնջումը։",
     "lessonsSelected": "{count, plural, one {# դաս ընտրված} other {# դաս ընտրված}}",
     "deleteSelected": "Ջնջել ընտրվածները",
     "sortByDateTime": "Դասավորել ըստ ամսաթվի և ժամի",

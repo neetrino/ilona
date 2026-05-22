@@ -33,7 +33,7 @@ interface LessonListTableProps {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onSort?: (key: string) => void;
-  /** When true, bulk action bar stays visible with a disabled delete until at least one row is selected (admin calendar). */
+  /** When true, bulk action bar stays visible even with no selected rows (admin calendar). */
   showBulkBarWhenEmpty?: boolean;
   /**
    * List view: completed first, then next 2 upcoming, today, later; Schedule column; 10 rows per page.
@@ -225,7 +225,7 @@ export function LessonListTable({
     ? sectionedPageLessonIds.some((id) => selectedLessons.has(id)) && !allSelected
     : selectedLessons.size > 0 && selectedLessons.size < lessons.length;
   const showBulkBar = onBulkDelete && (showBulkBarWhenEmpty || selectedLessons.size > 0);
-  const bulkDeleteDisabled = selectedLessons.size === 0;
+  const hasSelectedLessons = selectedLessons.size > 0;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -237,14 +237,24 @@ export function LessonListTable({
               ? tCal('bulkSelectHint')
               : tCal('lessonsSelected', { count: selectedLessons.size })}
           </span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleBulkDelete}
-            disabled={bulkDeleteDisabled}
+          <div
+            className={cn(
+              'overflow-hidden transition-all duration-200 ease-out',
+              hasSelectedLessons
+                ? 'max-w-[11rem] translate-x-0 opacity-100'
+                : 'max-w-0 translate-x-2 opacity-0',
+            )}
+            aria-hidden={!hasSelectedLessons}
           >
-            {tCal('deleteSelected')}
-          </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+              tabIndex={hasSelectedLessons ? 0 : -1}
+            >
+              {tCal('deleteSelected')}
+            </Button>
+          </div>
         </div>
       )}
 

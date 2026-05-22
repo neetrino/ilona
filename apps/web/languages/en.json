@@ -1805,7 +1805,7 @@
     "substituteTeacherTitle": "Substitute teacher",
     "columnLessonName": "Lesson Name",
     "columnDateTime": "Date & Time",
-    "bulkSelectHint": "Select lessons with the checkboxes to delete multiple at once.",
+    "bulkSelectHint": "Select one or more lessons to show bulk delete.",
     "lessonsSelected": "{count, plural, one {# lesson selected} other {# lessons selected}}",
     "deleteSelected": "Delete selected",
     "sortByDateTime": "Sort by Date & Time",

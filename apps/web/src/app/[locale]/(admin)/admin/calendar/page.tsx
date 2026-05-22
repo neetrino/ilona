@@ -734,7 +734,6 @@ export default function CalendarPage() {
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
-                showBulkBarWhenEmpty
                 sectionedCalendarList
                 onBulkDelete={handleBulkDeleteClick}
                 onObligationClick={(lessonId, obligation) => {
