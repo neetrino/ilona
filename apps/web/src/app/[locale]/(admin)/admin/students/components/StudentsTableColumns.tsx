@@ -5,7 +5,7 @@ import { MessageCircle } from 'lucide-react';
 import { ActionButtons, Avatar } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
-import { formatCurrency } from '@/shared/lib/utils';
+import { formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
@@ -342,7 +342,8 @@ export function createStudentsTableColumns({
       render: (row: TeacherAssignedItem) => {
         const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
-        const phone = isOnboardingItem(row) ? (row.phone ?? 'No phone') : (row.user?.phone ?? 'No phone');
+        const phoneRaw = isOnboardingItem(row) ? row.phone : row.user?.phone;
+        const phone = formatPhoneForDisplay(phoneRaw, 'No phone');
         const fullName = `${firstName} ${lastName}`.trim() || '?';
         const avatarUrl = isOnboardingItem(row) ? undefined : row.user?.avatarUrl;
         // Lifecycle/risk badges – computed from persisted status + server-derived risk.

@@ -1,6 +1,6 @@
 import { Building2, MapPin, Phone, Mail, Users } from 'lucide-react';
 import type { CenterWithCount } from '../types';
-import { getContrastColor } from '@/shared/lib/utils';
+import { formatPhoneForDisplay, getContrastColor } from '@/shared/lib/utils';
 import { ActionButtons } from '@/shared/components/ui';
 
 interface CenterCardProps {
@@ -117,7 +117,7 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
               <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white shadow-sm ring-1 ring-slate-200/70">
                 <Phone className="h-3.5 w-3.5 text-slate-400" />
               </span>
-              <span className="truncate" title={center.phone}>{center.phone}</span>
+              <span className="truncate" title={formatPhoneForDisplay(center.phone)}>{formatPhoneForDisplay(center.phone)}</span>
             </div>
           )}
 

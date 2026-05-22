@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Badge, Input, Label } from '@/shared/components/ui';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
 import type { Group } from '@/features/groups';
 import type { Teacher } from '@/features/teachers';
@@ -78,7 +79,7 @@ export function StudentDetails({
               </div>
               <div>
                 <label className="text-sm font-medium text-[#8b8b90]">{tc('phone')}</label>
-                <p className="text-[#3b3b40] mt-1">{student.user?.phone || na}</p>
+                <p className="text-[#3b3b40] mt-1">{formatPhoneForDisplay(student.user?.phone, na)}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-[#8b8b90]">{t('memberSince')}</label>
@@ -117,7 +118,7 @@ export function StudentDetails({
                     {teachers.map((teacher) => (
                       <option key={teacher.id} value={teacher.id}>
                         {teacher.user.firstName} {teacher.user.lastName}
-                        {teacher.user.phone ? ` - ${teacher.user.phone}` : ''}
+                        {teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}
                       </option>
                     ))}
                   </select>
@@ -229,7 +230,7 @@ export function StudentDetails({
               {student.parentPhone && (
                 <div>
                   <label className="text-sm font-medium text-[#8b8b90]">{t('parentPhone')}</label>
-                  <p className="text-[#3b3b40] mt-1">{student.parentPhone}</p>
+                  <p className="text-[#3b3b40] mt-1">{formatPhoneForDisplay(student.parentPhone)}</p>
                 </div>
               )}
               {student.parentEmail && (

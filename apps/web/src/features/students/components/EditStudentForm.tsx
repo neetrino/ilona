@@ -12,6 +12,7 @@ import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -462,7 +463,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   {teachersForCenter.map((teacher) => (
                     <option key={teacher.id} value={teacher.id}>
                       {teacher.user.firstName} {teacher.user.lastName}
-                      {teacher.user.phone ? ` - ${teacher.user.phone}` : ''}
+                      {teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}
                     </option>
                   ))}
                 </select>

@@ -65,9 +65,9 @@ export default function AdminProfilePage() {
     setUploadSuccess(null);
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      setUploadError('Invalid file type. Please upload a JPG, PNG, WEBP, or GIF image.');
+      setUploadError('Invalid file type. Please upload a JPG, PNG, or WEBP image.');
       return;
     }
 
@@ -170,7 +170,7 @@ export default function AdminProfilePage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -195,7 +195,7 @@ export default function AdminProfilePage() {
               )}
             </div>
             <p className="text-xs text-[#8b8b90] mt-1">
-              {t('imageFormats') ?? 'JPG, PNG, WEBP, GIF up to 5MB'}
+              {t('imageFormats') ?? 'JPG, PNG, WEBP up to 5MB'}
             </p>
           </div>
         </div>

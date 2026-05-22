@@ -6,7 +6,7 @@ import { useAdminStudents, useAdminTeachers, useAdminGroups, useAdminUnreadCount
 import { useChatStore } from '../store/chat.store';
 import { fetchGroupChat, createDirectChat } from '../api/chat.api';
 import type { Chat } from '../types';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { Badge } from '@/shared/components/ui/badge';
 import { getInitials } from '@/shared/components/ui/avatar';
 import Image from 'next/image';
@@ -160,7 +160,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
                 )}
               </div>
               {student.phone && (
-                <p className="text-sm text-slate-500 truncate">{student.phone}</p>
+                <p className="text-sm text-slate-500 truncate">{formatPhoneForDisplay(student.phone)}</p>
               )}
             </div>
           </button>
@@ -232,7 +232,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
                 )}
               </div>
               {teacher.phone && (
-                <p className="text-sm text-slate-500 truncate">{teacher.phone}</p>
+                <p className="text-sm text-slate-500 truncate">{formatPhoneForDisplay(teacher.phone)}</p>
               )}
             </div>
           </button>

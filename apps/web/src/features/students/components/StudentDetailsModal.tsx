@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { AdminAvatarPhotoLightbox, AdminDetailModal, Avatar, Badge, PublicAssetImage } from '@/shared/components/ui';
-import { cn, formatCurrency } from '@/shared/lib/utils';
+import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { portalInnerCardClass, portalPrimaryButtonClass } from '@/shared/lib/portal-theme';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { useStudent, useStudentStatistics } from '../hooks/useStudents';
@@ -239,7 +239,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                   {tTeachers('phoneNumber')}
                 </label>
                 <p className="text-slate-800 text-sm sm:text-base break-words">
-                  {student.user?.phone || tTeachers('noPhoneNumber')}
+                  {formatPhoneForDisplay(student.user?.phone, tTeachers('noPhoneNumber'))}
                 </p>
               </div>
               <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
@@ -329,7 +329,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                       <Phone className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                       {t('parentPhone')}
                     </label>
-                    <p className="text-slate-800 text-sm sm:text-base break-words">{student.parentPhone}</p>
+                    <p className="text-slate-800 text-sm sm:text-base break-words">{formatPhoneForDisplay(student.parentPhone)}</p>
                   </div>
                 )}
                 {student.parentEmail && (

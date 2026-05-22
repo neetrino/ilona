@@ -5,7 +5,7 @@ import { ActionButtons } from '@/shared/components/ui';
 import { InlineSelect } from '@/features/students';
 import { SelectAllCheckbox } from './SelectAllCheckbox';
 import { TeacherBranchDisplay } from './TeacherBranchDisplay';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Teacher } from '@/features/teachers';
 import { getTeacherCenters, formatLessonRate } from '../utils';
 import type { useTranslations } from 'next-intl';
@@ -84,7 +84,7 @@ export function createTeachersTableColumns({
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
         const fullName = `${firstName} ${lastName}`.trim() || '?';
-        const phone = teacher.user?.phone || t('noPhoneNumber');
+        const phone = formatPhoneForDisplay(teacher.user?.phone, t('noPhoneNumber'));
         const isActive = teacher.user?.status === 'ACTIVE';
         return (
           <div className={cn("flex items-center gap-3", !isActive && "opacity-60")}>

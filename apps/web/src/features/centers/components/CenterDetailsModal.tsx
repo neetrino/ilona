@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Avatar } from '@/shared/components/ui';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { fetchCenterDetails } from '../api/centers.api';
 import type { CenterDetails, CenterDetailTeacher } from '../types';
 import { ScheduleGrid } from '@/features/schedule/ScheduleGrid';
@@ -309,7 +309,7 @@ function StudentsTab({ data }: { data: CenterDetails }) {
               <p className="truncate text-sm font-medium text-slate-900">{userName(s.user)}</p>
               {s.user?.phone && (
                 <p className="flex items-center gap-1 truncate text-xs text-slate-500">
-                  <Phone className="size-3" /> {s.user.phone}
+                  <Phone className="size-3" /> {formatPhoneForDisplay(s.user.phone)}
                 </p>
               )}
             </div>
@@ -377,7 +377,7 @@ function InfoTab({ data }: { data: CenterDetails }) {
   const rows: Array<{ label: string; value: string | null }> = [
     { label: 'Name', value: c.name },
     { label: 'Address', value: c.address },
-    { label: 'Phone', value: c.phone },
+    { label: 'Phone', value: formatPhoneForDisplay(c.phone) },
     { label: 'Email', value: c.email },
     { label: 'Status', value: c.isActive ? 'Active' : 'Inactive' },
     { label: 'Description', value: c.description },

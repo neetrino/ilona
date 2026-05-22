@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import { Input, Label, PasswordInput } from '@/shared/components/ui';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { CreateStudentFormData } from '../student-account-form.schema';
 
 export type StudentAccountTeacherOption = {
@@ -213,7 +214,7 @@ export function StudentAccountFormFields({
             {teachers.map((teacher) => (
               <option key={teacher.id} value={teacher.id}>
                 {teacher.user?.firstName ?? ''} {teacher.user?.lastName ?? ''}
-                {teacher.user?.phone ? ` - ${teacher.user.phone}` : ''}
+                {teacher.user?.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}
               </option>
             ))}
           </select>

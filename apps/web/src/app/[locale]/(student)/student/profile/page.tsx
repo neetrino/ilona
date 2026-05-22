@@ -72,9 +72,9 @@ export default function StudentProfilePage() {
     setUploadSuccess(null);
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      setUploadError('Invalid file type. Please upload a JPG, PNG, WEBP, or GIF image.');
+      setUploadError('Invalid file type. Please upload a JPG, PNG, or WEBP image.');
       return;
     }
 
@@ -172,7 +172,7 @@ export default function StudentProfilePage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -196,7 +196,7 @@ export default function StudentProfilePage() {
               )}
             </div>
             <p className="mt-1 text-xs text-[#8b8b90]">
-              {t('imageFormats') ?? 'JPG, PNG, WEBP, GIF up to 5MB'}
+              {t('imageFormats') ?? 'JPG, PNG, WEBP up to 5MB'}
             </p>
           </div>
         </div>

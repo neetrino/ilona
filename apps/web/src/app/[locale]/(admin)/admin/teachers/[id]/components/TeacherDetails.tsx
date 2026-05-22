@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Badge, Input, Label } from '@/shared/components/ui';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
 import type { Teacher } from '@/features/teachers';
 import { getExperienceYearsFromHireDate, formatExperienceLabel } from '@/features/teachers/utils/experience';
@@ -94,7 +95,7 @@ export function TeacherDetails({
               </div>
               <div>
                 <label className="text-sm font-medium text-[#8b8b90]">{tc('phone')}</label>
-                <p className="text-[#3b3b40] mt-1">{teacher.user?.phone || na}</p>
+                <p className="text-[#3b3b40] mt-1">{formatPhoneForDisplay(teacher.user?.phone, na)}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-[#8b8b90]">{tc('experience')}</label>

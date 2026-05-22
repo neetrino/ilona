@@ -3,6 +3,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui';
 import { useStudent } from '@/features/students';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 
 interface StudentDetailsModalProps {
   open: boolean;
@@ -60,7 +61,7 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
               <InfoRow label="First Name" value={student.user.firstName || '—'} />
               <InfoRow label="Last Name" value={student.user.lastName || '—'} />
               <InfoRow label="Age" value={age ?? '—'} />
-              <InfoRow label="Phone Number" value={student.user.phone || '—'} />
+              <InfoRow label="Phone Number" value={formatPhoneForDisplay(student.user.phone)} />
               <InfoRow label="Course Start Date" value={formatDate(courseStartDate)} />
             </section>
 
@@ -68,7 +69,7 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
               <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
                 <h3 className="text-sm font-semibold text-[#1010a3] mb-2">Parent Information</h3>
                 <InfoRow label="Parent Name" value={student.parentName || '—'} />
-                <InfoRow label="Parent Phone Number" value={student.parentPhone || '—'} />
+                <InfoRow label="Parent Phone Number" value={formatPhoneForDisplay(student.parentPhone)} />
                 <InfoRow label="Parent Passport Information" value={student.parentPassportInfo || '—'} />
               </section>
             )}

@@ -8,6 +8,7 @@ import { useCreateManager, useManagers, type ManagerAccount } from '@/features/s
 import { EditManagerForm } from '@/features/settings/components/EditManagerForm';
 import { InactiveManagersDialog } from '@/features/settings/components/InactiveManagersDialog';
 import { getErrorMessage } from '@/shared/lib/api';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { isActiveCenterManager } from '@/features/settings/utils/manager-display';
 
 export function ManagerTab() {
@@ -229,7 +230,7 @@ export function ManagerTab() {
                     </div>
                     <p className="text-xs text-[#8b8b90] mt-0.5">{manager.email}</p>
                     {manager.phone && (
-                      <p className="text-xs text-[#8b8b90]">{manager.phone}</p>
+                      <p className="text-xs text-[#8b8b90]">{formatPhoneForDisplay(manager.phone)}</p>
                     )}
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-4">

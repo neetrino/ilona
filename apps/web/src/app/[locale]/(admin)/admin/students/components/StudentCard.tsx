@@ -1,8 +1,7 @@
 'use client';
 
 import { Badge, ActionButtons, Avatar } from '@/shared/components/ui';
-import { cn } from '@/shared/lib/utils';
-import { formatCurrency } from '@/shared/lib/utils';
+import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
@@ -61,7 +60,7 @@ export function StudentCard({ student, onEdit, onDelete, onDeactivate, onCardCli
   const firstName = student.user?.firstName || '';
   const lastName = student.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim();
-  const phone = student.user?.phone || 'No phone';
+  const phone = formatPhoneForDisplay(student.user?.phone, 'No phone');
   const teacherName = student.teacher
     ? `${student.teacher.user.firstName} ${student.teacher.user.lastName}`
     : null;

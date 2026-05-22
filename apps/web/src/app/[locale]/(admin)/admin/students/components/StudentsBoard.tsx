@@ -8,6 +8,7 @@ import {
   type TeacherAssignedItem,
   type Student,
 } from '@/features/students';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Center } from '@ilona/types';
 
 interface StudentsBoardProps {
@@ -94,7 +95,7 @@ export function StudentsBoard({
                             <p className="font-medium text-[#3b3b40]">
                               {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
                             </p>
-                            <p className="text-xs text-[#8b8b90] mt-1">{item.phone ?? t('noPhone')}</p>
+                            <p className="text-xs text-[#8b8b90] mt-1">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
                             <span className="inline-block mt-2 text-xs text-amber-600 font-medium">{tc('onboarding')}</span>
                           </div>
                         );
@@ -139,7 +140,7 @@ export function StudentsBoard({
                       <p className="font-medium text-[#3b3b40]">
                         {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
                       </p>
-                      <p className="text-xs text-[#8b8b90] mt-1">{item.phone ?? t('noPhone')}</p>
+                      <p className="text-xs text-[#8b8b90] mt-1">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
                       <span className="inline-block mt-2 text-xs text-amber-600 font-medium">{tc('onboarding')}</span>
                     </div>
                   );
