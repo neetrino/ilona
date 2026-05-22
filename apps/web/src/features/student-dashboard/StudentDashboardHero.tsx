@@ -75,13 +75,13 @@ export function StudentDashboardHero({
             ) : null}
           </div>
         </div>
-        <div className="relative mx-auto w-full max-w-[17rem] shrink-0 sm:max-w-xs lg:mx-0 lg:max-w-[18rem]">
+        <div className="relative mx-auto w-full max-w-[12rem] shrink-0 sm:max-w-[14rem] lg:mx-0 lg:ml-20 lg:max-w-[18rem]">
           <PublicAssetImage
             src={STUDENT_DASHBOARD_ASSETS.heroIllustration}
             alt=""
             width={460}
             height={445}
-            className="h-auto w-full object-contain"
+            className="h-auto w-full -translate-x-2 translate-y-2 scale-[1.08] rotate-90 object-contain sm:-translate-x-6 sm:translate-y-4 sm:scale-[1.2] lg:-translate-x-20 lg:translate-y-8 lg:scale-[1.6]"
             priority
           />
         </div>
