@@ -3,34 +3,13 @@
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { PublicAssetImage } from '@/shared/components/ui';
-import { formatLocaleInteger } from '@/shared/lib/utils';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 
 type AdminDashboardHeroProps = {
-  studentsTotal: number;
-  teachersTotal: number;
-  groupsTotal: number;
   isManager: boolean;
 };
 
-type HeroStatProps = {
-  label: string;
-  value: string;
-};
-
-function HeroStat({ label, value }: HeroStatProps) {
-  return (
-    <div className="rounded-full border border-white/20 bg-white/10 px-4 py-2">
-      <p className="text-[0.6875rem] uppercase tracking-[0.08em] text-[#c8c8ec]">{label}</p>
-      <p className="mt-0.5 text-sm font-semibold text-white">{value}</p>
-    </div>
-  );
-}
-
 export function AdminDashboardHero({
-  studentsTotal,
-  teachersTotal,
-  groupsTotal,
   isManager,
 }: AdminDashboardHeroProps) {
   const t = useTranslations('dashboard');
@@ -38,9 +17,9 @@ export function AdminDashboardHero({
   const locale = useLocale();
 
   return (
-    <section className="relative overflow-hidden rounded-[1.75rem] bg-[#1010a3] text-white">
-      <div className="relative z-10 flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:p-10">
-        <div className="min-w-0 max-w-2xl flex-1">
+    <section className="relative min-h-[20rem] overflow-hidden rounded-[1.75rem] bg-[#1010a3] text-white sm:min-h-[22rem] lg:min-h-[24rem]">
+      <div className="relative z-10 flex flex-col gap-6 p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between lg:gap-14 lg:p-14">
+        <div className="min-w-0 max-w-2xl flex-1 lg:max-w-[48%]">
           <p className="text-[0.6875rem] font-normal uppercase tracking-[0.18em] text-[#9b9b9f]">
             {t('title')}
           </p>
@@ -50,18 +29,6 @@ export function AdminDashboardHero({
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#b9b9bd] sm:text-[0.875rem]">
             {isManager ? t('banner.managerSubtitle') : t('banner.adminSubtitle')}
           </p>
-
-          <div className="mt-6 flex flex-wrap gap-2.5">
-            <HeroStat
-              label={t('banner.statStudents')}
-              value={formatLocaleInteger(studentsTotal, locale)}
-            />
-            <HeroStat
-              label={t('banner.statTeachers')}
-              value={formatLocaleInteger(teachersTotal, locale)}
-            />
-            <HeroStat label={t('totalGroups')} value={formatLocaleInteger(groupsTotal, locale)} />
-          </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
@@ -88,13 +55,13 @@ export function AdminDashboardHero({
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[12rem] shrink-0 sm:max-w-[14rem] lg:mx-0 lg:ml-20 lg:max-w-[18rem]">
+        <div className="relative mx-auto w-full max-w-[16rem] shrink-0 sm:max-w-[18rem] lg:mx-0 lg:ml-auto lg:max-w-[22rem] lg:pl-10">
           <PublicAssetImage
             src={STUDENT_DASHBOARD_ASSETS.heroIllustration}
             alt=""
             width={460}
             height={445}
-            className="h-auto w-full -translate-x-2 translate-y-2 scale-[1.08] rotate-90 object-contain sm:-translate-x-6 sm:translate-y-4 sm:scale-[1.2] lg:-translate-x-20 lg:translate-y-8 lg:scale-[1.6]"
+            className="h-auto w-full -translate-x-2 translate-y-2 scale-[1.08] rotate-90 object-contain sm:-translate-x-6 sm:translate-y-4 sm:scale-[1.2] lg:translate-x-0 lg:translate-y-8 lg:scale-[1.6]"
             priority
           />
         </div>

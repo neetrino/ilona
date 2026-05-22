@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout';
 import { AdminDashboardHero } from '@/features/admin-dashboard/AdminDashboardHero';
 import {
-  useAdminDashboardStats,
   UnpaidStudentsBlock,
   GroupsWithCapacityBlock,
   AtRiskStudentsBlock,
@@ -31,14 +30,6 @@ export default function AdminDashboardPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: stats, error: statsError } = useAdminDashboardStats({
-    includeFinance: !isManager,
-  });
-
-  if (statsError) {
-    console.error('Dashboard error:', statsError);
-  }
-
   const subtitle = isManager
     ? `${t('overview')} ${tNav('center')}: ${managerCenter?.name ?? '—'}`
     : t('overview');
@@ -46,12 +37,7 @@ export default function AdminDashboardPage() {
   return (
     <DashboardLayout title={t('title')} subtitle={subtitle}>
       <div className={portalPageStackClass}>
-        <AdminDashboardHero
-          studentsTotal={stats?.students.total ?? 0}
-          teachersTotal={stats?.teachers.total ?? 0}
-          groupsTotal={stats?.groups.total ?? 0}
-          isManager={isManager}
-        />
+        <AdminDashboardHero isManager={isManager} />
 
         {!isManager && <RevenueBlock />}
 
