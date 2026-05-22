@@ -12,9 +12,9 @@ export interface LessonActionDerived {
   feedbackCount?: number;
 }
 
-function deriveState(completed: boolean, locked: boolean): LessonActionUiState {
+function deriveState(completed: boolean, lessonCompleted: boolean): LessonActionUiState {
   if (completed) return 'done';
-  if (locked) return 'missed';
+  if (lessonCompleted) return 'missed';
   return 'pending';
 }
 
@@ -49,6 +49,7 @@ export function isLessonPastEnd(lesson: Lesson): boolean {
 }
 
 export function getLessonActionsDerived(lesson: Lesson): LessonActionDerived[] {
+  const lessonCompleted = lesson.status === 'COMPLETED' || lesson.completionStatus === 'DONE';
   const absenceDone = Boolean(lesson.absenceMarked);
   const feedbackDone = Boolean(lesson.feedbacksCompleted);
   const voiceDone = Boolean(lesson.voiceSent);
@@ -60,32 +61,32 @@ export function getLessonActionsDerived(lesson: Lesson): LessonActionDerived[] {
       id: 'absence',
       completed: absenceDone,
       locked: absenceLocked(lesson),
-      state: deriveState(absenceDone, absenceLocked(lesson)),
+      state: deriveState(absenceDone, lessonCompleted),
     },
     {
       id: 'feedback',
       completed: feedbackDone,
       locked: feedbackLocked(lesson),
-      state: deriveState(feedbackDone, feedbackLocked(lesson)),
+      state: deriveState(feedbackDone, lessonCompleted),
       feedbackCount: lesson._count?.feedbacks,
     },
     {
       id: 'voice',
       completed: voiceDone,
       locked: voiceLocked(lesson),
-      state: deriveState(voiceDone, voiceLocked(lesson)),
+      state: deriveState(voiceDone, lessonCompleted),
     },
     {
       id: 'text',
       completed: textDone,
       locked: textLocked(lesson),
-      state: deriveState(textDone, textLocked(lesson)),
+      state: deriveState(textDone, lessonCompleted),
     },
     {
       id: 'dailyPlan',
       completed: dailyDone,
       locked: dailyPlanLocked(lesson),
-      state: deriveState(dailyDone, dailyPlanLocked(lesson)),
+      state: deriveState(dailyDone, lessonCompleted),
     },
   ];
 }

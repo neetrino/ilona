@@ -126,8 +126,6 @@ export function LessonListTableBodyRow({
   const startMs = new Date(lesson.scheduledAt).getTime();
   const isPastInstant = !Number.isNaN(startMs) && startMs < Date.now();
 
-  const pendingCount = actions.filter((a) => a.state === 'pending').length;
-
   const obligationIds: LessonActionId[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
 
   return (
@@ -142,11 +140,6 @@ export function LessonListTableBodyRow({
           checked={isSelected}
           onCheckedChange={(checked) => onSelectLesson(lesson.id, checked === true)}
         />
-        {pendingCount > 0 && (
-          <p className="mt-1 max-w-[10rem] text-[10px] font-medium leading-snug text-amber-800 sm:max-w-none sm:text-xs">
-            {t('lessonActions.rowPendingHint', { count: pendingCount })}
-          </p>
-        )}
       </td>
       <td className="px-4 py-3">
         <div>
