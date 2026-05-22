@@ -422,6 +422,7 @@ exports.Prisma.SystemSettingsScalarFieldEnum = {
   paymentDueDays: 'paymentDueDays',
   lessonReminderHours: 'lessonReminderHours',
   logoUrl: 'logoUrl',
+  dashboardBannerUrl: 'dashboardBannerUrl',
   absencePercent: 'absencePercent',
   feedbacksPercent: 'feedbacksPercent',
   voicePercent: 'voicePercent',
