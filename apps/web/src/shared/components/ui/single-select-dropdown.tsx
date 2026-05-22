@@ -3,6 +3,20 @@
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/shared/lib/utils';
+import {
+  DROPDOWN_CHEVRON_CLASS,
+  DROPDOWN_LABEL_CLASS,
+  DROPDOWN_MENU_SURFACE_CLASS,
+  DROPDOWN_OPTION_BASE_CLASS,
+  DROPDOWN_OPTION_INTERACTIVE_CLASS,
+  DROPDOWN_OPTION_SELECTED_CLASS,
+  DROPDOWN_PLACEHOLDER_TEXT_CLASS,
+  DROPDOWN_TRIGGER_BASE_CLASS,
+  DROPDOWN_TRIGGER_DISABLED_CLASS,
+  DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+  DROPDOWN_TRIGGER_OPEN_CLASS,
+  DROPDOWN_VALUE_TEXT_CLASS,
+} from './dropdown-theme';
 
 export interface SingleSelectOption {
   id: string;
@@ -182,7 +196,7 @@ export function SingleSelectDropdown({
   return (
     <div className={cn('relative min-w-0', className)} ref={dropdownRef}>
       {label && (
-        <label id={labelId} htmlFor={triggerId} className="mb-1.5 block text-sm font-medium text-[#8b8b90]">
+        <label id={labelId} htmlFor={triggerId} className={DROPDOWN_LABEL_CLASS}>
           {label}
         </label>
       )}
@@ -199,24 +213,23 @@ export function SingleSelectDropdown({
           aria-controls={listboxId}
           aria-labelledby={label ? `${labelId} ${triggerId}` : undefined}
           className={cn(
-            'h-11 w-full rounded-xl border border-[rgba(14,14,16,0.08)] bg-white px-3 text-left',
-            'focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-            'transition-colors hover:border-[#1010a3]/30',
-            isOpen && 'border-[#1010a3]/35 shadow-[0_8px_20px_rgba(16,16,163,0.12)]',
+            DROPDOWN_TRIGGER_BASE_CLASS,
+            DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+            DROPDOWN_TRIGGER_DISABLED_CLASS,
+            isOpen && DROPDOWN_TRIGGER_OPEN_CLASS,
             error && 'border-red-500'
           )}
         >
           <div className="flex min-w-0 items-center justify-between gap-2">
             <span className={cn(
               'truncate text-sm',
-              !selectedOption ? 'text-slate-400' : 'text-[#2f2f35]'
+              !selectedOption ? DROPDOWN_PLACEHOLDER_TEXT_CLASS : DROPDOWN_VALUE_TEXT_CLASS
             )}>
               {isLoading ? 'Loading...' : displayText}
             </span>
             <svg
               className={cn(
-                'h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200',
+                DROPDOWN_CHEVRON_CLASS,
                 isOpen && 'rotate-180'
               )}
               fill="none"
@@ -242,8 +255,7 @@ export function SingleSelectDropdown({
             onKeyDown={handleMenuKeyDown}
             style={{ maxHeight: `${menuMaxHeight}px` }}
             className={cn(
-              'absolute left-0 right-0 z-50 overflow-y-auto rounded-xl border border-[rgba(14,14,16,0.08)] bg-white p-1',
-              'shadow-[0_16px_40px_rgba(15,23,42,0.14)] ring-1 ring-black/5',
+              DROPDOWN_MENU_SURFACE_CLASS,
               'animate-in fade-in-0 zoom-in-95 duration-150',
               openUpward ? 'bottom-full mb-1.5 origin-bottom' : 'top-full mt-1.5 origin-top'
             )}
@@ -270,10 +282,9 @@ export function SingleSelectDropdown({
                       onClick={() => handleSelect(option.id)}
                       onMouseEnter={() => setActiveIndex(index)}
                       className={cn(
-                        'w-full rounded-lg px-3 py-2.5 text-left text-sm text-[#3b3b40] outline-none transition-colors',
-                        'hover:bg-slate-50 hover:text-[#1010a3]',
-                        'focus:bg-slate-50 focus:text-[#1010a3]',
-                        isSelected && 'bg-[#ecefff] font-medium text-[#1010a3]',
+                        DROPDOWN_OPTION_BASE_CLASS,
+                        DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                        isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
                         activeIndex === index && 'bg-slate-50 text-[#1010a3]'
                       )}
                     >

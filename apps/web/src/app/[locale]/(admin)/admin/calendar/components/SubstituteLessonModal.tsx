@@ -11,6 +11,7 @@ import {
 } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useLesson, useUpdateLesson } from '@/features/lessons';
 
 export interface SubstituteTeacherOption {
@@ -90,21 +91,17 @@ export function SubstituteLessonModal({
             </p>
             <div className="space-y-2">
               <Label htmlFor="substitute-select">{t('substituteForClassOnly')}</Label>
-              <select
+              <SingleSelectDropdown
                 id="substitute-select"
-                className="unified-native-select w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
+                options={[
+                  { id: '', label: t('noneMainTeacherCovers') },
+                  ...teacherOptions
+                    .filter((teacher) => teacher.id !== lesson.teacherId)
+                    .map((teacher) => ({ id: teacher.id, label: teacher.label })),
+                ]}
                 value={selectedId}
-                onChange={(e) => setSelectedId(e.target.value)}
-              >
-                <option value="">{t('noneMainTeacherCovers')}</option>
-                {teacherOptions
-                  .filter((t) => t.id !== lesson.teacherId)
-                  .map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.label}
-                    </option>
-                  ))}
-              </select>
+                onValueChange={(nextValue) => setSelectedId(nextValue ?? '')}
+              />
             </div>
             {lesson.substituteTeacher?.user && (
               <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">

@@ -4,6 +4,16 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { Checkbox } from './checkbox';
+import {
+  DROPDOWN_CHEVRON_CLASS,
+  DROPDOWN_LABEL_CLASS,
+  DROPDOWN_MENU_SURFACE_CLASS,
+  DROPDOWN_OPTION_SELECTED_CLASS,
+  DROPDOWN_PLACEHOLDER_TEXT_CLASS,
+  DROPDOWN_TRIGGER_BASE_CLASS,
+  DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+  DROPDOWN_VALUE_TEXT_CLASS,
+} from './dropdown-theme';
 
 export interface MultiSelectOption {
   id: string;
@@ -95,7 +105,7 @@ export function MultiSelectGroupDropdown({
   return (
     <div className={cn('relative', className)} ref={dropdownRef}>
       {label && (
-        <label className="mb-2 block text-sm font-medium text-[#3b3b40]">
+        <label className={DROPDOWN_LABEL_CLASS}>
           {label}
         </label>
       )}
@@ -105,23 +115,25 @@ export function MultiSelectGroupDropdown({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={isLoading || disabled}
           className={cn(
-            'w-full min-h-11 px-3 py-2 text-left bg-white border border-slate-200 rounded-lg',
-            'focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10',
+            'w-full min-h-11 py-2 text-left',
+            DROPDOWN_TRIGGER_BASE_CLASS,
+            DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'transition-colors hover:border-[#1010a3]/30',
+            isOpen && 'border-[#1010a3]/35 shadow-[0_8px_20px_rgba(16,16,163,0.12)]',
             error && 'border-red-500'
           )}
         >
           <div className="flex items-center justify-between">
             <span className={cn(
                 'text-sm truncate',
-              selectedIds.size === 0 ? 'text-slate-400' : 'text-slate-800'
+              selectedIds.size === 0 ? DROPDOWN_PLACEHOLDER_TEXT_CLASS : DROPDOWN_VALUE_TEXT_CLASS
             )}>
               {isLoading ? 'Loading...' : getDisplayText()}
             </span>
             <svg
               className={cn(
-                'w-4 h-4 text-slate-500 transition-transform flex-shrink-0 ml-2',
+                DROPDOWN_CHEVRON_CLASS,
+                'ml-2',
                 isOpen && 'transform rotate-180'
               )}
               fill="none"
@@ -139,7 +151,7 @@ export function MultiSelectGroupDropdown({
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col">
+          <div className={cn(DROPDOWN_MENU_SURFACE_CLASS, 'absolute mt-1 flex max-h-60 w-full flex-col overflow-hidden')}>
             {error ? (
               <div className="p-3 text-sm text-red-600">{error}</div>
             ) : options.length === 0 ? (
@@ -198,8 +210,8 @@ export function MultiSelectGroupDropdown({
                           <label
                             key={option.id}
                             className={cn(
-                              'flex items-center px-4 py-2 cursor-pointer hover:bg-slate-50 transition-colors',
-                              isSelected && 'bg-[#ecefff]'
+                              'flex cursor-pointer items-center rounded-lg px-3 py-2.5 transition-colors hover:bg-slate-50',
+                              isSelected && DROPDOWN_OPTION_SELECTED_CLASS
                             )}
                           >
                             <Checkbox

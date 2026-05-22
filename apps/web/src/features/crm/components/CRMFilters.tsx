@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import type { CrmLeadFilters } from '@/features/crm/types';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 interface CRMFiltersProps {
   filters: CrmLeadFilters;
@@ -35,50 +36,48 @@ export function CRMFilters({
       </div>
       <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('center')}</label>
-        <select
+        <SingleSelectDropdown
+          id="crm-filter-center"
+          options={[
+            { id: '', label: tc('all') },
+            ...centers.map((c) => ({ id: c.id, label: c.name })),
+          ]}
           value={filters.centerId ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, centerId: e.target.value || undefined })
+          onValueChange={(nextValue) =>
+            onFiltersChange({ ...filters, centerId: nextValue || undefined })
           }
-          className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">{tc('all')}</option>
-          {centers.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+        />
       </div>
       <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('teacher')}</label>
-        <select
+        <SingleSelectDropdown
+          id="crm-filter-teacher"
+          options={[
+            { id: '', label: tc('all') },
+            ...teachers.map((teacher) => ({
+              id: teacher.id,
+              label: `${teacher.user?.firstName ?? ''} ${teacher.user?.lastName ?? ''}`.trim(),
+            })),
+          ]}
           value={filters.teacherId ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, teacherId: e.target.value || undefined })
+          onValueChange={(nextValue) =>
+            onFiltersChange({ ...filters, teacherId: nextValue || undefined })
           }
-          className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">{tc('all')}</option>
-          {teachers.map((teacher) => (
-            <option key={teacher.id} value={teacher.id}>
-              {teacher.user?.firstName} {teacher.user?.lastName}
-            </option>
-          ))}
-        </select>
+        />
       </div>
       <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('group')}</label>
-        <select
+        <SingleSelectDropdown
+          id="crm-filter-group"
+          options={[
+            { id: '', label: tc('all') },
+            ...groups.map((g) => ({ id: g.id, label: g.name })),
+          ]}
           value={filters.groupId ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, groupId: e.target.value || undefined })
+          onValueChange={(nextValue) =>
+            onFiltersChange({ ...filters, groupId: nextValue || undefined })
           }
-          className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">{tc('all')}</option>
-          {groups.map((g) => (
-            <option key={g.id} value={g.id}>{g.name}</option>
-          ))}
-        </select>
+        />
       </div>
       <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateFrom')}</label>

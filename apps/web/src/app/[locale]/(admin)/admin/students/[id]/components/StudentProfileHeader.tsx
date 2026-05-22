@@ -1,10 +1,12 @@
 'use client';
 
 import { Badge, Input, Label, Avatar } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type { Student } from '@/features/students';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
-import type { UseFormRegister } from 'react-hook-form';
+import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { UpdateStudentFormData } from '../schemas';
+import type { UserStatus } from '@/types';
 
 interface StudentProfileHeaderProps {
   student: Student;
@@ -18,6 +20,8 @@ interface StudentProfileHeaderProps {
     status?: { message?: string };
   };
   register: UseFormRegister<UpdateStudentFormData>;
+  setValue: UseFormSetValue<UpdateStudentFormData>;
+  statusValue: UserStatus;
 }
 
 export function StudentProfileHeader({
@@ -28,6 +32,8 @@ export function StudentProfileHeader({
   initials: _initials,
   errors,
   register,
+  setValue,
+  statusValue,
 }: StudentProfileHeaderProps) {
   const avatarUrl = student.user?.avatarUrl;
 
@@ -67,15 +73,18 @@ export function StudentProfileHeader({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status <span className="text-red-500">*</span></Label>
-                <select
+                <SingleSelectDropdown
                   id="status"
-                  {...register('status')}
-                  className="unified-native-select flex h-10 w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10"
-                >
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
-                  <option value="SUSPENDED">Suspended</option>
-                </select>
+                  options={[
+                    { id: 'ACTIVE', label: 'Active' },
+                    { id: 'INACTIVE', label: 'Inactive' },
+                    { id: 'SUSPENDED', label: 'Suspended' },
+                  ]}
+                  value={statusValue}
+                  onValueChange={(nextValue) =>
+                    setValue('status', (nextValue as UserStatus | null) ?? 'ACTIVE', { shouldDirty: true })
+                  }
+                />
                 {errors?.status && (
                   <p className="text-sm text-red-600">{errors.status.message}</p>
                 )}

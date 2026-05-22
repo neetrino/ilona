@@ -11,6 +11,7 @@ import {
 } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useSetSubstituteByGroupDay } from '@/features/lessons';
 import type { Group } from '@/features/groups/types';
 import type { SubstituteTeacherOption } from './SubstituteLessonModal';
@@ -73,39 +74,33 @@ export function SubstituteByGroupDayModal({
           </div>
           <div className="space-y-2">
             <Label htmlFor="sub-day-group">{t('group')}</Label>
-            <select
+            <SingleSelectDropdown
               id="sub-day-group"
-              className="unified-native-select w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
+              options={[
+                { id: '', label: groupsLoading ? t('loadingGroups') : t('selectGroup') },
+                ...groups.map((group) => ({
+                  id: group.id,
+                  label: `${group.name}${group.center?.name ? ` · ${group.center.name}` : ''}`,
+                })),
+              ]}
               value={groupId}
-              onChange={(e) => setGroupId(e.target.value)}
+              onValueChange={(nextValue) => setGroupId(nextValue ?? '')}
               disabled={groupsLoading}
-            >
-              <option value="">{groupsLoading ? t('loadingGroups') : t('selectGroup')}</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                  {g.center?.name ? ` · ${g.center.name}` : ''}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="sub-day-teacher">{t('substituteTeacher')}</Label>
-            <select
+            <SingleSelectDropdown
               id="sub-day-teacher"
-              className="unified-native-select w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
+              options={[
+                { id: '', label: t('noneClearSubstitute') },
+                ...teacherOptions
+                  .filter((teacher) => !selectedGroup?.teacherId || teacher.id !== selectedGroup.teacherId)
+                  .map((teacher) => ({ id: teacher.id, label: teacher.label })),
+              ]}
               value={substituteTeacherId}
-              onChange={(e) => setSubstituteTeacherId(e.target.value)}
-            >
-              <option value="">{t('noneClearSubstitute')}</option>
-              {teacherOptions
-                .filter((t) => !selectedGroup?.teacherId || t.id !== selectedGroup.teacherId)
-                .map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-            </select>
+              onValueChange={(nextValue) => setSubstituteTeacherId(nextValue ?? '')}
+            />
           </div>
         </div>
         <DialogFooter>

@@ -58,6 +58,7 @@ export default function TeacherProfilePage() {
       workingDays: [],
     },
   });
+  const watchedStatus = watch('status') || 'ACTIVE';
 
   // Dismiss edit mode and messages when navigating to another teacher
   useEffect(() => {
@@ -325,6 +326,8 @@ export default function TeacherProfilePage() {
           initials={initials}
           errors={errors}
           register={register}
+          setValue={setValue}
+          statusValue={watchedStatus}
         />
 
         {/* Stats Grid */}

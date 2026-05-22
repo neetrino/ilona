@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { Trash2, Loader2 } from 'lucide-react';
 import type { PaymentStatus, SalaryStatus } from '@/features/finance';
 
@@ -50,6 +51,19 @@ export function FinanceFilters({
   onPageChange,
 }: FinanceFiltersProps) {
   const t = useTranslations('finance');
+  const statusOptions =
+    activeTab === 'payments'
+      ? [
+          { id: '', label: 'All statuses' },
+          { id: 'PAID', label: t('paid') },
+          { id: 'OVERDUE', label: t('overdue') },
+          { id: 'CANCELLED', label: t('cancelled') },
+        ]
+      : [
+          { id: '', label: 'All statuses' },
+          { id: 'PENDING', label: 'Pending' },
+          { id: 'PAID', label: 'Paid' },
+        ];
 
   return (
     <div className="space-y-2">
@@ -76,40 +90,20 @@ export function FinanceFilters({
           )}
         </div>
         {/* Status Filter */}
-        <div className="relative w-full sm:w-auto shrink-0">
-          <select
+        <div className="w-full shrink-0 sm:w-auto sm:min-w-[9rem]">
+          <SingleSelectDropdown
+            id="finance-status-filter"
+            options={statusOptions}
             value={activeTab === 'payments' ? paymentStatus : salaryStatus}
-            onChange={(e) => {
+            onValueChange={(nextValue) => {
               if (activeTab === 'payments') {
-                onPaymentStatusChange(e.target.value as PaymentStatus | '');
-              } else if (activeTab === 'salaries') {
-                onSalaryStatusChange(e.target.value as SalaryStatus | '');
+                onPaymentStatusChange((nextValue ?? '') as PaymentStatus | '');
+              } else {
+                onSalaryStatusChange((nextValue ?? '') as SalaryStatus | '');
               }
             }}
-            className="unified-native-select w-full min-w-0 pl-4 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] appearance-none cursor-pointer sm:min-w-[9rem] sm:w-auto"
-          >
-            <option value="">All statuses</option>
-            {activeTab === 'payments' ? (
-              <>
-                <option value="PAID">{t('paid')}</option>
-                <option value="OVERDUE">{t('overdue')}</option>
-                <option value="CANCELLED">{t('cancelled')}</option>
-              </>
-            ) : activeTab === 'salaries' ? (
-              <>
-                <option value="PENDING">Pending</option>
-                <option value="PAID">Paid</option>
-              </>
-            ) : null}
-          </select>
-          <svg 
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90] pointer-events-none" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+            className="sm:min-w-[9rem]"
+          />
         </div>
         {activeTab === 'payments' ? (
           <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">

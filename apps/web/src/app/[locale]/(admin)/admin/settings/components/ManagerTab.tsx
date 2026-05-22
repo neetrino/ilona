@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Archive } from 'lucide-react';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useCenters } from '@/features/centers';
 import { useCreateManager, useManagers, type ManagerAccount } from '@/features/settings';
 import { EditManagerForm } from '@/features/settings/components/EditManagerForm';
@@ -146,19 +147,16 @@ export function ManagerTab() {
             value={form.phone}
             onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
           />
-          <select
-            className="unified-native-select h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3] bg-white"
+          <SingleSelectDropdown
+            id="manager-center-select"
+            options={[
+              { id: '', label: t('managerSelectCenter') },
+              ...availableCenters.map((center) => ({ id: center.id, label: center.name })),
+            ]}
             value={form.centerId}
-            onChange={(e) => setForm((prev) => ({ ...prev, centerId: e.target.value }))}
+            onValueChange={(nextValue) => setForm((prev) => ({ ...prev, centerId: nextValue ?? '' }))}
             disabled={availableCenters.length === 0}
-          >
-            <option value="">{t('managerSelectCenter')}</option>
-            {availableCenters.map((center) => (
-              <option key={center.id} value={center.id}>
-                {center.name}
-              </option>
-            ))}
-          </select>
+          />
 
           {availableCenters.length === 0 && (
             <p className="md:col-span-2 text-xs text-amber-700">{t('managerNoAvailableCenters')}</p>

@@ -15,6 +15,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { normalizeSearchQuery } from '../utils/normalize-search-query';
+import {
+  DROPDOWN_MENU_SURFACE_CLASS,
+  DROPDOWN_OPTION_BASE_CLASS,
+  DROPDOWN_OPTION_INTERACTIVE_CLASS,
+} from '@/shared/components/ui/dropdown-theme';
 
 function iconForType(type: GlobalSearchResultType): ReactNode {
   const className = 'w-4 h-4 text-slate-500 flex-shrink-0';
@@ -93,7 +98,10 @@ export function GlobalSearchDropdown({
 
   return (
     <div
-      className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[min(70vh,420px)] overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+      className={cn(
+        DROPDOWN_MENU_SURFACE_CLASS,
+        'top-full mt-1 max-h-[min(70vh,420px)] py-1'
+      )}
       role="listbox"
       aria-label="Search results"
     >
@@ -145,8 +153,9 @@ export function GlobalSearchDropdown({
                 role="option"
                 aria-selected={false}
                 className={cn(
-                  'flex w-full items-start gap-2 px-3 py-2 text-left text-sm transition-colors',
-                  'hover:bg-slate-50 focus:bg-slate-50 focus:outline-none',
+                  DROPDOWN_OPTION_BASE_CLASS,
+                  DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                  'flex items-start gap-2',
                 )}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => onPick(item)}

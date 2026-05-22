@@ -5,6 +5,7 @@ import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
@@ -169,21 +170,21 @@ export default function AdminDailyPlanPage() {
                 className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] px-3 text-[#3b3b40]"
               />
             </label>
-            <label className="flex flex-col gap-1 text-sm sm:col-span-2 lg:col-span-2">
+            <div className="flex flex-col gap-1 text-sm sm:col-span-2 lg:col-span-2">
               <span className="font-medium text-[#3b3b40]">{tCommon('teacher')}</span>
-              <select
+              <SingleSelectDropdown
+                id="daily-plan-teacher-filter"
+                options={[
+                  { id: '', label: t('allTeachers') },
+                  ...teachers.map((teacher) => ({
+                    id: teacher.id,
+                    label: `${teacher.user.firstName} ${teacher.user.lastName}`,
+                  })),
+                ]}
                 value={teacherId}
-                onChange={(e) => setTeacherId(e.target.value)}
-                className="unified-native-select h-10 rounded-lg border border-[rgba(14,14,16,0.07)] bg-white px-3 text-[#3b3b40]"
-              >
-                <option value="">{t('allTeachers')}</option>
-                {teachers.map((teacher) => (
-                  <option key={teacher.id} value={teacher.id}>
-                    {teacher.user.firstName} {teacher.user.lastName}
-                  </option>
-                ))}
-              </select>
-            </label>
+                onValueChange={(nextValue) => setTeacherId(nextValue ?? '')}
+              />
+            </div>
           </div>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-[#3b3b40]">{tCommon('search')}</span>

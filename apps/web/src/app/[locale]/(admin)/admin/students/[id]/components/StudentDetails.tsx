@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Badge, Input, Label } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
 import type { Group } from '@/features/groups';
@@ -27,6 +28,8 @@ interface StudentDetailsProps {
   };
   register: UseFormRegister<UpdateStudentFormData>;
   setValue?: UseFormSetValue<UpdateStudentFormData>;
+  teacherIdValue?: string;
+  groupIdValue?: string;
 }
 
 export function StudentDetails({
@@ -40,6 +43,8 @@ export function StudentDetails({
   errors,
   register,
   setValue,
+  teacherIdValue = '',
+  groupIdValue = '',
 }: StudentDetailsProps) {
   const t = useTranslations('students');
   const tc = useTranslations('common');
@@ -106,22 +111,22 @@ export function StudentDetails({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="teacherId">{t('teacher')}</Label>
-                  <select
+                  <SingleSelectDropdown
                     id="teacherId"
-                    {...register('teacherId', {
-                      onChange: () => setValue?.('groupId', ''),
-                    })}
-                    className="unified-native-select flex h-10 w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    options={[
+                      { id: '', label: t('selectTeacher') },
+                      ...teachers.map((teacher) => ({
+                        id: teacher.id,
+                        label: `${teacher.user.firstName} ${teacher.user.lastName}${teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}`,
+                      })),
+                    ]}
+                    value={teacherIdValue}
+                    onValueChange={(nextValue) => {
+                      setValue?.('teacherId', nextValue ?? '', { shouldDirty: true });
+                      setValue?.('groupId', '', { shouldDirty: true });
+                    }}
                     disabled={isLoadingTeachers}
-                  >
-                    <option value="">{t('selectTeacher')}</option>
-                    {teachers.map((teacher) => (
-                      <option key={teacher.id} value={teacher.id}>
-                        {teacher.user.firstName} {teacher.user.lastName}
-                        {teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {errors?.teacherId && (
                     <p className="text-sm text-red-600">{errors.teacherId.message}</p>
                   )}
@@ -132,21 +137,21 @@ export function StudentDetails({
 
                 <div className="space-y-2">
                   <Label htmlFor="groupId">{t('group')}</Label>
-                  <select
+                  <SingleSelectDropdown
                     id="groupId"
-                    {...register('groupId')}
-                    className="unified-native-select flex h-10 w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    options={[
+                      { id: '', label: groupSelectDisabled ? t('selectTeacherFirst') : tc('notAssigned') },
+                      ...groups.map((group) => ({
+                        id: group.id,
+                        label: `${group.name} ${group.level ? `(${group.level})` : ''}`.trim(),
+                      })),
+                    ]}
+                    value={groupIdValue}
+                    onValueChange={(nextValue) =>
+                      setValue?.('groupId', nextValue ?? '', { shouldDirty: true })
+                    }
                     disabled={isLoadingGroups || groupSelectDisabled}
-                  >
-                    <option value="">
-                      {groupSelectDisabled ? t('selectTeacherFirst') : tc('notAssigned')}
-                    </option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name} {group.level ? `(${group.level})` : ''}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {errors?.groupId && (
                     <p className="text-sm text-red-600">{errors.groupId.message}</p>
                   )}

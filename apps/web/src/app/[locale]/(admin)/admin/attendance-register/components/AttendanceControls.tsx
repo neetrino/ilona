@@ -1,6 +1,7 @@
 import { ViewModeSelector } from '@/shared/components/attendance';
 import { Button } from '@/shared/components/ui/button';
 import { MultiSelectGroupDropdown } from '@/shared/components/ui/multi-select-group-dropdown';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useTranslations } from 'next-intl';
 import {
   getTodayDate,
@@ -197,19 +198,15 @@ export function AttendanceControls({
               <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                 Filter by type
               </label>
-              <select
+              <SingleSelectDropdown
+                id="attendance-absence-type-filter"
+                options={absenceFilterOptions.map((opt) => ({ id: opt.value, label: opt.label }))}
                 value={absenceFilter}
-                onChange={(e) => onAbsenceFilterChange(e.target.value as AbsenceFilterType)}
+                onValueChange={(nextValue) =>
+                  onAbsenceFilterChange((nextValue as AbsenceFilterType | null) ?? 'all')
+                }
                 disabled={safeSelectedGroupIds.length === 0}
-                className="unified-native-select w-full h-10 px-4 py-2 text-sm text-left bg-white border border-[rgba(14,14,16,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.18)] transition-colors"
-                aria-label="Filter by absence type"
-              >
-                {absenceFilterOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           ) : (
             <Button

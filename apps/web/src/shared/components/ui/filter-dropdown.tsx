@@ -5,6 +5,16 @@ import { cn } from '@/shared/lib/utils';
 import { usePortalShell } from '@/shared/context/portal-shell-context';
 import { portalLabelClass, portalInputClass } from '@/shared/lib/portal-theme';
 import { Checkbox } from './checkbox';
+import {
+  DROPDOWN_CHEVRON_CLASS,
+  DROPDOWN_LABEL_CLASS,
+  DROPDOWN_MENU_SURFACE_CLASS,
+  DROPDOWN_OPTION_SELECTED_CLASS,
+  DROPDOWN_PLACEHOLDER_TEXT_CLASS,
+  DROPDOWN_TRIGGER_BASE_CLASS,
+  DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+  DROPDOWN_VALUE_TEXT_CLASS,
+} from './dropdown-theme';
 
 export interface FilterOption {
   id: string;
@@ -73,7 +83,7 @@ export function FilterDropdown({
 
   return (
     <div className={cn('relative min-w-0', className)} ref={dropdownRef}>
-      <label className={isPortal ? portalLabelClass : 'mb-1.5 block text-sm font-medium text-slate-500'}>
+      <label className={isPortal ? portalLabelClass : DROPDOWN_LABEL_CLASS}>
         {label}
       </label>
       <div className="relative">
@@ -85,8 +95,9 @@ export function FilterDropdown({
             isPortal
               ? cn(portalInputClass, 'flex items-center justify-between text-left')
               : cn(
-                  'flex min-h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-left',
-                  'hover:border-[#1010a3]/30 focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10',
+                  'flex min-h-11 w-full items-center justify-between',
+                  DROPDOWN_TRIGGER_BASE_CLASS,
+                  DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
                 ),
             'disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
           )}
@@ -100,8 +111,8 @@ export function FilterDropdown({
                     ? 'text-[#8b8b90]'
                     : 'text-[#3b3b40]'
                   : selectedIds.size === 0
-                    ? 'text-slate-400'
-                    : 'text-slate-800',
+                    ? DROPDOWN_PLACEHOLDER_TEXT_CLASS
+                    : DROPDOWN_VALUE_TEXT_CLASS,
               )}
             >
               {isLoading ? 'Loading...' : getDisplayText()}
@@ -109,7 +120,7 @@ export function FilterDropdown({
             <svg
               className={cn(
                 'h-4 w-4 shrink-0 transition-transform',
-                isPortal ? 'text-[#8b8b90]' : 'text-slate-500',
+                isPortal ? 'text-[#8b8b90]' : DROPDOWN_CHEVRON_CLASS,
                 isOpen && 'rotate-180',
               )}
               fill="none"
@@ -129,10 +140,10 @@ export function FilterDropdown({
         {isOpen && (
           <div
             className={cn(
-              'absolute z-50 mt-1 max-h-60 w-full overflow-auto shadow-lg',
+              'mt-1 max-h-60 w-full',
               isPortal
-                ? 'rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white'
-                : 'rounded-lg border border-slate-200 bg-white',
+                ? 'absolute z-50 overflow-auto rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white shadow-lg'
+                : cn(DROPDOWN_MENU_SURFACE_CLASS, 'absolute'),
             )}
           >
             {error ? (
@@ -149,9 +160,9 @@ export function FilterDropdown({
                     <label
                       key={option.id}
                       className={cn(
-                        'flex cursor-pointer select-none items-center px-4 py-2 transition-colors',
+                        'flex cursor-pointer select-none items-center rounded-lg px-3 py-2.5 transition-colors',
                         isPortal ? 'hover:bg-[#fafafa]' : 'hover:bg-slate-50',
-                        isSelected && (isPortal ? 'bg-[#f0f0fc]' : 'bg-[#ecefff]'),
+                        isSelected && (isPortal ? 'bg-[#f0f0fc]' : DROPDOWN_OPTION_SELECTED_CLASS),
                       )}
                     >
                       <Checkbox

@@ -2,6 +2,7 @@
 
 import { List, LayoutGrid } from 'lucide-react';
 import { Button } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { cn } from '@/shared/lib/utils';
 import type { useTranslations } from 'next-intl';
 
@@ -43,6 +44,13 @@ export function TeachersFilters({
   onPageChange,
   isUpdating = false,
 }: TeachersFiltersProps) {
+  const statusOptions = [
+    { id: '', label: 'All statuses' },
+    { id: 'ACTIVE', label: tStatus('active') },
+    { id: 'INACTIVE', label: tStatus('inactive') },
+    { id: 'SUSPENDED', label: tStatus('suspended') },
+  ];
+
   return (
     <div className="space-y-4 w-full min-w-0">
       <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
@@ -79,29 +87,15 @@ export function TeachersFilters({
 
       {/* Status Filter */}
       <div className="min-w-0">
-        <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
-          Status
-        </label>
-        <div className="relative">
-          <select
-            value={selectedStatus}
-            onChange={(e) => onStatusChange(e.target.value as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '')}
-            className="unified-native-select w-full h-12 pl-4 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] appearance-none cursor-pointer"
-          >
-            <option value="">All statuses</option>
-            <option value="ACTIVE">{tStatus('active')}</option>
-            <option value="INACTIVE">{tStatus('inactive')}</option>
-            <option value="SUSPENDED">{tStatus('suspended')}</option>
-          </select>
-          <svg 
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90] pointer-events-none" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
+        <SingleSelectDropdown
+          id="teachers-status-filter"
+          label="Status"
+          options={statusOptions}
+          value={selectedStatus}
+          onValueChange={(nextValue) => {
+            onStatusChange((nextValue ?? '') as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '');
+          }}
+        />
       </div>
 
       </div>

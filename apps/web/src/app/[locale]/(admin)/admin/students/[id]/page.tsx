@@ -91,6 +91,8 @@ export default function StudentProfilePage() {
   }, [student, isEditMode, reset]);
 
   const watchedTeacherId = watch('teacherId') || '';
+  const watchedGroupId = watch('groupId') || '';
+  const watchedStatus = watch('status') || 'ACTIVE';
   const groupsForTeacher = useMemo(() => {
     const allGroups = groupsData?.items ?? [];
     return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
@@ -325,6 +327,8 @@ export default function StudentProfilePage() {
           initials={initials}
           errors={errors}
           register={register}
+          setValue={setValue}
+          statusValue={watchedStatus}
         />
 
         {/* Stats Grid */}
@@ -348,6 +352,8 @@ export default function StudentProfilePage() {
           errors={errors}
           register={register}
           setValue={setValue}
+          teacherIdValue={watchedTeacherId}
+          groupIdValue={watchedGroupId}
         />
 
         {/* Notes */}
