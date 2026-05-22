@@ -22,7 +22,7 @@ export function CRMFilters({
   const tc = useTranslations('common');
 
   return (
-    <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] items-end">
+    <div className="grid w-full min-w-0 grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))]">
       <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{tc('search')}</label>
         <input
@@ -33,14 +33,14 @@ export function CRMFilters({
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
       </div>
-      <div>
+      <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('center')}</label>
         <select
           value={filters.centerId ?? ''}
           onChange={(e) =>
             onFiltersChange({ ...filters, centerId: e.target.value || undefined })
           }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         >
           <option value="">{tc('all')}</option>
           {centers.map((c) => (
@@ -48,14 +48,14 @@ export function CRMFilters({
           ))}
         </select>
       </div>
-      <div>
+      <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('teacher')}</label>
         <select
           value={filters.teacherId ?? ''}
           onChange={(e) =>
             onFiltersChange({ ...filters, teacherId: e.target.value || undefined })
           }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         >
           <option value="">{tc('all')}</option>
           {teachers.map((teacher) => (
@@ -65,14 +65,14 @@ export function CRMFilters({
           ))}
         </select>
       </div>
-      <div>
+      <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('group')}</label>
         <select
           value={filters.groupId ?? ''}
           onChange={(e) =>
             onFiltersChange({ ...filters, groupId: e.target.value || undefined })
           }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         >
           <option value="">{tc('all')}</option>
           {groups.map((g) => (
@@ -80,7 +80,7 @@ export function CRMFilters({
           ))}
         </select>
       </div>
-      <div>
+      <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateFrom')}</label>
         <input
           type="date"
@@ -88,10 +88,10 @@ export function CRMFilters({
           onChange={(e) =>
             onFiltersChange({ ...filters, dateFrom: e.target.value || undefined })
           }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
       </div>
-      <div>
+      <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateTo')}</label>
         <input
           type="date"
@@ -99,7 +99,7 @@ export function CRMFilters({
           onChange={(e) =>
             onFiltersChange({ ...filters, dateTo: e.target.value || undefined })
           }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
       </div>
     </div>
