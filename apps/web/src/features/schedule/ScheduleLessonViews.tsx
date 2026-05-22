@@ -13,7 +13,6 @@ import { studentScheduleTable } from '@/features/student-ui/tokens';
 
 type ScheduleUiVariant = 'default' | 'student';
 
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const SCHEDULE_START_HOUR = 9;
 const SCHEDULE_END_HOUR = 22;
 
@@ -53,6 +52,12 @@ function formatMinutesToLabel(totalMinutes: number): string {
   const hh = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
   const mm = String(totalMinutes % 60).padStart(2, '0');
   return `${hh}:${mm}`;
+}
+
+function formatWeekdayLabel(date: Date): string {
+  return date
+    .toLocaleDateString('en-US', { weekday: 'short' })
+    .toUpperCase();
 }
 
 function getLessonTimeBounds(lesson: Lesson): { start: number; end: number } | null {
@@ -239,9 +244,9 @@ export function WeekLessonGrid({
             >
               Time
             </th>
-            {DAY_LABELS.map((day) => (
+            {weekDates.map((date, dayIdx) => (
               <th
-                key={day}
+                key={`${formatScheduleDate(date)}-${dayIdx}`}
                 className={cn(
                   'border-b-2 border-r-2 px-2 py-1 text-center text-[10px] font-semibold uppercase last:border-r-0',
                   isStudent
@@ -249,7 +254,12 @@ export function WeekLessonGrid({
                     : 'border-slate-200 bg-slate-50 text-slate-500',
                 )}
               >
-                {day}
+                <div className="leading-tight">
+                  <div>{formatWeekdayLabel(date)}</div>
+                  <div className="text-[9px] font-medium normal-case">
+                    {date.getDate()}
+                  </div>
+                </div>
               </th>
             ))}
           </tr>
@@ -267,7 +277,7 @@ export function WeekLessonGrid({
               >
                 {formatMinutesToLabel(slot)}
               </td>
-              {DAY_LABELS.map((_, dayIdx) => {
+              {weekDates.map((_, dayIdx) => {
                 const key = `${dayIdx}|${slot}`;
                 const items = (cells.get(key) ?? []).sort(
                   (a, b) =>
