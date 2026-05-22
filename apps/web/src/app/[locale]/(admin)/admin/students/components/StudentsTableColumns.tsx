@@ -5,7 +5,7 @@ import { MessageCircle } from 'lucide-react';
 import { ActionButtons, Avatar } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
-import { formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
@@ -14,6 +14,18 @@ import type { Group } from '@/features/groups';
 import type { Teacher } from '@/features/teachers';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
+
+function getHorizontalScrollContainer(node: HTMLElement | null): HTMLElement | null {
+  let current = node?.parentElement ?? null;
+  while (current) {
+    const style = window.getComputedStyle(current);
+    const canScrollX = (style.overflowX === 'auto' || style.overflowX === 'scroll')
+      && current.scrollWidth > current.clientWidth;
+    if (canScrollX) return current;
+    current = current.parentElement;
+  }
+  return null;
+}
 
 function buildTeacherOptionsForRow(
   centerId: string | null,
@@ -168,7 +180,16 @@ function RegisterDateCell({
 
   useEffect(() => {
     if (editing && inputRef.current) {
-      inputRef.current.focus();
+      const scrollContainer = getHorizontalScrollContainer(inputRef.current);
+      const previousScrollLeft = scrollContainer?.scrollLeft ?? 0;
+      try {
+        inputRef.current.focus({ preventScroll: true });
+      } catch {
+        inputRef.current.focus();
+      }
+      if (scrollContainer) {
+        scrollContainer.scrollLeft = previousScrollLeft;
+      }
     }
   }, [editing]);
 
@@ -221,7 +242,7 @@ function RegisterDateCell({
 
   if (editing && !disabled) {
     return (
-      <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="relative min-w-0 w-full min-h-8" onClick={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
           type="text"
@@ -231,10 +252,10 @@ function RegisterDateCell({
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           disabled={saving}
-          className="w-full rounded border border-[rgba(14,14,16,0.12)] px-2 py-1 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3] disabled:opacity-50"
+          className="h-8 w-full rounded border border-[rgba(14,14,16,0.12)] px-2 py-1 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3] disabled:opacity-50"
         />
         {error && (
-          <p className="absolute mt-0.5 text-xs text-red-600">{error}</p>
+          <p className="absolute left-0 top-full mt-0.5 text-xs text-red-600">{error}</p>
         )}
       </div>
     );
@@ -243,14 +264,19 @@ function RegisterDateCell({
   const displayText = formatRegisterDate(value) || '—';
   return (
     <div
-      className="min-w-0"
+      className="relative flex min-h-8 min-w-0 items-center"
       onClick={(e) => e.stopPropagation()}
     >
       <button
         type="button"
         onClick={() => !disabled && setEditing(true)}
         disabled={disabled || saving}
-        className={`whitespace-nowrap ${displayText === '—' ? 'text-[#8b8b90] hover:text-[#3b3b40]' : 'text-[#3b3b40] hover:text-[#1010a3]'}`}
+        className={cn(
+          'h-8 whitespace-nowrap rounded px-1 text-left text-sm transition-colors',
+          displayText === '—'
+            ? 'text-[#8b8b90] hover:text-[#3b3b40]'
+            : 'text-[#3b3b40] hover:text-[#1010a3]',
+        )}
         title={displayText === '—' ? 'Set register date' : 'Edit register date'}
       >
         {displayText}
@@ -383,7 +409,7 @@ export function createStudentsTableColumns({
     {
       key: 'center',
       header: 'CENTER',
-      className: '!min-w-[9.5rem] align-top',
+      className: '!min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
@@ -407,7 +433,7 @@ export function createStudentsTableColumns({
     {
       key: 'teacher',
       header: 'TEACHER',
-      className: '!min-w-[9.5rem] align-top',
+      className: '!min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
@@ -437,7 +463,7 @@ export function createStudentsTableColumns({
     {
       key: 'group',
       header: 'GROUP',
-      className: '!min-w-[9.5rem] align-top',
+      className: '!min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
@@ -469,7 +495,7 @@ export function createStudentsTableColumns({
       key: 'register',
       header: 'REGISTER',
       sortable: true,
-      className: '!min-w-[7rem] whitespace-nowrap text-left align-top',
+      className: '!w-[8.25rem] !min-w-[8.25rem] !max-w-[8.25rem] whitespace-nowrap text-left align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         return (
@@ -486,7 +512,7 @@ export function createStudentsTableColumns({
       key: 'monthlyFee',
       header: 'MONTHLY FEE',
       sortable: true,
-      className: '!min-w-[6.5rem] whitespace-nowrap text-center align-top',
+      className: '!min-w-[6rem] whitespace-nowrap text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
@@ -521,7 +547,7 @@ export function createStudentsTableColumns({
     {
       key: 'actions',
       header: 'ACTIONS',
-      className: '!min-w-[10.5rem] shrink-0 !px-2 !py-3 text-center align-top',
+      className: '!min-w-[9.5rem] shrink-0 !px-2 !py-3 text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (

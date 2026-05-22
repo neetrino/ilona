@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { List, LayoutGrid } from 'lucide-react';
 import { Button, FilterDropdown } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { cn } from '@/shared/lib/utils';
 
 interface StudentsFiltersProps {
@@ -65,6 +66,14 @@ export function StudentsFilters({
   const t = useTranslations('students');
   const tc = useTranslations('common');
   const monthKeys = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+  const monthOptions = monthKeys.map((month) => ({
+    id: String(month),
+    label: tc(`months.${month}`),
+  }));
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = now.getFullYear() - 2 + i;
+    return { id: String(year), label: String(year) };
+  });
 
   return (
     <div className="w-full min-w-0 space-y-4">
@@ -160,37 +169,24 @@ export function StudentsFilters({
           onSelectionChange={onGroupChange}
           placeholder={t('allGroups')}
         />
-        <div className="relative">
-          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">{tc('month')}</label>
-          <select
-            value={selectedMonth}
-            onChange={(e) => onMonthChange(Number(e.target.value))}
-            className="unified-native-select h-11 w-full rounded-lg text-left"
-          >
-            {monthKeys.map((m) => (
-              <option key={m} value={m}>
-                {tc(`months.${m}`)}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="relative">
-          <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">{tc('year')}</label>
-          <select
-            value={selectedYear}
-            onChange={(e) => onYearChange(Number(e.target.value))}
-            className="unified-native-select h-11 w-full rounded-lg text-left"
-          >
-            {Array.from({ length: 5 }, (_, i) => {
-              const year = now.getFullYear() - 2 + i;
-              return (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              );
-            })}
-          </select>
-        </div>
+        <SingleSelectDropdown
+          id="students-month-filter"
+          label={tc('month')}
+          options={monthOptions}
+          value={String(selectedMonth)}
+          onValueChange={(nextValue) => {
+            if (nextValue) onMonthChange(Number(nextValue));
+          }}
+        />
+        <SingleSelectDropdown
+          id="students-year-filter"
+          label={tc('year')}
+          options={yearOptions}
+          value={String(selectedYear)}
+          onValueChange={(nextValue) => {
+            if (nextValue) onYearChange(Number(nextValue));
+          }}
+        />
       </div>
     </div>
   );
