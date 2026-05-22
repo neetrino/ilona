@@ -24,6 +24,7 @@ export type ScheduleBoardProps = {
   lessons: Lesson[];
   isLoading: boolean;
   topBar: ReactNode;
+  headerCenterContent?: ReactNode;
   managerBranchName?: string | null;
   weekDates: Date[];
   monthDates: (Date | null)[][];
@@ -42,6 +43,7 @@ export function ScheduleBoard({
   lessons,
   isLoading,
   topBar,
+  headerCenterContent,
   managerBranchName = null,
   weekDates,
   monthDates,
@@ -123,7 +125,11 @@ export function ScheduleBoard({
             </button>
           </div>
 
-          {managerBranchName ? (
+          {headerCenterContent ? (
+            <div className="order-last w-full md:pointer-events-auto md:absolute md:left-1/2 md:top-1/2 md:z-10 md:w-[min(20rem,calc(100%-24rem))] md:-translate-x-1/2 md:-translate-y-1/2">
+              {headerCenterContent}
+            </div>
+          ) : managerBranchName ? (
             <div className="flex justify-center md:absolute md:left-1/2 md:-translate-x-1/2">
               <span
                 className={

@@ -175,6 +175,39 @@ export default function AdminSchedulePage() {
     }
     return `${selectedCenterNames.length} selected centers`;
   }, [selectedCenterNames]);
+  const centerFilterBlock = !managerCenterId ? (
+    <div className="w-full md:w-[20rem]">
+      <div className="relative mb-1.5 flex items-center justify-center">
+        <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
+          Centers
+        </label>
+        {hasPendingCenterSelection && (
+          <button
+            type="button"
+            onClick={() =>
+              setAppliedSelectedCenterIds(new Set(draftSelectedCenterIds))
+            }
+            className="absolute right-0 text-[11px] font-semibold text-[#1010a3] transition-colors hover:text-[#0d0d85]"
+          >
+            Save
+          </button>
+        )}
+      </div>
+      <MultiSelectChipsDropdown
+        options={centerOptions}
+        selectedIds={draftSelectedCenterIds}
+        onSelectionChange={setDraftSelectedCenterIds}
+        placeholder="All centers"
+        searchPlaceholder="Search centers..."
+        emptyOptionsHint="No centers available"
+        noResultsHint="No centers found"
+        maxChipsHeightClassName="max-h-10"
+        showSelectedChipsOnlyWhenOpen
+        hideSelectedLabelsInTrigger
+        className="w-full [&_[role=button]]:min-h-9 [&_[role=button]]:py-1"
+      />
+    </div>
+  ) : null;
 
   return (
     <DashboardLayout
@@ -186,41 +219,9 @@ export default function AdminSchedulePage() {
         lessons={lessons}
         isLoading={isLoading || isLessonsLoading}
         highlightPastLessonCards
+        headerCenterContent={centerFilterBlock}
         topBar={(
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
-            {!managerCenterId && (
-              <div className="md:w-72">
-                <div className="mb-1.5 flex items-center justify-between">
-                  <label className="block text-sm font-medium text-[#3b3b40]">
-                    Centers
-                  </label>
-                  {hasPendingCenterSelection && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setAppliedSelectedCenterIds(new Set(draftSelectedCenterIds))
-                      }
-                      className="h-8 rounded-md bg-[#1010a3] px-3 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(16,16,163,0.28)] transition-colors hover:bg-[#0d0d85]"
-                    >
-                      Save
-                    </button>
-                  )}
-                </div>
-                <MultiSelectChipsDropdown
-                  options={centerOptions}
-                  selectedIds={draftSelectedCenterIds}
-                  onSelectionChange={setDraftSelectedCenterIds}
-                  placeholder="All centers"
-                  searchPlaceholder="Search centers..."
-                  emptyOptionsHint="No centers available"
-                  noResultsHint="No centers found"
-                  maxChipsHeightClassName="max-h-10"
-                  showSelectedChipsOnlyWhenOpen
-                  hideSelectedLabelsInTrigger
-                  className="w-full"
-                />
-              </div>
-            )}
+          <div className="mb-4 flex">
             <div className="flex-1 text-sm text-[#8b8b90]">
               Showing {groups.length} active group{groups.length !== 1 ? 's' : ''}
               {managerCenterId
