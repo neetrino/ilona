@@ -333,7 +333,7 @@ export function VoiceLeadDetailModal({
                     <select
                       value={form.levelId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, levelId: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
                       {LEVEL_OPTIONS.map((l) => (
@@ -346,7 +346,7 @@ export function VoiceLeadDetailModal({
                     <select
                       value={form.teacherId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value, groupId: '' }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
                       {teachers.map((teacher) => (
@@ -362,7 +362,7 @@ export function VoiceLeadDetailModal({
                       value={form.groupId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value }))}
                       disabled={!selectedTeacherId}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">
                         {selectedTeacherId ? '—' : t('selectTeacherFirst')}
@@ -377,7 +377,7 @@ export function VoiceLeadDetailModal({
                     <select
                       value={form.centerId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
                       {centers.map((c) => (

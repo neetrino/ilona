@@ -248,7 +248,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                       value={form.levelId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, levelId: e.target.value }))}
                       onBlur={handleSaveFields}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
                       {LEVEL_OPTIONS.map((l) => (
@@ -263,7 +263,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                     value={form.centerId ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value }))}
                     onBlur={handleSaveFields}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">—</option>
                     {centers.map((c) => (
@@ -277,7 +277,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                     value={form.teacherId ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value, groupId: '' }))}
                     onBlur={handleSaveFields}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">—</option>
                     {teachers.map((teacher) => (
@@ -294,7 +294,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                     onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value }))}
                     disabled={!selectedTeacherId}
                     onBlur={handleSaveFields}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">
                       {selectedTeacherId ? '—' : t('selectTeacherFirst')}

@@ -36,7 +36,7 @@ const fieldShell =
 
 function levelSelectClass(hasValue: boolean): string {
   return cn(
-    'h-11 w-full cursor-pointer appearance-none rounded-xl border-2 bg-white px-3 pr-10 text-sm text-slate-800',
+    'unified-native-select h-11 w-full cursor-pointer appearance-none rounded-xl border-2 bg-white px-3 pr-10 text-sm text-slate-800',
     'transition-colors focus:border-[#1010a3]/45 focus:outline-none',
     hasValue ? 'border-[#1010a3]/45' : 'border-slate-200'
   );

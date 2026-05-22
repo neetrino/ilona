@@ -225,7 +225,7 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
               {...register('groupId')}
               disabled={isSubmitting || isLoading || groups.length === 0}
               className={cn(
-                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
+                'unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
                 errors.groupId ? 'border-red-300' : 'border-slate-300',
                 (isSubmitting || isLoading || groups.length === 0) && 'bg-slate-100 cursor-not-allowed'
               )}

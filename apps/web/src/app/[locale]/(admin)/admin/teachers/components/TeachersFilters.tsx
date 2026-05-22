@@ -86,7 +86,7 @@ export function TeachersFilters({
           <select
             value={selectedStatus}
             onChange={(e) => onStatusChange(e.target.value as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '')}
-            className="w-full h-12 pl-4 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] appearance-none cursor-pointer"
+            className="unified-native-select w-full h-12 pl-4 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] appearance-none cursor-pointer"
           >
             <option value="">All statuses</option>
             <option value="ACTIVE">{tStatus('active')}</option>

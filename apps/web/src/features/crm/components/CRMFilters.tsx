@@ -40,7 +40,7 @@ export function CRMFilters({
           onChange={(e) =>
             onFiltersChange({ ...filters, centerId: e.target.value || undefined })
           }
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         >
           <option value="">{tc('all')}</option>
           {centers.map((c) => (
@@ -55,7 +55,7 @@ export function CRMFilters({
           onChange={(e) =>
             onFiltersChange({ ...filters, teacherId: e.target.value || undefined })
           }
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         >
           <option value="">{tc('all')}</option>
           {teachers.map((teacher) => (
@@ -72,7 +72,7 @@ export function CRMFilters({
           onChange={(e) =>
             onFiltersChange({ ...filters, groupId: e.target.value || undefined })
           }
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         >
           <option value="">{tc('all')}</option>
           {groups.map((g) => (

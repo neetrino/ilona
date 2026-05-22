@@ -429,7 +429,7 @@ export function EditLeadModal({
                     onChange={(e) =>
                       setForm((f) => ({ ...f, levelId: e.target.value || undefined }))
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">—</option>
                     {LEVEL_OPTIONS.map((l) => (
@@ -446,7 +446,7 @@ export function EditLeadModal({
                     onChange={(e) =>
                       setForm((f) => ({ ...f, teacherId: e.target.value || undefined, groupId: undefined }))
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">—</option>
                     {teachers.map((teacher) => (
@@ -467,7 +467,7 @@ export function EditLeadModal({
                       setForm((f) => ({ ...f, groupId: e.target.value || undefined }))
                     }
                     disabled={!selectedTeacherId}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">{selectedTeacherId ? '—' : t('selectTeacherFirst')}</option>
                     {groupsForSelectedTeacher.map((g) => (
@@ -494,7 +494,7 @@ export function EditLeadModal({
                       onChange={(e) =>
                         setForm((f) => ({ ...f, centerId: e.target.value || undefined }))
                       }
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
                       {centers.map((c) => (

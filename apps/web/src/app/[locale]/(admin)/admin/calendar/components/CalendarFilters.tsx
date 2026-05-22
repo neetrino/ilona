@@ -85,7 +85,7 @@ export function CalendarFilters({
           value={selectedTeacherId}
           onChange={(e) => onTeacherChange(e.target.value)}
           disabled={isLoadingTeachers}
-          className="h-11 w-full min-w-0 appearance-none rounded-xl border border-[rgba(14,14,16,0.12)] bg-gradient-to-b from-white to-[#f8f8fb] pl-4 pr-12 text-sm font-medium text-[#2f2f35] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 hover:border-[#1010a3]/30 hover:shadow-[0_4px_14px_rgba(16,16,163,0.08)] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] cursor-pointer sm:min-w-[11rem] sm:w-auto disabled:cursor-not-allowed disabled:opacity-50"
+          className="unified-native-select h-11 w-full min-w-0 appearance-none rounded-xl border border-[rgba(14,14,16,0.12)] bg-gradient-to-b from-white to-[#f8f8fb] pl-4 pr-12 text-sm font-medium text-[#2f2f35] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 hover:border-[#1010a3]/30 hover:shadow-[0_4px_14px_rgba(16,16,163,0.08)] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3] cursor-pointer sm:min-w-[11rem] sm:w-auto disabled:cursor-not-allowed disabled:opacity-50"
         >
           <option value="">{t('allTeachers')}</option>
           {teacherOptions.map((teacher) => (

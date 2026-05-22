@@ -264,7 +264,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               id="centerId"
               {...register('centerId')}
               disabled={isSubmitting || isLoadingCenters || centers.length === 0}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
+              className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
                 errors.centerId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || isLoadingCenters || centers.length === 0 ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
@@ -299,7 +299,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               id="teacherId"
               {...register('teacherId')}
               disabled={isSubmitting || createGroup.isPending || isLoadingTeachers}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
+              className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
                 errors.teacherId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
@@ -324,7 +324,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
               id="substituteTeacherId"
               {...register('substituteTeacherId')}
               disabled={isSubmitting || createGroup.isPending || isLoadingTeachers}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
+              className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
                 errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || createGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >

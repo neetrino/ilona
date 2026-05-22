@@ -13,6 +13,7 @@ const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 
 const inputClass =
   'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+const selectClass = `unified-native-select ${inputClass}`;
 
 const sectionTitle = 'text-xs font-semibold uppercase tracking-wide text-slate-500';
 
@@ -301,7 +302,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <label htmlFor={p('levelId')} className="mb-1 block text-sm font-medium text-slate-700">
               {tCommon('level')}
             </label>
-            <select id={p('levelId')} {...register('levelId')} className={inputClass} disabled={isSubmitting}>
+            <select id={p('levelId')} {...register('levelId')} className={selectClass} disabled={isSubmitting}>
               <option value="">—</option>
               {LEVEL_OPTIONS.map((l) => (
                 <option key={l} value={l}>
@@ -318,7 +319,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               <select
                 id={p('centerId')}
                 {...centerIdRegisterRest}
-                className={inputClass}
+                className={selectClass}
                 disabled={isLoadingCenters || isSubmitting}
                 onChange={(e) => {
                   onCenterFieldChange(e);
@@ -350,7 +351,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <select
               id={p('teacherId')}
               {...register('teacherId')}
-              className={inputClass}
+              className={selectClass}
               disabled={isLoadingTeachers || isSubmitting || !hasCenterScope}
             >
               <option value="">
@@ -377,7 +378,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <select
               id={p('groupId')}
               {...register('groupId')}
-              className={inputClass}
+              className={selectClass}
               disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
             >
               <option value="">

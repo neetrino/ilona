@@ -75,24 +75,24 @@ export function SingleSelectDropdown({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={isLoading || disabled}
           className={cn(
-            'h-11 w-full rounded-xl border border-[rgba(14,14,16,0.08)] bg-white px-3.5 text-left',
+            'h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-left',
             'focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'transition-all duration-150 hover:border-[rgba(14,14,16,0.16)]',
-            isOpen && 'border-[#1010a3]/35 shadow-[0_10px_30px_rgba(16,16,163,0.14)]',
+            'transition-colors hover:border-[#1010a3]/30',
+            isOpen && 'border-[#1010a3]/35 shadow-lg',
             error && 'border-red-500'
           )}
         >
           <div className="flex items-center justify-between">
             <span className={cn(
               'truncate text-sm',
-              !selectedOption ? 'text-[#9b9ba3]' : 'text-[#2f2f35]'
+              !selectedOption ? 'text-slate-400' : 'text-[#2f2f35]'
             )}>
               {isLoading ? 'Loading...' : displayText}
             </span>
             <svg
               className={cn(
-                'h-4 w-4 text-[#7f7f87] transition-transform duration-150',
+                'h-4 w-4 text-slate-500 transition-transform duration-150',
                 isOpen && 'transform rotate-180'
               )}
               fill="none"
@@ -110,7 +110,7 @@ export function SingleSelectDropdown({
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-xl border border-[rgba(14,14,16,0.08)] bg-white p-1.5 shadow-[0_16px_44px_rgba(16,16,163,0.14),0_2px_10px_rgba(14,14,16,0.08)]">
+          <div className="absolute z-50 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
             {error ? (
               <div className="p-3 text-sm text-red-600">{error}</div>
             ) : options.length === 0 ? (
@@ -126,8 +126,8 @@ export function SingleSelectDropdown({
                       onClick={() => handleSelect(option.id)}
                       className={cn(
                         'w-full rounded-lg px-3 py-2 text-left text-sm text-[#3b3b40] transition-colors',
-                        'hover:bg-[#f3f4ff] hover:text-[#1010a3]',
-                        isSelected && 'bg-[#ecefff] font-semibold text-[#1010a3]'
+                        'hover:bg-slate-50 hover:text-[#1010a3]',
+                        isSelected && 'bg-[#ecefff] font-medium text-[#1010a3]'
                       )}
                     >
                       {option.label}

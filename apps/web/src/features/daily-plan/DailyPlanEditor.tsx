@@ -313,7 +313,7 @@ export function DailyPlanEditor({
                   value={groupId}
                   onChange={(e) => setGroupId(e.target.value)}
                   disabled={isLoadingGroups || readOnly}
-                  className="h-10 w-full px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-60"
+                  className="unified-native-select h-10 w-full px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-60"
                 >
                   <option value="">Select group</option>
                   {myGroups.map((group) => (

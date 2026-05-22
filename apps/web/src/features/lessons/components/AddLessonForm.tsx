@@ -412,7 +412,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
               {...register('teacherId')}
               disabled={isBusy || isLoadingTeachers || teachers.length === 0}
               className={cn(
-                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
+                'unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
                 errors.teacherId ? 'border-red-300' : 'border-slate-300',
                 (isBusy || isLoadingTeachers || teachers.length === 0) && 'bg-slate-100 cursor-not-allowed',
                 !isLoadingTeachers && teachers.length > 0 && 'bg-white'
@@ -441,7 +441,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
               {...register('groupId')}
               disabled={groupSelectDisabled}
               className={cn(
-                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
+                'unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
                 errors.groupId ? 'border-red-300' : 'border-slate-300',
                 groupSelectDisabled && 'bg-slate-100 cursor-not-allowed',
                 !groupSelectDisabled && 'bg-white'

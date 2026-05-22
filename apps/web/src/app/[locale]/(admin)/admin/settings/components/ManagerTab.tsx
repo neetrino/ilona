@@ -147,7 +147,7 @@ export function ManagerTab() {
             onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
           />
           <select
-            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3] bg-white"
+            className="unified-native-select h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3] bg-white"
             value={form.centerId}
             onChange={(e) => setForm((prev) => ({ ...prev, centerId: e.target.value }))}
             disabled={availableCenters.length === 0}

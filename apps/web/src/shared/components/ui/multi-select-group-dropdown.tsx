@@ -105,7 +105,7 @@ export function MultiSelectGroupDropdown({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={isLoading || disabled}
           className={cn(
-            'w-full px-4 py-2 text-left bg-white border border-slate-300 rounded-lg',
+            'w-full min-h-11 px-3 py-2 text-left bg-white border border-slate-200 rounded-lg',
             'focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             'transition-colors hover:border-[#1010a3]/30',
@@ -114,7 +114,7 @@ export function MultiSelectGroupDropdown({
         >
           <div className="flex items-center justify-between">
             <span className={cn(
-              'text-sm truncate',
+                'text-sm truncate',
               selectedIds.size === 0 ? 'text-slate-400' : 'text-slate-800'
             )}>
               {isLoading ? 'Loading...' : getDisplayText()}

@@ -92,7 +92,7 @@ export function SubstituteLessonModal({
               <Label htmlFor="substitute-select">{t('substituteForClassOnly')}</Label>
               <select
                 id="substitute-select"
-                className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
+                className="unified-native-select w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
                 value={selectedId}
                 onChange={(e) => setSelectedId(e.target.value)}
               >

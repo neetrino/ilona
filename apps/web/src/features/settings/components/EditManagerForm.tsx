@@ -259,7 +259,7 @@ export function EditManagerForm({
               <Label htmlFor="manager-status">{t('managerStatus')}</Label>
               <select
                 id="manager-status"
-                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                className="unified-native-select flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                 {...activeForm.register('status')}
               >
                 <option value="ACTIVE">{tStatus('active')}</option>
@@ -382,7 +382,7 @@ function CenterSelect({
       <Label htmlFor="manager-center">{t('managerSelectCenter')}</Label>
       <select
         id="manager-center"
-        className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+        className="unified-native-select flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
         {...form.register('centerId')}
         disabled={disabled}
       >

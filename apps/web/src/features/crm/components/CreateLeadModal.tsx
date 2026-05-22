@@ -157,7 +157,7 @@ export function CreateLeadModal({
               <select
                 value={form.levelId ?? ''}
                 onChange={(e) => setForm((f) => ({ ...f, levelId: e.target.value || undefined }))}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
                 <option value="">—</option>
                 {LEVEL_OPTIONS.map((l) => (
@@ -176,7 +176,7 @@ export function CreateLeadModal({
               <select
                 value={form.centerId ?? ''}
                 onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value || undefined }))}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
                 <option value="">—</option>
                 {centers.map((c) => (
@@ -244,7 +244,7 @@ export function CreateLeadModal({
             <select
               value={form.teacherId ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value || undefined }))}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             >
               <option value="">—</option>
               {teachers.map((teacher) => (
@@ -259,7 +259,7 @@ export function CreateLeadModal({
             <select
               value={form.groupId ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value || undefined }))}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             >
               <option value="">—</option>
               {groups.map((g) => (

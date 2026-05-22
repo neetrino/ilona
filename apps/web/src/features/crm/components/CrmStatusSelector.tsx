@@ -129,7 +129,7 @@ export function CrmStatusSelector({
         }}
         disabled={disabled}
         className={cn(
-          'w-full inline-flex items-center justify-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/12',
+          'w-full min-h-11 inline-flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-[#2f2f35] hover:border-[#1010a3]/30 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10',
           disabled && 'cursor-not-allowed opacity-60'
         )}
         title={triggerTitle}
@@ -138,7 +138,7 @@ export function CrmStatusSelector({
       >
         <span>{displayValue}</span>
         <ChevronDown
-          className={cn('h-3 w-3 transition-transform', open && 'rotate-180')}
+          className={cn('h-4 w-4 text-slate-500 transition-transform', open && 'rotate-180')}
         />
       </button>
       {open &&
@@ -161,7 +161,7 @@ export function CrmStatusSelector({
                 type="button"
                 onClick={(e) => handleSelect(e, status)}
                 className={cn(
-                  'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
+                  'w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50',
                   value === status && 'bg-[#ecefff] font-medium text-[#1010a3]'
                 )}
               >

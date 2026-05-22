@@ -33,7 +33,7 @@ export function StudentSelect({
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select className={cn(studentSelectClass, className)} {...props}>
+    <select className={cn('unified-native-select', studentSelectClass, className)} {...props}>
       {children}
     </select>
   );

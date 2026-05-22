@@ -165,7 +165,7 @@ export function StudentsFilters({
           <select
             value={selectedMonth}
             onChange={(e) => onMonthChange(Number(e.target.value))}
-            className="h-12 w-full appearance-none rounded-lg border border-[rgba(14,14,16,0.07)] bg-white px-4 text-left text-sm transition-colors hover:border-[rgba(14,14,16,0.12)] focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className="unified-native-select h-11 w-full rounded-lg text-left"
           >
             {monthKeys.map((m) => (
               <option key={m} value={m}>
@@ -179,7 +179,7 @@ export function StudentsFilters({
           <select
             value={selectedYear}
             onChange={(e) => onYearChange(Number(e.target.value))}
-            className="h-12 w-full appearance-none rounded-lg border border-[rgba(14,14,16,0.07)] bg-white px-4 text-left text-sm transition-colors hover:border-[rgba(14,14,16,0.12)] focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className="unified-native-select h-11 w-full rounded-lg text-left"
           >
             {Array.from({ length: 5 }, (_, i) => {
               const year = now.getFullYear() - 2 + i;

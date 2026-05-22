@@ -75,7 +75,7 @@ export function SubstituteByGroupDayModal({
             <Label htmlFor="sub-day-group">{t('group')}</Label>
             <select
               id="sub-day-group"
-              className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
+              className="unified-native-select w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
               value={groupId}
               onChange={(e) => setGroupId(e.target.value)}
               disabled={groupsLoading}
@@ -93,7 +93,7 @@ export function SubstituteByGroupDayModal({
             <Label htmlFor="sub-day-teacher">{t('substituteTeacher')}</Label>
             <select
               id="sub-day-teacher"
-              className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
+              className="unified-native-select w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
               value={substituteTeacherId}
               onChange={(e) => setSubstituteTeacherId(e.target.value)}
             >

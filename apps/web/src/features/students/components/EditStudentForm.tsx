@@ -219,7 +219,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   }, [selectedTeacher, groupsForTeacher]);
 
   const selectFieldClass =
-    'flex w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50';
+    'unified-native-select flex w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50';
 
   const { onChange: onCenterChangeField, ...centerIdFieldRest } = register('centerId');
 

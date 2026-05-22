@@ -174,7 +174,7 @@ export default function AdminDailyPlanPage() {
               <select
                 value={teacherId}
                 onChange={(e) => setTeacherId(e.target.value)}
-                className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] bg-white px-3 text-[#3b3b40]"
+                className="unified-native-select h-10 rounded-lg border border-[rgba(14,14,16,0.07)] bg-white px-3 text-[#3b3b40]"
               >
                 <option value="">{t('allTeachers')}</option>
                 {teachers.map((teacher) => (
