@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import {
@@ -46,9 +47,9 @@ function formatRecordingTime(isoDate: string): string {
 
 /** CRM cards: API often stores digits-only; show E.164-style leading + when absent. */
 function formatPhoneForDisplay(phone: string): string {
-  const t = phone.trim();
-  if (!t) return '';
-  return t.startsWith('+') ? t : `+${t}`;
+  const trimmed = phone.trim();
+  if (!trimmed) return '';
+  return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
 }
 
 export function LeadCard({
@@ -65,8 +66,11 @@ export function LeadCard({
   deleteDisabled,
   className,
 }: LeadCardProps) {
+  const t = useTranslations('crm');
   const voiceAttachment = lead.attachments?.find((a) => a.type === 'VOICE_RECORDING');
-  const name = [lead.firstName, lead.lastName].filter(Boolean).join(' ') || (voiceAttachment ? 'Voice note' : 'No name');
+  const name =
+    [lead.firstName, lead.lastName].filter(Boolean).join(' ') ||
+    (voiceAttachment ? t('voiceNote') : t('noName'));
   const createdAt = lead.createdAt
     ? new Date(lead.createdAt).toLocaleDateString(undefined, {
         month: 'short',
@@ -100,8 +104,8 @@ export function LeadCard({
         {showDelete && onDeleteClick ? (
           <button
             type="button"
-            aria-label="Delete lead"
-            title="Delete lead"
+            aria-label={t('deleteLead')}
+            title={t('deleteLead')}
             disabled={deleteDisabled}
             onClick={(e) => {
               e.stopPropagation();
@@ -173,12 +177,12 @@ export function LeadCard({
         {lead.teacherApprovedAt ? (
           <span className="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
             <CheckCircle2 className="mr-1 h-3 w-3" />
-            Approved
+            {t('approved')}
           </span>
         ) : lead.transferFlag ? (
           <span className="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
             <ArrowRightLeft className="mr-1 h-3 w-3" />
-            TRANSFER
+            {t('transfer')}
           </span>
         ) : null}
       </div>
@@ -212,6 +216,3 @@ export function LeadCard({
     </div>
   );
 }
-
-// Re-export for consumers that import from LeadCard
-export { STATUS_LABELS } from '@/features/crm/types';

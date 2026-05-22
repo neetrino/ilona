@@ -10,11 +10,27 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { ScheduleBoard } from '@/features/schedule/ScheduleBoard';
 import { useScheduleViewMode } from '@/features/schedule/useScheduleViewMode';
 import {
+  MultiSelectChipsDropdown,
+  type MultiSelectChipsOption,
+} from '@/shared/components/ui/multi-select-chips-dropdown';
+import {
   formatScheduleDate,
   getMonthDates,
   getWeekDateRangeForApi,
   getWeekDates,
 } from '@/features/schedule/schedule-dates';
+
+function areSetsEqual(a: Set<string>, b: Set<string>): boolean {
+  if (a.size !== b.size) {
+    return false;
+  }
+  for (const value of a) {
+    if (!b.has(value)) {
+      return false;
+    }
+  }
+  return true;
+}
 
 export default function AdminSchedulePage() {
   const t = useTranslations('nav');
@@ -22,7 +38,12 @@ export default function AdminSchedulePage() {
   const managerCenterId =
     user?.role === 'MANAGER' ? user.managerCenterId : undefined;
 
-  const [centerId, setCenterId] = useState<string>('');
+  const [draftSelectedCenterIds, setDraftSelectedCenterIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [appliedSelectedCenterIds, setAppliedSelectedCenterIds] = useState<Set<string>>(
+    new Set(),
+  );
   const { viewMode, setViewMode } = useScheduleViewMode();
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -40,17 +61,27 @@ export default function AdminSchedulePage() {
     }
     return allCenters.find((center) => center.id === managerCenterId)?.name ?? null;
   }, [allCenters, managerCenterId, user?.role]);
-
-  const effectiveCenterId = managerCenterId ?? (centerId || undefined);
+  const centerOptions = useMemo<MultiSelectChipsOption[]>(
+    () =>
+      visibleCenters.map((center) => ({ id: center.id, label: center.name })),
+    [visibleCenters],
+  );
 
   const { data: groupsData, isLoading } = useGroups({
     isActive: true,
     take: 200,
-    centerId: effectiveCenterId,
+    centerId: managerCenterId ?? undefined,
   });
 
-  const groups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
+  const groups = useMemo(() => {
+    const allGroups = groupsData?.items ?? [];
+    if (managerCenterId || appliedSelectedCenterIds.size === 0) {
+      return allGroups;
+    }
+    return allGroups.filter((group) => appliedSelectedCenterIds.has(group.centerId));
+  }, [appliedSelectedCenterIds, groupsData?.items, managerCenterId]);
   const groupIds = useMemo(() => groups.map((group) => group.id), [groups]);
+  const filteredGroupIds = useMemo(() => new Set(groupIds), [groupIds]);
 
   const weekDates = useMemo(
     () => getWeekDates(new Date(currentDate)),
@@ -81,7 +112,7 @@ export default function AdminSchedulePage() {
   const { data: lessonsData, isLoading: isLessonsLoading } = useLessons(
     {
       groupIds: groupIds.length > 0 ? groupIds : undefined,
-      centerId: effectiveCenterId,
+      centerId: managerCenterId ?? undefined,
       dateFrom: queryDateFrom,
       dateTo: queryDateTo,
       take: 500,
@@ -91,10 +122,18 @@ export default function AdminSchedulePage() {
     { refetchInterval: 60000, refetchIntervalInBackground: false },
   );
 
-  const lessons = useMemo(
-    () => lessonsData?.items ?? [],
-    [lessonsData?.items],
-  );
+  const lessons = useMemo(() => {
+    const allLessons = lessonsData?.items ?? [];
+    if (managerCenterId || appliedSelectedCenterIds.size === 0) {
+      return allLessons;
+    }
+    return allLessons.filter((lesson) => filteredGroupIds.has(lesson.groupId));
+  }, [
+    appliedSelectedCenterIds.size,
+    filteredGroupIds,
+    lessonsData?.items,
+    managerCenterId,
+  ]);
 
   const periodLabel = useMemo(() => {
     if (viewMode === 'month') {
@@ -115,48 +154,82 @@ export default function AdminSchedulePage() {
     }
     setCurrentDate(next);
   };
+  const hasPendingCenterSelection = useMemo(
+    () => !areSetsEqual(draftSelectedCenterIds, appliedSelectedCenterIds),
+    [appliedSelectedCenterIds, draftSelectedCenterIds],
+  );
+  const selectedCenterNames = useMemo(
+    () =>
+      visibleCenters
+        .filter((center) => appliedSelectedCenterIds.has(center.id))
+        .map((center) => center.name),
+    [appliedSelectedCenterIds, visibleCenters],
+  );
+  const selectedCentersLabel = useMemo(() => {
+    if (selectedCenterNames.length === 0) {
+      return '';
+    }
+    if (selectedCenterNames.length === 1) {
+      return selectedCenterNames[0];
+    }
+    return `${selectedCenterNames.length} selected centers`;
+  }, [selectedCenterNames]);
+  const centerFilterBlock = !managerCenterId ? (
+    <div className="w-full md:w-[20rem]">
+      <div className="relative mb-1.5 flex items-center justify-center">
+        <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
+          Centers
+        </label>
+        {hasPendingCenterSelection && (
+          <button
+            type="button"
+            onClick={() =>
+              setAppliedSelectedCenterIds(new Set(draftSelectedCenterIds))
+            }
+            className="absolute right-0 text-[11px] font-semibold text-[#1010a3] transition-colors hover:text-[#0d0d85]"
+          >
+            Save
+          </button>
+        )}
+      </div>
+      <MultiSelectChipsDropdown
+        options={centerOptions}
+        selectedIds={draftSelectedCenterIds}
+        onSelectionChange={setDraftSelectedCenterIds}
+        placeholder="All centers"
+        searchPlaceholder="Search centers..."
+        emptyOptionsHint="No centers available"
+        noResultsHint="No centers found"
+        maxChipsHeightClassName="max-h-10"
+        showSelectedChipsOnlyWhenOpen
+        hideSelectedLabelsInTrigger
+        className="w-full [&_[role=button]]:min-h-9 [&_[role=button]]:py-1"
+      />
+    </div>
+  ) : null;
 
   return (
     <DashboardLayout
       title={t('schedule')}
       subtitle="Weekly and monthly schedule for upcoming lessons"
     >
+      <div className="w-full min-w-0">
       <ScheduleBoard
         lessons={lessons}
         isLoading={isLoading || isLessonsLoading}
         highlightPastLessonCards
+        headerCenterContent={centerFilterBlock}
         topBar={(
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
-            {!managerCenterId && (
-              <div className="md:w-72">
-                <label
-                  htmlFor="schedule-center"
-                  className="mb-1.5 block text-sm font-medium text-slate-600"
-                >
-                  Center
-                </label>
-                <select
-                  id="schedule-center"
-                  value={centerId}
-                  onChange={(e) => setCenterId(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
-                >
-                  <option value="">All centers</option>
-                  {visibleCenters.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            <div className="flex-1 text-sm text-slate-500">
+          <div className="mb-4 flex">
+            <div className="flex-1 text-sm text-[#8b8b90]">
               Showing {groups.length} active group{groups.length !== 1 ? 's' : ''}
-              {effectiveCenterId
+              {managerCenterId
                 ? ` in ${
-                    visibleCenters.find((c) => c.id === effectiveCenterId)
-                      ?.name ?? 'selected center'
+                    visibleCenters.find((c) => c.id === managerCenterId)?.name ??
+                    'selected center'
                   }`
+                : selectedCenterNames.length > 0
+                ? ` in ${selectedCentersLabel}`
                 : ''}
               .
             </div>
@@ -171,6 +244,7 @@ export default function AdminSchedulePage() {
         onPeriodNavigate={onPeriodNavigate}
         onGoToToday={() => setCurrentDate(new Date())}
       />
+      </div>
     </DashboardLayout>
   );
 }

@@ -7,7 +7,10 @@ import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
+import { toRolePortalPath } from '@/shared/lib/role-routes';
 import Image from 'next/image';
+import { StudentSidebar } from './StudentSidebar';
+import { TeacherSidebar } from './TeacherSidebar';
 
 interface NavItem {
   label: string;
@@ -151,11 +154,10 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('students'), href: '/admin/students', icon: icons.students },
         { label: t('schedule'), href: '/admin/schedule', icon: icons.schedule },
         { label: t('dailyPlan'), href: '/admin/daily-plan', icon: icons.dailyPlan },
-        { label: t('finance'), href: '/admin/finance', icon: icons.finance },
         { label: t('calendar'), href: '/admin/calendar', icon: icons.calendar },
         { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
         { label: t('settings'), href: '/admin/settings', icon: icons.settings },
-      ];
+      ].map((item) => ({ ...item, href: toRolePortalPath(item.href, 'MANAGER') }));
     case 'TEACHER':
       return [
         { label: t('dashboard'), href: '/teacher/dashboard', icon: icons.dashboard },
@@ -197,6 +199,14 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const t = useTranslations('nav');
   const userRole = user?.role || 'STUDENT';
   const { data: logoData } = useLogo();
+
+  if (userRole === 'STUDENT') {
+    return <StudentSidebar collapsed={collapsed} onToggle={onToggle} />;
+  }
+
+  if (userRole === 'TEACHER') {
+    return <TeacherSidebar collapsed={collapsed} onToggle={onToggle} />;
+  }
 
   const navItems = getNavItems(userRole, t);
   const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.png';

@@ -4,6 +4,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import {
+  StudentCard,
+  StudentFieldLabel,
+  StudentGhostButton,
+  StudentInput,
+  StudentPageStack,
+  studentTableHeadClass,
+} from '@/features/student-ui';
+import { cn } from '@/shared/lib/utils';
 import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import {
@@ -63,7 +72,9 @@ async function fetchAllAssignedStudentsDirectory(): Promise<Student[]> {
 }
 
 export default function TeacherRecordingsPage() {
-  const t = useTranslations('nav');
+  const tNav = useTranslations('nav');
+  const t = useTranslations('recordings');
+  const tCommon = useTranslations('common');
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -154,10 +165,10 @@ export default function TeacherRecordingsPage() {
             `${student.user.firstName} ${student.user.lastName}`.trim() ||
             student.userId,
           groupId: student.group?.id ?? null,
-          groupName: student.group?.name ?? 'Ungrouped',
+          groupName: student.group?.name ?? t('ungrouped'),
         }))
         .sort((a, b) => a.fullName.localeCompare(b.fullName)),
-    [allStudents],
+    [allStudents, t],
   );
 
   const groupOptions = useMemo(() => {
@@ -169,11 +180,11 @@ export default function TeacherRecordingsPage() {
 
     const hasUngrouped = studentDirectory.some((student) => student.groupId === null);
     if (hasUngrouped) {
-      map.set('ungrouped', { id: 'ungrouped', name: 'Ungrouped' });
+      map.set('ungrouped', { id: 'ungrouped', name: t('ungrouped') });
     }
 
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [myGroups, studentDirectory]);
+  }, [myGroups, studentDirectory, t]);
 
   const groupMultiOptions = useMemo(
     () => groupOptions.map((group) => ({ id: group.id, label: group.name })),
@@ -273,162 +284,154 @@ export default function TeacherRecordingsPage() {
 
   return (
     <DashboardLayout
-      title={t('recordings')}
-      subtitle="All student voice recordings in a single searchable table"
+      title={tNav('recordings')}
+      subtitle={tNav('adminRecordingsSubtitle')}
     >
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+      <StudentPageStack>
+      <StudentCard>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
-            label="Group"
+            label={tCommon('group')}
             options={groupMultiOptions}
             selectedIds={selectedGroupIds}
             onSelectionChange={setSelectedGroupIds}
-            placeholder="All groups"
-            searchPlaceholder="Search groups..."
-            emptyOptionsHint="No groups"
-            noResultsHint="No groups match"
+            placeholder={t('allGroups')}
+            searchPlaceholder={t('searchGroups')}
+            emptyOptionsHint={t('noGroups')}
+            noResultsHint={t('noGroupsMatch')}
             isLoading={isLoadingDirectory}
           />
         </div>
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
-            label="Student"
+            label={tCommon('searchTypeStudent')}
             options={studentMultiOptions}
             selectedIds={selectedStudentUserIds}
             onSelectionChange={setSelectedStudentUserIds}
-            placeholder="All students"
-            searchPlaceholder="Search students..."
-            emptyOptionsHint="No students"
-            noResultsHint="No students match"
+            placeholder={t('allStudents')}
+            searchPlaceholder={t('searchStudents')}
+            emptyOptionsHint={t('noStudents')}
+            noResultsHint={t('noStudentsMatch')}
             isLoading={isLoadingDirectory}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">
-            From
-          </label>
-          <input
+          <StudentFieldLabel htmlFor="recordings-from">{tCommon('from')}</StudentFieldLabel>
+          <StudentInput
+            id="recordings-from"
             type="date"
             value={dateFrom}
             max={dateTo || undefined}
             onChange={(event) => setDateFrom(event.target.value)}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">
-            To
-          </label>
-          <input
+          <StudentFieldLabel htmlFor="recordings-to">{tCommon('to')}</StudentFieldLabel>
+          <StudentInput
+            id="recordings-to"
             type="date"
             value={dateTo}
             min={dateFrom || undefined}
             onChange={(event) => setDateTo(event.target.value)}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-600 mb-1.5">
-            Search
-          </label>
-          <input
+      <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end">
+        <div className="min-w-0 flex-1">
+          <StudentFieldLabel htmlFor="recordings-search">{tCommon('search')}</StudentFieldLabel>
+          <StudentInput
+            id="recordings-search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Student, group, or file name..."
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            placeholder={t('searchPlaceholder')}
           />
         </div>
-        <button
-          type="button"
-          onClick={resetFilters}
-          className="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg border border-slate-200 transition-colors"
-        >
-          Clear all
-        </button>
+        <StudentGhostButton type="button" onClick={resetFilters} className="shrink-0">
+          {t('clearAll')}
+        </StudentGhostButton>
       </div>
+      </StudentCard>
 
-      <div className="mb-3 text-sm text-slate-500">
-        {visibleRecordings.length} recording
-        {visibleRecordings.length !== 1 ? 's' : ''} found
+      <div className="text-sm text-[#8b8b90]">
+        {t('recordingsFound', { count: visibleRecordings.length })}
         {selectedRecordingIds.size > 0 && (
-          <span className="ml-3 text-slate-700 font-medium">
-            ({selectedRecordingIds.size} selected)
+          <span className="ml-3 text-[#3b3b40] font-medium">
+            {t('selectedCount', { count: selectedRecordingIds.size })}
           </span>
         )}
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+      <StudentCard noPadding>
+        <div className="min-w-0 overflow-x-auto">
+          <table className="w-full min-w-[48rem] text-sm">
+            <thead className={cn(studentTableHeadClass, 'border-b border-[rgba(14,14,16,0.07)]')}>
               <tr>
                 <th className="w-12 px-4 py-3 text-left">
                   <input
                     type="checkbox"
-                    aria-label="Select all visible recordings"
-                    className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                    aria-label={t('selectAllVisible')}
+                    className="w-4 h-4 rounded border-[rgba(14,14,16,0.07)] cursor-pointer"
                     checked={allVisibleSelected}
                     onChange={toggleAll}
                     disabled={visibleRecordings.length === 0}
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Group
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                  {tCommon('group')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Student
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                  {tCommon('searchTypeStudent')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Date &amp; Time
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                  {t('dateTime')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Recording
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                  {t('recording')}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[rgba(14,14,16,0.07)]">
               {isLoading || isLoadingDirectory ? (
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={`skeleton-${idx}`}>
-                    <td className="px-4 py-4"><div className="h-4 w-4 bg-slate-100 animate-pulse rounded" /></td>
-                    <td className="px-4 py-4"><div className="h-4 w-24 bg-slate-100 animate-pulse rounded" /></td>
-                    <td className="px-4 py-4"><div className="h-4 w-32 bg-slate-100 animate-pulse rounded" /></td>
-                    <td className="px-4 py-4"><div className="h-4 w-28 bg-slate-100 animate-pulse rounded" /></td>
-                    <td className="px-4 py-4"><div className="h-8 w-48 bg-slate-100 animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-4 bg-[#f6f6f7] animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-24 bg-[#f6f6f7] animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-32 bg-[#f6f6f7] animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-4 w-28 bg-[#f6f6f7] animate-pulse rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-8 w-48 bg-[#f6f6f7] animate-pulse rounded" /></td>
                   </tr>
                 ))
               ) : visibleRecordings.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-500">
-                    No recordings found for the selected filters.
+                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-[#8b8b90]">
+                    {t('noRecordingsForFilters')}
                   </td>
                 </tr>
               ) : (
                 visibleRecordings.map((recording) => {
                   const isActive = activeRecordingId === recording.id;
                   return (
-                    <tr key={recording.id} className="hover:bg-slate-50/60 transition-colors">
+                    <tr key={recording.id} className="hover:bg-[#fafafa]/60 transition-colors">
                       <td className="px-4 py-3 align-middle">
                         <input
                           type="checkbox"
-                          aria-label={`Select recording ${recording.id}`}
-                          className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                          aria-label={t('selectRecording', { id: recording.id })}
+                          className="w-4 h-4 rounded border-[rgba(14,14,16,0.07)] cursor-pointer"
                           checked={selectedRecordingIds.has(recording.id)}
                           onChange={() => toggleOne(recording.id)}
                         />
                       </td>
-                      <td className="px-4 py-3 align-middle text-sm text-slate-700">
+                      <td className="px-4 py-3 align-middle text-sm text-[#3b3b40]">
                         {recording.group.name}
                       </td>
-                      <td className="px-4 py-3 align-middle text-sm font-medium text-slate-800">
+                      <td className="px-4 py-3 align-middle text-sm font-medium text-[#1010a3]">
                         {getStudentFullName(recording)}
                       </td>
                       <td className="px-4 py-3 align-middle whitespace-nowrap">
-                        <div className="text-sm text-slate-700">{formatDateTime(recording.createdAt)}</div>
-                        <div className="text-xs text-slate-400">{formatIsoDay(recording.createdAt)}</div>
+                        <div className="text-sm text-[#3b3b40]">{formatDateTime(recording.createdAt)}</div>
+                        <div className="text-xs text-[#8b8b90]">{formatIsoDay(recording.createdAt)}</div>
                       </td>
                       <td className="px-4 py-3 align-middle">
                         {isActive ? (
@@ -443,7 +446,7 @@ export default function TeacherRecordingsPage() {
                             onClick={() => setActiveRecordingId(recording.id)}
                             className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary border border-primary/20 hover:bg-primary/5 rounded-lg transition-colors"
                           >
-                            Play
+                            {t('play')}
                           </button>
                         )}
                       </td>
@@ -454,7 +457,8 @@ export default function TeacherRecordingsPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </StudentCard>
+      </StudentPageStack>
     </DashboardLayout>
   );
 }

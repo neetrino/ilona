@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { 
   AddStudentForm,
@@ -172,7 +173,7 @@ export default function StudentsPage() {
       title={t('title')} 
       subtitle={t('subtitle')}
     >
-      <div className="space-y-6">
+      <div className={portalPageStackClass}>
         {/* Stats Grid */}
         <StudentsStats 
           totalStudents={totalStudents}
@@ -209,7 +210,6 @@ export default function StudentsPage() {
           lifecycleFilterOptions={lifecycleFilterOptions}
           isLoadingTeachers={!teachersData}
           isDeleting={deleteStudent.isPending || isLoading}
-          t={t}
           now={now}
         />
 

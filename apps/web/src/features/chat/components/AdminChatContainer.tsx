@@ -31,9 +31,9 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
 
   // Isolate chat state per account so Admin selection does not affect Student (and vice versa)
   useEffect(() => {
-    const key = user?.id ? `${user.id}-admin` : null;
+    const key = user?.id && user?.role ? `${user.id}-${user.role.toLowerCase()}` : null;
     setAccountKey(key);
-  }, [user?.id, setAccountKey]);
+  }, [user?.id, user?.role, setAccountKey]);
 
   // Get tab from URL, no default - user must select a tab
   const tabFromUrl = searchParams.get('tab') as AdminChatTab | null;
@@ -271,7 +271,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
             'text-slate-700 hover:text-slate-900',
             'hover:bg-slate-100 rounded-lg',
             'transition-colors',
-            'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+            'focus:outline-none focus:ring-4 focus:ring-[#1010a3]/15 focus:ring-offset-2'
           )}
           aria-label="Back to previous page"
         >

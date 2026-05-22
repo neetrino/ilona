@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import {
 } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useLesson, useUpdateLesson } from '@/features/lessons';
 
 export interface SubstituteTeacherOption {
@@ -30,6 +32,8 @@ export function SubstituteLessonModal({
   lessonId,
   teacherOptions,
 }: SubstituteLessonModalProps) {
+  const t = useTranslations('calendar');
+  const tCommon = useTranslations('common');
   const { data: lesson, isLoading } = useLesson(lessonId ?? '', open && Boolean(lessonId));
   const updateLesson = useUpdateLesson();
   const [selectedId, setSelectedId] = useState<string>('');
@@ -72,39 +76,36 @@ export function SubstituteLessonModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Substitute teacher (this lesson)</DialogTitle>
+          <DialogTitle>{t('substituteTeacherLesson')}</DialogTitle>
         </DialogHeader>
         {isLoading || !lesson ? (
-          <p className="text-sm text-slate-600">Loading lesson…</p>
+          <p className="text-sm text-[#3b3b40]">{t('loadingLesson')}</p>
         ) : (
           <div className="space-y-4">
-            <p className="text-sm text-slate-700">
-              <span className="font-medium text-slate-900">Group:</span> {lesson.group?.name ?? '—'}
+            <p className="text-sm text-[#3b3b40]">
+              <span className="font-medium text-[#1010a3]">{t('groupLabel')}</span>{' '}
+              {lesson.group?.name ?? '—'}
             </p>
-            <p className="text-sm text-slate-700">
-              <span className="font-medium text-slate-900">Main teacher:</span> {mainName}
+            <p className="text-sm text-[#3b3b40]">
+              <span className="font-medium text-[#1010a3]">{t('mainTeacherLabel')}</span> {mainName}
             </p>
             <div className="space-y-2">
-              <Label htmlFor="substitute-select">Substitute for this class only</Label>
-              <select
+              <Label htmlFor="substitute-select">{t('substituteForClassOnly')}</Label>
+              <SingleSelectDropdown
                 id="substitute-select"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                options={[
+                  { id: '', label: t('noneMainTeacherCovers') },
+                  ...teacherOptions
+                    .filter((teacher) => teacher.id !== lesson.teacherId)
+                    .map((teacher) => ({ id: teacher.id, label: teacher.label })),
+                ]}
                 value={selectedId}
-                onChange={(e) => setSelectedId(e.target.value)}
-              >
-                <option value="">None (main teacher covers)</option>
-                {teacherOptions
-                  .filter((t) => t.id !== lesson.teacherId)
-                  .map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.label}
-                    </option>
-                  ))}
-              </select>
+                onValueChange={(nextValue) => setSelectedId(nextValue ?? '')}
+              />
             </div>
             {lesson.substituteTeacher?.user && (
               <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
-                Currently assigned substitute:{' '}
+                {t('currentlyAssignedSubstitute')}{' '}
                 <span className="font-medium">
                   {lesson.substituteTeacher.user.firstName} {lesson.substituteTeacher.user.lastName}
                 </span>
@@ -115,18 +116,18 @@ export function SubstituteLessonModal({
         <DialogFooter className="gap-2 sm:gap-0">
           {lesson?.substituteTeacherId ? (
             <Button type="button" variant="outline" onClick={handleRemove} disabled={updateLesson.isPending}>
-              Remove substitute
+              {t('removeSubstitute')}
             </Button>
           ) : null}
           <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
             onClick={handleSave}
             disabled={updateLesson.isPending || !lessonId || isLoading || !lesson}
           >
-            Save
+            {tCommon('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -82,22 +82,22 @@ export function StudentFeedbackModal({
         {!student ? (
           open && studentIdFromUrl ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-600" />
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-[rgba(14,14,16,0.07)] border-t-[#1010a3]" />
               <span className="sr-only">Loading student…</span>
             </div>
           ) : (
-            <p className="text-slate-500 text-sm py-4">No student selected.</p>
+            <p className="text-[#8b8b90] text-sm py-4">No student selected.</p>
           )
         ) : (
           <div className="flex flex-col gap-4 overflow-y-auto pr-1 -mr-1">
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="font-medium text-slate-500">Student</span>
-                <p className="text-slate-900 font-medium">{studentName}</p>
+                <span className="font-medium text-[#8b8b90]">Student</span>
+                <p className="text-[#1010a3] font-medium">{studentName}</p>
               </div>
               <div>
-                <span className="font-medium text-slate-500">Teacher</span>
-                <p className="text-slate-900 font-medium">
+                <span className="font-medium text-[#8b8b90]">Teacher</span>
+                <p className="text-[#1010a3] font-medium">
                   {teacherName ?? (student.teacherId ? 'Assigned (no feedback yet)' : 'Not assigned')}
                 </p>
               </div>
@@ -105,7 +105,7 @@ export function StudentFeedbackModal({
 
             {isLoading && (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-600" />
+                <div className="animate-spin rounded-full h-10 w-10 border-2 border-[rgba(14,14,16,0.07)] border-t-[#1010a3]" />
                 <span className="sr-only">Loading feedback…</span>
               </div>
             )}
@@ -117,14 +117,14 @@ export function StudentFeedbackModal({
             )}
 
             {!isLoading && !error && (!feedbacks || feedbacks.length === 0) && (
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-center text-slate-600 text-sm">
+              <div className="rounded-lg border border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-4 py-6 text-center text-[#3b3b40] text-sm">
                 No feedback provided yet.
               </div>
             )}
 
             {!isLoading && !error && feedbacks && feedbacks.length > 0 && (
               <div className="space-y-4">
-                <p className="text-sm font-medium text-slate-700">Feedback by lesson</p>
+                <p className="text-sm font-medium text-[#3b3b40]">Feedback by lesson</p>
                 {feedbacks.map((feedback) => (
                   <FeedbackCard key={feedback.id} feedback={feedback} />
                 ))}
@@ -145,28 +145,28 @@ function FeedbackCard({ feedback }: { feedback: Feedback }) {
   const groupName = lesson?.group?.name;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 space-y-3">
+    <div className="rounded-lg border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/50 p-4 space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+        <span className="text-xs font-semibold text-[#8b8b90] uppercase tracking-wide">
           Lesson: {scheduledAt}
         </span>
         {groupName && (
-          <span className="text-xs text-slate-500">· {groupName}</span>
+          <span className="text-xs text-[#8b8b90]">· {groupName}</span>
         )}
       </div>
 
       {feedback.content ? (
-        <div className="pt-2 border-t border-slate-200">
-          <p className="text-xs font-medium text-slate-500 mb-1">Feedback content</p>
-          <p className="text-sm text-slate-800 whitespace-pre-wrap">{feedback.content}</p>
-          <p className="text-xs text-slate-400 mt-2">
+        <div className="pt-2 border-t border-[rgba(14,14,16,0.07)]">
+          <p className="text-xs font-medium text-[#8b8b90] mb-1">Feedback content</p>
+          <p className="text-sm text-[#3b3b40] whitespace-pre-wrap">{feedback.content}</p>
+          <p className="text-xs text-[#8b8b90] mt-2">
             Given {formatDateTime(feedback.createdAt)}
           </p>
         </div>
       ) : (
-        <div className="pt-2 border-t border-slate-200">
-          <p className="text-sm text-slate-500 italic">No feedback text for this lesson.</p>
-          <p className="text-xs text-slate-400 mt-2">
+        <div className="pt-2 border-t border-[rgba(14,14,16,0.07)]">
+          <p className="text-sm text-[#8b8b90] italic">No feedback text for this lesson.</p>
+          <p className="text-xs text-[#8b8b90] mt-2">
             {formatDateTime(feedback.createdAt)}
           </p>
         </div>

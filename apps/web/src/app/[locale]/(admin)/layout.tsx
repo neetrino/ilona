@@ -2,7 +2,9 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { isAdminOnlyPathForManager } from '@/shared/lib/role-routes';
 
 export default function AdminLayout({
   children,
@@ -10,7 +12,20 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, isHydrated, user } = useAuthStore();
+  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, '');
+  const isManager = user?.role === 'MANAGER';
+  const isAdmin = user?.role === 'ADMIN';
+  const isAdminPath = pathWithoutLocale.startsWith('/admin');
+  const isManagerPath = pathWithoutLocale.startsWith('/manager');
+  const managerPathFromAdmin = isAdminPath
+    ? pathWithoutLocale.replace(/^\/admin/, '/manager')
+    : '/manager/dashboard';
+  const adminPathFromManager = isManagerPath
+    ? pathWithoutLocale.replace(/^\/manager/, '/admin')
+    : '/admin/dashboard';
+  const isManagerRestrictedPath = isManager && isAdminOnlyPathForManager(pathWithoutLocale);
 
   useEffect(() => {
     // Wait for hydration before making any decisions
@@ -24,19 +39,30 @@ export default function AdminLayout({
   }, [isAuthenticated, isHydrated, user, router]);
 
   useEffect(() => {
-    if (!isHydrated || !isAuthenticated || user?.role !== 'MANAGER') return;
+    if (!isHydrated || !isAuthenticated) return;
 
-    const path = window.location.pathname.replace(/^\/[a-z]{2}/, '');
-    if (path.startsWith('/admin/finance') || path.startsWith('/admin/analytics')) {
-      router.replace('/admin/dashboard');
+    if (isManager) {
+      if (isManagerRestrictedPath) {
+        router.replace('/manager/dashboard');
+        return;
+      }
+
+      if (isAdminPath) {
+        router.replace(managerPathFromAdmin);
+      }
+      return;
     }
-  }, [isHydrated, isAuthenticated, user, router]);
+
+    if (isAdmin && isManagerPath) {
+      router.replace(adminPathFromManager);
+    }
+  }, [isHydrated, isAuthenticated, isManager, isAdmin, router, isManagerRestrictedPath, isAdminPath, isManagerPath, managerPathFromAdmin, adminPathFromManager]);
 
   // Show loading while hydrating or checking auth
   if (!isHydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
       </div>
     );
   }
@@ -44,8 +70,17 @@ export default function AdminLayout({
   // Show loading while redirecting
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'MANAGER')) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+      </div>
+    );
+  }
+
+  // Block restricted manager routes from rendering while redirecting.
+  if (isManagerRestrictedPath || (isManager && isAdminPath) || (isAdmin && isManagerPath)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
       </div>
     );
   }

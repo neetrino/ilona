@@ -4,6 +4,16 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import {
+  DROPDOWN_CHEVRON_CLASS,
+  DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
+  DROPDOWN_OPTION_BASE_CLASS,
+  DROPDOWN_OPTION_INTERACTIVE_CLASS,
+  DROPDOWN_OPTION_SELECTED_CLASS,
+  DROPDOWN_TRIGGER_BASE_CLASS,
+  DROPDOWN_TRIGGER_DISABLED_CLASS,
+  DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+} from '@/shared/components/ui/dropdown-theme';
 
 type DropdownPosition = { top: number; left: number; width: number };
 
@@ -92,7 +102,11 @@ export function CrmBranchSelector({
         onClick={() => setOpen((prev) => !prev)}
         disabled={disabled}
         className={cn(
-          'w-full inline-flex items-center justify-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20',
+          'w-full min-h-11 inline-flex items-center justify-between gap-2 !border-2 !border-slate-300 !bg-slate-50/40 py-2 text-sm font-semibold text-slate-800 shadow-sm',
+          DROPDOWN_TRIGGER_BASE_CLASS,
+          DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+          DROPDOWN_TRIGGER_DISABLED_CLASS,
+          open && '!border-[#1010a3]/55 !bg-white shadow-[0_10px_24px_rgba(16,16,163,0.16)]',
           disabled && 'opacity-60 pointer-events-none'
         )}
         title="Change branch"
@@ -100,7 +114,7 @@ export function CrmBranchSelector({
         aria-expanded={open}
       >
         <span className="truncate">{displayValue}</span>
-        <ChevronDown className={cn('h-3 w-3 transition-transform', open && 'rotate-180')} />
+        <ChevronDown className={cn(DROPDOWN_CHEVRON_CLASS, open && 'rotate-180')} />
       </button>
       {open &&
         position &&
@@ -108,7 +122,7 @@ export function CrmBranchSelector({
         createPortal(
           <div
             ref={menuRef}
-            className="fixed z-[9999] min-w-[160px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+            className={cn(DROPDOWN_MENU_PORTAL_SURFACE_CLASS, 'min-w-[160px]')}
             style={{
               top: `${position.top}px`,
               left: `${position.left}px`,
@@ -119,8 +133,9 @@ export function CrmBranchSelector({
               type="button"
               onClick={(e) => handleSelect(e, null)}
               className={cn(
-                'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
-                !value && 'bg-primary/10 font-medium text-primary'
+                DROPDOWN_OPTION_BASE_CLASS,
+                DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                !value && DROPDOWN_OPTION_SELECTED_CLASS
               )}
             >
               No branch
@@ -131,8 +146,9 @@ export function CrmBranchSelector({
                 type="button"
                 onClick={(e) => handleSelect(e, branch.id)}
                 className={cn(
-                  'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
-                  value === branch.id && 'bg-primary/10 font-medium text-primary'
+                  DROPDOWN_OPTION_BASE_CLASS,
+                  DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                  value === branch.id && DROPDOWN_OPTION_SELECTED_CLASS
                 )}
               >
                 {branch.name}

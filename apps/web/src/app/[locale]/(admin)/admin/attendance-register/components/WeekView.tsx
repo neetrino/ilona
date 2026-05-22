@@ -87,7 +87,7 @@ export function WeekView({
   // If only one group or no multi-select, show single view (backward compatibility)
   if (selectedGroups.length <= 1) {
     return (
-      <div className="bg-white rounded-xl border-2 border-slate-300 p-6 shadow-sm">
+      <div className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
         <AttendanceContextHeader
           group={group || null}
           weekRange={formatWeekRange(currentDate)}
@@ -135,7 +135,7 @@ export function WeekView({
         });
 
         return (
-          <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-slate-300 p-6 shadow-sm">
+          <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
             <AttendanceContextHeader
               group={selectedGroup}
               weekRange={formatWeekRange(currentDate)}

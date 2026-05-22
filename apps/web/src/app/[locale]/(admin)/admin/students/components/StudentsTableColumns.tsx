@@ -5,7 +5,7 @@ import { MessageCircle } from 'lucide-react';
 import { ActionButtons, Avatar } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
-import { formatCurrency } from '@/shared/lib/utils';
+import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
@@ -14,6 +14,18 @@ import type { Group } from '@/features/groups';
 import type { Teacher } from '@/features/teachers';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
+
+function getHorizontalScrollContainer(node: HTMLElement | null): HTMLElement | null {
+  let current = node?.parentElement ?? null;
+  while (current) {
+    const style = window.getComputedStyle(current);
+    const canScrollX = (style.overflowX === 'auto' || style.overflowX === 'scroll')
+      && current.scrollWidth > current.clientWidth;
+    if (canScrollX) return current;
+    current = current.parentElement;
+  }
+  return null;
+}
 
 function buildTeacherOptionsForRow(
   centerId: string | null,
@@ -168,7 +180,16 @@ function RegisterDateCell({
 
   useEffect(() => {
     if (editing && inputRef.current) {
-      inputRef.current.focus();
+      const scrollContainer = getHorizontalScrollContainer(inputRef.current);
+      const previousScrollLeft = scrollContainer?.scrollLeft ?? 0;
+      try {
+        inputRef.current.focus({ preventScroll: true });
+      } catch {
+        inputRef.current.focus();
+      }
+      if (scrollContainer) {
+        scrollContainer.scrollLeft = previousScrollLeft;
+      }
     }
   }, [editing]);
 
@@ -221,7 +242,7 @@ function RegisterDateCell({
 
   if (editing && !disabled) {
     return (
-      <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="relative min-w-0 w-full min-h-8" onClick={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
           type="text"
@@ -231,10 +252,10 @@ function RegisterDateCell({
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           disabled={saving}
-          className="w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+          className="h-8 w-full rounded border border-[rgba(14,14,16,0.12)] px-2 py-1 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3] disabled:opacity-50"
         />
         {error && (
-          <p className="absolute mt-0.5 text-xs text-red-600">{error}</p>
+          <p className="absolute left-0 top-full mt-0.5 text-xs text-red-600">{error}</p>
         )}
       </div>
     );
@@ -243,14 +264,19 @@ function RegisterDateCell({
   const displayText = formatRegisterDate(value) || '—';
   return (
     <div
-      className="min-w-0"
+      className="relative flex min-h-8 min-w-0 items-center"
       onClick={(e) => e.stopPropagation()}
     >
       <button
         type="button"
         onClick={() => !disabled && setEditing(true)}
         disabled={disabled || saving}
-        className={displayText === '—' ? 'text-slate-400 hover:text-slate-600' : 'text-slate-700 hover:text-slate-900'}
+        className={cn(
+          'h-8 whitespace-nowrap rounded px-1 text-left text-sm transition-colors',
+          displayText === '—'
+            ? 'text-[#8b8b90] hover:text-[#3b3b40]'
+            : 'text-[#3b3b40] hover:text-[#1010a3]',
+        )}
         title={displayText === '—' ? 'Set register date' : 'Edit register date'}
       >
         {displayText}
@@ -323,7 +349,7 @@ export function createStudentsTableColumns({
         return (
           <input
             type="checkbox"
-            className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             checked={selectedStudentIds.has(getItemId(row))}
             onChange={() => onToggleSelect(getItemId(row))}
             onClick={(e) => e.stopPropagation()}
@@ -332,17 +358,18 @@ export function createStudentsTableColumns({
           />
         );
       },
-      className: '!pl-2 !pr-1 !w-[36px] !min-w-[36px]',
+      className: '!w-9 !min-w-9 !max-w-9 shrink-0 !pl-2 !pr-1',
     },
     {
       key: 'student',
       header: 'STUDENT',
       sortable: true,
-      className: '!pl-0 !pr-2 !w-[21%] align-top',
+      className: '!min-w-[14rem] !pl-0 !pr-2 align-top',
       render: (row: TeacherAssignedItem) => {
         const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
-        const phone = isOnboardingItem(row) ? (row.phone ?? 'No phone') : (row.user?.phone ?? 'No phone');
+        const phoneRaw = isOnboardingItem(row) ? row.phone : row.user?.phone;
+        const phone = formatPhoneForDisplay(phoneRaw, 'No phone');
         const fullName = `${firstName} ${lastName}`.trim() || '?';
         const avatarUrl = isOnboardingItem(row) ? undefined : row.user?.avatarUrl;
         // Lifecycle/risk badges – computed from persisted status + server-derived risk.
@@ -361,7 +388,7 @@ export function createStudentsTableColumns({
               )}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-slate-800 leading-tight break-words">
+              <p className="font-semibold text-[#3b3b40] leading-tight break-words">
                 {firstName} {lastName}
               </p>
               <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
@@ -372,7 +399,7 @@ export function createStudentsTableColumns({
                     {riskBadge.label}
                   </span>
                 )}
-                <span className="text-sm text-slate-500">{phone}</span>
+                <span className="text-sm text-[#8b8b90]">{phone}</span>
               </div>
             </div>
           </div>
@@ -382,9 +409,9 @@ export function createStudentsTableColumns({
     {
       key: 'center',
       header: 'CENTER',
-      className: '!w-[14%] align-top',
+      className: '!min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
         const manualCenterId = row.centerId ?? null;
         return (
@@ -406,9 +433,9 @@ export function createStudentsTableColumns({
     {
       key: 'teacher',
       header: 'TEACHER',
-      className: '!w-[14%] align-top',
+      className: '!min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
         const teacherOptionsForRow = buildTeacherOptionsForRow(
           manualCenterId,
@@ -436,9 +463,9 @@ export function createStudentsTableColumns({
     {
       key: 'group',
       header: 'GROUP',
-      className: '!w-[14%] align-top',
+      className: '!min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
         const teacherId = row.teacherId || null;
         const groupOptionsForRow = buildGroupOptionsForRow(
@@ -468,9 +495,9 @@ export function createStudentsTableColumns({
       key: 'register',
       header: 'REGISTER',
       sortable: true,
-      className: 'text-left !w-[11%] align-top',
+      className: '!w-[8.25rem] !min-w-[8.25rem] !max-w-[8.25rem] whitespace-nowrap text-left align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         return (
           <RegisterDateCell
             studentId={row.id}
@@ -485,13 +512,13 @@ export function createStudentsTableColumns({
       key: 'monthlyFee',
       header: 'MONTHLY FEE',
       sortable: true,
-      className: 'text-center !w-[10%] align-top',
+      className: '!min-w-[6rem] whitespace-nowrap text-center align-top',
       render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-slate-400">—</span>;
+        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
         return (
           <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-            <span className="text-slate-700 font-medium whitespace-nowrap">{formatCurrency(fee)}</span>
+            <span className="text-[#3b3b40] font-medium whitespace-nowrap">{formatCurrency(fee)}</span>
           </div>
         );
       },
@@ -500,19 +527,19 @@ export function createStudentsTableColumns({
       key: 'absence',
       header: 'ABSENCE',
       sortable: true,
-      className: 'text-center !w-[7%] align-top',
+      className: '!min-w-[5rem] whitespace-nowrap text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
             <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-              <span className="text-slate-400">—</span>
+              <span className="text-[#8b8b90]">—</span>
             </div>
           );
         }
         const absencesThisMonth = row.attendanceSummary?.absences ?? 0;
         return (
           <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-            <span className="text-slate-700 font-medium">{absencesThisMonth}</span>
+            <span className="text-[#3b3b40] font-medium">{absencesThisMonth}</span>
           </div>
         );
       },
@@ -520,17 +547,17 @@ export function createStudentsTableColumns({
     {
       key: 'actions',
       header: 'ACTIONS',
-      className: '!w-[160px] !min-w-[160px] !max-w-[160px] !px-2 !py-3 text-center align-top',
+      className: '!min-w-[9.5rem] shrink-0 !px-2 !py-3 text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
-            <span className="text-slate-400 text-xs" onClick={(e) => e.stopPropagation()}>Onboarding</span>
+            <span className="text-[#8b8b90] text-xs" onClick={(e) => e.stopPropagation()}>Onboarding</span>
           );
         }
         const student = row;
         const isActive = student.user?.status === 'ACTIVE';
         const btnClass =
-          'p-1.5 text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
+          'p-1.5 text-[#1010a3] hover:text-[#3b3b40] hover:bg-[#fafafa] rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
 
         return (
           <div

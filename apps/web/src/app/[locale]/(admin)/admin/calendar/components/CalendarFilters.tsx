@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, startTransition } from 'react';
+import { useTranslations } from 'next-intl';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 interface CalendarFiltersProps {
   searchQuery: string;
@@ -19,6 +21,8 @@ export function CalendarFilters({
   onSearchChange,
   onTeacherChange,
 }: CalendarFiltersProps) {
+  const t = useTranslations('calendar');
+  const tc = useTranslations('common');
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const onSearchChangeRef = useRef(onSearchChange);
 
@@ -47,26 +51,31 @@ export function CalendarFilters({
     setLocalSearchQuery('');
     onSearchChange('');
   };
+  const teacherSelectOptions = [
+    { id: '', label: t('allTeachers') },
+    ...teacherOptions,
+  ];
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
       {/* Search Input */}
-      <div className="flex-1 relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="relative min-w-0 flex-1">
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input
           type="search"
           value={localSearchQuery}
           onChange={(e) => setLocalSearchQuery(e.target.value)}
-          placeholder="Search lessons by keyword, group, or teacher..."
-          className="w-full pl-10 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          placeholder={t('searchLessonsPlaceholder')}
+          className="w-full pl-10 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
         />
         {localSearchQuery && (
           <button
+            type="button"
             onClick={handleClearSearch}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 hover:text-slate-600"
-            aria-label="Clear search"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90] hover:text-[#3b3b40]"
+            aria-label={tc('search')}
           >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -76,28 +85,15 @@ export function CalendarFilters({
       </div>
 
       {/* Teacher Filter */}
-      <div className="relative">
-        <select
+      <div className="w-full shrink-0 sm:w-auto sm:min-w-[11rem]">
+        <SingleSelectDropdown
+          id="calendar-teacher-filter"
+          options={teacherSelectOptions}
           value={selectedTeacherId}
-          onChange={(e) => onTeacherChange(e.target.value)}
-          disabled={isLoadingTeachers}
-          className="pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer min-w-[180px] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <option value="">All teachers</option>
-          {teacherOptions.map((teacher) => (
-            <option key={teacher.id} value={teacher.id}>
-              {teacher.label}
-            </option>
-          ))}
-        </select>
-        <svg 
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+          onValueChange={(nextValue) => onTeacherChange(nextValue ?? '')}
+          isLoading={isLoadingTeachers}
+          className="sm:min-w-[11rem]"
+        />
       </div>
     </div>
   );

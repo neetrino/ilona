@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { cn, formatCurrency } from '@/shared/lib/utils';
+import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { AdminAvatarPhotoLightbox, AdminDetailModal, Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
 import { getExperienceYearsFromHireDate, formatExperienceLabel } from '../utils/experience';
@@ -129,7 +129,7 @@ export function TeacherDetailsModal({
   const lastName = teacher?.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim() || 'Unknown';
   const isActive = teacher?.user?.status === 'ACTIVE';
-  const phone = teacher?.user?.phone || t('noPhoneNumber');
+  const phone = formatPhoneForDisplay(teacher?.user?.phone, t('noPhoneNumber'));
   const email = teacher?.user?.email || '';
   const lessonRateRaw = teacher?.lessonRateAMD;
   const hourlyRateFallback = typeof teacher?.hourlyRate === 'string'

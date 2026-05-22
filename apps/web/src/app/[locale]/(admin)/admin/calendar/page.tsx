@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useMemo, useEffect, useCallback, startTransition } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -21,6 +22,9 @@ import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGri
 import { useTeachers } from '@/features/teachers';
 import { CalendarFilters } from './components/CalendarFilters';
 import { SubstituteLessonModal } from './components/SubstituteLessonModal';
+import { useLocale, useTranslations } from 'next-intl';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 // Helper to get week dates
 function getWeekDates(date: Date): Date[] {
@@ -102,6 +106,11 @@ export default function CalendarPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations('calendar');
+  const tLessons = useTranslations('lessons');
+  const locale = useLocale();
+  const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
   
   // Initialize view mode from URL query params, with fallback to 'list'
   const [viewMode, setViewMode] = useState<'week' | 'month' | 'list'>(() => {
@@ -371,12 +380,12 @@ export default function CalendarPage() {
       setPendingBulkDeleteIds([]);
       showDeleteNotice(
         'success',
-        n === 1 ? 'Lesson deleted successfully.' : `${n} lessons deleted successfully.`,
+        n === 1 ? t('lessonDeletedSuccess') : t('lessonsDeletedSuccess', { count: n }),
       );
     } catch (err: unknown) {
-      setBulkDeleteError(getErrorMessage(err, 'Failed to delete lessons. Please try again.'));
+      setBulkDeleteError(getErrorMessage(err, t('failedDeleteLessons')));
     }
-  }, [deleteLessonsBulk, pendingBulkDeleteIds, showDeleteNotice]);
+  }, [deleteLessonsBulk, pendingBulkDeleteIds, showDeleteNotice, t]);
 
   const handleSingleDeleteClick = useCallback((lessonId: string) => {
     setSingleDeleteError(null);
@@ -399,11 +408,11 @@ export default function CalendarPage() {
       await deleteLesson.mutateAsync(pendingSingleDeleteId);
       setIsSingleDeleteDialogOpen(false);
       setPendingSingleDeleteId(null);
-      showDeleteNotice('success', 'Lesson deleted successfully.');
+      showDeleteNotice('success', t('lessonDeletedSuccess'));
     } catch (err: unknown) {
-      setSingleDeleteError(getErrorMessage(err, 'Failed to delete lesson. Please try again.'));
+      setSingleDeleteError(getErrorMessage(err, t('failedDeleteLesson')));
     }
-  }, [deleteLesson, pendingSingleDeleteId, showDeleteNotice]);
+  }, [deleteLesson, pendingSingleDeleteId, showDeleteNotice, t]);
 
   const singleDeleteLesson = pendingSingleDeleteId
     ? lessons.find((l) => l.id === pendingSingleDeleteId)
@@ -446,12 +455,12 @@ export default function CalendarPage() {
 
   return (
     <DashboardLayout 
-      title="Lesson Calendar" 
-      subtitle="Schedule and manage lessons across all groups."
+      title={t('adminTitle')} 
+      subtitle={t('adminSubtitle')}
     >
-      <div className="space-y-6">
+      <div className={portalPageStackClass}>
         {/* Filters */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200">
+        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
           <CalendarFilters
             searchQuery={searchQuery}
             selectedTeacherId={selectedTeacherId}
@@ -463,51 +472,51 @@ export default function CalendarPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid w-full min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
           <StatCard
-            title="Total Lessons"
+            title={t('statsTotalLessons')}
             value={stats?.total || 0}
           />
           <StatCard
-            title="Completed"
+            title={t('statsCompleted')}
             value={stats?.completed || 0}
-            change={{ value: `${stats?.completionRate || 0}%`, type: 'positive' }}
+            change={{ value: t('statsCompletionRate', { value: stats?.completionRate || 0 }), type: 'positive' }}
           />
           <StatCard
-            title="Scheduled"
+            title={t('statsScheduled')}
             value={stats?.scheduled || 0}
-            change={{ value: 'Upcoming', type: 'neutral' }}
+            change={{ value: t('statsUpcoming'), type: 'neutral' }}
           />
           <StatCard
-            title="In Progress"
+            title={t('statsInProgress')}
             value={stats?.inProgress || 0}
-            change={{ value: 'Live now', type: 'warning' }}
+            change={{ value: t('statsLiveNow'), type: 'warning' }}
           />
           <StatCard
-            title="Cancelled/Missed"
+            title={t('statsCancelledMissed')}
             value={(stats?.cancelled || 0) + (stats?.missed || 0)}
           />
         </div>
 
         {/* Calendar Controls */}
-        <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200">
-          <div className="flex items-center gap-4">
+        <div className="flex w-full min-w-0 flex-col gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-4">
             <button
               onClick={goToPreviousWeek}
-              className="p-2 rounded-lg hover:bg-slate-100"
+              className="p-2 rounded-lg hover:bg-[#f6f6f7]"
             >
-              <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h2 className="text-lg font-semibold text-slate-800">
+            <h2 className="text-lg font-semibold text-[#3b3b40]">
               {viewMode === 'month' ? monthHeader : weekHeader}
             </h2>
             <button
               onClick={goToNextWeek}
-              className="p-2 rounded-lg hover:bg-slate-100"
+              className="p-2 rounded-lg hover:bg-[#f6f6f7]"
             >
-              <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -515,53 +524,53 @@ export default function CalendarPage() {
               onClick={goToToday}
               className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg"
             >
-              Today
+              {t('today')}
             </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
+            <div className="inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
               <button
                 type="button"
                 onClick={() => updateViewModeInUrl('list')}
                 className={cn(
                   'px-4 py-2 text-sm font-semibold rounded-md transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'list'
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-[#1010a3] text-white shadow-md'
+                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'list'}
               >
-                List
+                {t('list')}
               </button>
               <button
                 type="button"
                 onClick={() => updateViewModeInUrl('week')}
                 className={cn(
                   'px-4 py-2 text-sm font-semibold rounded-md transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'week'
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-[#1010a3] text-white shadow-md'
+                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'week'}
               >
-                Week
+                {t('week')}
               </button>
               <button
                 type="button"
                 onClick={() => updateViewModeInUrl('month')}
                 className={cn(
                   'px-4 py-2 text-sm font-semibold rounded-md transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'month'
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-[#1010a3] text-white shadow-md'
+                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'month'}
               >
-                Month
+                {t('month')}
               </button>
             </div>
             <Button
@@ -570,28 +579,29 @@ export default function CalendarPage() {
               onClick={() => handleAddLessonOpenChange(true)}
               className="font-semibold shadow-sm"
             >
-              + Add Lesson
+              + {tLessons('addLesson')}
             </Button>
           </div>
         </div>
 
         {/* Week View */}
         {viewMode === 'week' && (
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
+            <div className="min-w-[42rem]">
             {/* Day Headers */}
-            <div className="grid grid-cols-7 border-b border-slate-200">
+            <div className="grid grid-cols-7 border-b border-[rgba(14,14,16,0.07)]">
               {weekDates.map((date, i) => (
                 <div 
                   key={i}
-                  className={`p-3 text-center border-r last:border-r-0 border-slate-200 ${
+                  className={`p-3 text-center border-r last:border-r-0 border-[rgba(14,14,16,0.07)] ${
                     isToday(date) ? 'bg-blue-50' : ''
                   }`}
                 >
-                  <p className="text-xs text-slate-500 uppercase">
+                  <p className="text-xs text-[#8b8b90] uppercase">
                     {date.toLocaleDateString('en-US', { weekday: 'short' })}
                   </p>
                   <p className={`text-lg font-semibold ${
-                    isToday(date) ? 'text-blue-600' : 'text-slate-800'
+                    isToday(date) ? 'text-blue-600' : 'text-[#3b3b40]'
                   }`}>
                     {date.getDate()}
                   </p>
@@ -608,18 +618,18 @@ export default function CalendarPage() {
                 return (
                   <div 
                     key={i}
-                    className={`p-2 border-r last:border-r-0 border-slate-200 ${
+                    className={`p-2 border-r last:border-r-0 border-[rgba(14,14,16,0.07)] ${
                       isToday(date) ? 'bg-blue-50/50' : ''
                     }`}
                   >
                     {isLoading ? (
                       <div className="animate-pulse space-y-2">
-                        <div className="h-16 bg-slate-200 rounded-lg" />
-                        <div className="h-16 bg-slate-200 rounded-lg" />
+                        <div className="h-16 bg-[#f1f1f2] rounded-lg" />
+                        <div className="h-16 bg-[#f1f1f2] rounded-lg" />
                       </div>
                     ) : dayLessons.length === 0 ? (
-                      <p className="text-xs text-slate-400 text-center py-4">
-                        {searchQuery || selectedTeacherId ? 'No lessons match filters' : 'No lessons'}
+                      <p className="text-xs text-[#8b8b90] text-center py-4">
+                        {searchQuery || selectedTeacherId ? t('noLessonsMatchFiltersShort') : t('noLessons')}
                       </p>
                     ) : (
                       <div className="space-y-2">
@@ -637,7 +647,7 @@ export default function CalendarPage() {
                             } else if (lesson.status === 'IN_PROGRESS') {
                               return 'bg-amber-50 border-amber-500';
                             } else if (lesson.status === 'CANCELLED' || lesson.status === 'MISSED') {
-                              return 'bg-slate-100 border-slate-400';
+                              return 'bg-[#f6f6f7] border-[rgba(14,14,16,0.18)]';
                             }
                             return 'bg-blue-50 border-blue-500';
                           };
@@ -647,15 +657,15 @@ export default function CalendarPage() {
                               key={lesson.id}
                               className={`p-2 rounded-lg text-xs border-l-4 ${getLessonColor()}`}
                             >
-                              <p className="font-medium text-slate-800 truncate">
+                              <p className="font-medium text-[#3b3b40] truncate">
                                 {formatTime(lesson.scheduledAt)}
                               </p>
-                              <p className="text-slate-600 truncate">
-                                {lesson.group?.name || 'Unknown'}
+                              <p className="text-[#3b3b40] truncate">
+                                {lesson.group?.name || t('lessonUnknown')}
                               </p>
                               {lesson.substituteTeacher?.user && (
-                                <p className="text-amber-800 truncate mt-0.5" title="Substitute teacher">
-                                  Sub: {lesson.substituteTeacher.user.firstName}{' '}
+                                <p className="text-amber-800 truncate mt-0.5" title={t('substituteTeacherTitle')}>
+                                  {t('substituteShort')} {lesson.substituteTeacher.user.firstName}{' '}
                                   {lesson.substituteTeacher.user.lastName}
                                 </p>
                               )}
@@ -668,11 +678,14 @@ export default function CalendarPage() {
                 );
               })}
             </div>
+            </div>
           </div>
         )}
 
         {viewMode === 'month' && (
-          <div className="h-[min(70vh,720px)] overflow-hidden bg-white rounded-xl border border-slate-200 min-h-0">
+          <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
+          <div className="min-w-[36rem]">
+          <div className="h-[min(70vh,720px)] min-h-0 overflow-hidden">
             <CalendarMonthGrid<Lesson>
               monthDates={monthDates}
               getLessonsForDay={(k) => lessonsByDate[k] ?? []}
@@ -682,21 +695,23 @@ export default function CalendarPage() {
               renderLesson={({ lesson, variant }) => (
                 <button
                   type="button"
-                  onClick={() => router.push(`/admin/calendar/${lesson.id}`)}
+                  onClick={() => router.push(`/${locale}${portalBasePath}/calendar/${lesson.id}`)}
                   className={cn(
-                    'w-full min-w-0 max-w-full truncate rounded border border-blue-100/90 bg-blue-50/90 text-left text-slate-800 transition hover:border-blue-200 hover:bg-blue-100/80',
+                    'w-full min-w-0 max-w-full truncate rounded border border-blue-100/90 bg-blue-50/90 text-left text-[#3b3b40] transition hover:border-blue-200 hover:bg-blue-100/80',
                     variant === 'cell'
                       ? 'px-1.5 py-0.5 text-[9px] leading-tight sm:px-2 sm:py-1 sm:text-[10px] sm:leading-tight'
                       : 'px-3 py-2.5 text-sm',
                   )}
                 >
-                  {formatTime(lesson.scheduledAt)} · {lesson.group?.name ?? 'Unknown'}
+                  {formatTime(lesson.scheduledAt)} · {lesson.group?.name ?? t('lessonUnknown')}
                   {lesson.substituteTeacher?.user
-                    ? ` · Sub ${lesson.substituteTeacher.user.firstName[0]}.`
+                    ? ` · ${t('substituteShort')} ${lesson.substituteTeacher.user.firstName[0]}.`
                     : ''}
                 </button>
               )}
             />
+          </div>
+          </div>
           </div>
         )}
 
@@ -704,17 +719,17 @@ export default function CalendarPage() {
         {viewMode === 'list' && (
           <>
             {isLoading ? (
-              <div className="bg-white rounded-xl border border-slate-200 p-8">
+              <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-8">
                 <div className="animate-pulse space-y-4">
-                  <div className="h-12 bg-slate-200 rounded-lg" />
-                  <div className="h-12 bg-slate-200 rounded-lg" />
-                  <div className="h-12 bg-slate-200 rounded-lg" />
+                  <div className="h-12 bg-[#f1f1f2] rounded-lg" />
+                  <div className="h-12 bg-[#f1f1f2] rounded-lg" />
+                  <div className="h-12 bg-[#f1f1f2] rounded-lg" />
                 </div>
               </div>
             ) : lessons.length === 0 ? (
-              <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-                <p className="text-slate-500">
-                  {searchQuery || selectedTeacherId ? 'No lessons match the current filters' : 'No lessons found'}
+              <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-8 text-center">
+                <p className="text-[#8b8b90]">
+                  {searchQuery || selectedTeacherId ? t('noLessonsMatchFilters') : t('noLessonsFound')}
                 </p>
               </div>
             ) : (
@@ -724,11 +739,11 @@ export default function CalendarPage() {
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
-                showBulkBarWhenEmpty
                 sectionedCalendarList
+                showScheduleColumn={false}
                 onBulkDelete={handleBulkDeleteClick}
                 onObligationClick={(lessonId, obligation) => {
-                  router.push(`/admin/calendar/${lessonId}?tab=${obligation}`);
+                  router.push(`/${locale}${portalBasePath}/calendar/${lessonId}?tab=${obligation}`);
                 }}
                 onDelete={handleSingleDeleteClick}
                 onAssignSubstitute={(lessonId) => {
@@ -773,23 +788,18 @@ export default function CalendarPage() {
         lessonCount={1}
         isLoading={deleteLesson.isPending}
         error={singleDeleteError}
-        title="Delete this lesson?"
+        title={t('deleteThisLessonTitle')}
         description={
           singleDeleteLesson ? (
-            <>
-              Permanently delete the lesson for{' '}
-              <span className="font-semibold text-slate-900">
-                {singleDeleteLesson.group?.name ?? 'Unknown group'}
-              </span>{' '}
-              scheduled{' '}
-              {new Date(singleDeleteLesson.scheduledAt).toLocaleString(undefined, {
+            t('deleteLessonPermanentFor', {
+              group: singleDeleteLesson.group?.name ?? t('unknownGroup'),
+              datetime: new Date(singleDeleteLesson.scheduledAt).toLocaleString(undefined, {
                 dateStyle: 'medium',
                 timeStyle: 'short',
-              })}
-              ? This cannot be undone (attendance, feedback, and related data will be removed).
-            </>
+              }),
+            })
           ) : (
-            'Permanently delete this lesson? This cannot be undone.'
+            t('deleteLessonPermanent')
           )
         }
       />

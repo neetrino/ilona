@@ -25,7 +25,7 @@ const nextConfig = {
 
     // Optimize webpack for development (only if not using Turbopack)
     // Note: With --turbo flag, webpack config is ignored
-    webpack: (config, { dev, isServer }) => {
+    webpack: (config, { dev, isServer: _isServer }) => {
       if (dev && !process.env.TURBOPACK) {
         // Faster builds in development
         config.optimization = {

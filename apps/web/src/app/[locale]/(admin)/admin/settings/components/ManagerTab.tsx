@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Archive } from 'lucide-react';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useCenters } from '@/features/centers';
 import { useCreateManager, useManagers, type ManagerAccount } from '@/features/settings';
 import { EditManagerForm } from '@/features/settings/components/EditManagerForm';
 import { InactiveManagersDialog } from '@/features/settings/components/InactiveManagersDialog';
 import { getErrorMessage } from '@/shared/lib/api';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { isActiveCenterManager } from '@/features/settings/utils/manager-display';
 
 export function ManagerTab() {
@@ -107,57 +109,54 @@ export function ManagerTab() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-800">{t('manager')}</h2>
-        <p className="text-sm text-slate-500 mt-1">{t('managerDescription')}</p>
-        <p className="text-xs text-slate-500 mt-2">{t('managerReplacementHint')}</p>
+      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+        <h2 className="text-lg font-semibold text-[#3b3b40]">{t('manager')}</h2>
+        <p className="text-sm text-[#8b8b90] mt-1">{t('managerDescription')}</p>
+        <p className="text-xs text-[#8b8b90] mt-2">{t('managerReplacementHint')}</p>
 
         <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
-            className="h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-primary"
+            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('firstName')}
             value={form.firstName}
             onChange={(e) => setForm((prev) => ({ ...prev, firstName: e.target.value }))}
           />
           <input
-            className="h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-primary"
+            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('lastName')}
             value={form.lastName}
             onChange={(e) => setForm((prev) => ({ ...prev, lastName: e.target.value }))}
           />
           <input
             type="email"
-            className="h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-primary"
+            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('emailAddress')}
             value={form.email}
             onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
           />
           <input
             type="password"
-            className="h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-primary"
+            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('managerPasswordPlaceholder')}
             value={form.password}
             onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
           />
           <input
-            className="h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-primary"
+            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('phoneNumber')}
             value={form.phone}
             onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
           />
-          <select
-            className="h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-primary bg-white"
+          <SingleSelectDropdown
+            id="manager-center-select"
+            options={[
+              { id: '', label: t('managerSelectCenter') },
+              ...availableCenters.map((center) => ({ id: center.id, label: center.name })),
+            ]}
             value={form.centerId}
-            onChange={(e) => setForm((prev) => ({ ...prev, centerId: e.target.value }))}
+            onValueChange={(nextValue) => setForm((prev) => ({ ...prev, centerId: nextValue ?? '' }))}
             disabled={availableCenters.length === 0}
-          >
-            <option value="">{t('managerSelectCenter')}</option>
-            {availableCenters.map((center) => (
-              <option key={center.id} value={center.id}>
-                {center.name}
-              </option>
-            ))}
-          </select>
+          />
 
           {availableCenters.length === 0 && (
             <p className="md:col-span-2 text-xs text-amber-700">{t('managerNoAvailableCenters')}</p>
@@ -171,7 +170,7 @@ export function ManagerTab() {
             <button
               type="submit"
               disabled={!canSubmit || createManager.isPending}
-              className="h-10 px-4 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-10 px-4 rounded-xl bg-[#1010a3] text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createManager.isPending ? t('saving') : t('createManager')}
             </button>
@@ -179,20 +178,20 @@ export function ManagerTab() {
         </form>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-base font-semibold text-slate-800">{t('managersList')}</h3>
+          <h3 className="text-base font-semibold text-[#3b3b40]">{t('managersList')}</h3>
           <button
             type="button"
             onClick={() => setIsInactiveOpen(true)}
             title={t('viewInactiveManagers')}
             aria-label={t('viewInactiveManagers')}
-            className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+            className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-[rgba(14,14,16,0.07)] text-sm font-medium text-[#3b3b40] hover:bg-[#fafafa] transition-colors"
           >
-            <Archive className="h-4 w-4 text-slate-500" aria-hidden />
+            <Archive className="h-4 w-4 text-[#8b8b90]" aria-hidden />
             <span className="hidden sm:inline">{t('inactiveManagers')}</span>
             {inactiveCount > 0 && (
-              <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-slate-200 text-xs font-semibold text-slate-700 inline-flex items-center justify-center">
+              <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-[#f1f1f2] text-xs font-semibold text-[#3b3b40] inline-flex items-center justify-center">
                 {inactiveCount}
               </span>
             )}
@@ -200,9 +199,9 @@ export function ManagerTab() {
         </div>
 
         <div className="mt-4 space-y-2">
-          {isLoading && <div className="text-sm text-slate-500">{t('loadingManagers')}</div>}
+          {isLoading && <div className="text-sm text-[#8b8b90]">{t('loadingManagers')}</div>}
           {!isLoading && activeManagers.length === 0 && (
-            <div className="text-sm text-slate-500">{t('noActiveManagers')}</div>
+            <div className="text-sm text-[#8b8b90]">{t('noActiveManagers')}</div>
           )}
           {!isLoading &&
             activeManagers.map((manager) => {
@@ -211,11 +210,11 @@ export function ManagerTab() {
               return (
                 <div
                   key={manager.id}
-                  className="rounded-xl border border-slate-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                  className="rounded-xl border border-[rgba(14,14,16,0.07)] px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-medium text-slate-800">
+                      <p className="text-sm font-medium text-[#3b3b40]">
                         {manager.firstName} {manager.lastName}
                       </p>
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
@@ -227,22 +226,22 @@ export function ManagerTab() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">{manager.email}</p>
+                    <p className="text-xs text-[#8b8b90] mt-0.5">{manager.email}</p>
                     {manager.phone && (
-                      <p className="text-xs text-slate-500">{manager.phone}</p>
+                      <p className="text-xs text-[#8b8b90]">{formatPhoneForDisplay(manager.phone)}</p>
                     )}
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-4">
                     <div className="text-left sm:text-right">
-                      <p className="text-xs text-slate-500">{t('managerAssignedCenter')}</p>
-                      <p className="text-sm font-medium text-slate-700">
+                      <p className="text-xs text-[#8b8b90]">{t('managerAssignedCenter')}</p>
+                      <p className="text-sm font-medium text-[#3b3b40]">
                         {manager.managerProfile?.center?.name ?? '—'}
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => openEdit(manager)}
-                      className="h-9 px-3 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 shrink-0"
+                      className="h-9 px-3 rounded-lg border border-[rgba(14,14,16,0.07)] text-sm font-medium text-[#3b3b40] hover:bg-[#fafafa] shrink-0"
                     >
                       {tCommon('edit')}
                     </button>

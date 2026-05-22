@@ -28,18 +28,18 @@ export function CalendarHeader({
     <div className="flex items-center gap-2">
       <button
         onClick={() => onNavigate(-1)}
-        className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+        className="p-2 hover:bg-[#f6f6f7] rounded-lg transition-colors"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </button>
-      <h2 className="text-lg font-semibold text-slate-800 min-w-[200px] text-center">
+      <h2 className="text-lg font-semibold text-[#1010a3] min-w-[200px] text-center">
         {formatHeader()}
       </h2>
       <button
         onClick={() => onNavigate(1)}
-        className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+        className="p-2 hover:bg-[#f6f6f7] rounded-lg transition-colors"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

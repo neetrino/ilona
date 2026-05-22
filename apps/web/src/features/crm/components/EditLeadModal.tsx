@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
@@ -9,6 +10,7 @@ import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
+import { DatePickerInput } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { PaidRegistrationModal } from './PaidRegistrationModal';
@@ -52,13 +54,15 @@ export function EditLeadModal({
   groups,
   availableStatuses = CRM_COLUMN_ORDER,
 }: EditLeadModalProps) {
+  const t = useTranslations('crm');
+  const tc = useTranslations('common');
   const user = useAuthStore((s) => s.user);
   const isManager = user?.role === 'MANAGER';
   const managerCenterReadonlyLabel = useMemo(() => {
     if (!isManager || !user?.managerCenterId) return null;
     const name = centers.find((c) => c.id === user.managerCenterId)?.name;
-    return name ?? 'Your assigned branch';
-  }, [centers, isManager, user?.managerCenterId]);
+    return name ?? t('yourAssignedBranch');
+  }, [centers, isManager, t, user?.managerCenterId]);
 
   const queryClient = useQueryClient();
   const modalContainerRef = useRef<HTMLDivElement>(null);
@@ -200,7 +204,7 @@ export function EditLeadModal({
       onSaved();
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update lead');
+      setError(err instanceof Error ? err.message : t('failedUpdateLead'));
     } finally {
       setSaving(false);
     }
@@ -223,20 +227,20 @@ export function EditLeadModal({
         >
           <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold text-slate-900">Edit Lead</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{t('editLead')}</h2>
               <button
                 type="button"
                 onClick={onClose}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 active:bg-slate-200"
-                aria-label="Close edit lead modal"
-                title="Close"
+                aria-label={t('closeEditLeadModal')}
+                title={tc('close')}
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
           </div>
         {isLoading ? (
-          <div className="p-8 text-center text-slate-500">Loading…</div>
+          <div className="p-8 text-center text-slate-500">{tc('loading')}</div>
         ) : (
           <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
             <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
@@ -244,7 +248,7 @@ export function EditLeadModal({
               <p className="text-sm text-red-600 rounded-lg bg-red-50 p-2">{error}</p>
             )}
             <section className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Voice</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('voiceSection')}</h3>
               {voiceAttachments.length > 0 ? (
                 <div className="space-y-2">
                   {voiceAttachments.map((attachment) => (
@@ -258,28 +262,28 @@ export function EditLeadModal({
                 </div>
               ) : (
                 <p className="rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-500">
-                  No voice recording
+                  {t('noVoiceRecording')}
                 </p>
               )}
             </section>
             <section className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Comment</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('comment')}</h3>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Comment</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700">{t('comment')}</label>
                 <textarea
                   rows={3}
                   value={form.comment ?? ''}
                   onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
-                  placeholder="Internal notes about this lead"
+                  placeholder={t('commentPlaceholder')}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
             </section>
             <section className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Basic Info</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('basicInfo')}</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">First name</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('firstName')}</label>
                   <input
                     type="text"
                     value={form.firstName ?? ''}
@@ -288,7 +292,7 @@ export function EditLeadModal({
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Last name</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('lastName')}</label>
                   <input
                     type="text"
                     value={form.lastName ?? ''}
@@ -298,7 +302,7 @@ export function EditLeadModal({
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Phone number</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700">{t('phoneNumber')}</label>
                 <input
                   type="tel"
                   inputMode="numeric"
@@ -310,10 +314,10 @@ export function EditLeadModal({
               </div>
             </section>
             <section className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Additional Info</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('additionalInfo')}</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Age</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('age')}</label>
                   <input
                     type="number"
                     min={0}
@@ -329,26 +333,24 @@ export function EditLeadModal({
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Date of birth (mm/dd/yyyy)
+                    {t('dateOfBirth')}
                   </label>
-                  <input
-                    type="date"
+                  <DatePickerInput
                     value={form.dateOfBirth ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, dateOfBirth: e.target.value || undefined }))
+                    onValueChange={(nextValue) =>
+                      setForm((f) => ({ ...f, dateOfBirth: nextValue || undefined }))
                     }
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">
-                    First lesson date (mm/dd/yyyy)
+                    {t('firstLessonDate')}
                   </label>
-                  <input
-                    type="date"
+                  <DatePickerInput
                     value={form.firstLessonDate ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, firstLessonDate: e.target.value || undefined }))
+                    onValueChange={(nextValue) =>
+                      setForm((f) => ({ ...f, firstLessonDate: nextValue || undefined }))
                     }
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
@@ -358,30 +360,30 @@ export function EditLeadModal({
             {typeof form.age === 'number' && form.age > 0 && form.age < 18 && (
               <section className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Parent details (under 18)
+                  {t('parentDetailsUnder18')}
                 </p>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent name</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentName')}</label>
                   <input
                     type="text"
                     value={form.parentName ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
-                    placeholder="John"
+                    placeholder={t('parentNamePlaceholder')}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent surname</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentSurname')}</label>
                   <input
                     type="text"
                     value={form.parentSurname ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentSurname: e.target.value }))}
-                    placeholder="Smith"
+                    placeholder={t('parentSurnamePlaceholder')}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent phone</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentPhone')}</label>
                   <input
                     type="tel"
                     inputMode="numeric"
@@ -389,44 +391,44 @@ export function EditLeadModal({
                     onChange={(e) =>
                       setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
                     }
-                    placeholder="+374XXXXXXXX"
+                    placeholder={t('parentPhonePlaceholder')}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent email</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentEmail')}</label>
                   <input
                     type="email"
                     autoComplete="email"
                     value={form.parentEmail ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentEmail: e.target.value }))}
-                    placeholder="parent@example.com"
+                    placeholder={t('parentEmailPlaceholder')}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Parent passport details</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentPassport')}</label>
                   <input
                     type="text"
                     value={form.parentPassportInfo ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
-                    placeholder="XX0000000"
+                    placeholder={t('passportPlaceholder')}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
               </section>
             )}
             <section className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Academic Info</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('academicInfo')}</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Level</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('level')}</label>
                   <select
                     value={form.levelId ?? ''}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, levelId: e.target.value || undefined }))
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">—</option>
                     {LEVEL_OPTIONS.map((l) => (
@@ -437,36 +439,36 @@ export function EditLeadModal({
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Teacher</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('teacher')}</label>
                   <select
                     value={form.teacherId ?? ''}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, teacherId: e.target.value || undefined, groupId: undefined }))
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
                     <option value="">—</option>
-                    {teachers.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.user?.firstName} {t.user?.lastName}
+                    {teachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.user?.firstName} {teacher.user?.lastName}
                       </option>
                     ))}
                   </select>
                   {isManager && teachers.length === 0 ? (
-                    <p className="mt-1 text-xs text-slate-500">No teachers available for your center.</p>
+                    <p className="mt-1 text-xs text-slate-500">{t('noTeachersForCenter')}</p>
                   ) : null}
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Group</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('group')}</label>
                   <select
                     value={form.groupId ?? ''}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, groupId: e.target.value || undefined }))
                     }
                     disabled={!selectedTeacherId}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   >
-                    <option value="">{selectedTeacherId ? '—' : 'Select Teacher first'}</option>
+                    <option value="">{selectedTeacherId ? '—' : t('selectTeacherFirst')}</option>
                     {groupsForSelectedTeacher.map((g) => (
                       <option key={g.id} value={g.id}>
                         {g.name}
@@ -477,7 +479,7 @@ export function EditLeadModal({
                 {isManager ? (
                   managerCenterReadonlyLabel ? (
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
+                      <label className="mb-1 block text-sm font-medium text-slate-700">{t('center')}</label>
                       <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
                         {managerCenterReadonlyLabel}
                       </p>
@@ -485,13 +487,13 @@ export function EditLeadModal({
                   ) : null
                 ) : (
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">Center</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-700">{t('center')}</label>
                     <select
                       value={form.centerId ?? ''}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, centerId: e.target.value || undefined }))
                       }
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
                       {centers.map((c) => (
@@ -507,9 +509,9 @@ export function EditLeadModal({
             </div>
             <div className="border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-2px_8px_rgba(15,23,42,0.06)] backdrop-blur sm:px-6">
               <section className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{tc('status')}</h3>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Status</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{tc('status')}</label>
                   <CrmStatusSelector
                     id="edit-lead-status"
                     value={form.status}
@@ -522,7 +524,7 @@ export function EditLeadModal({
                 {form.status === 'ARCHIVE' && (
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700">
-                      Archive reason (optional)
+                      {t('archiveReasonOptional')}
                     </label>
                     <input
                       type="text"
@@ -530,7 +532,7 @@ export function EditLeadModal({
                       onChange={(e) =>
                         setForm((f) => ({ ...f, archivedReason: e.target.value || undefined }))
                       }
-                      placeholder="Reason for archiving"
+                      placeholder={t('archiveReasonPlaceholder')}
                       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     />
                   </div>
@@ -546,7 +548,7 @@ export function EditLeadModal({
                   'rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50'
                 )}
               >
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? t('saving') : tc('save')}
               </button>
               </div>
             </div>

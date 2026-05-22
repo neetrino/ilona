@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getPresignedRecordingUrl, confirmRecording, getRecordingPlayUrl } from '@/features/crm/api/crm.api';
+import { getPresignedRecordingUrl, confirmRecording } from '@/features/crm/api/crm.api';
 import { cn } from '@/shared/lib/utils';
 import {
   createAudioRecorder,
@@ -12,6 +12,7 @@ import {
   selectSupportedAudioMimeType,
   stopStreamTracks,
 } from '@/features/crm/utils/voiceRecording';
+import { LeadCardVoiceInline } from './LeadCardVoiceInline';
 
 interface VoiceRecorderProps {
   leadId: string;
@@ -166,10 +167,5 @@ export function RecordingPlayback({
   mimeType: string | null;
   className?: string;
 }) {
-  const url = getRecordingPlayUrl(key);
-  return (
-    <audio controls className={cn('w-full max-w-xs', className)} src={url}>
-      Your browser does not support audio.
-    </audio>
-  );
+  return <LeadCardVoiceInline r2Key={key} mimeType={_mimeType} className={className} showLabel={false} />;
 }

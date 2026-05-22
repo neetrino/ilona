@@ -14,6 +14,7 @@ import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { filterTeachersByBranches, groupTeachersByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 type ViewMode = 'list' | 'board';
 
@@ -36,6 +37,7 @@ export function useTeachersPage() {
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
+  const portalBasePath = getAdminPortalBasePath(user?.role);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -100,7 +102,7 @@ export function useTeachersPage() {
       params.delete(ADD_TEACHER_URL_PARAM);
     }
     const qs = params.toString();
-    const path = qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`;
+    const path = qs ? `/${locale}${portalBasePath}/teachers?${qs}` : `/${locale}${portalBasePath}/teachers`;
     router.replace(path, { scroll: false });
   };
 
@@ -110,7 +112,7 @@ export function useTeachersPage() {
       params.delete(EDIT_TEACHER_URL_PARAM);
     }
     const qs = params.toString();
-    router.replace(qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`, { scroll: false });
+    router.replace(qs ? `/${locale}${portalBasePath}/teachers?${qs}` : `/${locale}${portalBasePath}/teachers`, { scroll: false });
   };
 
   // Debounce search query (300ms delay). Use startTransition to avoid "setTimeout handler took Xms" violations.
@@ -303,7 +305,7 @@ export function useTeachersPage() {
     } else {
       params.delete('status');
     }
-    router.push(`/${locale}/admin/teachers?${params.toString()}`);
+    router.push(`/${locale}${portalBasePath}/teachers?${params.toString()}`);
   };
 
   const handleSort = (key: string) => {
@@ -360,7 +362,7 @@ export function useTeachersPage() {
     } else {
       params.delete('view');
     }
-    router.push(`/${locale}/admin/teachers?${params.toString()}`);
+    router.push(`/${locale}${portalBasePath}/teachers?${params.toString()}`);
   };
 
   const handleViewModeChange = (mode: ViewMode) => {
@@ -382,7 +384,7 @@ export function useTeachersPage() {
     params.set(EDIT_TEACHER_URL_PARAM, teacher.id);
     params.delete(ADD_TEACHER_URL_PARAM);
     params.delete('teacherId');
-    router.replace(`/${locale}/admin/teachers?${params.toString()}`, { scroll: false });
+    router.replace(`/${locale}${portalBasePath}/teachers?${params.toString()}`, { scroll: false });
   };
 
   const handleDeleteClick = (teacher: Teacher) => {
@@ -409,7 +411,7 @@ export function useTeachersPage() {
       if (params.get(EDIT_TEACHER_URL_PARAM) === deletedId) {
         params.delete(EDIT_TEACHER_URL_PARAM);
         const qs = params.toString();
-        router.replace(qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`, { scroll: false });
+        router.replace(qs ? `/${locale}${portalBasePath}/teachers?${qs}` : `/${locale}${portalBasePath}/teachers`, { scroll: false });
       }
 
       setTimeout(() => {
@@ -448,7 +450,7 @@ export function useTeachersPage() {
         const params = new URLSearchParams(searchParams.toString());
         params.delete(EDIT_TEACHER_URL_PARAM);
         const qs = params.toString();
-        router.replace(qs ? `/${locale}/admin/teachers?${qs}` : `/${locale}/admin/teachers`, { scroll: false });
+        router.replace(qs ? `/${locale}${portalBasePath}/teachers?${qs}` : `/${locale}${portalBasePath}/teachers`, { scroll: false });
       }
 
       setTimeout(() => {
@@ -500,13 +502,13 @@ export function useTeachersPage() {
     params.set('teacherId', teacher.id);
     params.delete(ADD_TEACHER_URL_PARAM);
     params.delete(EDIT_TEACHER_URL_PARAM);
-    router.replace(`/${locale}/admin/teachers?${params.toString()}`, { scroll: false });
+    router.replace(`/${locale}${portalBasePath}/teachers?${params.toString()}`, { scroll: false });
   };
 
   const handleDetailsDrawerClose = () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('teacherId');
-    const newUrl = params.toString() ? `/${locale}/admin/teachers?${params.toString()}` : `/${locale}/admin/teachers`;
+    const newUrl = params.toString() ? `/${locale}${portalBasePath}/teachers?${params.toString()}` : `/${locale}${portalBasePath}/teachers`;
     router.replace(newUrl, { scroll: false });
   };
 

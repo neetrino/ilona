@@ -35,8 +35,8 @@ function AdminMetaRow({
   children: ReactNode;
 }) {
   return (
-    <div className="flex gap-2 text-slate-600">
-      <span className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true">
+    <div className="flex gap-2 text-[#3b3b40]">
+      <span className="mt-0.5 shrink-0 text-[#8b8b90]" aria-hidden="true">
         {icon}
       </span>
       <div className="min-w-0 flex-1">
@@ -111,12 +111,12 @@ export function TeacherCard({
       afterExperience={
         <div className="space-y-2.5 text-xs sm:text-sm">
           <AdminMetaRow icon={<Mail className="h-3.5 w-3.5" />} label={tCommon('email')}>
-            <span className="break-all text-slate-700" title={email}>
+            <span className="break-all text-[#3b3b40]" title={email}>
               {email}
             </span>
           </AdminMetaRow>
           <AdminMetaRow icon={<Users className="h-3.5 w-3.5" />} label={t('assignedGroups')}>
-            <span className="line-clamp-2 text-slate-700" title={groupsSummary}>
+            <span className="line-clamp-2 text-[#3b3b40]" title={groupsSummary}>
               {groupsSummary}
             </span>
           </AdminMetaRow>
@@ -124,20 +124,20 @@ export function TeacherCard({
             <TeacherBranchDisplay centers={centers} t={t} density="default" />
           </AdminMetaRow>
           <div className="flex flex-wrap items-center gap-2 pt-0.5">
-            <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-[#8b8b90]">
               {t('status')}
             </span>
             <Badge variant={statusBadgeVariant(status)} className="text-[11px]">
               {statusLabel}
             </Badge>
           </div>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 border-t border-slate-100 pt-2 text-[11px] text-slate-500 sm:text-xs">
+          <div className="flex flex-wrap gap-x-3 gap-y-1 border-t border-[rgba(14,14,16,0.07)] pt-2 text-[11px] text-[#8b8b90] sm:text-xs">
             <span>
-              {t('students')}: <span className="font-medium text-slate-700">{studentCount}</span>
+              {t('students')}: <span className="font-medium text-[#3b3b40]">{studentCount}</span>
             </span>
             <span>
               {t('rate')}:{' '}
-              <span className="font-medium text-slate-700">{formatCurrency(hourlyRate)}/hr</span>
+              <span className="font-medium text-[#3b3b40]">{formatCurrency(hourlyRate)}/hr</span>
             </span>
           </div>
         </div>

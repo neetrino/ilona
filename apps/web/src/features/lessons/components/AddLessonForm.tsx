@@ -18,97 +18,97 @@ import { useCreateLesson, useCreateRecurringLessons, type CreateLessonDto, type 
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 
 const TIME_RE = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
 
-/** Mon–Sun display; values match Date.getDay() (0 = Sun … 6 = Sat) */
-const WEEKDAYS = [
-  { value: 1, label: 'Mon' },
-  { value: 2, label: 'Tue' },
-  { value: 3, label: 'Wed' },
-  { value: 4, label: 'Thu' },
-  { value: 5, label: 'Fri' },
-  { value: 6, label: 'Sat' },
-  { value: 0, label: 'Sun' },
-] as const;
-
 type ScheduleMode = 'single' | 'recurring';
 
-const addLessonFormSchema = z
-  .object({
-    scheduleMode: z.enum(['single', 'recurring']),
-    groupId: z.string().min(1, 'Please select a group'),
-    teacherId: z.string().min(1, 'Please select a teacher'),
-    scheduledAt: z.string().optional(),
-    duration: z
-      .number()
-      .int('Duration must be a whole number')
-      .min(15, 'Duration must be at least 15 minutes')
-      .max(240, 'Duration must be at most 240 minutes')
-      .optional(),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
-    weekdays: z.array(z.number().int().min(0).max(6)).optional(),
-    startTime: z.string().optional(),
-    endTime: z.string().optional(),
-    description: z
-      .string()
-      .max(1000, 'Description must be at most 1000 characters')
-      .optional()
-      .or(z.literal('')),
-  })
-  .superRefine((data, ctx) => {
-    if (data.scheduleMode === 'single') {
-      if (!data.scheduledAt || data.scheduledAt.length < 1) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['scheduledAt'], message: 'Please select date and time' });
-      }
-    } else {
-      if (!data.startDate) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['startDate'], message: 'Please select start date' });
-      }
-      if (!data.endDate) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endDate'], message: 'Please select end date' });
-      }
-      if (data.startDate && data.endDate) {
-        const a = new Date(data.startDate);
-        const b = new Date(data.endDate);
-        if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endDate'], message: 'Invalid date' });
-        } else if (b < a) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endDate'], message: 'End date must be on or after start date' });
-        }
-      }
-      const wd = data.weekdays ?? [];
-      if (wd.length < 1) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['weekdays'], message: 'Select at least one day of the week' });
-      }
-      if (data.startTime) {
-        if (!TIME_RE.test(data.startTime)) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['startTime'], message: 'Start time is invalid' });
-        }
-      } else {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['startTime'], message: 'Please set start time' });
-      }
-      if (data.endTime) {
-        if (!TIME_RE.test(data.endTime)) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endTime'], message: 'End time is invalid' });
-        }
-      } else {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endTime'], message: 'Please set end time' });
-      }
-      if (data.startTime && data.endTime && TIME_RE.test(data.startTime) && TIME_RE.test(data.endTime)) {
-        const [sH, sM] = data.startTime.split(':').map(Number);
-        const [eH, eM] = data.endTime.split(':').map(Number);
-        if (eH * 60 + eM <= sH * 60 + sM) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endTime'], message: 'End time must be after start time' });
-        }
-      }
-    }
-  });
+type AddLessonFormData = {
+  scheduleMode: ScheduleMode;
+  groupId: string;
+  teacherId: string;
+  scheduledAt?: string;
+  duration?: number;
+  startDate?: string;
+  endDate?: string;
+  weekdays?: number[];
+  startTime?: string;
+  endTime?: string;
+  description?: string;
+};
 
-type AddLessonFormData = z.infer<typeof addLessonFormSchema>;
+function createAddLessonFormSchema(tVal: (key: string) => string) {
+  return z
+    .object({
+      scheduleMode: z.enum(['single', 'recurring']),
+      groupId: z.string().min(1, tVal('selectGroup')),
+      teacherId: z.string().min(1, tVal('selectTeacher')),
+      scheduledAt: z.string().optional(),
+      duration: z
+        .number()
+        .int(tVal('durationInt'))
+        .min(15, tVal('durationMin'))
+        .max(240, tVal('durationMax'))
+        .optional(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+      weekdays: z.array(z.number().int().min(0).max(6)).optional(),
+      startTime: z.string().optional(),
+      endTime: z.string().optional(),
+      description: z.string().max(1000, tVal('descriptionMax')).optional().or(z.literal('')),
+    })
+    .superRefine((data, ctx) => {
+      if (data.scheduleMode === 'single') {
+        if (!data.scheduledAt || data.scheduledAt.length < 1) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['scheduledAt'], message: tVal('scheduledAtRequired') });
+        }
+      } else {
+        if (!data.startDate) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['startDate'], message: tVal('startDateRequired') });
+        }
+        if (!data.endDate) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endDate'], message: tVal('endDateRequired') });
+        }
+        if (data.startDate && data.endDate) {
+          const a = new Date(data.startDate);
+          const b = new Date(data.endDate);
+          if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endDate'], message: tVal('invalidDate') });
+          } else if (b < a) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endDate'], message: tVal('endDateAfterStart') });
+          }
+        }
+        const wd = data.weekdays ?? [];
+        if (wd.length < 1) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['weekdays'], message: tVal('weekdaysRequired') });
+        }
+        if (data.startTime) {
+          if (!TIME_RE.test(data.startTime)) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['startTime'], message: tVal('startTimeInvalid') });
+          }
+        } else {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['startTime'], message: tVal('startTimeRequired') });
+        }
+        if (data.endTime) {
+          if (!TIME_RE.test(data.endTime)) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endTime'], message: tVal('endTimeInvalid') });
+          }
+        } else {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endTime'], message: tVal('endTimeRequired') });
+        }
+        if (data.startTime && data.endTime && TIME_RE.test(data.startTime) && TIME_RE.test(data.endTime)) {
+          const [sH, sM] = data.startTime.split(':').map(Number);
+          const [eH, eM] = data.endTime.split(':').map(Number);
+          if (eH * 60 + eM <= sH * 60 + sM) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endTime'], message: tVal('endTimeAfterStart') });
+          }
+        }
+      }
+    });
+}
 
 interface AddLessonFormProps {
   open: boolean;
@@ -143,6 +143,29 @@ function countSlotsInRange(
 }
 
 export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: AddLessonFormProps) {
+  const tForm = useTranslations('lessons.form');
+  const tVal = useTranslations('lessons.validation');
+  const tWeekdays = useTranslations('lessons.weekdays');
+  const tCommon = useTranslations('common');
+  const tCalendar = useTranslations('calendar');
+
+  const addLessonFormSchema = useMemo(() => createAddLessonFormSchema(tVal), [tVal]);
+  const resolver = useMemo(() => zodResolver(addLessonFormSchema), [addLessonFormSchema]);
+
+  const weekdays = useMemo(
+    () =>
+      [
+        { value: 1, label: tWeekdays('mon') },
+        { value: 2, label: tWeekdays('tue') },
+        { value: 3, label: tWeekdays('wed') },
+        { value: 4, label: tWeekdays('thu') },
+        { value: 5, label: tWeekdays('fri') },
+        { value: 6, label: tWeekdays('sat') },
+        { value: 0, label: tWeekdays('sun') },
+      ] as const,
+    [tWeekdays],
+  );
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const createLesson = useCreateLesson();
@@ -189,7 +212,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
     setValue,
     watch,
   } = useForm<AddLessonFormData>({
-    resolver: zodResolver(addLessonFormSchema),
+    resolver,
     defaultValues: {
       scheduleMode: 'single',
       groupId: '',
@@ -275,7 +298,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
           description: data.description || undefined,
         };
         await createLesson.mutateAsync(lessonData);
-        setSuccessMessage('Lesson created successfully!');
+        setSuccessMessage(tForm('lessonCreatedSuccess'));
       } else {
         const recurringData: CreateRecurringLessonsDto = {
           groupId: data.groupId,
@@ -290,9 +313,9 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
         const res = await createRecurring.mutateAsync(recurringData);
         const n = res.items.length;
         const s = res.skippedDuplicateCount;
-        let msg = n === 1 ? 'Created 1 lesson.' : `Created ${n} lessons.`;
+        let msg = tForm('createdLessons', { count: n });
         if (s > 0) {
-          msg += ` Skipped ${s} time slot(s) that already had a lesson.`;
+          msg += tForm('skippedDuplicates', { count: s });
         }
         setSuccessMessage(msg);
       }
@@ -301,7 +324,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
         onOpenChange(false);
       }, 1500);
     } catch (err: unknown) {
-      setErrorMessage(getErrorMessage(err, 'Failed to create lesson(s). Please try again.'));
+      setErrorMessage(getErrorMessage(err, tVal('failedToCreate')));
       setSuccessMessage(null);
     }
   };
@@ -333,10 +356,8 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Lesson</DialogTitle>
-          <DialogDescription>
-            Add one session or many recurring sessions. Fields marked with * are required.
-          </DialogDescription>
+          <DialogTitle>{tForm('addTitle')}</DialogTitle>
+          <DialogDescription>{tForm('addDescription')}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -352,7 +373,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
           )}
 
           <div className="space-y-2">
-            <Label>Schedule</Label>
+            <Label>{tForm('schedule')}</Label>
             <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-slate-50/80 p-1">
               <button
                 type="button"
@@ -364,7 +385,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
                     : 'text-slate-600 hover:text-slate-900'
                 )}
               >
-                Single session
+                {tForm('singleSession')}
               </button>
               <button
                 type="button"
@@ -376,30 +397,28 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
                     : 'text-slate-600 hover:text-slate-900'
                 )}
               >
-                Date range &amp; recurring
+                {tForm('recurringSessions')}
               </button>
             </div>
-            <p className="text-xs text-slate-500">
-              Single: one date and a duration. Recurring: a range, weekdays, and a start/end time each day.
-            </p>
+            <p className="text-xs text-slate-500">{tForm('scheduleHint')}</p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="teacherId">
-              Teacher <span className="text-red-500">*</span>
+              {tCommon('teacher')} <span className="text-red-500">*</span>
             </Label>
             <select
               id="teacherId"
               {...register('teacherId')}
               disabled={isBusy || isLoadingTeachers || teachers.length === 0}
               className={cn(
-                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm',
+                'unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
                 errors.teacherId ? 'border-red-300' : 'border-slate-300',
                 (isBusy || isLoadingTeachers || teachers.length === 0) && 'bg-slate-100 cursor-not-allowed',
                 !isLoadingTeachers && teachers.length > 0 && 'bg-white'
               )}
             >
-              <option value="">Select a teacher</option>
+              <option value="">{tForm('selectTeacher')}</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.id}>
                   {teacher.user.firstName} {teacher.user.lastName}
@@ -407,28 +426,28 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
               ))}
             </select>
             {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
-            {isLoadingTeachers && <p className="text-sm text-slate-500">Loading teachers...</p>}
+            {isLoadingTeachers && <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>}
             {!isLoadingTeachers && teachers.length === 0 && (
-              <p className="text-sm text-amber-600">No teachers available. Please create a teacher first.</p>
+              <p className="text-sm text-amber-600">{tForm('noTeachersAvailable')}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="groupId">
-              Group <span className="text-red-500">*</span>
+              {tCommon('group')} <span className="text-red-500">*</span>
             </Label>
             <select
               id="groupId"
               {...register('groupId')}
               disabled={groupSelectDisabled}
               className={cn(
-                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm',
+                'unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
                 errors.groupId ? 'border-red-300' : 'border-slate-300',
                 groupSelectDisabled && 'bg-slate-100 cursor-not-allowed',
                 !groupSelectDisabled && 'bg-white'
               )}
             >
-              <option value="">{!hasTeacher ? 'Select a teacher first' : 'Select a group'}</option>
+              <option value="">{!hasTeacher ? tForm('selectTeacherFirst') : tForm('selectGroup')}</option>
               {groups.map((group) => (
                 <option key={group.id} value={group.id}>
                   {group.name} {group.level ? `(${group.level})` : ''} {group.center ? `- ${group.center.name}` : ''}
@@ -436,10 +455,10 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
               ))}
             </select>
             {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}
-            {!hasTeacher && <p className="text-sm text-slate-500">Select a teacher to see groups assigned to them.</p>}
-            {hasTeacher && isLoadingGroups && <p className="text-sm text-slate-500">Loading groups...</p>}
+            {!hasTeacher && <p className="text-sm text-slate-500">{tForm('selectTeacherForGroups')}</p>}
+            {hasTeacher && isLoadingGroups && <p className="text-sm text-slate-500">{tForm('loadingGroups')}</p>}
             {hasTeacher && !isLoadingGroups && noGroupsForTeacher && (
-              <p className="text-sm text-amber-600">This teacher has no active groups assigned. Assign a group in Groups first.</p>
+              <p className="text-sm text-amber-600">{tForm('noGroupsForTeacher')}</p>
             )}
           </div>
 
@@ -447,7 +466,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="scheduledDate">
-                  Date <span className="text-red-500">*</span>
+                  {tCommon('date')} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="scheduledDate"
@@ -465,7 +484,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
 
               <div className="space-y-2">
                 <Label htmlFor="scheduledTime">
-                  Time <span className="text-red-500">*</span>
+                  {tCommon('time')} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="scheduledTime"
@@ -486,9 +505,11 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
           ) : (
             <>
               <div className="space-y-2">
-                <Label>Days of week <span className="text-red-500">*</span></Label>
+                <Label>
+                  {tForm('daysOfWeek')} <span className="text-red-500">*</span>
+                </Label>
                 <div className="flex flex-wrap gap-2">
-                  {WEEKDAYS.map((day) => {
+                  {weekdays.map((day) => {
                     const selected = (weekdaysW ?? []).includes(day.value);
                     return (
                       <button
@@ -499,7 +520,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
                         className={cn(
                           'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                           selected
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            ? 'bg-[#1010a3] text-white hover:bg-[#0d0d85]'
                             : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
                           isBusy && 'opacity-50 cursor-not-allowed'
                         )}
@@ -514,22 +535,30 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="al-startTime">Start time <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="al-startTime">
+                    {tCalendar('startTime')} <span className="text-red-500">*</span>
+                  </Label>
                   <Input id="al-startTime" type="time" {...register('startTime')} error={errors.startTime?.message} disabled={isBusy} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="al-endTime">End time <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="al-endTime">
+                    {tCalendar('endTime')} <span className="text-red-500">*</span>
+                  </Label>
                   <Input id="al-endTime" type="time" {...register('endTime')} error={errors.endTime?.message} disabled={isBusy} />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="al-startDate">Start date <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="al-startDate">
+                    {tCalendar('startDate')} <span className="text-red-500">*</span>
+                  </Label>
                   <Input id="al-startDate" type="date" {...register('startDate')} error={errors.startDate?.message} disabled={isBusy} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="al-endDate">End date <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="al-endDate">
+                    {tCalendar('endDate')} <span className="text-red-500">*</span>
+                  </Label>
                   <Input id="al-endDate" type="date" {...register('endDate')} error={errors.endDate?.message} disabled={isBusy} />
                 </div>
               </div>
@@ -539,11 +568,13 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
                   className="rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2 text-sm text-slate-700"
                   role="status"
                 >
-                  <p className="font-medium">Summary</p>
+                  <p className="font-medium">{tForm('summary')}</p>
                   <p>
-                    {slotPreview.slots} new lesson{slotPreview.slots === 1 ? '' : 's'} in this range
-                    {slotPreview.durationMins && slotPreview.durationMins > 0 ? ` · ${slotPreview.durationMins} min each` : ''}.
-                    Existing lessons at the same time are not duplicated.
+                    {tForm('summaryLessons', { count: slotPreview.slots })}
+                    {slotPreview.durationMins && slotPreview.durationMins > 0
+                      ? tForm('summaryDurationEach', { minutes: slotPreview.durationMins })
+                      : ''}
+                    . {tForm('summaryNoDuplicates')}
                   </p>
                 </div>
               )}
@@ -552,7 +583,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
 
           {scheduleMode === 'single' && (
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration (minutes)</Label>
+              <Label htmlFor="duration">{tForm('durationMinutes')}</Label>
               <Input
                 id="duration"
                 type="number"
@@ -564,23 +595,23 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
                 step={15}
                 disabled={isBusy}
               />
-              <p className="text-xs text-slate-500">Duration between 15 and 240 minutes (default: 60)</p>
+              <p className="text-xs text-slate-500">{tForm('durationHint')}</p>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{tCommon('description')}</Label>
             <textarea
               id="description"
               {...register('description')}
               rows={3}
               className={cn(
-                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm resize-none',
+                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm resize-none',
                 errors.description ? 'border-red-300' : 'border-slate-300',
                 isBusy && 'bg-slate-100 cursor-not-allowed',
                 !isBusy && 'bg-white'
               )}
-              placeholder="Optional notes..."
+              placeholder={tForm('descriptionPlaceholder')}
               disabled={isBusy}
             />
             {errors.description && <p className="text-sm text-red-600">{errors.description.message}</p>}
@@ -590,7 +621,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isBusy}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               type="submit"
@@ -604,12 +635,12 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
               }
             >
               {isBusy
-                ? 'Creating…'
+                ? tForm('creating')
                 : scheduleMode === 'recurring' && slotPreview.slots > 0
-                  ? `Create ${slotPreview.slots} lessons`
+                  ? tForm('createLessonsCount', { count: slotPreview.slots })
                   : scheduleMode === 'recurring'
-                    ? 'Create lessons'
-                    : 'Create lesson'}
+                    ? tForm('createLessons')
+                    : tForm('createLesson')}
             </Button>
           </DialogFooter>
         </form>

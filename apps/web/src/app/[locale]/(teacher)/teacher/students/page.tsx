@@ -126,18 +126,18 @@ export default function TeacherStudentsPage() {
     >
       <div className="space-y-4">
         {/* Group tabs */}
-        <div className="rounded-xl border border-slate-200 bg-white p-2">
+        <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-2">
           {!isAuthReady || isLoadingGroups ? (
             <div className="flex gap-2 p-2">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-10 w-40 animate-pulse rounded-lg bg-slate-200"
+                  className="h-10 w-40 animate-pulse rounded-lg bg-[#f1f1f2]"
                 />
               ))}
             </div>
           ) : groupsList.length === 0 ? (
-            <div className="p-6 text-center text-sm text-slate-500">
+            <div className="p-6 text-center text-sm text-[#8b8b90]">
               No groups assigned yet. Groups assigned to you will appear here.
             </div>
           ) : (
@@ -155,14 +155,14 @@ export default function TeacherStudentsPage() {
                       'rounded-lg border px-3 py-2 text-left transition-colors',
                       isSelected
                         ? 'border-primary bg-primary/10'
-                        : 'border-slate-200 bg-white hover:bg-slate-50',
+                        : 'border-[rgba(14,14,16,0.07)] bg-white hover:bg-[#fafafa]',
                     )}
                   >
                     <div className="flex items-center gap-2">
                       <span
                         className={cn(
                           'text-sm font-semibold',
-                          isSelected ? 'text-primary' : 'text-slate-800',
+                          isSelected ? 'text-primary' : 'text-[#1010a3]',
                         )}
                       >
                         {group.name}
@@ -178,7 +178,7 @@ export default function TeacherStudentsPage() {
                         {role === 'MAIN' ? 'Main' : 'Secondary'}
                       </span>
                     </div>
-                    <div className="mt-0.5 text-xs text-slate-500">
+                    <div className="mt-0.5 text-xs text-[#8b8b90]">
                       {group.level ? getLevelDisplay(group.level) : 'No level'} ·{' '}
                       {studentCount} student{studentCount !== 1 ? 's' : ''}
                     </div>
@@ -190,16 +190,16 @@ export default function TeacherStudentsPage() {
         </div>
 
         {/* Students Content */}
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-[rgba(14,14,16,0.07)] bg-white">
           {selectedGroup ? (
             <div
               className={cn(
-                'border-b border-slate-200 bg-slate-50 p-4',
+                'border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4',
                 selectedGroupRole === 'SECONDARY' && 'bg-amber-50',
               )}
             >
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-slate-800">{selectedGroup.name}</h3>
+                <h3 className="font-semibold text-[#1010a3]">{selectedGroup.name}</h3>
                 <span
                   className={cn(
                     'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase',
@@ -211,17 +211,17 @@ export default function TeacherStudentsPage() {
                   {selectedGroupRole === 'MAIN' ? 'Main' : 'Secondary'}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-[#8b8b90]">
                 {selectedGroup.level ? getLevelDisplay(selectedGroup.level) : 'No level'} ·{' '}
                 {items.length} student{items.length !== 1 ? 's' : ''}
               </p>
             </div>
           ) : null}
 
-          <div className="border-b border-slate-200 p-4">
+          <div className="border-b border-[rgba(14,14,16,0.07)] p-4">
             <div className="relative">
               <svg
-                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -238,26 +238,26 @@ export default function TeacherStudentsPage() {
                 placeholder="Search students..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg bg-slate-100 py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-lg bg-[#f6f6f7] py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[rgba(14,14,16,0.07)]">
             {isLoading ? (
               <div className="space-y-4 p-8">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="flex items-center gap-3 animate-pulse">
-                    <div className="h-10 w-10 rounded-full bg-slate-200" />
+                    <div className="h-10 w-10 rounded-full bg-[#f1f1f2]" />
                     <div className="flex-1">
-                      <div className="mb-2 h-4 w-1/3 rounded bg-slate-200" />
-                      <div className="h-3 w-1/2 rounded bg-slate-200" />
+                      <div className="mb-2 h-4 w-1/3 rounded bg-[#f1f1f2]" />
+                      <div className="h-3 w-1/2 rounded bg-[#f1f1f2]" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : items.length === 0 ? (
-              <div className="p-12 text-center text-sm text-slate-500">
+              <div className="p-12 text-center text-sm text-[#8b8b90]">
                 {searchQuery
                   ? 'No students found. Try adjusting your search.'
                   : 'No students in this group yet.'}
@@ -284,7 +284,7 @@ export default function TeacherStudentsPage() {
                             {initials}
                           </div>
                           <div>
-                            <p className="font-medium text-slate-800">
+                            <p className="font-medium text-[#1010a3]">
                               {name}
                               <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-normal text-amber-700">
                                 Onboarding
@@ -325,7 +325,7 @@ export default function TeacherStudentsPage() {
                               </button>
                             </>
                           ) : (
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs text-[#8b8b90]">
                               First lesson pending
                             </span>
                           )}
@@ -341,7 +341,7 @@ export default function TeacherStudentsPage() {
                 return (
                   <div
                     key={student.id}
-                    className="p-4 transition-colors hover:bg-slate-50"
+                    className="p-4 transition-colors hover:bg-[#fafafa]"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -360,11 +360,11 @@ export default function TeacherStudentsPage() {
                           </div>
                         )}
                         <div>
-                          <p className="font-medium text-slate-800">
+                          <p className="font-medium text-[#1010a3]">
                             {student.user.firstName} {student.user.lastName}
                           </p>
                           {student.group?.name && (
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-[#8b8b90]">
                               {student.group.name}
                             </p>
                           )}
@@ -376,7 +376,7 @@ export default function TeacherStudentsPage() {
                           onClick={() => setFeedbackStudent(student)}
                           title="View feedback history"
                           aria-label="View feedback history"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-primary/10 hover:text-primary"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#8b8b90] transition-colors hover:bg-primary/10 hover:text-primary"
                         >
                           <svg
                             className="h-5 w-5"
@@ -421,8 +421,8 @@ export default function TeacherStudentsPage() {
       {transferLeadId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h3 className="mb-2 text-lg font-semibold text-slate-900">Request transfer</h3>
-            <p className="mb-4 text-sm text-slate-600">
+            <h3 className="mb-2 text-lg font-semibold text-[#1010a3]">Request transfer</h3>
+            <p className="mb-4 text-sm text-[#8b8b90]">
               Include where to transfer the student and why (min 10 characters).
             </p>
             <textarea
@@ -430,7 +430,7 @@ export default function TeacherStudentsPage() {
               onChange={(e) => setTransferComment(e.target.value)}
               placeholder="e.g. Move to Group B2 – level is higher than A2"
               rows={4}
-              className="mb-4 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mb-4 w-full rounded-lg border border-[rgba(14,14,16,0.07)] px-3 py-2 text-sm"
             />
             <div className="flex justify-end gap-2">
               <button
@@ -439,7 +439,7 @@ export default function TeacherStudentsPage() {
                   setTransferLeadId(null);
                   setTransferComment('');
                 }}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+                className="rounded-lg border border-[rgba(14,14,16,0.07)] px-4 py-2 text-sm font-medium text-[#3b3b40]"
               >
                 Cancel
               </button>

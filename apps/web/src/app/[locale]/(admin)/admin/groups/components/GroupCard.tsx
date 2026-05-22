@@ -25,11 +25,11 @@ export function GroupCard({ group, onEdit, onDelete, onToggleActive }: GroupCard
         : 'bg-red-500';
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg border border-[rgba(14,14,16,0.07)] p-4 shadow-sm hover:shadow-md transition-shadow">
       {/* Group Header */}
       <div className="mb-3">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h4 className="font-semibold text-slate-800 text-sm leading-tight flex-1">
+          <h4 className="font-semibold text-[#3b3b40] text-sm leading-tight flex-1">
             {group.name}
           </h4>
           <ActionButtons
@@ -51,7 +51,7 @@ export function GroupCard({ group, onEdit, onDelete, onToggleActive }: GroupCard
           />
         </div>
         {group.description && (
-          <p className="text-xs text-slate-500 line-clamp-2 mt-1" title={group.description}>
+          <p className="text-xs text-[#8b8b90] line-clamp-2 mt-1" title={group.description}>
             {group.description}
           </p>
         )}
@@ -68,25 +68,25 @@ export function GroupCard({ group, onEdit, onDelete, onToggleActive }: GroupCard
         )}
 
         {teacherName && (
-          <div className="flex items-center gap-2 text-slate-600">
-            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 text-[#3b3b40]">
+            <svg className="w-3.5 h-3.5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <span className="truncate" title={teacherName}>{teacherName}</span>
           </div>
         )}
 
-        <div className="flex items-center gap-2 text-slate-600">
-          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center gap-2 text-[#3b3b40]">
+          <svg className="w-3.5 h-3.5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
           <span>
             {studentCount}/{group.maxStudents} students
           </span>
         </div>
-        <div className="flex items-center gap-2 text-slate-600">
+        <div className="flex items-center gap-2 text-[#3b3b40]">
           <span className={`inline-flex h-2.5 w-2.5 rounded-full ${dotColorClass}`} aria-hidden="true" />
-          <span className="font-medium text-slate-700">{occupancy.label}</span>
+          <span className="font-medium text-[#3b3b40]">{occupancy.label}</span>
         </div>
 
         {!group.isActive && (

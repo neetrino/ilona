@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { GroupsTab } from '../components/GroupsTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 type ViewMode = 'list' | 'board';
 
@@ -17,6 +18,7 @@ export default function CenterGroupsPage() {
   const locale = useLocale();
   const centerId = routeParams.centerId as string;
   const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
@@ -31,9 +33,9 @@ export default function CenterGroupsPage() {
   useEffect(() => {
     const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
     if (managerCenterId && centerId !== managerCenterId) {
-      router.replace(`/${locale}/admin/groups`);
+      router.replace(`/${locale}${portalBasePath}/groups`);
     }
-  }, [user, centerId, router, locale]);
+  }, [user, centerId, router, locale, portalBasePath]);
 
   const updateUrl = useCallback(
     (updates: Record<string, string | null>) => {

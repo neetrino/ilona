@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAdminAllUsers, useAddGroupChatMember, useAddCustomGroupChatMember } from '../hooks';
 import type { Chat } from '../types';
 import type { AdminChatAllUser } from '../api/chat.api';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import Image from 'next/image';
 import { getInitials } from '@/shared/components/ui/avatar';
 
@@ -53,7 +53,7 @@ export function AddMembersModal({
         onMemberAdded(updated);
       }
       // Keep modal open so admin can add more members
-    } catch (_e) {
+    } catch {
       // Error shown via mutation state / inline
     }
   };
@@ -144,7 +144,7 @@ export function AddMembersModal({
                       <p className="font-medium text-slate-800 truncate">{user.name}</p>
                       <p className="text-xs text-slate-500 truncate">
                         {user.email}
-                        {user.phone ? ` · ${user.phone}` : ''} · {user.role}
+                        {user.phone ? ` · ${formatPhoneForDisplay(user.phone)}` : ''} · {user.role}
                       </p>
                     </div>
                     <div className="flex-shrink-0">

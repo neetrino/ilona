@@ -1,8 +1,10 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { CrmLead } from '@/features/crm/types';
 import { ActionButtons } from '@/shared/components/ui';
-import { STATUS_LABELS } from './LeadCard';
+import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
+import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 
 interface ListTableProps {
   leads: CrmLead[];
@@ -21,24 +23,41 @@ export function ListTable({
   onLeadDeleteRequest,
   deleteInProgress,
 }: ListTableProps) {
+  const t = useTranslations('crm');
+  const tc = useTranslations('common');
+  const statusLabels = useCrmStatusLabels();
+
+  const headers = [
+    tc('name'),
+    tc('phone'),
+    tc('status'),
+    t('center'),
+    t('teacher'),
+    t('group'),
+    t('level'),
+    t('created'),
+    t('updated'),
+    ...(canDeleteLead ? [tc('actions')] : []),
+  ] as const;
+
   if (isLoading) {
     return (
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="w-full min-w-0 overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Name</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Phone</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Center</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Teacher</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Group</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Level</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Created</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Updated</th>
-              {canDeleteLead ? (
-                <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
-              ) : null}
+              {headers.map((label) => (
+                <th
+                  key={label}
+                  className={cn(
+                    'px-4 py-3 text-xs font-medium text-slate-500 uppercase',
+                    label === tc('actions') ? 'text-right' : 'text-left',
+                  )}
+                >
+                  {label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
@@ -60,27 +79,28 @@ export function ListTable({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="w-full min-w-0 overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-200">
         <thead className="bg-slate-50">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Name</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Phone</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Center</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Teacher</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Group</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Level</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Created</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Updated</th>
-            {canDeleteLead ? (
-              <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
-            ) : null}
+            {headers.map((label) => (
+              <th
+                key={label}
+                className={cn(
+                  'px-4 py-3 text-xs font-medium text-slate-500 uppercase',
+                  label === tc('actions') ? 'text-right' : 'text-left',
+                )}
+              >
+                {label}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 bg-white">
@@ -93,18 +113,18 @@ export function ListTable({
               <td className="px-4 py-3 text-sm font-medium text-slate-900">
                 {[lead.firstName, lead.lastName].filter(Boolean).join(' ') || '—'}
               </td>
-              <td className="px-4 py-3 text-sm text-slate-600">{lead.phone ?? '—'}</td>
+              <td className="px-4 py-3 text-sm text-slate-600">{formatPhoneForDisplay(lead.phone)}</td>
               <td className="px-4 py-3">
                 <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                  {STATUS_LABELS[lead.status]}
+                  {statusLabels[lead.status]}
                 </span>
                 {lead.teacherApprovedAt ? (
                   <span className="ml-1 inline-flex rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
-                    Approved
+                    {t('approved')}
                   </span>
                 ) : lead.transferFlag ? (
                   <span className="ml-1 inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
-                    TRANSFER
+                    {t('transfer')}
                   </span>
                 ) : null}
               </td>
@@ -141,8 +161,8 @@ export function ListTable({
                     onDelete={() => onLeadDeleteRequest(lead)}
                     disabled={deleteInProgress}
                     deleteDisabled={deleteInProgress}
-                    ariaLabels={{ delete: 'Delete lead' }}
-                    titles={{ delete: 'Delete lead' }}
+                    ariaLabels={{ delete: t('deleteLead') }}
+                    titles={{ delete: t('deleteLead') }}
                   />
                 </td>
               ) : null}
@@ -150,6 +170,7 @@ export function ListTable({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

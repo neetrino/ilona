@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMySalaries, useMySalarySummary, useMyDeductions, useMySalaryBreakdown } from '@/features/finance';
 import { useMyLessons } from '@/features/lessons';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { Eye, X } from 'lucide-react';
 import {
+  DatePickerInput,
   Dialog,
   DialogContent,
   DialogHeader,
@@ -63,33 +64,64 @@ function getMonthString(salary: { month: number; year: number }): string {
   return '';
 }
 
-function formatMonthFromSalary(salary: { month: number; year: number }): string {
+function formatMonthFromSalary(
+  salary: { month: number; year: number },
+  locale: string,
+  unknownLabel: string,
+): string {
   if (salary.month != null && salary.year != null) {
     const date = new Date(salary.year, salary.month - 1);
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
   }
-  return 'Unknown';
+  return unknownLabel;
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, { bg: string; text: string; label: string }> = {
-    PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pending' },
-    PROCESSING: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Processing' },
-    PAID: { bg: 'bg-green-100', text: 'text-green-700', label: 'Paid' },
-    CANCELLED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelled' },
+function StatusBadge({
+  status,
+  labels,
+}: {
+  status: string;
+  labels: Record<string, string>;
+}) {
+  const styles: Record<string, { bg: string; text: string; labelKey: string }> = {
+    PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', labelKey: 'pending' },
+    PROCESSING: { bg: 'bg-blue-100', text: 'text-blue-700', labelKey: 'processing' },
+    PAID: { bg: 'bg-green-100', text: 'text-green-700', labelKey: 'paid' },
+    CANCELLED: { bg: 'bg-red-100', text: 'text-red-700', labelKey: 'cancelled' },
   };
 
-  const style = styles[status] || { bg: 'bg-slate-100', text: 'text-slate-700', label: status };
+  const style = styles[status];
+  const label = style ? labels[style.labelKey] ?? status : status;
+  const colors = style ?? { bg: 'bg-[#f6f6f7]', text: 'text-[#3b3b40]' };
 
   return (
-    <span className={cn('px-2 py-1 text-xs font-medium rounded-full', style.bg, style.text)}>
-      {style.label}
+    <span className={cn('px-2 py-1 text-xs font-medium rounded-full', colors.bg, colors.text)}>
+      {label}
     </span>
   );
 }
 
+const PERIOD_PRESET_KEYS = {
+  day: 'periodDay',
+  week: 'periodWeek',
+  month: 'periodMonth',
+  custom: 'periodCustom',
+} as const satisfies Record<PeriodPreset, string>;
+
 export default function TeacherSalaryPage() {
   const t = useTranslations('finance');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
+
+  const statusLabels = useMemo(
+    () => ({
+      pending: t('pending'),
+      processing: t('processing'),
+      paid: t('paid'),
+      cancelled: t('cancelled'),
+    }),
+    [t],
+  );
   const [breakdownMonth, setBreakdownMonth] = useState<string | null>(null);
   const [preset, setPreset] = useState<PeriodPreset>('month');
   const initialRange = useMemo(() => computeRange('month'), []);
@@ -150,8 +182,8 @@ export default function TeacherSalaryPage() {
       subtitle={t('salarySubtitle')}
     >
       {/* Period Filter */}
-      <div className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4">
-        <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+      <div className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
+        <div className="flex gap-1 rounded-lg bg-[#f6f6f7] p-1">
           {(['day', 'week', 'month', 'custom'] as PeriodPreset[]).map((p) => (
             <button
               key={p}
@@ -160,65 +192,63 @@ export default function TeacherSalaryPage() {
               className={cn(
                 'rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors',
                 preset === p
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-800',
+                  ? 'bg-white text-[#1010a3] shadow-sm'
+                  : 'text-[#8b8b90] hover:text-[#1010a3]',
               )}
             >
-              {p}
+              {t(PERIOD_PRESET_KEYS[p])}
             </button>
           ))}
         </div>
         {preset === 'custom' && (
           <div className="flex flex-wrap items-center gap-2">
-            <label className="text-sm text-slate-600">From</label>
-            <input
-              type="date"
+            <label className="text-sm text-[#8b8b90]">{tCommon('from')}</label>
+            <DatePickerInput
               value={customFrom}
-              onChange={(e) => setCustomFrom(e.target.value)}
-              className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+              onValueChange={setCustomFrom}
+              className="rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
             />
-            <label className="text-sm text-slate-600">To</label>
-            <input
-              type="date"
+            <label className="text-sm text-[#8b8b90]">{tCommon('to')}</label>
+            <DatePickerInput
               value={customTo}
-              onChange={(e) => setCustomTo(e.target.value)}
-              className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+              onValueChange={setCustomTo}
+              className="rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
             />
           </div>
         )}
-        <span className="ml-auto text-xs text-slate-500">
-          {from.toLocaleDateString()} – {to.toLocaleDateString()}
+        <span className="ml-auto text-xs text-[#8b8b90]">
+          {from.toLocaleDateString(locale)} – {to.toLocaleDateString(locale)}
         </span>
       </div>
 
       {/* Period Summary (reflects only selected range) */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <p className="text-sm text-slate-500">Lessons</p>
-          <p className="text-2xl font-bold text-slate-800">{periodLessonsCount}</p>
-          <p className="mt-1 text-xs text-slate-500">in selected period</p>
+        <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
+          <p className="text-sm text-[#8b8b90]">{t('lessons')}</p>
+          <p className="text-2xl font-bold text-[#1010a3]">{periodLessonsCount}</p>
+          <p className="mt-1 text-xs text-[#8b8b90]">{t('inSelectedPeriod')}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <p className="text-sm text-slate-500">Deductions</p>
+        <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
+          <p className="text-sm text-[#8b8b90]">{t('deductions')}</p>
           <p className="text-2xl font-bold text-red-600">
             −{formatCurrency(periodDeductionsTotal)}
           </p>
-          <p className="mt-1 text-xs text-slate-500">
-            {periodDeductions.length} item{periodDeductions.length === 1 ? '' : 's'}
+          <p className="mt-1 text-xs text-[#8b8b90]">
+            {t('itemsCount', { count: periodDeductions.length })}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <p className="text-sm text-slate-500">Payments</p>
+        <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
+          <p className="text-sm text-[#8b8b90]">{t('payments')}</p>
           <p className="text-2xl font-bold text-green-600">
             {formatCurrency(periodPayments)}
           </p>
-          <p className="mt-1 text-xs text-slate-500">paid in period</p>
+          <p className="mt-1 text-xs text-[#8b8b90]">{t('paidInPeriod')}</p>
         </div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-xl border border-slate-200">
+        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
               <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,17 +256,17 @@ export default function TeacherSalaryPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Total Earned</p>
+              <p className="text-sm text-[#8b8b90]">{t('totalEarned')}</p>
               {isLoadingSummary ? (
-                <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
+                <div className="h-6 w-24 bg-[#f1f1f2] rounded animate-pulse" />
               ) : (
-                <p className="text-lg font-bold text-slate-800">{formatCurrency(summary?.totalEarned || 0)}</p>
+                <p className="text-lg font-bold text-[#1010a3]">{formatCurrency(summary?.totalEarned || 0)}</p>
               )}
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200">
+        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
               <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,17 +274,17 @@ export default function TeacherSalaryPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Pending</p>
+              <p className="text-sm text-[#8b8b90]">{t('pending')}</p>
               {isLoadingSummary ? (
-                <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
+                <div className="h-6 w-24 bg-[#f1f1f2] rounded animate-pulse" />
               ) : (
-                <p className="text-lg font-bold text-slate-800">{formatCurrency(summary?.totalPending || 0)}</p>
+                <p className="text-lg font-bold text-[#1010a3]">{formatCurrency(summary?.totalPending || 0)}</p>
               )}
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200">
+        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
               <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,17 +292,17 @@ export default function TeacherSalaryPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Total Deductions</p>
+              <p className="text-sm text-[#8b8b90]">{t('totalDeductionsLabel')}</p>
               {isLoadingSummary ? (
-                <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
+                <div className="h-6 w-24 bg-[#f1f1f2] rounded animate-pulse" />
               ) : (
-                <p className="text-lg font-bold text-slate-800">{formatCurrency(summary?.totalDeductions || 0)}</p>
+                <p className="text-lg font-bold text-[#1010a3]">{formatCurrency(summary?.totalDeductions || 0)}</p>
               )}
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200">
+        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
               <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,11 +310,11 @@ export default function TeacherSalaryPage() {
               </svg>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Lessons (all periods)</p>
+              <p className="text-sm text-[#8b8b90]">{t('lessonsAllPeriods')}</p>
               {isLoadingSummary ? (
-                <div className="h-6 w-16 bg-slate-200 rounded animate-pulse" />
+                <div className="h-6 w-16 bg-[#f1f1f2] rounded animate-pulse" />
               ) : (
-                <p className="text-lg font-bold text-slate-800">
+                <p className="text-lg font-bold text-[#1010a3]">
                   {summary?.lessonsCount ?? 0}
                 </p>
               )}
@@ -294,38 +324,38 @@ export default function TeacherSalaryPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="border-b border-slate-200 px-4 py-3">
-          <h3 className="text-sm font-medium text-slate-900">Salary Records</h3>
+      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] overflow-hidden">
+        <div className="border-b border-[rgba(14,14,16,0.07)] px-4 py-3">
+          <h3 className="text-sm font-medium text-[#1010a3]">{t('salaryRecords')}</h3>
         </div>
 
         {/* Content */}
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[rgba(14,14,16,0.07)]">
           {isLoadingSalaries ? (
             <div className="p-4 space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="animate-pulse flex items-center justify-between">
                   <div>
-                    <div className="h-4 bg-slate-200 rounded w-32 mb-2" />
-                    <div className="h-3 bg-slate-200 rounded w-24" />
+                    <div className="h-4 bg-[#f1f1f2] rounded w-32 mb-2" />
+                    <div className="h-3 bg-[#f1f1f2] rounded w-24" />
                   </div>
-                  <div className="h-6 bg-slate-200 rounded w-24" />
+                  <div className="h-6 bg-[#f1f1f2] rounded w-24" />
                 </div>
               ))}
             </div>
           ) : salaries.length === 0 ? (
             <div className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 mx-auto mb-4 bg-[#f6f6f7] rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-1">No salary records yet</h3>
-              <p className="text-sm text-slate-500">Your salary records will appear here once generated.</p>
+              <h3 className="text-lg font-semibold text-[#1010a3] mb-1">{t('noSalaryRecordsTitle')}</h3>
+              <p className="text-sm text-[#8b8b90]">{t('noSalaryRecordsDescription')}</p>
             </div>
           ) : (
             salaries.map((salary) => {
-              const monthName = formatMonthFromSalary(salary);
+              const monthName = formatMonthFromSalary(salary, locale, t('unknownMonth'));
               const monthStr = getMonthString(salary);
               const netAmount = typeof salary.netAmount === 'number' ? salary.netAmount : Number(salary.netAmount) || 0;
               const grossAmount = typeof salary.grossAmount === 'number' ? salary.grossAmount : Number(salary.grossAmount) || 0;
@@ -334,30 +364,32 @@ export default function TeacherSalaryPage() {
               return (
                 <div
                   key={salary.id}
-                  className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between gap-4 flex-wrap"
+                  className="p-4 hover:bg-[#fafafa] transition-colors flex items-center justify-between gap-4 flex-wrap"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-800">{monthName}</p>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-slate-500 flex-wrap">
-                      <span>{salary.lessonsCount ?? 0} lessons</span>
+                    <p className="font-semibold text-[#1010a3]">{monthName}</p>
+                    <div className="flex items-center gap-4 mt-1 text-sm text-[#8b8b90] flex-wrap">
+                      <span>{t('lessonsInRecord', { count: salary.lessonsCount ?? 0 })}</span>
                       {grossAmount > 0 && (
-                        <span className="text-slate-600">Gross: {formatCurrency(grossAmount)}</span>
+                        <span className="text-[#8b8b90]">{t('grossLabel', { amount: formatCurrency(grossAmount) })}</span>
                       )}
                       {totalDeductions > 0 && (
-                        <span className="text-red-600">−{formatCurrency(totalDeductions)} deductions</span>
+                        <span className="text-red-600">
+                          {t('deductionsInRecord', { amount: formatCurrency(totalDeductions) })}
+                        </span>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <p className="text-lg font-bold text-slate-800">{formatCurrency(netAmount)}</p>
-                    <StatusBadge status={salary.status} />
+                    <p className="text-lg font-bold text-[#1010a3]">{formatCurrency(netAmount)}</p>
+                    <StatusBadge status={salary.status} labels={statusLabels} />
                     <button
                       type="button"
                       onClick={() => setBreakdownMonth(monthStr)}
-                      className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
-                      aria-label={`View breakdown for ${monthName}`}
+                      className="p-2 hover:bg-[#f1f1f2] rounded-lg transition-colors"
+                      aria-label={t('viewBreakdownFor', { month: monthName })}
                     >
-                      <Eye className="w-5 h-5 text-slate-700" />
+                      <Eye className="w-5 h-5 text-[#3b3b40]" />
                     </button>
                   </div>
                 </div>
@@ -375,12 +407,16 @@ export default function TeacherSalaryPage() {
         >
           <DialogHeader>
             <DialogTitle>
-              Salary breakdown
+              {t('breakdownTitle')}
               {breakdownMonth
-                ? ` – ${formatMonthFromSalary({
-                    year: parseInt(breakdownMonth.slice(0, 4), 10),
-                    month: parseInt(breakdownMonth.slice(5, 7), 10),
-                  })}`
+                ? ` – ${formatMonthFromSalary(
+                    {
+                      year: parseInt(breakdownMonth.slice(0, 4), 10),
+                      month: parseInt(breakdownMonth.slice(5, 7), 10),
+                    },
+                    locale,
+                    t('unknownMonth'),
+                  )}`
                 : ''}
             </DialogTitle>
           </DialogHeader>
@@ -391,39 +427,39 @@ export default function TeacherSalaryPage() {
               </div>
             ) : breakdown?.lessons && breakdown.lessons.length > 0 ? (
               <>
-                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <div className="border border-[rgba(14,14,16,0.07)] rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 border-b border-slate-200">
+                    <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
                       <tr>
-                        <th className="text-left py-2 px-3 font-medium text-slate-700">Lesson</th>
-                        <th className="text-left py-2 px-3 font-medium text-slate-700">Date</th>
-                        <th className="text-center py-2 px-3 font-medium text-slate-700">Obligation</th>
-                        <th className="text-right py-2 px-3 font-medium text-slate-700">Salary</th>
-                        <th className="text-right py-2 px-3 font-medium text-slate-700">Deduction</th>
-                        <th className="text-right py-2 px-3 font-medium text-slate-700">Total</th>
+                        <th className="text-left py-2 px-3 font-medium text-[#3b3b40]">{t('lessonColumn')}</th>
+                        <th className="text-left py-2 px-3 font-medium text-[#3b3b40]">{tCommon('date')}</th>
+                        <th className="text-center py-2 px-3 font-medium text-[#3b3b40]">{t('obligation')}</th>
+                        <th className="text-right py-2 px-3 font-medium text-[#3b3b40]">{t('lessonSalary')}</th>
+                        <th className="text-right py-2 px-3 font-medium text-[#3b3b40]">{t('lessonDeduction')}</th>
+                        <th className="text-right py-2 px-3 font-medium text-[#3b3b40]">{t('rowTotal')}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-[rgba(14,14,16,0.07)]">
                       {breakdown.lessons.map((lesson) => (
-                        <tr key={lesson.lessonId} className="hover:bg-slate-50">
-                          <td className="py-2 px-3 text-slate-800">{lesson.lessonName}</td>
-                          <td className="py-2 px-3 text-slate-600">
+                        <tr key={lesson.lessonId} className="hover:bg-[#fafafa]">
+                          <td className="py-2 px-3 text-[#1010a3]">{lesson.lessonName}</td>
+                          <td className="py-2 px-3 text-[#8b8b90]">
                             {lesson.lessonDate
-                              ? new Date(lesson.lessonDate).toLocaleDateString('en-US', {
+                              ? new Date(lesson.lessonDate).toLocaleDateString(locale, {
                                   month: 'short',
                                   day: 'numeric',
                                   year: 'numeric',
                                 })
                               : '—'}
                           </td>
-                          <td className="py-2 px-3 text-center text-slate-700">
+                          <td className="py-2 px-3 text-center text-[#3b3b40]">
                             {lesson.obligationCompleted}/{lesson.obligationTotal}
                           </td>
-                          <td className="py-2 px-3 text-right text-slate-700">{formatCurrency(lesson.salary)}</td>
+                          <td className="py-2 px-3 text-right text-[#3b3b40]">{formatCurrency(lesson.salary)}</td>
                           <td className="py-2 px-3 text-right text-red-600">
                             −{formatCurrency(lesson.deduction)}
                           </td>
-                          <td className="py-2 px-3 text-right font-medium text-slate-800">
+                          <td className="py-2 px-3 text-right font-medium text-[#1010a3]">
                             {formatCurrency(lesson.total)}
                           </td>
                         </tr>
@@ -431,30 +467,36 @@ export default function TeacherSalaryPage() {
                     </tbody>
                   </table>
                 </div>
-                <div className="mt-4 pt-4 border-t border-slate-200 flex justify-end gap-6 text-sm font-semibold">
-                  <span className="text-slate-600">
-                    Gross: {formatCurrency(breakdown.lessons.reduce((s, l) => s + l.salary, 0))}
+                <div className="mt-4 pt-4 border-t border-[rgba(14,14,16,0.07)] flex justify-end gap-6 text-sm font-semibold">
+                  <span className="text-[#8b8b90]">
+                    {t('grossSummary', {
+                      amount: formatCurrency(breakdown.lessons.reduce((s, l) => s + l.salary, 0)),
+                    })}
                   </span>
                   <span className="text-red-600">
-                    Deductions: −{formatCurrency(breakdown.lessons.reduce((s, l) => s + l.deduction, 0))}
+                    {t('deductionsSummary', {
+                      amount: formatCurrency(breakdown.lessons.reduce((s, l) => s + l.deduction, 0)),
+                    })}
                   </span>
-                  <span className="text-slate-800">
-                    Net: {formatCurrency(breakdown.lessons.reduce((s, l) => s + l.total, 0))}
+                  <span className="text-[#1010a3]">
+                    {t('netSummary', {
+                      amount: formatCurrency(breakdown.lessons.reduce((s, l) => s + l.total, 0)),
+                    })}
                   </span>
                 </div>
               </>
             ) : breakdownMonth && !isLoadingBreakdown ? (
-              <p className="py-8 text-center text-slate-500">No lessons for this period.</p>
+              <p className="py-8 text-center text-[#8b8b90]">{t('breakdownNoLessons')}</p>
             ) : null}
           </div>
-          <div className="flex justify-end pt-4 border-t border-slate-200">
+          <div className="flex justify-end pt-4 border-t border-[rgba(14,14,16,0.07)]">
             <button
               type="button"
               onClick={() => setBreakdownMonth(null)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[rgba(14,14,16,0.07)] text-[#3b3b40] hover:bg-[#fafafa]"
             >
               <X className="w-4 h-4" />
-              Close
+              {tCommon('close')}
             </button>
           </div>
         </DialogContent>

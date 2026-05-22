@@ -4,10 +4,16 @@ import { useLocale } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { locales, Locale } from '@/config/i18n';
+import { cn } from '@/shared/lib/utils';
 
 const LOCALE_STORAGE_KEY = 'preferred-locale';
 
-export function LanguageSwitcher() {
+type LanguageSwitcherProps = {
+  variant?: 'default' | 'compact';
+};
+
+export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps) {
+  const isCompact = variant === 'compact';
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
@@ -56,7 +62,10 @@ export function LanguageSwitcher() {
     <div
       role="group"
       aria-label="Select language"
-      className="inline-flex items-center bg-slate-100 rounded-full p-1 gap-1"
+      className={cn(
+        'inline-flex shrink-0 items-center gap-0.5 rounded-full border border-[rgba(14,14,16,0.07)]',
+        isCompact ? 'h-11 bg-[#f3f3f4] p-0.5 sm:h-12' : 'gap-1 bg-slate-100 p-1',
+      )}
     >
       <button
         type="button"
@@ -64,20 +73,21 @@ export function LanguageSwitcher() {
         onKeyDown={(e) => handleKeyDown(e, 'hy')}
         aria-label="Switch to Armenian"
         aria-pressed={locale === 'hy'}
-        className={`
-          relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200
-          focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2
-          flex items-center gap-2
-          ${
-            locale === 'hy'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }
-        `}
+        className={cn(
+          'relative flex shrink-0 items-center gap-1 rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2',
+          isCompact ? 'px-2 py-1 text-xs' : 'gap-2 px-4 py-1.5 text-sm',
+          locale === 'hy'
+            ? isCompact
+              ? 'bg-white text-[#5b5b62] shadow-sm'
+              : 'bg-white text-slate-900 shadow-sm'
+            : isCompact
+              ? 'text-[#5b5b62] hover:text-[#1010a3]'
+              : 'text-slate-600 hover:text-slate-900',
+        )}
       >
         <svg
-          width="20"
-          height="15"
+          width={isCompact ? 16 : 20}
+          height={isCompact ? 12 : 15}
           viewBox="0 0 20 15"
           className="flex-shrink-0"
           aria-hidden="true"
@@ -87,7 +97,7 @@ export function LanguageSwitcher() {
           <rect y="5" width="20" height="5" fill="#0033A0" />
           <rect y="10" width="20" height="5" fill="#F2A800" />
         </svg>
-        <span>Հայ</span>
+        <span className="whitespace-nowrap">Հայ</span>
       </button>
       <button
         type="button"
@@ -95,20 +105,21 @@ export function LanguageSwitcher() {
         onKeyDown={(e) => handleKeyDown(e, 'en')}
         aria-label="Switch to English"
         aria-pressed={locale === 'en'}
-        className={`
-          relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200
-          focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2
-          flex items-center gap-2
-          ${
-            locale === 'en'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }
-        `}
+        className={cn(
+          'relative flex shrink-0 items-center gap-1 rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2',
+          isCompact ? 'px-2 py-1 text-xs' : 'gap-2 px-4 py-1.5 text-sm',
+          locale === 'en'
+            ? isCompact
+              ? 'bg-[#1010a3] text-white shadow-sm'
+              : 'bg-white text-slate-900 shadow-sm'
+            : isCompact
+              ? 'text-[#5b5b62] hover:text-[#1010a3]'
+              : 'text-slate-600 hover:text-slate-900',
+        )}
       >
         <svg
-          width="20"
-          height="15"
+          width={isCompact ? 16 : 20}
+          height={isCompact ? 12 : 15}
           viewBox="0 0 20 15"
           className="flex-shrink-0 rounded-sm overflow-hidden"
           aria-hidden="true"
@@ -142,7 +153,7 @@ export function LanguageSwitcher() {
           <rect x="0" y="7" width="20" height="1" fill="#C8102E" />
           <rect x="9.5" y="0" width="1" height="15" fill="#C8102E" />
         </svg>
-        <span>EN</span>
+        <span className="whitespace-nowrap">EN</span>
       </button>
     </div>
   );

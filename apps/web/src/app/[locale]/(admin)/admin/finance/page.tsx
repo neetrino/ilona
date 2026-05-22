@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -229,7 +230,7 @@ export default function FinancePage() {
       title={t('title')} 
       subtitle={t('adminSubtitle')}
     >
-      <div className="space-y-6">
+      <div className={portalPageStackClass}>
         {/* Stats Grid */}
         <FinanceStats dashboard={dashboard} isLoading={isLoadingDashboard} />
 

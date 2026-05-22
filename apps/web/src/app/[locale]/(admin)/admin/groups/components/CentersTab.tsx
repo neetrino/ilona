@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { StatCard, Button } from '@/shared/components/ui';
 import {
   CreateCenterForm,
@@ -29,6 +30,7 @@ export function CentersTab({
   updateUrl,
   searchParams,
 }: CentersTabProps) {
+  const t = useTranslations('groups');
   const {
     centers,
     totalCenters,
@@ -113,7 +115,7 @@ export function CentersTab({
       setDeactivateCenter(null);
       setDeactivateError(null);
     } catch (err: unknown) {
-      const message = getErrorMessage(err, 'Failed to deactivate center. Please try again.');
+      const message = getErrorMessage(err, t('failedDeactivateCenter'));
       setDeactivateError(message);
     }
   };
@@ -121,58 +123,58 @@ export function CentersTab({
   return (
     <div className="space-y-6">
       {/* Centers Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         <StatCard
-          title="Total Centers"
+          title={t('totalCenters')}
           value={totalCenters}
         />
         <StatCard
-          title="Active Centers"
+          title={t('activeCenters')}
           value={activeCenters || totalCenters}
-          change={{ value: 'Currently active', type: 'positive' }}
+          change={{ value: t('currentlyActive'), type: 'positive' }}
         />
         <StatCard
-          title="Total Groups"
+          title={t('totalGroups')}
           value={centers.reduce((sum, c) => sum + (c._count?.groups || 0), 0)}
-          change={{ value: 'across all centers', type: 'neutral' }}
+          change={{ value: t('acrossAllCenters'), type: 'neutral' }}
         />
       </div>
 
       {/* Centers Filters & Actions */}
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="search"
-            placeholder="Search centers by name or address..."
+            placeholder={t('searchCentersPlaceholder')}
             value={centerSearchQuery}
             onChange={onSearchChange}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
         <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium"
+          className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"
           onClick={() => setCreateCenterOpen(true)}
         >
-          + Add Center
+          + {t('addCenter')}
         </Button>
       </div>
 
       <div className="w-full overflow-x-auto">
         {isLoadingCenters ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-slate-500">Loading centers...</div>
+            <div className="text-[#8b8b90]">{t('loadingCenters')}</div>
           </div>
         ) : centers.length === 0 ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-slate-500">
-              {centerSearchQuery ? 'No centers match your search' : 'No centers found'}
+            <div className="text-[#8b8b90]">
+              {centerSearchQuery ? t('noCentersMatch') : t('noCentersFound')}
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))]">
             {centers.map((center) => (
               <CenterCard
                 key={center.id}

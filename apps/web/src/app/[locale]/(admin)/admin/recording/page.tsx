@@ -1,9 +1,11 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { DatePickerInput } from '@/shared/components/ui';
 import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import { fetchGroups } from '@/features/groups/api/groups.api';
@@ -156,7 +158,9 @@ function parseStoredFilters(): StoredFilters {
 }
 
 export default function AdminRecordingPage() {
-  const t = useTranslations('nav');
+  const tNav = useTranslations('nav');
+  const t = useTranslations('recordings');
+  const tCommon = useTranslations('common');
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -240,10 +244,10 @@ export default function AdminRecordingPage() {
             `${student.user.firstName} ${student.user.lastName}`.trim() ||
             student.userId,
           groupId: student.group?.id ?? null,
-          groupName: student.group?.name ?? 'Ungrouped',
+          groupName: student.group?.name ?? t('ungrouped'),
         }))
         .sort((a, b) => a.fullName.localeCompare(b.fullName)),
-    [allStudents],
+    [allStudents, t],
   );
 
   const groupOptions = useMemo(() => {
@@ -252,9 +256,9 @@ export default function AdminRecordingPage() {
       map.set(group.id, { id: group.id, name: group.name });
     });
     const hasUngrouped = studentDirectory.some((s) => s.groupId === null);
-    if (hasUngrouped) map.set('ungrouped', { id: 'ungrouped', name: 'Ungrouped' });
+    if (hasUngrouped) map.set('ungrouped', { id: 'ungrouped', name: t('ungrouped') });
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [allGroups, studentDirectory]);
+  }, [allGroups, studentDirectory, t]);
 
   const groupMultiOptions = useMemo(
     () => groupOptions.map((g) => ({ id: g.id, label: g.name })),
@@ -524,23 +528,24 @@ export default function AdminRecordingPage() {
 
   return (
     <DashboardLayout
-      title={t('recordings')}
-      subtitle="All student voice recordings in a single searchable table"
+      title={tNav('recordings')}
+      subtitle={tNav('adminRecordingsSubtitle')}
     >
+      <div className={portalPageStackClass}>
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+      <div className="mb-2 grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))]">
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
-            label="Group"
+            label={tCommon('group')}
             options={groupMultiOptions}
             selectedIds={selectedGroupIds}
             onSelectionChange={setSelectedGroupIds}
             showSelectedChipsOnlyWhenOpen
             hideSelectedLabelsInTrigger
-            placeholder="All groups"
-            searchPlaceholder="Search groups…"
-            emptyOptionsHint="No groups"
-            noResultsHint="No groups match"
+            placeholder={t('allGroups')}
+            searchPlaceholder={t('searchGroups')}
+            emptyOptionsHint={t('noGroups')}
+            noResultsHint={t('noGroupsMatch')}
             isLoading={isLoadingDirectory}
             maxChipsHeightClassName="max-h-28"
           />
@@ -548,24 +553,20 @@ export default function AdminRecordingPage() {
 
         <div className="md:col-span-2">
           <MultiSelectChipsDropdown
-            label="Student"
+            label={tCommon('searchTypeStudent')}
             options={studentMultiOptions}
             selectedIds={selectedStudentUserIds}
             onSelectionChange={setSelectedStudentUserIds}
             showSelectedChipsOnlyWhenOpen
             hideSelectedLabelsInTrigger
             placeholder={
-              selectedGroupIds.size === 0
-                ? 'All students'
-                : 'Students in selected groups'
+              selectedGroupIds.size === 0 ? t('allStudents') : t('studentsInSelectedGroups')
             }
-            searchPlaceholder="Search students…"
+            searchPlaceholder={t('searchStudents')}
             emptyOptionsHint={
-              selectedGroupIds.size === 0
-                ? 'No students'
-                : 'No students in selected groups'
+              selectedGroupIds.size === 0 ? t('noStudents') : t('noStudentsInGroups')
             }
-            noResultsHint="No students match"
+            noResultsHint={t('noStudentsMatch')}
             isLoading={isLoadingDirectory}
             maxChipsHeightClassName="max-h-28"
           />
@@ -574,34 +575,32 @@ export default function AdminRecordingPage() {
         <div>
           <label
             htmlFor="rec-date-from"
-            className="block text-sm font-medium text-slate-600 mb-1.5"
+            className="block text-sm font-medium text-[#3b3b40] mb-1.5"
           >
-            From
+            {tCommon('from')}
           </label>
-          <input
+          <DatePickerInput
             id="rec-date-from"
-            type="date"
             value={dateFrom}
             max={dateTo || undefined}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            onValueChange={setDateFrom}
+            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
 
         <div>
           <label
             htmlFor="rec-date-to"
-            className="block text-sm font-medium text-slate-600 mb-1.5"
+            className="block text-sm font-medium text-[#3b3b40] mb-1.5"
           >
-            To
+            {tCommon('to')}
           </label>
-          <input
+          <DatePickerInput
             id="rec-date-to"
-            type="date"
             value={dateTo}
             min={dateFrom || undefined}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            onValueChange={setDateTo}
+            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
       </div>
@@ -610,48 +609,47 @@ export default function AdminRecordingPage() {
         <div className="flex-1">
           <label
             htmlFor="rec-search"
-            className="block text-sm font-medium text-slate-600 mb-1.5"
+            className="block text-sm font-medium text-[#3b3b40] mb-1.5"
           >
-            Search
+            {tCommon('search')}
           </label>
           <input
             id="rec-search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Student, group, or file name…"
-            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            placeholder={t('searchPlaceholder')}
+            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
         <button
           type="button"
           onClick={clearAllFilters}
-          className="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg border border-slate-200 transition-colors"
+          className="h-11 px-4 bg-[#f6f6f7] hover:bg-[#f6f6f7] text-[#3b3b40] text-sm font-medium rounded-lg border border-[rgba(14,14,16,0.07)] transition-colors"
         >
-          Clear all
+          {t('clearAll')}
         </button>
       </div>
 
-      <div className="mb-3 text-sm text-slate-500">
-        {visibleRecordings.length} student
-        {visibleRecordings.length !== 1 ? 's' : ''} shown
+      <div className="mb-3 text-sm text-[#8b8b90]">
+        {t('studentsShown', { count: visibleRecordings.length })}
         {selectedRecordingIds.size > 0 && (
-          <span className="ml-3 text-slate-700 font-medium">
-            ({selectedRecordingIds.size} selected)
+          <span className="ml-3 text-[#3b3b40] font-medium">
+            {t('selectedCount', { count: selectedRecordingIds.size })}
           </span>
         )}
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div className="bg-white border border-[rgba(14,14,16,0.07)] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
               <tr>
                 <th className="w-12 px-4 py-3 text-left">
                   <input
                     type="checkbox"
-                    aria-label="Select all visible recordings"
-                    className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                    aria-label={t('selectAllVisible')}
+                    className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer"
                     checked={allVisibleSelected}
                     onChange={toggleAll}
                     disabled={
@@ -660,38 +658,38 @@ export default function AdminRecordingPage() {
                     }
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Group
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                  {tCommon('group')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Student
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                  {tCommon('searchTypeStudent')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Date &amp; Time
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                  {t('dateTime')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Recording
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                  {t('recording')}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[rgba(14,14,16,0.07)]">
               {isLoading || isLoadingDirectory ? (
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={`skeleton-${idx}`}>
                     <td className="px-4 py-4">
-                      <div className="h-4 w-4 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-4 w-4 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                     <td className="px-4 py-4">
-                      <div className="h-4 w-24 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-4 w-24 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                     <td className="px-4 py-4">
-                      <div className="h-4 w-32 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-4 w-32 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                     <td className="px-4 py-4">
-                      <div className="h-4 w-28 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-4 w-28 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                     <td className="px-4 py-4">
-                      <div className="h-8 w-48 bg-slate-100 animate-pulse rounded" />
+                      <div className="h-8 w-48 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                   </tr>
                 ))
@@ -699,11 +697,11 @@ export default function AdminRecordingPage() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-4 py-10 text-center text-sm text-slate-500"
+                    className="px-4 py-10 text-center text-sm text-[#8b8b90]"
                   >
                     {studentDirectory.length === 0
-                      ? 'No students in the directory yet.'
-                      : 'No students found for the selected filters.'}
+                      ? t('noStudentsInDirectory')
+                      : t('noStudentsForFilters')}
                   </td>
                 </tr>
               ) : (
@@ -715,13 +713,13 @@ export default function AdminRecordingPage() {
                   return (
                     <tr
                       key={row.studentUserId}
-                      className="hover:bg-slate-50/60 transition-colors"
+                      className="hover:bg-[#fafafa]/60 transition-colors"
                     >
                       <td className="px-4 py-3 align-middle">
                         <input
                           type="checkbox"
-                          aria-label={`Select recording for ${row.studentFullName}`}
-                          className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                          aria-label={t('selectRecordingFor', { name: row.studentFullName })}
+                          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer"
                           checked={
                             recordingId !== null &&
                             selectedRecordingIds.has(recordingId)
@@ -733,33 +731,33 @@ export default function AdminRecordingPage() {
                         />
                       </td>
                       <td className="px-4 py-3 align-middle">
-                        <span className="text-sm text-slate-700">
+                        <span className="text-sm text-[#3b3b40]">
                           {row.groupName}
                         </span>
                       </td>
                       <td className="px-4 py-3 align-middle">
-                        <span className="text-sm font-medium text-slate-800">
+                        <span className="text-sm font-medium text-[#3b3b40]">
                           {row.studentFullName}
                         </span>
                       </td>
                       <td className="px-4 py-3 align-middle whitespace-nowrap">
                         {recording ? (
                           <>
-                            <div className="text-sm text-slate-700">
+                            <div className="text-sm text-[#3b3b40]">
                               {formatDateTime(recording.createdAt)}
                             </div>
-                            <div className="text-xs text-slate-400">
+                            <div className="text-xs text-[#8b8b90]">
                               {formatIsoDay(recording.createdAt)}
                             </div>
                           </>
                         ) : (
-                          <span className="text-sm text-slate-400">-</span>
+                          <span className="text-sm text-[#8b8b90]">-</span>
                         )}
                       </td>
                       <td className="px-4 py-3 align-middle">
                         {!recording ? (
                           <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
-                            No voice recorded
+                            {t('noVoiceRecorded')}
                           </span>
                         ) : isActive ? (
                           <VoiceMessagePlayer
@@ -771,7 +769,7 @@ export default function AdminRecordingPage() {
                           <button
                             type="button"
                             onClick={() => setActiveRecordingId(recording.id)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary border border-primary/20 hover:bg-primary/5 rounded-lg transition-colors"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#1010a3] border border-[#1010a3]/20 hover:bg-[#1010a3]/5 rounded-lg transition-colors"
                           >
                             <svg
                               className="w-4 h-4"
@@ -792,7 +790,7 @@ export default function AdminRecordingPage() {
                                 d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                               />
                             </svg>
-                            Play
+                            {t('play')}
                           </button>
                         )}
                       </td>
@@ -803,6 +801,7 @@ export default function AdminRecordingPage() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </DashboardLayout>
   );

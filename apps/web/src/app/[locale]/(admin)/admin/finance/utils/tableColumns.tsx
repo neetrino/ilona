@@ -47,10 +47,10 @@ function SalaryActionCell({ salary, locale }: { salary: SalaryRecord; locale: st
       <Link
         href={href}
         onClick={(e) => e.stopPropagation()}
-        className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+        className="p-2 hover:bg-[#f6f6f7] rounded-lg transition-colors"
         aria-label="View breakdown"
       >
-        <Eye className="w-5 h-5 text-slate-600" />
+        <Eye className="w-5 h-5 text-[#3b3b40]" />
       </Link>
     </div>
   );
@@ -122,7 +122,7 @@ export function getPaymentColumns({
             render: (payment: Payment) => (
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 checked={selectedPaymentIds.has(payment.id)}
                 onChange={() => onToggleSelectPayment(payment.id)}
                 onClick={(e) => e.stopPropagation()}
@@ -142,14 +142,14 @@ export function getPaymentColumns({
         const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
         return (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold">
+            <div className="w-10 h-10 rounded-full bg-[#f1f1f2] flex items-center justify-center text-[#3b3b40] font-semibold">
               {initials}
             </div>
             <div>
-              <p className="font-semibold text-slate-800">
+              <p className="font-semibold text-[#3b3b40]">
                 {firstName} {lastName}
               </p>
-              <p className="text-sm text-slate-500">{payment.student?.user?.email || ''}</p>
+              <p className="text-sm text-[#8b8b90]">{payment.student?.user?.email || ''}</p>
             </div>
           </div>
         );
@@ -161,7 +161,7 @@ export function getPaymentColumns({
       render: (payment: Payment) => {
         const amount = typeof payment.amount === 'string' ? parseFloat(payment.amount) : Number(payment.amount);
         return (
-          <span className="font-semibold text-slate-800">
+          <span className="font-semibold text-[#3b3b40]">
             {formatCurrency(amount)}
           </span>
         );
@@ -173,7 +173,7 @@ export function getPaymentColumns({
       render: (payment: Payment) => {
         const date = new Date(payment.dueDate);
         return (
-          <span className="text-slate-500">
+          <span className="text-[#8b8b90]">
             {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </span>
         );
@@ -211,7 +211,7 @@ export function getPaymentColumns({
           );
         }
         return (
-          <span className="text-slate-600">{formatMethodLabel(payment.paymentMethod, t)}</span>
+          <span className="text-[#3b3b40]">{formatMethodLabel(payment.paymentMethod, t)}</span>
         );
       },
     },
@@ -296,7 +296,7 @@ export function getSalaryColumns({
           checked={selectedSalaryIds.has(salary.id)}
           onChange={(e) => onSelectOne(salary.id, e.target.checked)}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoadingSalaries}
           aria-label={`Select salary for ${salary.teacher?.user?.firstName} ${salary.teacher?.user?.lastName}`}
         />
@@ -312,14 +312,14 @@ export function getSalaryColumns({
         const email = salary.teacher?.user?.email || '';
         return (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold shrink-0">
+            <div className="w-10 h-10 rounded-full bg-[#f1f1f2] flex items-center justify-center text-[#3b3b40] font-semibold shrink-0">
               {initials}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-slate-800 truncate">
+              <p className="font-semibold text-[#3b3b40] truncate">
                 {firstName} {lastName}
               </p>
-              <p className="text-sm text-slate-500 truncate">{email}</p>
+              <p className="text-sm text-[#8b8b90] truncate">{email}</p>
             </div>
           </div>
         );
@@ -332,7 +332,7 @@ export function getSalaryColumns({
         const date =
           salary.month && salary.year ? new Date(salary.year, salary.month - 1) : null;
         return (
-          <span className="text-slate-500">
+          <span className="text-[#8b8b90]">
             {date ? date.toLocaleDateString(locale, { month: 'short', year: 'numeric' }) : '—'}
           </span>
         );
@@ -342,7 +342,7 @@ export function getSalaryColumns({
       key: 'lessons',
       header: t('lessons'),
       render: (salary: SalaryRecord) => (
-        <span className="text-slate-600">{salary.lessonsCount ?? 0}</span>
+        <span className="text-[#3b3b40]">{salary.lessonsCount ?? 0}</span>
       ),
     },
     {
@@ -358,7 +358,7 @@ export function getSalaryColumns({
             className={
               amount > 0
                 ? 'font-medium text-red-600'
-                : 'text-slate-600'
+                : 'text-[#3b3b40]'
             }
           >
             {amount > 0 ? '−' : ''}
@@ -374,7 +374,7 @@ export function getSalaryColumns({
         const amount =
           typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
         return (
-          <span className="font-semibold text-slate-800">
+          <span className="font-semibold text-[#3b3b40]">
             {formatCurrency(amount)}
           </span>
         );

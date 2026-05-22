@@ -4,9 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { AdminAvatarPhotoLightbox, AdminDetailModal, Avatar, Badge } from '@/shared/components/ui';
-import { cn, formatCurrency } from '@/shared/lib/utils';
+import { AdminAvatarPhotoLightbox, AdminDetailModal, Avatar, Badge, PublicAssetImage } from '@/shared/components/ui';
+import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { portalInnerCardClass, portalPrimaryButtonClass } from '@/shared/lib/portal-theme';
+import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { useStudent, useStudentStatistics } from '../hooks/useStudents';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import type { StudentLifecycleStatus } from '../types';
 import {
   Building2,
@@ -34,6 +38,34 @@ function formatDisplayDate(value: string | null | undefined): string {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
+type StudentModalStatCardProps = {
+  label: string;
+  value: string;
+  caption: string;
+  iconSrc: string;
+  iconBg: string;
+};
+
+function StudentModalStatCard({ label, value, caption, iconSrc, iconBg }: StudentModalStatCardProps) {
+  return (
+    <div className={portalInnerCardClass}>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-xs tracking-wide text-[#8b8b90]">{label}</p>
+        <div
+          className={cn(
+            'flex h-[2.625rem] w-[2.625rem] shrink-0 items-center justify-center rounded-[0.875rem]',
+            iconBg,
+          )}
+        >
+          <PublicAssetImage src={iconSrc} alt="" width={24} height={24} className="h-6 w-6 object-contain" />
+        </div>
+      </div>
+      <p className="mt-2 text-2xl font-bold tracking-tight text-[#1010a3]">{value}</p>
+      <p className="mt-1 text-xs text-[#8b8b90]">{caption}</p>
+    </div>
+  );
+}
+
 function formatLifecycle(status: StudentLifecycleStatus | undefined): string {
   if (!status) return '—';
   const labels: Record<StudentLifecycleStatus, string> = {
@@ -48,6 +80,8 @@ function formatLifecycle(status: StudentLifecycleStatus | undefined): string {
 }
 
 export function StudentDetailsModal({ studentId, open, onClose, locale }: StudentDetailsModalProps) {
+  const { user } = useAuthStore();
+  const basePath = getAdminPortalBasePath(user?.role);
   const t = useTranslations('students');
   const tTeachers = useTranslations('teachers');
   const tCommon = useTranslations('common');
@@ -209,7 +243,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                   {tTeachers('phoneNumber')}
                 </label>
                 <p className="text-slate-800 text-sm sm:text-base break-words">
-                  {student.user?.phone || tTeachers('noPhoneNumber')}
+                  {formatPhoneForDisplay(student.user?.phone, tTeachers('noPhoneNumber'))}
                 </p>
               </div>
               <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
@@ -299,7 +333,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                       <Phone className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                       {t('parentPhone')}
                     </label>
-                    <p className="text-slate-800 text-sm sm:text-base break-words">{student.parentPhone}</p>
+                    <p className="text-slate-800 text-sm sm:text-base break-words">{formatPhoneForDisplay(student.parentPhone)}</p>
                   </div>
                 )}
                 {student.parentEmail && (
@@ -328,44 +362,41 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
           )}
 
           {statistics && (
-            <div className="space-y-4 pt-6 border-t border-slate-200">
-              <h4 className="font-semibold text-slate-800 flex items-center gap-2">
-                <GraduationCap className="h-4 w-4 text-slate-500" aria-hidden="true" />
+            <div className="space-y-4 border-t border-[rgba(14,14,16,0.07)] pt-6">
+              <h4 className="flex items-center gap-2 text-base font-semibold text-[#1010a3] sm:text-lg">
+                <GraduationCap className="h-4 w-4 text-[#8b8b90]" aria-hidden="true" />
                 {tTeachers('statistics')}
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <p className="text-sm text-slate-600 mb-1">{t('attendance')}</p>
-                  <p className="text-2xl font-bold text-slate-800">{statistics.attendance.rate.toFixed(1)}%</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {statistics.attendance.present} / {statistics.attendance.total}{' '}
-                    {t('lessonsShort')}
-                  </p>
-                </div>
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <p className="text-sm text-slate-600 mb-1">{t('payments')}</p>
-                  <p className="text-2xl font-bold text-slate-800">{statistics.payments.pending}</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {statistics.payments.overdue > 0
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <StudentModalStatCard
+                  label={t('attendance')}
+                  value={`${statistics.attendance.rate.toFixed(1)}%`}
+                  caption={`${statistics.attendance.present} / ${statistics.attendance.total} ${t('lessonsShort')}`}
+                  iconSrc={STUDENT_DASHBOARD_ASSETS.iconAttendance}
+                  iconBg="bg-[#dffc76]"
+                />
+                <StudentModalStatCard
+                  label={t('payments')}
+                  value={String(statistics.payments.pending)}
+                  caption={
+                    statistics.payments.overdue > 0
                       ? t('overduePaymentsHint', { count: statistics.payments.overdue })
-                      : t('noOverduePayments')}
-                  </p>
-                </div>
+                      : t('noOverduePayments')
+                  }
+                  iconSrc={STUDENT_DASHBOARD_ASSETS.iconCard}
+                  iconBg="bg-[#ffe1e1]"
+                />
               </div>
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-200">
-            <Link
-              href={`/${locale}/admin/students/${student.id}`}
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
-              onClick={() => onClose()}
-            >
+          <div className="flex flex-wrap items-center gap-3 border-t border-[rgba(14,14,16,0.07)] pt-4">
+            <Link href={`/${locale}${basePath}/students/${student.id}`} className={portalPrimaryButtonClass} onClick={() => onClose()}>
               {t('openFullProfile')}
             </Link>
-            {student.receiveReports && (
-              <span className="text-xs text-slate-500">{t('receiveReportsOn')}</span>
-            )}
+            {student.receiveReports ? (
+              <span className="text-xs text-[#8b8b90]">{t('receiveReportsOn')}</span>
+            ) : null}
           </div>
         </>
       )}

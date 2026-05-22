@@ -5,6 +5,7 @@ export type CrmLeadStatus =
   | 'WAITLIST'
   | 'ARCHIVE';
 
+/** @deprecated For UI labels use `useCrmStatusLabels()` from `@/features/crm/hooks/useCrmStatusLabels`. */
 export const STATUS_LABELS: Record<CrmLeadStatus, string> = {
   NEW: 'New',
   FIRST_LESSON: 'First Lesson',

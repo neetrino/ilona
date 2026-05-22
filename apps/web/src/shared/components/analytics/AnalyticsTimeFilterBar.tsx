@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { type TimeFilterMode } from '@/shared/lib/analytics-time-range';
+import { DatePickerInput } from '@/shared/components/ui';
 
 type ApplyAction = {
   onApply: () => void;
@@ -23,6 +24,8 @@ type AnalyticsTimeFilterBarProps = {
   onCustomFromYmd: (v: string) => void;
   onCustomToYmd: (v: string) => void;
   className?: string;
+  /** Student dashboard color system */
+  variant?: 'default' | 'student';
   /** When set, shows an Apply control (used when API requests must not run until explicit confirm). */
   applyAction?: ApplyAction;
 };
@@ -39,9 +42,11 @@ export function AnalyticsTimeFilterBar({
   onCustomFromYmd,
   onCustomToYmd,
   className,
+  variant = 'default',
   applyAction,
 }: AnalyticsTimeFilterBarProps) {
   const t = useTranslations('analytics');
+  const isStudent = variant === 'student';
   const modes: { id: TimeFilterMode; label: string }[] = [
     { id: 'day', label: t('timeFilterDay') },
     { id: 'week', label: t('timeFilterWeek') },
@@ -51,21 +56,34 @@ export function AnalyticsTimeFilterBar({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4 sm:flex-row sm:items-end sm:justify-between',
+        'flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-end sm:justify-between',
+        isStudent
+          ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]'
+          : 'border-slate-200 bg-slate-50/80',
         className,
       )}
     >
-      <div className="flex flex-wrap items-center gap-1">
+      <div
+        className={cn(
+          'flex flex-wrap items-center gap-1',
+          isStudent && 'rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1',
+        )}
+      >
         {modes.map((m) => (
           <button
             key={m.id}
             type="button"
             onClick={() => onModeChange(m.id)}
             className={cn(
-              'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              'px-3 py-2 text-sm font-medium transition-colors',
+              isStudent ? 'rounded-full' : 'rounded-lg',
               mode === m.id
-                ? 'bg-primary text-white shadow-sm'
-                : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50',
+                ? isStudent
+                  ? 'bg-[#1010a3] text-white'
+                  : 'bg-primary text-white shadow-sm'
+                : isStudent
+                  ? 'bg-transparent text-[#3b3b40] hover:text-[#1010a3]'
+                  : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50',
             )}
           >
             {m.label}
@@ -73,44 +91,93 @@ export function AnalyticsTimeFilterBar({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+      <div
+        className={cn(
+          'flex flex-wrap items-center gap-3 text-sm',
+          isStudent ? 'text-[#3b3b40]' : 'text-slate-600',
+        )}
+      >
         {mode === 'day' && (
           <label className="flex items-center gap-2">
-            <span className="whitespace-nowrap text-slate-500">{t('timeFilterSelectDay')}</span>
-            <input
-              type="date"
-              className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-slate-800"
+            <span
+              className={cn(
+                'whitespace-nowrap',
+                isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+              )}
+            >
+              {t('timeFilterSelectDay')}
+            </span>
+            <DatePickerInput
+              className={cn(
+                'rounded-[0.875rem] border bg-white px-2 py-1.5',
+                isStudent
+                  ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
+                  : 'rounded-md border-slate-200 text-slate-800',
+              )}
               value={dayYmd}
-              onChange={(e) => onDayYmdChange(e.target.value)}
+              onValueChange={onDayYmdChange}
             />
           </label>
         )}
         {mode === 'week' && (
           <label className="flex items-center gap-2">
-            <span className="whitespace-nowrap text-slate-500">{t('timeFilterSelectWeek')}</span>
-            <input
-              type="date"
-              className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-slate-800"
+            <span
+              className={cn(
+                'whitespace-nowrap',
+                isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+              )}
+            >
+              {t('timeFilterSelectWeek')}
+            </span>
+            <DatePickerInput
+              className={cn(
+                'rounded-[0.875rem] border bg-white px-2 py-1.5',
+                isStudent
+                  ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
+                  : 'rounded-md border-slate-200 text-slate-800',
+              )}
               value={weekAnchorYmd}
-              onChange={(e) => onWeekAnchorYmdChange(e.target.value)}
+              onValueChange={onWeekAnchorYmdChange}
             />
           </label>
         )}
         {mode === 'date' && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="whitespace-nowrap text-slate-500">{t('timeFilterFrom')}</span>
-            <input
-              type="date"
-              className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-slate-800"
+            <span
+              className={cn(
+                'whitespace-nowrap',
+                isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+              )}
+            >
+              {t('timeFilterFrom')}
+            </span>
+            <DatePickerInput
+              className={cn(
+                'rounded-[0.875rem] border bg-white px-2 py-1.5',
+                isStudent
+                  ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
+                  : 'rounded-md border-slate-200 text-slate-800',
+              )}
               value={customFromYmd}
-              onChange={(e) => onCustomFromYmd(e.target.value)}
+              onValueChange={onCustomFromYmd}
             />
-            <span className="whitespace-nowrap text-slate-500">{t('timeFilterTo')}</span>
-            <input
-              type="date"
-              className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-slate-800"
+            <span
+              className={cn(
+                'whitespace-nowrap',
+                isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+              )}
+            >
+              {t('timeFilterTo')}
+            </span>
+            <DatePickerInput
+              className={cn(
+                'rounded-[0.875rem] border bg-white px-2 py-1.5',
+                isStudent
+                  ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
+                  : 'rounded-md border-slate-200 text-slate-800',
+              )}
               value={customToYmd}
-              onChange={(e) => onCustomToYmd(e.target.value)}
+              onValueChange={onCustomToYmd}
             />
           </div>
         )}
@@ -126,7 +193,12 @@ export function AnalyticsTimeFilterBar({
               type="button"
               onClick={applyAction.onApply}
               disabled={applyAction.applyDisabled ?? !applyAction.hasUnsavedChanges}
-              className="inline-flex w-full min-w-[7rem] items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm ring-1 ring-slate-200/40 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className={cn(
+                'inline-flex w-full min-w-[7rem] items-center justify-center px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50',
+                isStudent
+                  ? 'rounded-full bg-[#1010a3]'
+                  : 'rounded-lg bg-primary shadow-sm ring-1 ring-slate-200/40',
+              )}
             >
               {t('applyTimeFilter')}
             </button>

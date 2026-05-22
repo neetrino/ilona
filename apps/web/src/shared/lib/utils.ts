@@ -161,4 +161,18 @@ export function formatLocaleInteger(value: number, locale: string): string {
   return new Intl.NumberFormat(tag, { maximumFractionDigits: 0 }).format(value);
 }
 
+/**
+ * Format phone value for display and ensure `+` prefix.
+ */
+export function formatPhoneForDisplay(
+  value: string | null | undefined,
+  fallback: string = '—',
+): string {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return fallback;
+  }
+  return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
+}
+
 

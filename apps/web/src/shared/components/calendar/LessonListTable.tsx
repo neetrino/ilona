@@ -33,13 +33,15 @@ interface LessonListTableProps {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onSort?: (key: string) => void;
-  /** When true, bulk action bar stays visible with a disabled delete until at least one row is selected (admin calendar). */
+  /** When true, bulk action bar stays visible even with no selected rows (admin calendar). */
   showBulkBarWhenEmpty?: boolean;
   /**
    * List view: completed first, then next 2 upcoming, today, later; Schedule column; 10 rows per page.
    * Used for teacher and admin calendar list.
    */
   sectionedCalendarList?: boolean;
+  /** Controls Schedule column visibility in sectioned calendar list tables. */
+  showScheduleColumn?: boolean;
 }
 
 export function LessonListTable({
@@ -57,9 +59,12 @@ export function LessonListTable({
   onSort,
   showBulkBarWhenEmpty = false,
   sectionedCalendarList = false,
+  showScheduleColumn = true,
 }: LessonListTableProps) {
   const locale = useLocale();
   const tCal = useTranslations('calendar');
+  const tCommon = useTranslations('common');
+  const tActions = useTranslations('calendar.lessonActions');
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
   const [sectionedListPage, setSectionedListPage] = useState(1);
   const { user } = useAuthStore();
@@ -214,7 +219,7 @@ export function LessonListTable({
   }
 
   const tableColSpan =
-    10 + (sectionedCalendarList ? 1 : 0) + (hideTeacherColumn ? 0 : 1);
+    10 + (sectionedCalendarList && showScheduleColumn ? 1 : 0) + (hideTeacherColumn ? 0 : 1);
 
   const allSelected = sectionedCalendarList
     ? sectionedPageLessonIds.length > 0 && sectionedPageLessonIds.every((id) => selectedLessons.has(id))
@@ -223,7 +228,7 @@ export function LessonListTable({
     ? sectionedPageLessonIds.some((id) => selectedLessons.has(id)) && !allSelected
     : selectedLessons.size > 0 && selectedLessons.size < lessons.length;
   const showBulkBar = onBulkDelete && (showBulkBarWhenEmpty || selectedLessons.size > 0);
-  const bulkDeleteDisabled = selectedLessons.size === 0;
+  const hasSelectedLessons = selectedLessons.size > 0;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -232,17 +237,27 @@ export function LessonListTable({
         <div className="px-6 py-3 bg-blue-50 border-b border-slate-200 flex items-center justify-between gap-4">
           <span className="text-sm font-medium text-blue-900">
             {selectedLessons.size === 0
-              ? 'Select lessons with the checkboxes to delete multiple at once.'
-              : `${selectedLessons.size} lesson${selectedLessons.size !== 1 ? 's' : ''} selected`}
+              ? tCal('bulkSelectHint')
+              : tCal('lessonsSelected', { count: selectedLessons.size })}
           </span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleBulkDelete}
-            disabled={bulkDeleteDisabled}
+          <div
+            className={cn(
+              'overflow-hidden transition-all duration-200 ease-out',
+              hasSelectedLessons
+                ? 'max-w-[11rem] translate-x-0 opacity-100'
+                : 'max-w-0 translate-x-2 opacity-0',
+            )}
+            aria-hidden={!hasSelectedLessons}
           >
-            Delete selected
-          </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+              tabIndex={hasSelectedLessons ? 0 : -1}
+            >
+              {tCal('deleteSelected')}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -258,9 +273,13 @@ export function LessonListTable({
                   onCheckedChange={handleSelectAll}
                 />
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Lesson Name</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[120px]">Status</th>
-              {sectionedCalendarList && (
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
+                {tCal('columnLessonName')}
+              </th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[120px]">
+                {tCommon('status')}
+              </th>
+              {sectionedCalendarList && showScheduleColumn && (
                 <th className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase min-w-[7rem]">
                   {tCal('scheduleCategoryColumn')}
                 </th>
@@ -276,13 +295,13 @@ export function LessonListTable({
                     )}
                     aria-label={
                       sortBy !== 'scheduledAt'
-                        ? 'Sort by Date & Time'
+                        ? tCal('sortByDateTime')
                         : sortOrder === 'asc'
-                          ? 'Sorted by Date & Time ascending. Click to sort descending.'
-                          : 'Sorted by Date & Time descending. Click to sort ascending.'
+                          ? tCal('sortByDateTimeAsc')
+                          : tCal('sortByDateTimeDesc')
                     }
                   >
-                    <span>Date & Time</span>
+                    <span>{tCal('columnDateTime')}</span>
                     <span className="flex-shrink-0">
                       {sortBy === 'scheduledAt' ? (
                         sortOrder === 'asc' ? (
@@ -296,18 +315,32 @@ export function LessonListTable({
                     </span>
                   </button>
                 ) : (
-                  'Date & Time'
+                  tCal('columnDateTime')
                 )}
               </th>
               {!hideTeacherColumn && (
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Teacher</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
+                  {tCommon('teacher')}
+                </th>
               )}
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Absence</th>
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Feedbacks</th>
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Voice</th>
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Text</th>
-              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">Daily Plan</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Actions</th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('absenceLabel')}
+              </th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('feedbackLabel')}
+              </th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('voiceLabel')}
+              </th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('textLabel')}
+              </th>
+              <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
+                {tActions('dailyPlanLabel')}
+              </th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">
+                {tCommon('actions')}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -355,7 +388,7 @@ export function LessonListTable({
                       onEdit={onEdit}
                       onDelete={onDelete}
                       onAssignSubstitute={onAssignSubstitute}
-                      scheduleCategory={row.category}
+                      scheduleCategory={showScheduleColumn ? row.category : undefined}
                       scheduleCategoryLabels={scheduleCategoryLabels}
                     />,
                   );

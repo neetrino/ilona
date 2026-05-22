@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { ListBoardViewToggle } from '@/shared/components/ui';
 import {
   fetchLeads,
   changeLeadStatus,
@@ -43,6 +44,7 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
 
 const ARCHIVE_PARAM = 'archive';
 const EDIT_LEAD_PARAM = 'editLead';
+const VIEW_PARAM = 'view';
 
 function normalize(value?: unknown): string {
   if (value === null || value === undefined) {
@@ -101,7 +103,10 @@ function sortLeadsByFilters(leads: CrmLead[], filters: CrmLeadFilters): CrmLead[
 }
 
 export default function AdminCrmPage() {
+  const router = useRouter();
+  const pathname = usePathname();
   const t = useTranslations('nav');
+  const tCrm = useTranslations('crm');
   const user = useAuthStore((state) => state.user);
   const userRole = user?.role;
   const isHydrated = useAuthStore((state) => state.isHydrated);
@@ -113,7 +118,13 @@ export default function AdminCrmPage() {
   const authScopeKey = `${userRole ?? 'UNKNOWN'}:${user?.id ?? 'anonymous'}:${managerCenterId ?? 'all-centers'}`;
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
-  const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
+  const [viewMode, setViewMode] = useState<'board' | 'list'>(() => {
+    const modeFromUrl = searchParams.get(VIEW_PARAM);
+    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
+      return modeFromUrl;
+    }
+    return 'board';
+  });
   const [showArchiveColumn, setShowArchiveColumn] = useState(
     () => searchParams.get(ARCHIVE_PARAM) === '1'
   );
@@ -135,6 +146,27 @@ export default function AdminCrmPage() {
   useEffect(() => {
     setEditLeadId(searchParams.get(EDIT_LEAD_PARAM));
   }, [searchParams]);
+
+  // Restore view mode from URL after refresh/navigation
+  useEffect(() => {
+    const modeFromUrl = searchParams.get(VIEW_PARAM);
+    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
+      setViewMode(modeFromUrl);
+      return;
+    }
+    setViewMode('board');
+  }, [searchParams]);
+
+  const updateViewModeInUrl = (mode: 'board' | 'list') => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode === 'list') {
+      params.set(VIEW_PARAM, 'list');
+    } else {
+      params.delete(VIEW_PARAM);
+    }
+    const url = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(url, { scroll: false });
+  };
 
   const queryClient = useQueryClient();
   const scopedFilters = useMemo<CrmLeadFilters>(() => filters, [filters]);
@@ -183,7 +215,7 @@ export default function AdminCrmPage() {
       if (context?.previous) {
         queryClient.setQueryData(['crm-leads', authScopeKey, scopedFilters], context.previous);
       }
-      setStatusError('Failed to update status. Please try again.');
+      setStatusError(tCrm('failedUpdateStatus'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
@@ -219,7 +251,7 @@ export default function AdminCrmPage() {
       if (context?.previous) {
         queryClient.setQueryData(['crm-leads', authScopeKey, scopedFilters], context.previous);
       }
-      setStatusError('Failed to update branch. Please try again.');
+      setStatusError(tCrm('failedUpdateBranch'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
@@ -253,7 +285,7 @@ export default function AdminCrmPage() {
       if (context?.previous) {
         queryClient.setQueryData(['crm-leads', authScopeKey, scopedFilters], context.previous);
       }
-      setDeleteLeadError(getErrorMessage(err, 'Failed to delete lead. Please try again.'));
+      setDeleteLeadError(getErrorMessage(err, tCrm('failedDeleteLead')));
     },
     onSuccess: (_void, leadId) => {
       setLeadIdPendingDelete(null);
@@ -393,36 +425,21 @@ export default function AdminCrmPage() {
   };
 
   return (
-    <DashboardLayout title={t('crm')} subtitle="Lead management">
+    <DashboardLayout title={t('crm')} subtitle={tCrm('leadManagement')}>
       <CrmExclusiveAudioProvider>
-        <div className="space-y-4">
+        <div className="w-full min-w-0 space-y-4">
         {/* View toggle + Filters */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setViewMode('board')}
-              className={cn(
-                'rounded-lg px-3 py-1.5 text-sm font-medium',
-                viewMode === 'board'
-                  ? 'bg-primary text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              )}
-            >
-              Board
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={cn(
-                'rounded-lg px-3 py-1.5 text-sm font-medium',
-                viewMode === 'list'
-                  ? 'bg-primary text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              )}
-            >
-              List
-            </button>
+            <ListBoardViewToggle
+              value={viewMode}
+              onChange={(mode) => {
+                setViewMode(mode);
+                updateViewModeInUrl(mode);
+              }}
+              listLabel={tCrm('viewList')}
+              boardLabel={tCrm('viewBoard')}
+            />
             {viewMode === 'board' && (
               <button
                 type="button"
@@ -435,11 +452,11 @@ export default function AdminCrmPage() {
                   window.history.replaceState(null, '', url.pathname + url.search || '');
                 }}
                 className={cn(
-                  'rounded-lg p-1.5 text-slate-700 transition-colors hover:bg-slate-200 hover:text-slate-900',
-                  showArchiveColumn && 'bg-slate-700 text-white hover:bg-slate-600 hover:text-white'
+                  'rounded-lg p-1.5 text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] hover:text-[#1010a3]',
+                  showArchiveColumn && 'bg-[#3b3b40] text-white hover:bg-[#3b3b40] hover:text-white'
                 )}
-                title={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
-                aria-label={showArchiveColumn ? 'Hide Archive column' : 'Show Archive column'}
+                title={showArchiveColumn ? tCrm('hideArchiveColumn') : tCrm('showArchiveColumn')}
+                aria-label={showArchiveColumn ? tCrm('hideArchiveColumn') : tCrm('showArchiveColumn')}
               >
                 {showArchiveColumn ? (
                   <Eye className="size-5" strokeWidth={2} aria-hidden />
@@ -498,23 +515,25 @@ export default function AdminCrmPage() {
         )}
 
         {isLoading && viewMode === 'board' && (
+          <div className="w-full min-w-0 overflow-x-auto pb-1">
           <div
-            className="grid gap-4 pb-4 w-full min-w-0"
-            style={{ gridTemplateColumns: `repeat(${boardColumnStatuses.length}, minmax(160px, 1fr))` }}
+            className="grid gap-3 pb-4 w-max min-w-full sm:gap-4"
+            style={{ gridTemplateColumns: `repeat(${boardColumnStatuses.length}, minmax(min(11rem,42vw), 1fr))` }}
           >
             {boardColumnStatuses.map((s) => (
               <div
                 key={s}
-                className="min-w-0 w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 animate-pulse"
+                className="min-w-0 w-full rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/50 p-3 animate-pulse"
               >
-                <div className="h-6 bg-slate-200 rounded w-24 mb-4" />
+                <div className="h-6 bg-[#f1f1f2] rounded w-24 mb-4" />
                 <div className="space-y-2">
-                  <div className="h-20 bg-slate-200 rounded" />
-                  <div className="h-20 bg-slate-200 rounded" />
-                  <div className="h-20 bg-slate-200 rounded" />
+                  <div className="h-20 bg-[#f1f1f2] rounded" />
+                  <div className="h-20 bg-[#f1f1f2] rounded" />
+                  <div className="h-20 bg-[#f1f1f2] rounded" />
                 </div>
               </div>
             ))}
+          </div>
           </div>
         )}
         </div>

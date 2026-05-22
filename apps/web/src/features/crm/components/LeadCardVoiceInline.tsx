@@ -8,7 +8,8 @@ import {
   useState,
   type MouseEvent,
 } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Mic, Pause, Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { getRecordingPlayUrl } from '@/features/crm/api/crm.api';
 import { cn } from '@/shared/lib/utils';
 import { useCrmExclusiveAudio } from './CrmExclusiveAudioContext';
@@ -17,7 +18,11 @@ type LeadCardVoiceInlineProps = {
   r2Key: string;
   mimeType: string | null;
   className?: string;
+  showLabel?: boolean;
 };
+
+const PLAYBACK_SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2] as const;
+type PlaybackSpeed = (typeof PLAYBACK_SPEED_OPTIONS)[number];
 
 function formatTime(totalSeconds: number): string {
   if (!Number.isFinite(totalSeconds) || totalSeconds < 0) {
@@ -30,8 +35,11 @@ function formatTime(totalSeconds: number): string {
 
 export function LeadCardVoiceInline({
   r2Key,
+  mimeType: _mimeType,
   className,
+  showLabel = false,
 }: LeadCardVoiceInlineProps) {
+  const t = useTranslations('crm');
   const src = useMemo(() => getRecordingPlayUrl(r2Key), [r2Key]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -39,13 +47,15 @@ export function LeadCardVoiceInline({
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentSec, setCurrentSec] = useState(0);
-  const [muted, setMuted] = useState(false);
+  const [durationSec, setDurationSec] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState<PlaybackSpeed>(1);
 
   useEffect(() => {
     setProgress(0);
     setIsPlaying(false);
     setCurrentSec(0);
-    setMuted(false);
+    setDurationSec(0);
+    setPlaybackSpeed(1);
   }, [src]);
 
   useEffect(() => {
@@ -66,21 +76,31 @@ export function LeadCardVoiceInline({
         setProgress(el.currentTime / d);
       }
     };
-    const onVolumeChange = () => setMuted(el.muted);
+    const onLoadedMetadata = () => {
+      if (Number.isFinite(el.duration) && el.duration > 0) {
+        setDurationSec(el.duration);
+      }
+    };
 
     el.addEventListener('play', onPlay);
     el.addEventListener('pause', onPause);
     el.addEventListener('ended', onEnded);
     el.addEventListener('timeupdate', onTimeUpdate);
-    el.addEventListener('volumechange', onVolumeChange);
+    el.addEventListener('loadedmetadata', onLoadedMetadata);
     return () => {
       el.removeEventListener('play', onPlay);
       el.removeEventListener('pause', onPause);
       el.removeEventListener('ended', onEnded);
       el.removeEventListener('timeupdate', onTimeUpdate);
-      el.removeEventListener('volumechange', onVolumeChange);
+      el.removeEventListener('loadedmetadata', onLoadedMetadata);
     };
   }, [src]);
+
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    el.playbackRate = playbackSpeed;
+  }, [playbackSpeed]);
 
   const toggle = useCallback(
     async (e: MouseEvent<HTMLButtonElement>) => {
@@ -101,12 +121,13 @@ export function LeadCardVoiceInline({
     [isPlaying, takeOverPlayback]
   );
 
-  const toggleMute = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+  const cyclePlaybackSpeed = useCallback((e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    const el = audioRef.current;
-    if (!el) return;
-    el.muted = !el.muted;
-    setMuted(el.muted);
+    setPlaybackSpeed((prev) => {
+      const currentIdx = PLAYBACK_SPEED_OPTIONS.indexOf(prev);
+      const nextIdx = (currentIdx + 1) % PLAYBACK_SPEED_OPTIONS.length;
+      return PLAYBACK_SPEED_OPTIONS[nextIdx];
+    });
   }, []);
 
   const seekFromPointer = useCallback((clientX: number) => {
@@ -134,48 +155,35 @@ export function LeadCardVoiceInline({
     <div
       className={cn('min-w-0', className)}
       role="group"
-      aria-label="Voice note playback"
+      aria-label={t('voiceNotePlayback')}
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
     >
-      <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-        Voice
-      </p>
-      <div className="flex min-w-0 items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1.5 sm:gap-2.5 sm:px-3 sm:py-2">
+      {showLabel ? (
+        <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          {t('voiceSection')}
+        </p>
+      ) : null}
+      <div className="flex min-w-0 items-center gap-1.5 rounded-[0.875rem] bg-[#2329b8] px-2 py-1.5 text-white sm:gap-2">
         <audio ref={audioRef} src={src} preload="metadata" className="hidden" />
+        <span className="shrink-0 text-white/85" aria-hidden>
+          <Mic className="h-3.5 w-3.5" strokeWidth={2} />
+        </span>
         <button
           type="button"
           onClick={toggle}
           className={cn(
-            'shrink-0 rounded-md p-0.5 text-slate-900 transition-opacity hover:opacity-70',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1'
+            'group shrink-0 rounded-full border border-white/70 bg-gradient-to-b from-white to-indigo-50 p-2 text-[#1f2797] shadow-[0_6px_16px_rgba(10,14,110,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:from-white hover:to-indigo-100 hover:shadow-[0_10px_20px_rgba(10,14,110,0.42)] active:translate-y-0',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-[#2329b8]',
           )}
-          aria-label={isPlaying ? 'Pause voice note' : 'Play voice note'}
+          aria-label={isPlaying ? t('pauseVoiceNote') : t('playVoiceNote')}
         >
           {isPlaying ? (
-            <svg
-              viewBox="0 0 14 16"
-              className="h-3.5 w-3.5"
-              fill="currentColor"
-              aria-hidden
-            >
-              <rect x="1" y="1" width="4" height="14" rx="0.5" />
-              <rect x="9" y="1" width="4" height="14" rx="0.5" />
-            </svg>
+            <Pause className="h-4 w-4 fill-current" strokeWidth={2.5} aria-hidden />
           ) : (
-            <svg
-              viewBox="0 0 14 16"
-              className="h-3.5 w-3.5"
-              fill="currentColor"
-              aria-hidden
-            >
-              <polygon points="0,0 14,8 0,16" />
-            </svg>
+            <Play className="h-4 w-4 fill-current pl-[1px]" strokeWidth={2.3} aria-hidden />
           )}
         </button>
-        <span className="shrink-0 text-xs font-medium tabular-nums text-slate-900">
-          {formatTime(currentSec)}
-        </span>
         <div
           ref={trackRef}
           role="slider"
@@ -183,8 +191,8 @@ export function LeadCardVoiceInline({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(progress * 100)}
-          aria-label="Playback position"
-          className="relative h-0.5 min-w-0 flex-1 cursor-pointer rounded-full bg-slate-300"
+          aria-label={t('playbackPosition')}
+          className="relative h-1 min-w-0 flex-1 cursor-pointer rounded-full bg-white/25"
           onClick={onTrackClick}
           onKeyDown={(e) => {
             e.stopPropagation();
@@ -201,25 +209,27 @@ export function LeadCardVoiceInline({
           }}
         >
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-slate-600"
+            className="absolute inset-y-0 left-0 rounded-full bg-[#d4d8e2]"
             style={{ width: `${Math.round(progress * 1000) / 10}%` }}
           />
         </div>
         <button
           type="button"
-          onClick={toggleMute}
+          onClick={cyclePlaybackSpeed}
           className={cn(
-            'shrink-0 rounded-md p-0.5 text-slate-900 transition-opacity hover:opacity-70',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1'
+            'shrink-0 rounded-lg bg-[#f7edc6] px-2 py-0.5 text-xs font-semibold text-[#7a4724] transition-colors hover:bg-[#f3e3ab]',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-[#2329b8]',
           )}
-          aria-label={muted ? 'Unmute' : 'Mute'}
+          aria-label="Playback speed"
         >
-          {muted ? (
-            <VolumeX className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-          ) : (
-            <Volume2 className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-          )}
+          {playbackSpeed === 1 ? '1x' : `${playbackSpeed}x`}
         </button>
+        <span className="shrink-0 text-sm leading-none text-white/40" aria-hidden>
+          ·
+        </span>
+        <span className="shrink-0 whitespace-nowrap text-xs font-medium tabular-nums text-white">
+          {formatTime(currentSec)} / {formatTime(durationSec || 0)}
+        </span>
       </div>
     </div>
   );

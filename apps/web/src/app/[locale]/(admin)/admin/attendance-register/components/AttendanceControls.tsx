@@ -1,6 +1,8 @@
 import { ViewModeSelector } from '@/shared/components/attendance';
 import { Button } from '@/shared/components/ui/button';
+import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import { MultiSelectGroupDropdown } from '@/shared/components/ui/multi-select-group-dropdown';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useTranslations } from 'next-intl';
 import {
   getTodayDate,
@@ -20,14 +22,6 @@ export type AbsenceFilterType =
   | 'not_marked'
   | 'no_session';
 
-const ABSENCE_FILTER_OPTIONS: { value: AbsenceFilterType; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'present', label: 'Present' },
-  { value: 'absent_justified', label: 'Absent (Justified)' },
-  { value: 'absent_unjustified', label: 'Absent (Unjustified)' },
-  { value: 'not_marked', label: 'Not Marked' },
-  { value: 'no_session', label: 'No Session' },
-];
 
 interface AttendanceControlsProps {
   viewMode: ViewMode;
@@ -70,6 +64,16 @@ export function AttendanceControls({
   onAbsenceFilterChange,
 }: AttendanceControlsProps) {
   const t = useTranslations('attendance');
+  const tc = useTranslations('common');
+
+  const absenceFilterOptions: { value: AbsenceFilterType; label: string }[] = [
+    { value: 'all', label: tc('all') },
+    { value: 'present', label: t('present') },
+    { value: 'absent_justified', label: t('absentJustifiedFilter') },
+    { value: 'absent_unjustified', label: t('absentUnjustifiedFilter') },
+    { value: 'not_marked', label: t('notMarked') },
+    { value: 'no_session', label: t('noSession') },
+  ];
   // Ensure selectedGroupIds is always an array to prevent undefined errors
   // If selectedGroupIds is not provided, fall back to selectedGroupId (single-select mode)
   const safeSelectedGroupIds = selectedGroupIds ?? (selectedGroupId ? [selectedGroupId] : []);
@@ -91,9 +95,9 @@ export function AttendanceControls({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
       <div className="flex items-center justify-between mb-4">
-        <label className="block text-sm font-medium text-slate-700">View Mode</label>
+        <label className="block text-sm font-medium text-[#3b3b40]">{tc('viewMode')}</label>
         <ViewModeSelector
           value={viewMode}
           onChange={onViewModeChange}
@@ -102,7 +106,7 @@ export function AttendanceControls({
       </div>
 
       {/* Selection Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
         {/* Group Selection - Multi-select */}
         <MultiSelectGroupDropdown
           label={t('selectGroup')}
@@ -119,20 +123,19 @@ export function AttendanceControls({
         <div>
           {viewMode === 'day' && (
             <>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Select Date</label>
-              <input
-                type="date"
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('selectDate')}</label>
+              <DatePickerInput
                 value={formatDateString(currentDate)}
-                onChange={(e) => onDateChange(e.target.value)}
+                onValueChange={onDateChange}
                 max={getTodayDate()}
-                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
+                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-[rgba(14,14,16,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.18)] transition-colors"
                 disabled={safeSelectedGroupIds.length === 0}
               />
             </>
           )}
           {viewMode === 'week' && (
             <>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Week</label>
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('week')}</label>
               <div className="flex items-center gap-2">
                 <Button
                   onClick={onPrevious}
@@ -143,7 +146,7 @@ export function AttendanceControls({
                 >
                   ←
                 </Button>
-                <div className="flex-1 text-center px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-sm font-medium">
+                <div className="flex-1 text-center px-3 py-2 border border-[rgba(14,14,16,0.12)] rounded-lg bg-[#fafafa] text-sm font-medium">
                   {formatWeekRange(currentDate)}
                 </div>
                 <Button
@@ -160,7 +163,7 @@ export function AttendanceControls({
           )}
           {viewMode === 'month' && (
             <>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Month</label>
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('month')}</label>
               <div className="flex items-center gap-2">
                 <Button
                   onClick={onPrevious}
@@ -171,7 +174,7 @@ export function AttendanceControls({
                 >
                   ←
                 </Button>
-                <div className="flex-1 text-center px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-sm font-medium">
+                <div className="flex-1 text-center px-3 py-2 border border-[rgba(14,14,16,0.12)] rounded-lg bg-[#fafafa] text-sm font-medium">
                   {formatMonthDisplay(currentDate)}
                 </div>
                 <Button
@@ -192,22 +195,18 @@ export function AttendanceControls({
         <div className="flex items-end">
           {showAbsenceTypeFilter && onAbsenceFilterChange ? (
             <div className="w-full">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-[#3b3b40] mb-2">
                 Filter by type
               </label>
-              <select
+              <SingleSelectDropdown
+                id="attendance-absence-type-filter"
+                options={absenceFilterOptions.map((opt) => ({ id: opt.value, label: opt.label }))}
                 value={absenceFilter}
-                onChange={(e) => onAbsenceFilterChange(e.target.value as AbsenceFilterType)}
+                onValueChange={(nextValue) =>
+                  onAbsenceFilterChange((nextValue as AbsenceFilterType | null) ?? 'all')
+                }
                 disabled={safeSelectedGroupIds.length === 0}
-                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-400 transition-colors"
-                aria-label="Filter by absence type"
-              >
-                {ABSENCE_FILTER_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           ) : (
             <Button

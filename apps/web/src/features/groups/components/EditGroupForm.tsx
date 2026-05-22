@@ -3,12 +3,13 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateGroup, useGroup, type UpdateGroupDto } from '@/features/groups';
 import type { GroupScheduleEntry } from '../types';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, Fragment, useMemo } from 'react';
 import { ApiError, getErrorMessage } from '@/shared/lib/api';
 import { GroupCalendarScheduleSection } from './GroupCalendarScheduleSection';
 import { GroupIconPicker } from './GroupIconPicker';
@@ -19,16 +20,24 @@ import {
   scheduleSlotsValidationError,
 } from '../group-schedule-utils';
 
-const updateGroupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters').optional(),
-  level: z.string().max(50, 'Level must be at most 50 characters').optional().or(z.literal('')),
-  description: z.string().max(500, 'Description must be at most 500 characters').optional().or(z.literal('')),
-  centerId: z.string().min(1, 'Center is required').optional().or(z.literal('')),
-  teacherId: z.string().optional().or(z.literal('')),
-  substituteTeacherId: z.string().optional().or(z.literal('')),
-});
+type UpdateGroupFormData = {
+  name?: string;
+  level?: string;
+  description?: string;
+  centerId?: string;
+  teacherId?: string;
+  substituteTeacherId?: string;
+};
 
-type UpdateGroupFormData = z.infer<typeof updateGroupSchema>;
+function translateScheduleSlotError(
+  err: string | null,
+  tVal: (key: 'slotEndAfterStart' | 'slotDuration') => string,
+): string | null {
+  if (!err) return null;
+  if (err.includes('end time after')) return tVal('slotEndAfterStart');
+  if (err.includes('between 15 and 240')) return tVal('slotDuration');
+  return err;
+}
 
 const REGENERATE_CONFIRM_MESSAGE = 'GROUP_SCHEDULE_REGENERATION_CONFIRMATION_REQUIRED';
 
@@ -39,6 +48,25 @@ interface EditGroupFormProps {
 }
 
 export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProps) {
+  const tForm = useTranslations('groups.form');
+  const tVal = useTranslations('groups.validation');
+  const tCommon = useTranslations('common');
+
+  const updateGroupSchema = useMemo(
+    () =>
+      z.object({
+        name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')).optional(),
+        level: z.string().max(50, tVal('levelMax')).optional().or(z.literal('')),
+        description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
+        centerId: z.string().min(1, tVal('centerRequired')).optional().or(z.literal('')),
+        teacherId: z.string().optional().or(z.literal('')),
+        substituteTeacherId: z.string().optional().or(z.literal('')),
+      }),
+    [tVal],
+  );
+
+  const resolver = useMemo(() => zodResolver(updateGroupSchema), [updateGroupSchema]);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
@@ -68,7 +96,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     watch,
     getValues,
   } = useForm<UpdateGroupFormData>({
-    resolver: zodResolver(updateGroupSchema),
+    resolver,
     defaultValues: {
       name: '',
       level: '',
@@ -150,33 +178,33 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       data.teacherId &&
       data.substituteTeacherId === data.teacherId
     ) {
-      setErrorMessage('Substitute teacher cannot be the same as the main teacher');
+      setErrorMessage(tForm('substituteSameAsMain'));
       return;
     }
 
     if (schedule.length > 0) {
       if (!data.teacherId?.trim()) {
-        setErrorMessage('Select a main teacher to generate calendar lessons.');
+        setErrorMessage(tForm('selectMainTeacherForCalendar'));
         return;
       }
-      const slotErr = scheduleSlotsValidationError(schedule);
+      const slotErr = translateScheduleSlotError(scheduleSlotsValidationError(schedule), tVal);
       if (slotErr) {
         setErrorMessage(slotErr);
         return;
       }
       if (!dateFrom || !dateTo) {
-        setErrorMessage('Choose a start and end date for the calendar range.');
+        setErrorMessage(tForm('chooseCalendarDateRange'));
         return;
       }
       if (dateTo < dateFrom) {
-        setErrorMessage('End date must be on or after the start date.');
+        setErrorMessage(tForm('endDateOnOrAfterStart'));
         return;
       }
     }
 
     const payload = buildPayload(data, confirmReplace);
     await updateGroup.mutateAsync({ id: groupId, data: payload });
-    setSuccessMessage('Group updated successfully!');
+    setSuccessMessage(tForm('updatedSuccess'));
     setErrorMessage(null);
     setTimeout(() => {
       onOpenChange(false);
@@ -197,7 +225,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         setRegenerateDialogOpen(true);
         return;
       }
-      const message = getErrorMessage(error, 'Failed to update group. Please try again.');
+      const message = getErrorMessage(error, tForm('failedUpdate'));
       setErrorMessage(message);
       setSuccessMessage(null);
     }
@@ -209,7 +237,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     try {
       await persistGroup(getValues(), true);
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Failed to update group. Please try again.');
+      const message = getErrorMessage(error, tForm('failedUpdate'));
       setErrorMessage(message);
       setSuccessMessage(null);
     }
@@ -220,8 +248,8 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Group</DialogTitle>
-            <DialogDescription>Loading group data...</DialogDescription>
+            <DialogTitle>{tForm('editTitle')}</DialogTitle>
+            <DialogDescription>{tForm('loadingGroupData')}</DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>
@@ -233,10 +261,8 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Group</DialogTitle>
-          <DialogDescription>
-            Update the group information below. All changes will be saved immediately.
-          </DialogDescription>
+          <DialogTitle>{tForm('editTitle')}</DialogTitle>
+          <DialogDescription>{tForm('editDescription')}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -253,31 +279,31 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
 
           <div className="space-y-2">
             <Label htmlFor="name">
-              Group Name <span className="text-red-500">*</span>
+              {tForm('groupName')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
               {...register('name')}
               error={errors.name?.message}
-              placeholder="Beginner English A1"
+              placeholder={tForm('namePlaceholder')}
               disabled={isSubmitting}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="level">Level</Label>
+            <Label htmlFor="level">{tCommon('level')}</Label>
             <Input
               id="level"
               {...register('level')}
               error={errors.level?.message}
-              placeholder="A1, A2, B1, etc."
+              placeholder={tForm('levelPlaceholder')}
               disabled={isSubmitting}
             />
           </div>
 
           <div className="space-y-2">
-            <Label id="edit-group-icon-label">Group Icon</Label>
-            <p className="text-xs text-slate-500">Optional — pick one icon or Default for the generic group icon.</p>
+            <Label id="edit-group-icon-label">{tForm('groupIcon')}</Label>
+            <p className="text-xs text-slate-500">{tForm('iconHintEdit')}</p>
             <GroupIconPicker
               value={iconKey}
               onChange={setIconKey}
@@ -287,12 +313,12 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{tForm('description')}</Label>
             <textarea
               id="description"
               {...register('description')}
               rows={3}
-              placeholder="Group description..."
+              placeholder={tForm('descriptionPlaceholder')}
               disabled={isSubmitting}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm resize-none ${
                 errors.description ? 'border-red-300' : 'border-slate-300'
@@ -305,17 +331,17 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
 
           <div className="space-y-2">
             <Label htmlFor="centerId">
-              Center <span className="text-red-500">*</span>
+              {tCommon('center')} <span className="text-red-500">*</span>
             </Label>
             <select
               id="centerId"
               {...register('centerId')}
               disabled={isSubmitting || isLoadingCenters || centers.length === 0}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
+              className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
                 errors.centerId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || isLoadingCenters || centers.length === 0 ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
-              <option value="">Select a center</option>
+              <option value="">{tForm('selectCenter')}</option>
               {centers.map((center) => (
                 <option key={center.id} value={center.id}>
                   {center.name}
@@ -329,17 +355,22 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
 
           <div className="space-y-2">
             <Label htmlFor="teacherId">
-              Main Teacher {schedule.length > 0 ? <span className="text-red-500">*</span> : '(Optional)'}
+              {tForm('mainTeacher')}{' '}
+              {schedule.length > 0 ? (
+                <span className="text-red-500">*</span>
+              ) : (
+                tForm('optional')
+              )}
             </Label>
             <select
               id="teacherId"
               {...register('teacherId')}
               disabled={isSubmitting || updateGroup.isPending || isLoadingTeachers}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
+              className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
                 errors.teacherId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || updateGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
-              <option value="">No teacher assigned</option>
+              <option value="">{tForm('noTeacherAssigned')}</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.id}>
                   {teacher.user.firstName} {teacher.user.lastName}
@@ -352,16 +383,16 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="substituteTeacherId">Substitute Teacher (Optional)</Label>
+            <Label htmlFor="substituteTeacherId">{tForm('substituteTeacherOptional')}</Label>
             <select
               id="substituteTeacherId"
               {...register('substituteTeacherId')}
               disabled={isSubmitting || updateGroup.isPending || isLoadingTeachers}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
+              className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
                 errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting || updateGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
             >
-              <option value="">No substitute</option>
+              <option value="">{tForm('noSubstitute')}</option>
               {teachers
                 .filter((t) => t.id !== watchedTeacherId)
                 .map((teacher) => (
@@ -389,7 +420,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting || updateGroup.isPending}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               type="submit"
@@ -402,7 +433,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
               }
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              {isSubmitting || updateGroup.isPending ? 'Saving...' : 'Save Changes'}
+              {isSubmitting || updateGroup.isPending ? tForm('saving') : tForm('saveChanges')}
             </Button>
           </DialogFooter>
         </form>
@@ -412,19 +443,15 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
     <Dialog open={regenerateDialogOpen} onOpenChange={setRegenerateDialogOpen}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Replace auto-generated lessons?</DialogTitle>
-          <DialogDescription>
-            The calendar schedule changed in a way that requires replacing lessons previously generated from this
-            group. Lessons you added manually in the calendar are kept. Confirming will remove matching
-            auto-generated lessons in the affected date ranges and recreate them from the new settings.
-          </DialogDescription>
+          <DialogTitle>{tForm('replaceLessonsTitle')}</DialogTitle>
+          <DialogDescription>{tForm('replaceLessonsDescription')}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="ghost" onClick={() => setRegenerateDialogOpen(false)}>
-            Go back
+            {tForm('goBack')}
           </Button>
           <Button type="button" className="bg-primary text-primary-foreground" onClick={onConfirmRegenerate}>
-            Replace and save
+            {tForm('replaceAndSave')}
           </Button>
         </DialogFooter>
       </DialogContent>

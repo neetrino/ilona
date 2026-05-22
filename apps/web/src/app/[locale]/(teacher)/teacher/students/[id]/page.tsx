@@ -2,18 +2,34 @@
 
 import { useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Badge, Button } from '@/shared/components/ui';
 import { useStudent } from '@/features/students';
 import { ApiError } from '@/shared/lib/api';
 import Image from 'next/image';
 
+function formatUserStatus(
+  status: string | undefined,
+  tStatus: ReturnType<typeof useTranslations<'status'>>
+): string {
+  if (status === 'ACTIVE') return tStatus('active');
+  if (status === 'INACTIVE') return tStatus('inactive');
+  if (status === 'SUSPENDED') return tStatus('suspended');
+  return status ?? 'UNKNOWN';
+}
+
 export default function TeacherStudentProfilePage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
+  const t = useTranslations('students.teacherView');
+  const tCommon = useTranslations('common');
+  const tStudents = useTranslations('students');
+  const tStatus = useTranslations('status');
   const studentId = params.id as string;
-  const locale = params.locale as string;
+  const routeLocale = params.locale as string;
 
   const { data: student, isLoading, error, refetch } = useStudent(studentId);
 
@@ -24,11 +40,11 @@ export default function TeacherStudentProfilePage() {
   const getBackUrl = () => {
     const groupId = searchParams.get('groupId');
     const search = searchParams.get('search');
-    const params = new URLSearchParams();
-    if (groupId) params.set('groupId', groupId);
-    if (search) params.set('search', search);
-    const query = params.toString();
-    return query ? `/${locale}/teacher/students?${query}` : `/${locale}/teacher/students`;
+    const urlParams = new URLSearchParams();
+    if (groupId) urlParams.set('groupId', groupId);
+    if (search) urlParams.set('search', search);
+    const query = urlParams.toString();
+    return query ? `/${routeLocale}/teacher/students?${query}` : `/${routeLocale}/teacher/students`;
   };
 
   // Refetch data when page becomes visible
@@ -50,8 +66,8 @@ export default function TeacherStudentProfilePage() {
   if (isLoading) {
     return (
       <DashboardLayout 
-        title="Student Profile" 
-        subtitle="Loading student information..."
+        title={t('profileTitle')} 
+        subtitle={t('loadingSubtitle')}
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -64,8 +80,8 @@ export default function TeacherStudentProfilePage() {
   if (error || !student) {
     return (
       <DashboardLayout 
-        title="Student Profile" 
-        subtitle="Error loading student information"
+        title={t('profileTitle')} 
+        subtitle={t('errorSubtitle')}
       >
         <div className={`bg-white rounded-xl border p-6 ${
           isForbidden ? 'border-amber-200' : 'border-red-200'
@@ -85,23 +101,23 @@ export default function TeacherStudentProfilePage() {
               )}
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">
-                {isForbidden ? 'Access Denied' : isNotFound ? 'Student Not Found' : 'Error Loading Student'}
+              <h3 className="font-semibold text-[#1010a3] mb-2">
+                {isForbidden ? t('accessDenied') : isNotFound ? t('studentNotFound') : t('errorLoadingStudent')}
               </h3>
-              <p className="text-sm text-slate-500 mb-4">
+              <p className="text-sm text-[#8b8b90] mb-4">
                 {isForbidden
-                  ? 'You do not have permission to view this student. You can only view profiles of students assigned to you.'
+                  ? t('forbiddenMessage')
                   : isNotFound
-                  ? 'The student you are looking for does not exist or has been removed.'
+                  ? t('notFoundMessage')
                   : error instanceof ApiError
-                  ? error.message || 'Failed to load student information. Please try again later.'
-                  : 'Failed to load student information. Please try again later.'}
+                  ? error.message || t('failedToLoadMessage')
+                  : t('failedToLoadMessage')}
               </p>
               <Button 
                 variant="outline" 
                 onClick={() => router.push(getBackUrl())}
               >
-                Back to Students
+                {t('backToStudents')}
               </Button>
             </div>
           </div>
@@ -114,11 +130,12 @@ export default function TeacherStudentProfilePage() {
   const lastName = student.user?.lastName || '';
   const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
   const avatarUrl = student.user?.avatarUrl;
+  const fullName = `${firstName} ${lastName}`.trim();
 
   return (
     <DashboardLayout 
-      title="Student Profile" 
-      subtitle={`Viewing profile for ${firstName} ${lastName}`}
+      title={t('profileTitle')} 
+      subtitle={t('viewingProfileFor', { name: fullName })}
     >
       <div className="space-y-6">
         {/* Back Button */}
@@ -131,17 +148,17 @@ export default function TeacherStudentProfilePage() {
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Students
+            {t('backToStudents')}
           </Button>
         </div>
 
         {/* Profile Header */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
           <div className="flex items-start gap-6">
             {avatarUrl ? (
               <Image
                 src={avatarUrl}
-                alt={`${firstName} ${lastName}`}
+                alt={fullName}
                 width={80}
                 height={80}
                 className="w-20 h-20 rounded-full object-cover"
@@ -154,20 +171,22 @@ export default function TeacherStudentProfilePage() {
             )}
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl font-bold text-slate-800">
+                <h2 className="text-2xl font-bold text-[#1010a3]">
                   {firstName} {lastName}
                 </h2>
                 <Badge variant={student.user?.status === 'ACTIVE' ? 'success' : 'warning'}>
-                  {student.user?.status || 'UNKNOWN'}
+                  {formatUserStatus(student.user?.status, tStatus)}
                 </Badge>
               </div>
               <div className="flex flex-wrap gap-4 text-sm">
                 {student.user?.lastLoginAt && (
-                  <div className="flex items-center gap-2 text-slate-600">
+                  <div className="flex items-center gap-2 text-[#8b8b90]">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Last login: {new Date(student.user.lastLoginAt).toLocaleDateString()}
+                    {t('lastLogin', {
+                      date: new Date(student.user.lastLoginAt).toLocaleDateString(locale),
+                    })}
                   </div>
                 )}
               </div>
@@ -177,60 +196,60 @@ export default function TeacherStudentProfilePage() {
 
         {/* Learning info (sensitive personal data hidden for teachers) */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-4 text-lg font-semibold text-slate-800">Basic Info</h3>
+          <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+            <h3 className="mb-4 text-lg font-semibold text-[#1010a3]">{t('basicInfo')}</h3>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-500">First Name</label>
-                <p className="mt-1 text-slate-800">{firstName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">{tCommon('firstName')}</label>
+                <p className="mt-1 text-[#1010a3]">{firstName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Last Name</label>
-                <p className="mt-1 text-slate-800">{lastName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">{tCommon('lastName')}</label>
+                <p className="mt-1 text-[#1010a3]">{lastName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Member Since</label>
-                <p className="mt-1 text-slate-800">
+                <label className="text-sm font-medium text-[#8b8b90]">{tStudents('memberSince')}</label>
+                <p className="mt-1 text-[#1010a3]">
                   {student.user?.createdAt
-                    ? new Date(student.user.createdAt).toLocaleDateString('en-US', {
+                    ? new Date(student.user.createdAt).toLocaleDateString(locale, {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                       })
-                    : 'N/A'}
+                    : tStudents('notAvailable')}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-4 text-lg font-semibold text-slate-800">Learning</h3>
+          <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+            <h3 className="mb-4 text-lg font-semibold text-[#1010a3]">{t('learning')}</h3>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-500">Group</label>
-                <div className="mt-1 text-slate-800">
+                <label className="text-sm font-medium text-[#8b8b90]">{tCommon('group')}</label>
+                <div className="mt-1 text-[#1010a3]">
                   {student.group ? (
                     <div className="flex items-center gap-2">
                       <Badge variant="info">{student.group.name}</Badge>
                       {student.group.level && (
-                        <span className="text-sm text-slate-500">{student.group.level}</span>
+                        <span className="text-sm text-[#8b8b90]">{student.group.level}</span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-slate-400">Not assigned</span>
+                    <span className="text-[#8b8b90]">{tCommon('notAssigned')}</span>
                   )}
                 </div>
               </div>
               {student.group?.center && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Center</label>
-                  <p className="mt-1 text-slate-800">{student.group.center.name}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">{tCommon('center')}</label>
+                  <p className="mt-1 text-[#1010a3]">{student.group.center.name}</p>
                 </div>
               )}
               {student.teacher && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Teacher</label>
-                  <p className="mt-1 text-slate-800">
+                  <label className="text-sm font-medium text-[#8b8b90]">{tCommon('teacher')}</label>
+                  <p className="mt-1 text-[#1010a3]">
                     {student.teacher.user.firstName} {student.teacher.user.lastName}
                   </p>
                 </div>
@@ -241,20 +260,12 @@ export default function TeacherStudentProfilePage() {
 
         {/* Notes */}
         {student.notes && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Notes</h3>
-            <p className="text-slate-700 whitespace-pre-wrap">{student.notes}</p>
+          <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+            <h3 className="text-lg font-semibold text-[#1010a3] mb-4">{tCommon('notes')}</h3>
+            <p className="text-[#3b3b40] whitespace-pre-wrap">{student.notes}</p>
           </div>
         )}
       </div>
     </DashboardLayout>
   );
 }
-
-
-
-
-
-
-
-

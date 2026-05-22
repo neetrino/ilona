@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { Trash2, Loader2 } from 'lucide-react';
 import type { PaymentStatus, SalaryStatus } from '@/features/finance';
 
@@ -50,12 +51,25 @@ export function FinanceFilters({
   onPageChange,
 }: FinanceFiltersProps) {
   const t = useTranslations('finance');
+  const statusOptions =
+    activeTab === 'payments'
+      ? [
+          { id: '', label: 'All statuses' },
+          { id: 'PAID', label: t('paid') },
+          { id: 'OVERDUE', label: t('overdue') },
+          { id: 'CANCELLED', label: t('cancelled') },
+        ]
+      : [
+          { id: '', label: 'All statuses' },
+          { id: 'PENDING', label: 'Pending' },
+          { id: 'PAID', label: 'Paid' },
+        ];
 
   return (
     <div className="space-y-2">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
         <div className="flex-1 min-w-0 relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90] pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -67,49 +81,29 @@ export function FinanceFilters({
                 ? t('searchPaymentsPlaceholder')
                 : t('searchSalariesPlaceholder')
             }
-            className="w-full pl-10 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-10 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
           {isSearching && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b8b90]" aria-hidden>
               <Loader2 className="w-5 h-5 animate-spin" />
             </span>
           )}
         </div>
         {/* Status Filter */}
-        <div className="relative w-full sm:w-auto shrink-0">
-          <select
+        <div className="w-full shrink-0 sm:w-auto sm:min-w-[9rem]">
+          <SingleSelectDropdown
+            id="finance-status-filter"
+            options={statusOptions}
             value={activeTab === 'payments' ? paymentStatus : salaryStatus}
-            onChange={(e) => {
+            onValueChange={(nextValue) => {
               if (activeTab === 'payments') {
-                onPaymentStatusChange(e.target.value as PaymentStatus | '');
-              } else if (activeTab === 'salaries') {
-                onSalaryStatusChange(e.target.value as SalaryStatus | '');
+                onPaymentStatusChange((nextValue ?? '') as PaymentStatus | '');
+              } else {
+                onSalaryStatusChange((nextValue ?? '') as SalaryStatus | '');
               }
             }}
-            className="pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer min-w-[160px]"
-          >
-            <option value="">All statuses</option>
-            {activeTab === 'payments' ? (
-              <>
-                <option value="PAID">{t('paid')}</option>
-                <option value="OVERDUE">{t('overdue')}</option>
-                <option value="CANCELLED">{t('cancelled')}</option>
-              </>
-            ) : activeTab === 'salaries' ? (
-              <>
-                <option value="PENDING">Pending</option>
-                <option value="PAID">Paid</option>
-              </>
-            ) : null}
-          </select>
-          <svg 
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+            className="sm:min-w-[9rem]"
+          />
         </div>
         {activeTab === 'payments' ? (
           <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
@@ -125,7 +119,7 @@ export function FinanceFilters({
               </Button>
             )}
             {selectedPaymentIds && selectedPaymentIds.size > 0 && !onDeletePaymentsClick && (
-              <span className="text-sm text-slate-600">
+              <span className="text-sm text-[#3b3b40]">
                 {selectedPaymentIds.size} selected
               </span>
             )}
@@ -148,13 +142,13 @@ export function FinanceFilters({
       </div>
       {/* Pagination - positioned below search input */}
       {page !== undefined && pageSize !== undefined && total !== undefined && totalPages !== undefined && onPageChange && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-[#8b8b90]">
           <span>
             Showing {Math.min(page * pageSize + 1, total)}-{Math.min((page + 1) * pageSize, total)} of {total}
           </span>
           <div className="flex items-center gap-2">
             <button 
-              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
+              className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50" 
               disabled={page === 0}
               onClick={() => onPageChange(Math.max(0, page - 1))}
             >
@@ -164,7 +158,7 @@ export function FinanceFilters({
             </button>
             <span>Page {page + 1} of {totalPages || 1}</span>
             <button 
-              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+              className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50"
               disabled={page >= totalPages - 1}
               onClick={() => onPageChange(page + 1)}
             >

@@ -3,7 +3,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button, Badge } from '@/shared/components/ui';
+import { Button } from '@/shared/components/ui';
+import {
+  StudentAlert,
+  StudentBadge,
+  StudentCard,
+  StudentFieldLabel,
+  StudentGhostButton,
+  StudentInput,
+  StudentPageStack,
+  StudentPrimaryButton,
+  StudentSectionHeader,
+} from '@/features/student-ui';
+import { cn } from '@/shared/lib/utils';
+import { studentInputClass } from '@/features/student-ui/tokens';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useUploadAvatar, useDeleteAvatar, useUpdateProfile } from '@/features/settings/hooks/useSettings';
 import Image from 'next/image';
@@ -76,9 +89,9 @@ export default function TeacherProfilePage() {
     setUploadSuccess(null);
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      setUploadError('Invalid file type. Please upload a JPG, PNG, WEBP, or GIF image.');
+      setUploadError('Invalid file type. Please upload a JPG, PNG, or WEBP image.');
       return;
     }
 
@@ -130,27 +143,23 @@ export default function TeacherProfilePage() {
   const avatarUrl = user?.avatarUrl;
 
   return (
-    <DashboardLayout 
-      title={t('profile')} 
-      subtitle={t('profileInformation')}
-    >
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-800 mb-6">{t('profileInformation')}</h2>
-        
-        {/* Success/Error Messages */}
-        {uploadSuccess && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
-            <p className="text-sm text-green-600">{uploadSuccess}</p>
-          </div>
-        )}
-        {uploadError && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-            <p className="text-sm text-red-600">{uploadError}</p>
-          </div>
-        )}
-        
-        {/* Avatar */}
-        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-200">
+    <DashboardLayout title={t('profile')} subtitle={t('profileInformation')}>
+      <StudentPageStack>
+        <StudentCard>
+          <StudentSectionHeader title={t('profileInformation')} />
+
+          {uploadSuccess ? (
+            <StudentAlert variant="success" className="mb-4">
+              {uploadSuccess}
+            </StudentAlert>
+          ) : null}
+          {uploadError ? (
+            <StudentAlert variant="danger" className="mb-4">
+              {uploadError}
+            </StudentAlert>
+          ) : null}
+
+          <div className="mb-8 flex flex-col items-start gap-4 border-b border-[rgba(14,14,16,0.07)] pb-8 sm:flex-row sm:items-center sm:gap-6">
           <div className="relative">
             {avatarUrl ? (
               <Image
@@ -158,7 +167,7 @@ export default function TeacherProfilePage() {
                 alt={`${user?.firstName} ${user?.lastName}`}
                 width={80}
                 height={80}
-                className="w-20 h-20 rounded-full object-cover border-2 border-slate-200"
+                className="w-20 h-20 rounded-full object-cover border-2 border-[rgba(14,14,16,0.07)]"
                 unoptimized
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -168,21 +177,23 @@ export default function TeacherProfilePage() {
                 }}
               />
             ) : null}
-            <div 
-              className={`w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white text-2xl font-bold ${avatarUrl ? 'hidden' : ''}`}
+            <div
+              className={`flex h-20 w-20 items-center justify-center rounded-full bg-[#1010a3] text-2xl font-bold text-white ${avatarUrl ? 'hidden' : ''}`}
             >
               {initials}
             </div>
           </div>
           <div>
-            <h3 className="font-medium text-slate-800">{user?.firstName} {user?.lastName}</h3>
-            <p className="text-sm text-slate-500">{user?.email}</p>
-            <Badge variant="info" className="mt-2">{tRoles('teacher')}</Badge>
-            <div className="flex gap-2 mt-2">
+            <h3 className="font-medium text-[#1010a3]">{user?.firstName} {user?.lastName}</h3>
+            <p className="text-sm text-[#8b8b90]">{user?.email}</p>
+            <StudentBadge variant="info" className="mt-2">
+              {tRoles('teacher')}
+            </StudentBadge>
+            <div className="mt-2 flex flex-wrap gap-2">
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -194,134 +205,111 @@ export default function TeacherProfilePage() {
               >
                 {uploadAvatarMutation.isPending ? (t('uploading') ?? 'Uploading...') : t('uploadPhoto')}
               </Button>
-              {avatarUrl && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-red-600"
+              {avatarUrl ? (
+                <StudentGhostButton
+                  type="button"
+                  className="min-h-9 text-[#b42318]"
                   onClick={handleRemoveAvatar}
                   disabled={deleteAvatarMutation.isPending}
                 >
                   {deleteAvatarMutation.isPending ? (t('removing') ?? 'Removing...') : t('remove')}
-                </Button>
-              )}
+                </StudentGhostButton>
+              ) : null}
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              {t('imageFormats') ?? 'JPG, PNG, WEBP, GIF up to 5MB'}
+            <p className="text-xs text-[#8b8b90] mt-1">
+              {t('imageFormats') ?? 'JPG, PNG, WEBP up to 5MB'}
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleSaveProfile} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <form onSubmit={handleSaveProfile} className="space-y-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <StudentFieldLabel>{t('firstName')}</StudentFieldLabel>
+                <StudentInput
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+              </div>
+              <div>
+                <StudentFieldLabel>{t('lastName')}</StudentFieldLabel>
+                <StudentInput
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('firstName')}
-              </label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              <StudentFieldLabel>{t('emailAddress')}</StudentFieldLabel>
+              <StudentInput
+                type="email"
+                value={user?.email || ''}
+                disabled
+                className="bg-[#f6f6f7] text-[#8b8b90]"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('lastName')}
-              </label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              <StudentFieldLabel>{t('phoneNumber')}</StudentFieldLabel>
+              <StudentInput
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+380 XX XXX XXXX"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              {t('emailAddress')}
-            </label>
-            <input
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg bg-slate-50 text-slate-500"
-            />
-          </div>
+            <div>
+              <StudentFieldLabel>{t('introVideoUrl')}</StudentFieldLabel>
+              <StudentInput
+                type="url"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder={t('introVideoUrlPlaceholder')}
+              />
+              <p className="mt-1 text-xs text-[#8b8b90]">{t('introVideoUrlHint')}</p>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              {t('phoneNumber')}
-            </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+380 XX XXX XXXX"
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-          </div>
+            <div>
+              <StudentFieldLabel>{t('experience')}</StudentFieldLabel>
+              <StudentInput
+                type="number"
+                min={0}
+                max={80}
+                step={1}
+                value={experienceYears}
+                onChange={(e) =>
+                  setExperienceYears(Math.max(0, Math.trunc(Number(e.target.value || 0))))
+                }
+                placeholder="5"
+              />
+              <p className="mt-1 text-xs text-[#8b8b90]">
+                {formatExperienceLabel(experienceYears)}
+              </p>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              {t('introVideoUrl')}
-            </label>
-            <input
-              type="url"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              placeholder={t('introVideoUrlPlaceholder')}
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              {t('introVideoUrlHint')}
-            </p>
-          </div>
+            <div>
+              <StudentFieldLabel>{t('bio')}</StudentFieldLabel>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder={t('bioPlaceholder')}
+                rows={3}
+                className={cn(studentInputClass, 'min-h-[6rem] resize-none py-3')}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              {t('experience')}
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={80}
-              step={1}
-              value={experienceYears}
-              onChange={(e) => setExperienceYears(Math.max(0, Math.trunc(Number(e.target.value || 0))))}
-              placeholder="5"
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              {formatExperienceLabel(experienceYears)}
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              {t('bio')}
-            </label>
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder={t('bioPlaceholder')}
-              rows={3}
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-            />
-          </div>
-
-          <div className="pt-4 flex justify-end">
-            <Button 
-              type="submit" 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
-              disabled={isSaving}
-            >
-              {isSaving ? t('saving') : t('saveChanges')}
-            </Button>
-          </div>
-        </form>
-      </div>
+            <div className="flex justify-stretch pt-4 sm:justify-end">
+              <StudentPrimaryButton type="submit" disabled={isSaving}>
+                {isSaving ? t('saving') : t('saveChanges')}
+              </StudentPrimaryButton>
+            </div>
+          </form>
+        </StudentCard>
+      </StudentPageStack>
     </DashboardLayout>
   );
 }

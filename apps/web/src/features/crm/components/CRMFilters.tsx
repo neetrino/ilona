@@ -1,6 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { CrmLeadFilters } from '@/features/crm/types';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { DatePickerInput } from '@/shared/components/ui';
 
 interface CRMFiltersProps {
   filters: CrmLeadFilters;
@@ -17,85 +20,82 @@ export function CRMFilters({
   teachers,
   groups,
 }: CRMFiltersProps) {
+  const t = useTranslations('crm');
+  const tc = useTranslations('common');
+
   return (
-    <div className="flex flex-wrap items-end gap-4">
-      <div className="min-w-[200px]">
-        <label className="block text-xs font-medium text-slate-500 mb-1">Search</label>
+    <div className="grid w-full min-w-0 grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))]">
+      <div className="min-w-0">
+        <label className="block text-xs font-medium text-slate-500 mb-1">{tc('search')}</label>
         <input
           type="search"
-          placeholder="Name, phone…"
+          placeholder={t('searchPlaceholder')}
           value={filters.search ?? ''}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value || undefined })}
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
       </div>
-      <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1">Center</label>
-        <select
+      <div className="min-w-0">
+        <label className="block text-xs font-medium text-slate-500 mb-1">{t('center')}</label>
+        <SingleSelectDropdown
+          id="crm-filter-center"
+          options={[
+            { id: '', label: tc('all') },
+            ...centers.map((c) => ({ id: c.id, label: c.name })),
+          ]}
           value={filters.centerId ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, centerId: e.target.value || undefined })
+          onValueChange={(nextValue) =>
+            onFiltersChange({ ...filters, centerId: nextValue || undefined })
           }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">All</option>
-          {centers.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1">Teacher</label>
-        <select
-          value={filters.teacherId ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, teacherId: e.target.value || undefined })
-          }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">All</option>
-          {teachers.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.user?.firstName} {t.user?.lastName}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1">Group</label>
-        <select
-          value={filters.groupId ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, groupId: e.target.value || undefined })
-          }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">All</option>
-          {groups.map((g) => (
-            <option key={g.id} value={g.id}>{g.name}</option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1">From</label>
-        <input
-          type="date"
-          value={filters.dateFrom ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, dateFrom: e.target.value || undefined })
-          }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
       </div>
-      <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1">To</label>
-        <input
-          type="date"
-          value={filters.dateTo ?? ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, dateTo: e.target.value || undefined })
+      <div className="min-w-0">
+        <label className="block text-xs font-medium text-slate-500 mb-1">{t('teacher')}</label>
+        <SingleSelectDropdown
+          id="crm-filter-teacher"
+          options={[
+            { id: '', label: tc('all') },
+            ...teachers.map((teacher) => ({
+              id: teacher.id,
+              label: `${teacher.user?.firstName ?? ''} ${teacher.user?.lastName ?? ''}`.trim(),
+            })),
+          ]}
+          value={filters.teacherId ?? ''}
+          onValueChange={(nextValue) =>
+            onFiltersChange({ ...filters, teacherId: nextValue || undefined })
           }
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+      </div>
+      <div className="min-w-0">
+        <label className="block text-xs font-medium text-slate-500 mb-1">{t('group')}</label>
+        <SingleSelectDropdown
+          id="crm-filter-group"
+          options={[
+            { id: '', label: tc('all') },
+            ...groups.map((g) => ({ id: g.id, label: g.name })),
+          ]}
+          value={filters.groupId ?? ''}
+          onValueChange={(nextValue) =>
+            onFiltersChange({ ...filters, groupId: nextValue || undefined })
+          }
+        />
+      </div>
+      <div className="min-w-0">
+        <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateFrom')}</label>
+        <DatePickerInput
+          id="crm-filter-date-from"
+          value={filters.dateFrom ?? ''}
+          placeholder={t('dateFrom')}
+          onValueChange={(nextDate) => onFiltersChange({ ...filters, dateFrom: nextDate || undefined })}
+        />
+      </div>
+      <div className="min-w-0">
+        <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateTo')}</label>
+        <DatePickerInput
+          id="crm-filter-date-to"
+          value={filters.dateTo ?? ''}
+          placeholder={t('dateTo')}
+          onValueChange={(nextDate) => onFiltersChange({ ...filters, dateTo: nextDate || undefined })}
         />
       </div>
     </div>

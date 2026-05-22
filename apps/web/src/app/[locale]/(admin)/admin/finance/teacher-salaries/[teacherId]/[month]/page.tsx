@@ -222,7 +222,7 @@ export default function SalaryBreakdownPage() {
           checked={selectedLessonIds.has(lesson.lessonId)}
           onChange={(e) => handleSelectOne(lesson.lessonId, e.target.checked)}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoading}
           aria-label={`Select lesson ${lesson.lessonName}`}
         />
@@ -236,14 +236,14 @@ export default function SalaryBreakdownPage() {
         return (
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f1f2] text-sm font-semibold text-[#3b3b40]">
                 {teacherInitials}
               </div>
               {isSub ? <TeacherSubstituteBadge /> : null}
             </div>
             <div className="min-w-0">
-              <p className="truncate font-semibold text-slate-800">{teacherName}</p>
-              <p className="truncate text-sm text-slate-500">
+              <p className="truncate font-semibold text-[#3b3b40]">{teacherName}</p>
+              <p className="truncate text-sm text-[#8b8b90]">
                 {month ? formatMonth(month) : t('period')}
               </p>
             </div>
@@ -270,9 +270,9 @@ export default function SalaryBreakdownPage() {
                   {t('substituteLessonBadge')}
                 </span>
               ) : null}
-              <p className="font-semibold text-slate-800 truncate min-w-0">{primary}</p>
+              <p className="font-semibold text-[#3b3b40] truncate min-w-0">{primary}</p>
             </div>
-            {secondary ? <p className="text-sm text-slate-500 truncate">{secondary}</p> : null}
+            {secondary ? <p className="text-sm text-[#8b8b90] truncate">{secondary}</p> : null}
             {isSub && lesson.mainTeacherName ? (
               <p className="mt-1 text-xs leading-snug text-violet-900">
                 {t('substituteForMainTeacher', { name: lesson.mainTeacherName })}
@@ -287,7 +287,7 @@ export default function SalaryBreakdownPage() {
       header: t('lessonDate'),
       sortable: true,
       render: (lesson: SalaryBreakdownLesson) => (
-        <span className="text-slate-500">{formatDate(lesson.lessonDate)}</span>
+        <span className="text-[#8b8b90]">{formatDate(lesson.lessonDate)}</span>
       ),
     },
     {
@@ -302,7 +302,7 @@ export default function SalaryBreakdownPage() {
             setSelectedLessonIdForObligation(lesson.lessonId);
             setIsObligationModalOpen(true);
           }}
-          className="text-sm font-medium text-slate-600 hover:text-primary transition-colors mx-auto block"
+          className="text-sm font-medium text-[#3b3b40] hover:text-[#1010a3] transition-colors mx-auto block"
           aria-label={`View obligation details for ${lesson.lessonName}`}
         >
           {lesson.obligationCompleted}/{lesson.obligationTotal}
@@ -314,7 +314,7 @@ export default function SalaryBreakdownPage() {
       header: t('lessonSalary'),
       sortable: true,
       render: (lesson: SalaryBreakdownLesson) => (
-        <span className="font-semibold text-slate-800">{formatCurrency(lesson.salary)}</span>
+        <span className="font-semibold text-[#3b3b40]">{formatCurrency(lesson.salary)}</span>
       ),
     },
     {
@@ -332,7 +332,7 @@ export default function SalaryBreakdownPage() {
       header: t('rowTotal'),
       sortable: true,
       render: (lesson: SalaryBreakdownLesson) => (
-        <span className="font-semibold text-slate-800">{formatCurrency(lesson.total)}</span>
+        <span className="font-semibold text-[#3b3b40]">{formatCurrency(lesson.total)}</span>
       ),
     },
   ];
@@ -346,7 +346,7 @@ export default function SalaryBreakdownPage() {
     : `${t('salaryBreakdown')}: ${teacherName}`;
 
   const cardState = (children: ReactNode) => (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">{children}</div>
+    <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white overflow-hidden">{children}</div>
   );
 
   return (
@@ -410,7 +410,7 @@ export default function SalaryBreakdownPage() {
         {isLoading ? (
           cardState(
             <div className="p-12 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1010a3]" />
             </div>,
           )
         ) : error ? (
@@ -419,7 +419,7 @@ export default function SalaryBreakdownPage() {
           )
         ) : !breakdown || sortedLessons.length === 0 ? (
           cardState(
-            <div className="px-6 py-12 text-center text-slate-500 text-sm">{t('breakdownNoLessons')}</div>,
+            <div className="px-6 py-12 text-center text-[#8b8b90] text-sm">{t('breakdownNoLessons')}</div>,
           )
         ) : (
           cardState(
@@ -435,23 +435,23 @@ export default function SalaryBreakdownPage() {
                 onSort={handleSort}
                 embedInParentCard
               />
-              <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 sm:gap-8 text-sm">
-                <span className="text-slate-500 font-medium uppercase tracking-wide">{t('totals')}</span>
+              <div className="px-6 py-4 border-t border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 sm:gap-8 text-sm">
+                <span className="text-[#8b8b90] font-medium uppercase tracking-wide">{t('totals')}</span>
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 justify-end">
                   <span>
-                    <span className="text-slate-500 mr-2">{t('lessonSalary')}</span>
-                    <span className="font-semibold text-slate-800">{formatCurrency(totalSalary)}</span>
+                    <span className="text-[#8b8b90] mr-2">{t('lessonSalary')}</span>
+                    <span className="font-semibold text-[#3b3b40]">{formatCurrency(totalSalary)}</span>
                   </span>
                   <span>
-                    <span className="text-slate-500 mr-2">{t('lessonDeduction')}</span>
+                    <span className="text-[#8b8b90] mr-2">{t('lessonDeduction')}</span>
                     <span className="font-medium text-red-600">
                       {totalDeduction > 0 ? '−' : ''}
                       {formatCurrency(totalDeduction)}
                     </span>
                   </span>
                   <span>
-                    <span className="text-slate-500 mr-2">{t('rowTotal')}</span>
-                    <span className="font-semibold text-slate-800">{formatCurrency(totalNet)}</span>
+                    <span className="text-[#8b8b90] mr-2">{t('rowTotal')}</span>
+                    <span className="font-semibold text-[#3b3b40]">{formatCurrency(totalNet)}</span>
                   </span>
                 </div>
               </div>

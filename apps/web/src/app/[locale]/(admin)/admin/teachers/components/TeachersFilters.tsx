@@ -1,8 +1,7 @@
 'use client';
 
-import { List, LayoutGrid } from 'lucide-react';
-import { Button } from '@/shared/components/ui';
-import { cn } from '@/shared/lib/utils';
+import { Button, ListBoardViewToggle } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type { useTranslations } from 'next-intl';
 
 interface TeachersFiltersProps {
@@ -43,19 +42,26 @@ export function TeachersFilters({
   onPageChange,
   isUpdating = false,
 }: TeachersFiltersProps) {
+  const statusOptions = [
+    { id: '', label: 'All statuses' },
+    { id: 'ACTIVE', label: tStatus('active') },
+    { id: 'INACTIVE', label: tStatus('inactive') },
+    { id: 'SUSPENDED', label: tStatus('suspended') },
+  ];
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-end gap-4">
+    <div className="space-y-4 w-full min-w-0">
+      <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
       {/* Search and Status - equal width in one row */}
-      <div className="grid grid-cols-2 gap-4 flex-1 min-w-0">
+      <div className="grid grid-cols-1 gap-3 flex-1 min-w-0 sm:grid-cols-2 sm:gap-4">
       {/* Search by Keywords */}
       <div className="min-w-0">
-        <label className="block text-sm font-medium text-slate-500 mb-1.5">
+        <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
           Search by Keywords
         </label>
         <div className="relative">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -72,76 +78,38 @@ export function TeachersFilters({
             placeholder="Search teachers by name, email or group..."
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full h-12 pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-12 pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
       </div>
 
       {/* Status Filter */}
       <div className="min-w-0">
-        <label className="block text-sm font-medium text-slate-500 mb-1.5">
-          Status
-        </label>
-        <div className="relative">
-          <select
-            value={selectedStatus}
-            onChange={(e) => onStatusChange(e.target.value as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '')}
-            className="w-full h-12 pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer"
-          >
-            <option value="">All statuses</option>
-            <option value="ACTIVE">{tStatus('active')}</option>
-            <option value="INACTIVE">{tStatus('inactive')}</option>
-            <option value="SUSPENDED">{tStatus('suspended')}</option>
-          </select>
-          <svg 
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
+        <SingleSelectDropdown
+          id="teachers-status-filter"
+          label="Status"
+          options={statusOptions}
+          value={selectedStatus}
+          onValueChange={(nextValue) => {
+            onStatusChange((nextValue ?? '') as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '');
+          }}
+        />
       </div>
 
       </div>
 
-      {/* View Mode Toggle */}
-      <div className="flex-shrink-0 inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
-        <button
-          onClick={() => onViewModeChange('list')}
-          className={cn(
-            'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-            viewMode === 'list'
-              ? 'bg-primary text-primary-foreground shadow-md'
-              : 'text-slate-700 hover:bg-slate-100'
-          )}
-          aria-pressed={viewMode === 'list'}
-        >
-          <List className="w-4 h-4" />
-          List
-        </button>
-        <button
-          onClick={() => onViewModeChange('board')}
-          className={cn(
-            'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-            viewMode === 'board'
-              ? 'bg-primary text-primary-foreground shadow-md'
-              : 'text-slate-700 hover:bg-slate-100'
-          )}
-          aria-pressed={viewMode === 'board'}
-        >
-          <LayoutGrid className="w-4 h-4" />
-          Board
-        </button>
-      </div>
+      <ListBoardViewToggle
+        value={viewMode}
+        onChange={onViewModeChange}
+        listLabel="List"
+        boardLabel="Board"
+        className="w-full shrink-0 sm:w-auto"
+      />
 
       {/* Add Teacher Button */}
-      <div className="flex-shrink-0">
+      <div className="w-full shrink-0 sm:w-auto">
         <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium flex items-center gap-2"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1010a3] px-6 py-3 font-medium text-white hover:bg-[#1010a3]/90 sm:w-auto"
           onClick={onAddTeacher}
           disabled={isDeleting}
         >
@@ -165,7 +133,7 @@ export function TeachersFilters({
 
       {/* Pagination - shown only in list view */}
       {viewMode === 'list' && onPageChange && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-[#8b8b90]">
           <span>
             {t('showing', {
               start: page * PAGE_SIZE + 1,
@@ -175,7 +143,7 @@ export function TeachersFilters({
           </span>
           <div className="flex items-center gap-2">
             <button 
-              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50" 
+              className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50" 
               disabled={page === 0 || isDeleting || isUpdating}
               onClick={() => onPageChange(Math.max(0, page - 1))}
             >
@@ -185,7 +153,7 @@ export function TeachersFilters({
             </button>
             <span>{t('page', { current: page + 1, total: totalPages })}</span>
             <button 
-              className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+              className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50"
               disabled={page >= totalPages - 1 || isDeleting || isUpdating}
               onClick={() => onPageChange(page + 1)}
             >

@@ -18,12 +18,12 @@ export function CalendarControls({
 }: CalendarControlsProps) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex bg-slate-100 p-1 rounded-lg">
+      <div className="flex bg-[#f6f6f7] p-1 rounded-lg">
         <button
           onClick={() => onViewModeChange('list')}
           className={cn(
             'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-            viewMode === 'list' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+            viewMode === 'list' ? 'bg-white shadow-sm text-[#1010a3]' : 'text-[#8b8b90]'
           )}
         >
           {t?.('list') || 'List'}
@@ -32,7 +32,7 @@ export function CalendarControls({
           onClick={() => onViewModeChange('week')}
           className={cn(
             'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-            viewMode === 'week' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+            viewMode === 'week' ? 'bg-white shadow-sm text-[#1010a3]' : 'text-[#8b8b90]'
           )}
         >
           {t?.('week') || 'Week'}
@@ -41,7 +41,7 @@ export function CalendarControls({
           onClick={() => onViewModeChange('month')}
           className={cn(
             'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-            viewMode === 'month' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-600'
+            viewMode === 'month' ? 'bg-white shadow-sm text-[#1010a3]' : 'text-[#8b8b90]'
           )}
         >
           {t?.('month') || 'Month'}

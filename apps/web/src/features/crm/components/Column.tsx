@@ -2,8 +2,9 @@
 
 import { Mic, Plus } from 'lucide-react';
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
+import { useTranslations } from 'next-intl';
 import { LeadCard } from './LeadCard';
-import { STATUS_LABELS } from './LeadCard';
+import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
 import type { CrmBranchOption } from './CrmBranchSelector';
 
 interface ColumnProps {
@@ -47,7 +48,9 @@ export function Column({
   onLeadDeleteRequest,
   deleteInProgress,
 }: ColumnProps) {
-  const label = STATUS_LABELS[status];
+  const t = useTranslations('crm');
+  const statusLabels = useCrmStatusLabels();
+  const label = statusLabels[status];
   const isNew = status === 'NEW';
 
   return (
@@ -65,8 +68,8 @@ export function Column({
               type="button"
               onClick={onAddClick}
               className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white hover:bg-primary/90"
-              title="Record a voice lead"
-              aria-label="Record a voice lead"
+              title={t('recordVoiceLead')}
+              aria-label={t('recordVoiceLead')}
             >
               <Mic className="size-4" strokeWidth={2} aria-hidden />
             </button>
@@ -76,8 +79,8 @@ export function Column({
               type="button"
               onClick={onAddClick}
               className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white hover:bg-primary/90"
-              title="New lead"
-              aria-label="New lead"
+              title={t('newLeadAction')}
+              aria-label={t('newLeadAction')}
             >
               <Plus className="size-4" strokeWidth={2} aria-hidden />
             </button>

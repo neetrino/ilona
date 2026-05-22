@@ -1,5 +1,6 @@
 'use client';
 
+import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -103,9 +104,9 @@ export default function GroupsPage() {
       title="Groups & Centers" 
       subtitle="Manage learning groups and center branches."
     >
-      <div className="space-y-6">
+      <div className={portalPageStackClass}>
         {/* Tabs */}
-        <div className="border-b border-slate-200">
+        <div className="border-b border-[rgba(14,14,16,0.07)]">
           <nav className="flex gap-4">
             {!isManager && (
               <button
@@ -115,8 +116,8 @@ export default function GroupsPage() {
                 }}
                 className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
                   activeTab === 'centers'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-slate-600 hover:text-slate-800'
+                    ? 'border-[#1010a3] text-[#1010a3]'
+                    : 'border-transparent text-[#3b3b40] hover:text-[#3b3b40]'
                 }`}
               >
                 Centers / Branches
@@ -129,8 +130,8 @@ export default function GroupsPage() {
               }}
               className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
                 activeTab === 'groups'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-slate-600 hover:text-slate-800'
+                  ? 'border-[#1010a3] text-[#1010a3]'
+                  : 'border-transparent text-[#3b3b40] hover:text-[#3b3b40]'
               }`}
             >
               Groups

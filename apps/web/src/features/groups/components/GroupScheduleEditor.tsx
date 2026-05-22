@@ -51,7 +51,7 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
             value={entry.dayOfWeek}
             onChange={(e) => updateEntry(i, { dayOfWeek: Number(e.target.value) })}
             disabled={disabled}
-            className="col-span-4 rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
+            className="unified-native-select col-span-4 rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
             aria-label="Day of week"
           >
             {DAY_OPTIONS.map((d) => (

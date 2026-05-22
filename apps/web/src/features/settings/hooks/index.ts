@@ -9,3 +9,9 @@ export {
   useUpdateManager,
   settingsKeys,
 } from './useSettings';
+
+export {
+  useDashboardBanner,
+  useUploadDashboardBanner,
+  useDeleteDashboardBanner,
+} from './useDashboardBanner';

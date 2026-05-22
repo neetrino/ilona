@@ -1,8 +1,8 @@
 'use client';
 
-import { List, LayoutGrid } from 'lucide-react';
-import { Button, FilterDropdown } from '@/shared/components/ui';
-import { cn } from '@/shared/lib/utils';
+import { useTranslations } from 'next-intl';
+import { Button, FilterDropdown, ListBoardViewToggle } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 interface StudentsFiltersProps {
   searchQuery: string;
@@ -30,7 +30,6 @@ interface StudentsFiltersProps {
   lifecycleFilterOptions: Array<{ id: string; label: string }>;
   isLoadingTeachers: boolean;
   isDeleting: boolean;
-  t: (key: string) => string;
   now: Date;
 }
 
@@ -60,14 +59,25 @@ export function StudentsFilters({
   lifecycleFilterOptions,
   isLoadingTeachers,
   isDeleting,
-  t,
   now,
 }: StudentsFiltersProps) {
+  const t = useTranslations('students');
+  const tc = useTranslations('common');
+  const monthKeys = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+  const monthOptions = monthKeys.map((month) => ({
+    id: String(month),
+    label: tc(`months.${month}`),
+  }));
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = now.getFullYear() - 2 + i;
+    return { id: String(year), label: String(year) };
+  });
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="flex-1 relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="w-full min-w-0 space-y-4">
+      <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative min-w-0 flex-1">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -75,7 +85,7 @@ export function StudentsFilters({
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
           />
         </div>
         {selectedStudentIds.size > 0 && (
@@ -84,42 +94,18 @@ export function StudentsFilters({
             onClick={onBulkDelete}
             disabled={isDeleting}
           >
-            Delete All ({selectedStudentIds.size})
+            {t('deleteAll', { count: selectedStudentIds.size })}
           </Button>
         )}
-        {/* View Mode Toggle */}
-        <div className="inline-flex rounded-lg border-2 border-slate-300 bg-white p-1 shadow-sm">
-          <button
-            onClick={() => onViewModeChange('list')}
-            className={cn(
-              'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-              viewMode === 'list'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-slate-700 hover:bg-slate-100'
-            )}
-            aria-pressed={viewMode === 'list'}
-          >
-            <List className="w-4 h-4" />
-            List
-          </button>
-          <button
-            onClick={() => onViewModeChange('board')}
-            className={cn(
-              'px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2',
-              'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-              viewMode === 'board'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-slate-700 hover:bg-slate-100'
-            )}
-            aria-pressed={viewMode === 'board'}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            Board
-          </button>
-        </div>
+        <ListBoardViewToggle
+          value={viewMode}
+          onChange={onViewModeChange}
+          listLabel={t('listView')}
+          boardLabel={t('boardView')}
+          className="w-full shrink-0 sm:w-auto"
+        />
         <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-medium"
+          className="w-full shrink-0 rounded-xl bg-[#1010a3] px-6 py-3 font-medium text-white hover:bg-[#1010a3]/90 sm:w-auto"
           onClick={onAddStudent}
         >
           + {t('addStudent')}
@@ -127,76 +113,54 @@ export function StudentsFilters({
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-3 items-end sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
         <FilterDropdown
-          label="Status"
+          label={t('statusFilter')}
           options={statusFilterOptions}
           selectedIds={selectedStatusIds}
           onSelectionChange={onStatusChange}
-          placeholder="All Statuses"
+          placeholder={t('allStatuses')}
         />
         <FilterDropdown
-          label="Lifecycle"
+          label={t('lifecycleFilter')}
           options={lifecycleFilterOptions}
           selectedIds={selectedLifecycleIds}
           onSelectionChange={onLifecycleChange}
-          placeholder="All"
+          placeholder={tc('all')}
         />
         <FilterDropdown
-          label="Teacher"
+          label={tc('teacher')}
           options={teacherFilterOptions}
           selectedIds={selectedTeacherIds}
           onSelectionChange={onTeacherChange}
-          placeholder="All Teachers"
+          placeholder={t('allTeachers')}
           isLoading={isLoadingTeachers}
         />
         <FilterDropdown
-          label="Group"
+          label={tc('group')}
           options={groupFilterOptions}
           selectedIds={selectedGroupIds}
           onSelectionChange={onGroupChange}
-          placeholder="All Groups"
+          placeholder={t('allGroups')}
         />
-        {/* Month Filter */}
-        <div className="relative">
-          <label className="block text-sm font-medium text-slate-500 mb-1.5">Month</label>
-          <select
-            value={selectedMonth}
-            onChange={(e) => onMonthChange(Number(e.target.value))}
-            className="w-full h-12 px-4 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
-          >
-            <option value={1}>January</option>
-            <option value={2}>February</option>
-            <option value={3}>March</option>
-            <option value={4}>April</option>
-            <option value={5}>May</option>
-            <option value={6}>June</option>
-            <option value={7}>July</option>
-            <option value={8}>August</option>
-            <option value={9}>September</option>
-            <option value={10}>October</option>
-            <option value={11}>November</option>
-            <option value={12}>December</option>
-          </select>
-        </div>
-        {/* Year Filter */}
-        <div className="relative">
-          <label className="block text-sm font-medium text-slate-500 mb-1.5">Year</label>
-          <select
-            value={selectedYear}
-            onChange={(e) => onYearChange(Number(e.target.value))}
-            className="w-full h-12 px-4 text-left text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-300 transition-colors appearance-none"
-          >
-            {Array.from({ length: 5 }, (_, i) => {
-              const year = now.getFullYear() - 2 + i;
-              return (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              );
-            })}
-          </select>
-        </div>
+        <SingleSelectDropdown
+          id="students-month-filter"
+          label={tc('month')}
+          options={monthOptions}
+          value={String(selectedMonth)}
+          onValueChange={(nextValue) => {
+            if (nextValue) onMonthChange(Number(nextValue));
+          }}
+        />
+        <SingleSelectDropdown
+          id="students-year-filter"
+          label={tc('year')}
+          options={yearOptions}
+          value={String(selectedYear)}
+          onValueChange={(nextValue) => {
+            if (nextValue) onYearChange(Number(nextValue));
+          }}
+        />
       </div>
     </div>
   );

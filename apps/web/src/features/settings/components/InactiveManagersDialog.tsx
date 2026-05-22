@@ -19,6 +19,7 @@ import {
   getPendingCenterId,
 } from '@/features/settings/utils/manager-display';
 import { getErrorMessage } from '@/shared/lib/api';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 
 interface InactiveManagersDialogProps {
   open: boolean;
@@ -199,7 +200,7 @@ function InactiveList({
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">{manager.email}</p>
                 {manager.phone && (
-                  <p className="text-xs text-slate-500">{manager.phone}</p>
+                  <p className="text-xs text-slate-500">{formatPhoneForDisplay(manager.phone)}</p>
                 )}
 
                 <LastManagedSection

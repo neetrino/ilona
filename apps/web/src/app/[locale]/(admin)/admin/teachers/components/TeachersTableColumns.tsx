@@ -5,7 +5,7 @@ import { ActionButtons } from '@/shared/components/ui';
 import { InlineSelect } from '@/features/students';
 import { SelectAllCheckbox } from './SelectAllCheckbox';
 import { TeacherBranchDisplay } from './TeacherBranchDisplay';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Teacher } from '@/features/teachers';
 import { getTeacherCenters, formatLessonRate } from '../utils';
 import type { useTranslations } from 'next-intl';
@@ -65,7 +65,7 @@ export function createTeachersTableColumns({
       render: (teacher: Teacher) => (
         <input
           type="checkbox"
-          className="w-4 h-4 rounded border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           checked={selectedTeacherIds.has(teacher.id)}
           onChange={() => onToggleSelect(teacher.id)}
           onClick={(e) => e.stopPropagation()}
@@ -84,7 +84,7 @@ export function createTeachersTableColumns({
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
         const fullName = `${firstName} ${lastName}`.trim() || '?';
-        const phone = teacher.user?.phone || t('noPhoneNumber');
+        const phone = formatPhoneForDisplay(teacher.user?.phone, t('noPhoneNumber'));
         const isActive = teacher.user?.status === 'ACTIVE';
         return (
           <div className={cn("flex items-center gap-3", !isActive && "opacity-60")}>
@@ -96,14 +96,14 @@ export function createTeachersTableColumns({
             />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className={cn("font-semibold text-slate-800", !isActive && "text-slate-500")}>
+                <p className={cn("font-semibold text-[#3b3b40]", !isActive && "text-[#8b8b90]")}>
                   {firstName} {lastName}
                 </p>
                 {!isActive && (
-                  <span className="text-xs text-slate-400 font-normal">({tStatus('inactive')})</span>
+                  <span className="text-xs text-[#8b8b90] font-normal">({tStatus('inactive')})</span>
                 )}
               </div>
-              <p className={cn("text-sm text-slate-500", !isActive && "text-slate-400")}>{phone}</p>
+              <p className={cn("text-sm text-[#8b8b90]", !isActive && "text-[#8b8b90]")}>{phone}</p>
             </div>
           </div>
         );
@@ -207,7 +207,7 @@ export function createTeachersTableColumns({
             : fallback;
         return (
           <div className="flex w-full items-center justify-center">
-            <span className="text-slate-700 font-medium text-center">
+            <span className="text-[#3b3b40] font-medium text-center">
               {formatLessonRate(rate)}
             </span>
           </div>

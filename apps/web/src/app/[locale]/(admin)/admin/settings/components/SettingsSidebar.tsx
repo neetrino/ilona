@@ -2,7 +2,13 @@
 
 import { useTranslations } from 'next-intl';
 
-type SettingsTab = 'security' | 'notifications' | 'system' | 'penalty' | 'manager';
+type SettingsTab =
+  | 'security'
+  | 'notifications'
+  | 'system'
+  | 'penalty'
+  | 'manager'
+  | 'dashboard-banner';
 
 interface SettingsSidebarProps {
   activeTab: SettingsTab;
@@ -60,6 +66,15 @@ export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: Setting
         </svg>
       ),
     },
+    {
+      id: 'dashboard-banner',
+      label: t('dashboardBannerTab'),
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a2 2 0 012-2h12a2 2 0 012 2v14l-4-3-4 3-4-3-4 3V5z" />
+        </svg>
+      ),
+    },
   ];
 
   const tabs = allowedTabs?.length
@@ -67,16 +82,16 @@ export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: Setting
     : allTabs;
 
   return (
-    <div className="w-64 flex-shrink-0">
-      <nav className="bg-white rounded-2xl border border-slate-200 p-2">
+    <div className="w-full shrink-0 lg:w-64">
+      <nav className="flex gap-1 overflow-x-auto rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-2 lg:flex-col lg:overflow-visible">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${
+            className={`flex shrink-0 items-center gap-3 whitespace-nowrap rounded-xl px-4 py-3 text-left transition-colors lg:w-full ${
               activeTab === tab.id
-                ? 'bg-primary/10 text-primary'
-                : 'text-slate-600 hover:bg-slate-50'
+                ? 'bg-[#f0f0fc] text-[#1010a3]'
+                : 'text-[#3b3b40] hover:bg-[#fafafa]'
             }`}
           >
             {tab.icon}

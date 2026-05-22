@@ -4,6 +4,17 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
+import {
+  DROPDOWN_CHEVRON_CLASS,
+  DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
+  DROPDOWN_OPTION_BASE_CLASS,
+  DROPDOWN_OPTION_INTERACTIVE_CLASS,
+  DROPDOWN_OPTION_SELECTED_CLASS,
+  DROPDOWN_PLACEHOLDER_TEXT_CLASS,
+  DROPDOWN_TRIGGER_BASE_CLASS,
+  DROPDOWN_TRIGGER_DISABLED_CLASS,
+  DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+} from '@/shared/components/ui/dropdown-theme';
 
 interface InlineSelectProps {
   value: string | null;
@@ -163,7 +174,7 @@ export function InlineSelect({
     createPortal(
       <div
         ref={menuRef}
-        className="fixed z-[9999] bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto"
+        className={cn(DROPDOWN_MENU_PORTAL_SURFACE_CLASS, 'max-h-60')}
         style={{
           top: `${position.top}px`,
           left: `${position.left}px`,
@@ -175,8 +186,9 @@ export function InlineSelect({
             type="button"
             onClick={() => handleSelect(null)}
             className={cn(
-              'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors',
-              !localValue && 'bg-primary/10 font-medium'
+              DROPDOWN_OPTION_BASE_CLASS,
+              DROPDOWN_OPTION_INTERACTIVE_CLASS,
+              !localValue && DROPDOWN_OPTION_SELECTED_CLASS
             )}
           >
             {emptyActionLabel}
@@ -187,8 +199,9 @@ export function InlineSelect({
               type="button"
               onClick={() => handleSelect(option.id)}
               className={cn(
-                'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors',
-                localValue === option.id && 'bg-primary/10 font-medium'
+                DROPDOWN_OPTION_BASE_CLASS,
+                DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                localValue === option.id && DROPDOWN_OPTION_SELECTED_CLASS
               )}
             >
               {option.label}
@@ -208,12 +221,11 @@ export function InlineSelect({
         onClick={() => !disabled && !isLoading && setIsOpen(!isOpen)}
         disabled={disabled || isLoading}
         className={cn(
-          'w-full pl-0 pr-3 py-1.5 text-left text-sm rounded-md',
-          'border border-transparent hover:border-slate-300',
-          'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
-          'transition-colors',
-          !localValue && 'text-slate-400',
+          'w-full min-h-11 py-2 text-left text-sm',
+          DROPDOWN_TRIGGER_BASE_CLASS,
+          DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+          DROPDOWN_TRIGGER_DISABLED_CLASS,
+          !localValue && DROPDOWN_PLACEHOLDER_TEXT_CLASS,
           error && 'border-red-300 bg-red-50',
           isLoading && 'opacity-50 cursor-wait'
         )}
@@ -236,7 +248,7 @@ export function InlineSelect({
           {!isLoading && (
             <svg
               className={cn(
-                'w-4 h-4 text-slate-400 flex-shrink-0 transition-transform',
+                DROPDOWN_CHEVRON_CLASS,
                 isOpen && 'transform rotate-180'
               )}
               fill="none"

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import type { CrmLead } from '@/features/crm/types';
+import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
+import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
 import { fetchLead, deleteLead, updateLead } from '@/features/crm/api/crm.api';
 import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
@@ -64,6 +65,8 @@ export function VoiceLeadDetailModal({
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const t = useTranslations('crm');
   const tCommon = useTranslations('common');
+  const tr = useTranslations('roles');
+  const statusLabels = useCrmStatusLabels();
 
   const { data: lead, isLoading, refetch } = useQuery({
     queryKey: ['crm-lead', leadId],
@@ -138,7 +141,7 @@ export function VoiceLeadDetailModal({
       onUpdated();
       onClose();
     } catch (e) {
-      setDeleteError(e instanceof Error ? e.message : 'Failed to delete');
+      setDeleteError(e instanceof Error ? e.message : t('failedDeleteLead'));
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
@@ -169,7 +172,7 @@ export function VoiceLeadDetailModal({
       await refetch();
       onUpdated();
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : 'Failed to save');
+      setSaveError(e instanceof Error ? e.message : t('failedUpdateLead'));
     } finally {
       setSaving(false);
     }
@@ -213,7 +216,7 @@ export function VoiceLeadDetailModal({
                 disabled={deleting}
                 className="rounded-lg px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
               >
-                Delete
+                {t('deleteLead')}
               </button>
             )}
             <button
@@ -227,7 +230,7 @@ export function VoiceLeadDetailModal({
         </div>
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {!leadId ? (
-            <p className="text-slate-500">No lead selected.</p>
+            <p className="text-slate-500">{t('noLeadSelected')}</p>
           ) : isLoading ? (
             <div className="animate-pulse space-y-4">
               <div className="h-8 bg-slate-200 rounded w-2/3" />
@@ -235,7 +238,7 @@ export function VoiceLeadDetailModal({
               <div className="h-4 bg-slate-200 rounded w-1/2" />
             </div>
           ) : !lead ? (
-            <p className="text-slate-500">Lead not found.</p>
+            <p className="text-slate-500">{t('leadNotFound')}</p>
           ) : (
             <>
               {/* Voice player — top section */}
@@ -259,9 +262,13 @@ export function VoiceLeadDetailModal({
               )}
 
               <div className="text-xs text-slate-500">
-                Created {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : ''}
+                {t('created')}{' '}
+                {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : ''}
                 {lead.updatedAt && (
-                  <> · Updated {new Date(lead.updatedAt).toLocaleString()}</>
+                  <>
+                    {' '}
+                    · {t('updated')} {new Date(lead.updatedAt).toLocaleString()}
+                  </>
                 )}
               </div>
 
@@ -326,7 +333,7 @@ export function VoiceLeadDetailModal({
                     <select
                       value={form.levelId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, levelId: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
                       {LEVEL_OPTIONS.map((l) => (
@@ -339,7 +346,7 @@ export function VoiceLeadDetailModal({
                     <select
                       value={form.teacherId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value, groupId: '' }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
                       {teachers.map((teacher) => (
@@ -355,10 +362,10 @@ export function VoiceLeadDetailModal({
                       value={form.groupId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value }))}
                       disabled={!selectedTeacherId}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">
-                        {selectedTeacherId ? '—' : 'Select Teacher first'}
+                        {selectedTeacherId ? '—' : t('selectTeacherFirst')}
                       </option>
                       {groupsForSelectedTeacher.map((g) => (
                         <option key={g.id} value={g.id}>{g.name}</option>
@@ -370,7 +377,7 @@ export function VoiceLeadDetailModal({
                     <select
                       value={form.centerId ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     >
                       <option value="">—</option>
                       {centers.map((c) => (
@@ -406,9 +413,7 @@ export function VoiceLeadDetailModal({
 
               {showDeleteConfirm && (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
-                  <p className="text-sm text-amber-800">
-                    Delete this voice lead? This cannot be undone.
-                  </p>
+                  <p className="text-sm text-amber-800">{t('deleteVoiceLeadConfirm')}</p>
                   <div className="flex gap-2">
                     <button
                       type="button"
@@ -416,7 +421,7 @@ export function VoiceLeadDetailModal({
                       disabled={deleting}
                       className="rounded-lg px-3 py-1.5 text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
                     >
-                      {deleting ? 'Deleting…' : 'Delete'}
+                      {deleting ? t('deleting') : t('deleteLead')}
                     </button>
                     <button
                       type="button"
@@ -424,7 +429,7 @@ export function VoiceLeadDetailModal({
                       disabled={deleting}
                       className="rounded-lg px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-200"
                     >
-                      Cancel
+                      {tCommon('cancel')}
                     </button>
                   </div>
                 </div>
@@ -433,9 +438,9 @@ export function VoiceLeadDetailModal({
               {/* Approved / Transfer are mutually exclusive: show only one */}
               {(lead.teacherApprovedAt || lead.activities?.some((a) => a.type === 'TEACHER_APPROVED')) ? (
                 <div className="rounded-lg border border-green-200 bg-green-50/80 p-4">
-                  <h3 className="text-sm font-semibold text-green-900 mb-3">Approved</h3>
+                  <h3 className="text-sm font-semibold text-green-900 mb-3">{t('approved')}</h3>
                   <p className="text-sm text-slate-700">
-                    Teacher approved this lead
+                    {t('teacherApprovedLead')}
                     {lead.teacherApprovedAt && (
                       <span className="text-slate-500 ml-1">
                         {new Date(lead.teacherApprovedAt).toLocaleString()}
@@ -450,7 +455,7 @@ export function VoiceLeadDetailModal({
                 </div>
               ) : (lead.transferFlag || lead.activities?.some((a) => a.type === 'TEACHER_TRANSFER')) ? (
                 <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-4">
-                  <h3 className="text-sm font-semibold text-amber-900 mb-3">Transfer info</h3>
+                  <h3 className="text-sm font-semibold text-amber-900 mb-3">{t('transferInfo')}</h3>
                   <ul className="space-y-3">
                     {lead.activities
                       ?.filter((a) => a.type === 'TEACHER_TRANSFER')
@@ -460,7 +465,7 @@ export function VoiceLeadDetailModal({
                           ? `${a.actorUser.firstName} ${a.actorUser.lastName}`.trim()
                           : lead.teacher?.user
                             ? `${lead.teacher.user.firstName} ${lead.teacher.user.lastName}`.trim()
-                            : 'Teacher';
+                            : tr('teacher');
                         return (
                           <li key={a.id} className="text-sm text-slate-700 border-l-2 border-amber-300 pl-3 py-1.5">
                             <span className="font-medium text-slate-800">{teacherName}</span>
@@ -480,7 +485,7 @@ export function VoiceLeadDetailModal({
                             {lead.teacher.user.firstName} {lead.teacher.user.lastName}
                           </span>
                         ) : (
-                          <span className="font-medium text-slate-800">Teacher</span>
+                          <span className="font-medium text-slate-800">{tr('teacher')}</span>
                         )}
                         <p className="mt-1 text-slate-600">{lead.transferComment}</p>
                       </li>
@@ -491,19 +496,26 @@ export function VoiceLeadDetailModal({
 
               {lead.activities && lead.activities.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-slate-800 mb-2">Activity</h3>
+                  <h3 className="text-sm font-medium text-slate-800 mb-2">{t('activity')}</h3>
                   <ul className="space-y-2">
                     {lead.activities.map((a) => (
                       <li key={a.id} className="text-sm text-slate-600 border-l-2 border-slate-200 pl-3 py-1">
-                        {a.type === 'STATUS_CHANGE' && a.payload && (
-                          <>Status: {(a.payload as { fromStatus?: string }).fromStatus} → {(a.payload as { toStatus?: string }).toStatus}</>
-                        )}
+                        {a.type === 'STATUS_CHANGE' && a.payload && (() => {
+                          const payload = a.payload as { fromStatus?: CrmLeadStatus; toStatus?: CrmLeadStatus };
+                          const from = payload.fromStatus
+                            ? (statusLabels[payload.fromStatus] ?? payload.fromStatus)
+                            : '';
+                          const to = payload.toStatus
+                            ? (statusLabels[payload.toStatus] ?? payload.toStatus)
+                            : '';
+                          return <>{t('activityStatusChange', { from, to })}</>;
+                        })()}
                         {a.type === 'COMMENT' && a.payload && (
-                          <>Comment: {(a.payload as { content?: string }).content}</>
+                          <>{t('activityComment', { content: (a.payload as { content?: string }).content ?? '' })}</>
                         )}
-                        {a.type === 'RECORDING_UPLOADED' && <>Voice recording added</>}
-                        {a.type === 'TEACHER_APPROVED' && <>Teacher approved</>}
-                        {a.type === 'TEACHER_TRANSFER' && <>Transfer requested</>}
+                        {a.type === 'RECORDING_UPLOADED' && <>{t('activityVoiceAdded')}</>}
+                        {a.type === 'TEACHER_APPROVED' && <>{t('activityTeacherApproved')}</>}
+                        {a.type === 'TEACHER_TRANSFER' && <>{t('activityTransferRequested')}</>}
                         <span className="text-slate-400 ml-1">
                           {new Date(a.createdAt).toLocaleString()}
                         </span>

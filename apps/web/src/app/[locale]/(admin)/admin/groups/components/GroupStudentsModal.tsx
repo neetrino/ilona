@@ -60,40 +60,40 @@ export function GroupStudentsModal({
           </DialogHeader>
           <div className="flex flex-col min-h-0 flex-1">
             {isLoading ? (
-              <div className="py-8 text-center text-slate-500">Loading students...</div>
+              <div className="py-8 text-center text-[#8b8b90]">Loading students...</div>
             ) : isError ? (
               <div className="py-8 text-center text-red-600">
                 {error instanceof Error ? error.message : 'Failed to load students.'}
               </div>
             ) : items.length === 0 ? (
-              <div className="py-8 text-center text-slate-500">No students in this group.</div>
+              <div className="py-8 text-center text-[#8b8b90]">No students in this group.</div>
             ) : (
               <>
-                <div className="overflow-auto border border-slate-200 rounded-lg">
+                <div className="overflow-auto border border-[rgba(14,14,16,0.07)] rounded-lg">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 border-b border-slate-200 sticky top-0">
+                    <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)] sticky top-0">
                       <tr>
-                        <th className="text-left py-3 px-4 font-semibold text-slate-700">Name</th>
-                        <th className="text-left py-3 px-4 font-semibold text-slate-700">Enrollment date</th>
+                        <th className="text-left py-3 px-4 font-semibold text-[#3b3b40]">Name</th>
+                        <th className="text-left py-3 px-4 font-semibold text-[#3b3b40]">Enrollment date</th>
                       </tr>
                     </thead>
                     <tbody>
                       {items.map((student) => (
                         <tr
                           key={student.id}
-                          className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50"
+                          className="border-b border-[rgba(14,14,16,0.07)] last:border-0 hover:bg-[#fafafa]/50"
                         >
-                          <td className="py-3 px-4 text-slate-800">
+                          <td className="py-3 px-4 text-[#3b3b40]">
                             <button
                               type="button"
                               onClick={() => onStudentSelect(student.id)}
-                              className="underline decoration-slate-400 underline-offset-2 hover:decoration-primary hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 rounded"
+                              className="underline decoration-[#8b8b90] underline-offset-2 hover:decoration-[#1010a3] hover:text-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded"
                               title="Open student details"
                             >
                               {student.user.firstName} {student.user.lastName}
                             </button>
                           </td>
-                          <td className="py-3 px-4 text-slate-600">
+                          <td className="py-3 px-4 text-[#3b3b40]">
                             {formatEnrolledAt(student.enrolledAt)}
                           </td>
                         </tr>
@@ -102,14 +102,14 @@ export function GroupStudentsModal({
                   </table>
                 </div>
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-4 text-sm text-slate-500">
+                  <div className="flex items-center justify-between mt-4 text-sm text-[#8b8b90]">
                     <span>
                       Showing {skip + 1}-{Math.min(skip + PAGE_SIZE, total)} of {total}
                     </span>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:pointer-events-none"
+                        className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50 disabled:pointer-events-none"
                         disabled={page === 0}
                         onClick={() => setPage((p) => Math.max(0, p - 1))}
                         aria-label="Previous page"
@@ -121,7 +121,7 @@ export function GroupStudentsModal({
                       <span>Page {page + 1} of {totalPages}</span>
                       <button
                         type="button"
-                        className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:pointer-events-none"
+                        className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50 disabled:pointer-events-none"
                         disabled={page >= totalPages - 1}
                         onClick={() => setPage((p) => p + 1)}
                         aria-label="Next page"

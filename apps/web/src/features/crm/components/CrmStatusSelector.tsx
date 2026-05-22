@@ -5,7 +5,18 @@ import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import type { CrmLeadStatus } from '@/features/crm/types';
-import { STATUS_LABELS } from '@/features/crm/types';
+import { useTranslations } from 'next-intl';
+import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
+import {
+  DROPDOWN_CHEVRON_CLASS,
+  DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
+  DROPDOWN_OPTION_BASE_CLASS,
+  DROPDOWN_OPTION_INTERACTIVE_CLASS,
+  DROPDOWN_OPTION_SELECTED_CLASS,
+  DROPDOWN_TRIGGER_BASE_CLASS,
+  DROPDOWN_TRIGGER_DISABLED_CLASS,
+  DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+} from '@/shared/components/ui/dropdown-theme';
 
 type DropdownPosition = { top: number; left: number; width: number };
 
@@ -36,11 +47,14 @@ export function CrmStatusSelector({
   options,
   onChange,
   disabled = false,
-  disabledHint = 'Status cannot be changed after payment',
+  disabledHint,
   className,
   id,
   portaledMenuRef,
 }: CrmStatusSelectorProps) {
+  const t = useTranslations('crm');
+  const statusLabels = useCrmStatusLabels();
+  const resolvedDisabledHint = disabledHint ?? t('statusLockedAfterPayment');
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<DropdownPosition | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -109,9 +123,9 @@ export function CrmStatusSelector({
     setOpen(false);
   };
 
-  const displayValue = value ? (STATUS_LABELS[value] ?? value) : '—';
-  const triggerTitle = disabled ? disabledHint : 'Change status';
-  const triggerAria = disabled ? disabledHint : 'Change status';
+  const displayValue = value ? (statusLabels[value] ?? value) : '—';
+  const triggerTitle = disabled ? resolvedDisabledHint : t('changeStatus');
+  const triggerAria = disabled ? resolvedDisabledHint : t('changeStatus');
 
   return (
     <div className={cn('relative', className)}>
@@ -125,8 +139,12 @@ export function CrmStatusSelector({
         }}
         disabled={disabled}
         className={cn(
-          'w-full inline-flex items-center justify-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20',
-          disabled && 'cursor-not-allowed opacity-60'
+          'w-full min-h-11 inline-flex items-center justify-between gap-2 !border-2 !border-slate-300 !bg-slate-50/40 py-2 text-sm font-semibold text-slate-800 shadow-sm',
+          DROPDOWN_TRIGGER_BASE_CLASS,
+          DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+          DROPDOWN_TRIGGER_DISABLED_CLASS,
+          open && '!border-[#1010a3]/55 !bg-white shadow-[0_10px_24px_rgba(16,16,163,0.16)]',
+          disabled && 'opacity-60'
         )}
         title={triggerTitle}
         aria-label={triggerAria}
@@ -134,7 +152,7 @@ export function CrmStatusSelector({
       >
         <span>{displayValue}</span>
         <ChevronDown
-          className={cn('h-3 w-3 transition-transform', open && 'rotate-180')}
+          className={cn(DROPDOWN_CHEVRON_CLASS, open && 'rotate-180')}
         />
       </button>
       {open &&
@@ -144,7 +162,7 @@ export function CrmStatusSelector({
         createPortal(
           <div
             ref={setMenuElement}
-            className="fixed z-[9999] min-w-[140px] rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+            className={cn(DROPDOWN_MENU_PORTAL_SURFACE_CLASS, 'min-w-[140px]')}
             style={{
               top: `${position.top}px`,
               left: `${position.left}px`,
@@ -157,11 +175,12 @@ export function CrmStatusSelector({
                 type="button"
                 onClick={(e) => handleSelect(e, status)}
                 className={cn(
-                  'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
-                  value === status && 'bg-primary/10 font-medium text-primary'
+                  DROPDOWN_OPTION_BASE_CLASS,
+                  DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                  value === status && DROPDOWN_OPTION_SELECTED_CLASS
                 )}
               >
-                {STATUS_LABELS[status] ?? status}
+                {statusLabels[status] ?? status}
               </button>
             ))}
           </div>,

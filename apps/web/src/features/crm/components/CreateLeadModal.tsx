@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { createLead } from '@/features/crm/api/crm.api';
 import type { CreateLeadDto, CrmLead } from '@/features/crm/types';
 import { fetchCenters } from '@/features/centers/api/centers.api';
@@ -30,6 +31,8 @@ export function CreateLeadModal({
   defaultCenterName,
   groupsQueryCenterId,
 }: CreateLeadModalProps) {
+  const t = useTranslations('crm');
+  const tc = useTranslations('common');
   const [form, setForm] = useState<CreateLeadDto>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +84,7 @@ export function CreateLeadModal({
       onCreated(lead);
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create lead');
+      setError(err instanceof Error ? err.message : t('failedCreateLead'));
     } finally {
       setSaving(false);
     }
@@ -93,7 +96,7 @@ export function CreateLeadModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-slate-900">New Lead</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{t('newLead')}</h2>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
@@ -101,7 +104,7 @@ export function CreateLeadModal({
           )}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">First name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('firstName')}</label>
               <input
                 type="text"
                 value={form.firstName ?? ''}
@@ -110,7 +113,7 @@ export function CreateLeadModal({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Last name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('lastName')}</label>
               <input
                 type="text"
                 value={form.lastName ?? ''}
@@ -120,7 +123,7 @@ export function CreateLeadModal({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{tc('phone')}</label>
             <input
               type="tel"
               inputMode="numeric"
@@ -132,7 +135,7 @@ export function CreateLeadModal({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('age')}</label>
               <input
                 type="number"
                 min={0}
@@ -150,11 +153,11 @@ export function CreateLeadModal({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Level</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('level')}</label>
               <select
                 value={form.levelId ?? ''}
                 onChange={(e) => setForm((f) => ({ ...f, levelId: e.target.value || undefined }))}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
                 <option value="">—</option>
                 {LEVEL_OPTIONS.map((l) => (
@@ -164,16 +167,16 @@ export function CreateLeadModal({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Center</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('center')}</label>
             {defaultCenterId ? (
               <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
-                {defaultCenterName ?? 'Your center'}
+                {defaultCenterName ?? t('yourCenter')}
               </p>
             ) : (
               <select
                 value={form.centerId ?? ''}
                 onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value || undefined }))}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
                 <option value="">—</option>
                 {centers.map((c) => (
@@ -185,12 +188,12 @@ export function CreateLeadModal({
           {(isUnder18 || isAdult) && (
             <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                {isUnder18 ? 'Parent details (under 18)' : 'Student details (18+)'}
+                {isUnder18 ? t('parentDetailsUnder18') : t('studentDetailsOver18')}
               </p>
               {isUnder18 && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Parent name</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentName')}</label>
                     <input
                       type="text"
                       value={form.parentName ?? ''}
@@ -199,7 +202,7 @@ export function CreateLeadModal({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Parent phone number</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentPhone')}</label>
                     <input
                       type="tel"
                       inputMode="numeric"
@@ -211,13 +214,13 @@ export function CreateLeadModal({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Parent email</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentEmail')}</label>
                     <input
                       type="email"
                       autoComplete="email"
                       value={form.parentEmail ?? ''}
                       onChange={(e) => setForm((f) => ({ ...f, parentEmail: e.target.value }))}
-                      placeholder="parent@example.com"
+                      placeholder={t('parentEmailPlaceholder')}
                       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     />
                   </div>
@@ -225,7 +228,7 @@ export function CreateLeadModal({
               )}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  {isUnder18 ? 'Parent passport details' : 'Student passport details'}
+                  {isUnder18 ? t('parentPassport') : t('studentPassport')}
                 </label>
                 <input
                   type="text"
@@ -237,26 +240,26 @@ export function CreateLeadModal({
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Teacher</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('teacher')}</label>
             <select
               value={form.teacherId ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value || undefined }))}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             >
               <option value="">—</option>
-              {teachers.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.user?.firstName} {t.user?.lastName}
+              {teachers.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.user?.firstName} {teacher.user?.lastName}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Group</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('group')}</label>
             <select
               value={form.groupId ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value || undefined }))}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             >
               <option value="">—</option>
               {groups.map((g) => (
@@ -265,17 +268,17 @@ export function CreateLeadModal({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Source</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('source')}</label>
             <input
               type="text"
               value={form.source ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))}
-              placeholder="e.g. call, form"
+              placeholder={t('sourcePlaceholder')}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{tc('notes')}</label>
             <textarea
               value={form.notes ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
@@ -289,7 +292,7 @@ export function CreateLeadModal({
               onClick={onClose}
               className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
-              Cancel
+              {tc('cancel')}
             </button>
             <button
               type="submit"
@@ -298,7 +301,7 @@ export function CreateLeadModal({
                 'rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50'
               )}
             >
-              {saving ? 'Creating…' : 'Create Lead'}
+              {saving ? t('creating') : t('createLead')}
             </button>
           </div>
         </form>

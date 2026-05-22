@@ -14,6 +14,8 @@ import { TeacherDetails } from './components/TeacherDetails';
 import { updateTeacherSchema, type UpdateTeacherFormData } from './schemas';
 import type { UserStatus } from '@/types';
 import { getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 export default function TeacherProfilePage() {
   const t = useTranslations('teachers');
@@ -22,6 +24,8 @@ export default function TeacherProfilePage() {
   const router = useRouter();
   const teacherId = params.id as string;
   const locale = params.locale as string;
+  const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
   const [isEditMode, setIsEditMode] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -58,6 +62,7 @@ export default function TeacherProfilePage() {
       workingDays: [],
     },
   });
+  const watchedStatus = watch('status') || 'ACTIVE';
 
   // Dismiss edit mode and messages when navigating to another teacher
   useEffect(() => {
@@ -140,7 +145,7 @@ export default function TeacherProfilePage() {
     return (
       <DashboardLayout title={t('teacherProfile')} subtitle={t('loadingTeacherInfo')}>
         <div className="flex min-h-[400px] items-center justify-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#1010a3]" />
         </div>
       </DashboardLayout>
     );
@@ -225,7 +230,7 @@ export default function TeacherProfilePage() {
         subtitle={t('loadingTeacherInfo')}
       >
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1010a3]"></div>
         </div>
       </DashboardLayout>
     );
@@ -246,15 +251,15 @@ export default function TeacherProfilePage() {
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">Teacher Not Found</h3>
-              <p className="text-sm text-slate-500 mb-4">
+              <h3 className="font-semibold text-[#3b3b40] mb-2">Teacher Not Found</h3>
+              <p className="text-sm text-[#8b8b90] mb-4">
                 {error 
                   ? 'Failed to load teacher information. Please try again later.'
                   : 'The teacher you are looking for does not exist or has been removed.'}
               </p>
               <Button 
                 variant="outline" 
-                onClick={() => router.push(`/${locale}/admin/teachers`)}
+                onClick={() => router.push(`/${locale}${portalBasePath}/teachers`)}
               >
                 Back to Teachers
               </Button>
@@ -283,7 +288,7 @@ export default function TeacherProfilePage() {
           <Button 
             variant="ghost" 
             type="button"
-            onClick={() => handleNavigation(`/${locale}/admin/teachers`)}
+            onClick={() => handleNavigation(`/${locale}${portalBasePath}/teachers`)}
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -294,7 +299,7 @@ export default function TeacherProfilePage() {
             <Button 
               type="button"
               onClick={() => setIsEditMode(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -325,6 +330,8 @@ export default function TeacherProfilePage() {
           initials={initials}
           errors={errors}
           register={register}
+          setValue={setValue}
+          statusValue={watchedStatus}
         />
 
         {/* Stats Grid */}
@@ -351,7 +358,7 @@ export default function TeacherProfilePage() {
 
         {/* Edit Mode Actions */}
         {isEditMode && (
-          <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-4 pt-4 border-t border-[rgba(14,14,16,0.07)]">
             <Button
               type="button"
               variant="outline"
@@ -362,7 +369,7 @@ export default function TeacherProfilePage() {
             </Button>
             <Button
               type="submit"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white"
               disabled={updateTeacher.isPending || !isDirty}
               isLoading={updateTeacher.isPending}
             >

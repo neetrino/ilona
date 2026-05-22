@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui';
 import { useSalary } from '../hooks/useFinance';
@@ -12,9 +13,10 @@ interface SalaryDetailsModalProps {
 }
 
 export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsModalProps) {
+  const t = useTranslations('finance');
+  const locale = useLocale();
   const { data: salary, isLoading } = useSalary(salaryId || '', !!salaryId && open);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -26,7 +28,6 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
     };
   }, [open]);
 
-  // Close modal on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && open) {
@@ -36,6 +37,17 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [open, onClose]);
+
+  const requiredActions = useMemo(
+    () => [
+      { key: 'absenceMarked', label: t('actionAbsenceMarked') },
+      { key: 'feedbacksCompleted', label: t('actionFeedbacksCompleted') },
+      { key: 'voiceSent', label: t('actionVoiceSent') },
+      { key: 'textSent', label: t('actionTextSent') },
+      { key: 'dailyPlan', label: t('actionDailyPlan') },
+    ],
+    [t],
+  );
 
   if (!open || !salaryId) return null;
 
@@ -48,13 +60,11 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
     } else if (year !== undefined) {
       date = new Date(year, month - 1);
     } else {
-      // Fallback: try to parse as Date string
       date = new Date(month);
     }
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
   };
 
-  // Parse obligations info
   const obligationsInfo = salary?.obligationsInfo || (salary?.notes ? (() => {
     try {
       return JSON.parse(salary.notes);
@@ -63,19 +73,8 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
     }
   })() : null);
 
-  // Get action breakdown from salary details
   const actionBreakdown = (salary as { actionBreakdown?: Record<string, { required?: number; completed?: number }> })?.actionBreakdown || null;
 
-  // Define the required lesson actions for payout
-  const requiredActions = [
-    { key: 'absenceMarked', label: 'Absence Marked' },
-    { key: 'feedbacksCompleted', label: 'Feedbacks Completed' },
-    { key: 'voiceSent', label: 'Voice Sent' },
-    { key: 'textSent', label: 'Text Sent' },
-    { key: 'dailyPlan', label: 'Daily Plan' },
-  ];
-
-  // Calculate completion from action breakdown if available
   let completedCount = 0;
   let totalCount = 0;
   if (actionBreakdown) {
@@ -93,13 +92,13 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
 
   const firstName = salary?.teacher?.user?.firstName || '';
   const lastName = salary?.teacher?.user?.lastName || '';
-  const fullName = `${firstName} ${lastName}`.trim() || 'Unknown';
+  const fullName = `${firstName} ${lastName}`.trim() || t('unknownTeacher');
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Salary Details</DialogTitle>
+          <DialogTitle>{t('salaryDetailsTitle')}</DialogTitle>
         </DialogHeader>
 
         {isLoading ? (
@@ -108,58 +107,53 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
           </div>
         ) : salary ? (
           <div className="space-y-6">
-            {/* Teacher Info */}
             <div className="bg-slate-50 rounded-lg p-4">
-              <h3 className="font-semibold text-slate-800 mb-2">Teacher</h3>
+              <h3 className="font-semibold text-slate-800 mb-2">{t('teacher')}</h3>
               <p className="text-slate-700">{fullName}</p>
               <p className="text-sm text-slate-500">{salary.teacher?.user?.email}</p>
             </div>
 
-            {/* Period */}
             <div>
-              <h3 className="font-semibold text-slate-800 mb-2">Period</h3>
+              <h3 className="font-semibold text-slate-800 mb-2">{t('period')}</h3>
               <p className="text-slate-700">
                 {formatMonth(salary.month, salary.year)}
               </p>
             </div>
 
-            {/* Salary Breakdown */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-slate-800">Salary Breakdown</h3>
+              <h3 className="font-semibold text-slate-800">{t('salaryBreakdownSection')}</h3>
               <div className="bg-slate-50 rounded-lg p-4 space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Lessons Count:</span>
+                  <span className="text-slate-600">{t('lessonsCountLabel')}</span>
                   <span className="font-medium text-slate-800">{salary.lessonsCount}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Gross Amount:</span>
+                  <span className="text-slate-600">{t('grossAmountLabel')}</span>
                   <span className="font-medium text-slate-800">{formatCurrency(salary.grossAmount)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Total Deductions:</span>
+                  <span className="text-slate-600">{t('totalDeductionsLabelModal')}</span>
                   <span className="font-medium text-red-600">-{formatCurrency(salary.totalDeductions)}</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-slate-200">
-                  <span className="font-semibold text-slate-800">Net Amount:</span>
+                  <span className="font-semibold text-slate-800">{t('netAmountLabel')}</span>
                   <span className="font-bold text-slate-900">{formatCurrency(salary.netAmount)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Obligations Section */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-slate-800">Obligations</h3>
+              <h3 className="font-semibold text-slate-800">{t('obligationsSection')}</h3>
               <div className="bg-slate-50 rounded-lg p-4">
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-slate-600">Completion Summary:</span>
+                    <span className="text-slate-600">{t('completionSummary')}</span>
                     <span className="font-bold text-lg text-slate-800">
                       {completedCount}/{totalCount || 5}
                     </span>
                   </div>
                 </div>
 
-                {/* Action Breakdown */}
                 <div className="space-y-2">
                   {requiredActions.map((action) => {
                     let isCompleted = false;
@@ -172,8 +166,6 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
                       required = actionData.required || 0;
                       isCompleted = completed === required && required > 0;
                     } else {
-                      // Fallback: if we have obligationsInfo, we can't determine individual actions
-                      // So we show them as unknown
                       isCompleted = false;
                     }
 
@@ -215,26 +207,27 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
               </div>
             </div>
 
-            {/* Status */}
             <div>
-              <h3 className="font-semibold text-slate-800 mb-2">Status</h3>
+              <h3 className="font-semibold text-slate-800 mb-2">{t('status')}</h3>
               <div className="inline-block">
                 {salary.status === 'PAID' ? (
                   <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                    Paid
+                    {t('paid')}
                   </span>
                 ) : (
                   <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
-                    Pending
+                    {t('pending')}
                   </span>
                 )}
               </div>
               {salary.paidAt && (
                 <p className="text-sm text-slate-500 mt-1">
-                  Paid on: {new Date(salary.paidAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
+                  {t('paidOnDate', {
+                    date: new Date(salary.paidAt).toLocaleDateString(locale, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    }),
                   })}
                 </p>
               )}
@@ -242,11 +235,10 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
           </div>
         ) : (
           <div className="text-center py-12 text-slate-500">
-            Salary record not found
+            {t('salaryNotFound')}
           </div>
         )}
       </DialogContent>
     </Dialog>
   );
 }
-

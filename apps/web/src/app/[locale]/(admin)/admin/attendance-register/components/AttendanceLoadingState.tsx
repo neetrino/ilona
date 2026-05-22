@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/shared/components/ui/Skeleton';
 
 interface AttendanceLoadingStateProps {
@@ -11,6 +12,8 @@ const SKELETON_COLS = 6;
 const SKELETON_ROWS = 8;
 
 export function AttendanceLoadingState({ isLoadingAttendance }: AttendanceLoadingStateProps) {
+  const t = useTranslations('attendance');
+
   if (isLoadingAttendance) {
     return (
       <div className="space-y-2 p-4">
@@ -29,7 +32,7 @@ export function AttendanceLoadingState({ isLoadingAttendance }: AttendanceLoadin
             ))}
           </div>
         ))}
-        <p className="text-center text-sm text-muted-foreground">Loading attendance records...</p>
+        <p className="text-center text-sm text-muted-foreground">{t('loadingAttendanceRecords')}</p>
       </div>
     );
   }
@@ -37,15 +40,9 @@ export function AttendanceLoadingState({ isLoadingAttendance }: AttendanceLoadin
   return (
     <div className="flex items-center justify-center p-12">
       <div className="text-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
-        <p className="mt-4 text-sm text-slate-500">Loading lessons...</p>
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#1010a3] border-r-transparent" />
+        <p className="mt-4 text-sm text-[#8b8b90]">{t('loadingLessons')}</p>
       </div>
     </div>
   );
 }
-
-
-
-
-
-

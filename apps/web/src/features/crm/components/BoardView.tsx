@@ -55,14 +55,15 @@ export function BoardView({
 
   const columnCount = columnOrder.length;
   return (
-    <div
-      className="grid gap-4 pb-4 min-h-[400px] w-full min-w-0"
-      style={{
-        gridTemplateColumns: columnCount
-          ? `repeat(${columnCount}, minmax(160px, 1fr))`
-          : undefined,
-      }}
-    >
+    <div className="w-full min-w-0 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
+      <div
+        className="grid gap-3 pb-4 min-h-[min(400px,50vh)] w-max min-w-full sm:gap-4"
+        style={{
+          gridTemplateColumns: columnCount
+            ? `repeat(${columnCount}, minmax(min(11rem,42vw), 1fr))`
+            : undefined,
+        }}
+      >
       {columnOrder.map((status) => (
         <Column
           key={status}
@@ -83,6 +84,7 @@ export function BoardView({
           deleteInProgress={deleteInProgress}
         />
       ))}
+      </div>
     </div>
   );
 }

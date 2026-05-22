@@ -16,6 +16,8 @@ export type TeacherShowcaseCardProps = {
   afterExperience?: ReactNode;
   /** Visually soften card for inactive accounts */
   isMuted?: boolean;
+  /** Match student dashboard card styling */
+  variant?: 'default' | 'student';
 };
 
 function getTeacherName(teacher: Teacher): string {
@@ -29,7 +31,9 @@ export function TeacherShowcaseCard({
   headerActions,
   afterExperience,
   isMuted = false,
+  variant = 'default',
 }: TeacherShowcaseCardProps) {
+  const isStudent = variant === 'student';
   const fullName = getTeacherName(teacher);
   const experienceLabel = formatExperienceLabel(
     getExperienceYearsFromHireDate(teacher.hireDate)
@@ -51,19 +55,34 @@ export function TeacherShowcaseCard({
       onClick={interactive ? onCardClick : undefined}
       onKeyDown={interactive ? handleKeyDown : undefined}
       className={cn(
-        'group overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 md:p-5',
+        'group overflow-hidden rounded-3xl border bg-white p-4 transition-all duration-300 md:p-5',
+        isStudent
+          ? 'border-[rgba(14,14,16,0.07)]'
+          : 'border-slate-200 shadow-sm',
         interactive &&
-          'cursor-pointer hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
-        isMuted && 'opacity-90'
+          (isStudent
+            ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/30'
+            : 'cursor-pointer hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'),
+        isMuted && 'opacity-90',
       )}
     >
       {headerActions ? (
         <div
-          className="mb-3 flex justify-end border-b border-slate-100 pb-3"
+          className={cn(
+            'mb-3 flex justify-end border-b pb-3',
+            isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100',
+          )}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
         >
-          <div className="rounded-xl border border-slate-200/90 bg-slate-50/95 p-0.5 shadow-sm">
+          <div
+            className={cn(
+              'rounded-xl border p-0.5 shadow-sm',
+              isStudent
+                ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]'
+                : 'border-slate-200/90 bg-slate-50/95',
+            )}
+          >
             {headerActions}
           </div>
         </div>
@@ -75,9 +94,10 @@ export function TeacherShowcaseCard({
           name={fullName}
           size="xl"
           className={cn(
-            'z-10 h-72 w-full rounded-2xl border border-slate-100 bg-slate-50 object-contain ring-2 ring-white shadow-md transition-transform duration-300 md:h-80',
+            'z-10 h-72 w-full rounded-2xl border object-contain ring-2 ring-white shadow-md transition-transform duration-300 md:h-80',
+            isStudent ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]' : 'border-slate-100 bg-slate-50',
             interactive && 'group-hover:scale-[1.01]',
-            isMuted && 'opacity-90'
+            isMuted && 'opacity-90',
           )}
           alt={fullName}
         />
@@ -86,20 +106,41 @@ export function TeacherShowcaseCard({
       <div className="min-w-0 text-center">
         <h3
           className={cn(
-            'truncate text-xl font-semibold text-slate-900',
-            isMuted && 'text-slate-600'
+            'truncate text-xl font-semibold',
+            isStudent ? 'text-[#1010a3]' : 'text-slate-900',
+            isMuted && (isStudent ? 'text-[#8b8b90]' : 'text-slate-600'),
           )}
         >
           {fullName}
         </h3>
-        <p className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 sm:text-sm">
-          <Award className="h-3.5 w-3.5 shrink-0 text-slate-500 sm:h-4 sm:w-4" aria-hidden="true" />
+        <p
+          className={cn(
+            'mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium sm:text-sm',
+            isStudent
+              ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#3b3b40]'
+              : 'border-slate-200 bg-slate-50 text-slate-600',
+          )}
+        >
+          <Award
+            className={cn(
+              'h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4',
+              isStudent ? 'text-[#1010a3]' : 'text-slate-500',
+            )}
+            aria-hidden="true"
+          />
           <span className="truncate">{experienceLabel}</span>
         </p>
       </div>
 
       {afterExperience ? (
-        <div className="mt-4 border-t border-slate-100 pt-4 text-left">{afterExperience}</div>
+        <div
+          className={cn(
+            'mt-4 border-t pt-4 text-left',
+            isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100',
+          )}
+        >
+          {afterExperience}
+        </div>
       ) : null}
     </article>
   );

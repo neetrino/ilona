@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,9 @@ import {
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
+import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import { Label } from '@/shared/components/ui/label';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useSetSubstituteByGroupDay } from '@/features/lessons';
 import type { Group } from '@/features/groups/types';
 import type { SubstituteTeacherOption } from './SubstituteLessonModal';
@@ -29,6 +32,8 @@ export function SubstituteByGroupDayModal({
   groupsLoading,
   teacherOptions,
 }: SubstituteByGroupDayModalProps) {
+  const t = useTranslations('calendar');
+  const tCommon = useTranslations('common');
   const setSubstitute = useSetSubstituteByGroupDay();
   const [date, setDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [groupId, setGroupId] = useState<string>('');
@@ -54,65 +59,56 @@ export function SubstituteByGroupDayModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Substitute by group &amp; day</DialogTitle>
+          <DialogTitle>{t('substituteByGroupDay')}</DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-slate-600">
-          Applies to all non-cancelled lessons for the selected group on that calendar day (UTC date).
-        </p>
+        <p className="text-sm text-[#3b3b40]">{t('substituteByGroupDayHint')}</p>
         <div className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="sub-day-date">Date</Label>
-            <input
+            <Label htmlFor="sub-day-date">{tCommon('date')}</Label>
+            <DatePickerInput
               id="sub-day-date"
-              type="date"
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onValueChange={setDate}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sub-day-group">Group</Label>
-            <select
+            <Label htmlFor="sub-day-group">{t('group')}</Label>
+            <SingleSelectDropdown
               id="sub-day-group"
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+              options={[
+                { id: '', label: groupsLoading ? t('loadingGroups') : t('selectGroup') },
+                ...groups.map((group) => ({
+                  id: group.id,
+                  label: `${group.name}${group.center?.name ? ` · ${group.center.name}` : ''}`,
+                })),
+              ]}
               value={groupId}
-              onChange={(e) => setGroupId(e.target.value)}
+              onValueChange={(nextValue) => setGroupId(nextValue ?? '')}
               disabled={groupsLoading}
-            >
-              <option value="">{groupsLoading ? 'Loading groups…' : 'Select group'}</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                  {g.center?.name ? ` · ${g.center.name}` : ''}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sub-day-teacher">Substitute teacher</Label>
-            <select
+            <Label htmlFor="sub-day-teacher">{t('substituteTeacher')}</Label>
+            <SingleSelectDropdown
               id="sub-day-teacher"
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+              options={[
+                { id: '', label: t('noneClearSubstitute') },
+                ...teacherOptions
+                  .filter((teacher) => !selectedGroup?.teacherId || teacher.id !== selectedGroup.teacherId)
+                  .map((teacher) => ({ id: teacher.id, label: teacher.label })),
+              ]}
               value={substituteTeacherId}
-              onChange={(e) => setSubstituteTeacherId(e.target.value)}
-            >
-              <option value="">None (clear substitute for that day)</option>
-              {teacherOptions
-                .filter((t) => !selectedGroup?.teacherId || t.id !== selectedGroup.teacherId)
-                .map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-            </select>
+              onValueChange={(nextValue) => setSubstituteTeacherId(nextValue ?? '')}
+            />
           </div>
         </div>
         <DialogFooter>
           <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button type="button" onClick={handleSubmit} disabled={setSubstitute.isPending || !groupId || !date}>
-            Apply
+            {t('apply')}
           </Button>
         </DialogFooter>
       </DialogContent>

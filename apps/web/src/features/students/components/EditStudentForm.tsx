@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateStudent, useStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
@@ -11,6 +12,7 @@ import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -26,32 +28,26 @@ function computeAgeFromDob(dob: string | undefined): number | undefined {
   return age >= 0 && age <= 120 ? age : undefined;
 }
 
-const updateStudentSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name must be at most 50 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name must be at most 50 characters'),
-  phone: z.string().max(50, 'Phone must be at most 50 characters').optional().or(z.literal('')),
-  age: z.number().int('Age must be a whole number').min(1, 'Age must be at least 1').max(120, 'Age must be reasonable').optional(),
-  dateOfBirth: z
-    .union([z.string().regex(ISO_DATE_RE, 'Use YYYY-MM-DD format'), z.literal('')])
-    .optional(),
-  firstLessonDate: z
-    .union([z.string().regex(ISO_DATE_RE, 'Use YYYY-MM-DD format'), z.literal('')])
-    .optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
-  groupId: z.string().optional().or(z.literal('')),
-  teacherId: z.string().optional().or(z.literal('')),
-  centerId: z.string().optional().or(z.literal('')),
-  parentName: z.string().max(100, 'Parent name must be at most 100 characters').optional().or(z.literal('')),
-  parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional().or(z.literal('')),
-  parentEmail: z.string().email('Invalid email address').optional().or(z.literal('')),
-  parentPassportInfo: z.string().max(100, 'Passport info must be at most 100 characters').optional().or(z.literal('')),
-  monthlyFee: z.number().min(0, 'Monthly fee must be positive'),
-  notes: z.string().max(500, 'Notes must be at most 500 characters').optional().or(z.literal('')),
-  receiveReports: z.boolean().optional(),
-  registerDate: z.string().optional().or(z.literal('')), // YYYY-MM-DD, manual
-});
-
-type UpdateStudentFormData = z.infer<typeof updateStudentSchema>;
+type UpdateStudentFormData = {
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  age?: number;
+  dateOfBirth?: string;
+  firstLessonDate?: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  groupId?: string;
+  teacherId?: string;
+  centerId?: string;
+  parentName?: string;
+  parentPhone?: string;
+  parentEmail?: string;
+  parentPassportInfo?: string;
+  monthlyFee: number;
+  notes?: string;
+  receiveReports?: boolean;
+  registerDate?: string;
+};
 
 interface EditStudentFormProps {
   open: boolean;
@@ -60,6 +56,49 @@ interface EditStudentFormProps {
 }
 
 export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFormProps) {
+  const t = useTranslations('students');
+  const tForm = useTranslations('students.form');
+  const tVal = useTranslations('students.validation');
+  const tCommon = useTranslations('common');
+  const tStatus = useTranslations('status');
+  const tSettings = useTranslations('settings');
+
+  const updateStudentSchema = useMemo(
+    () =>
+      z.object({
+        firstName: z.string().min(2, tVal('firstNameMin')).max(50, tVal('firstNameMax')),
+        lastName: z.string().min(2, tVal('lastNameMin')).max(50, tVal('lastNameMax')),
+        phone: z.string().max(50, tVal('phoneMax')).optional().or(z.literal('')),
+        age: z
+          .number()
+          .int(tVal('ageInt'))
+          .min(1, tVal('ageMin'))
+          .max(120, tVal('ageMax'))
+          .optional(),
+        dateOfBirth: z
+          .union([z.string().regex(ISO_DATE_RE, tVal('dateFormat')), z.literal('')])
+          .optional(),
+        firstLessonDate: z
+          .union([z.string().regex(ISO_DATE_RE, tVal('dateFormat')), z.literal('')])
+          .optional(),
+        status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
+        groupId: z.string().optional().or(z.literal('')),
+        teacherId: z.string().optional().or(z.literal('')),
+        centerId: z.string().optional().or(z.literal('')),
+        parentName: z.string().max(100, tVal('parentNameMax')).optional().or(z.literal('')),
+        parentPhone: z.string().max(50, tVal('parentPhoneMax')).optional().or(z.literal('')),
+        parentEmail: z.string().email(tVal('invalidEmail')).optional().or(z.literal('')),
+        parentPassportInfo: z.string().max(100, tVal('passportMax')).optional().or(z.literal('')),
+        monthlyFee: z.number().min(0, tVal('monthlyFeeMin')),
+        notes: z.string().max(500, tVal('notesMax')).optional().or(z.literal('')),
+        receiveReports: z.boolean().optional(),
+        registerDate: z.string().optional().or(z.literal('')),
+      }),
+    [tVal],
+  );
+
+  const resolver = useMemo(() => zodResolver(updateStudentSchema), [updateStudentSchema]);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const updateStudent = useUpdateStudent();
@@ -73,7 +112,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     watch,
     setValue,
   } = useForm<UpdateStudentFormData>({
-    resolver: zodResolver(updateStudentSchema),
+    resolver,
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -180,7 +219,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   }, [selectedTeacher, groupsForTeacher]);
 
   const selectFieldClass =
-    'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+    'unified-native-select flex w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50';
 
   const { onChange: onCenterChangeField, ...centerIdFieldRest } = register('centerId');
 
@@ -227,7 +266,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
   const onSubmit = async (data: UpdateStudentFormData) => {
     setErrorMessage(null);
-    
+
     try {
       const payload: UpdateStudentDto = {};
 
@@ -263,11 +302,11 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       }
 
       await updateStudent.mutateAsync({ id: studentId, data: payload });
-      
+
       // Show success message
-      setSuccessMessage('Student updated successfully!');
+      setSuccessMessage(tForm('updatedSuccess'));
       setErrorMessage(null);
-      
+
       // Close modal after a brief delay
       setTimeout(() => {
         onOpenChange(false);
@@ -275,7 +314,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       }, 1500);
     } catch (error: unknown) {
       // Handle error
-      const message = getErrorMessage(error, 'Failed to update student. Please try again.');
+      const message = getErrorMessage(error, tForm('failedUpdate'));
       setErrorMessage(message);
       setSuccessMessage(null);
     }
@@ -285,10 +324,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Student</DialogTitle>
-          <DialogDescription>
-            Update the student information below. All fields marked with * are required.
-          </DialogDescription>
+          <DialogTitle>{tForm('editTitle')}</DialogTitle>
+          <DialogDescription>{tForm('editDescription')}</DialogDescription>
         </DialogHeader>
 
         {isLoadingStudent ? (
@@ -311,43 +348,43 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">
-                  First Name <span className="text-red-500">*</span>
+                  {tCommon('firstName')} <span className="text-red-500">{tForm('requiredMark')}</span>
                 </Label>
                 <Input
                   id="firstName"
                   {...register('firstName')}
                   error={errors.firstName?.message}
-                  placeholder="John"
+                  placeholder={tForm('firstNamePlaceholder')}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="lastName">
-                  Last Name <span className="text-red-500">*</span>
+                  {tCommon('lastName')} <span className="text-red-500">{tForm('requiredMark')}</span>
                 </Label>
                 <Input
                   id="lastName"
                   {...register('lastName')}
                   error={errors.lastName?.message}
-                  placeholder="Doe"
+                  placeholder={tForm('lastNamePlaceholder')}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{tCommon('phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
                 {...register('phone')}
                 error={errors.phone?.message}
-                placeholder="+1 (555) 123-4567"
+                placeholder={t('phonePlaceholder')}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Label htmlFor="dateOfBirth">{t('dateOfBirth')}</Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
@@ -355,12 +392,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   error={errors.dateOfBirth?.message}
                 />
                 {effectiveAge !== undefined && (
-                  <p className="text-xs text-slate-500">Age: {effectiveAge}</p>
+                  <p className="text-xs text-slate-500">{tForm('ageHint', { age: effectiveAge })}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="firstLessonDate">First Lesson Date</Label>
+                <Label htmlFor="firstLessonDate">{tForm('firstLessonDate')}</Label>
                 <Input
                   id="firstLessonDate"
                   type="date"
@@ -371,15 +408,15 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{tCommon('status')}</Label>
               <select
                 id="status"
                 {...register('status')}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className={selectFieldClass}
               >
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-                <option value="SUSPENDED">Suspended</option>
+                <option value="ACTIVE">{tStatus('active')}</option>
+                <option value="INACTIVE">{tStatus('inactive')}</option>
+                <option value="SUSPENDED">{tStatus('suspended')}</option>
               </select>
               {errors.status && (
                 <p className="text-sm text-red-600">{errors.status.message}</p>
@@ -387,7 +424,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="centerId">Center</Label>
+              <Label htmlFor="centerId">{tCommon('center')}</Label>
               <select
                 id="centerId"
                 {...centerIdFieldRest}
@@ -399,7 +436,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   setValue('groupId', '', { shouldDirty: true });
                 }}
               >
-                <option value="">Not assigned</option>
+                <option value="">{tCommon('notAssigned')}</option>
                 {centers.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -413,7 +450,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="teacherId">Teacher</Label>
+                <Label htmlFor="teacherId">{t('teacher')}</Label>
                 <select
                   id="teacherId"
                   {...register('teacherId')}
@@ -421,12 +458,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   disabled={isLoadingTeachers || isSubmitting || !watchedCenterId}
                 >
                   <option value="">
-                    {watchedCenterId ? 'Select teacher' : 'Select a center first'}
+                    {watchedCenterId ? t('selectTeacher') : tForm('selectCenter')}
                   </option>
                   {teachersForCenter.map((teacher) => (
                     <option key={teacher.id} value={teacher.id}>
                       {teacher.user.firstName} {teacher.user.lastName}
-                      {teacher.user.phone ? ` - ${teacher.user.phone}` : ''}
+                      {teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}
                     </option>
                   ))}
                 </select>
@@ -434,15 +471,17 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   <p className="text-sm text-red-600">{errors.teacherId.message}</p>
                 )}
                 {isLoadingTeachers && (
-                  <p className="text-sm text-slate-500">Loading teachers...</p>
+                  <p className="text-sm text-slate-500">{t('loadingTeachers')}</p>
                 )}
                 {watchedTeacherId && teacherCentersLabel ? (
-                  <p className="text-xs text-slate-500">Centers: {teacherCentersLabel}</p>
+                  <p className="text-xs text-slate-500">
+                    {tForm('teacherCenters')}: {teacherCentersLabel}
+                  </p>
                 ) : null}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="groupId">Group</Label>
+                <Label htmlFor="groupId">{t('group')}</Label>
                 <select
                   id="groupId"
                   {...register('groupId')}
@@ -450,7 +489,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
                 >
                   <option value="">
-                    {watchedTeacherId ? 'Select group' : 'Select a teacher first'}
+                    {watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst')}
                   </option>
                   {groupsForTeacher.map((group) => (
                     <option key={group.id} value={group.id}>
@@ -462,12 +501,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   <p className="text-sm text-red-600">{errors.groupId.message}</p>
                 )}
                 {watchedTeacherId && isLoadingGroups && (
-                  <p className="text-sm text-slate-500">Loading groups...</p>
+                  <p className="text-sm text-slate-500">{tCommon('loading')}</p>
                 )}
                 {watchedGroupId ? (
                   <p className="text-xs text-slate-500">
-                    Group location:{' '}
-                    {groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? '—'}
+                    {tCommon('center')}:{' '}
+                    {groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? t('notAvailable')}
                   </p>
                 ) : null}
               </div>
@@ -475,7 +514,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
             <div className="space-y-2">
               <Label htmlFor="monthlyFee">
-                Monthly Fee (֏) <span className="text-red-500">*</span>
+                {t('monthlyFeeLabel')} (֏) <span className="text-red-500">{tForm('requiredMark')}</span>
               </Label>
               <Input
                 id="monthlyFee"
@@ -489,62 +528,61 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="registerDate">Register (date joined group)</Label>
+              <Label htmlFor="registerDate">{t('registerDateLabel')}</Label>
               <Input
                 id="registerDate"
                 type="date"
                 {...register('registerDate')}
                 error={errors.registerDate?.message}
               />
-              <p className="text-xs text-slate-500">Optional. Date when the student joined the group. Leave empty if not set.</p>
             </div>
 
             {showParentSection && (
             <div className="border-t pt-4">
               <h3 className="text-sm font-semibold text-slate-800 mb-4">
-                Parent/Guardian Information
+                {tForm('parentDetailsSection')}
               </h3>
-              
+
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="parentName">Parent/Guardian Name</Label>
+                  <Label htmlFor="parentName">{t('parentName')}</Label>
                   <Input
                     id="parentName"
                     {...register('parentName')}
                     error={errors.parentName?.message}
-                    placeholder="Jane Doe"
+                    placeholder={tForm('firstNamePlaceholder')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="parentPhone">Parent/Guardian Phone</Label>
+                  <Label htmlFor="parentPhone">{t('parentPhone')}</Label>
                   <Input
                     id="parentPhone"
                     type="tel"
                     {...register('parentPhone')}
                     error={errors.parentPhone?.message}
-                    placeholder="+1 (555) 123-4567"
+                    placeholder={t('phonePlaceholder')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="parentEmail">Parent/Guardian Email</Label>
+                  <Label htmlFor="parentEmail">{t('parentEmail')}</Label>
                   <Input
                     id="parentEmail"
                     type="email"
                     {...register('parentEmail')}
                     error={errors.parentEmail?.message}
-                    placeholder="parent@example.com"
+                    placeholder={tForm('emailPlaceholder')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="parentPassportInfo">Parent Passport Information</Label>
+                  <Label htmlFor="parentPassportInfo">{tForm('parentPassportInfo')}</Label>
                   <Input
                     id="parentPassportInfo"
                     {...register('parentPassportInfo')}
                     error={errors.parentPassportInfo?.message}
-                    placeholder="Passport number / ID"
+                    placeholder={tForm('parentPassportInfo')}
                   />
                 </div>
               </div>
@@ -552,13 +590,13 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t('notes')}</Label>
               <textarea
                 id="notes"
                 {...register('notes')}
                 rows={4}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Additional notes about the student..."
+                className="flex w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder={t('notes')}
               />
               {errors.notes && (
                 <p className="text-sm text-red-600">{errors.notes.message}</p>
@@ -570,10 +608,10 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 type="checkbox"
                 id="receiveReports"
                 {...register('receiveReports')}
-                className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+                className="h-4 w-4 rounded border-slate-300 accent-[#1010a3] focus:ring-[#1010a3]/30"
               />
               <Label htmlFor="receiveReports" className="text-sm font-normal cursor-pointer">
-                Receive progress reports via email
+                {t('receiveReportsOn')}
               </Label>
             </div>
 
@@ -589,10 +627,10 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 }}
                 disabled={isSubmitting || updateStudent.isPending}
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
               <Button type="submit" isLoading={isSubmitting || updateStudent.isPending}>
-                {isSubmitting || updateStudent.isPending ? 'Saving...' : 'Save Changes'}
+                {isSubmitting || updateStudent.isPending ? tSettings('saving') : tSettings('saveChanges')}
               </Button>
             </DialogFooter>
           </form>
@@ -601,9 +639,3 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     </Dialog>
   );
 }
-
-
-
-
-
-

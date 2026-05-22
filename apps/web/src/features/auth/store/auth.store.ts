@@ -6,6 +6,7 @@ import { api } from '@/shared/lib/api';
 import { ApiError } from '@/shared/lib/api-errors';
 import { isTokenExpired } from '@/shared/lib/jwt-utils';
 import { clearChatStateOnLogout } from '@/features/chat/store/chat.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import type { User, AuthTokens, UserRole } from '@/types';
 
 interface AuthState {
@@ -159,7 +160,7 @@ export function getDashboardPath(role: UserRole): string {
   switch (role) {
     case 'ADMIN':
     case 'MANAGER':
-      return '/admin/dashboard';
+      return `${getAdminPortalBasePath(role)}/dashboard`;
     case 'TEACHER':
       return '/teacher/dashboard';
     case 'STUDENT':

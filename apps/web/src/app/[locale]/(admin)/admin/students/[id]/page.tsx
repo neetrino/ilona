@@ -17,6 +17,8 @@ import { StudentNotes } from './components/StudentNotes';
 import { StudentAttendance } from './components/StudentAttendance';
 import { updateStudentSchema, type UpdateStudentFormData } from './schemas';
 import type { UserStatus } from '@/types';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 export default function StudentProfilePage() {
   const t = useTranslations('students');
@@ -25,6 +27,8 @@ export default function StudentProfilePage() {
   const router = useRouter();
   const studentId = params.id as string;
   const locale = params.locale as string;
+  const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
   const [isEditMode, setIsEditMode] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -91,6 +95,8 @@ export default function StudentProfilePage() {
   }, [student, isEditMode, reset]);
 
   const watchedTeacherId = watch('teacherId') || '';
+  const watchedGroupId = watch('groupId') || '';
+  const watchedStatus = watch('status') || 'ACTIVE';
   const groupsForTeacher = useMemo(() => {
     const allGroups = groupsData?.items ?? [];
     return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
@@ -225,7 +231,7 @@ export default function StudentProfilePage() {
         subtitle="Loading student information..."
       >
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1010a3]"></div>
         </div>
       </DashboardLayout>
     );
@@ -246,15 +252,15 @@ export default function StudentProfilePage() {
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-slate-800 mb-2">Student Not Found</h3>
-              <p className="text-sm text-slate-500 mb-4">
+              <h3 className="font-semibold text-[#3b3b40] mb-2">Student Not Found</h3>
+              <p className="text-sm text-[#8b8b90] mb-4">
                 {error 
                   ? 'Failed to load student information. Please try again later.'
                   : 'The student you are looking for does not exist or has been removed.'}
               </p>
               <Button 
                 variant="outline" 
-                onClick={() => router.push(`/${locale}/admin/students`)}
+                onClick={() => router.push(`/${locale}${portalBasePath}/students`)}
               >
                 Back to Students
               </Button>
@@ -283,7 +289,7 @@ export default function StudentProfilePage() {
           <Button 
             variant="ghost" 
             type="button"
-            onClick={() => handleNavigation(`/${locale}/admin/students`)}
+            onClick={() => handleNavigation(`/${locale}${portalBasePath}/students`)}
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -294,7 +300,7 @@ export default function StudentProfilePage() {
             <Button 
               type="button"
               onClick={() => setIsEditMode(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -325,6 +331,8 @@ export default function StudentProfilePage() {
           initials={initials}
           errors={errors}
           register={register}
+          setValue={setValue}
+          statusValue={watchedStatus}
         />
 
         {/* Stats Grid */}
@@ -348,6 +356,8 @@ export default function StudentProfilePage() {
           errors={errors}
           register={register}
           setValue={setValue}
+          teacherIdValue={watchedTeacherId}
+          groupIdValue={watchedGroupId}
         />
 
         {/* Notes */}
@@ -363,7 +373,7 @@ export default function StudentProfilePage() {
 
         {/* Edit Mode Actions */}
         {isEditMode && (
-          <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-4 pt-4 border-t border-[rgba(14,14,16,0.07)]">
             <Button
               type="button"
               variant="outline"
@@ -374,7 +384,7 @@ export default function StudentProfilePage() {
             </Button>
             <Button
               type="submit"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white"
               disabled={updateStudent.isPending || !isDirty}
               isLoading={updateStudent.isPending}
             >

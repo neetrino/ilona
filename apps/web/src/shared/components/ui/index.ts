@@ -2,13 +2,16 @@ export { Avatar, getInitials, getInitialsFromParts, formatDisplayName } from './
 export { Button } from './button';
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
 export { Input } from './input';
+export { DatePickerInput } from './date-picker-input';
 export { PasswordInput } from './password-input';
 export { Label } from './label';
 export { StatCard } from './stat-card';
+export { PublicAssetImage } from './public-asset-image';
 export { DataTable } from './data-table';
 export { Badge } from './badge';
 export { Checkbox } from './checkbox';
 export { FilterDropdown } from './filter-dropdown';
+export { ListBoardViewToggle } from './list-board-view-toggle';
 export { ActionButtons } from './action-buttons';
 export type { ActionButtonsProps } from './action-buttons';
 export {
@@ -23,6 +26,8 @@ export {
   DialogTitle,
   DialogDescription,
 } from './dialog';
+export { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
+export type { DeleteConfirmationDialogProps } from './DeleteConfirmationDialog';
 export { AdminDetailModal } from './admin-detail-modal';
 export type { AdminDetailModalProps } from './admin-detail-modal';
 export { AdminAvatarPhotoLightbox } from './admin-avatar-photo-lightbox';

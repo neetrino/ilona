@@ -139,7 +139,7 @@ export default function TeacherCalendarPage() {
       ) : (
         <div
           className={cn(
-            'overflow-hidden rounded-xl border border-slate-200 bg-white',
+            'overflow-hidden rounded-xl border border-[rgba(14,14,16,0.07)] bg-white',
             viewMode === 'month' && 'h-[min(70vh,720px)] min-h-0',
           )}
         >

@@ -61,7 +61,7 @@ export function TextTab({ lessonId }: TextTabProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#1010a3]"></div>
       </div>
     );
   }
@@ -92,7 +92,7 @@ export function TextTab({ lessonId }: TextTabProps) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={8}
-          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
           placeholder="Enter your message here..."
         />
 
@@ -100,7 +100,7 @@ export function TextTab({ lessonId }: TextTabProps) {
           <Button
             onClick={handleSend}
             disabled={isSending || !text.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+            className="bg-[#1010a3] px-6 py-2 text-white hover:bg-[#0d0d85]"
           >
             {isSending ? 'Sending...' : 'Send Message'}
           </Button>

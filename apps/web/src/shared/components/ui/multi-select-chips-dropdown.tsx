@@ -4,6 +4,15 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Checkbox } from './checkbox';
+import {
+  DROPDOWN_CHEVRON_CLASS,
+  DROPDOWN_LABEL_CLASS,
+  DROPDOWN_MENU_SURFACE_CLASS,
+  DROPDOWN_OPTION_SELECTED_CLASS,
+  DROPDOWN_PLACEHOLDER_TEXT_CLASS,
+  DROPDOWN_TRIGGER_BASE_CLASS,
+  DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+} from './dropdown-theme';
 
 export interface MultiSelectChipsOption {
   id: string;
@@ -129,7 +138,7 @@ export function MultiSelectChipsDropdown({
   return (
     <div className={cn('relative', className)} ref={dropdownRef}>
       {label && (
-        <label className="block text-sm font-medium text-slate-600 mb-1.5">{label}</label>
+        <label className={DROPDOWN_LABEL_CLASS}>{label}</label>
       )}
       <div
         role="button"
@@ -146,10 +155,12 @@ export function MultiSelectChipsDropdown({
           }
         }}
         className={cn(
-          'w-full min-h-11 px-2 py-1.5 text-left bg-white border border-slate-200 rounded-lg',
-          'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+          'w-full min-h-11 py-1.5 text-left px-2',
+          DROPDOWN_TRIGGER_BASE_CLASS,
+          DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+          isOpen && 'border-[#1010a3]/35 shadow-[0_8px_20px_rgba(16,16,163,0.12)]',
           (isLoading || disabled) && 'opacity-50 cursor-not-allowed pointer-events-none',
-          !(isLoading || disabled) && 'hover:border-slate-300 cursor-pointer transition-colors',
+          !(isLoading || disabled) && 'cursor-pointer transition-colors',
         )}
       >
         <div className="flex items-start gap-2">
@@ -160,9 +171,9 @@ export function MultiSelectChipsDropdown({
             )}
           >
             {isLoading ? (
-              <span className="text-sm text-slate-400 px-1 py-0.5">Loading…</span>
+              <span className={cn('px-1 py-0.5 text-sm', DROPDOWN_PLACEHOLDER_TEXT_CLASS)}>Loading…</span>
             ) : selectedChips.length === 0 ? (
-              <span className="text-sm text-slate-400 px-1 py-1">{placeholder}</span>
+              <span className={cn('px-1 py-1 text-sm', DROPDOWN_PLACEHOLDER_TEXT_CLASS)}>{placeholder}</span>
             ) : !shouldShowChipsInTrigger ? (
               <span className="text-sm text-slate-500 px-1 py-1">
                 {selectedChips.length} selected
@@ -184,7 +195,7 @@ export function MultiSelectChipsDropdown({
                         removeChip(opt.id);
                       }
                     }}
-                    className="p-0.5 rounded-sm hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 shrink-0 inline-flex cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="inline-flex shrink-0 cursor-pointer rounded-sm p-0.5 text-slate-500 hover:bg-slate-200/80 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1010a3]/25"
                     aria-label={`Remove ${opt.label}`}
                   >
                     <X className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -195,7 +206,8 @@ export function MultiSelectChipsDropdown({
           </div>
           <svg
             className={cn(
-              'w-4 h-4 text-slate-500 transition-transform flex-shrink-0 mt-1.5',
+              DROPDOWN_CHEVRON_CLASS,
+              'mt-1.5',
               isOpen && 'rotate-180',
             )}
             fill="none"
@@ -209,7 +221,7 @@ export function MultiSelectChipsDropdown({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-72 overflow-hidden flex flex-col">
+        <div className={cn(DROPDOWN_MENU_SURFACE_CLASS, 'absolute mt-1 flex max-h-72 w-full flex-col overflow-hidden')}>
           {options.length === 0 ? (
             <div className="p-3 text-sm text-slate-500">{emptyOptionsHint}</div>
           ) : (
@@ -220,7 +232,7 @@ export function MultiSelectChipsDropdown({
                   placeholder={searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
@@ -231,7 +243,7 @@ export function MultiSelectChipsDropdown({
                     e.stopPropagation();
                     handleSelectAllFiltered();
                   }}
-                  className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                  className="text-xs font-medium text-[#1010a3] transition-colors hover:text-[#0d0d85]"
                   disabled={filteredOptions.length === 0}
                 >
                   Select all (visible)
@@ -259,8 +271,8 @@ export function MultiSelectChipsDropdown({
                         <label
                           key={option.id}
                           className={cn(
-                            'flex items-center px-4 py-2 cursor-pointer hover:bg-slate-50 transition-colors',
-                            isSelected && 'bg-primary/10',
+                            'flex cursor-pointer items-center rounded-lg px-3 py-2.5 transition-colors hover:bg-slate-50',
+                            isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
                           )}
                         >
                           <Checkbox

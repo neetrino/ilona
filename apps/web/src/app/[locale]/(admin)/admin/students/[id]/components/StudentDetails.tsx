@@ -1,6 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Badge, Input, Label } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
 import type { Group } from '@/features/groups';
 import type { Teacher } from '@/features/teachers';
@@ -25,6 +28,8 @@ interface StudentDetailsProps {
   };
   register: UseFormRegister<UpdateStudentFormData>;
   setValue?: UseFormSetValue<UpdateStudentFormData>;
+  teacherIdValue?: string;
+  groupIdValue?: string;
 }
 
 export function StudentDetails({
@@ -38,55 +43,59 @@ export function StudentDetails({
   errors,
   register,
   setValue,
+  teacherIdValue = '',
+  groupIdValue = '',
 }: StudentDetailsProps) {
+  const t = useTranslations('students');
+  const tc = useTranslations('common');
   const firstName = student.user?.firstName || '';
   const lastName = student.user?.lastName || '';
+  const na = t('notAvailable');
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Personal Information */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Personal Information</h3>
+      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">{tc('personalInformation')}</h3>
         <div className="space-y-4">
           {isEditMode ? (
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{tc('phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
                 {...register('phone')}
                 error={errors?.phone?.message}
-                placeholder="+1 (555) 123-4567"
+                placeholder={t('phonePlaceholder')}
               />
             </div>
           ) : (
             <>
               <div>
-                <label className="text-sm font-medium text-slate-500">First Name</label>
-                <p className="text-slate-800 mt-1">{firstName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">{tc('firstName')}</label>
+                <p className="text-[#3b3b40] mt-1">{firstName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Last Name</label>
-                <p className="text-slate-800 mt-1">{lastName}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">{tc('lastName')}</label>
+                <p className="text-[#3b3b40] mt-1">{lastName}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Email</label>
-                <p className="text-slate-800 mt-1">{student.user?.email || 'N/A'}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">{tc('email')}</label>
+                <p className="text-[#3b3b40] mt-1">{student.user?.email || na}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Phone</label>
-                <p className="text-slate-800 mt-1">{student.user?.phone || 'N/A'}</p>
+                <label className="text-sm font-medium text-[#8b8b90]">{tc('phone')}</label>
+                <p className="text-[#3b3b40] mt-1">{formatPhoneForDisplay(student.user?.phone, na)}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-500">Member Since</label>
-                <p className="text-slate-800 mt-1">
-                  {student.user?.createdAt 
-                    ? new Date(student.user.createdAt).toLocaleDateString('en-US', {
+                <label className="text-sm font-medium text-[#8b8b90]">{t('memberSince')}</label>
+                <p className="text-[#3b3b40] mt-1">
+                  {student.user?.createdAt
+                    ? new Date(student.user.createdAt).toLocaleDateString(undefined, {
                         year: 'numeric',
                         month: 'long',
-                        day: 'numeric'
+                        day: 'numeric',
                       })
-                    : 'N/A'}
+                    : na}
                 </p>
               </div>
             </>
@@ -94,63 +103,62 @@ export function StudentDetails({
         </div>
       </div>
 
-      {/* Group & Parent Information */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Group & Parent Information</h3>
+      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
+        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">{t('groupParentSection')}</h3>
         <div className="space-y-4">
           {isEditMode ? (
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="teacherId">Teacher</Label>
-                  <select
+                  <Label htmlFor="teacherId">{t('teacher')}</Label>
+                  <SingleSelectDropdown
                     id="teacherId"
-                    {...register('teacherId', {
-                      onChange: () => setValue?.('groupId', ''),
-                    })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    options={[
+                      { id: '', label: t('selectTeacher') },
+                      ...teachers.map((teacher) => ({
+                        id: teacher.id,
+                        label: `${teacher.user.firstName} ${teacher.user.lastName}${teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}`,
+                      })),
+                    ]}
+                    value={teacherIdValue}
+                    onValueChange={(nextValue) => {
+                      setValue?.('teacherId', nextValue ?? '', { shouldDirty: true });
+                      setValue?.('groupId', '', { shouldDirty: true });
+                    }}
                     disabled={isLoadingTeachers}
-                  >
-                    <option value="">Select a teacher</option>
-                    {teachers.map((teacher) => (
-                      <option key={teacher.id} value={teacher.id}>
-                        {teacher.user.firstName} {teacher.user.lastName}
-                        {teacher.user.phone ? ` - ${teacher.user.phone}` : ''}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {errors?.teacherId && (
                     <p className="text-sm text-red-600">{errors.teacherId.message}</p>
                   )}
                   {isLoadingTeachers && (
-                    <p className="text-sm text-slate-500">Loading teachers...</p>
+                    <p className="text-sm text-[#8b8b90]">{t('loadingTeachers')}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="groupId">Group</Label>
-                  <select
+                  <Label htmlFor="groupId">{t('group')}</Label>
+                  <SingleSelectDropdown
                     id="groupId"
-                    {...register('groupId')}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    options={[
+                      { id: '', label: groupSelectDisabled ? t('selectTeacherFirst') : tc('notAssigned') },
+                      ...groups.map((group) => ({
+                        id: group.id,
+                        label: `${group.name} ${group.level ? `(${group.level})` : ''}`.trim(),
+                      })),
+                    ]}
+                    value={groupIdValue}
+                    onValueChange={(nextValue) =>
+                      setValue?.('groupId', nextValue ?? '', { shouldDirty: true })
+                    }
                     disabled={isLoadingGroups || groupSelectDisabled}
-                  >
-                    <option value="">
-                      {groupSelectDisabled ? 'Select Teacher first' : 'Not assigned'}
-                    </option>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name} {group.level ? `(${group.level})` : ''}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {errors?.groupId && (
                     <p className="text-sm text-red-600">{errors.groupId.message}</p>
                   )}
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="parentName">Parent Name</Label>
+                <Label htmlFor="parentName">{t('parentName')}</Label>
                 <Input
                   id="parentName"
                   {...register('parentName')}
@@ -158,7 +166,7 @@ export function StudentDetails({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="parentPhone">Parent Phone</Label>
+                <Label htmlFor="parentPhone">{t('parentPhone')}</Label>
                 <Input
                   id="parentPhone"
                   type="tel"
@@ -167,7 +175,7 @@ export function StudentDetails({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="parentEmail">Parent Email</Label>
+                <Label htmlFor="parentEmail">{t('parentEmail')}</Label>
                 <Input
                   id="parentEmail"
                   type="email"
@@ -181,59 +189,59 @@ export function StudentDetails({
                     type="checkbox"
                     id="receiveReports"
                     {...register('receiveReports')}
-                    className="w-4 h-4 rounded border-slate-300"
+                    className="h-4 w-4 rounded border-[rgba(14,14,16,0.12)] accent-[#1010a3]"
                   />
-                  Receive Reports
+                  {t('receiveReportsLabel')}
                 </Label>
               </div>
             </>
           ) : (
             <>
               <div>
-                <label className="text-sm font-medium text-slate-500">Group</label>
-                <div className="text-slate-800 mt-1">
+                <label className="text-sm font-medium text-[#8b8b90]">{t('group')}</label>
+                <div className="text-[#3b3b40] mt-1">
                   {student.group ? (
                     <div className="flex items-center gap-2">
                       <Badge variant="info">{student.group.name}</Badge>
                       {student.group.level && (
-                        <span className="text-sm text-slate-500">{student.group.level}</span>
+                        <span className="text-sm text-[#8b8b90]">{student.group.level}</span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-slate-400">Not assigned</span>
+                    <span className="text-[#8b8b90]">{tc('notAssigned')}</span>
                   )}
                 </div>
               </div>
               {student.group?.center && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Center</label>
-                  <p className="text-slate-800 mt-1">{student.group.center.name}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">{tc('center')}</label>
+                  <p className="text-[#3b3b40] mt-1">{student.group.center.name}</p>
                 </div>
               )}
               {student.teacher && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Teacher</label>
-                  <p className="text-slate-800 mt-1">
+                  <label className="text-sm font-medium text-[#8b8b90]">{t('teacher')}</label>
+                  <p className="text-[#3b3b40] mt-1">
                     {student.teacher.user.firstName} {student.teacher.user.lastName}
                   </p>
                 </div>
               )}
               {student.parentName && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Parent Name</label>
-                  <p className="text-slate-800 mt-1">{student.parentName}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">{t('parentName')}</label>
+                  <p className="text-[#3b3b40] mt-1">{student.parentName}</p>
                 </div>
               )}
               {student.parentPhone && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Parent Phone</label>
-                  <p className="text-slate-800 mt-1">{student.parentPhone}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">{t('parentPhone')}</label>
+                  <p className="text-[#3b3b40] mt-1">{formatPhoneForDisplay(student.parentPhone)}</p>
                 </div>
               )}
               {student.parentEmail && (
                 <div>
-                  <label className="text-sm font-medium text-slate-500">Parent Email</label>
-                  <p className="text-slate-800 mt-1">{student.parentEmail}</p>
+                  <label className="text-sm font-medium text-[#8b8b90]">{t('parentEmail')}</label>
+                  <p className="text-[#3b3b40] mt-1">{student.parentEmail}</p>
                 </div>
               )}
             </>
@@ -243,4 +251,3 @@ export function StudentDetails({
     </div>
   );
 }
-

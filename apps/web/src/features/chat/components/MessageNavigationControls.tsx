@@ -1,8 +1,10 @@
 'use client';
 
 import { cn } from '@/shared/lib/utils';
+import { getChatTheme, type ChatUiVariant } from '../lib/chat-theme';
 
 type MessageNavigationControlsProps = {
+  variant?: ChatUiVariant;
   onPrevious: () => void;
   onNext: () => void;
   canGoPrevious: boolean;
@@ -10,22 +12,27 @@ type MessageNavigationControlsProps = {
 };
 
 export function MessageNavigationControls({
+  variant = 'default',
   onPrevious,
   onNext,
   canGoPrevious,
   canGoNext,
 }: MessageNavigationControlsProps) {
+  const ui = getChatTheme(variant);
   return (
-    <div className="flex items-center rounded-lg border border-slate-200 bg-white/90 shadow-sm">
+    <div
+      className={cn(
+        'flex items-center rounded-lg border bg-white/90 shadow-sm',
+        ui.border,
+      )}
+    >
       <button
         type="button"
         onClick={onPrevious}
         disabled={!canGoPrevious}
         className={cn(
-          'p-2 rounded-l-lg transition-colors',
-          canGoPrevious
-            ? 'text-slate-700 hover:bg-slate-100'
-            : 'text-slate-300 cursor-not-allowed'
+          'rounded-l-lg p-2 transition-colors',
+          canGoPrevious ? cn(ui.body, ui.listHover) : cn(ui.subtle, 'cursor-not-allowed'),
         )}
         title="Previous message"
         aria-label="Previous message"
@@ -34,14 +41,14 @@ export function MessageNavigationControls({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
         </svg>
       </button>
-      <div className="w-px h-5 bg-slate-200" aria-hidden />
+      <div className={cn('h-5 w-px', ui.border)} aria-hidden />
       <button
         type="button"
         onClick={onNext}
         disabled={!canGoNext}
         className={cn(
-          'p-2 rounded-r-lg transition-colors',
-          canGoNext ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed'
+          'rounded-r-lg p-2 transition-colors',
+          canGoNext ? cn(ui.body, ui.listHover) : cn(ui.subtle, 'cursor-not-allowed'),
         )}
         title="Next message"
         aria-label="Next message"

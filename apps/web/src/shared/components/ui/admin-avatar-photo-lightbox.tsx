@@ -53,7 +53,6 @@ export function AdminAvatarPhotoLightbox({
           >
             ✕
           </motion.button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <motion.img
             src={imageUrl}
             alt={imageAlt}

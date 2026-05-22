@@ -12,7 +12,17 @@ import {
   toYmd,
   type TimeFilterMode,
 } from '@/shared/lib/analytics-time-range';
-import { cn, formatCurrency } from '@/shared/lib/utils';
+import { formatCurrency } from '@/shared/lib/utils';
+import {
+  StudentCard,
+  StudentPageStack,
+  StudentProgressBar,
+  StudentSectionHeader,
+  StudentStatTile,
+  studentPillActiveClass,
+  studentPillInactiveClass,
+  studentPillTrackClass,
+} from '@/features/student-ui';
 
 type TabId = 'attendance' | 'feedback' | 'performance' | 'revenue';
 
@@ -20,58 +30,42 @@ function StatCard({
   label,
   value,
   subtext,
-  color = 'blue',
+  color: _color,
 }: {
   label: string;
   value: string | number;
   subtext?: string;
-  color?: 'blue' | 'green' | 'yellow' | 'red' | 'purple';
+  color?: string;
 }) {
-  const colors: Record<string, string> = {
-    blue: 'bg-blue-50 border-blue-200',
-    green: 'bg-green-50 border-green-200',
-    yellow: 'bg-yellow-50 border-yellow-200',
-    red: 'bg-red-50 border-red-200',
-    purple: 'bg-purple-50 border-purple-200',
-  };
   return (
-    <div className={cn('rounded-xl border p-4', colors[color])}>
-      <p className="mb-1 text-sm text-slate-600">{label}</p>
-      <p className="text-2xl font-bold text-slate-800">{value}</p>
-      {subtext && <p className="mt-1 text-xs text-slate-500">{subtext}</p>}
-    </div>
+    <StudentStatTile
+      label={label}
+      value={
+        <span>
+          {value}
+          {subtext ? (
+            <span className="mt-1 block text-xs font-normal text-[#8b8b90]">{subtext}</span>
+          ) : null}
+        </span>
+      }
+      tone="violet"
+      icon={
+        <svg className="h-5 w-5 text-[#1010a3]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      }
+    />
   );
 }
 
-function ProgressBar({
-  value,
-  max = 100,
-  label,
-}: {
-  value: number;
-  max?: number;
-  label: string;
-}) {
-  const percentage = Math.min((value / max) * 100, 100);
+function ProgressBar({ value, label }: { value: number; label: string }) {
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
-        <span className="text-slate-600">{label}</span>
-        <span className="font-medium text-slate-800">{Math.round(percentage)}%</span>
+        <span className="text-[#8b8b90]">{label}</span>
+        <span className="font-medium text-[#1010a3]">{Math.round(Math.min(value, 100))}%</span>
       </div>
-      <div className="h-2 w-full rounded-full bg-slate-200">
-        <div
-          className={cn(
-            'h-2 rounded-full transition-all',
-            percentage >= 90
-              ? 'bg-green-500'
-              : percentage >= 70
-                ? 'bg-yellow-500'
-                : 'bg-red-500',
-          )}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
+      <StudentProgressBar percent={value} />
     </div>
   );
 }
@@ -185,18 +179,14 @@ export default function TeacherAnalyticsPage() {
 
   return (
     <DashboardLayout title={t('myAnalytics')} subtitle={t('teacherSubtitle')}>
-      <div className="mb-6 flex flex-wrap gap-2">
+      <StudentPageStack>
+      <div className={studentPillTrackClass}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              'rounded-lg border px-4 py-2 text-sm font-medium transition-colors',
-              activeTab === tab.id
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
-            )}
+            className={activeTab === tab.id ? studentPillActiveClass : studentPillInactiveClass}
           >
             {tab.label}
           </button>
@@ -231,15 +221,13 @@ export default function TeacherAnalyticsPage() {
               color="yellow"
             />
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-4 font-semibold text-slate-800">
-              Attendance performance
-            </h3>
+          <StudentCard>
+            <StudentSectionHeader title="Attendance performance" />
             <div className="space-y-4">
               <ProgressBar value={completionRate} label="Lesson completion" />
               <ProgressBar value={absenceRate} label="Absence marked" />
             </div>
-          </div>
+          </StudentCard>
         </div>
       )}
 
@@ -270,15 +258,15 @@ export default function TeacherAnalyticsPage() {
               color="yellow"
             />
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-4 font-semibold text-slate-800">Feedback trends</h3>
+          <StudentCard>
+            <StudentSectionHeader title="Feedback trends" />
             <div className="space-y-4">
               <ProgressBar value={feedbackRate} label="Feedback completion" />
               <ProgressBar value={voiceRate} label="Voice delivery" />
               <ProgressBar value={textRate} label="Text delivery" />
               <ProgressBar value={vocabularyRate} label="Vocabulary sent" />
             </div>
-          </div>
+          </StudentCard>
         </div>
       )}
 
@@ -309,25 +297,26 @@ export default function TeacherAnalyticsPage() {
               color="red"
             />
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-4 font-semibold text-slate-800">Delivery rates</h3>
+          <StudentCard>
+            <StudentSectionHeader title="Delivery rates" />
             <div className="space-y-4">
               <ProgressBar value={completionRate} label="Lesson completion" />
               <ProgressBar value={vocabularyRate} label="Vocabulary" />
               <ProgressBar value={feedbackRate} label="Feedback" />
               <ProgressBar value={absenceRate} label="Absence marked" />
             </div>
-          </div>
+          </StudentCard>
         </div>
       )}
 
       {activeTab === 'revenue' && (
         <div className="space-y-6">
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-600">
+            <p className="mb-2 text-sm font-medium text-[#8b8b90]">
               {t('paymentsTimeFilterLabel')}
             </p>
             <AnalyticsTimeFilterBar
+              variant="student"
               mode={payTimeMode}
               onModeChange={setPayTimeMode}
               dayYmd={payDayYmd}
@@ -368,34 +357,35 @@ export default function TeacherAnalyticsPage() {
             />
           </div>
           {periodDeductionsList.length > 0 && (
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <div className="border-b border-slate-200 p-4">
-                <h3 className="font-semibold text-slate-800">Recent deductions</h3>
+            <StudentCard noPadding>
+              <div className="border-b border-[rgba(14,14,16,0.07)] px-5 py-4 sm:px-6">
+                <StudentSectionHeader title="Recent deductions" className="mb-0" />
               </div>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[rgba(14,14,16,0.07)]">
                 {periodDeductionsList.slice(0, 5).map((deduction) => (
                   <div
                     key={deduction.id}
-                    className="flex items-center justify-between p-4"
+                    className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="font-medium capitalize text-slate-800">
+                      <p className="font-medium capitalize text-[#1010a3]">
                         {deduction.reason.toLowerCase().replace(/_/g, ' ')}
                       </p>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-[#8b8b90]">
                         {new Date(deduction.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className="font-semibold text-red-600">
+                    <span className="font-semibold text-[#b42318]">
                       -{formatCurrency(Number(deduction.amount))}
                     </span>
                   </div>
                 ))}
               </div>
-            </div>
+            </StudentCard>
           )}
         </div>
       )}
+      </StudentPageStack>
     </DashboardLayout>
   );
 }

@@ -1,7 +1,8 @@
 export { CrmExclusiveAudioProvider } from './CrmExclusiveAudioContext';
 export { BoardView } from './BoardView';
 export { Column } from './Column';
-export { LeadCard, STATUS_LABELS } from './LeadCard';
+export { LeadCard } from './LeadCard';
+export { STATUS_LABELS } from '@/features/crm/types';
 export { LeadDrawer } from './LeadDrawer';
 export { VoiceLeadModal } from './VoiceLeadModal';
 export { CreateLeadModal } from './CreateLeadModal';
