@@ -7,6 +7,15 @@ import { Button, Badge } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useUploadAvatar, useDeleteAvatar, useUpdateProfile } from '@/features/settings/hooks/useSettings';
 import { Locale } from '@/config/i18n';
+import {
+  portalCardClass,
+  portalInnerCardClass,
+  portalInputClass,
+  portalLabelClass,
+  portalPageStackClass,
+  portalPrimaryButtonClass,
+  portalSecondaryButtonClass,
+} from '@/shared/lib/portal-theme';
 import Image from 'next/image';
 
 export default function AdminProfilePage() {
@@ -119,159 +128,163 @@ export default function AdminProfilePage() {
   const avatarUrl = user?.avatarUrl;
 
   return (
-    <DashboardLayout 
-      title={t('profile')} 
-      subtitle={t('profileInformation')}
-    >
-      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
-        <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">{t('profileInformation')}</h2>
-        
-        {/* Success/Error Messages */}
-        {uploadSuccess && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
-            <p className="text-sm text-green-600">{uploadSuccess}</p>
-          </div>
-        )}
-        {uploadError && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-            <p className="text-sm text-red-600">{uploadError}</p>
-          </div>
-        )}
-        
-        {/* Avatar */}
-        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-[rgba(14,14,16,0.07)]">
-          <div className="relative">
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt={`${user?.firstName} ${user?.lastName}`}
-                width={80}
-                height={80}
-                className="w-20 h-20 rounded-full object-cover border-2 border-[rgba(14,14,16,0.07)]"
-                unoptimized
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            <div 
-              className={`w-20 h-20 rounded-full bg-[#1010a3] flex items-center justify-center text-white text-2xl font-bold ${avatarUrl ? 'hidden' : ''}`}
-            >
-              {initials}
-            </div>
-          </div>
-          <div>
-            <h3 className="font-medium text-[#3b3b40]">{user?.firstName} {user?.lastName}</h3>
-            <p className="text-sm text-[#8b8b90]">{user?.email}</p>
-            <div className="flex gap-2 mt-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleUploadClick}
-                disabled={uploadAvatarMutation.isPending}
-              >
-                {uploadAvatarMutation.isPending ? (t('uploading') ?? 'Uploading...') : t('uploadPhoto')}
-              </Button>
-              {avatarUrl && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-red-600"
-                  onClick={handleRemoveAvatar}
-                  disabled={deleteAvatarMutation.isPending}
-                >
-                  {deleteAvatarMutation.isPending ? (t('removing') ?? 'Removing...') : t('remove')}
-                </Button>
-              )}
-            </div>
-            <p className="text-xs text-[#8b8b90] mt-1">
-              {t('imageFormats') ?? 'JPG, PNG, WEBP up to 5MB'}
+    <DashboardLayout title={t('profile')} subtitle={t('profileInformation')}>
+      <div className={portalPageStackClass}>
+        <section className={portalCardClass}>
+          <div className="flex flex-col gap-2">
+            <p className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-[#8b8b90]">
+              {t('profile')}
             </p>
+            <h2 className="text-[clamp(1.1rem,1.8vw,1.35rem)] font-semibold tracking-tight text-[#1010a3]">
+              {t('profileInformation')}
+            </h2>
+            <p className="text-sm text-[#8b8b90]">{t('contactAdminToChangeEmail')}</p>
           </div>
-        </div>
+        </section>
 
-        <form onSubmit={handleSaveProfile} className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-[#3b3b40] mb-2">
-                {t('firstName')}
-              </label>
+        <section className={portalCardClass}>
+          {uploadSuccess && (
+            <div className="mb-4 rounded-[1rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
+              <p className="text-sm font-medium text-emerald-700">{uploadSuccess}</p>
+            </div>
+          )}
+          {uploadError && (
+            <div className="mb-4 rounded-[1rem] border border-red-200 bg-red-50 px-4 py-3">
+              <p className="text-sm font-medium text-red-600">{uploadError}</p>
+            </div>
+          )}
+
+          <div className="mb-6 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4 sm:mb-8 sm:p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+              <div className="relative">
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt={`${user?.firstName} ${user?.lastName}`}
+                    width={80}
+                    height={80}
+                    className="h-20 w-20 rounded-full border-2 border-[rgba(14,14,16,0.07)] object-cover"
+                    unoptimized
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div
+                  className={`flex h-20 w-20 items-center justify-center rounded-full bg-[#1010a3] text-2xl font-bold text-white ${avatarUrl ? 'hidden' : ''}`}
+                >
+                  {initials}
+                </div>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-semibold text-[#3b3b40]">
+                  {user?.firstName} {user?.lastName}
+                </h3>
+                <p className="truncate text-sm text-[#8b8b90]">{user?.email}</p>
+                <p className="mt-1 text-xs text-[#8b8b90]">
+                  {t('imageFormats') ?? 'JPG, PNG, WEBP up to 5MB'}
+                </p>
+              </div>
+
+              <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className={portalSecondaryButtonClass}
+                  onClick={handleUploadClick}
+                  disabled={uploadAvatarMutation.isPending}
+                >
+                  {uploadAvatarMutation.isPending
+                    ? (t('uploading') ?? 'Uploading...')
+                    : t('uploadPhoto')}
+                </Button>
+                {avatarUrl ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="inline-flex min-h-10 items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+                    onClick={handleRemoveAvatar}
+                    disabled={deleteAvatarMutation.isPending}
+                  >
+                    {deleteAvatarMutation.isPending
+                      ? (t('removing') ?? 'Removing...')
+                      : t('remove')}
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <form onSubmit={handleSaveProfile} className="space-y-5">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className={portalInnerCardClass}>
+                <label className={portalLabelClass}>{t('firstName')}</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className={portalInputClass}
+                />
+              </div>
+
+              <div className={portalInnerCardClass}>
+                <label className={portalLabelClass}>{t('lastName')}</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className={portalInputClass}
+                />
+              </div>
+            </div>
+
+            <div className={portalInnerCardClass}>
+              <label className={portalLabelClass}>{t('emailAddress')}</label>
               <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+                type="email"
+                value={user?.email || ''}
+                disabled
+                className={`${portalInputClass} cursor-not-allowed bg-[#f6f6f7] text-[#8b8b90]`}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-[#3b3b40] mb-2">
-                {t('lastName')}
-              </label>
+
+            <div className={portalInnerCardClass}>
+              <label className={portalLabelClass}>{t('phoneNumber')}</label>
               <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+1 234 567 8900"
+                className={portalInputClass}
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
-              {t('emailAddress')}
-            </label>
-            <input
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl bg-[#fafafa] text-[#8b8b90]"
-            />
-            <p className="text-xs text-[#8b8b90] mt-1">{t('contactAdminToChangeEmail')}</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
-              {t('phoneNumber')}
-            </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+1 234 567 8900"
-              className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#3b3b40] mb-2">
-              {tCommon('status')}
-            </label>
-            <div className="flex items-center gap-2">
-              <Badge variant="info">{user?.role || 'ADMIN'}</Badge>
-              <span className="text-sm text-[#8b8b90]">{t('assignedBySystem')}</span>
+            <div className={portalInnerCardClass}>
+              <label className={portalLabelClass}>{tCommon('status')}</label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="info">{user?.role || 'ADMIN'}</Badge>
+                <span className="text-sm text-[#8b8b90]">{t('assignedBySystem')}</span>
+              </div>
             </div>
-          </div>
 
-          <div className="pt-4 flex justify-end">
-            <Button 
-              type="submit" 
-              className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6"
-              disabled={isSaving}
-            >
-              {isSaving ? t('saving') : t('saveChanges')}
-            </Button>
-          </div>
-        </form>
+            <div className="flex justify-end pt-2">
+              <Button type="submit" variant="ghost" className={portalPrimaryButtonClass} disabled={isSaving}>
+                {isSaving ? t('saving') : t('saveChanges')}
+              </Button>
+            </div>
+          </form>
+        </section>
       </div>
     </DashboardLayout>
   );

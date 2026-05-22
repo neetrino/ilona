@@ -138,7 +138,6 @@ function getAdminNavEntries(role: string): NavEntry[] {
   if (role === 'MANAGER') {
     return [
       ...core,
-      { labelKey: 'finance', href: '/admin/finance', icon: { type: 'sidebar', icon: 'iconPayments' } },
       ...tail,
     ];
   }

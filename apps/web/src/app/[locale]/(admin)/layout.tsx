@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export default function AdminLayout({
@@ -10,7 +11,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, isHydrated, user } = useAuthStore();
+  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, '');
+  const isManagerRestrictedPath =
+    user?.role === 'MANAGER' &&
+    (pathWithoutLocale.startsWith('/admin/finance') || pathWithoutLocale.startsWith('/admin/analytics'));
 
   useEffect(() => {
     // Wait for hydration before making any decisions
@@ -26,11 +32,10 @@ export default function AdminLayout({
   useEffect(() => {
     if (!isHydrated || !isAuthenticated || user?.role !== 'MANAGER') return;
 
-    const path = window.location.pathname.replace(/^\/[a-z]{2}/, '');
-    if (path.startsWith('/admin/finance') || path.startsWith('/admin/analytics')) {
+    if (isManagerRestrictedPath) {
       router.replace('/admin/dashboard');
     }
-  }, [isHydrated, isAuthenticated, user, router]);
+  }, [isHydrated, isAuthenticated, user, router, isManagerRestrictedPath]);
 
   // Show loading while hydrating or checking auth
   if (!isHydrated) {
@@ -43,6 +48,15 @@ export default function AdminLayout({
 
   // Show loading while redirecting
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'MANAGER')) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+      </div>
+    );
+  }
+
+  // Block restricted manager routes from rendering while redirecting.
+  if (isManagerRestrictedPath) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
         <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
