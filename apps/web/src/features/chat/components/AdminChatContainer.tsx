@@ -271,7 +271,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
             'text-slate-700 hover:text-slate-900',
             'hover:bg-slate-100 rounded-lg',
             'transition-colors',
-            'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+            'focus:outline-none focus:ring-4 focus:ring-[#1010a3]/15 focus:ring-offset-2'
           )}
           aria-label="Back to previous page"
         >

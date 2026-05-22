@@ -225,7 +225,7 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
               {...register('groupId')}
               disabled={isSubmitting || isLoading || groups.length === 0}
               className={cn(
-                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm',
+                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
                 errors.groupId ? 'border-red-300' : 'border-slate-300',
                 (isSubmitting || isLoading || groups.length === 0) && 'bg-slate-100 cursor-not-allowed'
               )}
@@ -264,7 +264,7 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
                     className={cn(
                       'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                       isSelected
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        ? 'bg-[#1010a3] text-white hover:bg-[#0d0d85]'
                         : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
                       isSubmitting && 'opacity-50 cursor-not-allowed'
                     )}
@@ -364,7 +364,7 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
               {...register('description')}
               rows={4}
               className={cn(
-                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm resize-none',
+                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm resize-none',
                 errors.description ? 'border-red-300' : 'border-slate-300',
                 isSubmitting && 'bg-slate-100 cursor-not-allowed'
               )}

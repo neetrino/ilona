@@ -219,7 +219,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   }, [selectedTeacher, groupsForTeacher]);
 
   const selectFieldClass =
-    'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+    'flex w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50';
 
   const { onChange: onCenterChangeField, ...centerIdFieldRest } = register('centerId');
 
@@ -412,7 +412,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               <select
                 id="status"
                 {...register('status')}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className={selectFieldClass}
               >
                 <option value="ACTIVE">{tStatus('active')}</option>
                 <option value="INACTIVE">{tStatus('inactive')}</option>
@@ -595,7 +595,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 id="notes"
                 {...register('notes')}
                 rows={4}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder={t('notes')}
               />
               {errors.notes && (
@@ -608,7 +608,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 type="checkbox"
                 id="receiveReports"
                 {...register('receiveReports')}
-                className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+                className="h-4 w-4 rounded border-slate-300 accent-[#1010a3] focus:ring-[#1010a3]/30"
               />
               <Label htmlFor="receiveReports" className="text-sm font-normal cursor-pointer">
                 {t('receiveReportsOn')}

@@ -32,13 +32,13 @@ interface StudentItem {
 }
 
 const fieldShell =
-  'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 transition-colors focus:border-blue-500 focus:outline-none focus:ring-0';
+  'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 transition-colors focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10';
 
 function levelSelectClass(hasValue: boolean): string {
   return cn(
     'h-11 w-full cursor-pointer appearance-none rounded-xl border-2 bg-white px-3 pr-10 text-sm text-slate-800',
-    'transition-colors focus:border-blue-500 focus:outline-none',
-    hasValue ? 'border-blue-500' : 'border-slate-200'
+    'transition-colors focus:border-[#1010a3]/45 focus:outline-none',
+    hasValue ? 'border-[#1010a3]/45' : 'border-slate-200'
   );
 }
 
@@ -367,9 +367,9 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                     hideSelectedLabelsInTrigger
                     searchPlaceholder={t('filterPlaceholder')}
                     className={cn(
-                      '[&_div[role=button]]:min-h-11 [&_div[role=button]]:rounded-xl [&_div[role=button]]:border-2 [&_div[role=button]]:focus-within:border-blue-500',
+                      '[&_div[role=button]]:min-h-11 [&_div[role=button]]:rounded-xl [&_div[role=button]]:border-2 [&_div[role=button]]:focus-within:border-[#1010a3]/45',
                       grammarSelected.size > 0
-                        ? '[&_div[role=button]]:border-blue-500'
+                        ? '[&_div[role=button]]:border-[#1010a3]/45'
                         : '[&_div[role=button]]:border-slate-200'
                     )}
                   />
@@ -382,7 +382,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                   <div className="flex flex-wrap gap-5 text-sm text-slate-800">
                     <button
                       type="button"
-                      className="inline-flex items-center gap-2.5 rounded-lg px-0.5 py-0.5 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+                      className="inline-flex items-center gap-2.5 rounded-lg px-0.5 py-0.5 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-1"
                       aria-pressed={structured.speaking}
                       onClick={() => {
                         const nextSpeaking = !structured.speaking;
@@ -404,7 +404,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex items-center gap-2.5 rounded-lg px-0.5 py-0.5 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+                      className="inline-flex items-center gap-2.5 rounded-lg px-0.5 py-0.5 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-1"
                       aria-pressed={structured.writing}
                       onClick={() => {
                         const nextWriting = !structured.writing;
@@ -465,7 +465,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
               <div className="space-y-3">
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between gap-3 rounded-xl border border-transparent px-1 py-1.5 text-left transition-colors hover:border-slate-200 hover:bg-slate-50/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  className="flex w-full items-center justify-between gap-3 rounded-xl border border-transparent px-1 py-1.5 text-left transition-colors hover:border-slate-200 hover:bg-slate-50/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-2"
                   aria-expanded={participationOpen}
                   aria-controls={`participation-options-${student.id}`}
                   id={`participation-trigger-${student.id}`}

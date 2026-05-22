@@ -85,7 +85,7 @@ export function FilterDropdown({
               ? cn(portalInputClass, 'flex items-center justify-between text-left')
               : cn(
                   'flex h-12 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 text-left',
-                  'hover:border-slate-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
+                  'hover:border-slate-300 focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10',
                 ),
             'disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
           )}
@@ -148,7 +148,7 @@ export function FilterDropdown({
                     <label
                       key={option.id}
                       className={cn(
-                        'flex cursor-pointer items-center px-4 py-2 transition-colors',
+                        'flex cursor-pointer select-none items-center px-4 py-2 transition-colors',
                         isPortal ? 'hover:bg-[#fafafa]' : 'hover:bg-slate-50',
                         isSelected && (isPortal ? 'bg-[#f0f0fc]' : 'bg-primary/10'),
                       )}
@@ -161,13 +161,13 @@ export function FilterDropdown({
                           'h-4 w-4 cursor-pointer rounded',
                           isPortal
                             ? 'border-[rgba(14,14,16,0.07)] text-[#1010a3] focus:ring-[#1010a3]/20 focus:ring-offset-0'
-                            : 'border-slate-300 text-primary focus:ring-primary focus:ring-offset-0',
+                            : 'accent-[#1010a3] border-slate-300 focus:ring-[#1010a3]/20 focus:ring-offset-0',
                         )}
                         onClick={(e) => e.stopPropagation()}
                       />
                       <span
                         className={cn(
-                          'ml-3 text-sm',
+                          'ml-3 select-none text-sm',
                           isPortal ? 'text-[#3b3b40]' : 'text-slate-700',
                         )}
                       >

@@ -176,7 +176,7 @@ export function InlineSelect({
             onClick={() => handleSelect(null)}
             className={cn(
               'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors',
-              !localValue && 'bg-primary/10 font-medium'
+              !localValue && 'bg-[#ecefff] font-medium text-[#1010a3]'
             )}
           >
             {emptyActionLabel}
@@ -188,7 +188,7 @@ export function InlineSelect({
               onClick={() => handleSelect(option.id)}
               className={cn(
                 'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors',
-                localValue === option.id && 'bg-primary/10 font-medium'
+                localValue === option.id && 'bg-[#ecefff] font-medium text-[#1010a3]'
               )}
             >
               {option.label}
@@ -210,7 +210,7 @@ export function InlineSelect({
         className={cn(
           'w-full pl-0 pr-3 py-1.5 text-left text-sm rounded-md',
           'border border-transparent hover:border-slate-300',
-          'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+          'focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           'transition-colors',
           !localValue && 'text-slate-400',

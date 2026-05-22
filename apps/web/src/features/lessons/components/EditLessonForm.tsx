@@ -251,7 +251,7 @@ export function EditLessonForm({ open, onOpenChange, lessonId }: EditLessonFormP
               id="description"
               {...register('description')}
               rows={3}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm ${
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
                 errors.description ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting ? 'bg-slate-100 cursor-not-allowed' : ''}`}
               placeholder={tForm('descriptionPlaceholderLong')}
@@ -266,7 +266,7 @@ export function EditLessonForm({ open, onOpenChange, lessonId }: EditLessonFormP
               id="notes"
               {...register('notes')}
               rows={3}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm ${
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
                 errors.notes ? 'border-red-300' : 'border-slate-300'
               } ${isSubmitting ? 'bg-slate-100 cursor-not-allowed' : ''}`}
               placeholder={tForm('notesPlaceholder')}
@@ -285,7 +285,7 @@ export function EditLessonForm({ open, onOpenChange, lessonId }: EditLessonFormP
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               {tCommon('cancel')}
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button type="submit" disabled={isSubmitting} className="bg-[#1010a3] hover:bg-[#0d0d85] text-white">
               {isSubmitting ? tForm('saving') : tForm('saveChanges')}
             </Button>
           </DialogFooter>

@@ -31,9 +31,9 @@ export function Checkbox({
       ref={checkboxRef}
       type="checkbox"
       className={cn(
-        'w-4 h-4 rounded border-slate-300 cursor-pointer',
+        'h-4 w-4 cursor-pointer rounded border-slate-300 accent-[#1010a3]',
         'disabled:opacity-50 disabled:cursor-not-allowed',
-        'focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+        'focus:ring-2 focus:ring-[#1010a3]/30 focus:ring-offset-2',
         className
       )}
       checked={checked}

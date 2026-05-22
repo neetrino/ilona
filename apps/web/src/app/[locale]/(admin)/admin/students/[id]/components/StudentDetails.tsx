@@ -111,7 +111,7 @@ export function StudentDetails({
                     {...register('teacherId', {
                       onChange: () => setValue?.('groupId', ''),
                     })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={isLoadingTeachers}
                   >
                     <option value="">{t('selectTeacher')}</option>
@@ -135,7 +135,7 @@ export function StudentDetails({
                   <select
                     id="groupId"
                     {...register('groupId')}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={isLoadingGroups || groupSelectDisabled}
                   >
                     <option value="">
@@ -184,7 +184,7 @@ export function StudentDetails({
                     type="checkbox"
                     id="receiveReports"
                     {...register('receiveReports')}
-                    className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)]"
+                    className="h-4 w-4 rounded border-[rgba(14,14,16,0.12)] accent-[#1010a3]"
                   />
                   {t('receiveReportsLabel')}
                 </Label>

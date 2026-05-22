@@ -95,7 +95,7 @@ export function MultiSelectGroupDropdown({
   return (
     <div className={cn('relative', className)} ref={dropdownRef}>
       {label && (
-        <label className="block text-sm font-medium text-slate-700 mb-2">
+        <label className="mb-2 block text-sm font-medium text-[#3b3b40]">
           {label}
         </label>
       )}
@@ -106,9 +106,9 @@ export function MultiSelectGroupDropdown({
           disabled={isLoading || disabled}
           className={cn(
             'w-full px-4 py-2 text-left bg-white border border-slate-300 rounded-lg',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary',
+            'focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'hover:border-slate-400 transition-colors',
+            'transition-colors hover:border-[#1010a3]/30',
             error && 'border-red-500'
           )}
         >
@@ -154,7 +154,7 @@ export function MultiSelectGroupDropdown({
                       placeholder={t('searchGroups')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full rounded border border-slate-300 px-3 py-1.5 text-sm focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>
@@ -168,7 +168,7 @@ export function MultiSelectGroupDropdown({
                       e.stopPropagation();
                       handleSelectAll();
                     }}
-                    className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                    className="text-xs font-medium text-[#1010a3] transition-colors hover:text-[#0d0d85]"
                     disabled={filteredOptions.length === 0}
                   >
                     {t('selectAll')}
@@ -199,7 +199,7 @@ export function MultiSelectGroupDropdown({
                             key={option.id}
                             className={cn(
                               'flex items-center px-4 py-2 cursor-pointer hover:bg-slate-50 transition-colors',
-                              isSelected && 'bg-primary/10'
+                              isSelected && 'bg-[#ecefff]'
                             )}
                           >
                             <Checkbox

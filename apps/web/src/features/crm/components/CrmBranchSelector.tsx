@@ -92,7 +92,7 @@ export function CrmBranchSelector({
         onClick={() => setOpen((prev) => !prev)}
         disabled={disabled}
         className={cn(
-          'w-full inline-flex items-center justify-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20',
+          'w-full inline-flex items-center justify-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/12',
           disabled && 'opacity-60 pointer-events-none'
         )}
         title="Change branch"
@@ -120,7 +120,7 @@ export function CrmBranchSelector({
               onClick={(e) => handleSelect(e, null)}
               className={cn(
                 'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
-                !value && 'bg-primary/10 font-medium text-primary'
+                !value && 'bg-[#ecefff] font-medium text-[#1010a3]'
               )}
             >
               No branch
@@ -132,7 +132,7 @@ export function CrmBranchSelector({
                 onClick={(e) => handleSelect(e, branch.id)}
                 className={cn(
                   'w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50',
-                  value === branch.id && 'bg-primary/10 font-medium text-primary'
+                  value === branch.id && 'bg-[#ecefff] font-medium text-[#1010a3]'
                 )}
               >
                 {branch.name}
