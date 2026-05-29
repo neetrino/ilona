@@ -202,7 +202,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="absolute left-[20px] top-[36px] rotate-[-12deg] rounded-full bg-[#fb2c36] px-6 py-3">
+            <div className="absolute left-[100px] top-[60px] rotate-[-12deg] rounded-full bg-[#fb2c36] px-6 py-3">
               <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
                 Since 2011
               </span>
@@ -221,7 +221,7 @@ export default function HomePage() {
               unoptimized
             />
           </div>
-          <div className="absolute left-[409px] top-[286px] rotate-[12deg] rounded-full bg-[#093394] px-6 py-3">
+          <div className="absolute left-[520px] top-[286px] rotate-[12deg] rounded-full bg-[#093394] px-6 py-3">
             <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
               15+ Years
             </span>
