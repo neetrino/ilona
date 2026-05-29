@@ -31,6 +31,14 @@ const ABOUT_SUCCESS_ICON =
   'https://www.figma.com/api/mcp/asset/1f121d8e-3322-41b8-83fa-7ab74bbac39d';
 const ABOUT_BRANCHES_ICON =
   'https://www.figma.com/api/mcp/asset/f350a76c-62e2-42a5-b36e-3fd9fa0e4247';
+const WHY_METHODS_IMAGE =
+  'https://www.figma.com/api/mcp/asset/30734f00-1ad2-4fca-84ba-28c2a59ee8b0';
+const WHY_RESULTS_IMAGE =
+  'https://www.figma.com/api/mcp/asset/675beb3d-cba1-4581-8f7e-2087a6313bcf';
+const WHY_TEACHERS_IMAGE =
+  'https://www.figma.com/api/mcp/asset/1d5370e5-2c90-4db0-9454-8e0c9570cef4';
+const WHY_SCHEDULE_IMAGE =
+  'https://www.figma.com/api/mcp/asset/c91db2fd-de48-453f-b3a8-87d453d7c3d6';
 const paytoneOne = Paytone_One({ weight: '400', subsets: ['latin'], preload: false });
 
 function AnimatedSection({
@@ -226,6 +234,75 @@ export default function HomePage() {
               15+ Years
             </span>
           </div>
+        </div>
+      </section>
+
+      {/* Why Choose IEC Section (Figma 1:873/1:882) */}
+      <section className="relative h-[764px] overflow-hidden bg-white">
+        <div className="pt-20 text-center">
+          <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
+            Why Choose IEC?
+          </h2>
+          <p className="mt-4 text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
+            Experience the difference
+          </p>
+        </div>
+
+        <div className="mx-auto mt-[95px] grid w-[1216px] grid-cols-4 gap-8">
+          <article className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px]">
+            <Image
+              src={WHY_METHODS_IMAGE}
+              alt=""
+              width={251}
+              height={251}
+              unoptimized
+              className="absolute -left-[21px] -top-[28px]"
+            />
+            <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+              Modern Methods
+            </h3>
+            <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+              <span className="block whitespace-nowrap">Interactive lessons,</span>
+              <span className="block whitespace-nowrap">multimedia resources, and</span>
+              <span className="block whitespace-nowrap">real-world practice scenarios</span>
+            </p>
+          </article>
+
+          <article className="relative h-[366px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-[34px]">
+            <div className="absolute -left-[58px] -top-[74px] h-[304px] w-[294px] rotate-[55.41deg]">
+              <Image src={WHY_RESULTS_IMAGE} alt="" fill unoptimized className="object-contain" />
+            </div>
+            <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+              Proven Results
+            </h3>
+            <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+              98% of our students achieve their language goals and pass international exams
+            </p>
+          </article>
+
+          <article className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-[34px]">
+            <div className="absolute -left-[36px] -top-[68px] h-[268px] w-[266px] rotate-[39.8deg]">
+              <Image src={WHY_TEACHERS_IMAGE} alt="" fill unoptimized className="object-contain" />
+            </div>
+            <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+              Expert Teachers
+            </h3>
+            <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+              Certified instructors with 10+ years of experience and native-level proficiency
+            </p>
+          </article>
+
+          <article className="relative h-[366px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-[34px]">
+            <div className="absolute -left-[35px] -top-[58px] h-[304px] w-[244px] rotate-180 scale-y-[-1]">
+              <Image src={WHY_SCHEDULE_IMAGE} alt="" fill unoptimized className="object-contain" />
+            </div>
+            <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+              Flexible Schedule
+            </h3>
+            <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+              Morning, afternoon, and evening classes to fit your busy lifestyle
+            </p>
+          </article>
         </div>
       </section>
 
