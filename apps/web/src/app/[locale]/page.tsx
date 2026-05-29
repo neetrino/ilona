@@ -1,26 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Paytone_One } from 'next/font/google';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { Button } from '@/shared/components/ui/button';
-import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 import { useCenters } from '@/features/centers';
 import { MapPin, BookOpen, Users, GraduationCap, ArrowRight } from 'lucide-react';
+import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-};
+const HERO_PERSON_IMAGE =
+  'https://www.figma.com/api/mcp/asset/5fd6d382-01d8-4f1a-a4f1-2ba71c1774a2';
+const HERO_UK_BADGE_IMAGE =
+  'https://www.figma.com/api/mcp/asset/aa94510f-7385-4351-913e-067860465b17';
+const HERO_US_BADGE_IMAGE =
+  'https://www.figma.com/api/mcp/asset/9d24568c-d6ed-4796-b842-db96b22080d6';
+const paytoneOne = Paytone_One({ weight: '400', subsets: ['latin'], preload: false });
 
 function AnimatedSection({
   children,
@@ -53,10 +56,7 @@ export default function HomePage() {
   const { isAuthenticated, isHydrated, user } = useAuthStore();
   const { data: logoData } = useLogo();
   const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.png';
-
-  // Hero image: use local hero.png if present, else fallback
-  const [heroSrc, setHeroSrc] = useState('/hero.png');
-  const heroFallback = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1920&q=80';
+  const profileHref = isAuthenticated && user ? `/${locale}${getDashboardPath(user.role)}` : `/${locale}/login`;
 
   // Fetch active centers from API (same as in Admin) for Our Branches section
   const { data: centersData } = useCenters({ isActive: true, take: 50 });
@@ -84,105 +84,74 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200/60 bg-white/95 backdrop-blur-md shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Link
-              href={`/${locale}`}
-              className="flex items-center gap-3 transition-opacity hover:opacity-85"
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform hover:scale-105 overflow-hidden bg-white relative">
-                <Image
-                  src={logoUrl}
-                  alt="ILONA English Center"
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-contain"
-                  unoptimized
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/logo.png';
-                    target.onerror = null;
-                  }}
-                />
-              </div>
-              <span className="text-xl font-bold text-slate-900 hidden sm:inline tracking-tight">
-                {t('title')}
-              </span>
-            </Link>
-            <div className="flex items-center gap-3 sm:gap-4">
-              <LanguageSwitcher />
-              <Button asChild className="rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
-                <Link href={`/${locale}/login`}>{t('signIn')}</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} />
 
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 hero-ken-burns">
+      <section id="home" className="relative h-[810px] min-h-[810px] scroll-mt-28 overflow-hidden bg-white">
+        <div className="relative -top-4 mx-auto h-full w-full max-w-[1280px] overflow-hidden">
+          <div className="absolute left-[36px] top-[227px] w-[992px] text-[#093394]">
+            <h1
+              className={cn(
+                paytoneOne.className,
+                'text-[5.75rem] not-italic font-normal leading-[6.375rem] tracking-[0.00769rem]',
+              )}
+            >
+              Learn English
+              <br />
+              with Confidence
+            </h1>
+          </div>
+
+          <p className="absolute left-[36px] top-[470px] w-[486px] text-[16px] font-normal leading-[24px] tracking-[0.0703px] text-black/50">
+            Expert teachers, modern methods, and proven results. Your journey to fluency starts
+            here.
+          </p>
+
+          <Link
+            href={`/${locale}/login`}
+            className="absolute left-[36px] top-[586px] inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-[16777200px] bg-white text-[16px] font-semibold tracking-[-0.3125px] text-[#1447e6] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)]"
+          >
+            Register Now
+          </Link>
+          <Link
+            href="#branches"
+            className="absolute left-[237px] top-[586px] inline-flex h-[60px] w-[199.055px] items-center justify-center rounded-[16777200px] border-2 border-[#1447e6] bg-[rgba(255,255,255,0.1)] text-[16px] font-normal tracking-[-0.3125px] text-[#1548e6]"
+          >
+            Choose Branch
+          </Link>
+
+          <div className="absolute left-[990px] top-[158px] h-[290px] w-[290px] overflow-hidden rounded-full">
             <Image
-              src={heroSrc}
-              alt="Ilona English Center – classroom"
+              src={HERO_UK_BADGE_IMAGE}
+              alt="UK flag badge"
               fill
+              unoptimized
               className="object-cover"
-              priority
-              sizes="100vw"
-              unoptimized={heroSrc.startsWith('/')}
-              onError={() => setHeroSrc(heroFallback)}
             />
           </div>
-          <div className="absolute inset-0 bg-slate-900/70" aria-hidden />
-        </div>
-        <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
-          <motion.div
-            className="max-w-4xl mx-auto text-center"
-            initial="initial"
-            animate="animate"
-            variants={{
-              initial: {},
-              animate: {
-                transition: { staggerChildren: 0.12, delayChildren: 0.1 },
-              },
-            }}
-          >
-            <motion.h1
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 sm:mb-8 leading-[1.1] tracking-tight drop-shadow-lg"
-              variants={fadeInUp}
-            >
-              {t('heroTitle')}
-            </motion.h1>
-            <motion.p
-              className="text-lg sm:text-xl text-slate-200 mb-10 sm:mb-12 max-w-2xl mx-auto leading-relaxed"
-              variants={fadeInUp}
-            >
-              {t('heroDescription')}
-            </motion.p>
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-              variants={fadeInUp}
-            >
-              <Button
-                size="lg"
-                asChild
-                className="rounded-xl text-base px-8 py-6 bg-white text-slate-900 hover:bg-slate-100 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.03] font-semibold group"
-              >
-                <Link href={`/${locale}/login`}>
-                  {t('signIn')}
-                  <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1 inline-block" />
-                </Link>
-              </Button>
-            </motion.div>
-          </motion.div>
+          <div className="absolute left-[654px] top-[454px] h-[281px] w-[281px] overflow-hidden rounded-full">
+            <Image
+              src={HERO_US_BADGE_IMAGE}
+              alt="US flag badge"
+              fill
+              unoptimized
+              className="object-cover object-[20%_center]"
+            />
+          </div>
+          <div className="absolute left-[789px] top-[140px] z-20 h-[873px] w-[393px]">
+            <Image
+              src={HERO_PERSON_IMAGE}
+              alt="Hero student illustration"
+              fill
+              unoptimized
+              className="object-cover"
+            />
+          </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section className="py-20 sm:py-28 bg-white">
+      <section id="about" className="py-20 scroll-mt-28 sm:py-28 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -215,7 +184,7 @@ export default function HomePage() {
 
       {/* Branches Section - shows centers from Admin */}
       {branches.length > 0 && (
-        <section className="py-20 sm:py-28 bg-gradient-to-b from-slate-50 to-white">
+        <section id="branches" className="py-20 scroll-mt-28 sm:py-28 bg-gradient-to-b from-slate-50 to-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <AnimatedSection className="max-w-6xl mx-auto">
               <div className="text-center mb-14 sm:mb-16">
@@ -254,7 +223,7 @@ export default function HomePage() {
       )}
 
       {/* Features / Benefits Section */}
-      <section className="py-20 sm:py-28 bg-white">
+      <section id="courses" className="py-20 scroll-mt-28 sm:py-28 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <AnimatedSection className="text-center mb-14 sm:mb-16">
@@ -297,7 +266,7 @@ export default function HomePage() {
       </section>
 
       {/* Student Life / Learning Visuals Section */}
-      <section className="py-20 sm:py-28 bg-slate-50">
+      <section id="teachers" className="py-20 scroll-mt-28 sm:py-28 bg-slate-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <AnimatedSection className="text-center mb-12 sm:mb-14">
@@ -401,7 +370,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200/60 bg-white">
+      <footer id="contact" className="border-t scroll-mt-28 border-slate-200/60 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex items-center justify-center">
             <p className="text-sm text-slate-600 text-center">

@@ -140,7 +140,18 @@
     "studentLifeSubtitle": "Modern classrooms and a community that supports your growth",
     "ctaTitle": "Ready to Start Your Journey?",
     "ctaDescription": "Join hundreds of students who are already improving their English with us. Create your account and get started today.",
-    "footerCopyright": "© 2024 Ilona English Center. All rights reserved."
+    "footerCopyright": "© 2024 Ilona English Center. All rights reserved.",
+    "nav": {
+      "brand": "Ilona English Centre",
+      "home": "Home",
+      "about": "About",
+      "courses": "Courses",
+      "teachers": "Teachers",
+      "branches": "Branches",
+      "contact": "Contact",
+      "blog": "Blog",
+      "profile": "Open profile"
+    }
   },
   "auth": {
     "login": "Log In",
