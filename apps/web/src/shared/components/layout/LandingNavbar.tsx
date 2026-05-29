@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 import { locales, type Locale } from '@/config/i18n';
 import { cn } from '@/shared/lib/utils';
 
@@ -47,10 +48,15 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
     router.refresh();
   };
 
+  const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <header className="fixed inset-x-0 top-3 z-50 px-3 sm:px-6">
       <div className="mx-auto flex h-[70px] max-w-[1280px] items-center justify-between rounded-[100px] bg-[#093394] px-4 shadow-lg sm:px-5">
-        <Link href={`/${locale}`} className="flex min-w-0 items-center gap-3">
+        <Link href="#home" onClick={handleLogoClick} className="flex min-w-0 items-center gap-3">
           <div className="relative h-[52px] w-[52px] overflow-hidden rounded-full bg-white ring-2 ring-white/40">
             <Image src={logoUrl} alt="Ilona English Centre" fill className="object-contain" unoptimized />
           </div>
