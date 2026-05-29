@@ -1348,7 +1348,7 @@ export default function HomePage() {
                 unoptimized
                 className="rounded-full"
               />
-              <span className="text-[30px] font-bold leading-[18px] tracking-[-0.18px]">
+              <span className="text-[26px] font-bold leading-[18px] tracking-[-0.18px]">
                 Ilona English Centre
               </span>
             </div>
