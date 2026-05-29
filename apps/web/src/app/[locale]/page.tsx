@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -37,16 +37,13 @@ const WHY_SCHEDULE_IMAGE =
   'https://www.figma.com/api/mcp/asset/c91db2fd-de48-453f-b3a8-87d453d7c3d6';
 const STUDENT_SUCCESS_IMAGE =
   'https://www.figma.com/api/mcp/asset/293ddea0-ddc0-4133-b9e0-dde8a664bbc7';
-const REGISTER_ARROW_IMAGE = '/register-arrow.png';
+const REGISTER_ARROW_IMAGE = '/register-arrow.webp';
 const REGISTER_SUBMIT_ICON =
   'https://www.figma.com/api/mcp/asset/ab507714-bdd0-4f49-afa6-14330021e236';
-const BRANCH_SIDE_IMAGE =
-  'https://www.figma.com/api/mcp/asset/8e0cb4f6-033b-408c-8c53-aa33da3ba7d8';
-const BRANCH_CENTER_IMAGE =
-  'https://www.figma.com/api/mcp/asset/bc68a5df-e6db-4e5d-87ab-f8738dbeacf1';
-const BRANCH_CENTER_IMAGE_ALT = '/branch-center-alt.png';
-const BRANCH_PLAY_ICON =
-  'https://www.figma.com/api/mcp/asset/8ff13978-8971-4997-97a8-796dc711ebe8';
+const BRANCH_CLASSROOM_IMAGE = '/branch-classroom-main.webp';
+const BRANCH_SIDE_IMAGE = BRANCH_CLASSROOM_IMAGE;
+const BRANCH_CENTER_IMAGE = BRANCH_CLASSROOM_IMAGE;
+const BRANCH_CENTER_IMAGE_ALT = BRANCH_CLASSROOM_IMAGE;
 const BRANCH_MAP_ICON =
   'https://www.figma.com/api/mcp/asset/b7a23b24-2836-415e-858c-e6e0b43660db';
 const BRANCH_NAV_ARROW =
@@ -151,33 +148,37 @@ const BRANCH_CAROUSEL_ITEMS = [
     address: '40 Zoravar Andranik Street, Yerevan',
     addressHy: 'Զորավար Անդրանիկի 40, Երևան',
     image: BRANCH_CENTER_IMAGE,
+    mapUrl: 'https://maps.google.com/?q=40+Zoravar+Andranik+Street,+Yerevan',
   },
   {
     shortLabel: 'Hanrapetutyan 67/3',
     shortLabelHy: 'Հանրապետության 67/3',
-    branchName: 'Hanrapetutyan 67/3',
-    branchNameHy: 'Հանրապետության 67/3',
-    address: 'Hanrapetutyan 67/3',
-    addressHy: 'Հանրապետության 67/3',
+    branchName: 'Hanrapetutyan Branch',
+    branchNameHy: 'Հանրապետության մասնաճյուղ',
+    address: '67/3 Hanrapetutyan Street, Yerevan',
+    addressHy: 'Հանրապետության 67/3, Երևան',
     image: BRANCH_CENTER_IMAGE_ALT,
+    mapUrl: 'https://maps.google.com/?q=67/3+Hanrapetutyan+Street,+Yerevan',
   },
   {
-    shortLabel: 'Yervanq Qochar 23/2',
+    shortLabel: 'Ervand Qochar 23/2',
     shortLabelHy: 'Էրվանդ Քոչարի 23/2',
-    branchName: 'Yervanq Qochar 23/2',
-    branchNameHy: 'Էրվանդ Քոչարի 23/2',
-    address: 'Yervanq Qochar 23/2',
-    addressHy: 'Էրվանդ Քոչարի 23/2',
+    branchName: 'Ervand Qochar Branch',
+    branchNameHy: 'Էրվանդ Քոչարի մասնաճյուղ',
+    address: '23/2 Ervand Qochar Street, Yerevan',
+    addressHy: 'Էրվանդ Քոչարի 23/2, Երևան',
     image: BRANCH_SIDE_IMAGE,
+    mapUrl: 'https://maps.google.com/?q=23/2+Ervand+Qochar+Street,+Yerevan',
   },
   {
     shortLabel: 'Z. Andranik 131/8',
     shortLabelHy: 'Անդրանիկի 131/8',
-    branchName: 'Z. Andranik 131/8',
-    branchNameHy: 'Անդրանիկի 131/8',
-    address: 'Zoravar Adranik 131/8',
+    branchName: 'Zoravar Andranik Branch',
+    branchNameHy: 'Զորավար Անդրանիկի մասնաճյուղ',
+    address: '131/8 Zoravar Andranik Street, Yerevan',
     addressHy: 'Զորավար Անդրանիկի 131/8',
     image: BRANCH_CENTER_IMAGE,
+    mapUrl: 'https://maps.google.com/?q=131/8+Zoravar+Andranik+Street,+Yerevan',
   },
 ] as const;
 const paytoneOne = Paytone_One({ weight: '400', subsets: ['latin'], preload: false });
@@ -187,12 +188,14 @@ export default function HomePage() {
   const isHy = locale === 'hy';
   const tr = (en: string, hy: string) => (isHy ? hy : en);
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, isHydrated, user } = useAuthStore();
   const { data: logoData } = useLogo();
-  const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.png';
+  const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.webp';
   const profileHref = isAuthenticated && user ? getDashboardPath(user.role) : '/login';
   const [activeBranchIndex, setActiveBranchIndex] = useState(0);
   const [branchSlideDirection, setBranchSlideDirection] = useState(1);
+  const [hasBranchInteracted, setHasBranchInteracted] = useState(false);
   const [englishLevel, setEnglishLevel] = useState<string>('');
   const [isEnglishLevelOpen, setIsEnglishLevelOpen] = useState(false);
   const [preferredBranch, setPreferredBranch] = useState<string>('');
@@ -222,6 +225,41 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    const storageKey = `scroll-position:${pathname}`;
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+
+    const restorePosition = () => {
+      const savedPosition = sessionStorage.getItem(storageKey);
+      if (!savedPosition) {
+        return;
+      }
+
+      const top = Number(savedPosition);
+      if (Number.isNaN(top)) {
+        return;
+      }
+
+      window.scrollTo({ top, left: 0, behavior: 'auto' });
+    };
+
+    const savePosition = () => {
+      sessionStorage.setItem(storageKey, String(window.scrollY));
+    };
+
+    requestAnimationFrame(restorePosition);
+    window.addEventListener('beforeunload', savePosition);
+    window.addEventListener('pagehide', savePosition);
+
+    return () => {
+      savePosition();
+      window.removeEventListener('beforeunload', savePosition);
+      window.removeEventListener('pagehide', savePosition);
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
+  }, [pathname]);
+
   const totalCarouselItems = BRANCH_CAROUSEL_ITEMS.length;
   const getWrappedIndex = (index: number) => (index + totalCarouselItems) % totalCarouselItems;
   const activeBranch = BRANCH_CAROUSEL_ITEMS[activeBranchIndex];
@@ -229,14 +267,22 @@ export default function HomePage() {
   const rightBranch = BRANCH_CAROUSEL_ITEMS[getWrappedIndex(activeBranchIndex + 1)];
 
   const goToPreviousBranch = () => {
+    setHasBranchInteracted(true);
     setBranchSlideDirection(-1);
     setActiveBranchIndex((prev) => getWrappedIndex(prev - 1));
   };
 
   const goToNextBranch = () => {
+    setHasBranchInteracted(true);
     setBranchSlideDirection(1);
     setActiveBranchIndex((prev) => getWrappedIndex(prev + 1));
   };
+  const branchImageTransition = { duration: 0.46, ease: [0.22, 1, 0.36, 1] } as const;
+  const branchImageVariants = {
+    enter: (direction: number) => ({ x: direction * 42, opacity: 0, scale: 0.985 }),
+    center: { x: 0, opacity: 1, scale: 1 },
+    exit: (direction: number) => ({ x: direction * -42, opacity: 0, scale: 0.985 }),
+  } as const;
 
   if (!isHydrated || (isAuthenticated && user)) {
     return (
@@ -337,7 +383,7 @@ export default function HomePage() {
 
       {/* About Section (Figma 1:834) */}
       <section id="about" className="relative -mt-[16px] h-[666px] scroll-mt-28 overflow-hidden bg-[#dde7ff]">
-        <div className="relative mx-auto h-full w-full max-w-[1470px]">
+        <div className="relative mx-auto h-full w-[1490px]">
           <div className="absolute left-[159px] top-[80px] h-[506px] w-[1152px]">
             <div className="absolute left-[608px] top-0 h-[506px] w-[544px]">
               <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
@@ -802,162 +848,133 @@ export default function HomePage() {
       </section>
 
       {/* Our Branches Section (Figma 1:690) */}
-      <section className="relative h-[878px] overflow-hidden bg-[#093394]">
-        <div className="absolute left-1/2 top-[81px] w-[1216px] -translate-x-1/2 text-center">
-          <h2 className="text-[48px] font-medium leading-[48px] tracking-[0.3516px] text-white">
-            {tr('Our Branches', 'Մեր մասնաճյուղերը')}
-          </h2>
-          <p className="mt-[27px] text-[20px] leading-[28px] tracking-[-0.4492px] text-white/60">
-            {tr('Find the location nearest to you', 'Գտեք ձեզ ամենամոտ մասնաճյուղը')}
-          </p>
-        </div>
+      <section id="branches" className="relative h-[878px] overflow-hidden bg-[#093394]">
+        <div className="relative mx-auto h-full w-full max-w-[1470px]">
+          <div className="absolute left-1/2 top-[81px] w-[1216px] -translate-x-1/2 text-center">
+            <h2 className="text-[48px] font-medium leading-[48px] tracking-[0.3516px] text-white">
+              {tr('Our Branches', 'Մեր մասնաճյուղերը')}
+            </h2>
+            <p className="mt-[27px] text-[20px] leading-[28px] tracking-[-0.4492px] text-white/60">
+              {tr('Find the location nearest to you', 'Գտեք ձեզ ամենամոտ մասնաճյուղը')}
+            </p>
+          </div>
 
-        <div className="absolute left-[68px] top-[313px] h-[301px] w-[553px] overflow-hidden rounded-[30px]">
-          <AnimatePresence initial={false} custom={branchSlideDirection} mode="popLayout">
-            <motion.div
-              key={`left-image-${leftBranch.shortLabel}`}
-              className="absolute inset-0"
-              custom={branchSlideDirection}
-              initial={{ opacity: 0, x: branchSlideDirection * 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: branchSlideDirection * -24 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
-            >
-              <Image
-                src={leftBranch.image}
-                alt=""
-                fill
-                unoptimized
-                loading="lazy"
-                sizes="553px"
-                className="object-cover object-bottom"
-              />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-        <AnimatePresence initial={false} mode="popLayout">
-          <motion.p
-            key={`left-label-${leftBranch.shortLabel}`}
-            className="absolute left-[253px] top-[627px] text-[26px] font-bold leading-[27px] text-white/70"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-          >
+          <div className="absolute left-[68px] top-[313px] h-[301px] w-[553px] overflow-hidden rounded-[30px]">
+            <AnimatePresence initial={false} custom={branchSlideDirection} mode="sync">
+              <motion.div
+                key={`left-image-${leftBranch.shortLabel}`}
+                className="absolute inset-0"
+                custom={branchSlideDirection}
+                variants={branchImageVariants}
+                initial={hasBranchInteracted ? 'enter' : false}
+                animate="center"
+                exit="exit"
+                transition={branchImageTransition}
+              >
+                <Image
+                  src={leftBranch.image}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="eager"
+                  fetchPriority="high"
+                  sizes="553px"
+                  className="object-cover object-bottom"
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <p className="absolute left-[253px] top-[627px] text-[26px] font-bold leading-[27px] text-white/70">
             {isHy ? leftBranch.shortLabelHy : leftBranch.shortLabel}
-          </motion.p>
-        </AnimatePresence>
+          </p>
 
-        <div className="absolute left-[869px] top-[294px] h-[301px] w-[553px] overflow-hidden rounded-[30px]">
-          <AnimatePresence initial={false} custom={branchSlideDirection} mode="popLayout">
-            <motion.div
-              key={`right-image-${rightBranch.shortLabel}`}
-              className="absolute inset-0"
-              custom={branchSlideDirection}
-              initial={{ opacity: 0, x: branchSlideDirection * 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: branchSlideDirection * -24 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
-            >
-              <Image
-                src={rightBranch.image}
-                alt=""
-                fill
-                unoptimized
-                loading="lazy"
-                sizes="553px"
-                className="object-cover object-bottom"
-              />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-        <AnimatePresence initial={false} mode="popLayout">
-          <motion.p
-            key={`right-label-${rightBranch.shortLabel}`}
-            className="absolute left-[934px] top-[613px] text-[26px] font-bold leading-[27px] text-white/70"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-          >
+          <div className="absolute left-[869px] top-[313px] h-[301px] w-[553px] overflow-hidden rounded-[30px]">
+            <AnimatePresence initial={false} custom={branchSlideDirection} mode="sync">
+              <motion.div
+                key={`right-image-${rightBranch.shortLabel}`}
+                className="absolute inset-0"
+                custom={branchSlideDirection}
+                variants={branchImageVariants}
+                initial={hasBranchInteracted ? 'enter' : false}
+                animate="center"
+                exit="exit"
+                transition={branchImageTransition}
+              >
+                <Image
+                  src={rightBranch.image}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="eager"
+                  fetchPriority="high"
+                  sizes="553px"
+                  className="object-cover object-bottom"
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <p className="absolute left-[934px] top-[627px] text-[26px] font-bold leading-[27px] text-white/70">
             {isHy ? rightBranch.shortLabelHy : rightBranch.shortLabel}
-          </motion.p>
-        </AnimatePresence>
+          </p>
 
-        <div className="absolute left-1/2 top-[251px] h-[424px] w-[722px] -translate-x-1/2 overflow-hidden rounded-[30px] border-[5px] border-white">
-          <AnimatePresence initial={false} custom={branchSlideDirection} mode="popLayout">
-            <motion.div
-              key={`center-image-${activeBranch.shortLabel}`}
-              className="absolute inset-0"
-              custom={branchSlideDirection}
-              initial={{ opacity: 0, x: branchSlideDirection * 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: branchSlideDirection * -30 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-            >
-              <Image
-                src={activeBranch.image}
-                alt=""
-                fill
-                unoptimized
-                loading="lazy"
-                sizes="722px"
-                className="object-cover object-bottom"
-              />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-        <div className="absolute left-1/2 top-[403px] flex h-[139px] w-[139px] -translate-x-1/2 items-center justify-center">
-          <Image src={BRANCH_PLAY_ICON} alt="" width={139} height={139} unoptimized className="rotate-90" />
-        </div>
+          <div className="absolute left-1/2 top-[251px] h-[424px] w-[722px] -translate-x-1/2 overflow-hidden rounded-[30px] border-[5px] border-white">
+            <AnimatePresence initial={false} custom={branchSlideDirection} mode="sync">
+              <motion.div
+                key={`center-image-${activeBranch.shortLabel}`}
+                className="absolute inset-0"
+                custom={branchSlideDirection}
+                variants={branchImageVariants}
+                initial={hasBranchInteracted ? 'enter' : false}
+                animate="center"
+                exit="exit"
+                transition={branchImageTransition}
+              >
+                <Image
+                  src={activeBranch.image}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="eager"
+                  fetchPriority="high"
+                  sizes="722px"
+                  className="object-cover object-bottom"
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <button
+            type="button"
+            aria-label="Previous branch"
+            className="absolute left-[40px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center"
+            onClick={goToPreviousBranch}
+          >
+            <Image src={BRANCH_NAV_ARROW} alt="" width={56} height={56} unoptimized />
+          </button>
+          <button
+            type="button"
+            aria-label="Next branch"
+            className="absolute right-[40px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center"
+            onClick={goToNextBranch}
+          >
+            <Image src={BRANCH_NAV_ARROW} alt="" width={56} height={56} unoptimized className="rotate-180" />
+          </button>
 
-        <button
-          type="button"
-          aria-label="Previous branch"
-          className="absolute left-[41px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center"
-          onClick={goToPreviousBranch}
-        >
-          <Image src={BRANCH_NAV_ARROW} alt="" width={56} height={56} unoptimized />
-        </button>
-        <button
-          type="button"
-          aria-label="Next branch"
-          className="absolute left-[1395px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center"
-          onClick={goToNextBranch}
-        >
-          <Image src={BRANCH_NAV_ARROW} alt="" width={56} height={56} unoptimized className="rotate-180" />
-        </button>
-
-        <div className="absolute left-1/2 top-[698px] w-[334px] -translate-x-1/2 text-center">
-          <AnimatePresence initial={false} mode="popLayout">
-            <motion.h3
-              key={`active-title-${activeBranch.shortLabel}`}
-              className="text-[26px] font-bold leading-[27px] text-white/70"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.24, ease: 'easeOut' }}
-            >
+          <div className="absolute left-1/2 top-[698px] w-[334px] -translate-x-1/2 text-center">
+            <h3 className="text-[26px] font-bold leading-[27px] text-white/70">
               {isHy ? activeBranch.branchNameHy : activeBranch.branchName}
-            </motion.h3>
-          </AnimatePresence>
-          <AnimatePresence initial={false} mode="popLayout">
-            <motion.p
-              key={`active-address-${activeBranch.shortLabel}`}
-              className="mt-3 text-[16px] leading-[20px] tracking-[-0.1504px] text-white/70"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.24, ease: 'easeOut' }}
-            >
+            </h3>
+            <p className="mt-3 text-[16px] leading-[20px] tracking-[-0.1504px] text-white/70">
               {isHy ? activeBranch.addressHy : activeBranch.address}
-            </motion.p>
-          </AnimatePresence>
-          <div className="mt-3 inline-flex items-center gap-2">
-            <Image src={BRANCH_MAP_ICON} alt="" width={16} height={16} unoptimized />
-            <span className="text-[16px] leading-[20px] tracking-[-0.1504px] text-[#ff5c56]">
-              {tr('View on map', 'Դիտել քարտեզում')}
-            </span>
+            </p>
+            <a
+              href={activeBranch.mapUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex items-center gap-2 text-[16px] leading-[20px] tracking-[-0.1504px] text-[#ff5c56] transition-opacity hover:opacity-80"
+            >
+              <Image src={BRANCH_MAP_ICON} alt="" width={16} height={16} unoptimized />
+              <span>{tr('View on map', 'Դիտել քարտեզում')}</span>
+            </a>
           </div>
         </div>
       </section>
@@ -1291,34 +1308,36 @@ export default function HomePage() {
       </section>
 
       {/* Footer Section (Figma 1:569) */}
-      <footer className="relative overflow-hidden bg-black px-[74px] pb-[31px] pt-[67px] text-white">
+      <footer className="relative overflow-hidden bg-black px-3 pb-[31px] pt-[67px] text-white sm:px-6">
         <div className="pointer-events-none absolute inset-0 z-0 mx-auto h-full w-[1470px]">
-          <div className="absolute left-[468px] top-[48px] h-[400px] w-[400px] overflow-hidden">
-            <Image
-              src={FOOTER_FLAG_USA}
-              alt=""
-              fill
-              unoptimized
-              loading="lazy"
-              sizes="400px"
-              className="object-cover"
-            />
-          </div>
+          <div className="absolute left-1/2 top-[48px] h-[400px] w-[502px] -translate-x-1/2">
+            <div className="absolute left-0 top-0 h-[400px] w-[400px] overflow-hidden">
+              <Image
+                src={FOOTER_FLAG_USA}
+                alt=""
+                fill
+                unoptimized
+                loading="lazy"
+                sizes="400px"
+                className="object-cover"
+              />
+            </div>
 
-          <div className="absolute left-[570px] top-[48px] h-[400px] w-[400px] overflow-hidden">
-            <Image
-              src={FOOTER_FLAG_UK}
-              alt=""
-              fill
-              unoptimized
-              loading="lazy"
-              sizes="400px"
-              className="object-cover"
-            />
+            <div className="absolute left-[102px] top-0 h-[400px] w-[400px] overflow-hidden">
+              <Image
+                src={FOOTER_FLAG_UK}
+                alt=""
+                fill
+                unoptimized
+                loading="lazy"
+                sizes="400px"
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="relative z-10 mx-auto flex w-full max-w-[1364px] items-start justify-between">
+        <div className="relative z-10 mx-auto flex w-full max-w-[1280px] items-start justify-between">
           <div className="w-[465px]">
             <div className="flex items-center gap-4">
               <Image
@@ -1342,13 +1361,30 @@ export default function HomePage() {
                 FOOTER_SOCIAL_WHATSAPP,
                 FOOTER_SOCIAL_VIBER,
               ].map((icon, index) => (
-                <Image key={index} src={icon} alt="" width={40} height={40} unoptimized />
+                <Image
+                  key={index}
+                  src={icon}
+                  alt=""
+                  width={40}
+                  height={40}
+                  unoptimized
+                  style={
+                    index >= 1 && index <= 3
+                      ? { transform: `translateX(${index * 20}px)` }
+                      : undefined
+                  }
+                />
               ))}
             </div>
 
             <div className="mt-[18px] h-px w-[296px] bg-white/60" />
 
-            <div className="mt-6 flex flex-col items-start gap-1 text-[14px] leading-[21px]">
+            <div
+              className={cn(
+                'mt-6 text-[14px] leading-[21px]',
+                isHy ? 'flex flex-col items-start gap-1' : 'flex items-center gap-4',
+              )}
+            >
               <Link href="#" className="hover:text-white/80">
                 {tr('Privacy Policy', 'Գաղտնիության քաղաքականություն')}
               </Link>
@@ -1371,18 +1407,18 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="flex items-start gap-[71px] pt-[2px]">
-            <div className="w-[141px]">
+          <div className="ml-auto grid w-full max-w-[560px] grid-cols-2 items-start pt-[2px] sm:translate-x-20">
+            <div className="w-[203px] sm:translate-x-[100px]">
               <h3 className="text-[18px] font-bold leading-[normal]">{tr('Branches', 'Մասնաճյուղեր')}</h3>
               <ul className="mt-[29px] space-y-2 text-[15px] leading-[23px]">
                 <li>{tr('Andranik 131/8', 'Անդրանիկի 131/8')}</li>
                 <li>{tr('Andranik 40', 'Անդրանիկի 40')}</li>
-                <li>{tr('Ervand Qochar 23/2', 'Էրվանդ Քոչարի 23/2')}</li>
-                <li>{tr('Hanrapetutyan 67/3', 'Հանրապետության 67/3')}</li>
+                <li className="whitespace-nowrap">{tr('Ervand Qochar 23/2', 'Էրվանդ Քոչարի 23/2')}</li>
+                <li className="whitespace-nowrap">{tr('Hanrapetutyan 67/3', 'Հանրապետության 67/3')}</li>
               </ul>
             </div>
 
-            <div className="w-[203px]">
+            <div className="w-[203px] justify-self-end">
               <h3 className="text-[18px] font-bold leading-[normal]">{tr('Navigation', 'Նավիգացիա')}</h3>
               <ul className="mt-[29px] space-y-2 text-[14px] leading-[normal]">
                 <li>

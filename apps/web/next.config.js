@@ -7,6 +7,7 @@ const nextConfig = {
   // Turbopack (replaces deprecated experimental.turbo)
   turbopack: {},
   images: {
+    formats: ['image/webp'],
     remotePatterns: [
       {
         protocol: 'https',

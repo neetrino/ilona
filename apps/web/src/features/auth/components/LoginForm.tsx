@@ -22,7 +22,7 @@ export function LoginForm() {
   const tHome = useTranslations('home');
   const tRoles = useTranslations('roles');
   const { data: logoData } = useLogo();
-  const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.png';
+  const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.webp';
   const shouldReduceMotion = useReducedMotion();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +66,7 @@ export function LoginForm() {
             unoptimized
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/logo.png';
+              target.src = '/logo.webp';
               target.onerror = null;
             }}
           />

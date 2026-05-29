@@ -183,7 +183,7 @@ export function TeacherDetailsModal({
         title={
           <>
             <Image
-              src="/teachers-logo.png"
+              src="/teachers-logo.webp"
               alt=""
               className="w-5 h-5 object-contain flex-shrink-0"
               width={20}
