@@ -126,7 +126,7 @@ export default function HomePage() {
               alt="UK flag badge"
               fill
               unoptimized
-              className="object-cover"
+              className="object-cover object-[90%_center]"
             />
           </div>
           <div className="absolute left-[654px] top-[454px] h-[281px] w-[281px] overflow-hidden rounded-full">
