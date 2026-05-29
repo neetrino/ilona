@@ -36,16 +36,17 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
 
   const switchLocale = (nextLocale: Locale) => {
     if (nextLocale === locale) return;
-    const segments = pathname.split('/');
-    if (segments[1] && locales.includes(segments[1] as Locale)) {
-      segments[1] = nextLocale;
-    } else {
-      segments.splice(1, 0, nextLocale);
-    }
+
+    document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
+
+    const segments = pathname.split('/').filter(Boolean);
+    const normalizedPath = segments[0] && locales.includes(segments[0] as Locale)
+      ? `/${segments.slice(1).join('/')}`
+      : pathname;
+
     const queryString = searchParams.toString();
-    const nextPath = queryString ? `${segments.join('/')}?${queryString}` : segments.join('/');
-    router.push(nextPath);
-    router.refresh();
+    const nextPath = queryString ? `${normalizedPath || '/'}?${queryString}` : normalizedPath || '/';
+    router.replace(nextPath, { scroll: false });
   };
 
   const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
