@@ -23,6 +23,14 @@ const HERO_UK_BADGE_IMAGE =
   'https://www.figma.com/api/mcp/asset/aa94510f-7385-4351-913e-067860465b17';
 const HERO_US_BADGE_IMAGE =
   'https://www.figma.com/api/mcp/asset/9d24568c-d6ed-4796-b842-db96b22080d6';
+const ABOUT_BIG_BEN_IMAGE =
+  'https://www.figma.com/api/mcp/asset/6cf13eac-ff69-43bb-9f3b-b786b941ffac';
+const ABOUT_FLAG_IMAGE =
+  'https://www.figma.com/api/mcp/asset/f2cb8812-ff41-42e7-b10b-eeb161a9d97d';
+const ABOUT_SUCCESS_ICON =
+  'https://www.figma.com/api/mcp/asset/1f121d8e-3322-41b8-83fa-7ab74bbac39d';
+const ABOUT_BRANCHES_ICON =
+  'https://www.figma.com/api/mcp/asset/f350a76c-62e2-42a5-b36e-3fd9fa0e4247';
 const paytoneOne = Paytone_One({ weight: '400', subsets: ['latin'], preload: false });
 
 function AnimatedSection({
@@ -150,34 +158,73 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-20 scroll-mt-28 sm:py-28 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              <AnimatedSection className="order-2 lg:order-1">
-                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4 tracking-tight">
-                  {t('aboutTitle')}
-                </h2>
-                <p className="text-slate-600 text-lg mb-4 font-medium">
-                  {t('aboutSubtitle')}
-                </p>
-                <p className="text-slate-600 leading-relaxed">
-                  {t('aboutDescription')}
-                </p>
-              </AnimatedSection>
-              <AnimatedSection className="order-1 lg:order-2" delay={0.1}>
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
-                  <Image
-                    src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800&q=85"
-                    alt="Modern classroom English learning"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
+      {/* About Section (Figma 1:834) */}
+      <section id="about" className="relative -mt-[16px] h-[666px] scroll-mt-28 overflow-hidden bg-[#dde7ff]">
+        <div className="relative mx-auto h-full w-full max-w-[1470px]">
+          <div className="absolute left-[159px] top-[80px] h-[506px] w-[1152px]">
+            <div className="absolute left-[608px] top-0 h-[506px] w-[544px]">
+              <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
+                <span className="text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#0025db]">
+                  About IEC
+                </span>
+              </div>
+              <h2 className="mt-[24px] text-[48px] font-extrabold leading-[60px] tracking-[0.3516px] text-[#0a0a0a]">
+                Ilona English Centre
+              </h2>
+              <p className="mt-[24px] w-[544px] text-[18px] leading-[29.25px] tracking-[-0.4395px] text-[#4a5565]">
+                We empower students through exceptional English education. Our mission: provide
+                world-class instruction that opens doors to global opportunities.
+              </p>
+              <p className="mt-[24px] w-[544px] text-[18px] leading-[29.25px] tracking-[-0.4395px] text-[#4a5565]">
+                A supportive, engaging environment where every student thrives with modern methods
+                and real results.
+              </p>
+
+              <div className="mt-[24px] flex gap-6">
+                <div className="h-[152px] w-[260px] rounded-[24px] bg-white px-6 pt-6">
+                  <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
+                  <p className="mt-3 text-[40px] font-bold leading-[36px] tracking-[0.3955px] text-[#0a0a0a]">
+                    95%
+                  </p>
+                  <p className="mt-1 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+                    Success Rate
+                  </p>
                 </div>
-              </AnimatedSection>
+                <div className="h-[152px] w-[260px] rounded-[24px] bg-white px-6 pt-6">
+                  <Image src={ABOUT_BRANCHES_ICON} alt="" width={32} height={32} unoptimized />
+                  <p className="mt-3 text-[40px] font-bold leading-[36px] tracking-[0.3955px] text-[#0a0a0a]">
+                    4
+                  </p>
+                  <p className="mt-1 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+                    Branches
+                  </p>
+                </div>
+              </div>
             </div>
+
+            <div className="absolute left-[20px] top-[36px] rotate-[-12deg] rounded-full bg-[#fb2c36] px-6 py-3">
+              <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
+                Since 2011
+              </span>
+            </div>
+          </div>
+
+          <div className="absolute left-[119px] top-[-59px] h-[985px] w-[535px] rotate-[-168.83deg] scale-y-[-1]">
+            <Image src={ABOUT_BIG_BEN_IMAGE} alt="" fill className="object-contain" unoptimized />
+          </div>
+          <div className="absolute left-[296px] top-[244px] h-[660px] w-[530px] rotate-[-6.86deg]">
+            <Image
+              src={ABOUT_FLAG_IMAGE}
+              alt=""
+              fill
+              className="object-contain scale-[1.36] origin-center"
+              unoptimized
+            />
+          </div>
+          <div className="absolute left-[409px] top-[286px] rotate-[12deg] rounded-full bg-[#093394] px-6 py-3">
+            <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
+              15+ Years
+            </span>
           </div>
         </div>
       </section>
