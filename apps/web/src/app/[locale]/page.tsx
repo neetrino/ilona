@@ -94,6 +94,8 @@ const FOOTER_FLAG_USA =
   'https://www.figma.com/api/mcp/asset/0a309554-56bd-43a8-bb6d-b0b5171154fc';
 const FOOTER_FLAG_UK =
   'https://www.figma.com/api/mcp/asset/996e4906-4cd0-4671-b738-8921a6ee19b2';
+const BUTTON_HOVER_CLASS =
+  'transition-transform duration-200 ease-out hover:-translate-y-1';
 const FAQ_ITEMS_EN = [
   'What age groups do you teach?',
   'How long does it take to complete a level?',
@@ -328,13 +330,19 @@ export default function HomePage() {
 
           <Link
             href="/login"
-            className="absolute left-[36px] top-[586px] inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-[16777200px] bg-white text-[16px] font-semibold tracking-[-0.3125px] text-[#1447e6] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)]"
+            className={cn(
+              'absolute left-[36px] top-[586px] inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-[16777200px] bg-white text-[16px] font-semibold tracking-[-0.3125px] text-[#1447e6] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)]',
+              BUTTON_HOVER_CLASS,
+            )}
           >
             {tr('Register Now', 'Գրանցվել հիմա')}
           </Link>
           <Link
             href="#branches"
-            className="absolute left-[237px] top-[586px] inline-flex h-[60px] w-[199.055px] items-center justify-center rounded-[16777200px] border-2 border-[#1447e6] bg-[rgba(255,255,255,0.1)] text-[16px] font-normal tracking-[-0.3125px] text-[#1548e6]"
+            className={cn(
+              'absolute left-[237px] top-[586px] inline-flex h-[60px] w-[199.055px] items-center justify-center rounded-[16777200px] border-2 border-[#1447e6] bg-[rgba(255,255,255,0.1)] text-[16px] font-normal tracking-[-0.3125px] text-[#1548e6]',
+              BUTTON_HOVER_CLASS,
+            )}
           >
             {tr('Choose Branch', 'Ընտրել մասնաճյուղ')}
           </Link>
@@ -429,40 +437,72 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="absolute left-[100px] top-[60px] rotate-[-12deg] rounded-full bg-[#fb2c36] px-6 py-3">
-              <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
-                {tr('Since 2011', '2011-ից')}
-              </span>
-            </div>
+            <motion.div
+              className="absolute left-[100px] top-[60px]"
+              initial={{ x: -90, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.05 }}
+              viewport={{ once: true, amount: 0.6 }}
+            >
+              <div className="rotate-[-12deg] rounded-full bg-[#fb2c36] px-6 py-3">
+                <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
+                  {tr('Since 2011', '2011-ից')}
+                </span>
+              </div>
+            </motion.div>
           </div>
 
-          <div className="absolute left-[119px] top-[-59px] h-[985px] w-[535px] rotate-[-168.83deg] scale-y-[-1]">
-            <Image
-              src={ABOUT_BIG_BEN_IMAGE}
-              alt=""
-              fill
-              className="object-contain"
-              unoptimized
-              loading="lazy"
-              sizes="535px"
-            />
-          </div>
-          <div className="absolute left-[296px] top-[244px] h-[660px] w-[530px] rotate-[-6.86deg]">
-            <Image
-              src={ABOUT_FLAG_IMAGE}
-              alt=""
-              fill
-              className="object-contain scale-[1.36] origin-center"
-              unoptimized
-              loading="lazy"
-              sizes="530px"
-            />
-          </div>
-          <div className="absolute left-[520px] top-[286px] rotate-[12deg] rounded-full bg-[#093394] px-6 py-3">
-            <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
-              {tr('15+ Years', '15+ տարի')}
-            </span>
-          </div>
+          <motion.div
+            className="absolute left-[119px] top-[-59px] h-[985px] w-[535px]"
+            initial={{ x: -36, opacity: 0 }}
+            whileInView={{ x: [-36, 12, -8, 0], opacity: 1 }}
+            transition={{ duration: 1.1, ease: 'easeOut' }}
+            viewport={{ once: true, amount: 0.55 }}
+          >
+            <div className="relative h-full w-full rotate-[-168.83deg] scale-y-[-1]">
+              <Image
+                src={ABOUT_BIG_BEN_IMAGE}
+                alt=""
+                fill
+                className="object-contain"
+                unoptimized
+                loading="lazy"
+                sizes="535px"
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className="absolute left-[296px] top-[244px] h-[660px] w-[530px]"
+            initial={{ x: 36, opacity: 0 }}
+            whileInView={{ x: [36, -12, 8, 0], opacity: 1 }}
+            transition={{ duration: 1.1, ease: 'easeOut' }}
+            viewport={{ once: true, amount: 0.55 }}
+          >
+            <div className="relative h-full w-full rotate-[-6.86deg]">
+              <Image
+                src={ABOUT_FLAG_IMAGE}
+                alt=""
+                fill
+                className="object-contain scale-[1.36] origin-center"
+                unoptimized
+                loading="lazy"
+                sizes="530px"
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className="absolute left-[520px] top-[286px]"
+            initial={{ x: 90, opacity: 0 }}
+            whileInView={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.7, ease: 'easeOut', delay: 0.12 }}
+            viewport={{ once: true, amount: 0.6 }}
+          >
+            <div className="rotate-[12deg] rounded-full bg-[#093394] px-6 py-3">
+              <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
+                {tr('15+ Years', '15+ տարի')}
+              </span>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -478,7 +518,13 @@ export default function HomePage() {
         </div>
 
         <div className="mx-auto mt-[95px] grid w-[1216px] grid-cols-4 gap-8">
-          <article className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px]">
+          <motion.article
+            className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px]"
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: 'easeOut' }}
+            viewport={{ once: true, amount: 0.35 }}
+          >
             <Image
               src={WHY_METHODS_IMAGE}
               alt=""
@@ -501,9 +547,15 @@ export default function HomePage() {
                 {tr('real-world practice scenarios', 'իրական կիրառական վարժություններ')}
               </span>
             </p>
-          </article>
+          </motion.article>
 
-          <article className="relative h-[366px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-[34px]">
+          <motion.article
+            className="relative h-[366px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-[34px]"
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
+            viewport={{ once: true, amount: 0.35 }}
+          >
             <div className="absolute -left-[58px] -top-[74px] h-[304px] w-[294px] rotate-[55.41deg]">
               <Image
                 src={WHY_RESULTS_IMAGE}
@@ -524,9 +576,15 @@ export default function HomePage() {
                 'Մեր ուսանողների 98%-ը հասնում է իր լեզվական նպատակներին և հանձնում միջազգային քննություններ',
               )}
             </p>
-          </article>
+          </motion.article>
 
-          <article className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-[34px]">
+          <motion.article
+            className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-[34px]"
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
+            viewport={{ once: true, amount: 0.35 }}
+          >
             <div className="absolute -left-[36px] -top-[68px] h-[268px] w-[266px] rotate-[39.8deg]">
               <Image
                 src={WHY_TEACHERS_IMAGE}
@@ -547,9 +605,15 @@ export default function HomePage() {
                 'Հավաստագրված դասավանդողներ՝ 10+ տարվա փորձով և բարձր լեզվական հմտություններով',
               )}
             </p>
-          </article>
+          </motion.article>
 
-          <article className="relative h-[366px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-[34px]">
+          <motion.article
+            className="relative h-[366px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-[34px]"
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: 'easeOut', delay: 0.24 }}
+            viewport={{ once: true, amount: 0.35 }}
+          >
             <div className="absolute -left-[35px] -top-[58px] h-[304px] w-[244px] rotate-180 scale-y-[-1]">
               <Image
                 src={WHY_SCHEDULE_IMAGE}
@@ -570,7 +634,7 @@ export default function HomePage() {
                 'Առավոտյան, ցերեկային և երեկոյան դասեր՝ ձեր զբաղված առօրյային հարմար',
               )}
             </p>
-          </article>
+          </motion.article>
         </div>
       </section>
 
@@ -615,7 +679,10 @@ export default function HomePage() {
 
           <Link
             href="#contact"
-            className="inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-full bg-[#093394] text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] text-white"
+            className={cn(
+              'inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-full bg-[#093394] text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] text-white',
+              BUTTON_HOVER_CLASS,
+            )}
           >
             {tr('More', 'Ավելին')}
           </Link>
@@ -630,8 +697,15 @@ export default function HomePage() {
           </h2>
 
           <div className="flex h-[397px] items-center gap-5">
-            {[1, 2, 3, 4].map((item) => (
-              <article key={item} className="relative h-[390px] w-[300px] rounded-[26px] bg-[#093394]">
+            {[1, 2, 3, 4].map((item, index) => (
+              <motion.article
+                key={item}
+                className="relative h-[390px] w-[300px] rounded-[26px] bg-[#093394]"
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease: 'easeOut', delay: index * 0.08 }}
+                viewport={{ once: true, amount: 0.35 }}
+              >
                 <p className="absolute left-[30px] top-[28px] text-[70px] font-bold leading-[78px] text-white">
                   {item.toString().padStart(2, '0')}
                 </p>
@@ -654,7 +728,10 @@ export default function HomePage() {
                 </p>
                 <Link
                   href="/login"
-                  className="absolute left-[26px] top-[308px] inline-flex h-[56px] w-[187px] items-center justify-center gap-1 rounded-[999px] bg-white text-[16px] font-semibold leading-[24px] text-[#093394]"
+                  className={cn(
+                    'absolute left-[26px] top-[308px] inline-flex h-[56px] w-[187px] items-center justify-center gap-1 rounded-[999px] bg-white text-[16px] font-semibold leading-[24px] text-[#093394]',
+                    BUTTON_HOVER_CLASS,
+                  )}
                 >
                   <span>{tr('Register', 'Գրանցվել')}</span>
                   <Image
@@ -666,13 +743,16 @@ export default function HomePage() {
                     className="h-5 w-5 object-contain"
                   />
                 </Link>
-              </article>
+              </motion.article>
             ))}
           </div>
 
           <button
             type="button"
-            className="inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-full bg-[#e7000b] text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] text-white"
+            className={cn(
+              'inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-full bg-[#e7000b] text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] text-white',
+              BUTTON_HOVER_CLASS,
+            )}
           >
             {tr('More', 'Ավելին')}
           </button>
@@ -838,7 +918,10 @@ export default function HomePage() {
 
             <button
               type="button"
-              className="mt-6 flex h-[68px] w-full items-center justify-center gap-2 rounded-[56px] bg-[#093394] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-white"
+              className={cn(
+                'mt-6 flex h-[68px] w-full items-center justify-center gap-2 rounded-[56px] bg-[#093394] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-white',
+                BUTTON_HOVER_CLASS,
+              )}
             >
               <span>{tr('Submit Registration', 'Ուղարկել գրանցումը')}</span>
               <Image src={REGISTER_SUBMIT_ICON} alt="" width={20} height={20} unoptimized />
@@ -945,7 +1028,10 @@ export default function HomePage() {
           <button
             type="button"
             aria-label="Previous branch"
-            className="absolute left-[40px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center"
+            className={cn(
+              'absolute left-[40px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center',
+              BUTTON_HOVER_CLASS,
+            )}
             onClick={goToPreviousBranch}
           >
             <Image src={BRANCH_NAV_ARROW} alt="" width={56} height={56} unoptimized />
@@ -953,7 +1039,10 @@ export default function HomePage() {
           <button
             type="button"
             aria-label="Next branch"
-            className="absolute right-[40px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center"
+            className={cn(
+              'absolute right-[40px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center',
+              BUTTON_HOVER_CLASS,
+            )}
             onClick={goToNextBranch}
           >
             <Image src={BRANCH_NAV_ARROW} alt="" width={56} height={56} unoptimized className="rotate-180" />
@@ -992,7 +1081,13 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-[repeat(3,minmax(0,360px))] justify-center gap-8">
-            <article className="h-[308px] overflow-hidden rounded-[40px] bg-gradient-to-br from-[#ad46ff] to-[#f6339a]">
+            <motion.article
+              className="h-[308px] overflow-hidden rounded-[40px] bg-gradient-to-br from-[#ad46ff] to-[#f6339a]"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut' }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
               <div className="flex h-full flex-col items-center pt-10">
                 <Image src={FOLLOW_INSTAGRAM_ICON} alt="" width={64} height={64} unoptimized />
                 <h3 className="mt-6 text-[24px] font-bold leading-[32px] text-white">
@@ -1003,14 +1098,23 @@ export default function HomePage() {
                 </p>
                 <button
                   type="button"
-                  className="mt-6 inline-flex h-[56px] w-[156px] items-center justify-center rounded-full bg-white text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-[#e60076]"
+                  className={cn(
+                    'mt-6 inline-flex h-[56px] w-[156px] items-center justify-center rounded-full bg-white text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-[#e60076]',
+                    BUTTON_HOVER_CLASS,
+                  )}
                 >
                   @ilonaenglish
                 </button>
               </div>
-            </article>
+            </motion.article>
 
-            <article className="h-[308px] overflow-hidden rounded-[40px] bg-[#0058df]">
+            <motion.article
+              className="h-[308px] overflow-hidden rounded-[40px] bg-[#0058df]"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
               <div className="flex h-full flex-col items-center pt-10">
                 <Image src={FOLLOW_FACEBOOK_ICON} alt="" width={64} height={64} unoptimized />
                 <h3 className="mt-6 text-[24px] font-bold leading-[32px] text-white">
@@ -1021,14 +1125,23 @@ export default function HomePage() {
                 </p>
                 <button
                   type="button"
-                  className="mt-6 inline-flex h-[56px] w-[146px] items-center justify-center rounded-full bg-white text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-[#155dfc]"
+                  className={cn(
+                    'mt-6 inline-flex h-[56px] w-[146px] items-center justify-center rounded-full bg-white text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-[#155dfc]',
+                    BUTTON_HOVER_CLASS,
+                  )}
                 >
                   Ilona English
                 </button>
               </div>
-            </article>
+            </motion.article>
 
-            <article className="h-[308px] overflow-hidden rounded-[40px] bg-[#3ac2fd]">
+            <motion.article
+              className="h-[308px] overflow-hidden rounded-[40px] bg-[#3ac2fd]"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
               <div className="flex h-full flex-col items-center pt-10">
                 <Image src={FOLLOW_TELEGRAM_ICON} alt="" width={64} height={64} unoptimized />
                 <h3 className="mt-6 text-[24px] font-bold leading-[32px] text-white">
@@ -1039,12 +1152,15 @@ export default function HomePage() {
                 </p>
                 <button
                   type="button"
-                  className="mt-6 inline-flex h-[56px] w-[167px] items-center justify-center rounded-full bg-white text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-[#27abe4]"
+                  className={cn(
+                    'mt-6 inline-flex h-[56px] w-[167px] items-center justify-center rounded-full bg-white text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-[#27abe4]',
+                    BUTTON_HOVER_CLASS,
+                  )}
                 >
                   t.me/iecenglish
                 </button>
               </div>
-            </article>
+            </motion.article>
           </div>
         </div>
       </section>
@@ -1069,14 +1185,20 @@ export default function HomePage() {
           <div className="mt-12 flex items-center justify-center gap-6">
             <Link
               href="tel:+1234567890"
-              className="inline-flex h-[56px] w-[271px] items-center justify-center gap-3 rounded-full bg-[#1b3ba4] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-white"
+              className={cn(
+                'inline-flex h-[56px] w-[271px] items-center justify-center gap-3 rounded-full bg-[#1b3ba4] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-white',
+                BUTTON_HOVER_CLASS,
+              )}
             >
               <Image src={GET_TOUCH_PHONE_ICON} alt="" width={24} height={24} unoptimized />
               <span>+1 (234) 567-890</span>
             </Link>
             <Link
               href="mailto:info@iec.com"
-              className="inline-flex h-[56px] w-[237px] items-center justify-center gap-3 rounded-full border-2 border-[rgba(27,59,164,0.6)] bg-[rgba(255,255,255,0.1)] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-[#1b3ba4]"
+              className={cn(
+                'inline-flex h-[56px] w-[237px] items-center justify-center gap-3 rounded-full border-2 border-[rgba(27,59,164,0.6)] bg-[rgba(255,255,255,0.1)] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-[#1b3ba4]',
+                BUTTON_HOVER_CLASS,
+              )}
             >
               <Image src={GET_TOUCH_EMAIL_ICON} alt="" width={24} height={24} unoptimized />
               <span>info@iec.com</span>
@@ -1299,7 +1421,10 @@ export default function HomePage() {
             </p>
             <Link
               href="#contact"
-              className="mt-[14px] inline-flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-[#fb2c36] to-[#e7000b] px-[30px] text-[16px] font-normal leading-6 tracking-[-0.3125px] text-white"
+              className={cn(
+                'mt-[14px] inline-flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-[#fb2c36] to-[#e7000b] px-[30px] text-[16px] font-normal leading-6 tracking-[-0.3125px] text-white',
+                BUTTON_HOVER_CLASS,
+              )}
             >
               {tr('Contact Us', 'Կապ մեզ հետ')}
             </Link>
