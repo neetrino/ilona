@@ -5,6 +5,7 @@
   "description": "NestJS Backend for Ilona English Center",
   "scripts": {
     "build": "pnpm --filter @ilona/database build && nest build",
+    "predev": "pnpm --filter @ilona/database build",
     "dev": "nest start --watch",
     "start": "nest start",
     "start:debug": "nest start --debug --watch",
