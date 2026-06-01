@@ -124,13 +124,14 @@ const FAQ_ITEMS_HY = [
 const REGISTER_BRANCH_OPTIONS = [
   { value: 'Andranik 131/8', labelEn: 'Andranik 131/8', labelHy: 'Անդրանիկի 131/8' },
   { value: 'Andranik 40', labelEn: 'Andranik 40', labelHy: 'Անդրանիկի 40' },
-  { value: 'Ervand Qochar 23/2', labelEn: 'Ervand Qochar 23/2', labelHy: 'Էրվանդ Քոչարի 23/2' },
+  { value: 'Ervand Qochar 23/2', labelEn: 'Ervand Qochar 23/2', labelHy: 'Երվանդ Քոչարի 23/2' },
   {
     value: 'Hanrapetutyan 67/3',
     labelEn: 'Hanrapetutyan 67/3',
     labelHy: 'Հանրապետության 67/3',
   },
 ] as const;
+const REGISTER_BRANCH_COMPACT_MOBILE_HY = new Set(['Hanrapetutyan 67/3']);
 const ENGLISH_LEVEL_OPTIONS = [
   { value: 'Beginner', labelEn: 'Beginner', labelHy: 'Սկսնակ' },
   { value: 'Elementary', labelEn: 'Elementary', labelHy: 'Տարրական' },
@@ -165,11 +166,11 @@ const BRANCH_CAROUSEL_ITEMS = [
   },
   {
     shortLabel: 'Ervand Qochar 23/2',
-    shortLabelHy: 'Էրվանդ Քոչարի 23/2',
+    shortLabelHy: 'Երվանդ Քոչարի 23/2',
     branchName: 'Ervand Qochar Branch',
-    branchNameHy: 'Էրվանդ Քոչարի մասնաճյուղ',
+    branchNameHy: 'Երվանդ Քոչարի 23/2',
     address: '23/2 Ervand Qochar Street, Yerevan',
-    addressHy: 'Էրվանդ Քոչարի 23/2, Երևան',
+    addressHy: 'Երվանդ Քոչարի 23/2',
     image: BRANCH_SIDE_IMAGE,
     mapUrl: 'https://maps.google.com/?q=23/2+Ervand+Qochar+Street,+Yerevan',
   },
@@ -207,6 +208,28 @@ export default function HomePage() {
   const prefersHoverRef = useRef(false);
   const faqItems = isHy ? FAQ_ITEMS_HY : FAQ_ITEMS_EN;
   const heroIntroVisibilityClass = 'opacity-100';
+  const whyChooseMobileIconBase = 'absolute -left-[10px] -top-[10px] object-contain';
+  const whyChooseMobileContentBase =
+    'absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]';
+  const whyChooseMobileTitleBase =
+    'text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]';
+  const whyChooseMobileBodyBase =
+    'text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]';
+  const whyChooseMobileIconHy = 'absolute -left-[10px] -top-[18px] object-contain';
+  const whyChooseMobileContentHy =
+    'absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[78px]';
+  const whyChooseMobileTitleHy =
+    'text-[13px] font-medium leading-[18px] tracking-[-0.44px] text-[#101828]';
+  const whyChooseMobileBodyHy =
+    'text-[11px] leading-[15px] tracking-[-0.31px] text-[#4a5565]';
+  const whyChooseMobileFourthContentHy =
+    'absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[93px]';
+  const followMobileCardBase = 'flex h-[94px] items-center gap-4 px-5 py-4';
+  const followMobileCardHy = 'flex min-h-[94px] items-center gap-4 px-5 py-4';
+  const followMobileCardSubtitleBase =
+    'truncate whitespace-nowrap text-[12px] leading-[18px] tracking-[-0.31px] text-white/90';
+  const followMobileCardSubtitleHy =
+    'text-[11px] leading-[15px] tracking-[-0.31px] text-white/90 line-clamp-2';
   useEffect(() => {
     if (isHydrated && isAuthenticated && user) {
       const dashboardPath = getDashboardPath(user.role);
@@ -323,7 +346,7 @@ export default function HomePage() {
               className={cn(
                 isHy ? '' : paytoneOne.className,
                 isHy
-                  ? 'text-[2.45rem] font-extrabold leading-[2.4rem] tracking-[0.004rem]'
+                  ? 'text-[1.85rem] font-extrabold leading-[2.5rem] tracking-[0.004rem]'
                   : 'text-[2.75rem] font-normal leading-[2.55rem] tracking-[0.018rem]',
               )}
             >
@@ -333,7 +356,12 @@ export default function HomePage() {
             </h1>
           </div>
 
-          <p className="absolute left-[17px] top-[218px] z-20 w-[150px] text-[14px] leading-[22px] tracking-[0.07px] text-black/50">
+          <p
+            className={cn(
+              'absolute left-[17px] z-20 w-[150px] text-[14px] leading-[22px] tracking-[0.07px] text-black/50',
+              isHy ? 'top-[198px]' : 'top-[218px]',
+            )}
+          >
             {tr(
               'Expert teachers, modern methods, and proven results. Your journey to fluency starts here.',
               'Փորձառու ուսուցիչներ, ժամանակակից մեթոդներ և իրական արդյունքներ։ Ձեր անգլերենի ճանապարհը սկսվում է այստեղ։',
@@ -527,7 +555,12 @@ export default function HomePage() {
             {tr('Ilona English Centre', 'Ilona English Centre')}
           </h2>
 
-          <div className="mt-8 space-y-3 text-[17px] leading-[22px] tracking-[-0.44px] text-[#4a5565]">
+          <div
+            className={cn(
+              'mt-8 space-y-3 tracking-[-0.44px] text-[#4a5565]',
+              isHy ? 'text-[14px] leading-[20px]' : 'text-[17px] leading-[22px]',
+            )}
+          >
             <p>
               {tr(
                 'We empower students through exceptional English education. Our mission: provide world-class instruction that opens doors to global opportunities.',
@@ -751,13 +784,13 @@ export default function HomePage() {
                 height={110}
                 unoptimized
                 loading="lazy"
-                className="absolute -left-[10px] -top-[10px] object-contain"
+                className={isHy ? whyChooseMobileIconHy : whyChooseMobileIconBase}
               />
-              <div className="absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]">
-                <h3 className="text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]">
+              <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
+                <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
                   {tr('Modern Methods', 'Ժամանակակից մեթոդներ')}
                 </h3>
-                <p className="text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]">
+                <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
                   {tr(
                     'Interactive lessons, multimedia resources, and real-world practice scenarios',
                     'Ինտերակտիվ դասեր, մուլտիմեդիա ռեսուրսներ և իրական կիրառական վարժություններ',
@@ -780,13 +813,13 @@ export default function HomePage() {
                 height={110}
                 unoptimized
                 loading="lazy"
-                className="absolute -left-[10px] -top-[10px] object-contain"
+                className={isHy ? whyChooseMobileIconHy : whyChooseMobileIconBase}
               />
-              <div className="absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]">
-                <h3 className="text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]">
+              <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
+                <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
                   {tr('Proven Results', 'Ապացուցված արդյունքներ')}
                 </h3>
-                <p className="text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]">
+                <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
                   {tr(
                     '98% of our students achieve their language goals and pass international exams',
                     'Մեր ուսանողների 98%-ը հասնում է իր լեզվական նպատակներին և հանձնում միջազգային քննություններ',
@@ -809,13 +842,13 @@ export default function HomePage() {
                 height={110}
                 unoptimized
                 loading="lazy"
-                className="absolute -left-[10px] -top-[10px] object-contain"
+                className={isHy ? whyChooseMobileIconHy : whyChooseMobileIconBase}
               />
-              <div className="absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]">
-                <h3 className="text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]">
+              <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
+                <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
                   {tr('Expert Teachers', 'Փորձառու ուսուցիչներ')}
                 </h3>
-                <p className="text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]">
+                <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
                   {tr(
                     'Certified instructors with 10+ years of experience and native-level proficiency',
                     'Հավաստագրված դասավանդողներ՝ 10+ տարվա փորձով և բարձր լեզվական հմտություններով',
@@ -838,13 +871,17 @@ export default function HomePage() {
                 height={110}
                 unoptimized
                 loading="lazy"
-                className="absolute -left-[10px] -top-[10px] object-contain"
+                className={isHy ? whyChooseMobileIconHy : whyChooseMobileIconBase}
               />
-              <div className="absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]">
-                <h3 className="text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]">
+              <div
+                className={
+                  isHy ? whyChooseMobileFourthContentHy : whyChooseMobileContentBase
+                }
+              >
+                <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
                   {tr('Flexible Schedule', 'Ճկուն գրաֆիկ')}
                 </h3>
-                <p className="text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]">
+                <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
                   {tr(
                     'Morning, afternoon, and evening classes to fit your busy lifestyle',
                     'Առավոտյան, ցերեկային և երեկոյան դասեր՝ ձեր զբաղված առօրյային հարմար',
@@ -1409,7 +1446,10 @@ export default function HomePage() {
                       type="button"
                       onClick={() => setPreferredBranch(branchOption.value)}
                       className={cn(
-                        'flex h-[56px] items-center justify-center rounded-[16px] border-2 px-4 text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] transition-colors',
+                        'flex h-[56px] items-center justify-center rounded-[16px] border-2 px-4 font-semibold tracking-[-0.3125px] transition-colors',
+                        REGISTER_BRANCH_COMPACT_MOBILE_HY.has(branchOption.value) && isHy
+                          ? 'text-[16px] leading-[24px] max-tablet:px-2 max-tablet:text-[13px] max-tablet:leading-[18px]'
+                          : 'text-[16px] leading-[24px]',
                         isSelected
                           ? 'border-[#093394] bg-white text-[#093394]'
                           : 'border-[#e5e7eb] bg-white text-[#0a0a0a]',
@@ -1681,7 +1721,10 @@ export default function HomePage() {
 
           <div className="flex flex-col gap-4">
             <motion.article
-              className="flex h-[94px] items-center gap-4 rounded-[28px] bg-gradient-to-br from-[#ad46ff] to-[#f6339a] px-5 py-4"
+              className={cn(
+                isHy ? followMobileCardHy : followMobileCardBase,
+                'rounded-[28px] bg-gradient-to-br from-[#ad46ff] to-[#f6339a]',
+              )}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut' }}
@@ -1692,7 +1735,7 @@ export default function HomePage() {
                 <h3 className="truncate whitespace-nowrap text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
                   {tr('Instagram', 'Instagram')}
                 </h3>
-                <p className="truncate whitespace-nowrap text-[12px] leading-[18px] tracking-[-0.31px] text-white/90">
+                <p className={isHy ? followMobileCardSubtitleHy : followMobileCardSubtitleBase}>
                   {tr('Daily tips & stories', 'Օրական խորհուրդներ և պատմություններ')}
                 </p>
               </div>
@@ -1708,7 +1751,10 @@ export default function HomePage() {
             </motion.article>
 
             <motion.article
-              className="flex h-[94px] items-center gap-4 rounded-[28px] bg-[#0058df] px-5 py-4"
+              className={cn(
+                isHy ? followMobileCardHy : followMobileCardBase,
+                'rounded-[28px] bg-[#0058df]',
+              )}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
@@ -1719,7 +1765,7 @@ export default function HomePage() {
                 <h3 className="truncate whitespace-nowrap text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
                   {tr('Facebook', 'Facebook')}
                 </h3>
-                <p className="truncate whitespace-nowrap text-[12px] leading-[18px] tracking-[-0.31px] text-white/90">
+                <p className={isHy ? followMobileCardSubtitleHy : followMobileCardSubtitleBase}>
                   {tr('Events & news', 'Իրադարձություններ և նորություններ')}
                 </p>
               </div>
@@ -1735,7 +1781,10 @@ export default function HomePage() {
             </motion.article>
 
             <motion.article
-              className="flex h-[94px] items-center gap-4 rounded-[28px] bg-[#3ac2fd] px-5 py-4"
+              className={cn(
+                isHy ? followMobileCardHy : followMobileCardBase,
+                'rounded-[28px] bg-[#3ac2fd]',
+              )}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
@@ -1746,7 +1795,7 @@ export default function HomePage() {
                 <h3 className="truncate whitespace-nowrap text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
                   {tr('Telegram', 'Telegram')}
                 </h3>
-                <p className="truncate whitespace-nowrap text-[12px] leading-[18px] tracking-[-0.31px] text-white/90">
+                <p className={isHy ? followMobileCardSubtitleHy : followMobileCardSubtitleBase}>
                   {tr('Resources', 'Ռեսուրսներ')}
                 </p>
               </div>
@@ -2465,7 +2514,7 @@ export default function HomePage() {
               <ul className="mt-3 flex flex-col gap-2 text-[13px] leading-[20px] text-white/80">
                 <li>{tr('Andranik 131/8', 'Անդրանիկի 131/8')}</li>
                 <li>{tr('Andranik 40', 'Անդրանիկի 40')}</li>
-                <li>{tr('Ervand Qochar 23/2', 'Էրվանդ Քոչարի 23/2')}</li>
+                <li>{tr('Ervand Qochar 23/2', 'Երվանդ Քոչարի 23/2')}</li>
                 <li>{tr('Hanrapetutyan 67/3', 'Հանրապետության 67/3')}</li>
               </ul>
             </div>
@@ -2488,7 +2537,16 @@ export default function HomePage() {
               </Link>
             </div>
             <p className="text-[12px] leading-[21px] text-white/70">
-              {tr('©2026 Neetrino IT Company. All right reserved', '©2026 Neetrino IT Company. Բոլոր իրավունքները պաշտպանված են')}
+              Copyright &copy;2026{' '}
+              <Link
+                href="https://neetrino.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-white/70 no-underline hover:text-white hover:no-underline"
+              >
+                Neetrino IT Company
+              </Link>
+              . All rights reserved.
             </p>
           </div>
         </div>
@@ -2604,7 +2662,7 @@ export default function HomePage() {
               <ul className="mt-[29px] space-y-2 text-[15px] leading-[23px]">
                 <li>{tr('Andranik 131/8', 'Անդրանիկի 131/8')}</li>
                 <li>{tr('Andranik 40', 'Անդրանիկի 40')}</li>
-                <li className="whitespace-nowrap">{tr('Ervand Qochar 23/2', 'Էրվանդ Քոչարի 23/2')}</li>
+                <li className="whitespace-nowrap">{tr('Ervand Qochar 23/2', 'Երվանդ Քոչարի 23/2')}</li>
                 <li className="whitespace-nowrap">{tr('Hanrapetutyan 67/3', 'Հանրապետության 67/3')}</li>
               </ul>
             </div>
