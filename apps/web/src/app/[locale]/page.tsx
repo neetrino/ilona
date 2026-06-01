@@ -12,6 +12,7 @@ import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
+import { CanvasScaler } from '@/shared/components/layout/CanvasScaler';
 
 const HERO_PERSON_IMAGE =
   'https://www.figma.com/api/mcp/asset/5fd6d382-01d8-4f1a-a4f1-2ba71c1774a2';
@@ -304,15 +305,15 @@ export default function HomePage() {
 
   return (
     <>
-      <div className="min-h-screen overflow-x-hidden bg-slate-50/50">
+      <CanvasScaler className="min-h-screen bg-slate-50/50">
         <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} />
 
       {/* Hero Section */}
       <section
         id="home"
-        className="relative scroll-mt-28 max-lg:bg-[#f9fafb] max-lg:pt-[115px] max-lg:overflow-x-visible max-lg:pb-0 lg:h-[810px] lg:min-h-[810px] lg:overflow-hidden lg:bg-white lg:pt-0"
+        className="relative scroll-mt-28 max-tablet:bg-[#f9fafb] max-tablet:pt-[115px] max-tablet:overflow-x-visible max-tablet:pb-0 tablet:h-[810px] tablet:min-h-[810px] tablet:overflow-hidden tablet:bg-white tablet:pt-0"
       >
-        <div className="relative isolate w-full min-h-[1050px] overflow-visible lg:hidden">
+        <div className="relative isolate w-full min-h-[1050px] overflow-visible tablet:hidden">
           <div
             className={cn(
               'absolute left-[14px] top-[20px] z-20 text-[#093394]',
@@ -402,7 +403,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="relative -top-4 mx-auto max-lg:hidden h-full w-full max-w-[1280px] overflow-hidden">
+        <div className="relative -top-4 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] overflow-hidden">
           <div
             className={cn(
               'absolute top-[227px] w-[992px] text-[#093394] transition-opacity duration-300',
@@ -514,9 +515,9 @@ export default function HomePage() {
       {/* About Section — mobile Figma 1:952, desktop Figma 1:834 */}
       <section
         id="about"
-        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-lg:z-20 max-lg:-mt-[200px] max-lg:pb-0 max-lg:pt-0 lg:-mt-[16px] lg:h-[666px]"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:h-[666px]"
       >
-        <div className="lg:hidden">
+        <div className="tablet:hidden">
         <div
           className="pointer-events-none absolute inset-0 bg-[#dde7ff]"
           aria-hidden
@@ -609,7 +610,7 @@ export default function HomePage() {
         </div>
         </div>
 
-        <div className="relative z-10 mx-auto max-lg:hidden h-full w-full max-w-[1280px] px-6">
+        <div className="relative z-10 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] px-6">
           <div className="absolute left-1/2 top-[80px] h-[506px] w-full max-w-[1152px] -translate-x-1/2">
             <div className="absolute left-[608px] top-0 h-[506px] w-[544px]">
               <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
@@ -725,8 +726,8 @@ export default function HomePage() {
       </section>
 
       {/* Why Choose IEC — mobile Figma 1:989, desktop Figma 1:873/1:882 */}
-      <section className="relative overflow-hidden bg-white max-lg:-mt-px lg:h-[764px]">
-        <div className="flex flex-col gap-8 px-5 pb-10 pt-10 lg:hidden">
+      <section className="relative overflow-hidden bg-white max-tablet:-mt-px tablet:h-[764px]">
+        <div className="flex flex-col gap-8 px-5 pb-10 pt-10 tablet:hidden">
           <div className="text-center">
             <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
               {tr('Why Choose IEC?', 'Ինչու ընտրել IEC-ը')}
@@ -855,7 +856,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="max-lg:hidden">
+        <div className="max-tablet:hidden">
           <div className="pt-20 text-center">
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
               {tr('Why Choose IEC?', 'Ինչու ընտրել IEC-ը')}
@@ -989,7 +990,7 @@ export default function HomePage() {
 
       {/* Student Success — mobile Figma 1:1024, desktop Figma 1:381 */}
       <section className="bg-[#f9fafb]">
-        <div className="flex flex-col gap-6 pb-10 pt-10 lg:hidden">
+        <div className="flex flex-col gap-6 pb-10 pt-10 tablet:hidden">
           <div className="flex flex-col items-center gap-2 px-5 text-center">
             <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
               {tr('Student Success', 'Ուսանողների հաջողություններ')}
@@ -1013,7 +1014,7 @@ export default function HomePage() {
                       fill
                       unoptimized
                       loading="lazy"
-                      sizes="(max-width: 767px) 100vw, 280px"
+                      sizes="(max-width: 743px) 100vw, 280px"
                       className="object-cover object-[center_52%]"
                     />
                   </div>
@@ -1043,7 +1044,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hidden pb-[80px] pt-[80px] lg:block">
+        <div className="hidden pb-[80px] pt-[80px] tablet:block">
           <div className="mx-auto flex w-full max-w-[1216px] flex-col items-center gap-[50px] px-6">
             <div className="flex w-full flex-col items-center gap-4">
               <h2 className="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
@@ -1095,8 +1096,8 @@ export default function HomePage() {
       </section>
 
       {/* Student Success Programs — mobile Figma 1:1055, desktop Figma 1:797 */}
-      <section className="bg-[#f9fafb] pb-10 pt-10 lg:pb-8 lg:pt-14">
-        <div className="flex flex-col gap-6 lg:hidden">
+      <section className="bg-[#f9fafb] pb-10 pt-10 tablet:pb-8 tablet:pt-14">
+        <div className="flex flex-col gap-6 tablet:hidden">
           <h2 className="px-5 text-center text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
             {tr('Student Success', 'Ուսանողների հաջողություններ')}
           </h2>
@@ -1189,7 +1190,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mx-auto hidden w-full max-w-[1280px] flex-col items-center gap-[69px] px-6 py-2 lg:flex">
+        <div className="mx-auto hidden w-full max-w-[1280px] flex-col items-center gap-[69px] px-6 py-2 tablet:flex">
           <h2 className="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
             {tr('Student Success', 'Ուսանողների հաջողություններ')}
           </h2>
@@ -1258,69 +1259,69 @@ export default function HomePage() {
       </section>
 
       {/* Register Now — mobile Figma 1:1107, desktop Figma 1:416 */}
-      <section className="bg-[#dde7ff] pb-10 pt-10 lg:pb-20 lg:pt-20">
-        <div className="mx-auto flex w-full flex-col items-center gap-6 px-5 lg:w-[720px] lg:gap-12 lg:px-0">
+      <section className="bg-[#dde7ff] pb-10 pt-10 tablet:pb-20 tablet:pt-20">
+        <div className="mx-auto flex w-full flex-col items-center gap-6 px-5 tablet:w-[720px] tablet:gap-12 tablet:px-0">
           <div className="text-center">
-            <div className="inline-flex h-[30px] items-center rounded-full bg-[#093394] px-4 lg:h-9 lg:px-6">
-              <span className="text-[12px] font-bold leading-[18px] text-white lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
+            <div className="inline-flex h-[30px] items-center rounded-full bg-[#093394] px-4 tablet:h-9 tablet:px-6">
+              <span className="text-[12px] font-bold leading-[18px] text-white tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
                 {tr('Start Today', 'Սկսիր այսօր')}
               </span>
             </div>
-            <h2 className="mt-3 text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a] lg:mt-4 lg:text-[48px] lg:leading-[48px] lg:tracking-[0.3516px]">
+            <h2 className="mt-3 text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a] tablet:mt-4 tablet:text-[48px] tablet:leading-[48px] tablet:tracking-[0.3516px]">
               {tr('Register Now', 'Գրանցվել հիմա')}
             </h2>
-            <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565] lg:mt-4 lg:text-[20px] lg:leading-[28px] lg:tracking-[-0.4492px]">
+            <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565] tablet:mt-4 tablet:text-[20px] tablet:leading-[28px] tablet:tracking-[-0.4492px]">
               {tr('Begin your English journey', 'Սկսիր քո անգլերենի ճանապարհը')}
             </p>
           </div>
 
-          <div className="w-full rounded-[28px] bg-white p-5 lg:rounded-[40px] lg:px-8 lg:pb-8 lg:pt-8">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-4 lg:gap-x-6 lg:gap-y-6">
+          <div className="w-full rounded-[28px] bg-white p-5 tablet:rounded-[40px] tablet:px-8 tablet:pb-8 tablet:pt-8">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-4 tablet:gap-x-6 tablet:gap-y-6">
               <div>
-                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
+                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
                   {tr('First Name', 'Անուն')}
                 </p>
                 <input
                   type="text"
                   name="firstName"
-                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] lg:h-[60px] lg:rounded-[16px] lg:border-2"
+                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] tablet:h-[60px] tablet:rounded-[16px] tablet:border-2"
                 />
               </div>
               <div>
-                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
+                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
                   {tr('Last Name', 'Ազգանուն')}
                 </p>
                 <input
                   type="text"
                   name="lastName"
-                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] lg:h-[60px] lg:rounded-[16px] lg:border-2"
+                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] tablet:h-[60px] tablet:rounded-[16px] tablet:border-2"
                 />
               </div>
               <div>
-                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
+                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
                   {tr('Age', 'Տարիք')}
                 </p>
                 <input
                   type="number"
                   name="age"
                   min={1}
-                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] lg:h-[60px] lg:rounded-[16px] lg:border-2"
+                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] tablet:h-[60px] tablet:rounded-[16px] tablet:border-2"
                 />
               </div>
               <div>
-                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
+                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
                   {tr('Phone', 'Հեռախոս')}
                 </p>
                 <input
                   type="tel"
                   name="phone"
-                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] lg:h-[60px] lg:rounded-[16px] lg:border-2"
+                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] tablet:h-[60px] tablet:rounded-[16px] tablet:border-2"
                 />
               </div>
             </div>
 
-            <div className="mt-4 lg:mt-6">
-              <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
+            <div className="mt-4 tablet:mt-6">
+              <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
                 {tr('English Level', 'Անգլերենի մակարդակ')}
               </p>
               <div
@@ -1340,7 +1341,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setIsEnglishLevelOpen((prev) => !prev)}
-                  className="relative h-[50px] w-full rounded-[14px] border border-[#e5e7eb] bg-white pl-4 pr-14 text-left text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors hover:border-[#c5d4ff] focus:border-[#093394] lg:h-[57px] lg:rounded-[16px] lg:border-2"
+                  className="relative h-[50px] w-full rounded-[14px] border border-[#e5e7eb] bg-white pl-4 pr-14 text-left text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors hover:border-[#c5d4ff] focus:border-[#093394] tablet:h-[57px] tablet:rounded-[16px] tablet:border-2"
                 >
                   <span className={cn(englishLevel ? 'text-[#0a0a0a]' : 'text-[#6b7280]')}>
                     {englishLevel ||
@@ -1395,11 +1396,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="mt-4 lg:mt-6">
-              <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:mb-3 lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
+            <div className="mt-4 tablet:mt-6">
+              <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:mb-3 tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
                 {tr('Preferred Branch', 'Նախընտրելի մասնաճյուղ')}
               </p>
-              <div className="grid grid-cols-2 gap-2.5 lg:gap-3">
+              <div className="grid grid-cols-2 gap-2.5 tablet:gap-3">
                 {REGISTER_BRANCH_OPTIONS.map((branchOption) => {
                   const isSelected = preferredBranch === branchOption.value;
 
@@ -1425,7 +1426,7 @@ export default function HomePage() {
             <button
               type="button"
               className={cn(
-                'mt-4 flex h-[56px] w-full items-center justify-center gap-2 rounded-[44px] bg-[#093394] text-[16px] font-bold leading-[24px] text-white lg:mt-6 lg:h-[68px] lg:rounded-[56px] lg:text-[18px] lg:leading-[28px] lg:tracking-[-0.4395px]',
+                'mt-4 flex h-[56px] w-full items-center justify-center gap-2 rounded-[44px] bg-[#093394] text-[16px] font-bold leading-[24px] text-white tablet:mt-6 tablet:h-[68px] tablet:rounded-[56px] tablet:text-[18px] tablet:leading-[28px] tablet:tracking-[-0.4395px]',
                 BUTTON_HOVER_CLASS,
               )}
             >
@@ -1436,7 +1437,7 @@ export default function HomePage() {
                 width={16}
                 height={16}
                 unoptimized
-                className="h-4 w-4 object-contain lg:h-5 lg:w-5"
+                className="h-4 w-4 object-contain tablet:h-5 tablet:w-5"
               />
             </button>
           </div>
@@ -1445,7 +1446,7 @@ export default function HomePage() {
 
       {/* Our Branches — mobile Figma 1:1167, desktop Figma 1:690 */}
       <section id="branches" className="overflow-hidden bg-[#093394]">
-        <div className="flex flex-col items-center gap-6 px-5 pb-12 pt-10 lg:hidden">
+        <div className="flex flex-col items-center gap-6 px-5 pb-12 pt-10 tablet:hidden">
           <div className="text-center">
             <h2 className="text-[28px] font-medium leading-[42px] tracking-[0.35px] text-white">
               {tr('Our Branches', 'Մեր մասնաճյուղերը')}
@@ -1531,7 +1532,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative mx-auto hidden h-[878px] w-full max-w-[1470px] px-6 lg:block">
+        <div className="relative mx-auto hidden h-[878px] w-full max-w-[1470px] px-6 tablet:block">
           <div className="absolute left-1/2 top-[81px] w-full max-w-[1216px] -translate-x-1/2 text-center">
             <h2 className="text-[48px] font-medium leading-[48px] tracking-[0.3516px] text-white">
               {tr('Our Branches', 'Մեր մասնաճյուղերը')}
@@ -1668,8 +1669,8 @@ export default function HomePage() {
       </section>
 
       {/* Follow Us — mobile Figma 1:1196, desktop Figma 1:473 */}
-      <section className="bg-[#f9fafb] pb-10 pt-10 lg:bg-white lg:pb-[80px] lg:pt-[80px]">
-        <div className="flex flex-col gap-6 px-5 lg:hidden">
+      <section className="bg-[#f9fafb] pb-10 pt-10 tablet:bg-white tablet:pb-[80px] tablet:pt-[80px]">
+        <div className="flex flex-col gap-6 px-5 tablet:hidden">
           <div className="text-center">
             <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
               {tr('Follow Us', 'Հետևեք մեզ')}
@@ -1763,7 +1764,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mx-auto hidden w-full max-w-[1216px] flex-col gap-[64px] px-6 lg:flex">
+        <div className="mx-auto hidden w-full max-w-[1216px] flex-col gap-[64px] px-6 tablet:flex">
           <div className="text-center">
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
               {tr('Follow Us', 'Հետևեք մեզ')}
@@ -1860,7 +1861,7 @@ export default function HomePage() {
 
       {/* Get in Touch — mobile Figma 1:1242, desktop Figma 1:910/1:911 */}
       <section id="contact" className="scroll-mt-28 bg-white">
-        <div className="flex flex-col items-center gap-6 px-5 pb-10 pt-10 lg:hidden">
+        <div className="flex flex-col items-center gap-6 px-5 pb-10 pt-10 tablet:hidden">
           <div className="text-center">
             <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#1b3ba4]">
               {tr('Get in Touch', 'Կապ մեզ հետ')}
@@ -1895,7 +1896,7 @@ export default function HomePage() {
         </div>
 
         <div
-          className="hidden py-20 lg:block"
+          className="hidden py-20 tablet:block"
           style={{
             backgroundImage:
               'linear-gradient(180deg, rgb(255, 255, 255) 0.52083%, rgba(0, 0, 0, 0) 0.52083%), linear-gradient(90deg, rgb(255, 255, 255) 0.13605%, rgba(0, 0, 0, 0) 0.13605%)',
@@ -1937,9 +1938,9 @@ export default function HomePage() {
 
       {/* Join Our Team — mobile Figma 1:1257, desktop Figma 1:722 */}
       <section
-        className="pb-10 pt-10 [background-image:linear-gradient(132deg,rgb(28,57,142)_7.92%,rgb(25,60,184)_92.08%)] lg:pb-[96px] lg:pt-[96px] lg:[background-image:linear-gradient(150.846deg,rgb(28,57,142)_0%,rgb(25,60,184)_100%)]"
+        className="pb-10 pt-10 [background-image:linear-gradient(132deg,rgb(28,57,142)_7.92%,rgb(25,60,184)_92.08%)] tablet:pb-[96px] tablet:pt-[96px] tablet:[background-image:linear-gradient(150.846deg,rgb(28,57,142)_0%,rgb(25,60,184)_100%)]"
       >
-        <div className="flex flex-col items-center gap-4 px-5 lg:hidden">
+        <div className="flex flex-col items-center gap-4 px-5 tablet:hidden">
           <h2
             className={cn(
               paytoneOne.className,
@@ -2015,7 +2016,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="mx-auto hidden w-full max-w-[896px] px-6 lg:block">
+        <div className="mx-auto hidden w-full max-w-[896px] px-6 tablet:block">
           <h2
             className={cn(
               paytoneOne.className,
@@ -2093,7 +2094,7 @@ export default function HomePage() {
 
       {/* Latest News — mobile Figma 1:1306, desktop Figma 1:513 */}
       <section className="bg-[#f9fafb]">
-        <div className="flex flex-col gap-6 pb-10 pt-10 lg:hidden">
+        <div className="flex flex-col gap-6 pb-10 pt-10 tablet:hidden">
           <div className="flex flex-col items-center gap-2 px-5 text-center">
             <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
               {tr('Latest News', 'Վերջին նորություններ')}
@@ -2139,7 +2140,7 @@ export default function HomePage() {
                     fill
                     unoptimized
                     loading="lazy"
-                    sizes="(max-width: 767px) 100vw, 384px"
+                    sizes="(max-width: 743px) 100vw, 384px"
                     className={article.imageClassName ?? 'object-cover'}
                   />
                   <Image
@@ -2148,7 +2149,7 @@ export default function HomePage() {
                     fill
                     unoptimized
                     loading="lazy"
-                    sizes="(max-width: 767px) 100vw, 384px"
+                    sizes="(max-width: 743px) 100vw, 384px"
                     className={article.imageClassName ?? 'object-cover'}
                   />
                 </div>
@@ -2182,7 +2183,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hidden pb-[80px] pt-[80px] lg:block">
+        <div className="hidden pb-[80px] pt-[80px] tablet:block">
           <div className="mx-auto flex w-full max-w-[1152px] flex-col gap-[64px] px-6">
           <div className="text-center">
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
@@ -2272,7 +2273,7 @@ export default function HomePage() {
 
       {/* FAQ — mobile Figma 1:1358, desktop Figma 1:605 */}
       <section id="faq" className="scroll-mt-28 bg-[#ecf0f7]">
-        <div className="flex flex-col items-center gap-6 px-5 pb-10 pt-10 lg:hidden">
+        <div className="flex flex-col items-center gap-6 px-5 pb-10 pt-10 tablet:hidden">
           <div className="text-center">
             <h2 className="text-[26px] font-extrabold leading-[39px] tracking-[0.35px] text-[#101828]">
               {tr('Frequently Asked Questions', 'Հաճախ տրվող հարցեր')}
@@ -2322,7 +2323,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hidden pb-[96px] pt-[96px] lg:block">
+        <div className="hidden pb-[96px] pt-[96px] tablet:block">
           <div className="mx-auto flex w-full max-w-[896px] flex-col items-center px-6">
             <div className="text-center">
               <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#101828]">
@@ -2377,7 +2378,7 @@ export default function HomePage() {
 
       {/* Footer — mobile Figma 1:1439, desktop Figma 1:569 */}
       <footer className="relative overflow-hidden bg-black text-white">
-        <div className="relative z-10 flex flex-col gap-6 px-5 pb-8 pt-8 lg:hidden">
+        <div className="relative z-10 flex flex-col gap-6 px-5 pb-8 pt-8 tablet:hidden">
           <div className="flex items-center gap-3">
             <div className="relative size-[46px] shrink-0 overflow-hidden rounded-full">
               <Image
@@ -2493,7 +2494,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative hidden overflow-hidden px-3 pb-[31px] pt-[67px] sm:px-6 lg:block">
+        <div className="relative hidden overflow-hidden px-3 pb-[31px] pt-[67px] sm:px-6 tablet:block">
         <div className="pointer-events-none absolute inset-0 z-0 mx-auto h-full w-[1470px]">
           <div className="absolute left-1/2 top-[48px] h-[400px] w-[502px] -translate-x-1/2">
             <div className="absolute left-0 top-0 h-[400px] w-[400px] overflow-hidden">
@@ -2643,7 +2644,7 @@ export default function HomePage() {
         </div>
         </div>
       </footer>
-      </div>
+      </CanvasScaler>
     </>
   );
 }

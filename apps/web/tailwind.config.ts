@@ -18,6 +18,10 @@ const config: Config = {
       },
     },
     extend: {
+      screens: {
+        /** Landing: mobile layout below 744px; canvas desktop from 744px */
+        tablet: '744px',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

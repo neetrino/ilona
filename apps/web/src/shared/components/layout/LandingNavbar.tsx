@@ -56,7 +56,7 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
 
   return (
     <header className="fixed inset-x-0 top-3 z-50 px-3 sm:px-6">
-      <div className="mx-auto flex h-[70px] max-w-[1280px] items-center justify-between rounded-[100px] bg-[#093394] px-4 shadow-lg sm:px-5">
+      <div className="mx-auto flex h-[70px] w-full max-w-[1280px] items-center justify-between rounded-[100px] bg-[#093394] px-4 shadow-lg sm:px-5">
         <Link href="#home" onClick={handleLogoClick} className="flex min-w-0 items-center gap-3">
           <div className="relative h-[52px] w-[52px] overflow-hidden rounded-full bg-white ring-2 ring-white/40">
             <Image src={logoUrl} alt="Ilona English Centre" fill className="object-contain" unoptimized />
@@ -66,7 +66,7 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-8 lg:flex">
+        <nav className="hidden items-center gap-8 tablet:flex">
           {NAV_ITEMS.map((item) => (
             <Link key={item.id} href={item.href} className="text-base font-normal tracking-[-0.3px] text-white transition-opacity hover:opacity-80">
               {t(item.id)}
