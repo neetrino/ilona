@@ -224,6 +224,26 @@ export default function HomePage() {
     'text-[11px] leading-[15px] tracking-[-0.31px] text-[#4a5565]';
   const whyChooseMobileFourthContentHy =
     'absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[93px]';
+  const whyChooseDesktopTitleBase =
+    'pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]';
+  const whyChooseDesktopTitleHy =
+    'pt-[198px] text-[19px] font-semibold leading-[27px] tracking-[-0.4492px] text-[#101828]';
+  const whyChooseDesktopBodyBase =
+    'mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]';
+  const whyChooseDesktopBodyHy =
+    'mt-2 text-[14px] font-medium leading-[21px] tracking-[-0.3125px] text-[#4a5565]';
+  const whyChooseDesktopMethodsIconBase = 'absolute -left-[21px] -top-[28px]';
+  const whyChooseDesktopMethodsIconHy = 'absolute -left-[21px] -top-[36px]';
+  const whyChooseDesktopResultsIconWrapBase =
+    'absolute -left-[58px] -top-[74px] h-[304px] w-[294px] rotate-[55.41deg]';
+  const whyChooseDesktopResultsIconWrapHy =
+    'absolute -left-[58px] -top-[92px] h-[304px] w-[294px] rotate-[55.41deg]';
+  const whyChooseDesktopTeachersIconWrapBase =
+    'absolute -left-[36px] -top-[68px] h-[268px] w-[266px] rotate-[39.8deg]';
+  const whyChooseDesktopTeachersIconWrapHy =
+    'absolute -left-[36px] -top-[86px] h-[268px] w-[266px] rotate-[39.8deg]';
+  const whyChooseDesktopScheduleIconWrapBase =
+    'absolute -left-[35px] -top-[58px] h-[304px] w-[244px] rotate-180 scale-y-[-1]';
   const followMobileCardBase = 'flex h-[94px] items-center gap-4 px-5 py-4';
   const followMobileCardHy = 'flex min-h-[94px] items-center gap-4 px-5 py-4';
   const followMobileCardSubtitleBase =
@@ -916,19 +936,19 @@ export default function HomePage() {
                 width={251}
                 height={251}
                 unoptimized
-                className="absolute -left-[21px] -top-[28px]"
+                className={isHy ? whyChooseDesktopMethodsIconHy : whyChooseDesktopMethodsIconBase}
               />
-              <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+              <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
                 {tr('Modern Methods', 'Ժամանակակից մեթոդներ')}
               </h3>
-              <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
-                <span className="block whitespace-nowrap">
+              <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
+                <span className={cn('block', !isHy && 'whitespace-nowrap')}>
                   {tr('Interactive lessons,', 'Ինտերակտիվ դասեր,')}
                 </span>
-                <span className="block whitespace-nowrap">
+                <span className={cn('block', !isHy && 'whitespace-nowrap')}>
                   {tr('multimedia resources, and', 'մուլտիմեդիա ռեսուրսներ և')}
                 </span>
-                <span className="block whitespace-nowrap">
+                <span className={cn('block', !isHy && 'whitespace-nowrap')}>
                   {tr('real-world practice scenarios', 'իրական կիրառական վարժություններ')}
                 </span>
               </p>
@@ -941,7 +961,11 @@ export default function HomePage() {
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
               viewport={{ once: true, amount: 0.35 }}
             >
-              <div className="absolute -left-[58px] -top-[74px] h-[304px] w-[294px] rotate-[55.41deg]">
+              <div
+                className={
+                  isHy ? whyChooseDesktopResultsIconWrapHy : whyChooseDesktopResultsIconWrapBase
+                }
+              >
                 <Image
                   src={WHY_RESULTS_IMAGE}
                   alt=""
@@ -952,10 +976,10 @@ export default function HomePage() {
                   className="object-contain"
                 />
               </div>
-              <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+              <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
                 {tr('Proven Results', 'Ապացուցված արդյունքներ')}
               </h3>
-              <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+              <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
                 {tr(
                   '98% of our students achieve their language goals and pass international exams',
                   'Մեր ուսանողների 98%-ը հասնում է իր լեզվական նպատակներին և հանձնում միջազգային քննություններ',
@@ -970,7 +994,11 @@ export default function HomePage() {
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
               viewport={{ once: true, amount: 0.35 }}
             >
-              <div className="absolute -left-[36px] -top-[68px] h-[268px] w-[266px] rotate-[39.8deg]">
+              <div
+                className={
+                  isHy ? whyChooseDesktopTeachersIconWrapHy : whyChooseDesktopTeachersIconWrapBase
+                }
+              >
                 <Image
                   src={WHY_TEACHERS_IMAGE}
                   alt=""
@@ -981,10 +1009,10 @@ export default function HomePage() {
                   className="object-contain"
                 />
               </div>
-              <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+              <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
                 {tr('Expert Teachers', 'Փորձառու ուսուցիչներ')}
               </h3>
-              <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+              <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
                 {tr(
                   'Certified instructors with 10+ years of experience and native-level proficiency',
                   'Հավաստագրված դասավանդողներ՝ 10+ տարվա փորձով և բարձր լեզվական հմտություններով',
@@ -999,7 +1027,7 @@ export default function HomePage() {
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.24 }}
               viewport={{ once: true, amount: 0.35 }}
             >
-              <div className="absolute -left-[35px] -top-[58px] h-[304px] w-[244px] rotate-180 scale-y-[-1]">
+              <div className={whyChooseDesktopScheduleIconWrapBase}>
                 <Image
                   src={WHY_SCHEDULE_IMAGE}
                   alt=""
@@ -1010,10 +1038,10 @@ export default function HomePage() {
                   className="object-contain"
                 />
               </div>
-              <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+              <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
                 {tr('Flexible Schedule', 'Ճկուն գրաֆիկ')}
               </h3>
-              <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+              <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
                 {tr(
                   'Morning, afternoon, and evening classes to fit your busy lifestyle',
                   'Առավոտյան, ցերեկային և երեկոյան դասեր՝ ձեր զբաղված առօրյային հարմար',
