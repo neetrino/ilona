@@ -117,7 +117,7 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
     <>
       <header
         className={cn(
-          'fixed inset-x-0 z-50 flex justify-center',
+          'fixed inset-x-0 z-50',
           isCanvasActive ? 'top-3' : 'top-2 px-3 sm:top-3 sm:px-6',
         )}
       >
@@ -128,7 +128,7 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
               ? {
                   width: LANDING_DESIGN_WIDTH,
                   transform: `scale(${scale})`,
-                  transformOrigin: 'top center',
+                  transformOrigin: 'top left',
                 }
               : undefined
           }

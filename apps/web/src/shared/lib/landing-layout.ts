@@ -21,12 +21,11 @@ export function getLandingCanvasMetrics(
   const isCanvasActive = viewportWidth >= minWidth;
 
   if (!isCanvasActive) {
-    return { isCanvasActive, scale: 1, offsetX: 0 };
+    return { isCanvasActive, scale: 1 };
   }
 
-  const scale = Math.min(viewportWidth / designWidth, 1);
-  const scaledWidth = designWidth * scale;
-  const offsetX = Math.max((viewportWidth - scaledWidth) / 2, 0);
-
-  return { isCanvasActive, scale, offsetX };
+  return {
+    isCanvasActive,
+    scale: viewportWidth / designWidth,
+  };
 }

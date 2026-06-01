@@ -349,11 +349,11 @@ export default function HomePage() {
   return (
     <>
       <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} />
-      <CanvasScaler className="min-h-screen bg-slate-50/50">
+      <CanvasScaler className="min-h-screen">
       {/* Hero Section */}
       <section
         id="home"
-        className="landing-viewport-bleed relative scroll-mt-28 max-tablet:bg-[#f9fafb] max-tablet:pt-[105px] max-tablet:overflow-x-visible max-tablet:pb-0 tablet:z-0 tablet:h-[810px] tablet:min-h-[810px] tablet:overflow-x-visible tablet:bg-white tablet:pt-0 tablet:max-navDesktop:overflow-visible tablet:max-navDesktop:pt-[48px] navDesktop:overflow-x-visible"
+        className="relative scroll-mt-28 max-tablet:bg-[#f9fafb] max-tablet:pt-[105px] max-tablet:overflow-x-visible max-tablet:pb-0 tablet:z-0 tablet:h-[810px] tablet:min-h-[810px] tablet:overflow-hidden tablet:bg-white tablet:pt-0 tablet:max-navDesktop:overflow-visible tablet:max-navDesktop:pt-[48px] navDesktop:overflow-hidden"
       >
         <div className="relative isolate w-full min-h-[1050px] overflow-visible tablet:hidden">
           <div
@@ -2454,7 +2454,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer — mobile Figma 1:1439, desktop Figma 1:569 */}
-      <footer className="landing-viewport-bleed relative overflow-x-visible bg-black text-white">
+      <footer className="relative overflow-hidden bg-black text-white">
         <div className="relative z-10 flex flex-col gap-6 px-5 pb-8 pt-8 tablet:hidden">
           <div className="flex items-center gap-3">
             <div className="relative size-[46px] shrink-0 overflow-hidden rounded-full">

@@ -14,7 +14,7 @@ function readMetrics(
   minWidth: number,
 ): LandingCanvasMetrics {
   if (typeof window === 'undefined') {
-    return { isCanvasActive: false, scale: 1, offsetX: 0 };
+    return { isCanvasActive: false, scale: 1 };
   }
 
   return getLandingCanvasMetrics(window.innerWidth, designWidth, minWidth);
