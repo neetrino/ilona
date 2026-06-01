@@ -609,8 +609,8 @@ export default function HomePage() {
         </div>
         </div>
 
-        <div className="relative z-10 mx-auto max-lg:hidden h-full w-[1490px]">
-          <div className="absolute left-[159px] top-[80px] h-[506px] w-[1152px]">
+        <div className="relative z-10 mx-auto max-lg:hidden h-full w-full max-w-[1280px] px-6">
+          <div className="absolute left-1/2 top-[80px] h-[506px] w-full max-w-[1152px] -translate-x-1/2">
             <div className="absolute left-[608px] top-0 h-[506px] w-[544px]">
               <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
                 <span className="text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#0025db]">
@@ -671,7 +671,7 @@ export default function HomePage() {
           </div>
 
           <motion.div
-            className="absolute left-[119px] top-[-59px] h-[985px] w-[535px]"
+            className="absolute left-[24px] top-[-59px] h-[985px] w-[535px]"
             initial={{ x: -36, opacity: 0 }}
             whileInView={{ x: [-36, 12, -8, 0], opacity: 1 }}
             transition={{ duration: 1.1, ease: 'easeOut' }}
@@ -690,7 +690,7 @@ export default function HomePage() {
             </div>
           </motion.div>
           <motion.div
-            className="absolute left-[296px] top-[244px] h-[660px] w-[530px]"
+            className="absolute left-[201px] top-[244px] h-[660px] w-[530px]"
             initial={{ x: 36, opacity: 0 }}
             whileInView={{ x: [36, -12, 8, 0], opacity: 1 }}
             transition={{ duration: 1.1, ease: 'easeOut' }}
@@ -709,7 +709,7 @@ export default function HomePage() {
             </div>
           </motion.div>
           <motion.div
-            className="absolute left-[520px] top-[286px]"
+            className="absolute left-[425px] top-[286px]"
             initial={{ x: 90, opacity: 0 }}
             whileInView={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.12 }}
@@ -865,7 +865,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mx-auto mt-[95px] grid w-[1216px] grid-cols-4 gap-8">
+          <div className="mx-auto mt-[95px] grid w-full max-w-[1216px] grid-cols-4 gap-8 px-6">
             <motion.article
               className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px]"
               initial={{ opacity: 0, y: 28 }}
@@ -1044,7 +1044,7 @@ export default function HomePage() {
         </div>
 
         <div className="hidden pb-[80px] pt-[80px] lg:block">
-          <div className="mx-auto flex w-[1216px] flex-col items-center gap-[50px]">
+          <div className="mx-auto flex w-full max-w-[1216px] flex-col items-center gap-[50px] px-6">
             <div className="flex w-full flex-col items-center gap-4">
               <h2 className="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
                 {tr('Student Success', 'Ուսանողների հաջողություններ')}
@@ -1189,12 +1189,12 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mx-auto hidden w-[1482px] flex-col items-center gap-[69px] py-2 lg:flex">
+        <div className="mx-auto hidden w-full max-w-[1280px] flex-col items-center gap-[69px] px-6 py-2 lg:flex">
           <h2 className="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
             {tr('Student Success', 'Ուսանողների հաջողություններ')}
           </h2>
 
-          <div className="flex h-[397px] items-center gap-5">
+          <div className="flex h-[397px] items-center justify-center gap-5">
             {[1, 2, 3, 4].map((item, index) => (
               <motion.article
                 key={item}
@@ -1531,8 +1531,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative mx-auto hidden h-[878px] w-full max-w-[1470px] lg:block">
-          <div className="absolute left-1/2 top-[81px] w-[1216px] -translate-x-1/2 text-center">
+        <div className="relative mx-auto hidden h-[878px] w-full max-w-[1470px] px-6 lg:block">
+          <div className="absolute left-1/2 top-[81px] w-full max-w-[1216px] -translate-x-1/2 text-center">
             <h2 className="text-[48px] font-medium leading-[48px] tracking-[0.3516px] text-white">
               {tr('Our Branches', 'Մեր մասնաճյուղերը')}
             </h2>
@@ -1763,7 +1763,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mx-auto hidden w-full max-w-[1216px] flex-col gap-[64px] lg:flex">
+        <div className="mx-auto hidden w-full max-w-[1216px] flex-col gap-[64px] px-6 lg:flex">
           <div className="text-center">
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
               {tr('Follow Us', 'Հետևեք մեզ')}
@@ -1901,7 +1901,7 @@ export default function HomePage() {
               'linear-gradient(180deg, rgb(255, 255, 255) 0.52083%, rgba(0, 0, 0, 0) 0.52083%), linear-gradient(90deg, rgb(255, 255, 255) 0.13605%, rgba(0, 0, 0, 0) 0.13605%)',
           }}
         >
-          <div className="mx-auto w-full max-w-[896px] text-center">
+          <div className="mx-auto w-full max-w-[896px] px-6 text-center">
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#1b3ba4]">
               {tr('Get in Touch', 'Կապ մեզ հետ')}
             </h2>
@@ -1937,7 +1937,7 @@ export default function HomePage() {
 
       {/* Join Our Team — mobile Figma 1:1257, desktop Figma 1:722 */}
       <section
-        className="pb-10 pt-10 [background-image:linear-gradient(132deg,rgb(28,57,142)_7.92%,rgb(25,60,184)_92.08%)] lg:px-[287px] lg:pb-[96px] lg:pt-[96px] lg:[background-image:linear-gradient(150.846deg,rgb(28,57,142)_0%,rgb(25,60,184)_100%)]"
+        className="pb-10 pt-10 [background-image:linear-gradient(132deg,rgb(28,57,142)_7.92%,rgb(25,60,184)_92.08%)] lg:pb-[96px] lg:pt-[96px] lg:[background-image:linear-gradient(150.846deg,rgb(28,57,142)_0%,rgb(25,60,184)_100%)]"
       >
         <div className="flex flex-col items-center gap-4 px-5 lg:hidden">
           <h2
@@ -2015,7 +2015,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="mx-auto hidden w-[896px] lg:block">
+        <div className="mx-auto hidden w-full max-w-[896px] px-6 lg:block">
           <h2
             className={cn(
               paytoneOne.className,
@@ -2182,8 +2182,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hidden px-[159px] pb-[80px] pt-[80px] lg:block">
-          <div className="mx-auto flex w-[1152px] flex-col gap-[64px]">
+        <div className="hidden pb-[80px] pt-[80px] lg:block">
+          <div className="mx-auto flex w-full max-w-[1152px] flex-col gap-[64px] px-6">
           <div className="text-center">
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
               {tr('Latest News', 'Վերջին նորություններ')}
@@ -2322,8 +2322,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hidden px-[287px] pb-[96px] pt-[96px] lg:block">
-          <div className="mx-auto flex w-[896px] flex-col items-center px-8">
+        <div className="hidden pb-[96px] pt-[96px] lg:block">
+          <div className="mx-auto flex w-full max-w-[896px] flex-col items-center px-6">
             <div className="text-center">
               <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#101828]">
                 {tr('Frequently Asked Questions', 'Հաճախ տրվող հարցեր')}
