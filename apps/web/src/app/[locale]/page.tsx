@@ -302,8 +302,101 @@ export default function HomePage() {
         <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} />
 
       {/* Hero Section */}
-      <section id="home" className="relative h-[810px] min-h-[810px] scroll-mt-28 overflow-hidden bg-white">
-        <div className="relative -top-4 mx-auto h-full w-full max-w-[1280px] overflow-hidden">
+      <section
+        id="home"
+        className="relative scroll-mt-28 bg-[#f9fafb] pt-[96px] max-lg:overflow-visible max-lg:pb-0 lg:h-[810px] lg:min-h-[810px] lg:overflow-hidden lg:bg-white lg:pt-0"
+      >
+        <div className="relative isolate w-full min-h-[1050px] overflow-visible lg:hidden">
+          <div
+            className={cn(
+              'absolute left-6 top-[20px] z-20 text-[#093394]',
+              isHy ? 'w-[250px]' : 'w-[220px]',
+            )}
+          >
+            <h1
+              className={cn(
+                isHy ? '' : paytoneOne.className,
+                isHy
+                  ? 'text-[2.65rem] font-extrabold leading-[2.6rem] tracking-[0.004rem]'
+                  : 'text-[3rem] font-normal leading-[2.75rem] tracking-[0.018rem]',
+              )}
+            >
+              {tr('Learn English', 'Սովորիր անգլերեն')}
+              <br />
+              {tr('with Confidence', 'վստահությամբ')}
+            </h1>
+          </div>
+
+          <p className="absolute left-7 top-[218px] z-20 w-[150px] text-[14px] leading-[22px] tracking-[0.07px] text-black/50">
+            {tr(
+              'Expert teachers, modern methods, and proven results. Your journey to fluency starts here.',
+              'Փորձառու ուսուցիչներ, ժամանակակից մեթոդներ և իրական արդյունքներ։ Ձեր անգլերենի ճանապարհը սկսվում է այստեղ։',
+            )}
+          </p>
+
+          <div className="absolute -right-[113px] top-[34px] z-[2] h-[231px] w-[231px] overflow-hidden rounded-full">
+            <Image
+              src={HERO_UK_BADGE_IMAGE}
+              alt="UK flag badge"
+              fill
+              priority
+              loading="eager"
+              fetchPriority="high"
+              sizes="231px"
+              className="object-cover object-center"
+            />
+          </div>
+
+          <div className="absolute left-[58px] top-[420px] z-[2] h-[236px] w-[236px] overflow-hidden rounded-full">
+            <Image
+              src={HERO_US_BADGE_IMAGE}
+              alt="US flag badge"
+              fill
+              priority
+              loading="eager"
+              fetchPriority="high"
+              sizes="236px"
+              className="object-cover object-center"
+            />
+          </div>
+
+          <div className="pointer-events-none absolute left-[50px] top-[148px] z-10 h-[900px] w-[520px] overflow-visible">
+            <div className="relative h-full w-full overflow-hidden rounded-t-[155px]">
+              <Image
+                src={HERO_PERSON_IMAGE}
+                alt="Hero student illustration"
+                fill
+                priority
+                loading="eager"
+                fetchPriority="high"
+                sizes="520px"
+                className="object-cover object-top"
+              />
+            </div>
+          </div>
+
+          <Link
+            href="/login"
+            className={cn(
+              'absolute left-3 right-3 top-[615px] z-20 inline-flex h-[56px] items-center justify-center rounded-[999px] bg-white text-[14px] font-semibold text-[#1447e6] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]',
+              BUTTON_HOVER_CLASS,
+            )}
+          >
+            {tr('Register Now', 'Գրանցվել հիմա')}
+          </Link>
+
+          <Link
+            href="#branches"
+            className={cn(
+              'absolute left-3 right-3 top-[685px] z-20 inline-flex h-[52px] items-center justify-center rounded-[999px] border border-[#1447e6] text-[14px] font-normal text-[#1548e6]',
+              BUTTON_HOVER_CLASS,
+            )}
+          >
+            {tr('Choose Branch', 'Ընտրել մասնաճյուղ')}
+          </Link>
+        </div>
+
+        <div className="relative -top-4 mx-auto hidden h-full w-full max-w-[1280px] overflow-hidden lg:block">
           <div
             className={cn(
               'absolute top-[227px] w-[992px] text-[#093394] transition-opacity duration-300',
@@ -413,8 +506,11 @@ export default function HomePage() {
       </section>
 
       {/* About Section (Figma 1:834) */}
-      <section id="about" className="relative -mt-[16px] h-[666px] scroll-mt-28 overflow-hidden bg-[#dde7ff]">
-        <div className="relative mx-auto h-full w-[1490px]">
+      <section
+        id="about"
+        className="relative mt-0 h-[666px] scroll-mt-28 overflow-hidden bg-[#dde7ff] max-lg:z-20 max-lg:-mt-[220px] max-lg:pt-[268px] lg:-mt-[16px]"
+      >
+        <div className="relative z-10 mx-auto h-full w-[1490px]">
           <div className="absolute left-[159px] top-[80px] h-[506px] w-[1152px]">
             <div className="absolute left-[608px] top-0 h-[506px] w-[544px]">
               <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
