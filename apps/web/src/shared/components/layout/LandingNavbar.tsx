@@ -122,11 +122,11 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
         )}
       >
         <div
-          className={cn('w-full', isCanvasActive && 'px-6')}
+          className={cn(!isCanvasActive && 'w-full px-3 sm:px-6')}
           style={
             isCanvasActive
               ? {
-                  maxWidth: LANDING_DESIGN_WIDTH,
+                  width: LANDING_DESIGN_WIDTH,
                   transform: `scale(${scale})`,
                   transformOrigin: 'top center',
                 }

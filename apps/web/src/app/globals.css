@@ -123,4 +123,15 @@
   backface-visibility: hidden;
 }
 
+/* Hero/footer backgrounds span the viewport when the canvas is centered on wide screens. */
+.landing-viewport-bleed::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--landing-canvas-offset-x, 0px));
+  z-index: -1;
+  width: 100vw;
+  background-color: inherit;
+}
 

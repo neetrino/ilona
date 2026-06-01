@@ -1,9 +1,8 @@
-import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales, Locale } from '@/config/i18n';
 import { QueryProvider } from '@/shared/lib/query-client';
-import { SetLangAttribute } from '@/shared/components/SetLangAttribute';
+import { ClientIntlProvider } from '@/shared/providers/ClientIntlProvider';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -32,11 +31,10 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      <SetLangAttribute locale={locale as Locale} />
+    <ClientIntlProvider initialLocale={locale as Locale} initialMessages={messages}>
       <QueryProvider>
         {children}
       </QueryProvider>
-    </NextIntlClientProvider>
+    </ClientIntlProvider>
   );
 }

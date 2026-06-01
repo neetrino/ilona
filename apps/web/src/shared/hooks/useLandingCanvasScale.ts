@@ -9,22 +9,25 @@ import {
 
 type LandingCanvasMetrics = ReturnType<typeof getLandingCanvasMetrics>;
 
-const DEFAULT_METRICS: LandingCanvasMetrics = {
-  isCanvasActive: false,
-  scale: 1,
-};
+function readMetrics(
+  designWidth: number,
+  minWidth: number,
+): LandingCanvasMetrics {
+  if (typeof window === 'undefined') {
+    return { isCanvasActive: false, scale: 1, offsetX: 0 };
+  }
+
+  return getLandingCanvasMetrics(window.innerWidth, designWidth, minWidth);
+}
 
 export function useLandingCanvasScale(
   designWidth = LANDING_DESIGN_WIDTH,
   minWidth = LANDING_CANVAS_MIN_WIDTH,
 ) {
-  const [metrics, setMetrics] = useState(DEFAULT_METRICS);
+  const [metrics, setMetrics] = useState(() => readMetrics(designWidth, minWidth));
 
   const updateMetrics = useCallback(() => {
-    const viewportWidth = window.innerWidth;
-    const isCanvasActive = viewportWidth >= minWidth;
-    const scale = isCanvasActive ? viewportWidth / designWidth : 1;
-    setMetrics({ isCanvasActive, scale });
+    setMetrics(getLandingCanvasMetrics(window.innerWidth, designWidth, minWidth));
   }, [designWidth, minWidth]);
 
   useEffect(() => {

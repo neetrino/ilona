@@ -16,8 +16,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Note: The lang attribute will be set dynamically by SetLangAttribute component
-  // in the [locale] layout, so we use a default here
+  // lang is synced client-side by ClientIntlProvider in the [locale] layout.
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
