@@ -150,7 +150,8 @@
       "branches": "Branches",
       "contact": "Contact",
       "blog": "Blog",
-      "profile": "Open profile"
+      "profile": "Open profile",
+      "openMenu": "Open menu"
     }
   },
   "auth": {

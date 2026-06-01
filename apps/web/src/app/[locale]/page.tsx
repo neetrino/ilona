@@ -305,13 +305,12 @@ export default function HomePage() {
 
   return (
     <>
+      <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} />
       <CanvasScaler className="min-h-screen bg-slate-50/50">
-        <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} />
-
       {/* Hero Section */}
       <section
         id="home"
-        className="relative scroll-mt-28 max-tablet:bg-[#f9fafb] max-tablet:pt-[115px] max-tablet:overflow-x-visible max-tablet:pb-0 tablet:h-[810px] tablet:min-h-[810px] tablet:overflow-hidden tablet:bg-white tablet:pt-0"
+        className="relative scroll-mt-28 max-tablet:bg-[#f9fafb] max-tablet:pt-[105px] max-tablet:overflow-x-visible max-tablet:pb-0 tablet:z-0 tablet:h-[810px] tablet:min-h-[810px] tablet:overflow-hidden tablet:bg-white tablet:pt-0 tablet:max-navDesktop:overflow-visible tablet:max-navDesktop:pt-[48px] navDesktop:overflow-hidden"
       >
         <div className="relative isolate w-full min-h-[1050px] overflow-visible tablet:hidden">
           <div
@@ -403,7 +402,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="relative -top-4 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] overflow-hidden">
+        <div className="relative -top-4 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] overflow-hidden tablet:max-navDesktop:top-0 tablet:max-navDesktop:overflow-visible navDesktop:-top-[16px] navDesktop:overflow-hidden">
           <div
             className={cn(
               'absolute top-[227px] w-[992px] text-[#093394] transition-opacity duration-300',
@@ -494,7 +493,7 @@ export default function HomePage() {
           </div>
           <div
             className={cn(
-              'absolute left-[789px] top-[140px] z-20 h-[873px] w-[393px] transition-opacity duration-300',
+              'absolute left-[789px] top-[140px] z-20 h-[873px] w-[393px] transition-opacity duration-300 tablet:max-navDesktop:top-[88px] tablet:max-navDesktop:z-[1] navDesktop:top-[140px] navDesktop:z-20',
               'opacity-100',
             )}
           >
@@ -515,7 +514,7 @@ export default function HomePage() {
       {/* About Section — mobile Figma 1:952, desktop Figma 1:834 */}
       <section
         id="about"
-        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:h-[666px]"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px] tablet:h-[666px]"
       >
         <div className="tablet:hidden">
         <div
@@ -1682,7 +1681,7 @@ export default function HomePage() {
 
           <div className="flex flex-col gap-4">
             <motion.article
-              className="flex min-h-[94px] items-center gap-5 rounded-[28px] bg-gradient-to-br from-[#ad46ff] to-[#f6339a] px-6 py-6"
+              className="flex h-[94px] items-center gap-4 rounded-[28px] bg-gradient-to-br from-[#ad46ff] to-[#f6339a] px-5 py-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut' }}
@@ -1690,17 +1689,17 @@ export default function HomePage() {
             >
               <Image src={FOLLOW_INSTAGRAM_ICON} alt="" width={40} height={40} unoptimized className="shrink-0" />
               <div className="min-w-0 flex-1">
-                <h3 className="text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
+                <h3 className="truncate whitespace-nowrap text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
                   {tr('Instagram', 'Instagram')}
                 </h3>
-                <p className="text-[13px] leading-[19.5px] tracking-[-0.31px] text-white/90">
+                <p className="truncate whitespace-nowrap text-[12px] leading-[18px] tracking-[-0.31px] text-white/90">
                   {tr('Daily tips & stories', 'Օրական խորհուրդներ և պատմություններ')}
                 </p>
               </div>
               <button
                 type="button"
                 className={cn(
-                  'shrink-0 rounded-full bg-white px-4 py-2.5 text-[13px] font-bold leading-[19.5px] tracking-[-0.31px] text-[#e60076]',
+                  'shrink-0 whitespace-nowrap rounded-full bg-white px-3 py-2 text-[11px] font-bold leading-[16px] tracking-[-0.31px] text-[#e60076]',
                   BUTTON_HOVER_CLASS,
                 )}
               >
@@ -1709,7 +1708,7 @@ export default function HomePage() {
             </motion.article>
 
             <motion.article
-              className="flex min-h-[94px] items-center gap-5 rounded-[28px] bg-[#0058df] px-6 py-6"
+              className="flex h-[94px] items-center gap-4 rounded-[28px] bg-[#0058df] px-5 py-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
@@ -1717,17 +1716,17 @@ export default function HomePage() {
             >
               <Image src={FOLLOW_FACEBOOK_ICON} alt="" width={40} height={40} unoptimized className="shrink-0" />
               <div className="min-w-0 flex-1">
-                <h3 className="text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
+                <h3 className="truncate whitespace-nowrap text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
                   {tr('Facebook', 'Facebook')}
                 </h3>
-                <p className="text-[13px] leading-[19.5px] tracking-[-0.31px] text-white/90">
+                <p className="truncate whitespace-nowrap text-[12px] leading-[18px] tracking-[-0.31px] text-white/90">
                   {tr('Events & news', 'Իրադարձություններ և նորություններ')}
                 </p>
               </div>
               <button
                 type="button"
                 className={cn(
-                  'shrink-0 rounded-full bg-white px-4 py-2.5 text-[13px] font-bold leading-[19.5px] tracking-[-0.31px] text-[#155dfc]',
+                  'shrink-0 whitespace-nowrap rounded-full bg-white px-3 py-2 text-[11px] font-bold leading-[16px] tracking-[-0.31px] text-[#155dfc]',
                   BUTTON_HOVER_CLASS,
                 )}
               >
@@ -1736,7 +1735,7 @@ export default function HomePage() {
             </motion.article>
 
             <motion.article
-              className="flex min-h-[94px] items-center gap-5 rounded-[28px] bg-[#3ac2fd] px-6 py-6"
+              className="flex h-[94px] items-center gap-4 rounded-[28px] bg-[#3ac2fd] px-5 py-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
@@ -1744,17 +1743,17 @@ export default function HomePage() {
             >
               <Image src={FOLLOW_TELEGRAM_ICON} alt="" width={40} height={40} unoptimized className="shrink-0" />
               <div className="min-w-0 flex-1">
-                <h3 className="text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
+                <h3 className="truncate whitespace-nowrap text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
                   {tr('Telegram', 'Telegram')}
                 </h3>
-                <p className="text-[13px] leading-[19.5px] tracking-[-0.31px] text-white/90">
+                <p className="truncate whitespace-nowrap text-[12px] leading-[18px] tracking-[-0.31px] text-white/90">
                   {tr('Resources', 'Ռեսուրսներ')}
                 </p>
               </div>
               <button
                 type="button"
                 className={cn(
-                  'shrink-0 rounded-full bg-white px-4 py-2.5 text-[13px] font-bold leading-[19.5px] tracking-[-0.31px] text-[#27abe4]',
+                  'shrink-0 whitespace-nowrap rounded-full bg-white px-3 py-2 text-[11px] font-bold leading-[16px] tracking-[-0.31px] text-[#27abe4]',
                   BUTTON_HOVER_CLASS,
                 )}
               >

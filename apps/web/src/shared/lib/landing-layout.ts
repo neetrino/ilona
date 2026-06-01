@@ -3,3 +3,16 @@ export const LANDING_DESIGN_WIDTH = 1440;
 
 /** Viewports below this width use the real mobile layout (no canvas scaling). */
 export const LANDING_CANVAS_MIN_WIDTH = 744;
+
+/** Max content width for the landing navbar within the design canvas. */
+export const LANDING_NAVBAR_MAX_WIDTH = 1280;
+
+/** Inline nav from this width; below it uses the burger menu (covers all iPad sizes). */
+export const LANDING_NAV_DESKTOP_MIN_WIDTH = 1367;
+
+export function getLandingCanvasMetrics(viewportWidth: number) {
+  const isCanvasActive = viewportWidth >= LANDING_CANVAS_MIN_WIDTH;
+  const scale = isCanvasActive ? viewportWidth / LANDING_DESIGN_WIDTH : 1;
+
+  return { isCanvasActive, scale };
+}
