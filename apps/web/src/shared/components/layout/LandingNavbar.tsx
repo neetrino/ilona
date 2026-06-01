@@ -5,7 +5,12 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, type MouseEvent } from 'react';
 import { useSwitchLocale } from '@/shared/hooks/useSwitchLocale';
-import { LANDING_NAV_DESKTOP_MIN_WIDTH } from '@/shared/lib/landing-layout';
+import { useLandingCanvasScale } from '@/shared/hooks/useLandingCanvasScale';
+import {
+  LANDING_DESIGN_WIDTH,
+  LANDING_NAV_DESKTOP_MIN_WIDTH,
+  LANDING_NAVBAR_HEIGHT,
+} from '@/shared/lib/landing-layout';
 import { cn } from '@/shared/lib/utils';
 
 type LandingNavbarProps = {
@@ -53,6 +58,7 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
   const tHome = useTranslations('home');
   const tCommon = useTranslations('common');
   const { locale, switchLocale } = useSwitchLocale();
+  const { isCanvasActive, scale } = useLandingCanvasScale();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -105,43 +111,91 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
     setMenuOpen(false);
   };
 
+  const scaledMenuTop = `calc(0.75rem + ${LANDING_NAVBAR_HEIGHT * scale}px + 0.5rem)`;
+
   return (
     <>
-      <header className="fixed inset-x-0 top-2 z-50 px-3 sm:top-3 sm:px-6">
+      <header
+        className={cn(
+          'fixed inset-x-0 z-50 flex justify-center',
+          isCanvasActive ? 'top-3' : 'top-2 px-3 sm:top-3 sm:px-6',
+        )}
+      >
         <div
-          className={cn(
-            'mx-auto flex w-full max-w-[1280px] items-center justify-between rounded-[100px] bg-[#093394] shadow-lg',
-            'h-[58px] px-3 sm:h-[64px] sm:px-4 tablet:h-[70px] tablet:px-5',
-          )}
+          className={cn('w-full', isCanvasActive && 'px-6')}
+          style={
+            isCanvasActive
+              ? {
+                  maxWidth: LANDING_DESIGN_WIDTH,
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'top center',
+                }
+              : undefined
+          }
         >
-            <Link href="#home" onClick={handleLogoClick} className="flex min-w-0 items-center gap-2 sm:gap-3">
-              <div className="relative h-[42px] w-[42px] shrink-0 overflow-hidden rounded-full bg-white ring-2 ring-white/40 sm:h-[48px] sm:w-[48px] tablet:h-[52px] tablet:w-[52px]">
+          <div
+            className={cn(
+              'mx-auto flex w-full max-w-[1280px] items-center justify-between rounded-[100px] bg-[#093394] shadow-lg',
+              isCanvasActive
+                ? 'h-[70px] px-5'
+                : 'h-[58px] px-3 sm:h-[64px] sm:px-4 tablet:h-[70px] tablet:px-5',
+            )}
+          >
+            <Link
+              href="#home"
+              onClick={handleLogoClick}
+              className={cn('flex min-w-0 items-center', isCanvasActive ? 'gap-3' : 'gap-2 sm:gap-3')}
+            >
+              <div
+                className={cn(
+                  'relative shrink-0 overflow-hidden rounded-full bg-white ring-2 ring-white/40',
+                  isCanvasActive
+                    ? 'h-[52px] w-[52px]'
+                    : 'h-[42px] w-[42px] sm:h-[48px] sm:w-[48px] tablet:h-[52px] tablet:w-[52px]',
+                )}
+              >
                 <Image src={logoUrl} alt="Ilona English Centre" fill className="object-contain" unoptimized />
               </div>
-              <span className="hidden truncate text-[16px] font-bold tracking-[-0.18px] text-white min-[420px]:block sm:text-[18px] tablet:text-[20px]">
+              <span
+                className={cn(
+                  'truncate font-bold tracking-[-0.18px] text-white',
+                  isCanvasActive
+                    ? 'block text-[20px]'
+                    : 'hidden text-[16px] min-[420px]:block sm:text-[18px] tablet:text-[20px]',
+                )}
+              >
                 {t('brand')}
               </span>
             </Link>
 
-            <nav className="hidden items-center gap-4 navDesktop:flex navDesktop:gap-6 xl:gap-8">
+            <nav
+              className={cn(
+                'hidden items-center text-white',
+                isCanvasActive ? 'gap-8 navDesktop:flex' : 'gap-4 navDesktop:flex navDesktop:gap-6 xl:gap-8',
+              )}
+            >
               {NAV_ITEMS.map((item) => (
                 <Link
                   key={item.id}
                   href={item.href}
-                  className="whitespace-nowrap text-sm font-normal tracking-[-0.3px] text-white transition-opacity hover:opacity-80 navDesktop:text-[15px] xl:text-base"
+                  className={cn(
+                    'whitespace-nowrap font-normal tracking-[-0.3px] transition-opacity hover:opacity-80',
+                    isCanvasActive ? 'text-base' : 'text-sm navDesktop:text-[15px] xl:text-base',
+                  )}
                 >
                   {t(item.id)}
                 </Link>
               ))}
             </nav>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 tablet:gap-3">
+            <div className={cn('flex items-center', isCanvasActive ? 'gap-3' : 'gap-1.5 sm:gap-2 tablet:gap-3')}>
               <div className="inline-flex items-center rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f3f3f4] p-[3px]">
                 <button
                   type="button"
                   onClick={() => switchLocale('hy')}
                   className={cn(
-                    'min-w-[38px] rounded-full px-2 py-1 text-[11px] font-medium transition-colors sm:min-w-[42px] sm:text-[12px]',
+                    'rounded-full px-2 py-1 font-medium transition-colors',
+                    isCanvasActive ? 'min-w-[42px] text-[12px]' : 'min-w-[38px] text-[11px] sm:min-w-[42px] sm:text-[12px]',
                     locale === 'hy' ? 'bg-[#093394] text-white' : 'text-[#5b5b62]/80',
                   )}
                 >
@@ -151,7 +205,8 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
                   type="button"
                   onClick={() => switchLocale('en')}
                   className={cn(
-                    'min-w-[38px] rounded-full px-2 py-1 text-[11px] font-medium transition-colors sm:min-w-[42px] sm:text-[12px]',
+                    'rounded-full px-2 py-1 font-medium transition-colors',
+                    isCanvasActive ? 'min-w-[42px] text-[12px]' : 'min-w-[38px] text-[11px] sm:min-w-[42px] sm:text-[12px]',
                     locale === 'en' ? 'bg-[#093394] text-white' : 'text-[#5b5b62]/80',
                   )}
                 >
@@ -162,7 +217,12 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
               <button
                 type="button"
                 onClick={() => setMenuOpen((open) => !open)}
-                className="relative inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center overflow-hidden rounded-full text-white transition-colors hover:bg-white/10 sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px] navDesktop:hidden"
+                className={cn(
+                  'relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full text-white transition-colors hover:bg-white/10 navDesktop:hidden',
+                  isCanvasActive
+                    ? 'h-[37px] w-[37px]'
+                    : 'h-[32px] w-[32px] sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px]',
+                )}
                 aria-expanded={menuOpen}
                 aria-controls="landing-mobile-menu"
                 aria-label={menuOpen ? tCommon('close') : t('openMenu')}
@@ -181,12 +241,18 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
               <Link
                 href={profileHref}
                 aria-label={tHome('login')}
-                className="relative hidden h-[32px] w-[32px] shrink-0 items-center justify-center overflow-hidden rounded-full sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px] navDesktop:inline-flex"
+                className={cn(
+                  'relative hidden shrink-0 items-center justify-center overflow-hidden rounded-full navDesktop:inline-flex',
+                  isCanvasActive
+                    ? 'h-[37px] w-[37px]'
+                    : 'h-[32px] w-[32px] sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px]',
+                )}
               >
                 <ProfileIcon className="h-full w-full" />
               </Link>
             </div>
           </div>
+        </div>
       </header>
 
       {menuOpen ? (
@@ -199,7 +265,13 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
           />
           <nav
             id="landing-mobile-menu"
-            className="fixed inset-x-3 top-[calc(0.5rem+58px+0.5rem)] z-40 max-h-[min(70vh,calc(100dvh-5.5rem))] overflow-y-auto rounded-[28px] bg-[#093394] p-3 shadow-xl sm:inset-x-6 sm:top-[calc(0.75rem+64px+0.5rem)] tablet:top-[calc(0.75rem+70px+0.5rem)] navDesktop:hidden"
+            className={cn(
+              'fixed z-40 max-h-[min(70vh,calc(100dvh-5.5rem))] overflow-y-auto rounded-[28px] bg-[#093394] p-3 shadow-xl navDesktop:hidden',
+              isCanvasActive
+                ? 'inset-x-6'
+                : 'inset-x-3 top-[calc(0.5rem+58px+0.5rem)] sm:inset-x-6 sm:top-[calc(0.75rem+64px+0.5rem)] tablet:top-[calc(0.75rem+70px+0.5rem)]',
+            )}
+            style={isCanvasActive ? { top: scaledMenuTop } : undefined}
           >
             <ul className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => (
