@@ -1,9 +1,8 @@
 'use client';
 
-import { useLocale } from 'next-intl';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
-import { locales, Locale } from '@/config/i18n';
+import { locales, type Locale } from '@/config/i18n';
+import { useSwitchLocale } from '@/shared/hooks/useSwitchLocale';
 import { cn } from '@/shared/lib/utils';
 
 const LOCALE_STORAGE_KEY = 'preferred-locale';
@@ -14,10 +13,7 @@ type LanguageSwitcherProps = {
 
 export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps) {
   const isCompact = variant === 'compact';
-  const locale = useLocale() as Locale;
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { locale, switchLocale } = useSwitchLocale();
 
   // Save current locale to localStorage when it changes
   useEffect(() => {
@@ -25,28 +21,6 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
       localStorage.setItem(LOCALE_STORAGE_KEY, locale);
     }
   }, [locale]);
-
-  const switchLocale = (newLocale: Locale) => {
-    // Don't switch if already on this locale
-    if (newLocale === locale) return;
-
-    // Save preference to localStorage
-    localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
-    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; samesite=lax`;
-
-    const segments = pathname.split('/').filter(Boolean);
-    const normalizedPath = segments[0] && locales.includes(segments[0] as Locale)
-      ? `/${segments.slice(1).join('/')}`
-      : pathname;
-
-    // Preserve query parameters
-    const queryString = searchParams.toString();
-    const newPath = queryString 
-      ? `${normalizedPath || '/'}?${queryString}`
-      : normalizedPath || '/';
-    
-    router.replace(newPath, { scroll: false });
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent, targetLocale: Locale) => {
     if (e.key === 'Enter' || e.key === ' ') {
