@@ -7,6 +7,9 @@ export const LANDING_CANVAS_MIN_WIDTH = 744;
 /** Max content width for the landing navbar within the design canvas. */
 export const LANDING_NAVBAR_MAX_WIDTH = 1280;
 
+/** Navbar bar height in the 1440px Figma canvas (scaled on tablet+). */
+export const LANDING_NAVBAR_HEIGHT = 70;
+
 /** Inline nav from this width; below it uses the burger menu (covers all iPad sizes). */
 export const LANDING_NAV_DESKTOP_MIN_WIDTH = 1367;
 

@@ -1,13 +1,13 @@
 'use client';
 
 import {
-  useCallback,
   useEffect,
   useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from 'react';
+import { useLandingCanvasScale } from '@/shared/hooks/useLandingCanvasScale';
 import {
   LANDING_CANVAS_MIN_WIDTH,
   LANDING_DESIGN_WIDTH,
@@ -29,22 +29,8 @@ export function CanvasScaler({
 }: CanvasScalerProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [isCanvasActive, setIsCanvasActive] = useState(false);
+  const { scale, isCanvasActive } = useLandingCanvasScale(designWidth, minWidth);
   const [contentHeight, setContentHeight] = useState(0);
-
-  const updateScale = useCallback(() => {
-    const viewportWidth = window.innerWidth;
-    const active = viewportWidth >= minWidth;
-    setIsCanvasActive(active);
-    setScale(active ? viewportWidth / designWidth : 1);
-  }, [designWidth, minWidth]);
-
-  useEffect(() => {
-    updateScale();
-    window.addEventListener('resize', updateScale, { passive: true });
-    return () => window.removeEventListener('resize', updateScale);
-  }, [updateScale]);
 
   useEffect(() => {
     const contentEl = contentRef.current;
