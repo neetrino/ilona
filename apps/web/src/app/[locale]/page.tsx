@@ -198,6 +198,7 @@ export default function HomePage() {
   const [activeBranchIndex, setActiveBranchIndex] = useState(0);
   const [branchSlideDirection, setBranchSlideDirection] = useState(1);
   const [hasBranchInteracted, setHasBranchInteracted] = useState(false);
+  const [activeProgramIndex, setActiveProgramIndex] = useState(0);
   const [englishLevel, setEnglishLevel] = useState<string>('');
   const [isEnglishLevelOpen, setIsEnglishLevelOpen] = useState(false);
   const [preferredBranch, setPreferredBranch] = useState<string>('');
@@ -981,38 +982,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Student Success Section (Figma 1:381) */}
-      <section className="bg-[#f9fafb] pb-[80px] pt-[80px]">
-        <div className="mx-auto flex w-[1216px] flex-col items-center gap-[50px]">
-          <div className="flex w-full flex-col items-center gap-4">
-            <h2 className="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
+      {/* Student Success — mobile Figma 1:1024, desktop Figma 1:381 */}
+      <section className="bg-[#f9fafb]">
+        <div className="flex flex-col gap-6 pb-10 pt-10 lg:hidden">
+          <div className="flex flex-col items-center gap-2 px-5 text-center">
+            <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
               {tr('Student Success', 'Ուսանողների հաջողություններ')}
             </h2>
-            <p className="text-center text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
+            <p className="text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565]">
               {tr('Real stories, real results', 'Իրական պատմություններ, իրական արդյունքներ')}
             </p>
           </div>
 
-          <div className="grid w-full grid-cols-3 gap-8">
+          <div className="flex flex-col gap-4 px-5">
             {[1, 2, 3].map((item) => (
               <article
                 key={item}
-                className="overflow-hidden rounded-[16px] bg-white shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]"
+                className="w-full overflow-hidden rounded-[16px] bg-white shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]"
               >
-                <div className="relative h-[216px] w-full bg-[#101828]">
-                  <Image
-                    src={STUDENT_SUCCESS_IMAGE}
-                    alt=""
-                    fill
-                    unoptimized
-                    className="object-cover"
-                  />
+                <div className="relative h-[200px] w-full overflow-hidden bg-[#101828]">
+                  <div className="absolute inset-x-0 -top-6 h-[254px]">
+                    <Image
+                      src={STUDENT_SUCCESS_IMAGE}
+                      alt=""
+                      fill
+                      unoptimized
+                      loading="lazy"
+                      sizes="(max-width: 1024px) 100vw, 280px"
+                      className="object-cover object-[center_52%]"
+                    />
+                  </div>
                 </div>
-                <div className="px-6 pb-6 pt-5">
-                  <h3 className="text-[28px] font-medium leading-[28px] tracking-[-0.4395px] text-[#101828]">
+                <div className="flex flex-col gap-1 px-5 pb-5 pt-5">
+                  <h3 className="text-[16px] font-medium leading-[24px] tracking-[-0.44px] text-[#101828]">
                     {tr('Maria&apos;s IELTS Success', 'Մարիայի IELTS հաջողությունը')}
                   </h3>
-                  <p className="mt-2 text-[14px] leading-[20px] tracking-[-0.1504px] text-[#4a5565]">
+                  <p className="text-[13px] leading-[20px] tracking-[-0.15px] text-[#4a5565]">
                     {tr('From beginner to IELTS 7.5 in 12 months', 'Սկսնակից մինչև IELTS 7.5՝ 12 ամսում')}
                   </p>
                 </div>
@@ -1020,21 +1025,166 @@ export default function HomePage() {
             ))}
           </div>
 
-          <Link
-            href="#contact"
-            className={cn(
-              'inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-full bg-[#093394] text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] text-white',
-              BUTTON_HOVER_CLASS,
-            )}
-          >
-            {tr('More', 'Ավելին')}
-          </Link>
+          <div className="px-5">
+            <Link
+              href="#contact"
+              className={cn(
+                'inline-flex h-[50px] w-full items-center justify-center rounded-full bg-[#093394] text-[15px] font-semibold leading-[22.5px] text-white',
+                BUTTON_HOVER_CLASS,
+              )}
+            >
+              {tr('More', 'Ավելին')}
+            </Link>
+          </div>
+        </div>
+
+        <div className="hidden pb-[80px] pt-[80px] lg:block">
+          <div className="mx-auto flex w-[1216px] flex-col items-center gap-[50px]">
+            <div className="flex w-full flex-col items-center gap-4">
+              <h2 className="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
+                {tr('Student Success', 'Ուսանողների հաջողություններ')}
+              </h2>
+              <p className="text-center text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
+                {tr('Real stories, real results', 'Իրական պատմություններ, իրական արդյունքներ')}
+              </p>
+            </div>
+
+            <div className="grid w-full grid-cols-3 gap-8">
+              {[1, 2, 3].map((item) => (
+                <article
+                  key={item}
+                  className="overflow-hidden rounded-[16px] bg-white shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]"
+                >
+                  <div className="relative h-[216px] w-full bg-[#101828]">
+                    <Image
+                      src={STUDENT_SUCCESS_IMAGE}
+                      alt=""
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="px-6 pb-6 pt-5">
+                    <h3 className="text-[28px] font-medium leading-[28px] tracking-[-0.4395px] text-[#101828]">
+                      {tr('Maria&apos;s IELTS Success', 'Մարիայի IELTS հաջողությունը')}
+                    </h3>
+                    <p className="mt-2 text-[14px] leading-[20px] tracking-[-0.1504px] text-[#4a5565]">
+                      {tr('From beginner to IELTS 7.5 in 12 months', 'Սկսնակից մինչև IELTS 7.5՝ 12 ամսում')}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <Link
+              href="#contact"
+              className={cn(
+                'inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-full bg-[#093394] text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] text-white',
+                BUTTON_HOVER_CLASS,
+              )}
+            >
+              {tr('More', 'Ավելին')}
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Student Success Programs (Figma 1:797) */}
-      <section className="bg-[#f9fafb] pb-8 pt-14">
-        <div className="mx-auto flex w-[1482px] flex-col items-center gap-[69px] py-2">
+      {/* Student Success Programs — mobile Figma 1:1055, desktop Figma 1:797 */}
+      <section className="bg-[#f9fafb] pb-10 pt-10 lg:pb-8 lg:pt-14">
+        <div className="flex flex-col gap-6 lg:hidden">
+          <h2 className="px-5 text-center text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
+            {tr('Student Success', 'Ուսանողների հաջողություններ')}
+          </h2>
+
+          <div className="px-5">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.article
+                key={activeProgramIndex}
+                role="tabpanel"
+                className="relative mx-auto h-[320px] w-full max-w-[320px] overflow-hidden rounded-[22px] bg-[#093394]"
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.28, ease: 'easeOut' }}
+              >
+                <p className="absolute left-6 top-5 text-[64px] font-bold leading-[64px] text-white">
+                  {(activeProgramIndex + 1).toString().padStart(2, '0')}
+                </p>
+                <p className="absolute left-6 top-[108px] text-[20px] font-bold leading-[26px] text-white">
+                  {tr('Program Name', 'Ծրագրի անվանում')}
+                </p>
+                <p className="absolute left-6 top-[196px] text-[20px] font-bold leading-[30px] text-white">
+                  18000 AMD
+                  {isHy ? (
+                    <span className="text-white/60">
+                      <span>/</span>
+                      <span className="text-[16px]">ամսական</span>
+                    </span>
+                  ) : (
+                    <span className="text-white/60">/MO</span>
+                  )}
+                </p>
+                <p className="absolute left-6 top-[230px] text-[13px] leading-[19.5px] text-white">
+                  {tr('Program details', 'Ծրագրի մանրամասներ')}
+                </p>
+                <Link
+                  href="/login"
+                  className={cn(
+                    'absolute left-5 top-[256px] inline-flex h-[43px] w-[112px] items-center justify-center gap-1 rounded-full bg-white text-[13px] font-semibold leading-[19.5px] text-[#093394]',
+                    BUTTON_HOVER_CLASS,
+                  )}
+                >
+                  <span>{tr('Register', 'Գրանցվել')}</span>
+                  <Image
+                    src={REGISTER_ARROW_IMAGE}
+                    alt=""
+                    width={16}
+                    height={16}
+                    unoptimized
+                    className="h-4 w-4 object-contain"
+                  />
+                </Link>
+              </motion.article>
+            </AnimatePresence>
+          </div>
+
+          <div className="flex flex-col gap-4 px-5">
+            <div
+              className="flex justify-center gap-1.5"
+              role="tablist"
+              aria-label={tr('Programs', 'Ծրագրեր')}
+            >
+              {[0, 1, 2, 3].map((index) => (
+                <button
+                  key={index}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeProgramIndex === index}
+                  onClick={() => setActiveProgramIndex(index)}
+                  className={cn(
+                    'inline-flex h-8 min-w-[36px] items-center justify-center rounded-full px-2 text-[12px] font-semibold leading-none transition-colors',
+                    activeProgramIndex === index
+                      ? 'bg-[#093394] text-white'
+                      : 'border border-[#093394] bg-white text-[#093394]',
+                  )}
+                >
+                  {(index + 1).toString().padStart(2, '0')}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className={cn(
+                'inline-flex h-[50px] w-full items-center justify-center rounded-full bg-[#e7000b] text-[15px] font-semibold leading-[22.5px] text-white',
+                BUTTON_HOVER_CLASS,
+              )}
+            >
+              {tr('More', 'Ավելին')}
+            </button>
+          </div>
+        </div>
+
+        <div className="mx-auto hidden w-[1482px] flex-col items-center gap-[69px] py-2 lg:flex">
           <h2 className="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
             {tr('Student Success', 'Ուսանողների հաջողություններ')}
           </h2>
@@ -1102,70 +1252,70 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Register Now Section (Figma 1:416) */}
-      <section className="bg-[#dde7ff] pb-20 pt-20">
-        <div className="mx-auto flex w-[720px] flex-col items-center gap-12">
+      {/* Register Now — mobile Figma 1:1107, desktop Figma 1:416 */}
+      <section className="bg-[#dde7ff] pb-10 pt-10 lg:pb-20 lg:pt-20">
+        <div className="mx-auto flex w-full flex-col items-center gap-6 px-5 lg:w-[720px] lg:gap-12 lg:px-0">
           <div className="text-center">
-            <div className="inline-flex h-[36px] items-center rounded-full bg-[#093394] px-6">
-              <span className="text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-white">
+            <div className="inline-flex h-[30px] items-center rounded-full bg-[#093394] px-4 lg:h-9 lg:px-6">
+              <span className="text-[12px] font-bold leading-[18px] text-white lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
                 {tr('Start Today', 'Սկսիր այսօր')}
               </span>
             </div>
-            <h2 className="mt-4 text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
+            <h2 className="mt-3 text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a] lg:mt-4 lg:text-[48px] lg:leading-[48px] lg:tracking-[0.3516px]">
               {tr('Register Now', 'Գրանցվել հիմա')}
             </h2>
-            <p className="mt-4 text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
+            <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565] lg:mt-4 lg:text-[20px] lg:leading-[28px] lg:tracking-[-0.4492px]">
               {tr('Begin your English journey', 'Սկսիր քո անգլերենի ճանապարհը')}
             </p>
           </div>
 
-          <div className="w-full rounded-[40px] bg-white px-8 pb-8 pt-8">
-            <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+          <div className="w-full rounded-[28px] bg-white p-5 lg:rounded-[40px] lg:px-8 lg:pb-8 lg:pt-8">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-4 lg:gap-x-6 lg:gap-y-6">
               <div>
-                <p className="mb-2 text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#364153]">
+                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
                   {tr('First Name', 'Անուն')}
                 </p>
                 <input
                   type="text"
                   name="firstName"
-                  className="h-[60px] w-full rounded-[16px] border-2 border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394]"
+                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] lg:h-[60px] lg:rounded-[16px] lg:border-2"
                 />
               </div>
               <div>
-                <p className="mb-2 text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#364153]">
+                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
                   {tr('Last Name', 'Ազգանուն')}
                 </p>
                 <input
                   type="text"
                   name="lastName"
-                  className="h-[60px] w-full rounded-[16px] border-2 border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394]"
+                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] lg:h-[60px] lg:rounded-[16px] lg:border-2"
                 />
               </div>
               <div>
-                <p className="mb-2 text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#364153]">
+                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
                   {tr('Age', 'Տարիք')}
                 </p>
                 <input
                   type="number"
                   name="age"
                   min={1}
-                  className="h-[60px] w-full rounded-[16px] border-2 border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394]"
+                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] lg:h-[60px] lg:rounded-[16px] lg:border-2"
                 />
               </div>
               <div>
-                <p className="mb-2 text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#364153]">
+                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
                   {tr('Phone', 'Հեռախոս')}
                 </p>
                 <input
                   type="tel"
                   name="phone"
-                  className="h-[60px] w-full rounded-[16px] border-2 border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394]"
+                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] lg:h-[60px] lg:rounded-[16px] lg:border-2"
                 />
               </div>
             </div>
 
-            <div className="mt-6">
-              <p className="mb-2 text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#364153]">
+            <div className="mt-4 lg:mt-6">
+              <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
                 {tr('English Level', 'Անգլերենի մակարդակ')}
               </p>
               <div
@@ -1177,7 +1327,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setIsEnglishLevelOpen((prev) => !prev)}
-                  className="relative h-[57px] w-full rounded-[16px] border-2 border-[#e5e7eb] bg-white pl-4 pr-14 text-left text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors hover:border-[#c5d4ff] focus:border-[#093394]"
+                  className="relative h-[50px] w-full rounded-[14px] border border-[#e5e7eb] bg-white pl-4 pr-14 text-left text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors hover:border-[#c5d4ff] focus:border-[#093394] lg:h-[57px] lg:rounded-[16px] lg:border-2"
                 >
                   <span className={cn(englishLevel ? 'text-[#0a0a0a]' : 'text-[#6b7280]')}>
                     {englishLevel ||
@@ -1232,11 +1382,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="mt-6">
-              <p className="mb-3 text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#364153]">
+            <div className="mt-4 lg:mt-6">
+              <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] lg:mb-3 lg:text-[14px] lg:leading-[20px] lg:tracking-[-0.1504px]">
                 {tr('Preferred Branch', 'Նախընտրելի մասնաճյուղ')}
               </p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5 lg:gap-3">
                 {REGISTER_BRANCH_OPTIONS.map((branchOption) => {
                   const isSelected = preferredBranch === branchOption.value;
 
@@ -1246,13 +1396,22 @@ export default function HomePage() {
                       type="button"
                       onClick={() => setPreferredBranch(branchOption.value)}
                       className={cn(
-                        'h-[56px] rounded-[16px] border-2 px-4 text-left text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] transition-colors',
+                        'flex items-center gap-2.5 rounded-[14px] px-3 py-3 text-left transition-colors lg:h-[56px] lg:gap-0 lg:rounded-[16px] lg:border-2 lg:px-4 lg:py-0 lg:text-[16px] lg:font-semibold lg:leading-[24px] lg:tracking-[-0.3125px]',
                         isSelected
-                          ? 'border-[#093394] bg-white text-[#093394]'
-                          : 'border-[#e5e7eb] bg-[#f9fafb] text-[#0a0a0a]',
+                          ? 'bg-[#f9fafb] lg:border-[#093394] lg:bg-white lg:text-[#093394]'
+                          : 'bg-[#f9fafb] lg:border-[#e5e7eb] lg:text-[#0a0a0a]',
                       )}
                     >
-                      {isHy ? branchOption.labelHy : branchOption.labelEn}
+                      <span
+                        className={cn(
+                          'size-4 shrink-0 rounded border border-[#d1d5dc] lg:hidden',
+                          isSelected && 'border-[#093394] bg-[#093394]',
+                        )}
+                        aria-hidden
+                      />
+                      <span className="text-[14px] font-semibold leading-[21px] tracking-[-0.31px] text-[#0a0a0a] lg:text-inherit lg:font-semibold lg:leading-[24px] lg:tracking-[-0.3125px] lg:text-inherit">
+                        {isHy ? branchOption.labelHy : branchOption.labelEn}
+                      </span>
                     </button>
                   );
                 })}
@@ -1262,20 +1421,113 @@ export default function HomePage() {
             <button
               type="button"
               className={cn(
-                'mt-6 flex h-[68px] w-full items-center justify-center gap-2 rounded-[56px] bg-[#093394] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-white',
+                'mt-4 flex h-[56px] w-full items-center justify-center gap-2 rounded-[44px] bg-[#093394] text-[16px] font-bold leading-[24px] text-white lg:mt-6 lg:h-[68px] lg:rounded-[56px] lg:text-[18px] lg:leading-[28px] lg:tracking-[-0.4395px]',
                 BUTTON_HOVER_CLASS,
               )}
             >
               <span>{tr('Submit Registration', 'Ուղարկել գրանցումը')}</span>
-              <Image src={REGISTER_SUBMIT_ICON} alt="" width={20} height={20} unoptimized />
+              <Image
+                src={REGISTER_SUBMIT_ICON}
+                alt=""
+                width={16}
+                height={16}
+                unoptimized
+                className="h-4 w-4 object-contain lg:h-5 lg:w-5"
+              />
             </button>
           </div>
         </div>
       </section>
 
-      {/* Our Branches Section (Figma 1:690) */}
-      <section id="branches" className="relative h-[878px] overflow-hidden bg-[#093394]">
-        <div className="relative mx-auto h-full w-full max-w-[1470px]">
+      {/* Our Branches — mobile Figma 1:1167, desktop Figma 1:690 */}
+      <section id="branches" className="overflow-hidden bg-[#093394]">
+        <div className="flex flex-col items-center gap-6 px-5 pb-12 pt-10 lg:hidden">
+          <div className="text-center">
+            <h2 className="text-[28px] font-medium leading-[42px] tracking-[0.35px] text-white">
+              {tr('Our Branches', 'Մեր մասնաճյուղերը')}
+            </h2>
+            <p className="mt-2 text-[15px] leading-[22.5px] tracking-[-0.45px] text-white/[0.58]">
+              {tr('Find the location nearest to you', 'Գտեք ձեզ ամենամոտ մասնաճյուղը')}
+            </p>
+          </div>
+
+          <div className="relative h-[240px] w-full overflow-hidden rounded-[24px] border-[3px] border-white">
+            <AnimatePresence initial={false} custom={branchSlideDirection} mode="sync">
+              <motion.div
+                key={`mobile-branch-image-${activeBranch.shortLabel}`}
+                className="absolute inset-0"
+                custom={branchSlideDirection}
+                variants={branchImageVariants}
+                initial={hasBranchInteracted ? 'enter' : false}
+                animate="center"
+                exit="exit"
+                transition={branchImageTransition}
+              >
+                <Image
+                  src={activeBranch.image}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="lazy"
+                  sizes="100vw"
+                  className="object-cover object-bottom"
+                />
+              </motion.div>
+            </AnimatePresence>
+            <button
+              type="button"
+              aria-label={tr('Play branch video', 'Նվագարկել մասնաճյուղի տեսանյութ')}
+              className="absolute left-1/2 top-1/2 z-10 flex size-[70px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-[0px_10px_15px_0px_rgba(0,0,0,0.1),0px_4px_6px_0px_rgba(0,0,0,0.1)]"
+            >
+              <span className="ml-1 block size-0 border-y-[10px] border-l-[16px] border-y-transparent border-l-[#093394]" />
+            </button>
+          </div>
+
+          <div className="flex w-full flex-col items-center gap-2 text-center">
+            <h3 className="text-[22px] font-bold leading-[33px] text-white/[0.74]">
+              {isHy ? activeBranch.branchNameHy : activeBranch.branchName}
+            </h3>
+            <p className="text-[14px] leading-[21px] tracking-[-0.15px] text-white/[0.66]">
+              {isHy ? activeBranch.addressHy : activeBranch.address}
+            </p>
+            <a
+              href={activeBranch.mapUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 text-[14px] leading-[21px] tracking-[-0.15px] text-[#ff5c56] transition-opacity hover:opacity-80"
+            >
+              <Image src={BRANCH_MAP_ICON} alt="" width={16} height={16} unoptimized />
+              <span>{tr('View on map', 'Դիտել քարտեզում')}</span>
+            </a>
+          </div>
+
+          <div className="flex items-center justify-center gap-5">
+            <button
+              type="button"
+              aria-label="Previous branch"
+              className={cn(
+                'inline-flex size-[56px] items-center justify-center',
+                BUTTON_HOVER_CLASS,
+              )}
+              onClick={goToPreviousBranch}
+            >
+              <Image src={BRANCH_NAV_ARROW} alt="" width={56} height={56} unoptimized />
+            </button>
+            <button
+              type="button"
+              aria-label="Next branch"
+              className={cn(
+                'inline-flex size-[56px] items-center justify-center',
+                BUTTON_HOVER_CLASS,
+              )}
+              onClick={goToNextBranch}
+            >
+              <Image src={BRANCH_NAV_ARROW} alt="" width={56} height={56} unoptimized className="rotate-180" />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative mx-auto hidden h-[878px] w-full max-w-[1470px] lg:block">
           <div className="absolute left-1/2 top-[81px] w-[1216px] -translate-x-1/2 text-center">
             <h2 className="text-[48px] font-medium leading-[48px] tracking-[0.3516px] text-white">
               {tr('Our Branches', 'Մեր մասնաճյուղերը')}
@@ -1411,9 +1663,103 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Follow Us Section (Figma 1:473) */}
-      <section className="bg-white pb-[80px] pt-[80px]">
-        <div className="mx-auto flex w-full max-w-[1216px] flex-col gap-[64px]">
+      {/* Follow Us — mobile Figma 1:1196, desktop Figma 1:473 */}
+      <section className="bg-[#f9fafb] pb-10 pt-10 lg:bg-white lg:pb-[80px] lg:pt-[80px]">
+        <div className="flex flex-col gap-6 px-5 lg:hidden">
+          <div className="text-center">
+            <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
+              {tr('Follow Us', 'Հետևեք մեզ')}
+            </h2>
+            <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565]">
+              {tr('Join the community', 'Միացեք համայնքին')}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <motion.article
+              className="flex min-h-[94px] items-center gap-5 rounded-[28px] bg-gradient-to-br from-[#ad46ff] to-[#f6339a] px-6 py-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut' }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <Image src={FOLLOW_INSTAGRAM_ICON} alt="" width={40} height={40} unoptimized className="shrink-0" />
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
+                  {tr('Instagram', 'Instagram')}
+                </h3>
+                <p className="text-[13px] leading-[19.5px] tracking-[-0.31px] text-white/90">
+                  {tr('Daily tips & stories', 'Օրական խորհուրդներ և պատմություններ')}
+                </p>
+              </div>
+              <button
+                type="button"
+                className={cn(
+                  'shrink-0 rounded-full bg-white px-4 py-2.5 text-[13px] font-bold leading-[19.5px] tracking-[-0.31px] text-[#e60076]',
+                  BUTTON_HOVER_CLASS,
+                )}
+              >
+                @ilonaenglish
+              </button>
+            </motion.article>
+
+            <motion.article
+              className="flex min-h-[94px] items-center gap-5 rounded-[28px] bg-[#0058df] px-6 py-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <Image src={FOLLOW_FACEBOOK_ICON} alt="" width={40} height={40} unoptimized className="shrink-0" />
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
+                  {tr('Facebook', 'Facebook')}
+                </h3>
+                <p className="text-[13px] leading-[19.5px] tracking-[-0.31px] text-white/90">
+                  {tr('Events & news', 'Իրադարձություններ և նորություններ')}
+                </p>
+              </div>
+              <button
+                type="button"
+                className={cn(
+                  'shrink-0 rounded-full bg-white px-4 py-2.5 text-[13px] font-bold leading-[19.5px] tracking-[-0.31px] text-[#155dfc]',
+                  BUTTON_HOVER_CLASS,
+                )}
+              >
+                Ilona English
+              </button>
+            </motion.article>
+
+            <motion.article
+              className="flex min-h-[94px] items-center gap-5 rounded-[28px] bg-[#3ac2fd] px-6 py-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <Image src={FOLLOW_TELEGRAM_ICON} alt="" width={40} height={40} unoptimized className="shrink-0" />
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
+                  {tr('Telegram', 'Telegram')}
+                </h3>
+                <p className="text-[13px] leading-[19.5px] tracking-[-0.31px] text-white/90">
+                  {tr('Resources', 'Ռեսուրսներ')}
+                </p>
+              </div>
+              <button
+                type="button"
+                className={cn(
+                  'shrink-0 rounded-full bg-white px-4 py-2.5 text-[13px] font-bold leading-[19.5px] tracking-[-0.31px] text-[#27abe4]',
+                  BUTTON_HOVER_CLASS,
+                )}
+              >
+                t.me/iecenglish
+              </button>
+            </motion.article>
+          </div>
+        </div>
+
+        <div className="mx-auto hidden w-full max-w-[1216px] flex-col gap-[64px] lg:flex">
           <div className="text-center">
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
               {tr('Follow Us', 'Հետևեք մեզ')}
@@ -1508,57 +1854,164 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Get in Touch Section (Figma 1:910/1:911) */}
-      <section
-        id="contact"
-        className="bg-white py-20"
-        style={{
-          backgroundImage:
-            'linear-gradient(180deg, rgb(255, 255, 255) 0.52083%, rgba(0, 0, 0, 0) 0.52083%), linear-gradient(90deg, rgb(255, 255, 255) 0.13605%, rgba(0, 0, 0, 0) 0.13605%)',
-        }}
-      >
-        <div className="mx-auto w-full max-w-[896px] text-center">
-          <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#1b3ba4]">
-            {tr('Get in Touch', 'Կապ մեզ հետ')}
-          </h2>
-          <p className="mt-6 text-[24px] leading-[32px] tracking-[0.0703px] text-[rgba(27,59,163,0.4)]">
-            {tr("We're here to help!", 'Մենք այստեղ ենք՝ օգնելու համար։')}
-          </p>
+      {/* Get in Touch — mobile Figma 1:1242, desktop Figma 1:910/1:911 */}
+      <section id="contact" className="scroll-mt-28 bg-white">
+        <div className="flex flex-col items-center gap-6 px-5 pb-10 pt-10 lg:hidden">
+          <div className="text-center">
+            <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#1b3ba4]">
+              {tr('Get in Touch', 'Կապ մեզ հետ')}
+            </h2>
+            <p className="mt-2 text-[18px] leading-[27px] tracking-[0.07px] text-[rgba(27,59,163,0.4)]">
+              {tr("We're here to help!", 'Մենք այստեղ ենք՝ օգնելու համար։')}
+            </p>
+          </div>
 
-          <div className="mt-12 flex items-center justify-center gap-6">
+          <div className="flex w-full flex-col gap-3">
             <Link
               href="tel:+1234567890"
               className={cn(
-                'inline-flex h-[56px] w-[271px] items-center justify-center gap-3 rounded-full bg-[#1b3ba4] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-white',
+                'inline-flex h-[56px] w-full items-center justify-center gap-3 rounded-full bg-[#1b3ba4] text-[16px] font-bold leading-[24px] tracking-[-0.44px] text-white',
                 BUTTON_HOVER_CLASS,
               )}
             >
-              <Image src={GET_TOUCH_PHONE_ICON} alt="" width={24} height={24} unoptimized />
+              <Image src={GET_TOUCH_PHONE_ICON} alt="" width={20} height={20} unoptimized />
               <span>+1 (234) 567-890</span>
             </Link>
             <Link
               href="mailto:info@iec.com"
               className={cn(
-                'inline-flex h-[56px] w-[237px] items-center justify-center gap-3 rounded-full border-2 border-[rgba(27,59,164,0.6)] bg-[rgba(255,255,255,0.1)] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-[#1b3ba4]',
+                'inline-flex h-[58px] w-full items-center justify-center gap-3 rounded-full border border-[rgba(27,59,164,0.6)] bg-[rgba(255,255,255,0.1)] text-[16px] font-bold leading-[24px] tracking-[-0.44px] text-[#1b3ba4]',
                 BUTTON_HOVER_CLASS,
               )}
             >
-              <Image src={GET_TOUCH_EMAIL_ICON} alt="" width={24} height={24} unoptimized />
+              <Image src={GET_TOUCH_EMAIL_ICON} alt="" width={20} height={20} unoptimized />
               <span>info@iec.com</span>
             </Link>
           </div>
         </div>
+
+        <div
+          className="hidden py-20 lg:block"
+          style={{
+            backgroundImage:
+              'linear-gradient(180deg, rgb(255, 255, 255) 0.52083%, rgba(0, 0, 0, 0) 0.52083%), linear-gradient(90deg, rgb(255, 255, 255) 0.13605%, rgba(0, 0, 0, 0) 0.13605%)',
+          }}
+        >
+          <div className="mx-auto w-full max-w-[896px] text-center">
+            <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#1b3ba4]">
+              {tr('Get in Touch', 'Կապ մեզ հետ')}
+            </h2>
+            <p className="mt-6 text-[24px] leading-[32px] tracking-[0.0703px] text-[rgba(27,59,163,0.4)]">
+              {tr("We're here to help!", 'Մենք այստեղ ենք՝ օգնելու համար։')}
+            </p>
+
+            <div className="mt-12 flex items-center justify-center gap-6">
+              <Link
+                href="tel:+1234567890"
+                className={cn(
+                  'inline-flex h-[56px] w-[271px] items-center justify-center gap-3 rounded-full bg-[#1b3ba4] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-white',
+                  BUTTON_HOVER_CLASS,
+                )}
+              >
+                <Image src={GET_TOUCH_PHONE_ICON} alt="" width={24} height={24} unoptimized />
+                <span>+1 (234) 567-890</span>
+              </Link>
+              <Link
+                href="mailto:info@iec.com"
+                className={cn(
+                  'inline-flex h-[56px] w-[237px] items-center justify-center gap-3 rounded-full border-2 border-[rgba(27,59,164,0.6)] bg-[rgba(255,255,255,0.1)] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-[#1b3ba4]',
+                  BUTTON_HOVER_CLASS,
+                )}
+              >
+                <Image src={GET_TOUCH_EMAIL_ICON} alt="" width={24} height={24} unoptimized />
+                <span>info@iec.com</span>
+              </Link>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* Join Our Team Section (Figma 1:722) */}
+      {/* Join Our Team — mobile Figma 1:1257, desktop Figma 1:722 */}
       <section
-        className="px-[287px] pb-[96px] pt-[96px]"
-        style={{
-          backgroundImage:
-            'linear-gradient(150.84621115375583deg, rgb(28, 57, 142) 0%, rgb(25, 60, 184) 100%)',
-        }}
+        className="pb-10 pt-10 [background-image:linear-gradient(132deg,rgb(28,57,142)_7.92%,rgb(25,60,184)_92.08%)] lg:px-[287px] lg:pb-[96px] lg:pt-[96px] lg:[background-image:linear-gradient(150.846deg,rgb(28,57,142)_0%,rgb(25,60,184)_100%)]"
       >
-        <div className="mx-auto w-[896px]">
+        <div className="flex flex-col items-center gap-4 px-5 lg:hidden">
+          <h2
+            className={cn(
+              paytoneOne.className,
+              'text-center text-[28px] leading-[42px] tracking-[0.35px] text-white',
+            )}
+          >
+            {tr('Join Our Team', 'Միացիր մեր թիմին')}
+          </h2>
+          <p className="text-center text-[14px] leading-[22px] tracking-[-0.45px] text-[#dbeafe]">
+            {tr(
+              "Are you a passionate English teacher? We're always looking for talented educators to join the IEC family and make a difference in students' lives.",
+              'Եթե սիրով եք դասավանդում անգլերեն, մենք միշտ փնտրում ենք տաղանդավոր մասնագետների՝ IEC թիմին միանալու և ուսանողների կյանքում փոփոխություն բերելու համար։',
+            )}
+          </p>
+
+          <div className="flex w-full flex-col gap-3">
+            {[
+              {
+                title: tr('English Teacher', 'Անգլերենի ուսուցիչ'),
+                subtitle: tr('Full-time position', 'Լրիվ դրույք'),
+              },
+              {
+                title: tr('IELTS Instructor', 'IELTS դասավանդող'),
+                subtitle: tr('Part-time available', 'Մասնական դրույք հասանելի է'),
+              },
+              {
+                title: tr('Academic Manager', 'Ակադեմիական մենեջեր'),
+                subtitle: tr('Full-time position', 'Լրիվ դրույք'),
+              },
+            ].map((role) => (
+              <article
+                key={role.title}
+                className="rounded-[14px] bg-[rgba(255,255,255,0.1)] px-5 py-4 text-center"
+              >
+                <h3 className="text-[16px] font-medium leading-[24px] tracking-[-0.44px] text-white">
+                  {role.title}
+                </h3>
+                <p className="mt-1 text-[13px] leading-[19.5px] tracking-[-0.15px] text-[#bedbff]">
+                  {role.subtitle}
+                </p>
+              </article>
+            ))}
+          </div>
+
+          <div className="w-full rounded-[16px] bg-[rgba(255,255,255,0.1)] px-5 py-5">
+            <h3 className="text-center text-[18px] font-medium leading-[27px] tracking-[0.07px] text-white">
+              {tr('What We Offer', 'Ինչ ենք առաջարկում')}
+            </h3>
+            <div className="mt-4 flex flex-col gap-3">
+              {[
+                tr('Competitive salary', 'Մրցունակ աշխատավարձ'),
+                tr('Professional development', 'Մասնագիտական զարգացում'),
+                tr('Friendly team environment', 'Բարեհամբույր թիմային միջավայր'),
+                tr('Modern teaching resources', 'Ժամանակակից դասավանդման ռեսուրսներ'),
+              ].map((label) => (
+                <div key={label} className="flex items-center gap-3">
+                  <Image src={TEAM_CHECK_ICON} alt="" width={20} height={20} unoptimized />
+                  <span className="text-[14px] leading-[21px] tracking-[-0.31px] text-white">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Link
+            href="#contact"
+            className={cn(
+              'inline-flex h-[50px] items-center justify-center gap-2 rounded-full bg-white px-8 text-[15px] font-medium leading-[22.5px] tracking-[-0.31px] text-[#1c398e]',
+              BUTTON_HOVER_CLASS,
+            )}
+          >
+            <Image src={TEAM_SEND_CV_ICON} alt="" width={20} height={20} unoptimized />
+            <span>{tr('Send Your CV', 'Ուղարկել CV')}</span>
+          </Link>
+        </div>
+
+        <div className="mx-auto hidden w-[896px] lg:block">
           <h2
             className={cn(
               paytoneOne.className,
@@ -1634,9 +2087,99 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Latest News Section (Figma 1:513) */}
-      <section className="bg-[#f9fafb] px-[159px] pb-[80px] pt-[80px]">
-        <div className="mx-auto flex w-[1152px] flex-col gap-[64px]">
+      {/* Latest News — mobile Figma 1:1306, desktop Figma 1:513 */}
+      <section className="bg-[#f9fafb]">
+        <div className="flex flex-col gap-6 pb-10 pt-10 lg:hidden">
+          <div className="flex flex-col items-center gap-2 px-5 text-center">
+            <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
+              {tr('Latest News', 'Վերջին նորություններ')}
+            </h2>
+            <p className="text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565]">
+              {tr('Updates & events', 'Թարմացումներ և միջոցառումներ')}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4 px-5">
+            {[
+              {
+                image: NEWS_IMAGE_1,
+                overlay: NEWS_IMAGE_1_OVERLAY,
+                date: tr('Apr 28, 2026', '28 Ապր, 2026'),
+                dateColor: 'text-[#1447e6]',
+                title: tr('Summer Intensive', 'Ամառային ինտենսիվ'),
+              },
+              {
+                image: NEWS_IMAGE_2,
+                overlay: NEWS_IMAGE_2_OVERLAY,
+                date: tr('Apr 15, 2026', '15 Ապր, 2026'),
+                dateColor: 'text-[#008236]',
+                title: tr('Achievement Awards', 'Հաջողության մրցանակաբաշխություն'),
+              },
+              {
+                image: NEWS_IMAGE_3,
+                overlay: NEWS_IMAGE_3_OVERLAY,
+                date: tr('Apr 1, 2026', '1 Ապր, 2026'),
+                dateColor: 'text-[#8200db]',
+                title: tr('New East Branch', 'Նոր արևելյան մասնաճյուղ'),
+                imageClassName: 'object-cover object-bottom',
+              },
+            ].map((article) => (
+              <article
+                key={article.title}
+                className="w-full overflow-hidden rounded-[28px] bg-[#ecf0f7]"
+              >
+                <div className="relative h-[160px] w-full overflow-hidden">
+                  <Image
+                    src={article.image}
+                    alt=""
+                    fill
+                    unoptimized
+                    loading="lazy"
+                    sizes="(max-width: 1024px) 100vw, 384px"
+                    className={article.imageClassName ?? 'object-cover'}
+                  />
+                  <Image
+                    src={article.overlay}
+                    alt=""
+                    fill
+                    unoptimized
+                    loading="lazy"
+                    sizes="(max-width: 1024px) 100vw, 384px"
+                    className={article.imageClassName ?? 'object-cover'}
+                  />
+                </div>
+                <div className="flex flex-col px-5 pb-5 pt-5">
+                  <div className="inline-flex h-7 w-fit items-center rounded-full bg-white px-3">
+                    <span
+                      className={cn(
+                        'text-[12px] font-bold leading-[18px] tracking-[-0.15px]',
+                        article.dateColor,
+                      )}
+                    >
+                      {article.date}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-[18px] font-bold leading-[27px] tracking-[0.07px] text-[#0a0a0a]">
+                    {article.title}
+                  </h3>
+                  <p className="mt-2 text-[13px] leading-[19.5px] tracking-[-0.31px] text-[#4a5565]">
+                    {tr('Read more about this...', 'Կարդալ ավելին...')}
+                  </p>
+                  <Link
+                    href="#"
+                    className="mt-3 inline-flex items-center gap-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.31px] text-[#155dfc]"
+                  >
+                    <span>{tr('Read more', 'Կարդալ ավելին')}</span>
+                    <Image src={NEWS_ARROW_ICON} alt="" width={14} height={14} unoptimized />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div className="hidden px-[159px] pb-[80px] pt-[80px] lg:block">
+          <div className="mx-auto flex w-[1152px] flex-col gap-[64px]">
           <div className="text-center">
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
               {tr('Latest News', 'Վերջին նորություններ')}
@@ -1719,53 +2262,54 @@ export default function HomePage() {
               </article>
             ))}
           </div>
+          </div>
         </div>
       </section>
 
-      {/* FAQ Section (Figma 1:605) */}
-      <section id="faq" className="bg-[#ecf0f7] px-[287px] pb-[96px] pt-[96px]">
-        <div className="mx-auto flex w-[896px] flex-col items-center px-8">
+      {/* FAQ — mobile Figma 1:1358, desktop Figma 1:605 */}
+      <section id="faq" className="scroll-mt-28 bg-[#ecf0f7]">
+        <div className="flex flex-col items-center gap-6 px-5 pb-10 pt-10 lg:hidden">
           <div className="text-center">
-            <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#101828]">
+            <h2 className="text-[26px] font-extrabold leading-[39px] tracking-[0.35px] text-[#101828]">
               {tr('Frequently Asked Questions', 'Հաճախ տրվող հարցեր')}
             </h2>
-            <p className="mt-2 text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
+            <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565]">
               {tr('Everything you need to know', 'Ամեն ինչ, ինչ պետք է իմանալ')}
             </p>
           </div>
 
-          <div className="mt-16 flex w-full flex-col gap-4">
+          <div className="flex w-full flex-col gap-3">
             {faqItems.map((question) => (
               <button
                 key={question}
                 type="button"
-                className="flex h-[84px] w-full items-center justify-between rounded-[24px] border-2 border-white bg-white px-6 text-left"
+                className="flex w-full items-center justify-between gap-3 rounded-[20px] border border-white bg-white px-5 py-5 text-left"
               >
-                <span className="text-[18px] font-medium leading-[28px] tracking-[-0.4395px] text-[#101828]">
+                <span className="text-[15px] font-medium leading-[26px] tracking-[-0.44px] text-[#101828]">
                   {question}
                 </span>
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#dbeafe] to-[#bedbff] shadow-[0px_4px_3px_rgba(0,0,0,0.1),0px_2px_2px_rgba(0,0,0,0.1)]">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#dbeafe] to-[#bedbff] drop-shadow-[0px_1px_2px_rgba(0,0,0,0.15)]">
                   <Image
                     src={FAQ_DROPDOWN_ICON}
                     alt=""
-                    width={20}
-                    height={20}
+                    width={16}
+                    height={16}
                     unoptimized
-                    className="translate-y-[2px]"
+                    className="translate-y-[1px]"
                   />
                 </span>
               </button>
             ))}
           </div>
 
-          <div className="mt-[52px] text-center">
-            <p className="text-[18px] leading-[28px] tracking-[-0.4395px] text-[#364153]">
+          <div className="text-center">
+            <p className="text-[15px] leading-[22.5px] tracking-[-0.44px] text-[#364153]">
               {tr('Still have questions?', 'Դեռ հարցե՞ր ունեք')}
             </p>
             <Link
               href="#contact"
               className={cn(
-                'mt-[14px] inline-flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-[#fb2c36] to-[#e7000b] px-[30px] text-[16px] font-normal leading-6 tracking-[-0.3125px] text-white',
+                'mt-3 inline-flex h-[49px] items-center justify-center rounded-full bg-gradient-to-r from-[#fb2c36] to-[#e7000b] px-8 text-[14px] font-normal leading-[21px] tracking-[-0.31px] text-white',
                 BUTTON_HOVER_CLASS,
               )}
             >
@@ -1773,10 +2317,179 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
+
+        <div className="hidden px-[287px] pb-[96px] pt-[96px] lg:block">
+          <div className="mx-auto flex w-[896px] flex-col items-center px-8">
+            <div className="text-center">
+              <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#101828]">
+                {tr('Frequently Asked Questions', 'Հաճախ տրվող հարցեր')}
+              </h2>
+              <p className="mt-2 text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
+                {tr('Everything you need to know', 'Ամեն ինչ, ինչ պետք է իմանալ')}
+              </p>
+            </div>
+
+            <div className="mt-16 flex w-full flex-col gap-4">
+              {faqItems.map((question) => (
+                <button
+                  key={question}
+                  type="button"
+                  className="flex h-[84px] w-full items-center justify-between rounded-[24px] border-2 border-white bg-white px-6 text-left"
+                >
+                  <span className="text-[18px] font-medium leading-[28px] tracking-[-0.4395px] text-[#101828]">
+                    {question}
+                  </span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#dbeafe] to-[#bedbff] shadow-[0px_4px_3px_rgba(0,0,0,0.1),0px_2px_2px_rgba(0,0,0,0.1)]">
+                    <Image
+                      src={FAQ_DROPDOWN_ICON}
+                      alt=""
+                      width={20}
+                      height={20}
+                      unoptimized
+                      className="translate-y-[2px]"
+                    />
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-[52px] text-center">
+              <p className="text-[18px] leading-[28px] tracking-[-0.4395px] text-[#364153]">
+                {tr('Still have questions?', 'Դեռ հարցե՞ր ունեք')}
+              </p>
+              <Link
+                href="#contact"
+                className={cn(
+                  'mt-[14px] inline-flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-[#fb2c36] to-[#e7000b] px-[30px] text-[16px] font-normal leading-6 tracking-[-0.3125px] text-white',
+                  BUTTON_HOVER_CLASS,
+                )}
+              >
+                {tr('Contact Us', 'Կապ մեզ հետ')}
+              </Link>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* Footer Section (Figma 1:569) */}
-      <footer className="relative overflow-hidden bg-black px-3 pb-[31px] pt-[67px] text-white sm:px-6">
+      {/* Footer — mobile Figma 1:1439, desktop Figma 1:569 */}
+      <footer className="relative overflow-hidden bg-black text-white">
+        <div className="relative z-10 flex flex-col gap-6 px-5 pb-8 pt-8 lg:hidden">
+          <div className="flex items-center gap-3">
+            <div className="relative size-[46px] shrink-0 overflow-hidden rounded-full">
+              <Image
+                src={logoUrl}
+                alt="Ilona English Centre"
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            </div>
+            <span className="text-[16px] font-bold leading-[24px] text-white">
+              Ilona English Centre
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {[
+              FOOTER_SOCIAL_INSTAGRAM,
+              FOOTER_SOCIAL_FACEBOOK,
+              FOOTER_SOCIAL_TELEGRAM,
+              FOOTER_SOCIAL_WHATSAPP,
+            ].map((icon, index) => (
+              <a
+                key={index}
+                href="#"
+                className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f2f5fb]"
+                aria-label={tr('Social link', 'Սոցիալական հղում')}
+              >
+                <Image src={icon} alt="" width={40} height={40} unoptimized className="size-10" />
+              </a>
+            ))}
+            <a
+              href="#"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f2f5fb]"
+              aria-label={tr('Viber', 'Viber')}
+            >
+              <Image
+                src={FOOTER_SOCIAL_VIBER}
+                alt=""
+                width={20}
+                height={20}
+                unoptimized
+                className="size-5"
+              />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-6 border-t border-white/20 pt-6">
+            <div>
+              <h3 className="text-[15px] font-bold leading-[22.5px] text-white">
+                {tr('Navigation', 'Նավիգացիա')}
+              </h3>
+              <ul className="mt-3 flex flex-col gap-2 text-[13px] leading-[20px] text-white/80">
+                <li>
+                  <Link href="#about" className="hover:text-white">
+                    {tr('About Us', 'Մեր մասին')}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    {tr('Careers', 'Աշխատանք')}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#faq" className="hover:text-white">
+                    {tr('FAQs', 'ՀՏՀ')}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    {tr('Teams', 'Թիմ')}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#contact" className="hover:text-white">
+                    {tr('Contact Us', 'Կապ մեզ հետ')}
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-[15px] font-bold leading-[22.5px] text-white">
+                {tr('Branches', 'Մասնաճյուղեր')}
+              </h3>
+              <ul className="mt-3 flex flex-col gap-2 text-[13px] leading-[20px] text-white/80">
+                <li>{tr('Andranik 131/8', 'Անդրանիկի 131/8')}</li>
+                <li>{tr('Andranik 40', 'Անդրանիկի 40')}</li>
+                <li>{tr('Ervand Qochar 23/2', 'Էրվանդ Քոչարի 23/2')}</li>
+                <li>{tr('Hanrapetutyan 67/3', 'Հանրապետության 67/3')}</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-white/20 pt-4">
+            <p className="text-[14px] font-bold leading-[21px] text-white">{tr('Call us', 'Զանգեք մեզ')}</p>
+            <a href="tel:+18008543680" className="mt-1 block text-[14px] leading-[21px] text-white/80 hover:text-white">
+              +1 800 854-36-80
+            </a>
+          </div>
+
+          <div className="flex flex-col gap-2 border-t border-white/20 pt-4">
+            <div className="flex gap-6 text-[12px] leading-[18px] text-white/70">
+              <Link href="#" className="hover:text-white">
+                {tr('Privacy Policy', 'Գաղտնիության քաղաքականություն')}
+              </Link>
+              <Link href="#" className="hover:text-white">
+                {tr('Terms of Use', 'Օգտագործման պայմաններ')}
+              </Link>
+            </div>
+            <p className="text-[12px] leading-[21px] text-white/70">
+              {tr('©2026 Neetrino IT Company. All right reserved', '©2026 Neetrino IT Company. Բոլոր իրավունքները պաշտպանված են')}
+            </p>
+          </div>
+        </div>
+
+        <div className="relative hidden overflow-hidden px-3 pb-[31px] pt-[67px] sm:px-6 lg:block">
         <div className="pointer-events-none absolute inset-0 z-0 mx-auto h-full w-[1470px]">
           <div className="absolute left-1/2 top-[48px] h-[400px] w-[502px] -translate-x-1/2">
             <div className="absolute left-0 top-0 h-[400px] w-[400px] overflow-hidden">
@@ -1819,28 +2532,36 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="mt-[52px] flex w-[296px] items-center justify-between">
+            <div className="mt-[52px] flex items-center gap-6">
               {[
                 FOOTER_SOCIAL_INSTAGRAM,
                 FOOTER_SOCIAL_FACEBOOK,
                 FOOTER_SOCIAL_TELEGRAM,
                 FOOTER_SOCIAL_WHATSAPP,
-                FOOTER_SOCIAL_VIBER,
               ].map((icon, index) => (
-                <Image
+                <a
                   key={index}
-                  src={icon}
-                  alt=""
-                  width={40}
-                  height={40}
-                  unoptimized
-                  style={
-                    index >= 1 && index <= 3
-                      ? { transform: `translateX(${index * 20}px)` }
-                      : undefined
-                  }
-                />
+                  href="#"
+                  className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f2f5fb]"
+                  aria-label={tr('Social link', 'Սոցիալական հղում')}
+                >
+                  <Image src={icon} alt="" width={40} height={40} unoptimized className="size-10" />
+                </a>
               ))}
+              <a
+                href="#"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f2f5fb]"
+                aria-label={tr('Viber', 'Viber')}
+              >
+                <Image
+                  src={FOOTER_SOCIAL_VIBER}
+                  alt=""
+                  width={20}
+                  height={20}
+                  unoptimized
+                  className="size-5"
+                />
+              </a>
             </div>
 
             <div className="mt-[18px] h-px w-[296px] bg-white/60" />
@@ -1915,6 +2636,7 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
+        </div>
         </div>
       </footer>
       </div>
