@@ -1,11 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-import { locales, type Locale } from '@/config/i18n';
+import { type Locale } from '@/config/i18n';
 import { useSwitchLocale } from '@/shared/hooks/useSwitchLocale';
 import { cn } from '@/shared/lib/utils';
-
-const LOCALE_STORAGE_KEY = 'preferred-locale';
 
 type LanguageSwitcherProps = {
   variant?: 'default' | 'compact';
@@ -14,13 +11,6 @@ type LanguageSwitcherProps = {
 export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps) {
   const isCompact = variant === 'compact';
   const { locale, switchLocale } = useSwitchLocale();
-
-  // Save current locale to localStorage when it changes
-  useEffect(() => {
-    if (locale && locales.includes(locale)) {
-      localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-    }
-  }, [locale]);
 
   const handleKeyDown = (e: React.KeyboardEvent, targetLocale: Locale) => {
     if (e.key === 'Enter' || e.key === ' ') {

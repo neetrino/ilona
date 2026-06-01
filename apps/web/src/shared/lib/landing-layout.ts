@@ -13,9 +13,20 @@ export const LANDING_NAVBAR_HEIGHT = 70;
 /** Inline nav from this width; below it uses the burger menu (covers all iPad sizes). */
 export const LANDING_NAV_DESKTOP_MIN_WIDTH = 1367;
 
-export function getLandingCanvasMetrics(viewportWidth: number) {
-  const isCanvasActive = viewportWidth >= LANDING_CANVAS_MIN_WIDTH;
-  const scale = isCanvasActive ? viewportWidth / LANDING_DESIGN_WIDTH : 1;
+export function getLandingCanvasMetrics(
+  viewportWidth: number,
+  designWidth = LANDING_DESIGN_WIDTH,
+  minWidth = LANDING_CANVAS_MIN_WIDTH,
+) {
+  const isCanvasActive = viewportWidth >= minWidth;
 
-  return { isCanvasActive, scale };
+  if (!isCanvasActive) {
+    return { isCanvasActive, scale: 1, offsetX: 0 };
+  }
+
+  const scale = Math.min(viewportWidth / designWidth, 1);
+  const scaledWidth = designWidth * scale;
+  const offsetX = Math.max((viewportWidth - scaledWidth) / 2, 0);
+
+  return { isCanvasActive, scale, offsetX };
 }

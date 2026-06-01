@@ -29,7 +29,7 @@ export function CanvasScaler({
 }: CanvasScalerProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { scale, isCanvasActive } = useLandingCanvasScale(designWidth, minWidth);
+  const { scale, isCanvasActive, offsetX } = useLandingCanvasScale(designWidth, minWidth);
   const [contentHeight, setContentHeight] = useState(0);
 
   useEffect(() => {
@@ -57,17 +57,26 @@ export function CanvasScaler({
         width: designWidth,
         transform: `scale(${scale})`,
         transformOrigin: 'top left',
+        marginLeft: offsetX,
         // Collapse pre-transform layout box so it does not extend below the scaled visual height.
         marginBottom:
           contentHeight > 0 && scale < 1 ? contentHeight * (scale - 1) : undefined,
       }
     : undefined;
 
+  const wrapStyle: CSSProperties | undefined =
+    wrapHeight > 0 || isCanvasActive
+      ? {
+          ...(wrapHeight > 0 ? { height: wrapHeight } : {}),
+          ['--landing-canvas-offset-x' as string]: `${offsetX}px`,
+        }
+      : undefined;
+
   return (
     <div
       ref={wrapRef}
       className={cn('w-full overflow-hidden', className)}
-      style={wrapHeight > 0 ? { height: wrapHeight } : undefined}
+      style={wrapStyle}
     >
       <div ref={contentRef} className={cn(isCanvasActive ? 'relative' : 'w-full')} style={contentStyle}>
         {children}
