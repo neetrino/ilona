@@ -2,10 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState, type MouseEvent } from 'react';
-import { locales, type Locale } from '@/config/i18n';
+import { useSwitchLocale } from '@/shared/hooks/useSwitchLocale';
 import { LANDING_NAV_DESKTOP_MIN_WIDTH } from '@/shared/lib/landing-layout';
 import { cn } from '@/shared/lib/utils';
 
@@ -53,10 +52,7 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
   const t = useTranslations('home.nav');
   const tHome = useTranslations('home');
   const tCommon = useTranslations('common');
-  const locale = useLocale() as Locale;
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { locale, switchLocale } = useSwitchLocale();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -98,21 +94,6 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
 
     return () => mediaQuery.removeEventListener('change', closeOnDesktop);
   }, [menuOpen]);
-
-  const switchLocale = (nextLocale: Locale) => {
-    if (nextLocale === locale) return;
-
-    document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
-
-    const segments = pathname.split('/').filter(Boolean);
-    const normalizedPath = segments[0] && locales.includes(segments[0] as Locale)
-      ? `/${segments.slice(1).join('/')}`
-      : pathname;
-
-    const queryString = searchParams.toString();
-    const nextPath = queryString ? `${normalizedPath || '/'}?${queryString}` : normalizedPath || '/';
-    router.replace(nextPath, { scroll: false });
-  };
 
   const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
