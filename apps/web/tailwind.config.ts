@@ -18,6 +18,12 @@ const config: Config = {
       },
     },
     extend: {
+      screens: {
+        /** Landing: mobile layout below 744px; canvas desktop from 744px */
+        tablet: '744px',
+        /** Landing navbar: burger below this; inline links from here up (above iPad Pro 12.9" landscape) */
+        navDesktop: '1367px',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

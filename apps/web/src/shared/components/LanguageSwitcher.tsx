@@ -32,23 +32,20 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
 
     // Save preference to localStorage
     localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
-    
-    // Replace the locale in the current pathname
-    const segments = pathname.split('/');
-    if (segments[1] && locales.includes(segments[1] as Locale)) {
-      segments[1] = newLocale;
-    } else {
-      segments.splice(1, 0, newLocale);
-    }
-    
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; samesite=lax`;
+
+    const segments = pathname.split('/').filter(Boolean);
+    const normalizedPath = segments[0] && locales.includes(segments[0] as Locale)
+      ? `/${segments.slice(1).join('/')}`
+      : pathname;
+
     // Preserve query parameters
     const queryString = searchParams.toString();
     const newPath = queryString 
-      ? `${segments.join('/')}?${queryString}`
-      : segments.join('/');
+      ? `${normalizedPath || '/'}?${queryString}`
+      : normalizedPath || '/';
     
-    router.push(newPath);
-    router.refresh();
+    router.replace(newPath, { scroll: false });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, targetLocale: Locale) => {

@@ -1,12 +1,26 @@
 const createNextIntlPlugin = require('next-intl/plugin');
+const { getLanIpv4Addresses } = require('./scripts/lan-ipv4.cjs');
 
 const withNextIntl = createNextIntlPlugin('./src/config/i18n.ts');
 
+function getDevelopmentAllowedDevOrigins() {
+  return [
+    ...getLanIpv4Addresses(),
+    '192.168.*.*',
+    '10.*.*.*',
+    '172.*.*.*',
+  ];
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  ...(process.env.NODE_ENV !== 'production' && {
+    allowedDevOrigins: getDevelopmentAllowedDevOrigins(),
+  }),
   // Turbopack (replaces deprecated experimental.turbo)
   turbopack: {},
   images: {
+    formats: ['image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -15,6 +29,14 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.figma.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'figma.com',
       },
     ],
   },

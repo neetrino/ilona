@@ -1,6 +1,6 @@
 /** Local sidebar assets from Figma — do not use remote URLs */
 export const STUDENT_SIDEBAR_ASSETS = {
-  brandLogo: '/student-sidebar/brand-logo.png',
+  brandLogo: '/student-sidebar/brand-logo.webp',
   iconDashboard: '/student-sidebar/icon-dashboard.svg',
   iconCrm: '/student-sidebar/icon-crm.svg',
   iconGroups: '/student-sidebar/icon-groups.svg',

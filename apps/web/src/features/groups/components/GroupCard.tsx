@@ -74,7 +74,7 @@ export function GroupCard({
               title={teacherName}
             >
               <Image
-                src="/teachers-logo.png"
+                src="/teachers-logo.webp"
                 alt=""
                 width={20}
                 height={20}

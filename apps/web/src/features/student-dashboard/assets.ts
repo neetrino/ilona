@@ -1,7 +1,7 @@
 /** Local assets exported from Figma — do not use remote URLs in UI */
 export const STUDENT_DASHBOARD_ASSETS = {
-  calendarIcon: '/student-dashboard/calendar-icon.png',
-  heroIllustration: '/student-dashboard/hero-illustration.png',
+  calendarIcon: '/student-dashboard/calendar-icon.webp',
+  heroIllustration: '/student-dashboard/hero-illustration.webp',
   arrowDetails: '/student-dashboard/arrow-details.svg',
   arrowPay: '/student-dashboard/arrow-pay.svg',
   arrowHero: '/student-dashboard/arrow-hero.svg',

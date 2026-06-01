@@ -28,7 +28,7 @@ const icons = {
   ),
   teachers: (
     <Image
-      src="/teachers-logo.png"
+      src="/teachers-logo.webp"
       alt=""
       className="w-5 h-5 object-contain flex-shrink-0"
       width={20}
@@ -37,7 +37,7 @@ const icons = {
   ),
   students: (
     <Image
-      src="/students-logo.png"
+      src="/students-logo.webp"
       alt=""
       className="w-5 h-5 object-contain flex-shrink-0"
       width={20}
@@ -209,7 +209,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   }
 
   const navItems = getNavItems(userRole, t);
-  const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.png';
+  const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.webp';
 
   const isActive = (href: string) => {
     // Extract the path without locale
@@ -236,7 +236,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             unoptimized
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/logo.png';
+              target.src = '/logo.webp';
               target.onerror = null;
             }}
           />

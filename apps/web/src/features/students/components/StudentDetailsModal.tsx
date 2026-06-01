@@ -147,7 +147,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
         title={
           <>
             <Image
-              src="/students-logo.png"
+              src="/students-logo.webp"
               alt=""
               className="w-5 h-5 object-contain flex-shrink-0"
               width={20}

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { DisableImageDrag } from '@/shared/components/DisableImageDrag';
 import { WarmupRequest } from '@/shared/components/WarmupRequest';
 
 const inter = Inter({ subsets: ['latin'], preload: false });
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <DisableImageDrag />
         <WarmupRequest />
         {children}
       </body>
