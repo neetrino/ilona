@@ -1464,7 +1464,6 @@ export default function HomePage() {
                 src={FOOTER_FLAG_USA}
                 alt=""
                 fill
-                unoptimized
                 loading="lazy"
                 sizes="400px"
                 className="object-cover"
@@ -1476,7 +1475,6 @@ export default function HomePage() {
                 src={FOOTER_FLAG_UK}
                 alt=""
                 fill
-                unoptimized
                 loading="lazy"
                 sizes="400px"
                 className="object-cover"
