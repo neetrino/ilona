@@ -1474,7 +1474,8 @@ export default function HomePage() {
                       type="button"
                       onClick={() => setPreferredBranch(branchOption.value)}
                       className={cn(
-                        'flex h-[56px] items-center justify-center rounded-[16px] border-2 px-4 font-semibold tracking-[-0.3125px] transition-colors',
+                        'flex h-[56px] items-center justify-center rounded-[16px] border-2 px-4 font-semibold tracking-[-0.3125px]',
+                        BUTTON_HOVER_CLASS,
                         REGISTER_BRANCH_COMPACT_MOBILE_HY.has(branchOption.value) && isHy
                           ? 'text-[16px] leading-[24px] max-tablet:px-2 max-tablet:text-[13px] max-tablet:leading-[18px]'
                           : 'text-[16px] leading-[24px]',
