@@ -6,4 +6,9 @@ export const routing = defineRouting({
   defaultLocale,
   localePrefix: 'never',
   localeDetection: true,
+  localeCookie: {
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  },
 });
