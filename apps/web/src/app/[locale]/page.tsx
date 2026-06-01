@@ -304,7 +304,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section
         id="home"
-        className="relative scroll-mt-28 bg-[#f9fafb] pt-[96px] max-lg:overflow-visible max-lg:pb-0 lg:h-[810px] lg:min-h-[810px] lg:overflow-hidden lg:bg-white lg:pt-0"
+        className="relative scroll-mt-28 overflow-hidden max-lg:bg-[#f9fafb] max-lg:pt-[96px] max-lg:overflow-x-visible max-lg:pb-0 lg:h-[810px] lg:min-h-[810px] lg:bg-white lg:pt-0"
       >
         <div className="relative isolate w-full min-h-[1050px] overflow-visible lg:hidden">
           <div
@@ -388,7 +388,7 @@ export default function HomePage() {
           <Link
             href="#branches"
             className={cn(
-              'absolute left-3 right-3 top-[685px] z-20 inline-flex h-[52px] items-center justify-center rounded-[999px] border border-[#1447e6] text-[14px] font-normal text-[#1548e6]',
+              'absolute left-3 right-3 top-[685px] z-20 inline-flex h-[52px] items-center justify-center rounded-[999px] border border-[#1447e6] bg-white/10 text-[14px] font-normal text-[#1548e6] backdrop-blur-md',
               BUTTON_HOVER_CLASS,
             )}
           >
@@ -505,12 +505,105 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* About Section (Figma 1:834) */}
+      {/* About Section — mobile Figma 1:952, desktop Figma 1:834 */}
       <section
         id="about"
-        className="relative mt-0 h-[666px] scroll-mt-28 overflow-hidden bg-[#dde7ff] max-lg:z-20 max-lg:-mt-[220px] max-lg:pt-[268px] lg:-mt-[16px]"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-lg:z-20 max-lg:-mt-[220px] max-lg:pb-0 max-lg:pt-0 lg:-mt-[16px] lg:mt-0 lg:h-[666px]"
       >
-        <div className="relative z-10 mx-auto h-full w-[1490px]">
+        <div className="lg:hidden">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[#dde7ff]"
+          aria-hidden
+        />
+
+        <div className="absolute left-5 top-6 z-30 max-w-[237px]">
+          <h2 className="text-[33px] font-extrabold leading-[34px] tracking-[0.35px] text-[#0a0a0a]">
+            {tr('Ilona English Centre', 'Ilona English Centre')}
+          </h2>
+
+          <div className="mt-11 space-y-3 text-[18px] leading-6 tracking-[-0.44px] text-[#4a5565]">
+            <p>
+              {tr(
+                'We empower students through exceptional English education. Our mission: provide world-class instruction that opens doors to global opportunities.',
+                'Մենք զարգացնում ենք ուսանողներին բարձրակարգ անգլերենի ուսուցմամբ։ Մեր առաքելությունն է ապահովել համաշխարհային մակարդակի կրթություն, որը բացում է նոր հնարավորություններ։',
+              )}
+            </p>
+            <p>
+              {tr(
+                'A supportive, engaging environment where every student thrives with modern methods and real results.',
+                'Աջակցող և ներգրավող միջավայր, որտեղ յուրաքանչյուր ուսանող առաջադիմում է ժամանակակից մեթոդներով և տեսանելի արդյունքներով։',
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="relative z-10 mx-auto flex min-h-[700px] w-full flex-col bg-[#dde7ff] px-5 pb-0 pt-[220px]">
+          <div className="pointer-events-none absolute right-[-270px] top-[-80px] z-[1] flex h-[900px] w-[440px] items-center justify-center">
+            <div className="-scale-y-100 rotate-[171.43deg]">
+              <div className="relative h-[860px] w-[350px]">
+                <Image
+                  src={ABOUT_BIG_BEN_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="lazy"
+                  sizes="350px"
+                  className="object-cover object-left"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute right-16 top-[62px] z-10">
+            <div className="rotate-[6deg] rounded-full bg-[#093394] px-4 py-1.5">
+              <span className="text-[12px] font-bold leading-[18px] text-white">
+                {tr('15+ Years', '15+ տարի')}
+              </span>
+            </div>
+          </div>
+
+          <div className="absolute right-20 top-[180px] z-10">
+            <div className="-rotate-[19deg] rounded-full bg-white px-4 py-1.5">
+              <span className="text-[13px] font-bold leading-[19.5px] text-[#0025db]">
+                {tr('About IEC', 'IEC-ի մասին')}
+              </span>
+            </div>
+          </div>
+
+          <div className="absolute right-11 top-[310px] z-10">
+            <div className="-rotate-6 rounded-full bg-[#fb2c36] px-4 py-1.5">
+              <span className="text-[12px] font-bold leading-[18px] text-white">
+                {tr('Since 2011', '2011-ից')}
+              </span>
+            </div>
+          </div>
+
+          <div className="min-h-1 flex-1" aria-hidden />
+
+          <div className="relative z-10 mb-8 grid shrink-0 grid-cols-2 gap-3">
+            <div className="rounded-[20px] bg-white px-5 py-5">
+              <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
+              <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
+                95%
+              </p>
+              <p className="mt-1 text-[13px] leading-6 tracking-[-0.31px] text-[#4a5565]">
+                {tr('Success Rate', 'Հաջողության տոկոս')}
+              </p>
+            </div>
+            <div className="rounded-[20px] bg-white px-5 py-5">
+              <Image src={ABOUT_BRANCHES_ICON} alt="" width={32} height={32} unoptimized />
+              <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
+                4
+              </p>
+              <p className="mt-1 text-[13px] leading-6 tracking-[-0.31px] text-[#4a5565]">
+                {tr('Branches', 'Մասնաճյուղեր')}
+              </p>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div className="relative mx-auto hidden h-full w-[1490px] lg:block">
           <div className="absolute left-[159px] top-[80px] h-[506px] w-[1152px]">
             <div className="absolute left-[608px] top-0 h-[506px] w-[544px]">
               <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
@@ -626,7 +719,7 @@ export default function HomePage() {
       </section>
 
       {/* Why Choose IEC Section (Figma 1:873/1:882) */}
-      <section className="relative h-[764px] overflow-hidden bg-white">
+      <section className="relative h-[764px] overflow-hidden bg-white max-lg:-mt-px lg:mt-0">
         <div className="pt-20 text-center">
           <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
             {tr('Why Choose IEC?', 'Ինչու ընտրել IEC-ը')}
