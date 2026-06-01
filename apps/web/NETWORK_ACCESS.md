@@ -13,15 +13,17 @@
    ```bash
    # Terminal 1 - API Server
    cd apps/api
-   npm run start:dev
-   
+   pnpm run dev
+
    # Terminal 2 - Next.js Server
    cd apps/web
-   npm run dev
+   pnpm run dev
    ```
 
+   `pnpm run dev`-ը ցույց կտա **Wi-Fi** URL (օր. `http://192.168.1.100:3000`). Մյուս սարքերից **չօգտագործեք** `http://0.0.0.0:3000` — այդ հասցեն աշխատում է միայն սերվերի մեքենայում:
+
 3. **Մուտք գործեք IP հասցեով:**
-   - Բացեք browser-ում: `http://192.168.1.100:3000`
+   - Բացեք browser-ում: `http://192.168.1.100:3000` (ձեր LAN IP-ն, terminal-ի «Wi-Fi» տողից)
    - Frontend-ը ավտոմատ կկապվի `http://192.168.1.100:4000/api`-ին
 
 ## Configuration

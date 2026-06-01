@@ -304,12 +304,12 @@ export default function HomePage() {
       {/* Hero Section */}
       <section
         id="home"
-        className="relative scroll-mt-28 overflow-hidden max-lg:bg-[#f9fafb] max-lg:pt-[96px] max-lg:overflow-x-visible max-lg:pb-0 lg:h-[810px] lg:min-h-[810px] lg:bg-white lg:pt-0"
+        className="relative scroll-mt-28 max-lg:bg-[#f9fafb] max-lg:pt-[96px] max-lg:overflow-x-visible max-lg:pb-0 lg:h-[810px] lg:min-h-[810px] lg:overflow-hidden lg:bg-white lg:pt-0"
       >
         <div className="relative isolate w-full min-h-[1050px] overflow-visible lg:hidden">
           <div
             className={cn(
-              'absolute left-6 top-[20px] z-20 text-[#093394]',
+              'absolute left-[14px] top-[20px] z-20 text-[#093394]',
               isHy ? 'w-[250px]' : 'w-[220px]',
             )}
           >
@@ -317,8 +317,8 @@ export default function HomePage() {
               className={cn(
                 isHy ? '' : paytoneOne.className,
                 isHy
-                  ? 'text-[2.65rem] font-extrabold leading-[2.6rem] tracking-[0.004rem]'
-                  : 'text-[3rem] font-normal leading-[2.75rem] tracking-[0.018rem]',
+                  ? 'text-[2.45rem] font-extrabold leading-[2.4rem] tracking-[0.004rem]'
+                  : 'text-[2.75rem] font-normal leading-[2.55rem] tracking-[0.018rem]',
               )}
             >
               {tr('Learn English', 'Սովորիր անգլերեն')}
@@ -327,7 +327,7 @@ export default function HomePage() {
             </h1>
           </div>
 
-          <p className="absolute left-7 top-[218px] z-20 w-[150px] text-[14px] leading-[22px] tracking-[0.07px] text-black/50">
+          <p className="absolute left-[17px] top-[218px] z-20 w-[150px] text-[14px] leading-[22px] tracking-[0.07px] text-black/50">
             {tr(
               'Expert teachers, modern methods, and proven results. Your journey to fluency starts here.',
               'Փորձառու ուսուցիչներ, ժամանակակից մեթոդներ և իրական արդյունքներ։ Ձեր անգլերենի ճանապարհը սկսվում է այստեղ։',
@@ -396,7 +396,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="relative -top-4 mx-auto hidden h-full w-full max-w-[1280px] overflow-hidden lg:block">
+        <div className="relative -top-4 mx-auto max-lg:hidden h-full w-full max-w-[1280px] overflow-hidden">
           <div
             className={cn(
               'absolute top-[227px] w-[992px] text-[#093394] transition-opacity duration-300',
@@ -508,7 +508,7 @@ export default function HomePage() {
       {/* About Section — mobile Figma 1:952, desktop Figma 1:834 */}
       <section
         id="about"
-        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-lg:z-20 max-lg:-mt-[220px] max-lg:pb-0 max-lg:pt-0 lg:-mt-[16px] lg:mt-0 lg:h-[666px]"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-lg:z-20 max-lg:-mt-[220px] max-lg:pb-0 max-lg:pt-0 lg:-mt-[16px] lg:h-[666px]"
       >
         <div className="lg:hidden">
         <div
@@ -517,11 +517,11 @@ export default function HomePage() {
         />
 
         <div className="absolute left-5 top-6 z-30 max-w-[237px]">
-          <h2 className="text-[33px] font-extrabold leading-[34px] tracking-[0.35px] text-[#0a0a0a]">
+          <h2 className="text-[30px] font-extrabold leading-[31px] tracking-[0.35px] text-[#0a0a0a]">
             {tr('Ilona English Centre', 'Ilona English Centre')}
           </h2>
 
-          <div className="mt-11 space-y-3 text-[18px] leading-6 tracking-[-0.44px] text-[#4a5565]">
+          <div className="mt-11 space-y-3 text-[17px] leading-[22px] tracking-[-0.44px] text-[#4a5565]">
             <p>
               {tr(
                 'We empower students through exceptional English education. Our mission: provide world-class instruction that opens doors to global opportunities.',
@@ -562,7 +562,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="absolute right-20 top-[180px] z-10">
+          <div className="absolute right-12 top-[180px] z-10">
             <div className="-rotate-[19deg] rounded-full bg-white px-4 py-1.5">
               <span className="text-[13px] font-bold leading-[19.5px] text-[#0025db]">
                 {tr('About IEC', 'IEC-ի մասին')}
@@ -570,7 +570,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="absolute right-11 top-[310px] z-10">
+          <div className="absolute right-[72px] top-[338px] z-10">
             <div className="-rotate-6 rounded-full bg-[#fb2c36] px-4 py-1.5">
               <span className="text-[12px] font-bold leading-[18px] text-white">
                 {tr('Since 2011', '2011-ից')}
@@ -603,7 +603,7 @@ export default function HomePage() {
         </div>
         </div>
 
-        <div className="relative mx-auto hidden h-full w-[1490px] lg:block">
+        <div className="relative z-10 mx-auto max-lg:hidden h-full w-[1490px]">
           <div className="absolute left-[159px] top-[80px] h-[506px] w-[1152px]">
             <div className="absolute left-[608px] top-0 h-[506px] w-[544px]">
               <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
@@ -718,135 +718,266 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose IEC Section (Figma 1:873/1:882) */}
-      <section className="relative h-[764px] overflow-hidden bg-white max-lg:-mt-px lg:mt-0">
-        <div className="pt-20 text-center">
-          <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
-            {tr('Why Choose IEC?', 'Ինչու ընտրել IEC-ը')}
-          </h2>
-          <p className="mt-4 text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
-            {tr('Experience the difference', 'Զգացեք տարբերությունը')}
-          </p>
-        </div>
-
-        <div className="mx-auto mt-[95px] grid w-[1216px] grid-cols-4 gap-8">
-          <motion.article
-            className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px]"
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: 'easeOut' }}
-            viewport={{ once: true, amount: 0.35 }}
-          >
-            <Image
-              src={WHY_METHODS_IMAGE}
-              alt=""
-              width={251}
-              height={251}
-              unoptimized
-              className="absolute -left-[21px] -top-[28px]"
-            />
-            <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
-              {tr('Modern Methods', 'Ժամանակակից մեթոդներ')}
-            </h3>
-            <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
-              <span className="block whitespace-nowrap">
-                {tr('Interactive lessons,', 'Ինտերակտիվ դասեր,')}
-              </span>
-              <span className="block whitespace-nowrap">
-                {tr('multimedia resources, and', 'մուլտիմեդիա ռեսուրսներ և')}
-              </span>
-              <span className="block whitespace-nowrap">
-                {tr('real-world practice scenarios', 'իրական կիրառական վարժություններ')}
-              </span>
+      {/* Why Choose IEC — mobile Figma 1:989, desktop Figma 1:873/1:882 */}
+      <section className="relative overflow-hidden bg-white max-lg:-mt-px lg:h-[764px]">
+        <div className="flex flex-col gap-8 px-5 pb-10 pt-10 lg:hidden">
+          <div className="text-center">
+            <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
+              {tr('Why Choose IEC?', 'Ինչու ընտրել IEC-ը')}
+            </h2>
+            <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565]">
+              {tr('Experience the difference', 'Զգացեք տարբերությունը')}
             </p>
-          </motion.article>
+          </div>
 
-          <motion.article
-            className="relative h-[366px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-[34px]"
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
-            viewport={{ once: true, amount: 0.35 }}
-          >
-            <div className="absolute -left-[58px] -top-[74px] h-[304px] w-[294px] rotate-[55.41deg]">
+          <div className="grid grid-cols-2 gap-4">
+            <motion.article
+              className="relative h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut' }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <Image
+                src={WHY_METHODS_IMAGE}
+                alt=""
+                width={110}
+                height={110}
+                unoptimized
+                loading="lazy"
+                className="absolute -left-[10px] -top-[10px] object-contain"
+              />
+              <div className="absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]">
+                <h3 className="text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]">
+                  {tr('Modern Methods', 'Ժամանակակից մեթոդներ')}
+                </h3>
+                <p className="text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]">
+                  {tr(
+                    'Interactive lessons, multimedia resources, and real-world practice scenarios',
+                    'Ինտերակտիվ դասեր, մուլտիմեդիա ռեսուրսներ և իրական կիրառական վարժություններ',
+                  )}
+                </p>
+              </div>
+            </motion.article>
+
+            <motion.article
+              className="relative h-[220px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
               <Image
                 src={WHY_RESULTS_IMAGE}
                 alt=""
-                fill
+                width={110}
+                height={110}
                 unoptimized
                 loading="lazy"
-                sizes="294px"
-                className="object-contain"
+                className="absolute -left-[10px] -top-[10px] object-contain"
               />
-            </div>
-            <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
-              {tr('Proven Results', 'Ապացուցված արդյունքներ')}
-            </h3>
-            <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
-              {tr(
-                '98% of our students achieve their language goals and pass international exams',
-                'Մեր ուսանողների 98%-ը հասնում է իր լեզվական նպատակներին և հանձնում միջազգային քննություններ',
-              )}
-            </p>
-          </motion.article>
+              <div className="absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]">
+                <h3 className="text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]">
+                  {tr('Proven Results', 'Ապացուցված արդյունքներ')}
+                </h3>
+                <p className="text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]">
+                  {tr(
+                    '98% of our students achieve their language goals and pass international exams',
+                    'Մեր ուսանողների 98%-ը հասնում է իր լեզվական նպատակներին և հանձնում միջազգային քննություններ',
+                  )}
+                </p>
+              </div>
+            </motion.article>
 
-          <motion.article
-            className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-[34px]"
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
-            viewport={{ once: true, amount: 0.35 }}
-          >
-            <div className="absolute -left-[36px] -top-[68px] h-[268px] w-[266px] rotate-[39.8deg]">
+            <motion.article
+              className="relative h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
               <Image
                 src={WHY_TEACHERS_IMAGE}
                 alt=""
-                fill
+                width={110}
+                height={110}
                 unoptimized
                 loading="lazy"
-                sizes="266px"
-                className="object-contain"
+                className="absolute -left-[10px] -top-[10px] object-contain"
               />
-            </div>
-            <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
-              {tr('Expert Teachers', 'Փորձառու ուսուցիչներ')}
-            </h3>
-            <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
-              {tr(
-                'Certified instructors with 10+ years of experience and native-level proficiency',
-                'Հավաստագրված դասավանդողներ՝ 10+ տարվա փորձով և բարձր լեզվական հմտություններով',
-              )}
-            </p>
-          </motion.article>
+              <div className="absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]">
+                <h3 className="text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]">
+                  {tr('Expert Teachers', 'Փորձառու ուսուցիչներ')}
+                </h3>
+                <p className="text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]">
+                  {tr(
+                    'Certified instructors with 10+ years of experience and native-level proficiency',
+                    'Հավաստագրված դասավանդողներ՝ 10+ տարվա փորձով և բարձր լեզվական հմտություններով',
+                  )}
+                </p>
+              </div>
+            </motion.article>
 
-          <motion.article
-            className="relative h-[366px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-[34px]"
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: 'easeOut', delay: 0.24 }}
-            viewport={{ once: true, amount: 0.35 }}
-          >
-            <div className="absolute -left-[35px] -top-[58px] h-[304px] w-[244px] rotate-180 scale-y-[-1]">
+            <motion.article
+              className="relative h-[220px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.24 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
               <Image
                 src={WHY_SCHEDULE_IMAGE}
                 alt=""
-                fill
+                width={110}
+                height={110}
                 unoptimized
                 loading="lazy"
-                sizes="244px"
-                className="object-contain"
+                className="absolute -left-[10px] -top-[10px] object-contain"
               />
-            </div>
-            <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
-              {tr('Flexible Schedule', 'Ճկուն գրաֆիկ')}
-            </h3>
-            <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
-              {tr(
-                'Morning, afternoon, and evening classes to fit your busy lifestyle',
-                'Առավոտյան, ցերեկային և երեկոյան դասեր՝ ձեր զբաղված առօրյային հարմար',
-              )}
+              <div className="absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]">
+                <h3 className="text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]">
+                  {tr('Flexible Schedule', 'Ճկուն գրաֆիկ')}
+                </h3>
+                <p className="text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]">
+                  {tr(
+                    'Morning, afternoon, and evening classes to fit your busy lifestyle',
+                    'Առավոտյան, ցերեկային և երեկոյան դասեր՝ ձեր զբաղված առօրյային հարմար',
+                  )}
+                </p>
+              </div>
+            </motion.article>
+          </div>
+        </div>
+
+        <div className="max-lg:hidden">
+          <div className="pt-20 text-center">
+            <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
+              {tr('Why Choose IEC?', 'Ինչու ընտրել IEC-ը')}
+            </h2>
+            <p className="mt-4 text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
+              {tr('Experience the difference', 'Զգացեք տարբերությունը')}
             </p>
-          </motion.article>
+          </div>
+
+          <div className="mx-auto mt-[95px] grid w-[1216px] grid-cols-4 gap-8">
+            <motion.article
+              className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px]"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut' }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <Image
+                src={WHY_METHODS_IMAGE}
+                alt=""
+                width={251}
+                height={251}
+                unoptimized
+                className="absolute -left-[21px] -top-[28px]"
+              />
+              <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+                {tr('Modern Methods', 'Ժամանակակից մեթոդներ')}
+              </h3>
+              <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+                <span className="block whitespace-nowrap">
+                  {tr('Interactive lessons,', 'Ինտերակտիվ դասեր,')}
+                </span>
+                <span className="block whitespace-nowrap">
+                  {tr('multimedia resources, and', 'մուլտիմեդիա ռեսուրսներ և')}
+                </span>
+                <span className="block whitespace-nowrap">
+                  {tr('real-world practice scenarios', 'իրական կիրառական վարժություններ')}
+                </span>
+              </p>
+            </motion.article>
+
+            <motion.article
+              className="relative h-[366px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-[34px]"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <div className="absolute -left-[58px] -top-[74px] h-[304px] w-[294px] rotate-[55.41deg]">
+                <Image
+                  src={WHY_RESULTS_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="lazy"
+                  sizes="294px"
+                  className="object-contain"
+                />
+              </div>
+              <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+                {tr('Proven Results', 'Ապացուցված արդյունքներ')}
+              </h3>
+              <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+                {tr(
+                  '98% of our students achieve their language goals and pass international exams',
+                  'Մեր ուսանողների 98%-ը հասնում է իր լեզվական նպատակներին և հանձնում միջազգային քննություններ',
+                )}
+              </p>
+            </motion.article>
+
+            <motion.article
+              className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-[34px]"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <div className="absolute -left-[36px] -top-[68px] h-[268px] w-[266px] rotate-[39.8deg]">
+                <Image
+                  src={WHY_TEACHERS_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="lazy"
+                  sizes="266px"
+                  className="object-contain"
+                />
+              </div>
+              <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+                {tr('Expert Teachers', 'Փորձառու ուսուցիչներ')}
+              </h3>
+              <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+                {tr(
+                  'Certified instructors with 10+ years of experience and native-level proficiency',
+                  'Հավաստագրված դասավանդողներ՝ 10+ տարվա փորձով և բարձր լեզվական հմտություններով',
+                )}
+              </p>
+            </motion.article>
+
+            <motion.article
+              className="relative h-[366px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-[34px]"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.24 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <div className="absolute -left-[35px] -top-[58px] h-[304px] w-[244px] rotate-180 scale-y-[-1]">
+                <Image
+                  src={WHY_SCHEDULE_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="lazy"
+                  sizes="244px"
+                  className="object-contain"
+                />
+              </div>
+              <h3 className="pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]">
+                {tr('Flexible Schedule', 'Ճկուն գրաֆիկ')}
+              </h3>
+              <p className="mt-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+                {tr(
+                  'Morning, afternoon, and evening classes to fit your busy lifestyle',
+                  'Առավոտյան, ցերեկային և երեկոյան դասեր՝ ձեր զբաղված առօրյային հարմար',
+                )}
+              </p>
+            </motion.article>
+          </div>
         </div>
       </section>
 
