@@ -203,6 +203,7 @@ export default function HomePage() {
   const [isEnglishLevelOpen, setIsEnglishLevelOpen] = useState(false);
   const [preferredBranch, setPreferredBranch] = useState<string>('');
   const englishLevelDropdownRef = useRef<HTMLDivElement | null>(null);
+  const prefersHoverRef = useRef(false);
   const faqItems = isHy ? FAQ_ITEMS_HY : FAQ_ITEMS_EN;
   const heroIntroVisibilityClass = 'opacity-100';
   useEffect(() => {
@@ -211,6 +212,10 @@ export default function HomePage() {
       router.replace(dashboardPath);
     }
   }, [isAuthenticated, isHydrated, user, router]);
+
+  useEffect(() => {
+    prefersHoverRef.current = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -305,7 +310,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section
         id="home"
-        className="relative scroll-mt-28 max-lg:bg-[#f9fafb] max-lg:pt-[96px] max-lg:overflow-x-visible max-lg:pb-0 lg:h-[810px] lg:min-h-[810px] lg:overflow-hidden lg:bg-white lg:pt-0"
+        className="relative scroll-mt-28 max-lg:bg-[#f9fafb] max-lg:pt-[115px] max-lg:overflow-x-visible max-lg:pb-0 lg:h-[810px] lg:min-h-[810px] lg:overflow-hidden lg:bg-white lg:pt-0"
       >
         <div className="relative isolate w-full min-h-[1050px] overflow-visible lg:hidden">
           <div
@@ -357,11 +362,11 @@ export default function HomePage() {
               loading="eager"
               fetchPriority="high"
               sizes="236px"
-              className="object-cover object-center"
+              className="object-cover object-[20%_center]"
             />
           </div>
 
-          <div className="pointer-events-none absolute left-[50px] top-[148px] z-10 h-[900px] w-[520px] overflow-visible">
+          <div className="pointer-events-none absolute left-[24px] top-[148px] z-10 h-[900px] w-[520px] overflow-visible">
             <div className="relative h-full w-full overflow-hidden rounded-t-[155px]">
               <Image
                 src={HERO_PERSON_IMAGE}
@@ -509,7 +514,7 @@ export default function HomePage() {
       {/* About Section — mobile Figma 1:952, desktop Figma 1:834 */}
       <section
         id="about"
-        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-lg:z-20 max-lg:-mt-[220px] max-lg:pb-0 max-lg:pt-0 lg:-mt-[16px] lg:h-[666px]"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-lg:z-20 max-lg:-mt-[200px] max-lg:pb-0 max-lg:pt-0 lg:-mt-[16px] lg:h-[666px]"
       >
         <div className="lg:hidden">
         <div
@@ -522,7 +527,7 @@ export default function HomePage() {
             {tr('Ilona English Centre', 'Ilona English Centre')}
           </h2>
 
-          <div className="mt-11 space-y-3 text-[17px] leading-[22px] tracking-[-0.44px] text-[#4a5565]">
+          <div className="mt-8 space-y-3 text-[17px] leading-[22px] tracking-[-0.44px] text-[#4a5565]">
             <p>
               {tr(
                 'We empower students through exceptional English education. Our mission: provide world-class instruction that opens doors to global opportunities.',
@@ -538,7 +543,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative z-10 mx-auto flex min-h-[700px] w-full flex-col bg-[#dde7ff] px-5 pb-0 pt-[220px]">
+        <div className="relative z-10 mx-auto flex min-h-[640px] w-full flex-col bg-[#dde7ff] px-5 pb-0 pt-[200px]">
           <div className="pointer-events-none absolute right-[-270px] top-[-80px] z-[1] flex h-[900px] w-[440px] items-center justify-center">
             <div className="-scale-y-100 rotate-[171.43deg]">
               <div className="relative h-[860px] w-[350px]">
@@ -571,7 +576,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="absolute right-[72px] top-[338px] z-10">
+          <div className="absolute right-[72px] top-[310px] z-10">
             <div className="-rotate-6 rounded-full bg-[#fb2c36] px-4 py-1.5">
               <span className="text-[12px] font-bold leading-[18px] text-white">
                 {tr('Since 2011', '2011-ից')}
@@ -581,7 +586,7 @@ export default function HomePage() {
 
           <div className="min-h-1 flex-1" aria-hidden />
 
-          <div className="relative z-10 mb-8 grid shrink-0 grid-cols-2 gap-3">
+          <div className="relative z-10 mb-6 grid shrink-0 grid-cols-2 gap-3">
             <div className="rounded-[20px] bg-white px-5 py-5">
               <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
               <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
@@ -1008,7 +1013,7 @@ export default function HomePage() {
                       fill
                       unoptimized
                       loading="lazy"
-                      sizes="(max-width: 1024px) 100vw, 280px"
+                      sizes="(max-width: 767px) 100vw, 280px"
                       className="object-cover object-[center_52%]"
                     />
                   </div>
@@ -1025,11 +1030,11 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="px-5">
+          <div className="flex justify-center px-5">
             <Link
               href="#contact"
               className={cn(
-                'inline-flex h-[50px] w-full items-center justify-center rounded-full bg-[#093394] text-[15px] font-semibold leading-[22.5px] text-white',
+                'inline-flex h-[50px] w-[180.633px] items-center justify-center rounded-full bg-[#093394] text-[15px] font-semibold leading-[22.5px] text-white',
                 BUTTON_HOVER_CLASS,
               )}
             >
@@ -1175,7 +1180,7 @@ export default function HomePage() {
             <button
               type="button"
               className={cn(
-                'inline-flex h-[50px] w-full items-center justify-center rounded-full bg-[#e7000b] text-[15px] font-semibold leading-[22.5px] text-white',
+                'mx-auto inline-flex h-[50px] w-[180.633px] items-center justify-center rounded-full bg-[#e7000b] text-[15px] font-semibold leading-[22.5px] text-white',
                 BUTTON_HOVER_CLASS,
               )}
             >
@@ -1321,8 +1326,16 @@ export default function HomePage() {
               <div
                 ref={englishLevelDropdownRef}
                 className="relative"
-                onMouseEnter={() => setIsEnglishLevelOpen(true)}
-                onMouseLeave={() => setIsEnglishLevelOpen(false)}
+                onMouseEnter={() => {
+                  if (prefersHoverRef.current) {
+                    setIsEnglishLevelOpen(true);
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (prefersHoverRef.current) {
+                    setIsEnglishLevelOpen(false);
+                  }
+                }}
               >
                 <button
                   type="button"
@@ -1396,22 +1409,13 @@ export default function HomePage() {
                       type="button"
                       onClick={() => setPreferredBranch(branchOption.value)}
                       className={cn(
-                        'flex items-center gap-2.5 rounded-[14px] px-3 py-3 text-left transition-colors lg:h-[56px] lg:gap-0 lg:rounded-[16px] lg:border-2 lg:px-4 lg:py-0 lg:text-[16px] lg:font-semibold lg:leading-[24px] lg:tracking-[-0.3125px]',
+                        'flex h-[56px] items-center justify-center rounded-[16px] border-2 px-4 text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] transition-colors',
                         isSelected
-                          ? 'bg-[#f9fafb] lg:border-[#093394] lg:bg-white lg:text-[#093394]'
-                          : 'bg-[#f9fafb] lg:border-[#e5e7eb] lg:text-[#0a0a0a]',
+                          ? 'border-[#093394] bg-white text-[#093394]'
+                          : 'border-[#e5e7eb] bg-white text-[#0a0a0a]',
                       )}
                     >
-                      <span
-                        className={cn(
-                          'size-4 shrink-0 rounded border border-[#d1d5dc] lg:hidden',
-                          isSelected && 'border-[#093394] bg-[#093394]',
-                        )}
-                        aria-hidden
-                      />
-                      <span className="text-[14px] font-semibold leading-[21px] tracking-[-0.31px] text-[#0a0a0a] lg:text-inherit lg:font-semibold lg:leading-[24px] lg:tracking-[-0.3125px] lg:text-inherit">
-                        {isHy ? branchOption.labelHy : branchOption.labelEn}
-                      </span>
+                      {isHy ? branchOption.labelHy : branchOption.labelEn}
                     </button>
                   );
                 })}
@@ -2135,7 +2139,7 @@ export default function HomePage() {
                     fill
                     unoptimized
                     loading="lazy"
-                    sizes="(max-width: 1024px) 100vw, 384px"
+                    sizes="(max-width: 767px) 100vw, 384px"
                     className={article.imageClassName ?? 'object-cover'}
                   />
                   <Image
@@ -2144,7 +2148,7 @@ export default function HomePage() {
                     fill
                     unoptimized
                     loading="lazy"
-                    sizes="(max-width: 1024px) 100vw, 384px"
+                    sizes="(max-width: 767px) 100vw, 384px"
                     className={article.imageClassName ?? 'object-cover'}
                   />
                 </div>
