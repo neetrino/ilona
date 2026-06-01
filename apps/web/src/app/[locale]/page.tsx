@@ -203,7 +203,7 @@ export default function HomePage() {
   const [preferredBranch, setPreferredBranch] = useState<string>('');
   const englishLevelDropdownRef = useRef<HTMLDivElement | null>(null);
   const faqItems = isHy ? FAQ_ITEMS_HY : FAQ_ITEMS_EN;
-
+  const heroIntroVisibilityClass = 'opacity-100';
   useEffect(() => {
     if (isHydrated && isAuthenticated && user) {
       const dashboardPath = getDashboardPath(user.role);
@@ -288,22 +288,26 @@ export default function HomePage() {
 
   if (!isHydrated || (isAuthenticated && user)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-      </div>
+      <>
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-50/50">
-      <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} />
+    <>
+      <div className="min-h-screen overflow-x-hidden bg-slate-50/50">
+        <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} />
 
       {/* Hero Section */}
       <section id="home" className="relative h-[810px] min-h-[810px] scroll-mt-28 overflow-hidden bg-white">
         <div className="relative -top-4 mx-auto h-full w-full max-w-[1280px] overflow-hidden">
           <div
             className={cn(
-              'absolute top-[227px] w-[992px] text-[#093394]',
+              'absolute top-[227px] w-[992px] text-[#093394] transition-opacity duration-300',
+              heroIntroVisibilityClass,
               isHy ? 'left-[33px]' : 'left-[36px]',
             )}
           >
@@ -321,7 +325,12 @@ export default function HomePage() {
             </h1>
           </div>
 
-          <p className="absolute left-[36px] top-[470px] w-[486px] text-[16px] font-normal leading-[24px] tracking-[0.0703px] text-black/50">
+          <p
+            className={cn(
+              'absolute left-[36px] top-[470px] w-[486px] text-[16px] font-normal leading-[24px] tracking-[0.0703px] text-black/50 transition-opacity duration-300',
+              heroIntroVisibilityClass,
+            )}
+          >
             {tr(
               'Expert teachers, modern methods, and proven results. Your journey to fluency starts here.',
               'Փորձառու ուսուցիչներ, ժամանակակից մեթոդներ և իրական արդյունքներ։ Ձեր անգլերենի ճանապարհը սկսվում է այստեղ։',
@@ -331,7 +340,8 @@ export default function HomePage() {
           <Link
             href="/login"
             className={cn(
-              'absolute left-[36px] top-[586px] inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-[16777200px] bg-white text-[16px] font-semibold tracking-[-0.3125px] text-[#1447e6] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)]',
+              'absolute left-[36px] top-[586px] inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-[16777200px] bg-white text-[16px] font-semibold tracking-[-0.3125px] text-[#1447e6] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] transition-opacity duration-300',
+              heroIntroVisibilityClass,
               BUTTON_HOVER_CLASS,
             )}
           >
@@ -340,19 +350,24 @@ export default function HomePage() {
           <Link
             href="#branches"
             className={cn(
-              'absolute left-[237px] top-[586px] inline-flex h-[60px] w-[199.055px] items-center justify-center rounded-[16777200px] border-2 border-[#1447e6] bg-[rgba(255,255,255,0.1)] text-[16px] font-normal tracking-[-0.3125px] text-[#1548e6]',
+              'absolute left-[237px] top-[586px] inline-flex h-[60px] w-[199.055px] items-center justify-center rounded-[16777200px] border-2 border-[#1447e6] bg-[rgba(255,255,255,0.1)] text-[16px] font-normal tracking-[-0.3125px] text-[#1548e6] transition-opacity duration-300',
+              heroIntroVisibilityClass,
               BUTTON_HOVER_CLASS,
             )}
           >
             {tr('Choose Branch', 'Ընտրել մասնաճյուղ')}
           </Link>
 
-          <div className="absolute left-[990px] top-[158px] h-[290px] w-[290px] overflow-hidden rounded-full">
+          <div
+            className={cn(
+              'absolute left-[990px] top-[158px] h-[290px] w-[290px] overflow-hidden rounded-full transition-opacity duration-300',
+              'opacity-100',
+            )}
+          >
             <Image
               src={HERO_UK_BADGE_IMAGE}
               alt="UK flag badge"
               fill
-              unoptimized
               priority
               loading="eager"
               fetchPriority="high"
@@ -360,12 +375,16 @@ export default function HomePage() {
               className="object-cover object-[90%_center]"
             />
           </div>
-          <div className="absolute left-[654px] top-[454px] h-[281px] w-[281px] overflow-hidden rounded-full">
+          <div
+            className={cn(
+              'absolute left-[654px] top-[454px] h-[281px] w-[281px] overflow-hidden rounded-full transition-opacity duration-300',
+              'opacity-100',
+            )}
+          >
             <Image
               src={HERO_US_BADGE_IMAGE}
               alt="US flag badge"
               fill
-              unoptimized
               priority
               loading="eager"
               fetchPriority="high"
@@ -373,12 +392,16 @@ export default function HomePage() {
               className="object-cover object-[20%_center]"
             />
           </div>
-          <div className="absolute left-[789px] top-[140px] z-20 h-[873px] w-[393px]">
+          <div
+            className={cn(
+              'absolute left-[789px] top-[140px] z-20 h-[873px] w-[393px] transition-opacity duration-300',
+              'opacity-100',
+            )}
+          >
             <Image
               src={HERO_PERSON_IMAGE}
               alt="Hero student illustration"
               fill
-              unoptimized
               priority
               loading="eager"
               fetchPriority="high"
@@ -1576,6 +1599,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
