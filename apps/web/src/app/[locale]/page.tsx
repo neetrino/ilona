@@ -13,88 +13,51 @@ import { getFullApiUrl } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
 import { CanvasScaler } from '@/shared/components/layout/CanvasScaler';
+import { LANDING_ASSETS } from '@/features/landing/landingAssets';
 
-const HERO_PERSON_IMAGE =
-  'https://www.figma.com/api/mcp/asset/5fd6d382-01d8-4f1a-a4f1-2ba71c1774a2';
-const HERO_UK_BADGE_IMAGE =
-  'https://www.figma.com/api/mcp/asset/aa94510f-7385-4351-913e-067860465b17';
-const HERO_US_BADGE_IMAGE =
-  'https://www.figma.com/api/mcp/asset/9d24568c-d6ed-4796-b842-db96b22080d6';
-const ABOUT_BIG_BEN_IMAGE =
-  'https://www.figma.com/api/mcp/asset/6cf13eac-ff69-43bb-9f3b-b786b941ffac';
-const ABOUT_FLAG_IMAGE =
-  'https://www.figma.com/api/mcp/asset/f2cb8812-ff41-42e7-b10b-eeb161a9d97d';
-const ABOUT_SUCCESS_ICON =
-  'https://www.figma.com/api/mcp/asset/1f121d8e-3322-41b8-83fa-7ab74bbac39d';
-const ABOUT_BRANCHES_ICON =
-  'https://www.figma.com/api/mcp/asset/f350a76c-62e2-42a5-b36e-3fd9fa0e4247';
-const WHY_METHODS_IMAGE =
-  'https://www.figma.com/api/mcp/asset/30734f00-1ad2-4fca-84ba-28c2a59ee8b0';
-const WHY_RESULTS_IMAGE =
-  'https://www.figma.com/api/mcp/asset/675beb3d-cba1-4581-8f7e-2087a6313bcf';
-const WHY_TEACHERS_IMAGE =
-  'https://www.figma.com/api/mcp/asset/1d5370e5-2c90-4db0-9454-8e0c9570cef4';
-const WHY_SCHEDULE_IMAGE =
-  'https://www.figma.com/api/mcp/asset/c91db2fd-de48-453f-b3a8-87d453d7c3d6';
-const STUDENT_SUCCESS_IMAGE =
-  'https://www.figma.com/api/mcp/asset/293ddea0-ddc0-4133-b9e0-dde8a664bbc7';
-const REGISTER_ARROW_IMAGE = '/register-arrow.webp';
-const REGISTER_SUBMIT_ICON =
-  'https://www.figma.com/api/mcp/asset/ab507714-bdd0-4f49-afa6-14330021e236';
+const HERO_PERSON_IMAGE = LANDING_ASSETS.heroPerson;
+const HERO_UK_BADGE_IMAGE = LANDING_ASSETS.heroUkBadge;
+const HERO_US_BADGE_IMAGE = LANDING_ASSETS.heroUsBadge;
+const ABOUT_BIG_BEN_IMAGE = LANDING_ASSETS.aboutBigBen;
+const ABOUT_FLAG_IMAGE = LANDING_ASSETS.aboutFlag;
+const ABOUT_SUCCESS_ICON = LANDING_ASSETS.aboutSuccessIcon;
+const ABOUT_BRANCHES_ICON = LANDING_ASSETS.aboutBranchesIcon;
+const WHY_METHODS_IMAGE = LANDING_ASSETS.whyMethods;
+const WHY_RESULTS_IMAGE = LANDING_ASSETS.whyResults;
+const WHY_TEACHERS_IMAGE = LANDING_ASSETS.whyTeachers;
+const WHY_SCHEDULE_IMAGE = LANDING_ASSETS.whySchedule;
+const STUDENT_SUCCESS_IMAGE = LANDING_ASSETS.studentSuccess;
+const REGISTER_ARROW_IMAGE = LANDING_ASSETS.registerArrow;
+const REGISTER_SUBMIT_ICON = LANDING_ASSETS.registerSubmitIcon;
 const BRANCH_CLASSROOM_IMAGE = '/branch-classroom-main.webp';
 const BRANCH_SIDE_IMAGE = BRANCH_CLASSROOM_IMAGE;
 const BRANCH_CENTER_IMAGE = BRANCH_CLASSROOM_IMAGE;
 const BRANCH_CENTER_IMAGE_ALT = BRANCH_CLASSROOM_IMAGE;
-const BRANCH_MAP_ICON =
-  'https://www.figma.com/api/mcp/asset/b7a23b24-2836-415e-858c-e6e0b43660db';
-const BRANCH_NAV_ARROW =
-  'https://www.figma.com/api/mcp/asset/8a23a889-4c51-4910-9644-c8145936804b';
-const FOLLOW_INSTAGRAM_ICON =
-  'https://www.figma.com/api/mcp/asset/9b0da3a1-232e-4f43-ac12-72713291306c';
-const FOLLOW_FACEBOOK_ICON =
-  'https://www.figma.com/api/mcp/asset/a8b0b16d-24c4-4bc3-b9d4-e357f71bb33d';
-const FOLLOW_TELEGRAM_ICON =
-  'https://www.figma.com/api/mcp/asset/df3e1455-4e30-449f-8a08-d6a3a46b4073';
-const GET_TOUCH_PHONE_ICON =
-  'https://www.figma.com/api/mcp/asset/278372c9-77c7-4541-af68-f01f076cf709';
-const GET_TOUCH_EMAIL_ICON =
-  'https://www.figma.com/api/mcp/asset/c5e057ac-529d-4b20-8de9-1effe7915001';
-const TEAM_CHECK_ICON =
-  'https://www.figma.com/api/mcp/asset/15391d53-dafa-4e3d-b637-db8201b07423';
-const TEAM_SEND_CV_ICON =
-  'https://www.figma.com/api/mcp/asset/08948765-b53f-43eb-acbb-cb37ee6f5b57';
-const NEWS_IMAGE_1 =
-  'https://www.figma.com/api/mcp/asset/6118a541-485d-49f9-927b-49a8118a4447';
-const NEWS_IMAGE_1_OVERLAY =
-  'https://www.figma.com/api/mcp/asset/553ec347-aff6-4a69-a1a6-efa9c4bf6519';
-const NEWS_IMAGE_2 =
-  'https://www.figma.com/api/mcp/asset/536f6c12-2a3a-4ccd-b43b-de41c6af3550';
-const NEWS_IMAGE_2_OVERLAY =
-  'https://www.figma.com/api/mcp/asset/6864b60b-4825-4fa8-bee1-575f87f56595';
-const NEWS_IMAGE_3 =
-  'https://www.figma.com/api/mcp/asset/d88a6602-049f-432f-95ac-adec54e6412d';
-const NEWS_IMAGE_3_OVERLAY =
-  'https://www.figma.com/api/mcp/asset/874c8cba-2392-4b4a-90b3-7d234f3b737e';
-const NEWS_ARROW_ICON =
-  'https://www.figma.com/api/mcp/asset/978f12e2-3890-4cf8-aad2-3362a6e4bff1';
-const FAQ_DROPDOWN_ICON =
-  'https://www.figma.com/api/mcp/asset/8e07c12b-716b-4275-9825-95eebcc8cdfe';
-const FOOTER_LOGO_IMAGE =
-  'https://www.figma.com/api/mcp/asset/c818d932-a7ee-4824-a21d-0563e4468a6a';
-const FOOTER_SOCIAL_INSTAGRAM =
-  'https://www.figma.com/api/mcp/asset/a8ced297-0527-41ee-8fa6-1cb38783a4d9';
-const FOOTER_SOCIAL_FACEBOOK =
-  'https://www.figma.com/api/mcp/asset/fa35db9d-77bf-4adc-b4be-93f0419cdae6';
-const FOOTER_SOCIAL_TELEGRAM =
-  'https://www.figma.com/api/mcp/asset/cc557e1a-746c-4ad0-9ccb-00cff4491385';
-const FOOTER_SOCIAL_WHATSAPP =
-  'https://www.figma.com/api/mcp/asset/461dfb34-60a0-4a9f-a763-55f5d92487ec';
-const FOOTER_SOCIAL_VIBER =
-  'https://www.figma.com/api/mcp/asset/e7606674-5c33-4d25-9cc7-9a443ab253d3';
-const FOOTER_FLAG_USA =
-  'https://www.figma.com/api/mcp/asset/0a309554-56bd-43a8-bb6d-b0b5171154fc';
-const FOOTER_FLAG_UK =
-  'https://www.figma.com/api/mcp/asset/996e4906-4cd0-4671-b738-8921a6ee19b2';
+const BRANCH_MAP_ICON = LANDING_ASSETS.branchMapIcon;
+const BRANCH_NAV_ARROW = LANDING_ASSETS.branchNavArrow;
+const FOLLOW_INSTAGRAM_ICON = LANDING_ASSETS.followInstagram;
+const FOLLOW_FACEBOOK_ICON = LANDING_ASSETS.followFacebook;
+const FOLLOW_TELEGRAM_ICON = LANDING_ASSETS.followTelegram;
+const GET_TOUCH_PHONE_ICON = LANDING_ASSETS.getTouchPhone;
+const GET_TOUCH_EMAIL_ICON = LANDING_ASSETS.getTouchEmail;
+const TEAM_CHECK_ICON = LANDING_ASSETS.teamCheckIcon;
+const TEAM_SEND_CV_ICON = LANDING_ASSETS.teamSendCvIcon;
+const NEWS_IMAGE_1 = LANDING_ASSETS.newsImage1;
+const NEWS_IMAGE_1_OVERLAY = LANDING_ASSETS.newsImage1Overlay;
+const NEWS_IMAGE_2 = LANDING_ASSETS.newsImage2;
+const NEWS_IMAGE_2_OVERLAY = LANDING_ASSETS.newsImage2Overlay;
+const NEWS_IMAGE_3 = LANDING_ASSETS.newsImage3;
+const NEWS_IMAGE_3_OVERLAY = LANDING_ASSETS.newsImage3Overlay;
+const NEWS_ARROW_ICON = LANDING_ASSETS.newsArrowIcon;
+const FAQ_DROPDOWN_ICON = LANDING_ASSETS.faqDropdownIcon;
+const FOOTER_LOGO_IMAGE = LANDING_ASSETS.footerLogo;
+const FOOTER_SOCIAL_INSTAGRAM = LANDING_ASSETS.footerSocialInstagram;
+const FOOTER_SOCIAL_FACEBOOK = LANDING_ASSETS.footerSocialFacebook;
+const FOOTER_SOCIAL_TELEGRAM = LANDING_ASSETS.footerSocialTelegram;
+const FOOTER_SOCIAL_WHATSAPP = LANDING_ASSETS.footerSocialWhatsapp;
+const FOOTER_SOCIAL_VIBER = LANDING_ASSETS.footerSocialViber;
+const FOOTER_FLAG_USA = LANDING_ASSETS.footerFlagUsa;
+const FOOTER_FLAG_UK = LANDING_ASSETS.footerFlagUk;
 const BUTTON_HOVER_CLASS =
   'transition-transform duration-200 ease-out hover:-translate-y-1';
 const FAQ_ITEMS_EN = [
