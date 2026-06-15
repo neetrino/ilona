@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, startTransition } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, startTransition } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -75,15 +75,36 @@ export function useStudentsPage() {
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
-  // Modal/Dialog states
-  const isAddStudentOpen = searchParams.get(ADD_STUDENT_URL_PARAM) === '1';
+  // Modal/Dialog states — local state + URL sync (same pattern as Groups createGroup / Calendar add-lesson).
+  const [isAddStudentOpen, setIsAddStudentOpenState] = useState(
+    () => searchParams.get(ADD_STUDENT_URL_PARAM) === '1',
+  );
+  const isAddStudentClosingRef = useRef(false);
+
+  useEffect(() => {
+    if (isAddStudentClosingRef.current) {
+      return;
+    }
+    const shouldOpen = searchParams.get(ADD_STUDENT_URL_PARAM) === '1';
+    if (isAddStudentOpen !== shouldOpen) {
+      setIsAddStudentOpenState(shouldOpen);
+    }
+  }, [searchParams, isAddStudentOpen]);
+
   const setIsAddStudentOpen = useCallback(
     (open: boolean) => {
       const next = new URLSearchParams(searchParams.toString());
       if (open) {
+        isAddStudentClosingRef.current = false;
+        setIsAddStudentOpenState(true);
         next.set(ADD_STUDENT_URL_PARAM, '1');
       } else {
+        isAddStudentClosingRef.current = true;
+        setIsAddStudentOpenState(false);
         next.delete(ADD_STUDENT_URL_PARAM);
+        setTimeout(() => {
+          isAddStudentClosingRef.current = false;
+        }, 100);
       }
       const url = next.toString() ? `${pathname}?${next.toString()}` : pathname;
       router.replace(url, { scroll: false });
