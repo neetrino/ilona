@@ -12,7 +12,7 @@ import {
 } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
-import { filterTeachersByBranches, groupTeachersByCenter } from '../utils';
+import { countUniqueTeachers, filterTeachersByBranches, groupTeachersByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
@@ -512,6 +512,18 @@ export function useTeachersPage() {
     router.replace(newUrl, { scroll: false });
   };
 
+  const uniqueTeachersCount = useMemo(() => {
+    const clientCount = countUniqueTeachers(filteredTeachers);
+    if (selectedBranchIds.size > 0) {
+      return clientCount;
+    }
+    const apiTotal = teachersData?.total;
+    if (typeof apiTotal === 'number') {
+      return apiTotal;
+    }
+    return clientCount;
+  }, [filteredTeachers, selectedBranchIds, teachersData?.total]);
+
   // Stats calculation
   const activeTeachers = filteredTeachers.filter(t => t.user?.status === 'ACTIVE').length;
   const totalLessons = filteredTeachers.reduce((sum, t) => sum + (t._count?.lessons || 0), 0);
@@ -548,6 +560,7 @@ export function useTeachersPage() {
     // Data
     teachers,
     totalTeachers,
+    uniqueTeachersCount,
     totalPages,
     teachersByCenter,
     filteredTeachers,

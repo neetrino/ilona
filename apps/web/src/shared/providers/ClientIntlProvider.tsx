@@ -36,8 +36,8 @@ const messageLoaders: Record<
 };
 
 async function loadMessages(locale: Locale): Promise<AbstractIntlMessages> {
-  const module = await messageLoaders[locale]();
-  return module.default;
+  const loaded = await messageLoaders[locale]();
+  return loaded.default;
 }
 
 export function ClientIntlProvider({

@@ -53,6 +53,7 @@ export default function TeachersPage() {
     // Data
     teachers,
     totalTeachers,
+    uniqueTeachersCount,
     totalPages,
     teachersByCenter,
     centersData,
@@ -154,6 +155,7 @@ export default function TeachersPage() {
             teachersByCenter={teachersByCenter}
             activeCenterTabId={activeCenterTabId}
             onSelectCenter={handleActiveCenterTabChange}
+            uniqueTeachersCount={uniqueTeachersCount}
             teachers={teachers}
             sortBy={sortBy}
             sortOrder={sortOrder}
@@ -192,12 +194,14 @@ export default function TeachersPage() {
             centersData={sortedVisibleCenters}
             activeCenterTabId={activeCenterTabId}
             onSelectCenter={handleActiveCenterTabChange}
+            uniqueTeachersCount={uniqueTeachersCount}
             isLoading={isLoading}
             searchQuery={searchQuery}
             onEdit={handleEditClick}
             onDelete={handleDeleteClick}
             onDeactivate={handleDeactivateClick}
             onCardClick={handleRowClick}
+            t={t}
           />
         )}
 
