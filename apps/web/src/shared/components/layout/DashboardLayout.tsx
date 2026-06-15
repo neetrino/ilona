@@ -9,7 +9,9 @@ import { AdminSidebar } from './AdminSidebar';
 import { Header } from './Header';
 import { StudentDashboardHeader } from '@/features/student-dashboard';
 import { TeacherDashboardHeader } from '@/features/teacher-dashboard';
-import { AdminDashboardHeader } from '@/features/admin-dashboard';
+import { AdminDashboardHeader, AdminPortalBottomNav } from '@/features/admin-dashboard';
+import { ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS } from '@/features/admin-dashboard/admin-portal-layout';
+import { isAdminPortalSubpage } from '@/shared/lib/role-routes';
 import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PortalShellProvider } from '@/shared/context/portal-shell-context';
@@ -55,6 +57,8 @@ export function DashboardLayout({
   const isAdminPortal =
     variant === 'admin' ||
     (variant === 'default' && (role === 'ADMIN' || role === 'MANAGER') && isAdminRoute);
+  const isAdminMobileSubpage =
+    isAdminPortal && isAdminPortalSubpage(pathname.replace(/^\/[a-z]{2}\//, '/'), role);
   const isPortalShell = isStudentPortal || isTeacherPortal || isAdminPortal;
   const isDashboardHome = isPortalShell && !title;
 
@@ -161,12 +165,14 @@ export function DashboardLayout({
             className={cn(
               'min-h-0 flex-1 overflow-x-hidden overflow-y-auto',
               mainPadding,
+              isAdminMobileSubpage && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
             )}
           >
             {promoBanner ? <div className="mb-4 sm:mb-6">{promoBanner}</div> : null}
             <div className="mx-auto w-full min-w-0 max-w-[90rem]">{children}</div>
           </div>
         </main>
+        {isAdminPortal ? <AdminPortalBottomNav /> : null}
         <FloatingChatWidget />
       </div>
     </PortalShellProvider>

@@ -76,7 +76,7 @@ export function AdminDashboardHeader({
             <div className="min-w-0 flex-1">
               <GlobalSearchBar
                 className="w-full max-w-none"
-                inputClassName="h-11 rounded-[2.125rem] border-transparent bg-[#f3f3f4] text-sm sm:h-12"
+                inputClassName="h-11 rounded-[2.125rem] border-transparent bg-[#f3f3f4] text-base sm:h-12 sm:text-sm"
               />
             </div>
 

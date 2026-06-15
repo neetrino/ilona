@@ -29,6 +29,15 @@ export function isAdminPortalRootPath(path: string): boolean {
   return normalized === ADMIN_BASE_PATH || normalized === MANAGER_BASE_PATH;
 }
 
+export function isAdminPortalSubpage(path: string, role?: UserRole | null): boolean {
+  if (!isAdminPortalPath(path)) {
+    return false;
+  }
+
+  const normalized = path.replace(/^\/[a-z]{2}\//, '/');
+  return normalized !== getAdminPortalBasePath(role);
+}
+
 export function isPortalMobileViewport(): boolean {
   if (typeof window === 'undefined') return false;
   return !window.matchMedia(`(min-width: ${PORTAL_DESKTOP_MIN_WIDTH}px)`).matches;
