@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { MouseEvent, ReactNode } from 'react';
+import type { MouseEvent, ReactNode, SyntheticEvent } from 'react';
 import { LandingNavbarLanguageToggle } from './LandingNavbarLanguageToggle';
 import { cn } from '@/shared/lib/utils';
 
@@ -14,6 +14,9 @@ type LandingMobileNavbarPillProps = {
   center?: ReactNode;
   trailing?: ReactNode;
   isCanvasActive?: boolean;
+  showLanguageToggle?: boolean;
+  logoOnError?: (event: SyntheticEvent<HTMLImageElement>) => void;
+  enlargeLogoInner?: boolean;
 };
 
 export function LandingMobileNavbarPill({
@@ -24,6 +27,9 @@ export function LandingMobileNavbarPill({
   center,
   trailing,
   isCanvasActive = false,
+  showLanguageToggle = true,
+  logoOnError,
+  enlargeLogoInner = false,
 }: LandingMobileNavbarPillProps) {
   const brandClassName = cn(
     'min-w-0 truncate font-bold tracking-[-0.18px] text-white',
@@ -42,7 +48,14 @@ export function LandingMobileNavbarPill({
             : 'h-[42px] w-[42px] sm:h-[48px] sm:w-[48px] tablet:h-[52px] tablet:w-[52px]',
         )}
       >
-        <Image src={logoUrl} alt={brandLabel} fill className="object-contain" unoptimized />
+        <Image
+          src={logoUrl}
+          alt={brandLabel}
+          fill
+          className={cn('object-contain', enlargeLogoInner && 'scale-[1.22]')}
+          unoptimized
+          onError={logoOnError}
+        />
       </div>
       <span className={brandClassName}>{brandLabel}</span>
     </>
@@ -82,7 +95,7 @@ export function LandingMobileNavbarPill({
       ) : null}
 
       <div className={cn('flex items-center', isCanvasActive ? 'gap-3' : 'gap-1.5 sm:gap-2 tablet:gap-3')}>
-        <LandingNavbarLanguageToggle isCanvasActive={isCanvasActive} />
+        {showLanguageToggle ? <LandingNavbarLanguageToggle isCanvasActive={isCanvasActive} /> : null}
         {trailing}
       </div>
     </div>
