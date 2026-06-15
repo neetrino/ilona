@@ -48,6 +48,11 @@ export function LandingMobileNavbarPill({
     </>
   );
 
+  const logoWrapClassName = cn(
+    'flex min-w-0 items-center',
+    isCanvasActive ? 'gap-3' : 'flex-1 gap-2 pr-2 sm:gap-3',
+  );
+
   return (
     <div
       className={cn(
@@ -58,31 +63,17 @@ export function LandingMobileNavbarPill({
       )}
     >
       {logoHref ? (
-        <Link
-          href={logoHref}
-          onClick={onLogoClick}
-          className={cn(
-            'flex min-w-0 flex-1 items-center pr-2',
-            isCanvasActive ? 'gap-3' : 'gap-2 sm:gap-3',
-          )}
-        >
+        <Link href={logoHref} onClick={onLogoClick} className={logoWrapClassName}>
           {logoBlock}
         </Link>
       ) : (
-        <div
-          className={cn(
-            'flex min-w-0 flex-1 items-center pr-2',
-            isCanvasActive ? 'gap-3' : 'gap-2 sm:gap-3',
-          )}
-        >
-          {logoBlock}
-        </div>
+        <div className={logoWrapClassName}>{logoBlock}</div>
       )}
 
       {center ? (
         <nav
           className={cn(
-            'hidden min-w-0 flex-1 items-center justify-center text-white',
+            'hidden items-center text-white',
             isCanvasActive ? 'gap-8 navDesktop:flex' : 'gap-4 navDesktop:flex navDesktop:gap-6 xl:gap-8',
           )}
         >
@@ -90,7 +81,7 @@ export function LandingMobileNavbarPill({
         </nav>
       ) : null}
 
-      <div className={cn('flex shrink-0 items-center', isCanvasActive ? 'gap-3' : 'gap-1.5 sm:gap-2 tablet:gap-3')}>
+      <div className={cn('flex items-center', isCanvasActive ? 'gap-3' : 'gap-1.5 sm:gap-2 tablet:gap-3')}>
         <LandingNavbarLanguageToggle isCanvasActive={isCanvasActive} />
         {trailing}
       </div>

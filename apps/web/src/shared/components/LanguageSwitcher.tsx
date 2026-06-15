@@ -23,7 +23,7 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
 
   if (isCircle) {
     const nextLocale: Locale = locale === 'en' ? 'hy' : 'en';
-    const label = locale === 'en' ? 'EN' : 'HY';
+    const label = locale === 'en' ? 'EN' : 'Հայ';
 
     return (
       <button
@@ -33,8 +33,8 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
         aria-label={locale === 'en' ? 'Switch to Armenian' : 'Switch to English'}
         className={cn(
           'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
-          'bg-[#f3f3f4] text-xs font-semibold tracking-wide text-[#1010a3]',
-          'transition-colors hover:bg-[#ebebec] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/30',
+          'bg-white text-xs font-bold tracking-wide text-[#1010a3]',
+          'transition-colors hover:bg-[#f3f3f4] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/30',
           className,
         )}
       >

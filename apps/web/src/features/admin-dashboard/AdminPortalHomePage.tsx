@@ -3,7 +3,6 @@
 import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { getAdminNavEntries } from '@/shared/lib/admin-nav-entries';
@@ -55,10 +54,6 @@ export function AdminPortalHomePage() {
               icon={item.icon}
             />
           ))}
-        </div>
-
-        <div className="mt-4 pb-2">
-          <StudentLogoutControl variant="sidebar" />
         </div>
       </main>
 

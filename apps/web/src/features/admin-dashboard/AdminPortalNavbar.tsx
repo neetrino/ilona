@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
+import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
+import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { STUDENT_SIDEBAR_ASSETS } from '@/features/student-dashboard/studentSidebarAssets';
@@ -38,7 +39,13 @@ export function AdminPortalNavbar() {
           </span>
         </div>
 
-        <LandingNavbarLanguageToggle />
+        <div className="flex shrink-0 items-center gap-1.5">
+          <LanguageSwitcher
+            variant="circle"
+            className="h-9 w-9 bg-white text-[11px] font-bold text-[#1010a3] hover:bg-[#f3f3f4]"
+          />
+          <StudentLogoutControl variant="circle" />
+        </div>
       </div>
     </header>
   );
