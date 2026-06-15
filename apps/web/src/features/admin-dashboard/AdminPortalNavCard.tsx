@@ -43,13 +43,15 @@ export function AdminPortalNavCard({ href, label, icon }: AdminPortalNavCardProp
     <Link
       href={href}
       className={cn(
-        'flex aspect-square flex-col items-center justify-center gap-2.5 rounded-[1.25rem]',
-        'border border-[rgba(14,14,16,0.07)] bg-white p-3',
+        'flex min-h-[4.25rem] flex-row items-center gap-3 rounded-2xl px-3.5 py-3',
+        'border border-[rgba(14,14,16,0.07)] bg-white',
         'transition-transform active:scale-[0.98]',
       )}
     >
-      <AdminPortalNavCardIcon icon={icon} />
-      <span className="line-clamp-2 text-center text-xs font-medium leading-snug text-[#242427]">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <AdminPortalNavCardIcon icon={icon} />
+      </span>
+      <span className="min-w-0 flex-1 text-left text-sm font-medium leading-snug text-[#242427] line-clamp-2 whitespace-pre-line">
         {label}
       </span>
     </Link>
