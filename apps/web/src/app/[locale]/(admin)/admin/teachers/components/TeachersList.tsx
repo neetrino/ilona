@@ -13,6 +13,7 @@ interface TeachersListProps {
   teachersByCenter: Record<string, Teacher[]>;
   activeCenterTabId: string | null;
   onSelectCenter: (centerId: string) => void;
+  uniqueTeachersCount: number;
   teachers: Teacher[];
   sortBy: string | undefined;
   sortOrder: 'asc' | 'desc';
@@ -44,6 +45,7 @@ export function TeachersList({
   teachersByCenter,
   activeCenterTabId,
   onSelectCenter,
+  uniqueTeachersCount,
   teachers,
   sortBy,
   sortOrder,
@@ -90,22 +92,23 @@ export function TeachersList({
     centerOptions,
   });
 
-  const showCenterStrip =
-    !isLoading &&
-    (centers.length > 0 || (teachersByCenter.unassigned?.length || 0) > 0);
+  const hasCenterTabs =
+    isLoading ||
+    centers.length > 0 ||
+    (teachersByCenter.unassigned?.length || 0) > 0;
 
   const emptyMessage = useMemo(() => {
     if (searchQuery.trim()) {
       return t('noTeachersMatch');
     }
-    if (showCenterStrip) {
+    if (hasCenterTabs) {
       if (activeCenterTabId === 'unassigned') {
         return t('noUnassignedTeachers');
       }
       return t('noTeachersInThisCenter');
     }
     return t('noTeachersFound');
-  }, [searchQuery, showCenterStrip, activeCenterTabId, t]);
+  }, [searchQuery, hasCenterTabs, activeCenterTabId, t]);
 
   const table = (
     <DataTable
@@ -118,13 +121,9 @@ export function TeachersList({
       sortOrder={sortOrder}
       onSort={onSort}
       onRowClick={onRowClick}
-      embedInParentCard={showCenterStrip}
+      embedInParentCard={hasCenterTabs}
     />
   );
-
-  if (!showCenterStrip) {
-    return table;
-  }
 
   return (
     <div className="mb-6 overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.07)]/90 bg-white shadow-sm">
@@ -133,6 +132,9 @@ export function TeachersList({
         teachersByCenter={teachersByCenter}
         activeCenterTabId={activeCenterTabId}
         onSelectCenter={onSelectCenter}
+        uniqueTeachersCount={uniqueTeachersCount}
+        isLoading={isLoading}
+        t={t}
       />
       {table}
     </div>

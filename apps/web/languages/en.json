@@ -416,6 +416,8 @@
     "feedbackCompletion": "Feedback Completion",
     "vocabularyCompletion": "Vocabulary Completion",
     "totalTeachers": "Total Teachers",
+    "uniqueTeachersHelper": "Unique teachers across centers",
+    "centerTeachersCount": "Teachers",
     "activeTeachers": "Active Teachers",
     "totalLessons": "Total Lessons",
     "avgLessonsPerTeacher": "Avg. Lessons/Teacher",

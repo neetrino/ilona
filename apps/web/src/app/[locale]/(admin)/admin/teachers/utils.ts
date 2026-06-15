@@ -39,6 +39,19 @@ export function getTeacherCenters(teacher: Teacher): Center[] {
 }
 
 /**
+ * Count unique teachers by stable teacher.id (not name or center assignment).
+ */
+export function countUniqueTeachers(teachers: Teacher[]): number {
+  const ids = new Set<string>();
+  for (const teacher of teachers) {
+    if (teacher?.id) {
+      ids.add(teacher.id);
+    }
+  }
+  return ids.size;
+}
+
+/**
  * Filter teachers by branch IDs
  */
 export function filterTeachersByBranches(
