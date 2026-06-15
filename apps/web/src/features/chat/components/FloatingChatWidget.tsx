@@ -6,7 +6,8 @@ import { useLocale } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChats } from '@/features/chat/hooks';
 import { cn } from '@/shared/lib/utils';
-import { getAdminPortalBasePath, isAdminPortalPath } from '@/shared/lib/role-routes';
+import { navigateToPortalChat } from '@/features/chat/lib/navigate-to-portal-chat';
+import { isAdminPortalPath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
 
 export function FloatingChatWidget() {
   const pathname = usePathname();
@@ -30,6 +31,10 @@ export function FloatingChatWidget() {
   }
 
   const isAdminRoute = isAdminPortalPath(pathname.replace(/^\/[a-z]{2}\//, '/'));
+  const isAdminMobileSubpage = isAdminRoute && isAdminPortalSubpage(
+    pathname.replace(/^\/[a-z]{2}\//, '/'),
+    user?.role,
+  );
   const isPortalShell =
     user?.role === 'STUDENT' ||
     user?.role === 'TEACHER' ||
@@ -44,23 +49,13 @@ export function FloatingChatWidget() {
 
   const handleChatClick = () => {
     if (!user?.role) return;
-
-    // Get current pathname with search params as returnTo (includes locale)
-    const currentPath = searchParams.toString() 
-      ? `${pathname}?${searchParams.toString()}`
-      : pathname;
-    const returnTo = encodeURIComponent(currentPath);
-
-    const roleSegment =
-      user.role === 'ADMIN' || user.role === 'MANAGER'
-        ? getAdminPortalBasePath(user.role).slice(1)
-        : user.role.toLowerCase();
-
-    // Navigate to chat route with returnTo parameter
-    // CRITICAL: Do NOT include conversationId/chatId to prevent auto-selection
-    // The chat should open in neutral state, allowing user to manually select a conversation
-    const chatPath = `/${locale}/${roleSegment}/chat?returnTo=${returnTo}`;
-    router.push(chatPath);
+    navigateToPortalChat({
+      router,
+      locale,
+      role: user.role,
+      pathname,
+      searchParams,
+    });
   };
 
   return (
@@ -71,7 +66,8 @@ export function FloatingChatWidget() {
         className={cn(
           'fixed z-50',
           'bottom-6 right-3 sm:right-6',
-          'flex h-14 w-14 items-center justify-center sm:h-16 sm:w-16',
+          isAdminMobileSubpage ? 'hidden lg:flex' : 'flex',
+          'h-14 w-14 items-center justify-center sm:h-16 sm:w-16',
           'rounded-full text-white',
           fabBg,
           fabShadow,

@@ -1,5 +1,5 @@
 // Store
-export { useAuthStore, getDashboardPath } from './store';
+export { useAuthStore, getDashboardPath, getPortalEntryPath } from './store';
 
 // Components
 export { LoginForm } from './components/LoginForm';

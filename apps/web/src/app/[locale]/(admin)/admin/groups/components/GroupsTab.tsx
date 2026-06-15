@@ -24,6 +24,7 @@ import { GroupStudentsModal } from './GroupStudentsModal';
 import { StudentDetailsModal } from './StudentDetailsModal';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 
 interface SelectAllCheckboxProps {
   checked: boolean;
@@ -96,6 +97,7 @@ export function GroupsTab({
   const router = useRouter();
   const { user } = useAuthStore();
   const portalBasePath = getAdminPortalBasePath(user?.role);
+  const isLg = useIsLgViewport();
   const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
   /** Captured at open; optimistic updates must not change dialog copy */
   const [statusDialog, setStatusDialog] = useState<{
@@ -299,6 +301,15 @@ export function GroupsTab({
   };
 
   const pageSize = 10;
+
+  useEffect(() => {
+    if (isLg === false && viewMode !== 'board') {
+      setViewMode('board');
+      updateViewModeInUrl('board');
+      setPage(0);
+      setSelectedGroupIds(new Set());
+    }
+  }, [isLg, setPage, setSelectedGroupIds, setViewMode, updateViewModeInUrl, viewMode]);
 
   // Students modal state from URL so it survives refresh
   const studentsGroupId = searchParams.get('studentsGroup');
@@ -590,26 +601,28 @@ export function GroupsTab({
             {t('deleteAll', { count: selectedGroupIds.size })}
           </Button>
         )}
-        <ListBoardViewToggle
-          value={viewMode}
-          onChange={(mode) => {
-            if (mode === 'list') {
-              setViewMode('list');
+        {isLg ? (
+          <ListBoardViewToggle
+            value={viewMode}
+            onChange={(mode) => {
+              if (mode === 'list') {
+                setViewMode('list');
+                setPage(0);
+                setSelectedGroupIds(new Set());
+                setBoardTabCenterId(null);
+                updateUrl({ view: 'list', branch: null });
+                return;
+              }
+
+              setViewMode('board');
+              updateViewModeInUrl('board');
               setPage(0);
               setSelectedGroupIds(new Set());
-              setBoardTabCenterId(null);
-              updateUrl({ view: 'list', branch: null });
-              return;
-            }
-
-            setViewMode('board');
-            updateViewModeInUrl('board');
-            setPage(0);
-            setSelectedGroupIds(new Set());
-          }}
-          listLabel={t('listView')}
-          boardLabel={t('boardView')}
-        />
+            }}
+            listLabel={t('listView')}
+            boardLabel={t('boardView')}
+          />
+        ) : null}
 
         <Button 
           className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"

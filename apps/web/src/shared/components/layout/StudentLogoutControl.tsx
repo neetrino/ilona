@@ -28,7 +28,7 @@ function LogoutIcon({ className }: { className?: string }) {
 }
 
 type StudentLogoutControlProps = {
-  variant?: 'header' | 'sidebar';
+  variant?: 'header' | 'sidebar' | 'circle';
   className?: string;
   roleDetail?: string;
   onAfterLogout?: () => void;
@@ -86,6 +86,25 @@ export function StudentLogoutControl({
 
   const pillSizes =
     'inline-flex h-11 shrink-0 items-center rounded-full bg-[#1010a3] text-white sm:h-12';
+
+  if (variant === 'circle') {
+    return (
+      <button
+        type="button"
+        onClick={handleLogout}
+        className={cn(
+          'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full p-0',
+          'bg-white text-[#1010a3] transition-colors hover:bg-[#f3f3f4]',
+          'focus:outline-none focus:ring-2 focus:ring-[#1010a3]/30',
+          className,
+        )}
+        title={tAuth('logout')}
+        aria-label={tAuth('logout')}
+      >
+        <LogoutIcon className="h-5 w-5 shrink-0 translate-x-px" />
+      </button>
+    );
+  }
 
   if (variant === 'sidebar') {
     const sidebarLabel = shortName || displayLabel || roleLabel;

@@ -1,3 +1,3 @@
-export { useAuthStore, getDashboardPath } from './auth.store';
+export { useAuthStore, getDashboardPath, getPortalEntryPath } from './auth.store';
 
 

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Paytone_One } from 'next/font/google';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
+import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
@@ -159,7 +159,7 @@ export default function HomePage() {
   const { isAuthenticated, isHydrated, user } = useAuthStore();
   const { data: logoData } = useLogo();
   const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.webp';
-  const profileHref = isAuthenticated && user ? getDashboardPath(user.role) : '/login';
+  const profileHref = isAuthenticated && user ? getPortalEntryPath(user.role) : '/login';
   const [activeBranchIndex, setActiveBranchIndex] = useState(0);
   const [branchSlideDirection, setBranchSlideDirection] = useState(1);
   const [hasBranchInteracted, setHasBranchInteracted] = useState(false);
@@ -215,7 +215,7 @@ export default function HomePage() {
     'text-[11px] leading-[15px] tracking-[-0.31px] text-white/90 line-clamp-2';
   useEffect(() => {
     if (isHydrated && isAuthenticated && user) {
-      const dashboardPath = getDashboardPath(user.role);
+      const dashboardPath = getPortalEntryPath(user.role);
       router.replace(dashboardPath);
     }
   }, [isAuthenticated, isHydrated, user, router]);

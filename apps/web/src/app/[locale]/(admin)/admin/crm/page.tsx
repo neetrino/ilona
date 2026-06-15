@@ -34,6 +34,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getErrorMessage } from '@/shared/lib/api';
+import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 
 const DEFAULT_FILTERS: CrmLeadFilters = {
   skip: 0,
@@ -117,6 +118,7 @@ export default function AdminCrmPage() {
   const isAuthReady = isHydrated && isAuthenticated && hasAccessToken && !!user?.id;
   const authScopeKey = `${userRole ?? 'UNKNOWN'}:${user?.id ?? 'anonymous'}:${managerCenterId ?? 'all-centers'}`;
   const searchParams = useSearchParams();
+  const isLg = useIsLgViewport();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'board' | 'list'>(() => {
     const modeFromUrl = searchParams.get(VIEW_PARAM);
@@ -146,6 +148,13 @@ export default function AdminCrmPage() {
   useEffect(() => {
     setEditLeadId(searchParams.get(EDIT_LEAD_PARAM));
   }, [searchParams]);
+
+  useEffect(() => {
+    if (isLg === false && viewMode !== 'board') {
+      setViewMode('board');
+      updateViewModeInUrl('board');
+    }
+  }, [isLg, viewMode]);
 
   // Restore view mode from URL after refresh/navigation
   useEffect(() => {
@@ -431,15 +440,17 @@ export default function AdminCrmPage() {
         {/* View toggle + Filters */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <ListBoardViewToggle
-              value={viewMode}
-              onChange={(mode) => {
-                setViewMode(mode);
-                updateViewModeInUrl(mode);
-              }}
-              listLabel={tCrm('viewList')}
-              boardLabel={tCrm('viewBoard')}
-            />
+            {isLg ? (
+              <ListBoardViewToggle
+                value={viewMode}
+                onChange={(mode) => {
+                  setViewMode(mode);
+                  updateViewModeInUrl(mode);
+                }}
+                listLabel={tCrm('viewList')}
+                boardLabel={tCrm('viewBoard')}
+              />
+            ) : null}
             {viewMode === 'board' && (
               <button
                 type="button"

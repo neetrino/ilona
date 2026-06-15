@@ -9,7 +9,8 @@ import { AdminSidebar } from './AdminSidebar';
 import { Header } from './Header';
 import { StudentDashboardHeader } from '@/features/student-dashboard';
 import { TeacherDashboardHeader } from '@/features/teacher-dashboard';
-import { AdminDashboardHeader } from '@/features/admin-dashboard';
+import { AdminDashboardHeader, AdminPortalBottomNav } from '@/features/admin-dashboard';
+import { ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS } from '@/features/admin-dashboard/admin-portal-layout';
 import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PortalShellProvider } from '@/shared/context/portal-shell-context';
@@ -105,7 +106,7 @@ export function DashboardLayout({
     <PortalShellProvider enabled={isPortalShell}>
       <div
         className={cn(
-          'flex h-screen min-h-0 w-full max-w-[100vw] overflow-hidden',
+          'flex min-h-screen w-full max-w-[100vw] overflow-x-hidden lg:h-screen lg:overflow-hidden',
           isPortalShell ? PORTAL_SHELL_BG : 'bg-slate-50',
         )}
       >
@@ -118,7 +119,7 @@ export function DashboardLayout({
           />
         )}
 
-        {isPortalShell && mobileNavOpen ? (
+        {isPortalShell && mobileNavOpen && !isAdminPortal ? (
           <>
             <button
               type="button"
@@ -135,7 +136,7 @@ export function DashboardLayout({
           </>
         ) : null}
 
-        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-visible lg:overflow-hidden">
           {isStudentPortal ? (
             <StudentDashboardHeader
               pageTitle={isDashboardHome ? undefined : title}
@@ -153,21 +154,22 @@ export function DashboardLayout({
               pageTitle={isDashboardHome ? undefined : title}
               pageSubtitle={isDashboardHome ? undefined : subtitle}
               headerContent={headerContent}
-              onMenuClick={() => setMobileNavOpen(true)}
             />
           ) : (
             <Header title={title} subtitle={subtitle} headerContent={headerContent} />
           )}
           <div
             className={cn(
-              'min-h-0 flex-1 overflow-x-hidden overflow-y-auto',
+              'flex-1 overflow-x-hidden overflow-visible lg:min-h-0 lg:overflow-y-auto',
               mainPadding,
+              isAdminPortal && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
             )}
           >
             {promoBanner ? <div className="mb-4 sm:mb-6">{promoBanner}</div> : null}
-            <div className="mx-auto w-full min-w-0 max-w-[90rem]">{children}</div>
+            <div className="mx-auto w-full min-w-0 max-w-[90rem] pb-[30px]">{children}</div>
           </div>
         </main>
+        {isAdminPortal ? <AdminPortalBottomNav /> : null}
         <FloatingChatWidget />
       </div>
     </PortalShellProvider>

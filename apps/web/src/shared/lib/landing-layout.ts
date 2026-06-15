@@ -13,6 +13,9 @@ export const LANDING_NAVBAR_HEIGHT = 70;
 /** Inline nav from this width; below it uses the burger menu (covers all iPad sizes). */
 export const LANDING_NAV_DESKTOP_MIN_WIDTH = 1367;
 
+/** Horizontal padding for landing mobile navbar (matches admin portal home). */
+export const LANDING_MOBILE_HORIZONTAL_PADDING = 'px-4';
+
 export function getLandingCanvasMetrics(
   viewportWidth: number,
   designWidth = LANDING_DESIGN_WIDTH,

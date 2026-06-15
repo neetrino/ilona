@@ -48,7 +48,7 @@ const studentTheme: ChatThemeTokens = {
     'text-[#3b3b40] bg-[#f6f6f7] rounded-[0.875rem] hover:bg-[#ececec] transition-colors',
   iconBtn: 'hover:bg-[#f6f6f7] rounded-[0.875rem] text-[#8b8b90]',
   searchInput:
-    'w-full pl-9 pr-4 py-2 rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white text-sm text-[#3b3b40] placeholder:text-[#8b8b90] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15 focus:border-[#1010a3]',
+    'w-full pl-9 pr-4 py-2 rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white text-[16px] text-[#3b3b40] placeholder:text-[#8b8b90] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15 focus:border-[#1010a3] lg:text-sm',
   listHover: 'hover:bg-[#f6f6f7]',
   listActive: 'bg-[#ddecff]/70 hover:bg-[#ddecff]/80',
   avatar: 'bg-[#1010a3]',
@@ -58,7 +58,7 @@ const studentTheme: ChatThemeTokens = {
   ownBubble: 'bg-[#1010a3] text-white rounded-br-md',
   otherBubble: 'bg-white text-[#3b3b40] rounded-bl-md shadow-sm border border-[rgba(14,14,16,0.07)]',
   input:
-    'flex-1 px-4 py-2 rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white resize-none text-sm text-[#3b3b40] placeholder:text-[#8b8b90] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15 focus:border-[#1010a3] overflow-x-hidden',
+    'flex-1 px-4 py-2 rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white resize-none text-[16px] text-[#3b3b40] placeholder:text-[#8b8b90] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15 focus:border-[#1010a3] overflow-x-hidden lg:text-sm',
   loadMore: 'text-sm text-[#1010a3] hover:opacity-80',
   spinner: 'border-2 border-[#1010a3] border-t-transparent',
   datePill: 'bg-white text-[#8b8b90] border border-[rgba(14,14,16,0.07)]',
@@ -85,7 +85,7 @@ const defaultTheme: ChatThemeTokens = {
   ghostBtn: 'text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors',
   iconBtn: 'hover:bg-slate-100 rounded-lg text-slate-500',
   searchInput:
-    'w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20',
+    'w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-[16px] focus:outline-none focus:ring-2 focus:ring-primary/20 lg:text-sm',
   listHover: 'hover:bg-slate-50',
   listActive: 'bg-primary/10 hover:bg-primary/10',
   avatar: 'bg-primary',
@@ -95,7 +95,7 @@ const defaultTheme: ChatThemeTokens = {
   ownBubble: 'bg-primary text-primary-foreground rounded-br-md',
   otherBubble: 'bg-white text-slate-800 rounded-bl-md shadow-sm',
   input:
-    'flex-1 px-4 py-2 bg-slate-100 rounded-xl resize-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 overflow-x-hidden',
+    'flex-1 px-4 py-2 bg-slate-100 rounded-xl resize-none text-[16px] focus:outline-none focus:ring-2 focus:ring-primary/20 overflow-x-hidden lg:text-sm',
   loadMore: 'text-sm text-primary hover:text-primary/90',
   spinner: 'border-2 border-primary border-t-transparent',
   datePill: 'bg-white text-slate-500 shadow-sm',

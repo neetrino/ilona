@@ -1431,6 +1431,7 @@
     "profile": "Պրոֆիլ",
     "security": "Անվտանգություն",
     "notifications": "Ծանուցումներ",
+    "notificationsEmpty": "Դեռ ծանուցումներ չկան։",
     "language": "Լեզու",
     "changePassword": "Փոխել գաղտնաբառը",
     "systemSettings": "Համակարգի կարգավորումներ",

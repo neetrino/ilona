@@ -3,6 +3,8 @@
 import { Button, ListBoardViewToggle } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
+import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 
 interface TeachersFiltersProps {
   searchQuery: string;
@@ -48,6 +50,13 @@ export function TeachersFilters({
     { id: 'INACTIVE', label: tStatus('inactive') },
     { id: 'SUSPENDED', label: tStatus('suspended') },
   ];
+  const isLg = useIsLgViewport();
+
+  useEffect(() => {
+    if (isLg === false && viewMode !== 'board') {
+      onViewModeChange('board');
+    }
+  }, [isLg, onViewModeChange, viewMode]);
 
   return (
     <div className="space-y-4 w-full min-w-0">
@@ -98,13 +107,15 @@ export function TeachersFilters({
 
       </div>
 
-      <ListBoardViewToggle
-        value={viewMode}
-        onChange={onViewModeChange}
-        listLabel="List"
-        boardLabel="Board"
-        className="w-full shrink-0 sm:w-auto"
-      />
+      {isLg ? (
+        <ListBoardViewToggle
+          value={viewMode}
+          onChange={onViewModeChange}
+          listLabel="List"
+          boardLabel="Board"
+          className="w-full shrink-0 sm:w-auto"
+        />
+      ) : null}
 
       {/* Add Teacher Button */}
       <div className="w-full shrink-0 sm:w-auto">

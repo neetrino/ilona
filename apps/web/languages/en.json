@@ -1431,6 +1431,7 @@
     "profile": "Profile",
     "security": "Security",
     "notifications": "Notifications",
+    "notificationsEmpty": "No notifications yet.",
     "language": "Language",
     "changePassword": "Change Password",
     "systemSettings": "System Settings",
