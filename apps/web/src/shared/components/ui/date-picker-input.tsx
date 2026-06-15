@@ -197,7 +197,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
           data-role="date-trigger"
           onClick={() => !disabled && setOpen((prev) => !prev)}
           className={cn(
-            'h-10 w-full rounded-lg border border-slate-300 px-3 text-left text-sm transition-colors',
+            'h-10 w-full rounded-lg border border-slate-300 px-3 text-left text-[16px] transition-colors lg:text-sm',
             'focus:outline-none focus:ring-2 focus:ring-[#3036b6]/25',
             selectedDate ? 'text-slate-900' : 'text-slate-400',
             disabled && 'cursor-not-allowed opacity-60',

@@ -19,7 +19,7 @@ export {
 export const studentLabelClass = 'mb-1.5 block text-xs font-medium tracking-wide text-[#8b8b90]';
 
 export const studentInputClass =
-  'h-11 w-full min-w-0 rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white px-4 text-sm text-[#3b3b40] transition-colors placeholder:text-[#8b8b90] hover:border-[rgba(14,14,16,0.12)] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15';
+  'h-11 w-full min-w-0 rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white px-4 text-[16px] text-[#3b3b40] transition-colors placeholder:text-[#8b8b90] hover:border-[rgba(14,14,16,0.12)] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15 lg:text-sm';
 
 export const studentSelectClass = studentInputClass;
 

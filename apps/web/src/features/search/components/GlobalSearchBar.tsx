@@ -14,6 +14,9 @@ import { cn } from '@/shared/lib/utils';
 
 const DEBOUNCE_MS = 300;
 
+/** iOS Safari zooms inputs below 16px — keep 16px until desktop sidebar (`lg`). */
+const GLOBAL_SEARCH_INPUT_FONT_CLASS = 'text-[16px] lg:text-sm';
+
 type GlobalSearchBarProps = {
   className?: string;
   inputClassName?: string;
@@ -118,7 +121,11 @@ export function GlobalSearchBar({ className, inputClassName }: GlobalSearchBarPr
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setOpen(true)}
-        className={cn('w-full min-w-0 border-slate-200 bg-slate-50 pl-10 focus:bg-white', inputClassName)}
+        className={cn(
+          'w-full min-w-0 border-slate-200 bg-slate-50 pl-10 focus:bg-white',
+          GLOBAL_SEARCH_INPUT_FONT_CLASS,
+          inputClassName,
+        )}
         autoComplete="off"
         aria-autocomplete="list"
         aria-expanded={open}

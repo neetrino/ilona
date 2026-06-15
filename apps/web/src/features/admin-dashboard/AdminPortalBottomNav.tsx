@@ -16,7 +16,7 @@ import {
 } from './admin-portal-layout';
 import { cn } from '@/shared/lib/utils';
 
-const BOTTOM_NAV_ICON_CLASS = 'h-7 w-7 stroke-[2.5]';
+const BOTTOM_NAV_ICON_CLASS = 'h-[1.625rem] w-[1.625rem] stroke-[2]';
 
 function BottomNavItem({
   ariaLabel,
@@ -36,21 +36,21 @@ function BottomNavItem({
   badge?: number;
 }) {
   const className =
-    'relative flex min-w-0 flex-1 flex-col items-center justify-start gap-0 px-2 py-1.5 text-white outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none active:bg-transparent';
+    'relative z-0 flex min-w-0 flex-1 flex-col items-center justify-start gap-0 overflow-visible px-1.5 py-1 text-white outline-none [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none active:bg-transparent';
 
   const content = (
     <>
-      <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
+      <span className="relative z-0 flex h-9 w-9 shrink-0 items-center justify-center overflow-visible rounded-full">
         {children}
         {badge && badge > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 z-20 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ff2e23] px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -right-0.5 -top-0.5 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ff2e23] px-0.5 text-[9px] font-semibold leading-none text-white">
             {badge > 99 ? '99+' : badge}
           </span>
         ) : null}
       </span>
       <span
         className={cn(
-          'relative z-10 mt-0 w-full truncate text-center text-[11px] font-medium leading-none',
+          'relative z-50 flex min-h-[13px] w-full items-center justify-center overflow-visible truncate px-0.5 text-center text-[11px] font-medium leading-snug',
           labelClassName,
         )}
       >
@@ -146,7 +146,7 @@ export function AdminPortalBottomNav() {
           <div className="rounded-[1.25rem] border border-[rgba(14,14,16,0.07)] bg-white p-2 shadow-lg">
             <GlobalSearchBar
               className="w-full max-w-none"
-              inputClassName="h-11 rounded-[2.125rem] border-transparent bg-[#f3f3f4] text-base sm:text-sm"
+              inputClassName="h-11 rounded-[2.125rem] border-transparent bg-[#f3f3f4]"
             />
           </div>
         </div>
@@ -154,13 +154,13 @@ export function AdminPortalBottomNav() {
 
       <nav
         className={cn(
-          'fixed inset-x-0 bottom-0 z-[65] rounded-t-[30px] bg-[#1010a3] lg:hidden',
+          'fixed inset-x-0 bottom-0 z-[65] overflow-visible rounded-t-[30px] bg-[#1010a3] lg:hidden',
           ADMIN_PORTAL_MOBILE_HORIZONTAL_PADDING,
           'pb-[env(safe-area-inset-bottom)]',
         )}
         aria-label={tNav('dashboard')}
       >
-        <div className="flex items-stretch">
+        <div className="relative z-[1] flex items-stretch overflow-visible pb-1.5 pt-1">
           <BottomNavItem href={portalHomeHref} ariaLabel={tHome('home')} label={tHome('home')}>
             <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path
@@ -188,7 +188,7 @@ export function AdminPortalBottomNav() {
           <BottomNavItem
             ariaLabel={tSettings('notifications')}
             label={tSettings('notifications')}
-            labelClassName={locale === 'hy' ? 'text-[9px]' : undefined}
+            labelClassName={locale === 'hy' ? 'min-h-[12px] text-[9px] leading-snug' : undefined}
             onClick={handleNotificationsClick}
           >
             <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
