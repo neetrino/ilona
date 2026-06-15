@@ -24,7 +24,7 @@ export function TeacherDashboardHeader({
 
   return (
     <header className="shrink-0 bg-transparent px-3 py-3 sm:px-6 lg:px-8">
-      <div className="sticky top-0 z-40 w-full min-w-0 rounded-[2rem] border border-[rgba(14,14,16,0.07)] bg-white px-3 py-4 sm:rounded-[4rem] sm:px-5 sm:py-5">
+      <div className="w-full min-w-0 rounded-[2rem] border border-[rgba(14,14,16,0.07)] bg-white px-3 py-4 sm:rounded-[4rem] sm:px-5 sm:py-5">
         <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {onMenuClick ? (
