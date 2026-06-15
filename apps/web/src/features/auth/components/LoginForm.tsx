@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { motion, useReducedMotion } from 'framer-motion';
-import { useAuthStore, getDashboardPath } from '../store/auth.store';
+import { useAuthStore, getPortalEntryPath } from '../store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { Button } from '@/shared/components/ui/button';
@@ -33,7 +33,7 @@ export function LoginForm() {
       await login(email, password);
       const user = useAuthStore.getState().user;
       if (user) {
-        router.push(getDashboardPath(user.role));
+        router.push(getPortalEntryPath(user.role));
       }
     } catch {
       // Error is handled in store

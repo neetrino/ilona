@@ -5,11 +5,13 @@ import { useSwitchLocale } from '@/shared/hooks/useSwitchLocale';
 import { cn } from '@/shared/lib/utils';
 
 type LanguageSwitcherProps = {
-  variant?: 'default' | 'compact';
+  variant?: 'default' | 'compact' | 'circle';
+  className?: string;
 };
 
-export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ variant = 'default', className }: LanguageSwitcherProps) {
   const isCompact = variant === 'compact';
+  const isCircle = variant === 'circle';
   const { locale, switchLocale } = useSwitchLocale();
 
   const handleKeyDown = (e: React.KeyboardEvent, targetLocale: Locale) => {
@@ -18,6 +20,28 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
       switchLocale(targetLocale);
     }
   };
+
+  if (isCircle) {
+    const nextLocale: Locale = locale === 'en' ? 'hy' : 'en';
+    const label = locale === 'en' ? 'EN' : 'HY';
+
+    return (
+      <button
+        type="button"
+        onClick={() => switchLocale(nextLocale)}
+        onKeyDown={(e) => handleKeyDown(e, nextLocale)}
+        aria-label={locale === 'en' ? 'Switch to Armenian' : 'Switch to English'}
+        className={cn(
+          'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+          'bg-[#f3f3f4] text-xs font-semibold tracking-wide text-[#1010a3]',
+          'transition-colors hover:bg-[#ebebec] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/30',
+          className,
+        )}
+      >
+        {label}
+      </button>
+    );
+  }
 
   return (
     <div

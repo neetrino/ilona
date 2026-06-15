@@ -6,7 +6,10 @@ import { api } from '@/shared/lib/api';
 import { ApiError } from '@/shared/lib/api-errors';
 import { isTokenExpired } from '@/shared/lib/jwt-utils';
 import { clearChatStateOnLogout } from '@/features/chat/store/chat.store';
-import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import {
+  getAdminPortalBasePath,
+  isPortalMobileViewport,
+} from '@/shared/lib/role-routes';
 import type { User, AuthTokens, UserRole } from '@/types';
 
 interface AuthState {
@@ -168,6 +171,17 @@ export function getDashboardPath(role: UserRole): string {
     default:
       return '/';
   }
+}
+
+/** First screen after login — admin/manager mobile opens the portal home (/admin or /manager). */
+export function getPortalEntryPath(role: UserRole): string {
+  if (role === 'ADMIN' || role === 'MANAGER') {
+    if (isPortalMobileViewport()) {
+      return getAdminPortalBasePath(role);
+    }
+    return getDashboardPath(role);
+  }
+  return getDashboardPath(role);
 }
 
 /** Apply tokens from a successful refresh (keeps Zustand and localStorage in sync). */

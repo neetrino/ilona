@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginForm } from '@/features/auth/components/LoginForm';
-import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
+import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.store';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,7 +15,7 @@ export default function LoginPage() {
 
     // If already authenticated, redirect to dashboard
     if (isAuthenticated && user) {
-      router.replace(getDashboardPath(user.role));
+      router.replace(getPortalEntryPath(user.role));
     }
   }, [isAuthenticated, isHydrated, user, router]);
 

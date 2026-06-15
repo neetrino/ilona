@@ -118,7 +118,7 @@ export function DashboardLayout({
           />
         )}
 
-        {isPortalShell && mobileNavOpen ? (
+        {isPortalShell && mobileNavOpen && !isAdminPortal ? (
           <>
             <button
               type="button"
@@ -153,7 +153,6 @@ export function DashboardLayout({
               pageTitle={isDashboardHome ? undefined : title}
               pageSubtitle={isDashboardHome ? undefined : subtitle}
               headerContent={headerContent}
-              onMenuClick={() => setMobileNavOpen(true)}
             />
           ) : (
             <Header title={title} subtitle={subtitle} headerContent={headerContent} />

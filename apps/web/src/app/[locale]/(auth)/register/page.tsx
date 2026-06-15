@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
-import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
+import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.store';
 import { Button } from '@/shared/components/ui/button';
 
 /**
@@ -22,7 +22,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (!isHydrated) return;
     if (isAuthenticated && user) {
-      router.replace(`/${locale}${getDashboardPath(user.role)}`);
+      router.replace(`/${locale}${getPortalEntryPath(user.role)}`);
     }
   }, [isAuthenticated, isHydrated, user, locale, router]);
 
