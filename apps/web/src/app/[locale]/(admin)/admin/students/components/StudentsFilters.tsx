@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl';
 import { Button, FilterDropdown, ListBoardViewToggle } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { useEffect } from 'react';
+import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 
 interface StudentsFiltersProps {
   searchQuery: string;
@@ -68,6 +70,14 @@ export function StudentsFilters({
     id: String(month),
     label: tc(`months.${month}`),
   }));
+  const isLg = useIsLgViewport();
+
+  useEffect(() => {
+    if (isLg === false && viewMode !== 'board') {
+      onViewModeChange('board');
+    }
+  }, [isLg, onViewModeChange, viewMode]);
+
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
     const year = now.getFullYear() - 2 + i;
     return { id: String(year), label: String(year) };
@@ -97,13 +107,15 @@ export function StudentsFilters({
             {t('deleteAll', { count: selectedStudentIds.size })}
           </Button>
         )}
-        <ListBoardViewToggle
-          value={viewMode}
-          onChange={onViewModeChange}
-          listLabel={t('listView')}
-          boardLabel={t('boardView')}
-          className="w-full shrink-0 sm:w-auto"
-        />
+        {isLg ? (
+          <ListBoardViewToggle
+            value={viewMode}
+            onChange={onViewModeChange}
+            listLabel={t('listView')}
+            boardLabel={t('boardView')}
+            className="w-full shrink-0 sm:w-auto"
+          />
+        ) : null}
         <Button 
           className="w-full shrink-0 rounded-xl bg-[#1010a3] px-6 py-3 font-medium text-white hover:bg-[#1010a3]/90 sm:w-auto"
           onClick={onAddStudent}

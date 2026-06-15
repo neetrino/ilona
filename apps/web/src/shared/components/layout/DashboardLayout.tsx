@@ -11,7 +11,6 @@ import { StudentDashboardHeader } from '@/features/student-dashboard';
 import { TeacherDashboardHeader } from '@/features/teacher-dashboard';
 import { AdminDashboardHeader, AdminPortalBottomNav } from '@/features/admin-dashboard';
 import { ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS } from '@/features/admin-dashboard/admin-portal-layout';
-import { isAdminPortalSubpage } from '@/shared/lib/role-routes';
 import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PortalShellProvider } from '@/shared/context/portal-shell-context';
@@ -57,8 +56,6 @@ export function DashboardLayout({
   const isAdminPortal =
     variant === 'admin' ||
     (variant === 'default' && (role === 'ADMIN' || role === 'MANAGER') && isAdminRoute);
-  const isAdminMobileSubpage =
-    isAdminPortal && isAdminPortalSubpage(pathname.replace(/^\/[a-z]{2}\//, '/'), role);
   const isPortalShell = isStudentPortal || isTeacherPortal || isAdminPortal;
   const isDashboardHome = isPortalShell && !title;
 
@@ -109,7 +106,7 @@ export function DashboardLayout({
     <PortalShellProvider enabled={isPortalShell}>
       <div
         className={cn(
-          'flex min-h-screen w-full max-w-[100vw] overflow-hidden lg:h-screen',
+          'flex min-h-screen w-full max-w-[100vw] overflow-x-hidden lg:h-screen lg:overflow-hidden',
           isPortalShell ? PORTAL_SHELL_BG : 'bg-slate-50',
         )}
       >
@@ -163,7 +160,7 @@ export function DashboardLayout({
           )}
           <div
             className={cn(
-              'min-h-0 flex-1 overflow-x-hidden overflow-y-auto',
+              'flex-1 overflow-x-hidden overflow-visible lg:min-h-0 lg:overflow-y-auto',
               mainPadding,
               isAdminPortal && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
             )}
