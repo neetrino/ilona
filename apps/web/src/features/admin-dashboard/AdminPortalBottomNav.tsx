@@ -1,18 +1,17 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useChats } from '@/features/chat/hooks';
 import { navigateToPortalChat } from '@/features/chat/lib/navigate-to-portal-chat';
 import { navigateToPortalNotifications } from '@/features/admin-dashboard/navigate-to-portal-notifications';
-import { GlobalSearchBar } from '@/features/search/components/GlobalSearchBar';
+import { PortalMobileSearchSheet } from '@/features/search/components/PortalMobileSearchSheet';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
 import {
   ADMIN_PORTAL_MOBILE_HORIZONTAL_PADDING,
-  ADMIN_PORTAL_MOBILE_BOTTOM_NAV_SEARCH_OFFSET_CLASS,
 } from './admin-portal-layout';
 import { cn } from '@/shared/lib/utils';
 
@@ -98,6 +97,10 @@ export function AdminPortalBottomNav() {
     [chats],
   );
 
+  useEffect(() => {
+    setSearchOpen(false);
+  }, [pathname]);
+
   if (!isSubpage) {
     return null;
   }
@@ -126,31 +129,10 @@ export function AdminPortalBottomNav() {
 
   return (
     <>
-      {searchOpen ? (
-        <button
-          type="button"
-          className="fixed inset-0 z-[60] bg-black/40 lg:hidden"
-          aria-label={tCommon('close')}
-          onClick={() => setSearchOpen(false)}
-        />
-      ) : null}
-
-      {searchOpen ? (
-        <div
-          className={cn(
-            'fixed inset-x-0 z-[70] lg:hidden',
-            ADMIN_PORTAL_MOBILE_BOTTOM_NAV_SEARCH_OFFSET_CLASS,
-            ADMIN_PORTAL_MOBILE_HORIZONTAL_PADDING,
-          )}
-        >
-          <div className="rounded-[1.25rem] border border-[rgba(14,14,16,0.07)] bg-white p-2 shadow-lg">
-            <GlobalSearchBar
-              className="w-full max-w-none"
-              inputClassName="h-11 rounded-[2.125rem] border-transparent bg-[#f3f3f4]"
-            />
-          </div>
-        </div>
-      ) : null}
+      <PortalMobileSearchSheet
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+      />
 
       <nav
         className={cn(
@@ -188,7 +170,6 @@ export function AdminPortalBottomNav() {
           <BottomNavItem
             ariaLabel={tSettings('notifications')}
             label={tSettings('notifications')}
-            labelClassName={locale === 'hy' ? 'min-h-[12px] text-[9px] leading-snug' : undefined}
             onClick={handleNotificationsClick}
           >
             <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>

@@ -1,10 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
-import { GlobalSearchBar } from '@/features/search/components/GlobalSearchBar';
+import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { isAdminPortalSubpage } from '@/shared/lib/role-routes';
 
 type AdminDashboardHeaderProps = {
   pageTitle?: string;
@@ -21,9 +23,14 @@ export function AdminDashboardHeader({
 }: AdminDashboardHeaderProps) {
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
+  const pathname = usePathname();
   const { user } = useAuthStore();
   const firstName = user?.firstName ?? tNav('user');
   const isSubpage = Boolean(pageTitle);
+  const isAdminMobileSubpage = isAdminPortalSubpage(
+    pathname.replace(/^\/[a-z]{2}\//, '/'),
+    user?.role,
+  );
   return (
     <header className="shrink-0 bg-[#ececec] px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.5rem,1vw,0.75rem)]">
       <div className="w-full min-w-0 rounded-[1.5rem] border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.75rem,1.5vw,1.25rem)] sm:rounded-[2rem] lg:rounded-[4rem]">
@@ -74,10 +81,7 @@ export function AdminDashboardHeader({
 
           <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <div className="min-w-0 flex-1">
-              <GlobalSearchBar
-                className="w-full max-w-none"
-                inputClassName="h-11 rounded-[2.125rem] border-transparent bg-[#f3f3f4] lg:h-12"
-              />
+              <PortalHeaderSearch mobileSearchHandledExternally={isAdminMobileSubpage} />
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">

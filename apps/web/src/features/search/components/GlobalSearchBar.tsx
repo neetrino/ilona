@@ -20,6 +20,9 @@ const GLOBAL_SEARCH_INPUT_FONT_CLASS = 'text-[16px] lg:text-sm';
 type GlobalSearchBarProps = {
   className?: string;
   inputClassName?: string;
+  autoFocus?: boolean;
+  dropdownPlacement?: 'below' | 'above';
+  onNavigate?: () => void;
 };
 
 const TYPE_KEYS: Record<GlobalSearchResultType, string> = {
@@ -33,15 +36,31 @@ const TYPE_KEYS: Record<GlobalSearchResultType, string> = {
   page: 'searchTypePage',
 };
 
-export function GlobalSearchBar({ className, inputClassName }: GlobalSearchBarProps = {}) {
+export function GlobalSearchBar({
+  className,
+  inputClassName,
+  autoFocus = false,
+  dropdownPlacement = 'below',
+  onNavigate,
+}: GlobalSearchBarProps = {}) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('common');
   const tNav = useTranslations('nav');
+
+  useEffect(() => {
+    if (!autoFocus) return;
+    const frame = window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      setOpen(true);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [autoFocus]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -73,8 +92,9 @@ export function GlobalSearchBar({ className, inputClassName }: GlobalSearchBarPr
       setOpen(false);
       setQuery('');
       setDebouncedQuery('');
+      onNavigate?.();
     },
-    [locale, router],
+    [locale, onNavigate, router],
   );
 
   const onPick = useCallback(
@@ -116,6 +136,7 @@ export function GlobalSearchBar({ className, inputClassName }: GlobalSearchBarPr
         />
       </svg>
       <Input
+        ref={inputRef}
         type="search"
         placeholder={t('globalSearch')}
         value={query}
@@ -147,6 +168,7 @@ export function GlobalSearchBar({ className, inputClassName }: GlobalSearchBarPr
         retryLabel={t('retry')}
         getBadgeLabel={getBadgeLabel}
         getTitle={getTitle}
+        placement={dropdownPlacement}
       />
     </div>
   );

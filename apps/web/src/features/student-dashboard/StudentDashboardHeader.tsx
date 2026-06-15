@@ -4,7 +4,7 @@ import { PublicAssetImage } from '@/shared/components/ui';
 import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
-import { GlobalSearchBar } from '@/features/search/components/GlobalSearchBar';
+import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMyDashboard } from '@/features/students';
 import { STUDENT_DASHBOARD_ASSETS } from './assets';
@@ -80,10 +80,7 @@ export function StudentDashboardHeader({
 
           <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <div className="min-w-0 flex-1">
-              <GlobalSearchBar
-                className="w-full max-w-none"
-                inputClassName="h-11 rounded-[2.125rem] border-transparent bg-[#f3f3f4] lg:h-12"
-              />
+              <PortalHeaderSearch />
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">

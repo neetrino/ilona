@@ -69,6 +69,7 @@ export type GlobalSearchDropdownProps = {
   retryLabel: string;
   getBadgeLabel: (item: GlobalSearchResult) => string;
   getTitle: (item: GlobalSearchResult) => string;
+  placement?: 'below' | 'above';
 };
 
 export function GlobalSearchDropdown({
@@ -88,19 +89,23 @@ export function GlobalSearchDropdown({
   retryLabel,
   getBadgeLabel,
   getTitle,
+  placement = 'below',
 }: GlobalSearchDropdownProps) {
-  if (!open) {
+  const trimmed = normalizeSearchQuery(query);
+
+  // Do not show an empty dropdown panel before user starts typing.
+  if (!open || trimmed.length === 0) {
     return null;
   }
 
-  const trimmed = normalizeSearchQuery(query);
   const debouncedOk = normalizeSearchQuery(debouncedQuery).length >= 2;
 
   return (
     <div
       className={cn(
         DROPDOWN_MENU_SURFACE_CLASS,
-        'top-full mt-1 max-h-[min(70vh,420px)] py-1'
+        placement === 'above' ? 'bottom-full mb-1 max-h-[min(50vh,320px)]' : 'top-full mt-1 max-h-[min(70vh,420px)]',
+        'py-1',
       )}
       role="listbox"
       aria-label="Search results"
