@@ -130,7 +130,7 @@ export function PaymentsTable({
                 <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
-                    className="my-auto h-5 w-5 rounded border-[rgba(14,14,16,0.2)]"
+                    className="my-auto h-5 w-5 rounded border-[rgba(14,14,16,0.2)] accent-[#1010a3] text-[#1010a3]"
                     checked={selectedPaymentIds.has(payment.id)}
                     onChange={() => onToggleSelectPayment(payment.id)}
                     aria-label={`Select payment for ${fullName}`}
