@@ -494,7 +494,8 @@ export default function CalendarPage() {
           />
           <StatCard
             title={t('statsCancelledMissed')}
-            value={(stats?.cancelled || 0) + (stats?.missed || 0)}
+            value={`${stats?.cancelled || 0}/${stats?.missed || 0}`}
+            className="col-span-2 sm:col-span-1"
           />
         </div>
 
@@ -528,7 +529,7 @@ export default function CalendarPage() {
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
             <div className="inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
               <button
                 type="button"
@@ -557,20 +558,6 @@ export default function CalendarPage() {
                 aria-pressed={viewMode === 'week'}
               >
                 {t('week')}
-              </button>
-              <button
-                type="button"
-                onClick={() => updateViewModeInUrl('month')}
-                className={cn(
-                  'px-4 py-2 text-sm font-semibold rounded-md transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-                  viewMode === 'month'
-                    ? 'bg-[#1010a3] text-white shadow-md'
-                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
-                )}
-                aria-pressed={viewMode === 'month'}
-              >
-                {t('month')}
               </button>
             </div>
             <Button
@@ -741,6 +728,7 @@ export default function CalendarPage() {
                 onSort={handleSort}
                 sectionedCalendarList
                 showScheduleColumn={false}
+                useMobileCards
                 onBulkDelete={handleBulkDeleteClick}
                 onObligationClick={(lessonId, obligation) => {
                   router.push(`/${locale}${portalBasePath}/calendar/${lessonId}?tab=${obligation}`);
