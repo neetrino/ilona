@@ -47,6 +47,30 @@ function AdminMetaRow({
   );
 }
 
+function MobileInfoRow({
+  icon,
+  value,
+  trailingIcon,
+}: {
+  icon: ReactNode;
+  value: ReactNode;
+  trailingIcon?: ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f5f6fb] text-[#3b3b40]">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1 text-sm text-[#3b3b40]">{value}</div>
+      {trailingIcon ? (
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[rgba(14,14,16,0.08)] bg-white text-[#3b3b40]">
+          {trailingIcon}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 export function TeacherCard({
   teacher,
   onEdit,
@@ -83,6 +107,7 @@ export function TeacherCard({
           .slice(0, 4)
           .map((g) => g.name)
           .join(', ') + (groups.length > 4 ? ` +${groups.length - 4}` : '');
+  const firstCenterName = centers[0]?.name ?? t('noBranchAssigned');
 
   return (
     <TeacherShowcaseCard
@@ -95,7 +120,7 @@ export function TeacherCard({
           onDisable={onDeactivate}
           onDelete={onDelete}
           isActive={isActive}
-          size="sm"
+          size="md"
           ariaLabels={{
             edit: 'Edit teacher',
             disable: isActive ? 'Deactivate teacher' : 'Activate teacher',
@@ -109,38 +134,89 @@ export function TeacherCard({
         />
       }
       afterExperience={
-        <div className="space-y-2.5 text-xs sm:text-sm">
-          <AdminMetaRow icon={<Mail className="h-3.5 w-3.5" />} label={tCommon('email')}>
-            <span className="break-all text-[#3b3b40]" title={email}>
-              {email}
-            </span>
-          </AdminMetaRow>
-          <AdminMetaRow icon={<Users className="h-3.5 w-3.5" />} label={t('assignedGroups')}>
-            <span className="line-clamp-2 text-[#3b3b40]" title={groupsSummary}>
-              {groupsSummary}
-            </span>
-          </AdminMetaRow>
-          <AdminMetaRow icon={<Building2 className="h-3.5 w-3.5" />} label={t('center')}>
-            <TeacherBranchDisplay centers={centers} t={t} density="default" />
-          </AdminMetaRow>
-          <div className="flex flex-wrap items-center gap-2 pt-0.5">
-            <span className="text-[11px] font-medium uppercase tracking-wide text-[#8b8b90]">
-              {t('status')}
-            </span>
-            <Badge variant={statusBadgeVariant(status)} className="text-[11px]">
-              {statusLabel}
-            </Badge>
+        <>
+          <div className="space-y-3 sm:hidden">
+            <MobileInfoRow
+              icon={<Mail className="h-4 w-4" />}
+              value={
+                <span className="block truncate" title={email}>
+                  {email}
+                </span>
+              }
+            />
+            <MobileInfoRow
+              icon={<Users className="h-4 w-4" />}
+              value={
+                <span className="block truncate" title={groupsSummary}>
+                  {groupsSummary}
+                </span>
+              }
+            />
+            <MobileInfoRow
+              icon={<Building2 className="h-4 w-4" />}
+              value={
+                <span className="block truncate" title={firstCenterName}>
+                  {firstCenterName}
+                </span>
+              }
+            />
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f5f6fb] text-[#3b3b40]">
+                <Users className="h-4 w-4" />
+              </span>
+              <span className="text-sm text-[#3b3b40]">{t('status')}</span>
+              <Badge variant={statusBadgeVariant(status)} className="text-[11px]">
+                {statusLabel}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-3 rounded-2xl bg-[#f5f6fb] p-3">
+              <div className="min-w-0 border-r border-[rgba(14,14,16,0.08)] pr-3">
+                <div className="text-[11px] uppercase tracking-wide text-[#8b8b90]">{t('students')}</div>
+                <div className="mt-1 text-2xl font-semibold leading-none text-[#1010a3]">{studentCount}</div>
+              </div>
+              <div className="min-w-0">
+                <div className="text-[11px] uppercase tracking-wide text-[#8b8b90]">{t('rate')}</div>
+                <div className="mt-1 truncate text-xl font-semibold leading-none text-[#1f2937]">
+                  {formatCurrency(hourlyRate)}
+                  <span className="ml-1 text-sm font-medium text-[#3b3b40]">/hr</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 border-t border-[rgba(14,14,16,0.07)] pt-2 text-[11px] text-[#8b8b90] sm:text-xs">
-            <span>
-              {t('students')}: <span className="font-medium text-[#3b3b40]">{studentCount}</span>
-            </span>
-            <span>
-              {t('rate')}:{' '}
-              <span className="font-medium text-[#3b3b40]">{formatCurrency(hourlyRate)}/hr</span>
-            </span>
+
+          <div className="hidden space-y-2.5 text-xs sm:block sm:text-sm">
+            <AdminMetaRow icon={<Mail className="h-3.5 w-3.5" />} label={tCommon('email')}>
+              <span className="break-all text-[#3b3b40]" title={email}>
+                {email}
+              </span>
+            </AdminMetaRow>
+            <AdminMetaRow icon={<Users className="h-3.5 w-3.5" />} label={t('assignedGroups')}>
+              <span className="line-clamp-2 text-[#3b3b40]" title={groupsSummary}>
+                {groupsSummary}
+              </span>
+            </AdminMetaRow>
+            <AdminMetaRow icon={<Building2 className="h-3.5 w-3.5" />} label={t('center')}>
+              <TeacherBranchDisplay centers={centers} t={t} density="default" />
+            </AdminMetaRow>
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              <span className="text-[11px] font-medium uppercase tracking-wide text-[#8b8b90]">
+                {t('status')}
+              </span>
+              <Badge variant={statusBadgeVariant(status)} className="text-[11px]">
+                {statusLabel}
+              </Badge>
+            </div>
+            <div className="flex flex-wrap gap-x-3 gap-y-1 border-t border-[rgba(14,14,16,0.07)] pt-2 text-[11px] text-[#8b8b90] sm:text-xs">
+              <span>
+                {t('students')}: <span className="font-medium text-[#3b3b40]">{studentCount}</span>
+              </span>
+              <span>
+                {t('rate')}:{' '}
+                <span className="font-medium text-[#3b3b40]">{formatCurrency(hourlyRate)}/hr</span>
+              </span>
+            </div>
           </div>
-        </div>
+        </>
       }
     />
   );
