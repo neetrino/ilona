@@ -81,6 +81,17 @@ export function ScheduleGrid({
     return { slots: baseSlots, cells: buckets };
   }, [groups, fixedSlots]);
 
+  const selectedDayItems = useMemo(() => {
+    const dayItems: ScheduleCellEntry[] = [];
+    for (const slot of slots) {
+      const key = `${selectedDay}|${slot}`;
+      const items = cells.get(key);
+      if (!items) continue;
+      dayItems.push(...items);
+    }
+    return dayItems.sort((a, b) => a.entry.startTime.localeCompare(b.entry.startTime));
+  }, [cells, selectedDay, slots]);
+
   if (isLoading) {
     return (
       <div className="bg-white border border-slate-200 rounded-xl p-6">
@@ -104,17 +115,6 @@ export function ScheduleGrid({
       </div>
     );
   }
-
-  const selectedDayItems = useMemo(() => {
-    const dayItems: ScheduleCellEntry[] = [];
-    for (const slot of slots) {
-      const key = `${selectedDay}|${slot}`;
-      const items = cells.get(key);
-      if (!items) continue;
-      dayItems.push(...items);
-    }
-    return dayItems.sort((a, b) => a.entry.startTime.localeCompare(b.entry.startTime));
-  }, [cells, selectedDay, slots]);
 
   return (
     <div className="sm:overflow-hidden sm:rounded-xl sm:border sm:border-slate-200 sm:bg-white">

@@ -6,7 +6,7 @@ import { createTeachersTableColumns } from './TeachersTableColumns';
 import { TeachersCentersStrip } from './TeachersCentersStrip';
 import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
-import type { useTranslations } from 'next-intl';
+import { useTranslations as useTranslationsRuntime, type useTranslations } from 'next-intl';
 
 interface TeachersListProps {
   centers: Center[];
@@ -71,6 +71,7 @@ export function TeachersList({
   tCommon,
   tStatus,
 }: TeachersListProps) {
+  const tc = useTranslationsRuntime('common');
   const teacherColumns = createTeachersTableColumns({
     t,
     tCommon,
@@ -135,6 +136,7 @@ export function TeachersList({
         uniqueTeachersCount={uniqueTeachersCount}
         isLoading={isLoading}
         t={t}
+        unassignedLabel={tc('unassigned')}
       />
       {table}
     </div>
