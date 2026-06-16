@@ -501,29 +501,31 @@ export default function CalendarPage() {
 
         {/* Calendar Controls */}
         <div className="flex w-full min-w-0 flex-col gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-4">
-            <button
-              onClick={goToPreviousWeek}
-              className="p-2 rounded-lg hover:bg-[#f6f6f7]"
-            >
-              <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h2 className="text-lg font-semibold text-[#3b3b40]">
-              {viewMode === 'month' ? monthHeader : weekHeader}
-            </h2>
-            <button
-              onClick={goToNextWeek}
-              className="p-2 rounded-lg hover:bg-[#f6f6f7]"
-            >
-              <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+          <div className="w-full min-w-0 space-y-2 sm:w-auto sm:flex sm:min-w-0 sm:flex-wrap sm:items-center sm:gap-4 sm:space-y-0">
+            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:contents">
+              <button
+                onClick={goToPreviousWeek}
+                className="p-2 rounded-lg hover:bg-[#f6f6f7]"
+              >
+                <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="text-center text-lg font-semibold text-[#3b3b40] sm:text-left">
+                {viewMode === 'month' ? monthHeader : weekHeader}
+              </h2>
+              <button
+                onClick={goToNextWeek}
+                className="justify-self-end p-2 rounded-lg hover:bg-[#f6f6f7]"
+              >
+                <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
             <button
               onClick={goToToday}
-              className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg"
+              className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg sm:ml-0"
             >
               {t('today')}
             </button>
@@ -535,7 +537,8 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => updateViewModeInUrl('list')}
                 className={cn(
-                  'px-4 py-2 text-sm font-semibold rounded-md transition-all',
+                  'py-2 font-semibold rounded-md transition-all',
+                  locale === 'hy' ? 'px-3 text-xs sm:px-4 sm:text-sm' : 'px-4 text-sm',
                   'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'list'
                     ? 'bg-[#1010a3] text-white shadow-md'
@@ -549,7 +552,8 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => updateViewModeInUrl('week')}
                 className={cn(
-                  'px-4 py-2 text-sm font-semibold rounded-md transition-all',
+                  'py-2 font-semibold rounded-md transition-all',
+                  locale === 'hy' ? 'px-3 text-xs sm:px-4 sm:text-sm' : 'px-4 text-sm',
                   'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
                   viewMode === 'week'
                     ? 'bg-[#1010a3] text-white shadow-md'
@@ -559,12 +563,29 @@ export default function CalendarPage() {
               >
                 {t('week')}
               </button>
+              <button
+                type="button"
+                onClick={() => updateViewModeInUrl('month')}
+                className={cn(
+                  'hidden px-4 py-2 text-sm font-semibold rounded-md transition-all sm:inline-flex',
+                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
+                  viewMode === 'month'
+                    ? 'bg-[#1010a3] text-white shadow-md'
+                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
+                )}
+                aria-pressed={viewMode === 'month'}
+              >
+                {t('month')}
+              </button>
             </div>
             <Button
               type="button"
               variant="default"
               onClick={() => handleAddLessonOpenChange(true)}
-              className="font-semibold shadow-sm"
+              className={cn(
+                'whitespace-nowrap font-semibold shadow-sm',
+                locale === 'hy' ? 'px-3 text-sm sm:px-4' : 'px-4 text-sm',
+              )}
             >
               + {tLessons('addLesson')}
             </Button>

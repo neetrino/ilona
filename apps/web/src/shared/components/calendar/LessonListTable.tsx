@@ -348,8 +348,8 @@ export function LessonListTable({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M5 11h14M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />
                           </svg>
                           <div className="min-w-0">
-                            <p className="text-base font-medium text-[#1f2937]">{new Date(lesson.scheduledAt).toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-                            <p className="text-[1.65rem] leading-none font-medium text-[#111827]">{new Date(lesson.scheduledAt).toLocaleTimeString(locale === 'hy' ? 'hy-AM' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
+                            <p className="text-center text-base font-medium text-[#1f2937]">{new Date(lesson.scheduledAt).toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                            <p className="text-center text-[1.65rem] leading-none font-medium text-[#111827]">{new Date(lesson.scheduledAt).toLocaleTimeString(locale === 'hy' ? 'hy-AM' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
                             <div className="mt-2 flex items-center gap-1">
                               <svg className="h-4 w-4 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A4 4 0 018 10h8a4 4 0 012.879 6.804M15 11a3 3 0 11-6 0 3 3 0 016 0zm-9 9a6 6 0 1112 0H6z" />
