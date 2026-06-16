@@ -8,6 +8,7 @@ import {
   GraduationCap,
   CalendarDays,
   Info,
+  X,
   MapPin,
   Phone,
   Mail,
@@ -239,7 +240,7 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
           <DialogPrimitive.Title className="sr-only">
             {data?.center.name ?? 'Center details'}
           </DialogPrimitive.Title>
-          <Header center={data?.center ?? null} />
+          <Header center={data?.center ?? null} onClose={onClose} />
           <Tabs activeTab={activeTab} setActiveTab={setActiveTab} counts={data?.counts} />
 
           <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
@@ -263,8 +264,10 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
 
 function Header({
   center,
+  onClose,
 }: {
   center: CenterDetails['center'] | null;
+  onClose: () => void;
 }) {
   const color = center?.colorHex ?? '#253046';
   return (
@@ -290,6 +293,14 @@ function Header({
           )}
         </div>
       </div>
+      <button
+        type="button"
+        onClick={onClose}
+        className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:inline-flex"
+        aria-label="Close"
+      >
+        <X className="size-5" />
+      </button>
     </div>
   );
 }
@@ -350,24 +361,24 @@ function TeachersTab({ data }: { data: CenterDetails }) {
     return <EmptyState message="No teachers assigned to this branch yet." />;
   }
   return (
-    <ul className="space-y-3 px-0">
+    <ul className="space-y-2.5 px-0">
       {data.teachers.map((t) => (
         <li
           key={t.id}
-          className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-[#e2e5ea] bg-white p-3.5 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 sm:animate-none sm:rounded-lg sm:border-slate-200 sm:p-3"
+          className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-[#e2e5ea] bg-white p-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 sm:animate-none sm:rounded-lg sm:border-slate-200 sm:p-3"
         >
           <div className="flex min-w-0 items-center gap-3">
             <Avatar src={t.user?.avatarUrl ?? undefined} name={teacherName(t)} size="md" />
             <div className="min-w-0">
-              <p className="truncate text-lg font-semibold leading-tight text-slate-900 sm:text-sm sm:font-medium">{teacherName(t)}</p>
+              <p className="truncate text-base font-semibold leading-tight text-slate-900 sm:text-sm sm:font-medium">{teacherName(t)}</p>
               {t.user?.email && (
-                <p className="mt-1 truncate text-sm text-slate-500 sm:text-xs">
+                <p className="truncate text-xs text-slate-500 sm:text-xs">
                   {t.user.email}
                 </p>
               )}
             </div>
           </div>
-          <span className="inline-flex min-h-8 items-center justify-center self-center rounded-full bg-[#eef0f4] px-3 py-1 text-center text-sm font-semibold leading-none text-slate-700">
+          <span className="inline-flex min-h-7 items-center justify-center self-center whitespace-nowrap rounded-full bg-[#eef0f4] px-2.5 py-0.5 text-center text-xs font-semibold leading-none text-slate-700">
             {t._count?.groups ?? 0} groups
           </span>
         </li>
@@ -483,7 +494,7 @@ function InfoTab({ data }: { data: CenterDetails }) {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
+    <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-sm text-slate-500">
       {message}
     </div>
   );

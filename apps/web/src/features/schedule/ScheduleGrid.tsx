@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Building2, CalendarDays } from 'lucide-react';
 import type { Group, GroupScheduleEntry } from '@/features/groups/types';
 import { GroupIconDisplay } from '@/features/groups';
 import { getGroupWeeklySlots } from '@/features/groups/group-schedule-utils';
@@ -14,6 +15,8 @@ const DAY_LABELS = [
   'Saturday',
   'Sunday',
 ];
+
+const DAY_SHORT_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /** Convert JS Sunday=0 indexing to Mon=0 ordering used in the grid. */
 function toMondayIndex(jsDay: number): number {
@@ -54,6 +57,7 @@ export function ScheduleGrid({
   fixedSlots,
   fitToContainer = false,
 }: ScheduleGridProps) {
+  const [selectedDay, setSelectedDay] = useState(() => toMondayIndex(new Date().getDay()));
   const { slots, cells } = useMemo(() => {
     const buckets = new Map<string, ScheduleCellEntry[]>();
     const slotSet = new Set<string>();
@@ -101,9 +105,62 @@ export function ScheduleGrid({
     );
   }
 
+  const selectedDayItems = useMemo(() => {
+    const dayItems: ScheduleCellEntry[] = [];
+    for (const slot of slots) {
+      const key = `${selectedDay}|${slot}`;
+      const items = cells.get(key);
+      if (!items) continue;
+      dayItems.push(...items);
+    }
+    return dayItems.sort((a, b) => a.entry.startTime.localeCompare(b.entry.startTime));
+  }, [cells, selectedDay, slots]);
+
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <div className={fitToContainer ? 'px-1 pb-1' : 'overflow-x-auto'}>
+    <div className="sm:overflow-hidden sm:rounded-xl sm:border sm:border-slate-200 sm:bg-white">
+      <div className="sm:hidden border-b border-slate-100 px-3 pb-3 pt-3">
+        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          {DAY_SHORT_LABELS.map((label, dayIdx) => {
+            const isActive = dayIdx === selectedDay;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setSelectedDay(dayIdx)}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                  isActive
+                    ? 'border-[#1010a3] bg-[#1010a3] text-white'
+                    : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-5 px-3 pb-4 pt-3 sm:hidden">
+        <section className="space-y-2.5">
+          <h4 className="text-2xl font-semibold tracking-[-0.01em] text-slate-900">{DAY_LABELS[selectedDay]}</h4>
+          {selectedDayItems.length === 0 ? (
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-8 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#eef1ff] text-[#4f5fd8]">
+                <CalendarDays className="size-5" />
+              </div>
+              <p className="text-base font-medium text-slate-500">No classes scheduled</p>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {selectedDayItems.map(({ group, entry }) => (
+                <MobileScheduleCard key={`${group.id}-${selectedDay}-${entry.startTime}`} group={group} entry={entry} />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+
+      <div className={`hidden sm:block ${fitToContainer ? 'px-1 pb-1' : 'overflow-x-auto'}`}>
         <table className={`w-full border-collapse ${fitToContainer ? 'table-fixed' : ''}`}>
           <thead>
             <tr>
@@ -208,5 +265,28 @@ function ScheduleCard({ group, entry, compact = false }: ScheduleCardProps) {
         {entry.startTime}–{entry.endTime}
       </div>
     </div>
+  );
+}
+
+function MobileScheduleCard({ group, entry }: { group: Group; entry: GroupScheduleEntry }) {
+  const teacherName = group.teacher
+    ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`.trim()
+    : 'No teacher';
+  const subName = group.substituteTeacher
+    ? `${group.substituteTeacher.user.firstName} ${group.substituteTeacher.user.lastName}`.trim()
+    : null;
+
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
+      <div className="mb-2 inline-flex items-center rounded-full bg-[#eef1ff] px-3 py-1 text-base font-semibold text-[#3f4ed7]">
+        {entry.startTime}-{entry.endTime}
+      </div>
+      <div className="mb-1 flex min-w-0 items-center gap-2">
+        <Building2 className="size-4 shrink-0 text-slate-500" />
+        <p className="truncate text-xl font-semibold tracking-[-0.01em] text-slate-900">{group.name}</p>
+      </div>
+      <p className="truncate text-base text-slate-600">{teacherName}</p>
+      {subName ? <p className="truncate text-base font-medium text-[#c56b2f]">Sub: {subName}</p> : null}
+    </article>
   );
 }
