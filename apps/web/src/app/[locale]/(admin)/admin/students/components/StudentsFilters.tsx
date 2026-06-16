@@ -125,7 +125,7 @@ export function StudentsFilters({
       </div>
 
       {/* Filters */}
-      <div className="grid w-full min-w-0 grid-cols-1 gap-3 items-end sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
+      <div className="grid w-full min-w-0 grid-cols-2 gap-3 items-end sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
         <FilterDropdown
           label={t('statusFilter')}
           options={statusFilterOptions}
