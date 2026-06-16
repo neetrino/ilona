@@ -18,6 +18,7 @@ import { resolveAgeFromDobAndManual } from '../student-account-form.age';
 import { StudentAccountFormFieldsCrmLeadLayout } from './StudentAccountFormFieldsCrmLeadLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { cn } from '@/shared/lib/utils';
+import { X } from 'lucide-react';
 
 interface AddStudentFormProps {
   open: boolean;
@@ -270,6 +271,12 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
           <DialogPrimitive.Title className="sr-only">Add New Student</DialogPrimitive.Title>
+          <DialogPrimitive.Close
+            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:inline-flex"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </DialogPrimitive.Close>
           <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-[#3b3b40]">Add New Student</h2>

@@ -1,13 +1,14 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { GroupsTab } from './components/GroupsTab';
 import { CentersTab } from './components/CentersTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
+import { cn } from '@/shared/lib/utils';
 
 type TabType = 'groups' | 'centers';
 type ViewMode = 'list' | 'board';
@@ -35,14 +36,6 @@ export default function GroupsPage() {
   const [centerPage, setCenterPage] = useState(0);
   const [renderedTab, setRenderedTab] = useState<TabType>('groups');
   const [isTabContentVisible, setIsTabContentVisible] = useState(true);
-  const navRef = useRef<HTMLElement | null>(null);
-  const centersLabelRef = useRef<HTMLSpanElement | null>(null);
-  const groupsLabelRef = useRef<HTMLSpanElement | null>(null);
-  const [tabIndicatorStyle, setTabIndicatorStyle] = useState<{ left: number; width: number; ready: boolean }>({
-    left: 0,
-    width: 0,
-    ready: false,
-  });
 
   // View mode state with URL persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -104,11 +97,11 @@ export default function GroupsPage() {
     }
 
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      setViewMode(modeFromUrl);
+      setViewMode((prev) => (prev === modeFromUrl ? prev : modeFromUrl));
     } else if (!modeFromUrl) {
-      setViewMode('board');
+      setViewMode((prev) => (prev === 'board' ? prev : 'board'));
     }
-  }, [isLg, searchParams, viewMode]);
+  }, [isLg, searchParams]);
 
   // Sync active tab from URL
   useEffect(() => {
@@ -144,27 +137,6 @@ export default function GroupsPage() {
     return () => window.clearTimeout(timeout);
   }, [activeTab, isLg, renderedTab]);
 
-  useEffect(() => {
-    const updateIndicator = () => {
-      const navEl = navRef.current;
-      const targetLabelEl = activeTab === 'centers' ? centersLabelRef.current : groupsLabelRef.current;
-      if (!navEl || !targetLabelEl) return;
-
-      const navRect = navEl.getBoundingClientRect();
-      const labelRect = targetLabelEl.getBoundingClientRect();
-      const extraUnderlinePadding = 6;
-      setTabIndicatorStyle({
-        left: labelRect.left - navRect.left - extraUnderlinePadding,
-        width: labelRect.width + extraUnderlinePadding * 2,
-        ready: true,
-      });
-    };
-
-    updateIndicator();
-    window.addEventListener('resize', updateIndicator);
-    return () => window.removeEventListener('resize', updateIndicator);
-  }, [activeTab, isManager]);
-
   // Handle search
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -184,48 +156,51 @@ export default function GroupsPage() {
       <div className={portalPageStackClass}>
         {/* Tabs */}
         <div className="border-b border-[rgba(14,14,16,0.07)]">
-          <nav ref={navRef} className="relative flex gap-1">
-            <span
-              aria-hidden
-              className={`pointer-events-none absolute -bottom-[1px] h-0.5 bg-[#1010a3] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                tabIndicatorStyle.ready ? 'opacity-100' : 'opacity-0'
-              }`}
-              style={{
-                left: `${tabIndicatorStyle.left}px`,
-                width: `${tabIndicatorStyle.width}px`,
-              }}
-            />
-            {!isManager && (
+          {!isManager ? (
+            <nav className="flex gap-1">
               <button
                 onClick={() => {
+                  if (activeTab === 'centers') return;
                   setActiveTab('centers');
                   updateTabInUrl('centers');
                 }}
-                className={`px-4 py-2 font-medium text-sm transition-colors ${
+                className={cn(
+                  'relative px-4 py-2 text-sm font-medium transition-colors focus:outline-none',
+                  'after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[#1010a3] after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.22,1,0.36,1)]',
                   activeTab === 'centers'
-                    ? 'text-[#1010a3]'
-                    : 'text-[#3b3b40] hover:text-[#3b3b40]'
-                }`}
+                    ? 'text-[#1010a3] after:scale-x-100'
+                    : 'text-[#3b3b40] after:scale-x-0'
+                )}
               >
-                <span ref={centersLabelRef} className="relative inline-block">
-                  Centers / Branches
-                </span>
+                Centers / Branches
               </button>
-            )}
-            <button
-              onClick={() => {
-                setActiveTab('groups');
-                updateTabInUrl('groups');
-              }}
-              className={`px-4 py-2 font-medium text-sm transition-colors ${
-                activeTab === 'groups'
-                  ? 'text-[#1010a3]'
-                  : 'text-[#3b3b40] hover:text-[#3b3b40]'
-              }`}
-            >
-              <span ref={groupsLabelRef} className="relative inline-block">Groups</span>
-            </button>
-          </nav>
+              <button
+                onClick={() => {
+                  if (activeTab === 'groups') return;
+                  setActiveTab('groups');
+                  updateTabInUrl('groups');
+                }}
+                className={cn(
+                  'relative px-4 py-2 text-sm font-medium transition-colors focus:outline-none',
+                  'after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[#1010a3] after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.22,1,0.36,1)]',
+                  activeTab === 'groups'
+                    ? 'text-[#1010a3] after:scale-x-100'
+                    : 'text-[#3b3b40] after:scale-x-0'
+                )}
+              >
+                Groups
+              </button>
+            </nav>
+          ) : (
+            <nav className="flex gap-1">
+              <button
+                className="relative px-4 py-2 text-sm font-medium text-[#1010a3] focus:outline-none after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[#1010a3]"
+                aria-current="page"
+              >
+                Groups
+              </button>
+            </nav>
+          )}
         </div>
 
         <div

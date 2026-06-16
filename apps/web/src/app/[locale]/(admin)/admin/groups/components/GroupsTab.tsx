@@ -606,30 +606,56 @@ export function GroupsTab({
           </Button>
         )}
         {isLg ? (
-          <ListBoardViewToggle
-            value={viewMode}
-            onChange={(mode) => {
-              if (mode === 'list') {
-                setViewMode('list');
+          <div className="flex w-full shrink-0 items-center gap-3 sm:w-auto">
+            <ListBoardViewToggle
+              value={viewMode}
+              onChange={(mode) => {
+                if (mode === viewMode) {
+                  return;
+                }
+
                 setPage(0);
                 setSelectedGroupIds(new Set());
-                setBoardTabCenterId(null);
-                updateUrl({ view: 'list', branch: null });
-                return;
-              }
 
-              setViewMode('board');
-              updateViewModeInUrl('board');
-              setPage(0);
-              setSelectedGroupIds(new Set());
-            }}
-            listLabel={t('listView')}
-            boardLabel={t('boardView')}
-          />
+                if (mode === 'list') {
+                  setViewMode('list');
+                  updateUrl({ view: 'list' });
+                  return;
+                }
+
+                const nextBoardCenterId =
+                  selectedCenterId ??
+                  searchParams.get('branch') ??
+                  boardTabCenterId ??
+                  allCenters[0]?.id ??
+                  null;
+
+                setViewMode('board');
+
+                if (!selectedCenterId) {
+                  setBoardTabCenterId(nextBoardCenterId);
+                }
+
+                updateUrl({
+                  view: null,
+                  branch: selectedCenterId ? null : nextBoardCenterId,
+                });
+              }}
+              listLabel={t('listView')}
+              boardLabel={t('boardView')}
+              className="w-full sm:w-auto"
+            />
+            <Button
+              className="h-10 whitespace-nowrap rounded-lg bg-[#1010a3] px-4 text-sm font-medium text-white hover:bg-[#1010a3]/90"
+              onClick={() => handleCreateGroupOpenChange(true)}
+            >
+              {t('addGroupButton')}
+            </Button>
+          </div>
         ) : null}
 
         <Button 
-          className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6 py-3 rounded-xl font-medium"
+          className="h-12 w-full rounded-lg bg-[#1010a3] px-4 font-medium text-white hover:bg-[#1010a3]/90 sm:hidden"
           onClick={() => handleCreateGroupOpenChange(true)}
         >
           {t('addGroupButton')}

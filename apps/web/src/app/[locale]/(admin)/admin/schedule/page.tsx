@@ -243,6 +243,7 @@ export default function AdminSchedulePage() {
         periodLabel={periodLabel}
         onPeriodNavigate={onPeriodNavigate}
         onGoToToday={() => setCurrentDate(new Date())}
+        hideMonthOnMobile
       />
       </div>
     </DashboardLayout>

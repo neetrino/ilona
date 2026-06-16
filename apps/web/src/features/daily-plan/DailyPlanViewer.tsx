@@ -1,5 +1,9 @@
 'use client';
 
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
+import { cn } from '@/shared/lib/utils';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 
 interface DailyPlanViewerProps {
@@ -39,87 +43,186 @@ function formatDateTime(value: string) {
 }
 
 export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
-  return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <header className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-800">Daily Plan</h2>
-            <p className="text-sm text-slate-600">
-              {plan.teacher.user.firstName} {plan.teacher.user.lastName}
-            </p>
-            <p className="text-sm text-slate-500">
-              {formatDate(plan.date)} · {plan.group?.name ?? plan.lesson?.group?.name ?? 'No group'}
-              {(plan.group?.center?.name ?? plan.lesson?.group?.center?.name) && (
-                <>
-                  {' '}
-                  · {plan.group?.center?.name ?? plan.lesson?.group?.center?.name}
-                </>
-              )}
-            </p>
-            {plan.lesson?.scheduledAt && (
-              <p className="text-xs text-slate-500 mt-1">
-                Lesson: {formatDateTime(plan.lesson.scheduledAt)}
-              </p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-slate-500 hover:text-slate-800 text-xl leading-none px-2"
-            aria-label="Close"
-          >
-            ×
-          </button>
-        </header>
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-        <div className="p-5 space-y-4">
-          {plan.topics.map((topic) => (
+  const isMobileViewport = () =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) {
+        clearTimeout(settleTimerRef.current);
+      }
+    };
+  }, []);
+
+  const resetDragRefs = useCallback(() => {
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    setIsDragging(false);
+  }, []);
+
+  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    touchStartYRef.current = firstTouch.clientY;
+    touchStartXRef.current = firstTouch.clientX;
+    setIsSettling(false);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    const deltaY = firstTouch.clientY - touchStartYRef.current;
+    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
+    if (deltaY <= 0 || deltaY <= deltaX) return;
+    event.preventDefault();
+    setDragOffsetY(Math.min(deltaY * 0.95, 340));
+  };
+
+  const handleDragEnd = useCallback(() => {
+    if (!isMobileViewport()) return;
+    if (!isDragging) return;
+    const shouldClose = dragOffsetY > 110;
+    resetDragRefs();
+    if (shouldClose) {
+      setDragOffsetY(0);
+      onClose();
+      return;
+    }
+    setIsSettling(true);
+    setDragOffsetY(0);
+    settleTimerRef.current = setTimeout(() => {
+      setIsSettling(false);
+      settleTimerRef.current = null;
+    }, 280);
+  }, [dragOffsetY, isDragging, onClose, resetDragRefs]);
+
+  const dragStyle =
+    dragOffsetY > 0 || isSettling
+      ? {
+          transform: `translateY(${dragOffsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }
+      : undefined;
+
+  return (
+    <DialogPrimitive.Root open onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content
+          style={dragStyle}
+          className={cn(
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr_auto] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-white shadow-xl sm:grid-rows-[auto_1fr_auto]',
+            'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-3xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
+            'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0',
+          )}
+        >
+          <div className="relative flex h-9 w-full items-center justify-center bg-white sm:hidden">
             <div
-              key={topic.id}
-              className="border border-slate-200 rounded-lg p-4 bg-slate-50/40 space-y-2"
-            >
-              <h3 className="font-semibold text-slate-800">{topic.title}</h3>
-              {topic.resources.length > 0 ? (
-                <ul className="space-y-1 text-sm text-slate-700">
-                  {topic.resources.map((resource) => (
-                    <li key={resource.id}>
-                      <span className="text-slate-500 mr-2">
-                        {KIND_LABEL[resource.kind]}:
-                      </span>
-                      {resource.link ? (
-                        <a
-                          href={resource.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        >
-                          {resource.title}
-                        </a>
-                      ) : (
-                        <span>{resource.title}</span>
-                      )}
-                      {resource.description ? ` — ${resource.description}` : ''}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-slate-500">No resources</p>
+              className="absolute inset-x-0 -top-2 h-14"
+              onTouchStart={handleDragStart}
+              onTouchMove={handleDragMove}
+              onTouchEnd={handleDragEnd}
+              onTouchCancel={handleDragEnd}
+            />
+            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
+          </div>
+          <DialogPrimitive.Title className="sr-only">Daily plan details</DialogPrimitive.Title>
+
+          <header className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white p-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-800">Daily Plan</h2>
+              <p className="text-sm text-slate-600">
+                {plan.teacher.user.firstName} {plan.teacher.user.lastName}
+              </p>
+              <p className="text-sm text-slate-500">
+                {formatDate(plan.date)} · {plan.group?.name ?? plan.lesson?.group?.name ?? 'No group'}
+                {(plan.group?.center?.name ?? plan.lesson?.group?.center?.name) && (
+                  <>
+                    {' '}
+                    · {plan.group?.center?.name ?? plan.lesson?.group?.center?.name}
+                  </>
+                )}
+              </p>
+              {plan.lesson?.scheduledAt && (
+                <p className="mt-1 text-xs text-slate-500">
+                  Lesson: {formatDateTime(plan.lesson.scheduledAt)}
+                </p>
               )}
             </div>
-          ))}
-        </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:inline-flex"
+              aria-label="Close"
+            >
+              <X className="size-5" />
+            </button>
+          </header>
 
-        <footer className="flex justify-end p-4 border-t border-slate-200 sticky bottom-0 bg-white">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-10 px-4 border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50"
-          >
-            Close
-          </button>
-        </footer>
-      </div>
-    </div>
+          <div className="space-y-4 overflow-y-auto p-5">
+            {plan.topics.map((topic) => (
+              <div
+                key={topic.id}
+                className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/40 p-4"
+              >
+                <h3 className="font-semibold text-slate-800">{topic.title}</h3>
+                {topic.resources.length > 0 ? (
+                  <ul className="space-y-1 text-sm text-slate-700">
+                    {topic.resources.map((resource) => (
+                      <li key={resource.id}>
+                        <span className="mr-2 text-slate-500">{KIND_LABEL[resource.kind]}:</span>
+                        {resource.link ? (
+                          <a
+                            href={resource.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            {resource.title}
+                          </a>
+                        ) : (
+                          <span>{resource.title}</span>
+                        )}
+                        {resource.description ? ` — ${resource.description}` : ''}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-slate-500">No resources</p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <footer className="sticky bottom-0 flex justify-end border-t border-slate-200 bg-white p-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-10 rounded-lg border border-slate-200 px-4 text-slate-700 hover:bg-slate-50"
+            >
+              Close
+            </button>
+          </footer>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

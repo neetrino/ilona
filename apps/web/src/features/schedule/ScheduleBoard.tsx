@@ -37,6 +37,8 @@ export type ScheduleBoardProps = {
   highlightPastLessonCards?: boolean;
   /** Student portal styling aligned with dashboard. */
   variant?: 'default' | 'student';
+  /** Hide month toggle on mobile screens only. */
+  hideMonthOnMobile?: boolean;
 };
 
 export function ScheduleBoard({
@@ -54,6 +56,7 @@ export function ScheduleBoard({
   onGoToToday,
   highlightPastLessonCards = false,
   variant = 'default',
+  hideMonthOnMobile = false,
 }: ScheduleBoardProps) {
   const isStudent = variant === 'student';
   const lessonsByDate = useMemo(
@@ -146,21 +149,32 @@ export function ScheduleBoard({
           <div
             className={
               isStudent
-                ? 'inline-flex items-center self-start rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1 md:self-auto'
-                : 'inline-flex items-center self-start rounded-lg border border-slate-200 bg-slate-50 p-1 md:self-auto'
+                ? `${hideMonthOnMobile ? 'hidden sm:inline-flex ' : ''}relative items-center self-start rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1 md:self-auto`
+                : `${hideMonthOnMobile ? 'hidden sm:inline-flex ' : ''}relative items-center self-start rounded-lg border border-slate-200 bg-slate-50 p-1 md:self-auto`
             }
           >
+            <span
+              className={
+                viewMode === 'week'
+                  ? isStudent
+                    ? 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-full bg-[#1010a3] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-0'
+                    : 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-md bg-[#1010a3] shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-0'
+                  : isStudent
+                    ? 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-full bg-[#1010a3] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-[92px]'
+                    : 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-md bg-[#1010a3] shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-[92px]'
+              }
+            />
             <button
               type="button"
               onClick={() => onViewModeChange('week')}
               className={
                 viewMode === 'week'
                   ? isStudent
-                    ? 'h-8 rounded-full bg-[#1010a3] px-3 text-sm font-medium text-white'
-                    : 'h-8 rounded-md bg-white px-3 text-sm text-slate-900 shadow-sm'
+                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-white transition-colors duration-300'
+                    : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-white transition-colors duration-300'
                   : isStudent
-                    ? 'h-8 rounded-full px-3 text-sm font-medium text-[#3b3b40] hover:text-[#1010a3]'
-                    : 'h-8 rounded-md px-3 text-sm text-slate-600 hover:text-slate-800'
+                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
+                    : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-slate-600 transition-colors duration-300 hover:text-slate-800'
               }
             >
               Week
@@ -168,15 +182,15 @@ export function ScheduleBoard({
             <button
               type="button"
               onClick={() => onViewModeChange('month')}
-              className={
+              className={`${hideMonthOnMobile ? 'hidden sm:inline-flex ' : ''}${
                 viewMode === 'month'
                   ? isStudent
-                    ? 'h-8 rounded-full bg-[#1010a3] px-3 text-sm font-medium text-white'
-                    : 'h-8 rounded-md bg-white px-3 text-sm text-slate-900 shadow-sm'
+                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-white transition-colors duration-300'
+                    : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-white transition-colors duration-300'
                   : isStudent
-                    ? 'h-8 rounded-full px-3 text-sm font-medium text-[#3b3b40] hover:text-[#1010a3]'
-                    : 'h-8 rounded-md px-3 text-sm text-slate-600 hover:text-slate-800'
-              }
+                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
+                    : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-slate-600 transition-colors duration-300 hover:text-slate-800'
+              }`}
             >
               Month
             </button>
