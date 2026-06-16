@@ -54,12 +54,12 @@ export function TeachersCentersStrip({
                     id={`center-tab-${center.id}`}
                     onClick={() => onSelectCenter(center.id)}
                     className={cn(
-                      'group inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm transition-all duration-200',
+                      'group inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm transition-all duration-200',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/60 focus-visible:ring-offset-2',
                       'active:scale-[0.985]',
                       isActive
-                        ? 'shadow-[0_4px_14px_rgba(15,23,42,0.14)]'
-                        : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:-translate-y-px hover:border-[rgba(14,14,16,0.12)] hover:bg-[#fafafa] hover:text-[#3b3b40] hover:shadow-sm'
+                        ? ''
+                        : 'bg-white text-[#3b3b40] hover:-translate-y-px hover:bg-[#fafafa] hover:text-[#3b3b40] hover:shadow-sm'
                     )}
                     style={
                       isActive
@@ -119,12 +119,12 @@ export function TeachersCentersStrip({
                   id="center-tab-unassigned"
                   onClick={() => onSelectCenter('unassigned')}
                   className={cn(
-                    'group inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm transition-all duration-200',
+                    'group inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm transition-all duration-200',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/60 focus-visible:ring-offset-2',
                     'active:scale-[0.985]',
                     activeCenterTabId === 'unassigned'
-                      ? 'border-[#1010a3] bg-[#1010a3] text-white shadow-[0_4px_14px_rgba(15,23,42,0.14)]'
-                      : 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#3b3b40] hover:-translate-y-px hover:border-[rgba(14,14,16,0.12)] hover:bg-[#f6f6f7] hover:shadow-sm'
+                      ? 'bg-[#1010a3] text-white'
+                      : 'bg-[#f6f6f7] text-[#3b3b40] hover:-translate-y-px hover:bg-[#f6f6f7] hover:shadow-sm'
                   )}
                 >
                   <span className="max-w-[12rem] truncate font-semibold tracking-[0.01em] sm:max-w-[14rem]">
