@@ -174,7 +174,7 @@ export function CentersTab({
             </div>
           </div>
         ) : (
-          <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))]">
+          <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
             {centers.map((center) => (
               <CenterCard
                 key={center.id}

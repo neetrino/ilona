@@ -159,12 +159,17 @@ export default function AdminCrmPage() {
   // Restore view mode from URL after refresh/navigation
   useEffect(() => {
     const modeFromUrl = searchParams.get(VIEW_PARAM);
+    if (isLg === false) {
+      setViewMode('board');
+      return;
+    }
+
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       setViewMode(modeFromUrl);
       return;
     }
     setViewMode('board');
-  }, [searchParams]);
+  }, [isLg, searchParams]);
 
   const updateViewModeInUrl = (mode: 'board' | 'list') => {
     const params = new URLSearchParams(searchParams.toString());

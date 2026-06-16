@@ -34,13 +34,8 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
       tabIndex={onOpenDetails ? 0 : undefined}
       onClick={onOpenDetails ? handleCardActivate : undefined}
       onKeyDown={onOpenDetails ? handleKeyDown : undefined}
-      className={`group relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${onOpenDetails ? 'cursor-pointer' : ''}`}
+      className={`relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${onOpenDetails ? 'cursor-pointer' : ''}`}
     >
-      <div
-        className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-15 blur-2xl transition-opacity duration-300 group-hover:opacity-25"
-        style={{ backgroundColor: primaryColor }}
-        aria-hidden
-      />
       <div
         className="h-2 w-full"
         style={{ backgroundColor: primaryColor }}
@@ -48,8 +43,8 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
       />
 
       <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 space-y-3">
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
               <span
                 className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset"
@@ -68,37 +63,37 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
               </span>
             </div>
 
-            <div className="flex items-center gap-2 min-w-0">
-              <div
-                className="h-11 w-11 shrink-0 rounded-xl flex items-center justify-center shadow-sm ring-1 ring-black/5"
-                style={{ backgroundColor: primaryColor }}
-              >
-                <Building2 className={`h-5 w-5 ${titleColor}`} />
-              </div>
-              <h4 className="truncate text-base font-semibold leading-tight text-slate-900">
-                {center.name}
-              </h4>
+            <div onClick={(e) => e.stopPropagation()}>
+              <ActionButtons
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onDisable={onToggleActive}
+                isActive={center.isActive}
+                size="sm"
+                ariaLabels={{
+                  edit: 'Edit center',
+                  delete: 'Delete center',
+                  disable: center.isActive ? 'Deactivate center' : 'Activate center',
+                }}
+                titles={{
+                  edit: 'Edit center',
+                  delete: 'Delete center',
+                  disable: center.isActive ? 'Deactivate center' : 'Activate center',
+                }}
+              />
             </div>
           </div>
 
-          <div onClick={(e) => e.stopPropagation()}>
-          <ActionButtons
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onDisable={onToggleActive}
-            isActive={center.isActive}
-            size="sm"
-            ariaLabels={{
-              edit: 'Edit center',
-              delete: 'Delete center',
-              disable: center.isActive ? 'Deactivate center' : 'Activate center',
-            }}
-            titles={{
-              edit: 'Edit center',
-              delete: 'Delete center',
-              disable: center.isActive ? 'Deactivate center' : 'Activate center',
-            }}
-          />
+          <div className="flex min-w-0 items-center gap-2">
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm ring-1 ring-black/5"
+              style={{ backgroundColor: primaryColor }}
+            >
+              <Building2 className={`h-5 w-5 ${titleColor}`} />
+            </div>
+            <h4 className="min-w-0 whitespace-nowrap text-[1.02rem] font-semibold leading-tight text-slate-900" title={center.name}>
+              {center.name}
+            </h4>
           </div>
         </div>
 
