@@ -12,17 +12,39 @@ interface StatCardProps {
   };
   icon?: React.ReactNode;
   className?: string;
+  wrapTitle?: boolean;
+  stackChangeOnDesktop?: boolean;
 }
 
-export function StatCard({ title, value, change, icon, className }: StatCardProps) {
+export function StatCard({
+  title,
+  value,
+  change,
+  icon,
+  className,
+  wrapTitle = false,
+  stackChangeOnDesktop = false,
+}: StatCardProps) {
   const isPortal = usePortalShell();
 
   if (isPortal) {
     return (
       <div className={cn(portalCardClass, 'flex flex-col overflow-hidden sm:flex-row sm:items-start sm:justify-between', className)}>
         <div className="min-w-0 flex-1 space-y-2 sm:pr-2">
-          <p className="truncate text-xs tracking-wide text-[#8b8b90]">{title}</p>
-          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-baseline sm:gap-3">
+          <p
+            className={cn(
+              'text-xs tracking-wide text-[#8b8b90]',
+              wrapTitle ? 'whitespace-normal break-words leading-snug' : 'truncate',
+            )}
+          >
+            {title}
+          </p>
+          <div
+            className={cn(
+              'flex min-w-0 flex-col gap-2 sm:gap-3',
+              stackChangeOnDesktop ? 'sm:flex-col sm:items-start' : 'sm:flex-row sm:items-baseline',
+            )}
+          >
             <p
               className={cn(
                 'break-words text-lg font-bold leading-tight tracking-tight sm:text-xl lg:text-2xl',
@@ -34,7 +56,8 @@ export function StatCard({ title, value, change, icon, className }: StatCardProp
             {change ? (
               <span
                 className={cn(
-                  'flex-shrink-0 self-start whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold sm:self-auto',
+                  'flex-shrink-0 self-start rounded-full px-2 py-0.5 text-xs font-semibold sm:self-auto',
+                  wrapTitle ? 'whitespace-normal break-words sm:whitespace-nowrap' : 'whitespace-nowrap',
                   change.type === 'positive' && 'bg-[#d9f4e8] text-[#0d6b42]',
                   change.type === 'negative' && 'bg-[#ffe5e3] text-[#ff2e23]',
                   change.type === 'neutral' && 'bg-[#f6f6f7] text-[#3b3b40]',
@@ -62,8 +85,20 @@ export function StatCard({ title, value, change, icon, className }: StatCardProp
       )}
     >
       <div className="min-w-0 w-full flex-1 space-y-2 sm:pr-2">
-        <p className="truncate text-sm font-medium text-slate-500">{title}</p>
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-baseline sm:gap-3">
+        <p
+          className={cn(
+            'text-sm font-medium text-slate-500',
+            wrapTitle ? 'whitespace-normal break-words leading-snug' : 'truncate',
+          )}
+        >
+          {title}
+        </p>
+        <div
+          className={cn(
+            'flex min-w-0 flex-col gap-2 sm:gap-3',
+            stackChangeOnDesktop ? 'sm:flex-col sm:items-start' : 'sm:flex-row sm:items-baseline',
+          )}
+        >
           <p
             className={cn(
               'break-words text-lg font-bold leading-tight sm:text-xl lg:text-2xl',
@@ -75,7 +110,8 @@ export function StatCard({ title, value, change, icon, className }: StatCardProp
           {change && (
             <span
               className={cn(
-                'flex-shrink-0 self-start whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold sm:self-auto',
+                'flex-shrink-0 self-start rounded-full px-2 py-0.5 text-xs font-semibold sm:self-auto',
+                wrapTitle ? 'whitespace-normal break-words sm:whitespace-nowrap' : 'whitespace-nowrap',
                 change.type === 'positive' && 'bg-emerald-50 text-emerald-600',
                 change.type === 'negative' && 'bg-red-50 text-red-500',
                 change.type === 'neutral' && 'bg-slate-100 text-slate-600',
