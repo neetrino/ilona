@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -149,12 +149,23 @@ export default function AdminCrmPage() {
     setEditLeadId(searchParams.get(EDIT_LEAD_PARAM));
   }, [searchParams]);
 
+  const updateViewModeInUrl = useCallback((mode: 'board' | 'list') => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode === 'list') {
+      params.set(VIEW_PARAM, 'list');
+    } else {
+      params.delete(VIEW_PARAM);
+    }
+    const url = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(url, { scroll: false });
+  }, [pathname, router, searchParams]);
+
   useEffect(() => {
     if (isLg === false && viewMode !== 'board') {
       setViewMode('board');
       updateViewModeInUrl('board');
     }
-  }, [isLg, viewMode]);
+  }, [isLg, updateViewModeInUrl, viewMode]);
 
   // Restore view mode from URL after refresh/navigation
   useEffect(() => {
@@ -170,17 +181,6 @@ export default function AdminCrmPage() {
     }
     setViewMode('board');
   }, [isLg, searchParams]);
-
-  const updateViewModeInUrl = (mode: 'board' | 'list') => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode === 'list') {
-      params.set(VIEW_PARAM, 'list');
-    } else {
-      params.delete(VIEW_PARAM);
-    }
-    const url = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.replace(url, { scroll: false });
-  };
 
   const queryClient = useQueryClient();
   const scopedFilters = useMemo<CrmLeadFilters>(() => filters, [filters]);

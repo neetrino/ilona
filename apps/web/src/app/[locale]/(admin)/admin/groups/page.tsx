@@ -101,7 +101,7 @@ export default function GroupsPage() {
     } else if (!modeFromUrl) {
       setViewMode((prev) => (prev === 'board' ? prev : 'board'));
     }
-  }, [isLg, searchParams]);
+  }, [isLg, searchParams, viewMode]);
 
   // Sync active tab from URL
   useEffect(() => {
