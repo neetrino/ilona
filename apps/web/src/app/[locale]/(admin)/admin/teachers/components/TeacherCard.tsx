@@ -104,10 +104,10 @@ export function TeacherCard({
     groups.length === 0
       ? t('noGroups')
       : groups
-          .slice(0, 4)
-          .map((g) => g.name)
-          .join(', ') + (groups.length > 4 ? ` +${groups.length - 4}` : '');
+          .map((group, index) => (index < groups.length - 1 ? `${group.name},` : group.name))
+          .join(' ');
   const firstCenterName = centers[0]?.name ?? t('noBranchAssigned');
+  const remainingCentersCount = Math.max(0, centers.length - 1);
 
   return (
     <TeacherShowcaseCard
@@ -155,8 +155,11 @@ export function TeacherCard({
             <MobileInfoRow
               icon={<Building2 className="h-4 w-4" />}
               value={
-                <span className="block truncate" title={firstCenterName}>
+                <span className="block truncate" title={centers.map((center) => center.name).join(', ') || firstCenterName}>
                   {firstCenterName}
+                  {remainingCentersCount > 0 ? (
+                    <span className="ml-1 text-[#8b8b90]">and {remainingCentersCount} more</span>
+                  ) : null}
                 </span>
               }
             />

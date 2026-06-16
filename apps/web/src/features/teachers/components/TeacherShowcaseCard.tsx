@@ -106,7 +106,7 @@ export function TeacherShowcaseCard({
       <div className="min-w-0 text-center">
         <h3
           className={cn(
-            'truncate text-[2rem] font-semibold leading-tight sm:text-xl',
+            'truncate text-[clamp(1.125rem,7vw,2rem)] font-semibold leading-tight sm:text-xl',
             isStudent ? 'text-[#1010a3]' : 'text-slate-900',
             isMuted && (isStudent ? 'text-[#8b8b90]' : 'text-slate-600'),
           )}

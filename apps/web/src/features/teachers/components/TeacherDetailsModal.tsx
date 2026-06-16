@@ -1,23 +1,12 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
-import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
-import { AdminAvatarPhotoLightbox, AdminDetailModal, Avatar, Badge } from '@/shared/components/ui';
+import { formatCurrency, formatPhoneForDisplay, cn } from '@/shared/lib/utils';
+import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
 import { getExperienceYearsFromHireDate, formatExperienceLabel } from '../utils/experience';
-import {
-  Building2,
-  CircleDollarSign,
-  FileText,
-  GraduationCap,
-  Link as LinkIcon,
-  Mail,
-  Phone,
-  Sparkles,
-  Users,
-} from 'lucide-react';
 
 interface TeacherDetailsModalProps {
   teacherId: string | null;
@@ -27,73 +16,26 @@ interface TeacherDetailsModalProps {
   showInternalMeta?: boolean;
 }
 
-interface EmbeddedVideoData {
-  embedUrl: string;
-  platform: 'youtube' | 'vimeo';
+function formatDate(value?: string | null): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
-const YOUTUBE_HOSTS = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be']);
-const VIMEO_HOSTS = new Set(['vimeo.com', 'www.vimeo.com', 'player.vimeo.com']);
-
-function getYouTubeVideoId(url: URL): string | null {
-  if (url.hostname === 'youtu.be') {
-    const shortId = url.pathname.split('/').filter(Boolean)[0];
-    return shortId || null;
-  }
-
-  const queryId = url.searchParams.get('v');
-  if (queryId) return queryId;
-
-  const pathParts = url.pathname.split('/').filter(Boolean);
-  if (pathParts[0] === 'shorts' && pathParts[1]) return pathParts[1];
-  if (pathParts[0] === 'embed' && pathParts[1]) return pathParts[1];
-
-  return null;
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-1 gap-2 border-b border-[rgba(14,14,16,0.07)] py-2 last:border-0 sm:grid-cols-2">
+      <p className="text-sm text-[#8b8b90]">{label}</p>
+      <p className="break-words text-sm font-medium text-[#3b3b40]">{value}</p>
+    </div>
+  );
 }
 
-function getVimeoVideoId(url: URL): string | null {
-  const segments = url.pathname.split('/').filter(Boolean);
-  const candidate = segments[segments.length - 1];
-  if (!candidate) return null;
-
-  return /^\d+$/.test(candidate) ? candidate : null;
-}
-
-function getEmbeddedVideoData(videoUrl: string): EmbeddedVideoData | null {
-  try {
-    const parsed = new URL(videoUrl);
-    if (!['https:', 'http:'].includes(parsed.protocol)) {
-      return null;
-    }
-
-    if (YOUTUBE_HOSTS.has(parsed.hostname)) {
-      const videoId = getYouTubeVideoId(parsed);
-      if (!videoId) return null;
-      return {
-        embedUrl: `https://www.youtube.com/embed/${videoId}`,
-        platform: 'youtube',
-      };
-    }
-
-    if (VIMEO_HOSTS.has(parsed.hostname)) {
-      const videoId = getVimeoVideoId(parsed);
-      if (!videoId) return null;
-      return {
-        embedUrl: `https://player.vimeo.com/video/${videoId}`,
-        platform: 'vimeo',
-      };
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * CRM-style centered modal for Teacher details.
- * Matches VoiceLeadDetailModal layout: overlay, max-w-lg, rounded-xl, same header/body structure.
- */
 export function TeacherDetailsModal({
   teacherId,
   open,
@@ -105,29 +47,11 @@ export function TeacherDetailsModal({
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
 
-  const {
-    data: teacher,
-    isLoading: queryLoading,
-    error,
-  } = useTeacher(teacherId || '', !!teacherId && open);
-  const isMismatchedRecord = Boolean(
-    teacherId && teacher && teacher.id !== teacherId,
-  );
-  const isLoading = queryLoading || isMismatchedRecord;
-
-  const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false);
-
-  const handleEscapeKey = useCallback(() => {
-    if (photoPreviewOpen) {
-      setPhotoPreviewOpen(false);
-      return true;
-    }
-    return false;
-  }, [photoPreviewOpen]);
+  const { data: teacher, isLoading, error } = useTeacher(teacherId ?? '', open && !!teacherId);
 
   const firstName = teacher?.user?.firstName || '';
   const lastName = teacher?.user?.lastName || '';
-  const fullName = `${firstName} ${lastName}`.trim() || 'Unknown';
+  const fullName = `${firstName} ${lastName}`.trim() || 'Teacher';
   const isActive = teacher?.user?.status === 'ACTIVE';
   const phone = formatPhoneForDisplay(teacher?.user?.phone, t('noPhoneNumber'));
   const email = teacher?.user?.email || '';
@@ -141,298 +65,250 @@ export function TeacherDetailsModal({
       : hourlyRateFallback;
   const groups = teacher?.groups || [];
   const substituteGroups = teacher?.substituteForGroups || [];
-  const explicitCenters = teacher?.centerLinks?.map((l) => l.center) ?? [];
-  const groupCenters = Array.from(
-    new Map(
-      groups
-        .filter((group) => group.center)
-        .map((group) => [group.center!.id, group.center!])
-    ).values()
-  );
+  const explicitCenters = teacher?.centerLinks?.map((link) => link.center) ?? [];
+  const groupCenters = groups.filter((group) => group.center).map((group) => group.center!);
   const centers =
     teacher?.centers ??
-    Array.from(
-      new Map([...explicitCenters, ...groupCenters].map((c) => [c.id, c])).values()
-    );
+    Array.from(new Map([...explicitCenters, ...groupCenters].map((center) => [center.id, center])).values());
+  const [isDialogOpen, setIsDialogOpen] = useState(open);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const avatarUrl = teacher?.user?.avatarUrl;
-  const embeddedVideo = useMemo(() => {
-    if (!teacher?.videoUrl) return null;
-    return getEmbeddedVideoData(teacher.videoUrl);
-  }, [teacher?.videoUrl]);
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) {
+        clearTimeout(settleTimerRef.current);
+      }
+    };
+  }, []);
 
-  if (!open) return null;
+  useEffect(() => {
+    setIsDialogOpen(open);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setDragOffsetY(0);
+      setIsDragging(false);
+      setIsSettling(false);
+    }
+  }, [open]);
+
+  const requestClose = useCallback(() => {
+    setIsDialogOpen(false);
+    onClose();
+  }, [onClose]);
+
+  const isMobileViewport = () =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
+  const resetDragRefs = () => {
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    setIsDragging(false);
+  };
+
+  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    touchStartYRef.current = firstTouch.clientY;
+    touchStartXRef.current = firstTouch.clientX;
+    setIsSettling(false);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    const deltaY = firstTouch.clientY - touchStartYRef.current;
+    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
+    if (deltaY <= 0 || deltaY <= deltaX) return;
+    event.preventDefault();
+    setDragOffsetY(Math.min(deltaY * 0.95, 340));
+  };
+
+  const handleDragEnd = () => {
+    if (!isMobileViewport()) return;
+    if (!isDragging) return;
+    const shouldClose = dragOffsetY > 110;
+    resetDragRefs();
+    if (shouldClose) {
+      setDragOffsetY(0);
+      requestClose();
+      return;
+    }
+    setIsSettling(true);
+    setDragOffsetY(0);
+    settleTimerRef.current = setTimeout(() => {
+      setIsSettling(false);
+      settleTimerRef.current = null;
+    }, 280);
+  };
+
+  const dragStyle =
+    dragOffsetY > 0 || isSettling
+      ? {
+          transform: `translateY(${dragOffsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }
+      : undefined;
 
   return (
-    <>
-      <AdminAvatarPhotoLightbox
-        open={photoPreviewOpen}
-        imageUrl={avatarUrl}
-        imageAlt={fullName}
-        ariaLabel={t('viewFullPhoto')}
-        closeAriaLabel={tCommon('close')}
-        onClose={() => setPhotoPreviewOpen(false)}
-      />
-
-      <AdminDetailModal
-        open={open}
-        onClose={onClose}
-        aria-label="Teacher details"
-        closeAriaLabel={tCommon('close')}
-        onEscapeKey={handleEscapeKey}
-        title={
-          <>
-            <Image
-              src="/teachers-logo.webp"
-              alt=""
-              className="w-5 h-5 object-contain flex-shrink-0"
-              width={20}
-              height={20}
-            />
-            {t('teacherDetails')}
-          </>
-        }
-      >
-          {!teacherId ? (
-            <p className="text-slate-500">No teacher selected.</p>
-          ) : isLoading ? (
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-slate-200 rounded w-2/3" />
-              <div className="h-4 bg-slate-200 rounded w-full" />
-              <div className="h-4 bg-slate-200 rounded w-1/2" />
-            </div>
-          ) : error ? (
-            <div className="py-4">
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600 font-medium">
-                  {error instanceof Error ? error.message : 'Failed to load teacher details'}
-                </p>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="mt-4 text-sm text-red-600 hover:text-red-700 underline"
-                >
-                  {tCommon('close')}
-                </button>
-              </div>
-            </div>
-          ) : !teacher ? (
-            <p className="text-slate-500">{t('teacherNotFound')}</p>
-          ) : (
-            <>
-              {/* Teacher Header — large square profile photo with optional click-to-preview */}
-              <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 pb-6 border-b border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => teacher.user?.avatarUrl && setPhotoPreviewOpen(true)}
-                  className={cn(
-                    'rounded-xl flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
-                    !teacher.user?.avatarUrl && 'cursor-default pointer-events-none'
-                  )}
-                  aria-label={teacher.user?.avatarUrl ? t('viewFullPhoto') : undefined}
-                >
-                  <Avatar
-                    src={teacher.user?.avatarUrl}
-                    name={fullName}
-                    size="xl"
-                    className="w-40 h-40 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-xl"
-                    alt={fullName}
-                  />
-                </button>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <h3 className={cn('text-2xl font-bold leading-tight', isActive ? 'text-slate-800' : 'text-slate-500')}>
-                      {fullName}
-                    </h3>
-                    {!isActive && (
-                      <Badge variant="warning">{tStatus('inactive')}</Badge>
-                    )}
-                    {isActive && (
-                      <Badge variant="success">{tStatus('active')}</Badge>
-                    )}
-                  </div>
-                  {email && (
-                    <div className="mt-1 flex items-center gap-2 text-slate-500 text-sm">
-                      <Mail className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                      <p className="truncate">{email}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Basic Information */}
-              <div className="space-y-5">
-                <h4 className="font-semibold text-slate-800 text-base sm:text-lg">{t('basicInformation')}</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
-                    <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                      {t('phoneNumber')}
-                    </label>
-                    <p className="text-slate-800 text-sm sm:text-base break-words">{phone}</p>
-                  </div>
-                  {showInternalMeta && (
-                    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
-                      <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                        <CircleDollarSign className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                        Per Lesson Rate
-                      </label>
-                      <p className="text-slate-800 text-sm sm:text-base">
-                        {formatCurrency(lessonRate)}/lesson
-                      </p>
-                    </div>
-                  )}
-                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
-                    <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                      Experience
-                    </label>
-                    <p className="text-slate-800 text-sm sm:text-base">
-                      {formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}
-                    </p>
-                  </div>
-                  {teacher.videoUrl && (
-                    <div className="sm:col-span-2 rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-2">
-                      <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                        <LinkIcon className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                        Video
-                      </label>
-                      <div>
-                        {embeddedVideo ? (
-                          <div className="w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-                            <iframe
-                              src={embeddedVideo.embedUrl}
-                              title={`${fullName} ${embeddedVideo.platform} video`}
-                              className="h-52 w-full sm:h-64 lg:h-72"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                              allowFullScreen
-                              loading="lazy"
-                              referrerPolicy="strict-origin-when-cross-origin"
-                              sandbox="allow-same-origin allow-scripts allow-presentation allow-popups"
-                            />
-                          </div>
-                        ) : (
-                          <p className="text-sm text-slate-500 italic">Video cannot be displayed</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {teacher.bio && (
-                    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
-                      <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                        {t('bio')}
-                      </label>
-                      <p className="text-slate-800 text-sm sm:text-base whitespace-pre-wrap break-words">{teacher.bio}</p>
-                    </div>
-                  )}
-                  {teacher.specialization && (
-                    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
-                      <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                        {t('specialization')}
-                      </label>
-                      <p className="text-slate-800 text-sm sm:text-base break-words">{teacher.specialization}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Centers/Branches */}
-              {showInternalMeta && centers.length > 0 && (
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-slate-800 flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-slate-500" aria-hidden="true" />
-                    {t('centers')}
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {centers.map((center) => (
-                      <Badge key={center.id} variant="default">
-                        {center.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Statistics */}
-              {showInternalStats && teacher._count && (
-                <div className="space-y-4 pt-6 border-t border-slate-200">
-                  <h4 className="font-semibold text-slate-800 flex items-center gap-2">
-                    <GraduationCap className="h-4 w-4 text-slate-500" aria-hidden="true" />
-                    {t('statistics')}
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <p className="text-sm text-slate-600 mb-1">{t('totalGroups')}</p>
-                      <p className="text-2xl font-bold text-slate-800">{teacher._count.groups || 0}</p>
-                    </div>
-                    <div className="bg-amber-50 rounded-lg p-4">
-                      <p className="text-sm text-amber-700 mb-1">Sub-groups</p>
-                      <p className="text-2xl font-bold text-amber-800">
-                        {teacher.substituteForGroupsCount ?? teacher._count.substituteForGroups ?? 0}
-                      </p>
-                    </div>
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <p className="text-sm text-slate-600 mb-1">{t('totalLessons')}</p>
-                      <p className="text-2xl font-bold text-slate-800">{teacher._count.lessons || 0}</p>
-                    </div>
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <p className="text-sm text-slate-600 mb-1">{t('totalStudents')}</p>
-                      <p className="text-2xl font-bold text-slate-800">{teacher._count.students || 0}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Groups list */}
-              {showInternalStats && groups.length > 0 && (
-                <div className="space-y-3 pt-6 border-t border-slate-200">
-                  <h4 className="font-semibold text-slate-800 flex items-center gap-2">
-                    <Users className="h-4 w-4 text-slate-500" aria-hidden="true" />
-                    Groups ({groups.length})
-                  </h4>
-                  <ul className="space-y-2">
-                    {groups.map((g) => (
-                      <li
-                        key={g.id}
-                        className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm"
-                      >
-                        <span className="font-medium text-slate-800">{g.name}</span>
-                        {g.center && (
-                          <span className="text-xs text-slate-500">{g.center.name}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Substitute groups list */}
-              {showInternalStats && substituteGroups.length > 0 && (
-                <div className="space-y-3 pt-6 border-t border-slate-200">
-                  <h4 className="font-semibold text-amber-800 flex items-center gap-2">
-                    <Users className="h-4 w-4 text-amber-700" aria-hidden="true" />
-                    Sub-groups ({substituteGroups.length})
-                  </h4>
-                  <ul className="space-y-2">
-                    {substituteGroups.map((g) => (
-                      <li
-                        key={g.id}
-                        className="flex items-center justify-between rounded-md border border-amber-200 bg-amber-50/50 px-3 py-2 text-sm"
-                      >
-                        <span className="font-medium text-slate-800">{g.name}</span>
-                        {g.center && (
-                          <span className="text-xs text-slate-500">{g.center.name}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </>
+    <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content
+          style={dragStyle}
+          className={cn(
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-2xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
+            'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0'
           )}
-      </AdminDetailModal>
-    </>
+          aria-describedby={undefined}
+        >
+          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sm:hidden">
+            <div
+              className="absolute inset-x-0 -top-2 h-14"
+              onTouchStart={handleDragStart}
+              onTouchMove={handleDragMove}
+              onTouchEnd={handleDragEnd}
+              onTouchCancel={handleDragEnd}
+            />
+            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
+          </div>
+          <DialogPrimitive.Title className="sr-only">
+            {fullName} - {t('teacherDetails')}
+          </DialogPrimitive.Title>
+          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
+
+            {!teacherId ? (
+              <div className="py-8 text-center text-[#8b8b90]">{t('teacherNotFound')}</div>
+            ) : isLoading ? (
+              <div className="py-8 text-center text-[#8b8b90]">{tCommon('loading')}</div>
+            ) : error ? (
+              <div className="py-8 text-center text-red-600">
+                {error instanceof Error ? error.message : 'Failed to load teacher details.'}
+              </div>
+            ) : !teacher ? (
+              <div className="py-8 text-center text-[#8b8b90]">{t('teacherNotFound')}</div>
+            ) : (
+              <div className="space-y-6">
+                <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
+                  <div className="mb-3 flex items-center gap-3">
+                    <Avatar
+                      src={teacher.user.avatarUrl}
+                      name={fullName}
+                      size="xl"
+                      className="h-14 w-14 rounded-full"
+                      alt={fullName}
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-semibold text-[#3b3b40]">{fullName}</p>
+                      <Badge variant={isActive ? 'success' : 'warning'}>
+                        {isActive ? tStatus('active') : tStatus('inactive')}
+                      </Badge>
+                    </div>
+                  </div>
+                  <InfoRow label={t('phoneNumber')} value={phone} />
+                  <InfoRow label={tCommon('email')} value={email || '—'} />
+                  <InfoRow
+                    label="Experience"
+                    value={formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}
+                  />
+                  <InfoRow label="Joined" value={formatDate(teacher.createdAt)} />
+                </section>
+
+                <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
+                  <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">{t('basicInformation')}</h3>
+                  {showInternalMeta ? (
+                    <InfoRow label="Per Lesson Rate" value={`${formatCurrency(lessonRate)}/lesson`} />
+                  ) : null}
+                  <InfoRow label={t('specialization')} value={teacher.specialization || '—'} />
+                  <InfoRow label={t('bio')} value={teacher.bio || '—'} />
+                  <InfoRow label="Video URL" value={teacher.videoUrl || '—'} />
+                </section>
+
+                {showInternalMeta && (
+                  <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
+                    <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">{t('centers')}</h3>
+                    {centers.length === 0 ? (
+                      <p className="text-sm text-[#8b8b90]">{t('noBranchAssigned')}</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {centers.map((center) => (
+                          <li key={center.id} className="rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-2 text-sm text-[#3b3b40]">
+                            {center.name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                )}
+
+                {showInternalStats && (
+                  <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
+                    <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">{t('statistics')}</h3>
+                    <InfoRow label={t('totalGroups')} value={teacher._count?.groups ?? 0} />
+                    <InfoRow label="Sub-groups" value={teacher.substituteForGroupsCount ?? teacher._count?.substituteForGroups ?? 0} />
+                    <InfoRow label={t('totalLessons')} value={teacher._count?.lessons ?? 0} />
+                    <InfoRow label={t('totalStudents')} value={teacher._count?.students ?? 0} />
+                  </section>
+                )}
+
+                {showInternalStats && (
+                  <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
+                    <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">Groups</h3>
+                    {groups.length === 0 ? (
+                      <p className="text-sm text-[#8b8b90]">No groups assigned.</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {groups.map((group) => (
+                          <li key={group.id} className="rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-2">
+                            <p className="text-sm font-medium text-[#3b3b40]">{group.name}</p>
+                            <p className="text-xs text-[#8b8b90]">{group.center?.name || '—'}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                )}
+
+                {showInternalStats && (
+                  <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
+                    <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">Sub-groups</h3>
+                    {substituteGroups.length === 0 ? (
+                      <p className="text-sm text-[#8b8b90]">No sub-groups assigned.</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {substituteGroups.map((group) => (
+                          <li key={group.id} className="rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-2">
+                            <p className="text-sm font-medium text-[#3b3b40]">{group.name}</p>
+                            <p className="text-xs text-[#8b8b90]">{group.center?.name || '—'}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
