@@ -221,11 +221,11 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
           style={dragStyle}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
             'h-[calc(94dvh+7px)] grid-rows-[auto_auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl sm:grid-rows-[auto_auto_1fr]',
             'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-4xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
-            'sm:data-[state=open]:animate-none sm:data-[state=closed]:animate-none',
+            'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0',
           )}
         >
           <div
