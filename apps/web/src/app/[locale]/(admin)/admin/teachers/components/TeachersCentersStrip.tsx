@@ -14,6 +14,7 @@ interface TeachersCentersStripProps {
   uniqueTeachersCount: number;
   isLoading: boolean;
   t: ReturnType<typeof useTranslations<'teachers'>>;
+  unassignedLabel: string;
 }
 
 export function TeachersCentersStrip({
@@ -24,6 +25,7 @@ export function TeachersCentersStrip({
   uniqueTeachersCount,
   isLoading,
   t,
+  unassignedLabel,
 }: TeachersCentersStripProps) {
   const hasUnassigned = (teachersByCenter.unassigned?.length || 0) > 0;
   const hasCenterTabs = centers.length > 0 || hasUnassigned;
@@ -128,7 +130,7 @@ export function TeachersCentersStrip({
                   )}
                 >
                   <span className="max-w-[12rem] truncate font-semibold tracking-[0.01em] sm:max-w-[14rem]">
-                    Unassigned
+                    {unassignedLabel}
                   </span>
                   <span className="inline-flex items-center gap-1.5">
                     <span

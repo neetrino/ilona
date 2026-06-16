@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type TouchEvent } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { StudentCard } from './StudentCard';
 import { Button } from '@/shared/components/ui';
 import {
@@ -13,6 +13,64 @@ import {
 } from '@/features/students';
 import { cn, formatPhoneForDisplay, getContrastColor, lightenColor } from '@/shared/lib/utils';
 import type { Center } from '@ilona/types';
+
+const CENTER_NAME_PAIRS = [
+  { en: 'Andranik 40', hy: 'Անդրանիկի 40' },
+  { en: 'Andranik 40/55', hy: 'Անդրանիկի 40/55' },
+  { en: 'Hanrapetutyan 67/3', hy: 'Հանրապետության 67/3' },
+  { en: 'Ervand Qochar 23/2', hy: 'Երվանդ Քոչարի 23/2' },
+  { en: 'Yervand Qochar 23/2', hy: 'Երվանդ Քոչարի 23/2' },
+  { en: 'Z. Andranik 131/8', hy: 'Անդրանիկի 131/8' },
+  { en: '40 Zoravar Andranik Street, Yerevan', hy: 'Զորավար Անդրանիկի 40, Երևան' },
+  { en: '40/55 Zoravar Andranik Street, Yerevan', hy: 'Զորավար Անդրանիկի 40/55, Երևան' },
+  { en: '67/3 Hanrapetutyan Street, Yerevan', hy: 'Հանրապետության 67/3, Երևան' },
+  { en: '23/2 Ervand Qochar Street, Yerevan', hy: 'Երվանդ Քոչարի 23/2' },
+  { en: '23/2 Yervand Qochar Street, Yerevan', hy: 'Երվանդ Քոչարի 23/2' },
+  { en: '131/8 Zoravar Andranik Street, Yerevan', hy: 'Զորավար Անդրանիկի 131/8' },
+  { en: 'Andranik Branch', hy: 'Անդրանիկի մասնաճյուղ' },
+  { en: 'Hanrapetutyan Branch', hy: 'Հանրապետության մասնաճյուղ' },
+  { en: 'Zoravar Andranik Branch', hy: 'Զորավար Անդրանիկի մասնաճյուղ' },
+] as const;
+
+function getLocalizedCenterName(centerName: string, isArmenianLocale: boolean): string {
+  const normalizeCenterName = (value: string) =>
+    value
+      .toLowerCase()
+      .replace(/[.,]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const normalizedName = normalizeCenterName(centerName);
+  const matchedPair = CENTER_NAME_PAIRS.find((pair) => {
+    const normalizedEnglish = normalizeCenterName(pair.en);
+    const normalizedArmenian = normalizeCenterName(pair.hy);
+    return (
+      normalizedName === normalizedEnglish ||
+      normalizedName === normalizedArmenian ||
+      normalizedName.includes(normalizedEnglish) ||
+      normalizedName.includes(normalizedArmenian)
+    );
+  });
+  if (matchedPair) return isArmenianLocale ? matchedPair.hy : matchedPair.en;
+
+  if (/qochar|քոչար/.test(normalizedName)) {
+    return isArmenianLocale ? 'Երվանդ Քոչարի 23/2' : 'Yervand Qochar 23/2';
+  }
+  if (/hanrapetutyan|հանրապետության/.test(normalizedName)) {
+    return isArmenianLocale ? 'Հանրապետության 67/3' : 'Hanrapetutyan 67/3';
+  }
+  if (/andranik|անդրանիկ/.test(normalizedName) && /131\/8/.test(normalizedName)) {
+    return isArmenianLocale ? 'Անդրանիկի 131/8' : 'Z. Andranik 131/8';
+  }
+  if (/andranik|անդրանիկ/.test(normalizedName) && /40\/55/.test(normalizedName)) {
+    return isArmenianLocale ? 'Անդրանիկի 40/55' : 'Andranik 40/55';
+  }
+  if (/andranik|անդրանիկ/.test(normalizedName) && /\b40\b/.test(normalizedName)) {
+    return isArmenianLocale ? 'Անդրանիկի 40' : 'Andranik 40';
+  }
+
+  return centerName;
+}
 
 interface StudentsBoardProps {
   studentsByCenter: Record<string, TeacherAssignedItem[]>;
@@ -35,9 +93,10 @@ export function StudentsBoard({
   onDeactivate,
   onCardClick,
 }: StudentsBoardProps) {
+  const locale = useLocale();
+  const isArmenianLocale = locale === 'hy';
   const t = useTranslations('students');
   const tc = useTranslations('common');
-  const tCenterForm = useTranslations('centers.form');
   const [selectedCenterId, setSelectedCenterId] = useState<string | null>(null);
   const [dragOffsetY, setDragOffsetY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -55,7 +114,7 @@ export function StudentsBoard({
   const centerCards = [
     ...visibleCenters.map((center) => ({
       id: center.id,
-      name: center.name,
+      name: getLocalizedCenterName(center.name, isArmenianLocale),
       students: studentsByCenter[center.id] || [],
       isUnassigned: false,
       colorHex: center.colorHex || null,
@@ -189,7 +248,7 @@ export function StudentsBoard({
               <div className="flex w-full items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate text-[15px] font-semibold">
-                    {tCenterForm('address')}: {center.name}
+                    {center.name}
                   </p>
                   <p className="mt-1 text-sm opacity-75">{t('studentCount', { count: center.students.length })}</p>
                 </div>
@@ -231,7 +290,9 @@ export function StudentsBoard({
                 >
                   {/* Column Header */}
                   <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
-                    <h3 className="font-semibold text-[#3b3b40]">{center.name}</h3>
+                    <h3 className="font-semibold text-[#3b3b40]">
+                      {getLocalizedCenterName(center.name, isArmenianLocale)}
+                    </h3>
                     <p className="text-sm text-[#8b8b90] mt-1">
                       {t('studentCount', { count: centerStudents.length })}
                     </p>
