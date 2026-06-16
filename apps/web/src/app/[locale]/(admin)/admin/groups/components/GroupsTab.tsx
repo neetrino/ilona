@@ -552,24 +552,28 @@ export function GroupsTab({
           </>
         ) : (
           <>
-            <StatCard
-              title={t('totalGroups')}
-              value={totalGroups}
-            />
-            <StatCard
-              title={t('activeGroups')}
-              value={activeGroups || totalGroups}
-              change={{ value: t('currentlyRunning'), type: 'positive' }}
-            />
-            <StatCard
-              title={t('studentsEnrolled')}
-              value={totalStudentsInGroups}
-            />
-            <StatCard
-              title={t('avgGroupSize')}
-              value={averageGroupSize}
-              change={{ value: t('studentsPerGroup'), type: 'neutral' }}
-            />
+            <div className="grid grid-cols-2 gap-4 sm:col-span-2 lg:col-span-2">
+              <StatCard
+                title={t('totalGroups')}
+                value={totalGroups}
+              />
+              <StatCard
+                title={t('activeGroups')}
+                value={activeGroups || totalGroups}
+                change={{ value: t('currentlyRunning'), type: 'positive' }}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4 sm:col-span-2 lg:col-span-2">
+              <StatCard
+                title={t('studentsEnrolled')}
+                value={totalStudentsInGroups}
+              />
+              <StatCard
+                title={t('avgGroupSize')}
+                value={averageGroupSize}
+                change={{ value: t('studentsPerGroup'), type: 'neutral' }}
+              />
+            </div>
           </>
         )}
       </div>

@@ -123,16 +123,18 @@ export function CentersTab({
   return (
     <div className="space-y-6">
       {/* Centers Stats Grid */}
-      <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-        <StatCard
-          title={t('totalCenters')}
-          value={totalCenters}
-        />
-        <StatCard
-          title={t('activeCenters')}
-          value={activeCenters || totalCenters}
-          change={{ value: t('currentlyActive'), type: 'positive' }}
-        />
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
+        <div className="grid grid-cols-2 gap-4 lg:col-span-2">
+          <StatCard
+            title={t('totalCenters')}
+            value={totalCenters}
+          />
+          <StatCard
+            title={t('activeCenters')}
+            value={activeCenters || totalCenters}
+            change={{ value: t('currentlyActive'), type: 'positive' }}
+          />
+        </div>
         <StatCard
           title={t('totalGroups')}
           value={centers.reduce((sum, c) => sum + (c._count?.groups || 0), 0)}
