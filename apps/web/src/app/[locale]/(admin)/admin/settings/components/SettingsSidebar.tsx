@@ -83,7 +83,10 @@ export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: Setting
 
   return (
     <div className="w-full shrink-0 lg:w-64">
-      <nav className="flex gap-1 overflow-x-auto rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-2 lg:flex-col lg:overflow-visible">
+      <nav
+        className="flex gap-1 overflow-x-auto overflow-y-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-2 [&::-webkit-scrollbar]:hidden lg:flex-col lg:overflow-visible"
+        style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}
