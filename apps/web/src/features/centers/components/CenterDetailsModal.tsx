@@ -228,13 +228,14 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
             'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0',
           )}
         >
-          <div
-            className="flex h-9 w-full items-center justify-center bg-white sm:hidden"
-            onTouchStart={handleDragStart}
-            onTouchMove={handleDragMove}
-            onTouchEnd={handleDragEnd}
-            onTouchCancel={handleDragEnd}
-          >
+          <div className="relative flex h-9 w-full items-center justify-center bg-white sm:hidden">
+            <div
+              className="absolute inset-x-0 -top-2 h-14"
+              onTouchStart={handleDragStart}
+              onTouchMove={handleDragMove}
+              onTouchEnd={handleDragEnd}
+              onTouchCancel={handleDragEnd}
+            />
             <div className="h-1.5 w-14 rounded-full bg-slate-300" />
           </div>
           <DialogPrimitive.Title className="sr-only">
