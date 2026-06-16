@@ -4,17 +4,24 @@ import { useState, useMemo, useEffect, type ReactElement } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { LessonListTableBodyRow } from '@/shared/components/calendar/LessonListTableBodyRow';
 import type { Lesson } from '@/features/lessons';
 import { getScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { Badge } from '@/shared/components/ui/badge';
+import { CalendarListActionPill } from '@/shared/components/calendar/CalendarListActionPill';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { isAdminPortalPath } from '@/shared/lib/role-routes';
+import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/calendar/lesson-action-states';
 import {
   buildTeacherCalendarOrderedRows,
   TEACHER_CALENDAR_LIST_PAGE_SIZE,
   teacherCalendarRowSection,
 } from '@/shared/lib/calendar/teacher-calendar-list-order';
+import type { TeacherCalendarRowCategory } from '@/shared/lib/calendar/teacher-calendar-list-order';
 
 interface LessonListTableProps {
   lessons: Lesson[];
@@ -42,6 +49,8 @@ interface LessonListTableProps {
   sectionedCalendarList?: boolean;
   /** Controls Schedule column visibility in sectioned calendar list tables. */
   showScheduleColumn?: boolean;
+  /** Enables card-style mobile layout for admin calendar list. */
+  useMobileCards?: boolean;
 }
 
 export function LessonListTable({
@@ -60,6 +69,7 @@ export function LessonListTable({
   showBulkBarWhenEmpty = false,
   sectionedCalendarList = false,
   showScheduleColumn = true,
+  useMobileCards = false,
 }: LessonListTableProps) {
   const locale = useLocale();
   const tCal = useTranslations('calendar');
@@ -69,6 +79,7 @@ export function LessonListTable({
   const [sectionedListPage, setSectionedListPage] = useState(1);
   const { user } = useAuthStore();
   const isTeacher = user?.role === 'TEACHER';
+  const router = useRouter();
 
   const sectionedOrderedRows = useMemo(
     () => (sectionedCalendarList ? buildTeacherCalendarOrderedRows(lessons) : []),
@@ -229,6 +240,24 @@ export function LessonListTable({
     : selectedLessons.size > 0 && selectedLessons.size < lessons.length;
   const showBulkBar = onBulkDelete && (showBulkBarWhenEmpty || selectedLessons.size > 0);
   const hasSelectedLessons = selectedLessons.size > 0;
+  const obligationIds: LessonActionId[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
+  const cardRows: Array<{ lesson: Lesson; category?: TeacherCalendarRowCategory }> = sectionedCalendarList
+    ? sectionedPageRows.map((row) => ({ lesson: row.lesson, category: row.category }))
+    : sortedLessons.map((lesson) => ({ lesson }));
+
+  const handleView = (lessonId: string) => {
+    const currentPath = window.location.pathname;
+    if (isAdminPortalPath(currentPath.replace(/^\/[a-z]{2}\//, '/'))) {
+      const portalRoot = currentPath.includes('/manager/') ? '/manager' : '/admin';
+      router.push(`${portalRoot}/calendar/${lessonId}`);
+      return;
+    }
+    if (currentPath.includes('/teacher/')) {
+      router.push(`/teacher/calendar/${lessonId}`);
+      return;
+    }
+    router.push(`/calendar/${lessonId}`);
+  };
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -261,8 +290,166 @@ export function LessonListTable({
         </div>
       )}
 
+      <div className={cn('space-y-3 p-3 sm:hidden', !useMobileCards && 'hidden')}>
+        {cardRows.map((row, idx) => {
+          const lesson = row.lesson;
+          const actions = getLessonActionsDerived(lesson);
+          const actionMap = new Map(actions.map((action) => [action.id, action]));
+          const isLocked = isTeacher && lesson.isLockedForTeacher;
+          const section = row.category ? teacherCalendarRowSection(row.category) : null;
+          const prevSection =
+            idx > 0 && cardRows[idx - 1]?.category
+              ? teacherCalendarRowSection(cardRows[idx - 1].category!)
+              : null;
+          const showSectionHeader = sectionedCalendarList && section !== prevSection;
+
+          return (
+            <div key={lesson.id}>
+              {showSectionHeader ? (
+                <p className="mb-2 px-1 text-xs font-bold uppercase tracking-wide text-slate-500">
+                  {section === 'upcoming'
+                    ? tCal('sectionUpcoming')
+                    : section === 'today'
+                      ? tCal('sectionToday')
+                      : tCal('sectionCompleted')}
+                </p>
+              ) : null}
+              <article className="overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.09)] bg-white shadow-[0_1px_2px_rgba(14,14,16,0.03)]">
+                <div className="p-4">
+                  <div className="flex items-start gap-2.5">
+                    <Checkbox
+                      checked={selectedLessons.has(lesson.id)}
+                      onCheckedChange={(checked) => handleSelectLesson(lesson.id, checked === true)}
+                      className="mt-1.5 h-5 w-5 rounded-md"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-[1.2rem] leading-none font-semibold text-[#111827]">
+                          {lesson.group?.name || tCal('unknownGroupName')}
+                        </p>
+                        {lesson.completionStatus === 'DONE' ? (
+                          <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">
+                            {tCal('completed')}
+                          </Badge>
+                        ) : lesson.completionStatus === 'IN_PROCESS' ? (
+                          <Badge variant="warning" className="bg-yellow-100 text-yellow-700 border-yellow-200">
+                            {tCal('statusInProcess')}
+                          </Badge>
+                        ) : null}
+                      </div>
+                      <div className="mt-5 -ml-[31px] grid grid-cols-2 items-stretch gap-3">
+                        <div className="justify-self-start flex items-start gap-2">
+                          <svg
+                            className="mt-0.5 h-5 w-5 shrink-0 text-green-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M5 11h14M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />
+                          </svg>
+                          <div className="min-w-0">
+                            <p className="text-left text-[11px] font-medium text-[#1f2937]">
+                              {new Date(lesson.scheduledAt).toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </p>
+                            <p className="mt-0.5 text-left text-[2rem] leading-none font-medium text-[#111827]">
+                              {new Date(lesson.scheduledAt).toLocaleTimeString(
+                                locale === 'hy' ? 'hy-AM' : 'en-US',
+                                { hour: '2-digit', minute: '2-digit', hour12: false },
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="pl-3">
+                          <div className="flex items-start gap-2">
+                            <User className="mt-0.5 h-5 w-5 shrink-0 text-green-500" aria-hidden />
+                            <p className="line-clamp-2 text-[1.2rem] leading-tight font-medium text-[#111827]">
+                              {lesson.teacher?.user
+                                ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
+                                : tCal('unknownTeacher')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="my-3 border-t border-dashed border-[rgba(14,14,16,0.14)]" />
+                  <div className="grid grid-cols-3 gap-2">
+                    {obligationIds.map((id) => (
+                      <CalendarListActionPill
+                        key={id}
+                        action={actionMap.get(id)!}
+                        onActivate={() => onObligationClick?.(lesson.id, id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center justify-around gap-2 border-t border-[rgba(14,14,16,0.08)] bg-[#fbfbfc] px-4 py-2.5">
+                  {!isTeacher && onAssignSubstitute ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onAssignSubstitute(lesson.id)}
+                      className="h-auto px-2 py-1 text-green-600 hover:text-green-700"
+                      title={tCal('assignSubstituteTitle')}
+                    >
+                      <span className="flex flex-col items-center gap-0.5">
+                        <Image
+                          src="/icons/substitute-teacher.svg"
+                          alt=""
+                          width={20}
+                          height={20}
+                          className="h-5 w-5 shrink-0"
+                          aria-hidden
+                        />
+                        <span className="text-[11px] leading-none">{tCommon('edit')}</span>
+                      </span>
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleView(lesson.id)}
+                    className="h-auto px-2 py-1 text-blue-600 hover:text-blue-700"
+                  >
+                    <span className="flex flex-col items-center gap-0.5">
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <span className="text-[11px] leading-none">{tCommon('view')}</span>
+                    </span>
+                  </Button>
+                  {onDelete ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDelete(lesson.id)}
+                      disabled={isLocked}
+                      className={cn('h-auto px-2 py-1 text-red-600 hover:text-red-700', isLocked && 'opacity-75 cursor-not-allowed')}
+                      title={isLocked ? tCal('lessonLockedDelete') : tCommon('delete')}
+                    >
+                      <span className="flex flex-col items-center gap-0.5">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span className="text-[11px] leading-none">{tCommon('delete')}</span>
+                      </span>
+                    </Button>
+                  ) : null}
+                </div>
+              </article>
+            </div>
+          );
+        })}
+      </div>
+
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className={cn('overflow-x-auto', useMobileCards && 'hidden sm:block')}>
         <table className="w-full">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>

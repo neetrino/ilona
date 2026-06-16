@@ -308,7 +308,10 @@ export default function FinancePage() {
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent
+            overlayClassName="duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className="w-[calc(100%-1.5rem)] max-w-sm rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full"
+          >
             <DialogHeader>
               <DialogTitle>Delete Salary Records</DialogTitle>
               <DialogDescription>
@@ -316,11 +319,11 @@ export default function FinancePage() {
               </DialogDescription>
             </DialogHeader>
             {deleteError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
                 <p className="text-sm text-red-600">{deleteError}</p>
               </div>
             )}
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -329,6 +332,7 @@ export default function FinancePage() {
                   setDeleteError(null);
                 }}
                 disabled={deleteSalaries.isPending}
+                className="rounded-full px-5"
               >
                 Cancel
               </Button>
@@ -337,6 +341,7 @@ export default function FinancePage() {
                 variant="destructive"
                 onClick={handleDeleteConfirm}
                 disabled={deleteSalaries.isPending}
+                className="rounded-full px-5"
               >
                 {deleteSalaries.isPending ? 'Deleting...' : 'Delete'}
               </Button>
@@ -346,7 +351,10 @@ export default function FinancePage() {
 
         {/* Delete Payments Confirmation Dialog */}
         <Dialog open={isDeletePaymentsDialogOpen} onOpenChange={setIsDeletePaymentsDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent
+            overlayClassName="duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className="w-[calc(100%-1.5rem)] max-w-sm rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full"
+          >
             <DialogHeader>
               <DialogTitle>Delete Payments</DialogTitle>
               <DialogDescription>
@@ -354,11 +362,11 @@ export default function FinancePage() {
               </DialogDescription>
             </DialogHeader>
             {deletePaymentsError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
                 <p className="text-sm text-red-600">{deletePaymentsError}</p>
               </div>
             )}
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -367,6 +375,7 @@ export default function FinancePage() {
                   setDeletePaymentsError(null);
                 }}
                 disabled={deletePayments.isPending}
+                className="rounded-full px-5"
               >
                 Cancel
               </Button>
@@ -375,6 +384,7 @@ export default function FinancePage() {
                 variant="destructive"
                 onClick={handleDeletePaymentsConfirm}
                 disabled={deletePayments.isPending}
+                className="rounded-full px-5"
               >
                 {deletePayments.isPending ? 'Deleting...' : 'Delete'}
               </Button>

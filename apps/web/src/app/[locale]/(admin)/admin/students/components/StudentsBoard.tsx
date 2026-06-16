@@ -1,14 +1,17 @@
 'use client';
 
+import { useEffect, useRef, useState, type TouchEvent } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
 import { StudentCard } from './StudentCard';
+import { Button } from '@/shared/components/ui';
 import {
   getItemId,
   isOnboardingItem,
   type TeacherAssignedItem,
   type Student,
 } from '@/features/students';
-import { formatPhoneForDisplay } from '@/shared/lib/utils';
+import { cn, formatPhoneForDisplay, getContrastColor, lightenColor } from '@/shared/lib/utils';
 import type { Center } from '@ilona/types';
 
 interface StudentsBoardProps {
@@ -34,6 +37,116 @@ export function StudentsBoard({
 }: StudentsBoardProps) {
   const t = useTranslations('students');
   const tc = useTranslations('common');
+  const tCenterForm = useTranslations('centers.form');
+  const [selectedCenterId, setSelectedCenterId] = useState<string | null>(null);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const allCenters = centersData || [];
+  const visibleCenters = allCenters.filter((center) => {
+    const centerStudents = studentsByCenter[center.id] || [];
+    return centerStudents.length > 0;
+  });
+  const hasUnassigned = (studentsByCenter.unassigned?.length ?? 0) > 0;
+  const centerCards = [
+    ...visibleCenters.map((center) => ({
+      id: center.id,
+      name: center.name,
+      students: studentsByCenter[center.id] || [],
+      isUnassigned: false,
+      colorHex: center.colorHex || null,
+    })),
+    ...(hasUnassigned
+      ? [{
+          id: 'unassigned',
+          name: tc('unassigned'),
+          students: studentsByCenter.unassigned || [],
+          isUnassigned: true,
+          colorHex: null,
+        }]
+      : []),
+  ];
+  const selectedCenter = centerCards.find((center) => center.id === selectedCenterId) ?? null;
+  const isSheetOpen = selectedCenter !== null;
+
+  useEffect(() => {
+    if (!isSheetOpen) {
+      setDragOffsetY(0);
+      setIsDragging(false);
+      setIsSettling(false);
+    }
+  }, [isSheetOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    };
+  }, []);
+
+  const isMobileViewport = () =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
+  const resetDragRefs = () => {
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    setIsDragging(false);
+  };
+
+  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    touchStartYRef.current = firstTouch.clientY;
+    touchStartXRef.current = firstTouch.clientX;
+    setIsSettling(false);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    const deltaY = firstTouch.clientY - touchStartYRef.current;
+    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
+    if (deltaY <= 0 || deltaY <= deltaX) return;
+    event.preventDefault();
+    setDragOffsetY(Math.min(deltaY * 0.95, 340));
+  };
+
+  const handleDragEnd = () => {
+    if (!isMobileViewport()) return;
+    if (!isDragging) return;
+    const shouldClose = dragOffsetY > 110;
+    resetDragRefs();
+    if (shouldClose) {
+      setDragOffsetY(0);
+      setSelectedCenterId(null);
+      return;
+    }
+    setIsSettling(true);
+    setDragOffsetY(0);
+    settleTimerRef.current = setTimeout(() => {
+      setIsSettling(false);
+      settleTimerRef.current = null;
+    }, 280);
+  };
+
+  const dragStyle =
+    dragOffsetY > 0 || isSettling
+      ? {
+          transform: `translateY(${dragOffsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }
+      : undefined;
 
   if (isLoading) {
     return (
@@ -42,8 +155,6 @@ export function StudentsBoard({
       </div>
     );
   }
-
-  const allCenters = centersData || [];
 
   if (allCenters.length === 0 && (!studentsByCenter['unassigned'] || studentsByCenter['unassigned'].length === 0)) {
     return (
@@ -54,122 +165,241 @@ export function StudentsBoard({
   }
 
   return (
-    <div className="w-full min-w-0 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
-      <div className="flex gap-3 pb-4 sm:gap-4">
-        {/* Center Columns */}
-        {allCenters
-          .filter((center) => {
-            // When searching/filtering, only show centers with matching students
+    <>
+      <div className="grid w-full min-w-0 grid-cols-1 gap-3 pb-3 sm:hidden">
+        {centerCards.map((center) => {
+          const primaryColor = center.colorHex || '#253046';
+          const softColor = center.isUnassigned ? '#f6f6f7' : lightenColor(primaryColor, 0.65);
+          const softBorderColor = center.isUnassigned ? '#e8e8ec' : lightenColor(primaryColor, 0.35);
+          const textColor = center.isUnassigned
+            ? '#3b3b40'
+            : getContrastColor(primaryColor) === 'white'
+              ? '#1e293b'
+              : '#0f172a';
+
+          return (
+            <Button
+              key={center.id}
+              type="button"
+              variant="outline"
+              className="h-auto min-h-[68px] w-full rounded-xl px-4 py-3 text-left"
+              style={{ backgroundColor: softColor, borderColor: softBorderColor, color: textColor }}
+              onClick={() => setSelectedCenterId(center.id)}
+            >
+              <div className="flex w-full items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-[15px] font-semibold">
+                    {tCenterForm('address')}: {center.name}
+                  </p>
+                  <p className="mt-1 text-sm opacity-75">{t('studentCount', { count: center.students.length })}</p>
+                </div>
+                <span
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/45 text-[#1f2937] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_16px_rgba(15,23,42,0.16)] backdrop-blur-md"
+                  style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.55), rgba(255,255,255,0.2))' }}
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M5 12H19M19 12L13 6M19 12L13 18"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+            </Button>
+          );
+        })}
+      </div>
+
+      <div className="hidden w-full min-w-0 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sm:block">
+        <div className="flex gap-3 pb-4 sm:gap-4">
+          {/* Center Columns */}
+          {allCenters
+            .filter((center) => {
+              // When searching/filtering, only show centers with matching students
+              const centerStudents = studentsByCenter[center.id] || [];
+              return centerStudents.length > 0;
+            })
+            .map((center) => {
+              const centerStudents = studentsByCenter[center.id] || [];
+              return (
+                <div
+                  key={center.id}
+                  className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]"
+                >
+                  {/* Column Header */}
+                  <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
+                    <h3 className="font-semibold text-[#3b3b40]">{center.name}</h3>
+                    <p className="text-sm text-[#8b8b90] mt-1">
+                      {t('studentCount', { count: centerStudents.length })}
+                    </p>
+                  </div>
+
+                  {/* Column Content */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
+                    {centerStudents.length === 0 ? (
+                      <div className="text-center py-8 text-[#8b8b90] text-sm">
+                        {t('noStudentsInCenter')}
+                      </div>
+                    ) : (
+                      centerStudents.map((item) => {
+                        if (isOnboardingItem(item)) {
+                          return (
+                            <div
+                              key={getItemId(item)}
+                              className="bg-white rounded-lg border border-[rgba(14,14,16,0.07)] border-dashed p-4 opacity-90"
+                            >
+                              <p className="font-medium text-[#3b3b40]">
+                                {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
+                              </p>
+                              <p className="text-xs text-[#8b8b90] mt-1">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
+                              <span className="inline-block mt-2 text-xs text-amber-600 font-medium">{tc('onboarding')}</span>
+                            </div>
+                          );
+                        }
+                        return (
+                          <StudentCard
+                            key={getItemId(item)}
+                            student={item}
+                            onEdit={() => onEdit(item)}
+                            onDelete={() => onDelete(item)}
+                            onDeactivate={() => onDeactivate(item)}
+                            onCardClick={onCardClick}
+                          />
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          
+          {/* Unassigned Students Column */}
+          {studentsByCenter['unassigned'] && studentsByCenter['unassigned'].length > 0 && (
+            <div className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]">
+              {/* Column Header */}
+              <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
+                <h3 className="font-semibold text-[#3b3b40]">{tc('unassigned')}</h3>
+                <p className="text-sm text-[#8b8b90] mt-1">
+                  {t('studentCount', { count: studentsByCenter['unassigned'].length })}
+                </p>
+              </div>
+
+              {/* Column Content */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
+                {studentsByCenter['unassigned'].map((item) => {
+                  if (isOnboardingItem(item)) {
+                    return (
+                      <div
+                        key={getItemId(item)}
+                        className="bg-white rounded-lg border border-[rgba(14,14,16,0.07)] border-dashed p-4 opacity-90"
+                      >
+                        <p className="font-medium text-[#3b3b40]">
+                          {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
+                        </p>
+                        <p className="text-xs text-[#8b8b90] mt-1">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
+                        <span className="inline-block mt-2 text-xs text-amber-600 font-medium">{tc('onboarding')}</span>
+                      </div>
+                    );
+                  }
+                  return (
+                    <StudentCard
+                      key={getItemId(item)}
+                      student={item}
+                      onEdit={() => onEdit(item)}
+                      onDelete={() => onDelete(item)}
+                      onDeactivate={() => onDeactivate(item)}
+                      onCardClick={onCardClick}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
+          {searchQuery && allCenters.filter((center) => {
             const centerStudents = studentsByCenter[center.id] || [];
             return centerStudents.length > 0;
-          })
-          .map((center) => {
-            const centerStudents = studentsByCenter[center.id] || [];
-            return (
-              <div
-                key={center.id}
-                className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]"
-              >
-                {/* Column Header */}
-                <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
-                  <h3 className="font-semibold text-[#3b3b40]">{center.name}</h3>
-                  <p className="text-sm text-[#8b8b90] mt-1">
-                    {t('studentCount', { count: centerStudents.length })}
-                  </p>
-                </div>
-
-                {/* Column Content */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
-                  {centerStudents.length === 0 ? (
-                    <div className="text-center py-8 text-[#8b8b90] text-sm">
-                      {t('noStudentsInCenter')}
-                    </div>
-                  ) : (
-                    centerStudents.map((item) => {
-                      if (isOnboardingItem(item)) {
-                        return (
-                          <div
-                            key={getItemId(item)}
-                            className="bg-white rounded-lg border border-[rgba(14,14,16,0.07)] border-dashed p-4 opacity-90"
-                          >
-                            <p className="font-medium text-[#3b3b40]">
-                              {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
-                            </p>
-                            <p className="text-xs text-[#8b8b90] mt-1">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
-                            <span className="inline-block mt-2 text-xs text-amber-600 font-medium">{tc('onboarding')}</span>
-                          </div>
-                        );
-                      }
-                      return (
-                        <StudentCard
-                          key={getItemId(item)}
-                          student={item}
-                          onEdit={() => onEdit(item)}
-                          onDelete={() => onDelete(item)}
-                          onDeactivate={() => onDeactivate(item)}
-                          onCardClick={onCardClick}
-                        />
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        
-        {/* Unassigned Students Column */}
-        {studentsByCenter['unassigned'] && studentsByCenter['unassigned'].length > 0 && (
-          <div className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]">
-            {/* Column Header */}
-            <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
-              <h3 className="font-semibold text-[#3b3b40]">{tc('unassigned')}</h3>
-              <p className="text-sm text-[#8b8b90] mt-1">
-                {t('studentCount', { count: studentsByCenter['unassigned'].length })}
-              </p>
+          }).length === 0 && (!studentsByCenter['unassigned'] || studentsByCenter['unassigned'].length === 0) && (
+            <div className="flex w-full items-center justify-center py-12">
+              <div className="text-[#8b8b90]">{t('noStudentsMatch')}</div>
             </div>
-
-            {/* Column Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)]">
-              {studentsByCenter['unassigned'].map((item) => {
-                if (isOnboardingItem(item)) {
-                  return (
-                    <div
-                      key={getItemId(item)}
-                      className="bg-white rounded-lg border border-[rgba(14,14,16,0.07)] border-dashed p-4 opacity-90"
-                    >
-                      <p className="font-medium text-[#3b3b40]">
-                        {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
-                      </p>
-                      <p className="text-xs text-[#8b8b90] mt-1">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
-                      <span className="inline-block mt-2 text-xs text-amber-600 font-medium">{tc('onboarding')}</span>
-                    </div>
-                  );
-                }
-                return (
-                  <StudentCard
-                    key={getItemId(item)}
-                    student={item}
-                    onEdit={() => onEdit(item)}
-                    onDelete={() => onDelete(item)}
-                    onDeactivate={() => onDeactivate(item)}
-                    onCardClick={onCardClick}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
-        
-        {searchQuery && allCenters.filter((center) => {
-          const centerStudents = studentsByCenter[center.id] || [];
-          return centerStudents.length > 0;
-        }).length === 0 && (!studentsByCenter['unassigned'] || studentsByCenter['unassigned'].length === 0) && (
-          <div className="flex items-center justify-center py-12 w-full">
-            <div className="text-[#8b8b90]">{t('noStudentsMatch')}</div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+
+      <DialogPrimitive.Root open={isSheetOpen} onOpenChange={(open) => !open && setSelectedCenterId(null)}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 sm:hidden" />
+          <DialogPrimitive.Content
+            style={dragStyle}
+            className={cn(
+              'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 sm:hidden',
+              'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
+              'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
+              'h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-white shadow-xl'
+            )}
+            aria-describedby={undefined}
+          >
+            <div className="relative flex h-9 w-full items-center justify-center bg-white">
+              <div
+                className="absolute inset-x-0 -top-2 h-14"
+                onTouchStart={handleDragStart}
+                onTouchMove={handleDragMove}
+                onTouchEnd={handleDragEnd}
+                onTouchCancel={handleDragEnd}
+              />
+              <div className="h-1.5 w-14 rounded-full bg-slate-400" />
+            </div>
+            <DialogPrimitive.Title className="sr-only">{selectedCenter?.name ?? t('boardView')}</DialogPrimitive.Title>
+            <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+              <div>
+                <h3 className="text-base font-semibold text-[#3b3b40]">{selectedCenter?.name}</h3>
+                <p className="text-sm text-[#8b8b90]">
+                  {t('studentCount', { count: selectedCenter?.students.length ?? 0 })}
+                </p>
+              </div>
+            </div>
+            <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4">
+              {selectedCenter?.students.length ? (
+                <div className="space-y-3">
+                  {selectedCenter.students.map((item) => {
+                    if (isOnboardingItem(item)) {
+                      return (
+                        <div
+                          key={getItemId(item)}
+                          className="rounded-lg border border-[rgba(14,14,16,0.07)] border-dashed bg-white p-4 opacity-90"
+                        >
+                          <p className="font-medium text-[#3b3b40]">
+                            {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
+                          </p>
+                          <p className="mt-1 text-xs text-[#8b8b90]">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
+                          <span className="mt-2 inline-block text-xs font-medium text-amber-600">{tc('onboarding')}</span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <StudentCard
+                        key={getItemId(item)}
+                        student={item}
+                        onEdit={() => onEdit(item)}
+                        onDelete={() => onDelete(item)}
+                        onDeactivate={() => onDeactivate(item)}
+                        onCardClick={onCardClick}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-sm text-[#8b8b90]">{t('noStudentsInCenter')}</div>
+              )}
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    </>
   );
 }
 

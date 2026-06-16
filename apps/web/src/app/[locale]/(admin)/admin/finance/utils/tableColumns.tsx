@@ -296,7 +296,7 @@ export function getSalaryColumns({
           checked={selectedSalaryIds.has(salary.id)}
           onChange={(e) => onSelectOne(salary.id, e.target.checked)}
           onClick={(e) => e.stopPropagation()}
-          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="my-auto w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoadingSalaries}
           aria-label={`Select salary for ${salary.teacher?.user?.firstName} ${salary.teacher?.user?.lastName}`}
         />

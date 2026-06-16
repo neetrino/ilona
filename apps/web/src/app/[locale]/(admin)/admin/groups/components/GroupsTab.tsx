@@ -552,24 +552,28 @@ export function GroupsTab({
           </>
         ) : (
           <>
-            <StatCard
-              title={t('totalGroups')}
-              value={totalGroups}
-            />
-            <StatCard
-              title={t('activeGroups')}
-              value={activeGroups || totalGroups}
-              change={{ value: t('currentlyRunning'), type: 'positive' }}
-            />
-            <StatCard
-              title={t('studentsEnrolled')}
-              value={totalStudentsInGroups}
-            />
-            <StatCard
-              title={t('avgGroupSize')}
-              value={averageGroupSize}
-              change={{ value: t('studentsPerGroup'), type: 'neutral' }}
-            />
+            <div className="grid grid-cols-2 gap-4 sm:col-span-2 lg:col-span-2">
+              <StatCard
+                title={t('totalGroups')}
+                value={totalGroups}
+              />
+              <StatCard
+                title={t('activeGroups')}
+                value={activeGroups || totalGroups}
+                change={{ value: t('currentlyRunning'), type: 'positive' }}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4 sm:col-span-2 lg:col-span-2">
+              <StatCard
+                title={t('studentsEnrolled')}
+                value={totalStudentsInGroups}
+              />
+              <StatCard
+                title={t('avgGroupSize')}
+                value={averageGroupSize}
+                change={{ value: t('studentsPerGroup'), type: 'neutral' }}
+              />
+            </div>
           </>
         )}
       </div>
@@ -634,7 +638,7 @@ export function GroupsTab({
 
       {/* Board: branch tabs + groups directly underneath */}
       {viewMode === 'board' && (
-        <div className="mb-6 overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.07)]/90 bg-white shadow-sm">
+        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
           <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
             {isLoadingBranchTabs ? (
               <div className="py-4 text-sm text-[#8b8b90]">{t('loadingBranches')}</div>
@@ -668,7 +672,7 @@ export function GroupsTab({
                           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/60 focus-visible:ring-offset-2',
                           'active:scale-[0.985]',
                           isActive
-                            ? 'shadow-[0_4px_14px_rgba(15,23,42,0.14)]'
+                            ? ''
                             : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:-translate-y-px hover:border-[rgba(14,14,16,0.12)] hover:bg-[#fafafa] hover:text-[#3b3b40] hover:shadow-sm'
                         )}
                         style={
@@ -692,7 +696,7 @@ export function GroupsTab({
                           className={cn(
                             'inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
                             isActive
-                              ? 'shadow-sm'
+                              ? ''
                               : 'group-hover:bg-[#f6f6f7] group-hover:text-[#3b3b40]'
                           )}
                           style={

@@ -55,7 +55,7 @@ export function TeacherShowcaseCard({
       onClick={interactive ? onCardClick : undefined}
       onKeyDown={interactive ? handleKeyDown : undefined}
       className={cn(
-        'group overflow-hidden rounded-3xl border bg-white p-4 transition-all duration-300 md:p-5',
+        'group overflow-hidden rounded-[1.75rem] border bg-white p-4 transition-all duration-300 md:rounded-3xl md:p-5',
         isStudent
           ? 'border-[rgba(14,14,16,0.07)]'
           : 'border-slate-200 shadow-sm',
@@ -69,7 +69,7 @@ export function TeacherShowcaseCard({
       {headerActions ? (
         <div
           className={cn(
-            'mb-3 flex justify-end border-b pb-3',
+            'mb-3 flex justify-end border-b px-1 pb-3',
             isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100',
           )}
           onClick={(e) => e.stopPropagation()}
@@ -77,7 +77,7 @@ export function TeacherShowcaseCard({
         >
           <div
             className={cn(
-              'rounded-xl border p-0.5 shadow-sm',
+              'rounded-full border px-2 py-1 shadow-sm',
               isStudent
                 ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]'
                 : 'border-slate-200/90 bg-slate-50/95',
@@ -94,7 +94,7 @@ export function TeacherShowcaseCard({
           name={fullName}
           size="xl"
           className={cn(
-            'z-10 h-72 w-full rounded-2xl border object-contain ring-2 ring-white shadow-md transition-transform duration-300 md:h-80',
+            'z-10 h-48 w-48 rounded-full border ring-2 ring-white shadow-sm transition-transform duration-300 sm:h-64 sm:w-full sm:rounded-3xl md:h-80',
             isStudent ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]' : 'border-slate-100 bg-slate-50',
             interactive && 'group-hover:scale-[1.01]',
             isMuted && 'opacity-90',
@@ -106,7 +106,7 @@ export function TeacherShowcaseCard({
       <div className="min-w-0 text-center">
         <h3
           className={cn(
-            'truncate text-xl font-semibold',
+            'truncate text-[clamp(1.125rem,7vw,2rem)] font-semibold leading-tight sm:text-xl',
             isStudent ? 'text-[#1010a3]' : 'text-slate-900',
             isMuted && (isStudent ? 'text-[#8b8b90]' : 'text-slate-600'),
           )}
@@ -115,7 +115,7 @@ export function TeacherShowcaseCard({
         </h3>
         <p
           className={cn(
-            'mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium sm:text-sm',
+            'mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium sm:text-sm',
             isStudent
               ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#3b3b40]'
               : 'border-slate-200 bg-slate-50 text-slate-600',

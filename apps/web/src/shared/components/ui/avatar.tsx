@@ -63,6 +63,8 @@ export interface AvatarProps {
   className?: string;
   /** Alt text for the image. Defaults to name. */
   alt?: string;
+  /** Image fit mode. Defaults to `cover`. */
+  fit?: 'cover' | 'contain';
 }
 
 const sizeClasses = {
@@ -73,7 +75,7 @@ const sizeClasses = {
   xl: 'w-20 h-20 text-2xl',
 };
 
-export function Avatar({ src, name, size = 'md', className, alt = name }: AvatarProps) {
+export function Avatar({ src, name, size = 'md', className, alt = name, fit = 'cover' }: AvatarProps) {
   const [imgFailed, setImgFailed] = React.useState(false);
   const showImage = Boolean(src && !imgFailed);
   const initials = getInitials(name);
@@ -96,7 +98,7 @@ export function Avatar({ src, name, size = 'md', className, alt = name }: Avatar
           alt={alt}
           width={size === 'xs' ? 24 : size === 'sm' ? 32 : size === 'md' ? 40 : size === 'lg' ? 48 : 80}
           height={size === 'xs' ? 24 : size === 'sm' ? 32 : size === 'md' ? 40 : size === 'lg' ? 48 : 80}
-          className="w-full h-full object-cover"
+          className={cn('w-full h-full', fit === 'contain' ? 'object-contain' : 'object-cover')}
           unoptimized
           onError={() => setImgFailed(true)}
         />

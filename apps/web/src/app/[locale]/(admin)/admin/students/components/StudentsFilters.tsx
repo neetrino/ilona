@@ -125,7 +125,69 @@ export function StudentsFilters({
       </div>
 
       {/* Filters */}
-      <div className="grid w-full min-w-0 grid-cols-1 gap-3 items-end sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
+      <div className="space-y-3 sm:hidden">
+        <div className="grid grid-cols-2 gap-3">
+          <FilterDropdown
+            label={t('statusFilter')}
+            options={statusFilterOptions}
+            selectedIds={selectedStatusIds}
+            onSelectionChange={onStatusChange}
+            placeholder={t('allStatuses')}
+          />
+          <FilterDropdown
+            label={t('lifecycleFilter')}
+            options={lifecycleFilterOptions}
+            selectedIds={selectedLifecycleIds}
+            onSelectionChange={onLifecycleChange}
+            placeholder={tc('all')}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <SingleSelectDropdown
+            id="students-month-filter-mobile"
+            label={tc('month')}
+            options={monthOptions}
+            value={String(selectedMonth)}
+            onValueChange={(nextValue) => {
+              if (nextValue) onMonthChange(Number(nextValue));
+            }}
+          />
+          <SingleSelectDropdown
+            id="students-year-filter-mobile"
+            label={tc('year')}
+            options={yearOptions}
+            value={String(selectedYear)}
+            onValueChange={(nextValue) => {
+              if (nextValue) onYearChange(Number(nextValue));
+            }}
+          />
+        </div>
+
+        <div>
+          <FilterDropdown
+            label={tc('teacher')}
+            options={teacherFilterOptions}
+            selectedIds={selectedTeacherIds}
+            onSelectionChange={onTeacherChange}
+            placeholder={t('allTeachers')}
+            isLoading={isLoadingTeachers}
+          />
+        </div>
+
+        <div>
+          <FilterDropdown
+            label={tc('group')}
+            options={groupFilterOptions}
+            selectedIds={selectedGroupIds}
+            onSelectionChange={onGroupChange}
+            placeholder={t('allGroups')}
+          />
+        </div>
+
+      </div>
+
+      <div className="hidden w-full min-w-0 grid-cols-2 items-end gap-3 sm:grid md:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
         <FilterDropdown
           label={t('statusFilter')}
           options={statusFilterOptions}
@@ -133,12 +195,23 @@ export function StudentsFilters({
           onSelectionChange={onStatusChange}
           placeholder={t('allStatuses')}
         />
-        <FilterDropdown
-          label={t('lifecycleFilter')}
-          options={lifecycleFilterOptions}
-          selectedIds={selectedLifecycleIds}
-          onSelectionChange={onLifecycleChange}
-          placeholder={tc('all')}
+        <SingleSelectDropdown
+          id="students-year-filter"
+          label={tc('year')}
+          options={yearOptions}
+          value={String(selectedYear)}
+          onValueChange={(nextValue) => {
+            if (nextValue) onYearChange(Number(nextValue));
+          }}
+        />
+        <SingleSelectDropdown
+          id="students-month-filter"
+          label={tc('month')}
+          options={monthOptions}
+          value={String(selectedMonth)}
+          onValueChange={(nextValue) => {
+            if (nextValue) onMonthChange(Number(nextValue));
+          }}
         />
         <FilterDropdown
           label={tc('teacher')}
@@ -155,23 +228,12 @@ export function StudentsFilters({
           onSelectionChange={onGroupChange}
           placeholder={t('allGroups')}
         />
-        <SingleSelectDropdown
-          id="students-month-filter"
-          label={tc('month')}
-          options={monthOptions}
-          value={String(selectedMonth)}
-          onValueChange={(nextValue) => {
-            if (nextValue) onMonthChange(Number(nextValue));
-          }}
-        />
-        <SingleSelectDropdown
-          id="students-year-filter"
-          label={tc('year')}
-          options={yearOptions}
-          value={String(selectedYear)}
-          onValueChange={(nextValue) => {
-            if (nextValue) onYearChange(Number(nextValue));
-          }}
+        <FilterDropdown
+          label={t('lifecycleFilter')}
+          options={lifecycleFilterOptions}
+          selectedIds={selectedLifecycleIds}
+          onSelectionChange={onLifecycleChange}
+          placeholder={tc('all')}
         />
       </div>
     </div>

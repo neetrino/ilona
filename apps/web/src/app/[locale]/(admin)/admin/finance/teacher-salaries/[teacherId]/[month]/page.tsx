@@ -10,7 +10,7 @@ import { useSalaryBreakdown, useExcludeLessonsFromSalary, financeKeys } from '@/
 import { TeacherSubstituteBadge, substituteLessonChipClassName } from '@/features/finance';
 import type { SalaryBreakdownLesson } from '@/features/finance/types';
 import { cn } from '@/shared/lib/utils';
-import { Trash2, ArrowLeft } from 'lucide-react';
+import { Trash2, ArrowLeft, Wallet, TrendingDown, TrendingUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ObligationDetailsModal } from '@/features/finance/components/ObligationDetailsModal';
 import {
@@ -366,7 +366,7 @@ export default function SalaryBreakdownPage() {
           <>
             <div
               className={cn(
-                'grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 lg:gap-6',
+                'grid grid-cols-2 gap-4 md:gap-5 lg:gap-6',
                 substituteSummary.lessonCount > 0 ? 'lg:grid-cols-5' : 'lg:grid-cols-4',
               )}
             >
@@ -424,35 +424,146 @@ export default function SalaryBreakdownPage() {
         ) : (
           cardState(
             <>
-              <DataTable
-                columns={breakdownColumns}
-                data={sortedLessons}
-                keyExtractor={(lesson) => lesson.lessonId}
-                isLoading={false}
-                emptyMessage={t('breakdownNoLessons')}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSort={handleSort}
-                embedInParentCard
-              />
-              <div className="px-6 py-4 border-t border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 sm:gap-8 text-sm">
-                <span className="text-[#8b8b90] font-medium uppercase tracking-wide">{t('totals')}</span>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 justify-end">
-                  <span>
-                    <span className="text-[#8b8b90] mr-2">{t('lessonSalary')}</span>
-                    <span className="font-semibold text-[#3b3b40]">{formatCurrency(totalSalary)}</span>
-                  </span>
-                  <span>
-                    <span className="text-[#8b8b90] mr-2">{t('lessonDeduction')}</span>
-                    <span className="font-medium text-red-600">
-                      {totalDeduction > 0 ? '−' : ''}
-                      {formatCurrency(totalDeduction)}
+              <div className="space-y-3 p-3 sm:hidden">
+                {sortedLessons.map((lesson) => (
+                  <article
+                    key={`mobile-${lesson.lessonId}`}
+                    className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(14,14,16,0.03)]"
+                  >
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedLessonIds.has(lesson.lessonId)}
+                        onChange={(e) => handleSelectOne(lesson.lessonId, e.target.checked)}
+                        className="my-auto h-5 w-5 rounded border-[rgba(14,14,16,0.2)] accent-[#1010a3]"
+                        aria-label={`Select lesson ${lesson.lessonName}`}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start gap-2 min-w-0">
+                          {lesson.isSubstituteLesson ? (
+                            <span className={`${substituteLessonChipClassName} mt-0.5`}>
+                              {t('substituteLessonBadge')}
+                            </span>
+                          ) : null}
+                          <p className="truncate text-[1.05rem] font-semibold text-[#1f2937]">
+                            {lesson.groupName || lesson.lessonName}
+                          </p>
+                        </div>
+                        <p className="mt-1 text-sm text-[#64748b]">{teacherName}</p>
+                      </div>
+                    </div>
+
+                    <div className="my-3 border-t border-[rgba(14,14,16,0.08)]" />
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] px-3 py-3">
+                        <p className="text-sm text-[#64748b]">{t('lessonDate')}</p>
+                        <p className="mt-1 text-sm font-semibold text-[#0f172a]">{formatDate(lesson.lessonDate)}</p>
+                      </div>
+                      <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] px-3 py-3">
+                        <p className="text-sm text-[#64748b]">{t('obligation')}</p>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedLessonIdForObligation(lesson.lessonId);
+                            setIsObligationModalOpen(true);
+                          }}
+                          className="mt-1 text-sm font-semibold text-[#1010a3]"
+                        >
+                          {lesson.obligationCompleted}/{lesson.obligationTotal}
+                        </button>
+                      </div>
+                      <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] px-3 py-3">
+                        <p className="text-sm text-[#64748b]">{t('lessonSalary')}</p>
+                        <p className="mt-1 text-sm font-semibold text-[#0f172a]">{formatCurrency(lesson.salary)}</p>
+                      </div>
+                      <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] px-3 py-3">
+                        <p className="text-sm text-[#64748b]">{t('lessonDeduction')}</p>
+                        <p className="mt-1 text-sm font-semibold text-red-600">
+                          {lesson.deduction > 0 ? '−' : ''}
+                          {formatCurrency(lesson.deduction)}
+                        </p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <div className="hidden sm:block">
+                <DataTable
+                  columns={breakdownColumns}
+                  data={sortedLessons}
+                  keyExtractor={(lesson) => lesson.lessonId}
+                  isLoading={false}
+                  emptyMessage={t('breakdownNoLessons')}
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={handleSort}
+                  embedInParentCard
+                />
+              </div>
+
+              <div className="border-t border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60">
+                <div className="space-y-3 p-3 sm:hidden">
+                  <div className="rounded-2xl bg-white p-4 shadow-[0_1px_2px_rgba(14,14,16,0.03)]">
+                    <p className="mb-4 text-[1.9rem] font-semibold leading-none text-[#111827]">{t('totals')}</p>
+                    <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-[#fafafa] px-4 py-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="inline-flex size-11 items-center justify-center rounded-full bg-[#eef0ff] text-[#5b6470]">
+                          <Wallet className="h-5 w-5" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-[#7c828d]">{t('lessonSalary')}</p>
+                        </div>
+                        <p className="whitespace-nowrap text-right text-[clamp(1rem,5.3vw,1.5rem)] font-semibold leading-none text-[#111827]">
+                          {formatCurrency(totalSalary)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                      <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-[#fafafa] px-4 py-3">
+                        <div className="mb-2 inline-flex size-11 items-center justify-center rounded-full bg-[#ffeef0] text-[#d22839]">
+                          <TrendingDown className="h-5 w-5" />
+                        </div>
+                        <p className="text-sm text-[#5f6672]">{t('lessonDeduction')}</p>
+                        <p className="mt-1 whitespace-nowrap text-[clamp(1rem,5.2vw,1.5rem)] font-semibold leading-none text-[#d22839]">
+                          {totalDeduction > 0 ? '−' : ''}
+                          {formatCurrency(totalDeduction)}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-[#fafafa] px-4 py-3">
+                        <div className="mb-2 inline-flex size-11 items-center justify-center rounded-full bg-[#e9f8f0] text-[#0f8a47]">
+                          <TrendingUp className="h-5 w-5" />
+                        </div>
+                        <p className="text-sm text-[#5f6672]">{t('rowTotal')}</p>
+                        <p className="mt-1 whitespace-nowrap text-[clamp(1rem,5.2vw,1.5rem)] font-semibold leading-none text-[#111827]">
+                          {formatCurrency(totalNet)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hidden flex-col gap-3 px-6 py-4 text-sm sm:flex">
+                  <span className="text-[#8b8b90] font-medium uppercase tracking-wide">{t('totals')}</span>
+                  <div className="flex flex-col gap-2">
+                    <span className="flex items-center justify-between gap-4">
+                      <span className="text-[#8b8b90]">{t('lessonSalary')}</span>
+                      <span className="font-semibold text-[#3b3b40]">{formatCurrency(totalSalary)}</span>
                     </span>
-                  </span>
-                  <span>
-                    <span className="text-[#8b8b90] mr-2">{t('rowTotal')}</span>
-                    <span className="font-semibold text-[#3b3b40]">{formatCurrency(totalNet)}</span>
-                  </span>
+                    <span className="flex items-center justify-between gap-4">
+                      <span className="text-[#8b8b90]">{t('lessonDeduction')}</span>
+                      <span className="font-medium text-red-600">
+                        {totalDeduction > 0 ? '−' : ''}
+                        {formatCurrency(totalDeduction)}
+                      </span>
+                    </span>
+                    <span className="flex items-center justify-between gap-4">
+                      <span className="text-[#8b8b90]">{t('rowTotal')}</span>
+                      <span className="font-semibold text-[#3b3b40]">{formatCurrency(totalNet)}</span>
+                    </span>
+                  </div>
                 </div>
               </div>
             </>,

@@ -9,10 +9,10 @@ import { useUpdateStudent, useStudent, type UpdateStudentDto } from '@/features/
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, type TouchEvent } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
-import { formatPhoneForDisplay } from '@/shared/lib/utils';
+import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -101,6 +101,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const updateStudent = useUpdateStudent();
   const { data: student, isLoading: isLoadingStudent } = useStudent(studentId, open);
 
@@ -261,8 +267,80 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       reset();
       setErrorMessage(null);
       setSuccessMessage(null);
+      setDragOffsetY(0);
+      setIsDragging(false);
+      setIsSettling(false);
     }
   }, [open, reset]);
+
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) {
+        clearTimeout(settleTimerRef.current);
+      }
+    };
+  }, []);
+
+  const isMobileViewport = () =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
+  const resetDragRefs = () => {
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    setIsDragging(false);
+  };
+
+  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    touchStartYRef.current = firstTouch.clientY;
+    touchStartXRef.current = firstTouch.clientX;
+    setIsSettling(false);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    const deltaY = firstTouch.clientY - touchStartYRef.current;
+    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
+    if (deltaY <= 0 || deltaY <= deltaX) return;
+    event.preventDefault();
+    setDragOffsetY(Math.min(deltaY * 0.95, 340));
+  };
+
+  const handleDragEnd = () => {
+    if (!isMobileViewport()) return;
+    if (!isDragging) return;
+    const shouldClose = dragOffsetY > 110;
+    resetDragRefs();
+    if (shouldClose) {
+      setDragOffsetY(0);
+      onOpenChange(false);
+      return;
+    }
+    setIsSettling(true);
+    setDragOffsetY(0);
+    settleTimerRef.current = setTimeout(() => {
+      setIsSettling(false);
+      settleTimerRef.current = null;
+    }, 280);
+  };
+
+  const dragStyle =
+    dragOffsetY > 0 || isSettling
+      ? {
+          transform: `translateY(${dragOffsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }
+      : undefined;
 
   const onSubmit = async (data: UpdateStudentFormData) => {
     setErrorMessage(null);
@@ -322,11 +400,33 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{tForm('editTitle')}</DialogTitle>
-          <DialogDescription>{tForm('editDescription')}</DialogDescription>
-        </DialogHeader>
+      <DialogContent
+        style={dragStyle}
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        className={cn(
+          'bottom-[7px] left-0 top-auto z-50 w-full max-w-none translate-x-0 translate-y-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] p-0 [&>button]:hidden',
+          'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
+          'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
+          'h-[calc(94dvh+7px)]',
+          'sm:left-[50%] sm:top-[50%] sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-lg sm:border sm:bg-background sm:p-6'
+        )}
+      >
+        <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sm:hidden">
+          <div
+            className="absolute inset-x-0 -top-2 h-14"
+            style={{ touchAction: 'pan-y' }}
+            onTouchStart={handleDragStart}
+            onTouchMove={handleDragMove}
+            onTouchEnd={handleDragEnd}
+            onTouchCancel={handleDragEnd}
+          />
+          <div className="h-1.5 w-14 rounded-full bg-slate-400" />
+        </div>
+        <div className="overflow-y-auto overflow-x-hidden px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:px-0 sm:pb-0 sm:pt-0">
+          <DialogHeader>
+            <DialogTitle>{tForm('editTitle')}</DialogTitle>
+            <DialogDescription>{tForm('editDescription')}</DialogDescription>
+          </DialogHeader>
 
         {isLoadingStudent ? (
           <div className="flex items-center justify-center py-8">
@@ -382,7 +482,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="dateOfBirth">{t('dateOfBirth')}</Label>
                 <Input
@@ -615,7 +715,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               </Label>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -635,6 +735,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             </DialogFooter>
           </form>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );

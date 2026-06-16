@@ -1,27 +1,23 @@
 'use client';
 
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from '@/shared/components/ui';
 import { useCreateStudent } from '../hooks/useStudents';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { createStudentSchema, type CreateStudentFormData } from '../student-account-form.schema';
 import { formDataToCreateStudentDto } from '../student-account-form.payload';
 import { resolveAgeFromDobAndManual } from '../student-account-form.age';
 import { StudentAccountFormFieldsCrmLeadLayout } from './StudentAccountFormFieldsCrmLeadLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { cn } from '@/shared/lib/utils';
 
 interface AddStudentFormProps {
   open: boolean;
@@ -31,6 +27,13 @@ interface AddStudentFormProps {
 export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(open);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const createStudent = useCreateStudent();
   const user = useAuthStore((s) => s.user);
   const isManager = user?.role === 'MANAGER';
@@ -121,12 +124,93 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   const showParentSection = computedAge !== undefined && computedAge < 18;
 
   useEffect(() => {
+    setIsDialogOpen(open);
+  }, [open]);
+
+  useEffect(() => {
     if (!open) {
       reset();
       setErrorMessage(null);
       setSuccessMessage(null);
+      setDragOffsetY(0);
+      setIsDragging(false);
+      setIsSettling(false);
     }
   }, [open, reset]);
+
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) {
+        clearTimeout(settleTimerRef.current);
+      }
+    };
+  }, []);
+
+  const requestClose = useCallback(() => {
+    setIsDialogOpen(false);
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const isMobileViewport = () =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
+  const resetDragRefs = () => {
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    setIsDragging(false);
+  };
+
+  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    touchStartYRef.current = firstTouch.clientY;
+    touchStartXRef.current = firstTouch.clientX;
+    setIsSettling(false);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    const deltaY = firstTouch.clientY - touchStartYRef.current;
+    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
+    if (deltaY <= 0 || deltaY <= deltaX) return;
+    event.preventDefault();
+    setDragOffsetY(Math.min(deltaY * 0.95, 340));
+  };
+
+  const handleDragEnd = () => {
+    if (!isMobileViewport()) return;
+    if (!isDragging) return;
+    const shouldClose = dragOffsetY > 110;
+    resetDragRefs();
+    if (shouldClose) {
+      setDragOffsetY(0);
+      requestClose();
+      return;
+    }
+    setIsSettling(true);
+    setDragOffsetY(0);
+    settleTimerRef.current = setTimeout(() => {
+      setIsSettling(false);
+      settleTimerRef.current = null;
+    }, 280);
+  };
+
+  const dragStyle =
+    dragOffsetY > 0 || isSettling
+      ? {
+          transform: `translateY(${dragOffsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }
+      : undefined;
 
   useEffect(() => {
     if (computedAge !== undefined && computedAge >= 18) {
@@ -160,17 +244,42 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Add New Student</DialogTitle>
-          <DialogDescription>
-            Basic info and phone first, then account credentials, dates, parent details when under 18, academic
-            assignment, then billing. Voice and lead comment stay on the CRM board only.
-          </DialogDescription>
-        </DialogHeader>
+    <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content
+          style={dragStyle}
+          className={cn(
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-3xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
+            'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0'
+          )}
+          aria-describedby={undefined}
+        >
+          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sm:hidden">
+            <div
+              className="absolute inset-x-0 -top-2 h-14"
+              onTouchStart={handleDragStart}
+              onTouchMove={handleDragMove}
+              onTouchEnd={handleDragEnd}
+              onTouchCancel={handleDragEnd}
+            />
+            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
+          </div>
+          <DialogPrimitive.Title className="sr-only">Add New Student</DialogPrimitive.Title>
+          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-[#3b3b40]">Add New Student</h2>
+              <p className="mt-1 text-sm text-[#8b8b90]">
+                Basic info and phone first, then account credentials, dates, parent details when under 18, academic
+                assignment, then billing. Voice and lead comment stay on the CRM board only.
+              </p>
+            </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {successMessage && (
             <div className="rounded-lg border border-green-200 bg-green-50 p-3">
               <p className="text-sm text-green-600">{successMessage}</p>
@@ -202,13 +311,13 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             groupsForAssignmentFilter={assignmentGroups}
           />
 
-          <DialogFooter>
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="outline"
               onClick={() => {
                 reset();
-                onOpenChange(false);
+                requestClose();
                 setErrorMessage(null);
                 setSuccessMessage(null);
               }}
@@ -219,9 +328,11 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             <Button type="submit" isLoading={isSubmitting || createStudent.isPending}>
               {isSubmitting || createStudent.isPending ? 'Creating...' : 'Create Student'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
