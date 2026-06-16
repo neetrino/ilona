@@ -33,6 +33,7 @@ function formatIsoDay(value: string): string {
 }
 
 const DIRECTORY_PAGE_SIZE = 100;
+const RECORDINGS_PAGE_SIZE = 5;
 const FILTERS_STORAGE_KEY = 'admin-recordings:filters-v3';
 const LEGACY_FILTERS_KEY = 'admin-recordings:filters-v2';
 const LEGACY_GROUP_KEY = 'admin-recordings:selected-group';
@@ -170,9 +171,7 @@ export default function AdminRecordingPage() {
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [selectedRecordingIds, setSelectedRecordingIds] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [page, setPage] = useState(0);
   const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -469,54 +468,23 @@ export default function AdminRecordingPage() {
     dateTo,
   ]);
 
-  // Reconcile selected ids with visible rows
   useEffect(() => {
-    setSelectedRecordingIds((prev) => {
-      if (prev.size === 0) return prev;
-      const visibleIds = new Set(
-        visibleRecordings
-          .map((row) => row.recording?.id)
-          .filter((id): id is string => Boolean(id)),
-      );
-      const next = new Set<string>();
-      prev.forEach((id) => {
-        if (visibleIds.has(id)) next.add(id);
-      });
-      if (next.size === prev.size) return prev;
-      return next;
-    });
-  }, [visibleRecordings]);
+    setPage(0);
+  }, [selectedGroupIds, selectedStudentUserIds, search, dateFrom, dateTo]);
 
-  const allVisibleSelected =
-    visibleRecordings.some((row) => row.recording !== null) &&
-    visibleRecordings
-      .filter((row) => row.recording !== null)
-      .every((row) =>
-        row.recording ? selectedRecordingIds.has(row.recording.id) : false,
-      );
+  const totalPages = Math.max(1, Math.ceil(visibleRecordings.length / RECORDINGS_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const paginatedRecordings = useMemo(
+    () =>
+      visibleRecordings.slice(
+        safePage * RECORDINGS_PAGE_SIZE,
+        safePage * RECORDINGS_PAGE_SIZE + RECORDINGS_PAGE_SIZE,
+      ),
+    [safePage, visibleRecordings],
+  );
 
-  const toggleAll = () => {
-    if (allVisibleSelected) {
-      setSelectedRecordingIds(new Set());
-    } else {
-      setSelectedRecordingIds(
-        new Set(
-          visibleRecordings
-            .map((row) => row.recording?.id)
-            .filter((id): id is string => Boolean(id)),
-        ),
-      );
-    }
-  };
-
-  const toggleOne = (id: string) => {
-    setSelectedRecordingIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const rangeStart = visibleRecordings.length === 0 ? 0 : safePage * RECORDINGS_PAGE_SIZE + 1;
+  const rangeEnd = Math.min((safePage + 1) * RECORDINGS_PAGE_SIZE, visibleRecordings.length);
 
   const clearAllFilters = () => {
     setSelectedGroupIds(new Set());
@@ -632,32 +600,122 @@ export default function AdminRecordingPage() {
 
       <div className="mb-3 text-sm text-[#8b8b90]">
         {t('studentsShown', { count: visibleRecordings.length })}
-        {selectedRecordingIds.size > 0 && (
-          <span className="ml-3 text-[#3b3b40] font-medium">
-            {t('selectedCount', { count: selectedRecordingIds.size })}
-          </span>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="space-y-3 sm:hidden">
+        {isLoading || isLoadingDirectory ? (
+          Array.from({ length: 4 }).map((_, idx) => (
+            <div
+              key={`mobile-skeleton-${idx}`}
+              className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white p-4"
+            >
+              <div className="h-5 w-32 animate-pulse rounded bg-[#f6f6f7]" />
+              <div className="mt-2 h-4 w-40 animate-pulse rounded bg-[#f6f6f7]" />
+              <div className="mt-3 h-4 w-28 animate-pulse rounded bg-[#f6f6f7]" />
+              <div className="mt-4 h-9 w-32 animate-pulse rounded-lg bg-[#f6f6f7]" />
+            </div>
+          ))
+        ) : visibleRecordings.length === 0 ? (
+          <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white px-4 py-10 text-center text-sm text-[#8b8b90]">
+            {studentDirectory.length === 0
+              ? t('noStudentsInDirectory')
+              : t('noStudentsForFilters')}
+          </div>
+        ) : (
+          paginatedRecordings.map((row) => {
+            const recording = row.recording;
+            const recordingId = recording?.id ?? null;
+            const isActive =
+              recordingId !== null && activeRecordingId === recordingId;
+            return (
+              <article
+                key={`mobile-${row.studentUserId}`}
+                className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(14,14,16,0.03)]"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-[1.35rem] font-semibold leading-tight tracking-[-0.01em] text-[#1f2937]">
+                    {row.groupName}
+                  </p>
+                  <p className="mt-1 truncate text-[1rem] text-[#3b3b40]">
+                    {row.studentFullName}
+                  </p>
+                  <div className="mt-2 flex items-start gap-2 text-[#8b8b90]">
+                    <svg
+                      className="mt-[2px] h-4 w-4 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <div className="text-[1.05rem] leading-snug">
+                      <p>{t('dateTime')}</p>
+                      <p className="text-[#3b3b40]">
+                        {recording ? formatDateTime(recording.createdAt) : '-'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-end">
+                  {!recording ? (
+                    <span className="inline-flex items-center rounded-xl border border-amber-300 px-3 py-1.5 text-sm font-medium text-amber-700">
+                      {t('noVoiceRecorded')}
+                    </span>
+                  ) : isActive ? (
+                    <div className="w-full">
+                      <VoiceMessagePlayer
+                        fileUrl={recording.fileUrl}
+                        duration={recording.duration}
+                        fileName={recording.fileName}
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setActiveRecordingId(recording.id)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-[#1010a3]/20 px-3 py-1.5 text-sm font-medium text-[#1010a3] transition-colors hover:bg-[#1010a3]/5"
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      {t('play')}
+                    </button>
+                  )}
+                </div>
+              </article>
+            );
+          })
         )}
       </div>
 
-      {/* Table */}
-      <div className="bg-white border border-[rgba(14,14,16,0.07)] rounded-xl overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden overflow-hidden rounded-xl border border-[rgba(14,14,16,0.07)] bg-white sm:block">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
               <tr>
-                <th className="w-12 px-4 py-3 text-left">
-                  <input
-                    type="checkbox"
-                    aria-label={t('selectAllVisible')}
-                    className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer"
-                    checked={allVisibleSelected}
-                    onChange={toggleAll}
-                    disabled={
-                      visibleRecordings.length === 0 ||
-                      visibleRecordings.every((row) => row.recording === null)
-                    }
-                  />
-                </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   {tCommon('group')}
                 </th>
@@ -677,9 +735,6 @@ export default function AdminRecordingPage() {
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={`skeleton-${idx}`}>
                     <td className="px-4 py-4">
-                      <div className="h-4 w-4 bg-[#f6f6f7] animate-pulse rounded" />
-                    </td>
-                    <td className="px-4 py-4">
                       <div className="h-4 w-24 bg-[#f6f6f7] animate-pulse rounded" />
                     </td>
                     <td className="px-4 py-4">
@@ -696,7 +751,7 @@ export default function AdminRecordingPage() {
               ) : visibleRecordings.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={4}
                     className="px-4 py-10 text-center text-sm text-[#8b8b90]"
                   >
                     {studentDirectory.length === 0
@@ -705,7 +760,7 @@ export default function AdminRecordingPage() {
                   </td>
                 </tr>
               ) : (
-                visibleRecordings.map((row) => {
+                paginatedRecordings.map((row) => {
                   const recording = row.recording;
                   const recordingId = recording?.id ?? null;
                   const isActive =
@@ -715,21 +770,6 @@ export default function AdminRecordingPage() {
                       key={row.studentUserId}
                       className="hover:bg-[#fafafa]/60 transition-colors"
                     >
-                      <td className="px-4 py-3 align-middle">
-                        <input
-                          type="checkbox"
-                          aria-label={t('selectRecordingFor', { name: row.studentFullName })}
-                          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer"
-                          checked={
-                            recordingId !== null &&
-                            selectedRecordingIds.has(recordingId)
-                          }
-                          disabled={recordingId === null}
-                          onChange={() => {
-                            if (recordingId) toggleOne(recordingId);
-                          }}
-                        />
-                      </td>
                       <td className="px-4 py-3 align-middle">
                         <span className="text-sm text-[#3b3b40]">
                           {row.groupName}
@@ -802,6 +842,41 @@ export default function AdminRecordingPage() {
           </table>
         </div>
       </div>
+
+      {visibleRecordings.length > 0 && (
+        <div className="mt-4 flex items-center justify-between text-sm text-[#8b8b90]">
+          <span>
+            Showing {rangeStart}-{rangeEnd} of {visibleRecordings.length}
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] disabled:opacity-40"
+              disabled={safePage === 0}
+              onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+              aria-label="Previous page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-[#1010a3] px-3 text-sm font-semibold text-white">
+              {safePage + 1}
+            </span>
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] disabled:opacity-40"
+              disabled={safePage >= totalPages - 1}
+              onClick={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
+              aria-label="Next page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
       </div>
     </DashboardLayout>
   );
