@@ -143,7 +143,7 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
           <Header center={data?.center ?? null} onClose={onClose} />
           <Tabs activeTab={activeTab} setActiveTab={setActiveTab} counts={data?.counts} />
 
-          <div className="overflow-y-auto p-4 sm:p-6">
+          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
             {isLoading && <p className="text-sm text-slate-500">Loading…</p>}
             {error && (
               <p className="text-sm text-red-600">
