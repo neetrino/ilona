@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { AdminAvatarPhotoLightbox, AdminDetailModal, Avatar, Badge, PublicAssetImage } from '@/shared/components/ui';
+import { AdminAvatarPhotoLightbox, Avatar, Badge, PublicAssetImage } from '@/shared/components/ui';
 import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { portalInnerCardClass, portalPrimaryButtonClass } from '@/shared/lib/portal-theme';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
@@ -22,6 +23,7 @@ import {
   Phone,
   UserCircle,
   Users,
+  X,
 } from 'lucide-react';
 
 export interface StudentDetailsModalProps {
@@ -96,6 +98,17 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
   const { data: statistics } = useStudentStatistics(studentId || '', !!studentId && open && !!student);
 
   const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(open);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setIsDialogOpen(open);
+  }, [open]);
 
   useEffect(() => {
     if (!open) setPhotoPreviewOpen(false);
@@ -105,13 +118,79 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
     setPhotoPreviewOpen(false);
   }, [studentId]);
 
-  const handleEscapeKey = useCallback(() => {
-    if (photoPreviewOpen) {
-      setPhotoPreviewOpen(false);
-      return true;
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) {
+        clearTimeout(settleTimerRef.current);
+      }
+    };
+  }, []);
+
+  const requestClose = useCallback(() => {
+    setIsDialogOpen(false);
+    onClose();
+  }, [onClose]);
+
+  const isMobileViewport = () =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
+  const resetDragRefs = () => {
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    setIsDragging(false);
+  };
+
+  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
     }
-    return false;
-  }, [photoPreviewOpen]);
+    touchStartYRef.current = firstTouch.clientY;
+    touchStartXRef.current = firstTouch.clientX;
+    setIsSettling(false);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    const deltaY = firstTouch.clientY - touchStartYRef.current;
+    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
+    if (deltaY <= 0 || deltaY <= deltaX) return;
+    event.preventDefault();
+    setDragOffsetY(Math.min(deltaY * 0.95, 340));
+  };
+
+  const handleDragEnd = () => {
+    if (!isMobileViewport()) return;
+    if (!isDragging) return;
+    const shouldClose = dragOffsetY > 110;
+    resetDragRefs();
+    if (shouldClose) {
+      setDragOffsetY(0);
+      requestClose();
+      return;
+    }
+    setIsSettling(true);
+    setDragOffsetY(0);
+    settleTimerRef.current = setTimeout(() => {
+      setIsSettling(false);
+      settleTimerRef.current = null;
+    }, 280);
+  };
+
+  const dragStyle =
+    dragOffsetY > 0 || isSettling
+      ? {
+          transform: `translateY(${dragOffsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }
+      : undefined;
 
   const fullName = useMemo(() => {
     const first = student?.user?.firstName || '';
@@ -138,25 +217,53 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
         onClose={() => setPhotoPreviewOpen(false)}
       />
 
-      <AdminDetailModal
-        open={open}
-        onClose={onClose}
-        aria-label={t('studentDetails')}
-        closeAriaLabel={tCommon('close')}
-        onEscapeKey={handleEscapeKey}
-        title={
-          <>
-            <Image
-              src="/students-logo.webp"
-              alt=""
-              className="w-5 h-5 object-contain flex-shrink-0"
-              width={20}
-              height={20}
-            />
-            {t('studentDetails')}
-          </>
-        }
+      <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+      <DialogPrimitive.Portal>
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <DialogPrimitive.Content
+        style={dragStyle}
+        className={cn(
+          'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+          'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
+          'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
+          'h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+          'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-4xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
+          'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0'
+        )}
+        aria-describedby={undefined}
       >
+      <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sm:hidden">
+        <div
+          className="absolute inset-x-0 -top-2 h-14"
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+          onTouchCancel={handleDragEnd}
+        />
+        <div className="h-1.5 w-14 rounded-full bg-slate-400" />
+      </div>
+      <DialogPrimitive.Title className="sr-only">{t('studentDetails')}</DialogPrimitive.Title>
+      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-2">
+          <Image
+            src="/students-logo.webp"
+            alt=""
+            className="h-5 w-5 object-contain"
+            width={20}
+            height={20}
+          />
+          <h2 className="text-base font-semibold text-[#3b3b40] sm:text-lg">{t('studentDetails')}</h2>
+        </div>
+        <button
+          type="button"
+          onClick={requestClose}
+          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          aria-label={tCommon('close')}
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
       {!studentId ? (
         <p className="text-slate-500">{t('noStudentSelected')}</p>
       ) : isLoading ? (
@@ -400,7 +507,10 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
           </div>
         </>
       )}
-      </AdminDetailModal>
+      </div>
+      </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
     </>
   );
 }
