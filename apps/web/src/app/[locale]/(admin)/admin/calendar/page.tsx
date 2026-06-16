@@ -532,17 +532,29 @@ export default function CalendarPage() {
           </div>
 
           <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
-            <div className="inline-flex rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm">
+            <div className="relative inline-flex flex-1 rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm sm:w-[276px] sm:flex-none">
+              <span
+                className={cn(
+                  'pointer-events-none absolute bottom-1 left-1 top-1 z-0 rounded-md bg-[#1010a3] shadow-sm transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                  viewMode === 'list'
+                    ? locale === 'hy'
+                      ? 'w-[calc(50%-0.125rem)] sm:w-[calc(33.333%-0.166rem)] translate-x-0'
+                      : 'w-[calc(50%-0.125rem)] sm:w-[calc(33.333%-0.166rem)] translate-x-0'
+                    : viewMode === 'week'
+                      ? locale === 'hy'
+                        ? 'w-[calc(50%-0.125rem)] sm:w-[calc(33.333%-0.166rem)] translate-x-full sm:translate-x-[100%]'
+                        : 'w-[calc(50%-0.125rem)] sm:w-[calc(33.333%-0.166rem)] translate-x-full sm:translate-x-[100%]'
+                      : 'hidden sm:block sm:w-[calc(33.333%-0.166rem)] sm:translate-x-[200%]'
+                )}
+              />
               <button
                 type="button"
                 onClick={() => updateViewModeInUrl('list')}
                 className={cn(
-                  'py-2 font-semibold rounded-md transition-all',
+                  'relative z-10 flex-1 py-2 text-center font-semibold rounded-md transition-colors',
                   locale === 'hy' ? 'px-3 text-xs sm:px-4 sm:text-sm' : 'px-4 text-sm',
-                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-                  viewMode === 'list'
-                    ? 'bg-[#1010a3] text-white shadow-md'
-                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  'focus:outline-none',
+                  viewMode === 'list' ? 'text-white' : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'list'}
               >
@@ -552,12 +564,10 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => updateViewModeInUrl('week')}
                 className={cn(
-                  'py-2 font-semibold rounded-md transition-all',
+                  'relative z-10 flex-1 py-2 text-center font-semibold rounded-md transition-colors',
                   locale === 'hy' ? 'px-3 text-xs sm:px-4 sm:text-sm' : 'px-4 text-sm',
-                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-                  viewMode === 'week'
-                    ? 'bg-[#1010a3] text-white shadow-md'
-                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  'focus:outline-none',
+                  viewMode === 'week' ? 'text-white' : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'week'}
               >
@@ -567,11 +577,9 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => updateViewModeInUrl('month')}
                 className={cn(
-                  'hidden px-4 py-2 text-sm font-semibold rounded-md transition-all sm:inline-flex',
-                  'focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:ring-offset-2',
-                  viewMode === 'month'
-                    ? 'bg-[#1010a3] text-white shadow-md'
-                    : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  'relative z-10 hidden flex-1 px-4 py-2 text-center text-sm font-semibold rounded-md transition-colors sm:inline-flex sm:justify-center',
+                  'focus:outline-none',
+                  viewMode === 'month' ? 'text-white' : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
                 )}
                 aria-pressed={viewMode === 'month'}
               >

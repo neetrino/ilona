@@ -3,6 +3,8 @@
 import { Button, ListBoardViewToggle } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
+import { useTranslations as useTranslationsRuntime } from 'next-intl';
 import { useEffect } from 'react';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 
@@ -44,6 +46,8 @@ export function TeachersFilters({
   onPageChange,
   isUpdating = false,
 }: TeachersFiltersProps) {
+  const locale = useLocale();
+  const tGroups = useTranslationsRuntime('groups');
   const statusOptions = [
     { id: '', label: 'All statuses' },
     { id: 'ACTIVE', label: tStatus('active') },
@@ -108,19 +112,29 @@ export function TeachersFilters({
       </div>
 
       {isLg ? (
-        <ListBoardViewToggle
-          value={viewMode}
-          onChange={onViewModeChange}
-          listLabel="List"
-          boardLabel="Board"
-          className="w-full shrink-0 sm:w-auto"
-        />
+        <div className="flex w-full shrink-0 items-center gap-3 sm:w-auto">
+          <ListBoardViewToggle
+            value={viewMode}
+            onChange={onViewModeChange}
+            listLabel={tGroups('listView')}
+            boardLabel={tGroups('boardView')}
+            className="w-full sm:w-auto"
+          />
+          {/* Add Teacher Button */}
+          <Button
+            className="h-10 whitespace-nowrap rounded-lg bg-[#1010a3] px-4 text-sm font-medium text-white hover:bg-[#1010a3]/90"
+            onClick={onAddTeacher}
+            disabled={isDeleting}
+          >
+            + {t('addTeacher')}
+          </Button>
+        </div>
       ) : null}
 
-      {/* Add Teacher Button */}
-      <div className="w-full shrink-0 sm:w-auto">
+      {/* Add Teacher Button (mobile) */}
+      <div className="w-full shrink-0 sm:hidden">
         <Button 
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1010a3] px-6 py-3 font-medium text-white hover:bg-[#1010a3]/90 sm:w-auto"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#1010a3] px-4 font-medium text-white hover:bg-[#1010a3]/90"
           onClick={onAddTeacher}
           disabled={isDeleting}
         >
@@ -137,7 +151,7 @@ export function TeachersFilters({
               d="M12 4v16m8-8H4"
             />
           </svg>
-          {t('addTeacher')}
+          <span className={locale === 'hy' ? 'text-sm' : 'text-base'}>+ {t('addTeacher')}</span>
         </Button>
       </div>
       </div>

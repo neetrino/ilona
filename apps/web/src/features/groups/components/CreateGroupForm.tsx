@@ -17,6 +17,7 @@ import { GroupIconPicker } from './GroupIconPicker';
 import type { GroupIconKey } from '@ilona/types';
 import { defaultMonthDateRange, scheduleSlotsValidationError } from '../group-schedule-utils';
 import { cn } from '@/shared/lib/utils';
+import { X } from 'lucide-react';
 
 type CreateGroupFormData = {
   name: string;
@@ -321,6 +322,12 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
           <DialogPrimitive.Title className="sr-only">{tForm('addTitle')}</DialogPrimitive.Title>
           <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
             <div className="mb-4">
+              <DialogPrimitive.Close
+                className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:inline-flex"
+                aria-label={tCommon('close')}
+              >
+                <X className="h-4 w-4" />
+              </DialogPrimitive.Close>
               <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
               <p className="mt-1 text-sm text-[#8b8b90]">{tForm('addDescription')}</p>
             </div>
