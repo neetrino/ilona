@@ -123,7 +123,11 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
   const { data, isLoading, error } = useQuery({
     queryKey: ['center-details', centerId],
     queryFn: () => fetchCenterDetails(centerId!),
-    enabled: !!centerId && open,
+    enabled: !!centerId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   return (
@@ -133,8 +137,11 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
         <DialogPrimitive.Content
           className={cn(
             'fixed inset-x-0 bottom-0 top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-0',
+            'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
             'h-[94dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
             'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-4xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
+            'sm:data-[state=open]:animate-none sm:data-[state=closed]:animate-none',
           )}
         >
           <DialogPrimitive.Title className="sr-only">
@@ -196,10 +203,10 @@ function Header({
       <button
         type="button"
         onClick={onClose}
-        className="rounded-xl border border-[#7ca5ff] p-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 sm:rounded-lg sm:border-0 sm:p-2"
+        className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
         aria-label="Close"
       >
-        <X className="size-5 sm:size-4" />
+        <X className="size-5" />
       </button>
     </div>
   );
@@ -265,7 +272,7 @@ function TeachersTab({ data }: { data: CenterDetails }) {
       {data.teachers.map((t) => (
         <li
           key={t.id}
-          className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-[#e2e5ea] bg-white p-3.5 sm:rounded-lg sm:border-slate-200 sm:p-3"
+          className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-[#e2e5ea] bg-white p-3.5 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 sm:animate-none sm:rounded-lg sm:border-slate-200 sm:p-3"
         >
           <div className="flex min-w-0 items-center gap-3">
             <Avatar src={t.user?.avatarUrl ?? undefined} name={teacherName(t)} size="md" />
@@ -296,7 +303,7 @@ function StudentsTab({ data }: { data: CenterDetails }) {
       {data.students.map((s) => (
         <li
           key={s.id}
-          className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-[#e2e5ea] bg-white p-3.5 sm:rounded-lg sm:border-slate-200 sm:p-3"
+          className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-[#e2e5ea] bg-white p-3.5 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 sm:animate-none sm:rounded-lg sm:border-slate-200 sm:p-3"
         >
           <div className="flex min-w-0 items-center gap-3">
             <Avatar src={s.user?.avatarUrl ?? undefined} name={userName(s.user)} size="md" />
@@ -325,7 +332,10 @@ function GroupsTab({ data }: { data: CenterDetails }) {
   return (
     <ul className="space-y-2">
       {data.groups.map((g) => (
-        <li key={g.id} className="rounded-lg border border-slate-200 bg-white p-3">
+        <li
+          key={g.id}
+          className="rounded-lg border border-slate-200 bg-white p-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 sm:animate-none"
+        >
           <div className="flex items-center justify-between gap-2">
             <p className="truncate text-sm font-semibold text-slate-900">{g.name}</p>
             <div className="flex items-center gap-2 text-xs text-slate-600">
@@ -378,7 +388,7 @@ function InfoTab({ data }: { data: CenterDetails }) {
     { label: 'Description', value: c.description },
   ];
   return (
-    <dl className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
+    <dl className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white animate-in fade-in-0 slide-in-from-bottom-2 duration-500 sm:animate-none">
       {rows.map((r) => (
         <div key={r.label} className="grid grid-cols-3 gap-4 px-4 py-3 text-sm">
           <dt className="font-medium text-slate-500">{r.label}</dt>
