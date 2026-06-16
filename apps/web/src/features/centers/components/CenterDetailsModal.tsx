@@ -132,8 +132,9 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           className={cn(
-            'fixed left-1/2 top-1/2 z-50 grid w-[95vw] max-w-4xl -translate-x-1/2 -translate-y-1/2',
-            'max-h-[90vh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-2xl border bg-white shadow-xl',
+            'fixed inset-x-0 bottom-0 top-auto z-50 grid w-full translate-y-0',
+            'h-[94dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-4xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
           )}
         >
           <DialogPrimitive.Title className="sr-only">
@@ -142,7 +143,7 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
           <Header center={data?.center ?? null} onClose={onClose} />
           <Tabs activeTab={activeTab} setActiveTab={setActiveTab} counts={data?.counts} />
 
-          <div className="overflow-y-auto p-6">
+          <div className="overflow-y-auto p-4 sm:p-6">
             {isLoading && <p className="text-sm text-slate-500">Loading…</p>}
             {error && (
               <p className="text-sm text-red-600">
@@ -171,22 +172,22 @@ function Header({
   const color = center?.colorHex ?? '#253046';
   return (
     <div
-      className="flex items-center justify-between gap-4 px-6 py-4"
+      className="flex items-center justify-between gap-4 bg-white px-4 py-4 sm:px-6"
       style={{ borderBottom: '1px solid #e2e8f0' }}
     >
       <div className="flex min-w-0 items-center gap-3">
         <div
-          className="flex size-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-black/5"
+          className="flex size-12 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-black/5 sm:size-10"
           style={{ backgroundColor: color }}
         >
-          <Building2 className="size-5" />
+          <Building2 className="size-6 sm:size-5" />
         </div>
         <div className="min-w-0">
-          <h2 className="truncate text-lg font-semibold text-slate-900">
+          <h2 className="truncate text-2xl font-semibold text-slate-900 sm:text-lg">
             {center?.name ?? '—'}
           </h2>
           {center?.address && (
-            <p className="flex items-center gap-1 truncate text-xs text-slate-500">
+            <p className="flex items-center gap-1 truncate text-sm text-slate-500 sm:text-xs">
               <MapPin className="size-3" /> {center.address}
             </p>
           )}
@@ -195,10 +196,10 @@ function Header({
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+        className="rounded-xl border border-[#7ca5ff] p-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 sm:rounded-lg sm:border-0 sm:p-2"
         aria-label="Close"
       >
-        <X className="size-4" />
+        <X className="size-5 sm:size-4" />
       </button>
     </div>
   );
@@ -220,35 +221,37 @@ function Tabs({
   };
 
   return (
-    <div role="tablist" className="flex gap-1 border-b border-slate-200 px-3 pt-2">
-      {TABS.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = tab.id === activeTab;
-        const count = countByTab[tab.id];
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={isActive}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              'flex items-center gap-2 rounded-t-lg border-b-2 px-3 py-2 text-sm font-medium transition-colors',
-              isActive
-                ? 'border-primary text-primary'
-                : 'border-transparent text-slate-600 hover:text-slate-900',
-            )}
-          >
-            <Icon className="size-4" />
-            {tab.label}
-            {count !== undefined && (
-              <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                {count}
-              </span>
-            )}
-          </button>
-        );
-      })}
+    <div className="overflow-x-auto border-b border-[#e6e8ee] bg-white px-2 pt-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:overflow-visible sm:border-slate-200 sm:px-3">
+      <div role="tablist" className="flex min-w-max items-end gap-0.5 sm:min-w-0 sm:gap-1">
+        {TABS.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = tab.id === activeTab;
+          const count = countByTab[tab.id];
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                'flex h-full flex-none items-center justify-center gap-2 rounded-t-lg border-b-2 px-3 py-2.5 text-sm font-medium transition-colors sm:flex-1 sm:px-3 sm:py-2',
+                isActive
+                  ? 'border-[#1010a3] text-[#1010a3]'
+                  : 'border-transparent text-slate-600 hover:text-slate-900',
+              )}
+            >
+              <Icon className="size-4 shrink-0" />
+              <span className="truncate">{tab.label}</span>
+              {count !== undefined && (
+                <span className="ml-1 rounded-full bg-[#eef0f4] px-2 py-0.5 text-xs font-medium text-slate-700">
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -258,28 +261,24 @@ function TeachersTab({ data }: { data: CenterDetails }) {
     return <EmptyState message="No teachers assigned to this branch yet." />;
   }
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-3 px-0">
       {data.teachers.map((t) => (
         <li
           key={t.id}
-          className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3"
+          className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-[#e2e5ea] bg-white p-3.5 sm:rounded-lg sm:border-slate-200 sm:p-3"
         >
           <div className="flex min-w-0 items-center gap-3">
-            <Avatar
-              src={t.user?.avatarUrl ?? undefined}
-              name={teacherName(t)}
-              size="sm"
-            />
+            <Avatar src={t.user?.avatarUrl ?? undefined} name={teacherName(t)} size="md" />
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-slate-900">{teacherName(t)}</p>
+              <p className="truncate text-lg font-semibold leading-tight text-slate-900 sm:text-sm sm:font-medium">{teacherName(t)}</p>
               {t.user?.email && (
-                <p className="flex items-center gap-1 truncate text-xs text-slate-500">
-                  <Mail className="size-3" /> {t.user.email}
+                <p className="mt-1 truncate text-sm text-slate-500 sm:text-xs">
+                  {t.user.email}
                 </p>
               )}
             </div>
           </div>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+          <span className="inline-flex min-h-8 items-center justify-center self-center rounded-full bg-[#eef0f4] px-3 py-1 text-center text-sm font-semibold leading-none text-slate-700">
             {t._count?.groups ?? 0} groups
           </span>
         </li>
@@ -293,28 +292,24 @@ function StudentsTab({ data }: { data: CenterDetails }) {
     return <EmptyState message="No students enrolled in this branch yet." />;
   }
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-3 px-0">
       {data.students.map((s) => (
         <li
           key={s.id}
-          className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3"
+          className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-[#e2e5ea] bg-white p-3.5 sm:rounded-lg sm:border-slate-200 sm:p-3"
         >
           <div className="flex min-w-0 items-center gap-3">
-            <Avatar
-              src={s.user?.avatarUrl ?? undefined}
-              name={userName(s.user)}
-              size="sm"
-            />
+            <Avatar src={s.user?.avatarUrl ?? undefined} name={userName(s.user)} size="md" />
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-slate-900">{userName(s.user)}</p>
+              <p className="truncate text-lg font-semibold leading-tight text-slate-900 sm:text-sm sm:font-medium">{userName(s.user)}</p>
               {s.user?.phone && (
-                <p className="flex items-center gap-1 truncate text-xs text-slate-500">
-                  <Phone className="size-3" /> {formatPhoneForDisplay(s.user.phone)}
+                <p className="flex items-center gap-1.5 truncate text-sm text-slate-500 sm:text-xs">
+                  <Phone className="size-4 sm:size-3" /> {formatPhoneForDisplay(s.user.phone)}
                 </p>
               )}
             </div>
           </div>
-          <span className="truncate rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+          <span className="truncate rounded-full bg-[#eef0f4] px-3 py-1 text-sm font-semibold text-slate-700">
             {s.groupName}
           </span>
         </li>
