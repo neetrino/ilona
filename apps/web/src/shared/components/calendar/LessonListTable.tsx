@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, type ReactElement } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { LessonListTableBodyRow } from '@/shared/components/calendar/LessonListTableBodyRow';
 import type { Lesson } from '@/features/lessons';
 import { getScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
@@ -21,6 +21,7 @@ import {
   TEACHER_CALENDAR_LIST_PAGE_SIZE,
   teacherCalendarRowSection,
 } from '@/shared/lib/calendar/teacher-calendar-list-order';
+import type { TeacherCalendarRowCategory } from '@/shared/lib/calendar/teacher-calendar-list-order';
 
 interface LessonListTableProps {
   lessons: Lesson[];
@@ -240,7 +241,7 @@ export function LessonListTable({
   const showBulkBar = onBulkDelete && (showBulkBarWhenEmpty || selectedLessons.size > 0);
   const hasSelectedLessons = selectedLessons.size > 0;
   const obligationIds: LessonActionId[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
-  const cardRows = sectionedCalendarList
+  const cardRows: Array<{ lesson: Lesson; category?: TeacherCalendarRowCategory }> = sectionedCalendarList
     ? sectionedPageRows.map((row) => ({ lesson: row.lesson, category: row.category }))
     : sortedLessons.map((lesson) => ({ lesson }));
 
@@ -319,10 +320,10 @@ export function LessonListTable({
                     <Checkbox
                       checked={selectedLessons.has(lesson.id)}
                       onCheckedChange={(checked) => handleSelectLesson(lesson.id, checked === true)}
-                      className="mt-0.5 h-5 w-5 rounded-md"
+                      className="mt-1.5 h-5 w-5 rounded-md"
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center justify-between gap-2">
                         <p className="truncate text-[1.2rem] leading-none font-semibold text-[#111827]">
                           {lesson.group?.name || tCal('unknownGroupName')}
                         </p>
@@ -336,10 +337,10 @@ export function LessonListTable({
                           </Badge>
                         ) : null}
                       </div>
-                      <div className="mt-3 -ml-1">
-                        <div className="flex items-start gap-1">
+                      <div className="mt-5 -ml-[31px] grid grid-cols-2 items-stretch gap-3">
+                        <div className="justify-self-start flex items-start gap-2">
                           <svg
-                            className="mt-1 h-4 w-4 text-green-500"
+                            className="mt-0.5 h-5 w-5 shrink-0 text-green-500"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -348,18 +349,29 @@ export function LessonListTable({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M5 11h14M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />
                           </svg>
                           <div className="min-w-0">
-                            <p className="text-center text-base font-medium text-[#1f2937]">{new Date(lesson.scheduledAt).toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-                            <p className="text-center text-[1.65rem] leading-none font-medium text-[#111827]">{new Date(lesson.scheduledAt).toLocaleTimeString(locale === 'hy' ? 'hy-AM' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
-                            <div className="mt-2 flex items-center gap-1">
-                              <svg className="h-4 w-4 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A4 4 0 018 10h8a4 4 0 012.879 6.804M15 11a3 3 0 11-6 0 3 3 0 016 0zm-9 9a6 6 0 1112 0H6z" />
-                              </svg>
-                              <p className="truncate text-[1.2rem] leading-tight font-medium text-[#111827]">
-                                {lesson.teacher?.user
-                                  ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
-                                  : tCal('unknownTeacher')}
-                              </p>
-                            </div>
+                            <p className="text-left text-[11px] font-medium text-[#1f2937]">
+                              {new Date(lesson.scheduledAt).toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </p>
+                            <p className="mt-0.5 text-left text-[2rem] leading-none font-medium text-[#111827]">
+                              {new Date(lesson.scheduledAt).toLocaleTimeString(
+                                locale === 'hy' ? 'hy-AM' : 'en-US',
+                                { hour: '2-digit', minute: '2-digit', hour12: false },
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="pl-3">
+                          <div className="flex items-start gap-2">
+                            <User className="mt-0.5 h-5 w-5 shrink-0 text-green-500" aria-hidden />
+                            <p className="line-clamp-2 text-[1.2rem] leading-tight font-medium text-[#111827]">
+                              {lesson.teacher?.user
+                                ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
+                                : tCal('unknownTeacher')}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -376,35 +388,41 @@ export function LessonListTable({
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2 border-t border-[rgba(14,14,16,0.08)] px-4 py-2">
+                <div className="flex items-center justify-around gap-2 border-t border-[rgba(14,14,16,0.08)] bg-[#fbfbfc] px-4 py-2.5">
                   {!isTeacher && onAssignSubstitute ? (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onAssignSubstitute(lesson.id)}
-                      className="text-green-600 hover:text-green-700"
+                      className="h-auto px-2 py-1 text-green-600 hover:text-green-700"
                       title={tCal('assignSubstituteTitle')}
                     >
-                      <Image
-                        src="/icons/substitute-teacher.svg"
-                        alt=""
-                        width={20}
-                        height={20}
-                        className="h-5 w-5 shrink-0"
-                        aria-hidden
-                      />
+                      <span className="flex flex-col items-center gap-0.5">
+                        <Image
+                          src="/icons/substitute-teacher.svg"
+                          alt=""
+                          width={20}
+                          height={20}
+                          className="h-5 w-5 shrink-0"
+                          aria-hidden
+                        />
+                        <span className="text-[11px] leading-none">{tCommon('edit')}</span>
+                      </span>
                     </Button>
                   ) : null}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleView(lesson.id)}
-                    className="text-blue-600 hover:text-blue-700"
+                    className="h-auto px-2 py-1 text-blue-600 hover:text-blue-700"
                   >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
+                    <span className="flex flex-col items-center gap-0.5">
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <span className="text-[11px] leading-none">{tCommon('view')}</span>
+                    </span>
                   </Button>
                   {onDelete ? (
                     <Button
@@ -412,12 +430,15 @@ export function LessonListTable({
                       size="sm"
                       onClick={() => onDelete(lesson.id)}
                       disabled={isLocked}
-                      className={cn('text-red-600 hover:text-red-700', isLocked && 'opacity-75 cursor-not-allowed')}
+                      className={cn('h-auto px-2 py-1 text-red-600 hover:text-red-700', isLocked && 'opacity-75 cursor-not-allowed')}
                       title={isLocked ? tCal('lessonLockedDelete') : tCommon('delete')}
                     >
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      <span className="flex flex-col items-center gap-0.5">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span className="text-[11px] leading-none">{tCommon('delete')}</span>
+                      </span>
                     </Button>
                   ) : null}
                 </div>
