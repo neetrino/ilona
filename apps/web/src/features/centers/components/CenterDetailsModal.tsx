@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState, type TouchEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Building2,
@@ -8,7 +8,6 @@ import {
   GraduationCap,
   CalendarDays,
   Info,
-  X,
   MapPin,
   Phone,
   Mail,
@@ -119,6 +118,12 @@ function mapCenterGroupToScheduleGroup(data: CenterDetails, group: CenterDetails
 
 export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>('teachers');
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['center-details', centerId],
@@ -130,24 +135,111 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
     refetchOnWindowFocus: false,
   });
 
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) {
+        clearTimeout(settleTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setDragOffsetY(0);
+      setIsDragging(false);
+      setIsSettling(false);
+    }
+  }, [open]);
+
+  const isMobileViewport = () =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
+  const resetDragRefs = () => {
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    setIsDragging(false);
+  };
+
+  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    touchStartYRef.current = firstTouch.clientY;
+    touchStartXRef.current = firstTouch.clientX;
+    setIsSettling(false);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    const deltaY = firstTouch.clientY - touchStartYRef.current;
+    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
+    if (deltaY <= 0 || deltaY <= deltaX) return;
+    event.preventDefault();
+    setDragOffsetY(Math.min(deltaY * 0.95, 340));
+  };
+
+  const handleDragEnd = () => {
+    if (!isMobileViewport()) return;
+    if (!isDragging) return;
+    const shouldClose = dragOffsetY > 110;
+    resetDragRefs();
+    if (shouldClose) {
+      setDragOffsetY(0);
+      onClose();
+      return;
+    }
+    setIsSettling(true);
+    setDragOffsetY(0);
+    settleTimerRef.current = setTimeout(() => {
+      setIsSettling(false);
+      settleTimerRef.current = null;
+    }, 280);
+  };
+
+  const dragStyle =
+    dragOffsetY > 0 || isSettling
+      ? {
+          transform: `translateY(${dragOffsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }
+      : undefined;
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
+          style={dragStyle}
           className={cn(
-            'fixed inset-x-0 bottom-0 top-auto z-50 grid w-full translate-y-0',
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-0',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[94dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl sm:grid-rows-[auto_auto_1fr]',
             'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-4xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
             'sm:data-[state=open]:animate-none sm:data-[state=closed]:animate-none',
           )}
         >
+          <div
+            className="flex h-9 w-full items-center justify-center bg-white sm:hidden"
+            onTouchStart={handleDragStart}
+            onTouchMove={handleDragMove}
+            onTouchEnd={handleDragEnd}
+            onTouchCancel={handleDragEnd}
+          >
+            <div className="h-1.5 w-14 rounded-full bg-slate-300" />
+          </div>
           <DialogPrimitive.Title className="sr-only">
             {data?.center.name ?? 'Center details'}
           </DialogPrimitive.Title>
-          <Header center={data?.center ?? null} onClose={onClose} />
+          <Header center={data?.center ?? null} />
           <Tabs activeTab={activeTab} setActiveTab={setActiveTab} counts={data?.counts} />
 
           <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
@@ -171,15 +263,13 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
 
 function Header({
   center,
-  onClose,
 }: {
   center: CenterDetails['center'] | null;
-  onClose: () => void;
 }) {
   const color = center?.colorHex ?? '#253046';
   return (
     <div
-      className="flex items-center justify-between gap-4 bg-white px-4 py-4 sm:px-6"
+      className="flex items-center justify-between gap-4 bg-white px-4 py-[1.125rem] sm:px-6 sm:py-4"
       style={{ borderBottom: '1px solid #e2e8f0' }}
     >
       <div className="flex min-w-0 items-center gap-3">
@@ -200,14 +290,6 @@ function Header({
           )}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onClose}
-        className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
-        aria-label="Close"
-      >
-        <X className="size-5" />
-      </button>
     </div>
   );
 }
@@ -228,7 +310,7 @@ function Tabs({
   };
 
   return (
-    <div className="overflow-x-auto border-b border-[#e6e8ee] bg-white px-2 pt-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:overflow-visible sm:border-slate-200 sm:px-3">
+    <div className="overflow-x-auto border-b border-[#e6e8ee] bg-white px-2 pt-2.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:overflow-visible sm:border-slate-200 sm:px-3 sm:pt-2">
       <div role="tablist" className="flex min-w-max items-end gap-0.5 sm:min-w-0 sm:gap-1">
         {TABS.map((tab) => {
           const Icon = tab.icon;
@@ -242,7 +324,7 @@ function Tabs({
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'flex h-full flex-none items-center justify-center gap-2 rounded-t-lg border-b-2 px-3 py-2.5 text-sm font-medium transition-colors sm:flex-1 sm:px-3 sm:py-2',
+                'flex h-full flex-none items-center justify-center gap-2 rounded-t-lg border-b-2 px-3 py-[0.6875rem] text-sm font-medium transition-colors sm:flex-1 sm:px-3 sm:py-2',
                 isActive
                   ? 'border-[#1010a3] text-[#1010a3]'
                   : 'border-transparent text-slate-600 hover:text-slate-900',
