@@ -20,16 +20,17 @@ import {
 type StudentSidebarNavIconProps = {
   icon: StudentSidebarIconKey;
   active: boolean;
+  activeVariant?: 'pill' | 'filled';
 };
 
-function InactiveMaskedIcon({ icon }: { icon: StudentSidebarIconKey }) {
+function MaskedIcon({ icon, colorClass }: { icon: StudentSidebarIconKey; colorClass?: string }) {
   const src = getSidebarIconSrc(icon, false);
 
   return (
     <span className={STUDENT_SIDEBAR_ICON_SLOT_CLASS}>
       <span
         aria-hidden
-        className={cn(STUDENT_SIDEBAR_ICON_INACTIVE_MASK_CLASS)}
+        className={cn(STUDENT_SIDEBAR_ICON_INACTIVE_MASK_CLASS, colorClass)}
         style={
           {
             width: STUDENT_SIDEBAR_ICON_SLOT_PX,
@@ -42,12 +43,20 @@ function InactiveMaskedIcon({ icon }: { icon: StudentSidebarIconKey }) {
   );
 }
 
-export function StudentSidebarNavIcon({ icon, active }: StudentSidebarNavIconProps) {
+export function StudentSidebarNavIcon({
+  icon,
+  active,
+  activeVariant = 'pill',
+}: StudentSidebarNavIconProps) {
   if (icon === 'iconSchedule') {
-    return <StudentScheduleNavIcon active={active} />;
+    return <StudentScheduleNavIcon active={active} activeVariant={activeVariant} />;
   }
 
   if (active) {
+    if (activeVariant === 'filled') {
+      return <MaskedIcon icon={icon} colorClass="bg-[#1010A3]" />;
+    }
+
     return (
       <span className={STUDENT_SIDEBAR_ICON_ACTIVE_PILL_CLASS}>
         <PublicAssetImage
@@ -61,5 +70,5 @@ export function StudentSidebarNavIcon({ icon, active }: StudentSidebarNavIconPro
     );
   }
 
-  return <InactiveMaskedIcon icon={icon} />;
+  return <MaskedIcon icon={icon} />;
 }

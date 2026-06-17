@@ -23,6 +23,13 @@ import {
   PORTAL_SIDEBAR_DESKTOP_CLASS,
 } from './student-layout';
 
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'portal-sidebar-collapsed';
+
+function getInitialSidebarCollapsedState(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === 'true';
+}
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
   title: string;
@@ -44,7 +51,7 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const pathname = usePathname();
   const { user } = useAuthStore();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(getInitialSidebarCollapsedState);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const role = user?.role;
@@ -71,6 +78,10 @@ export function DashboardLayout({
       document.body.style.overflow = prev;
     };
   }, [mobileNavOpen]);
+
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   const mainPadding = isPortalShell ? PORTAL_MAIN_PADDING : 'p-8';
 

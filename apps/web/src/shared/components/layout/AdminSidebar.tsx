@@ -19,9 +19,23 @@ import { STUDENT_SIDEBAR_ASSETS } from '@/features/student-dashboard/studentSide
 const NAV_LIST_GAP_CLASS = 'gap-0.5';
 const NAV_ICON_COLUMN_CLASS = 'flex h-12 w-[2.375rem] shrink-0 items-center justify-center';
 
-function AdminNavIconDisplay({ icon, active }: { icon: AdminNavIcon; active: boolean }) {
+function AdminNavIconDisplay({
+  icon,
+  active,
+  collapsed,
+}: {
+  icon: AdminNavIcon;
+  active: boolean;
+  collapsed: boolean;
+}) {
   if (icon.type === 'sidebar') {
-    return <StudentSidebarNavIcon icon={icon.icon} active={active} />;
+    return (
+      <StudentSidebarNavIcon
+        icon={icon.icon}
+        active={active}
+        activeVariant={collapsed ? 'filled' : 'pill'}
+      />
+    );
   }
 
   if (icon.type === 'image') {
@@ -46,7 +60,10 @@ function AdminNavIconDisplay({ icon, active }: { icon: AdminNavIcon; active: boo
   return (
     <span className={NAV_ICON_COLUMN_CLASS}>
       <svg
-        className={cn('h-5 w-5', active ? 'text-white' : 'text-[#787878]')}
+        className={cn(
+          'h-5 w-5',
+          active ? (collapsed ? 'text-[#1010a3]' : 'text-white') : 'text-[#787878]',
+        )}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -81,12 +98,14 @@ function NavLink({
       className={cn(
         'flex min-h-12 w-full items-center gap-1 transition-colors',
         active
-          ? 'rounded-[3.375rem] bg-[#1010a3] py-1 pl-1.5 pr-3'
+          ? collapsed
+            ? 'rounded-[0.875rem] bg-transparent px-1.5 py-0'
+            : 'rounded-[3.375rem] bg-[#1010a3] py-1 pl-1.5 pr-3'
           : 'rounded-[0.875rem] px-3 py-1 hover:bg-[#f6f6f7]',
         collapsed && 'h-12 justify-center px-1.5 py-0',
       )}
     >
-      <AdminNavIconDisplay icon={item.icon} active={active} />
+      <AdminNavIconDisplay icon={item.icon} active={active} collapsed={collapsed} />
       {!collapsed ? (
         <span
           className={cn(
