@@ -2,6 +2,7 @@
 
 import { Plus, Trash2 } from 'lucide-react';
 import type { GroupScheduleEntry } from '../types';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 const DAY_OPTIONS: Array<{ value: number; label: string }> = [
   { value: 1, label: 'Monday' },
@@ -12,6 +13,11 @@ const DAY_OPTIONS: Array<{ value: number; label: string }> = [
   { value: 6, label: 'Saturday' },
   { value: 0, label: 'Sunday' },
 ];
+
+const DAY_DROPDOWN_OPTIONS = DAY_OPTIONS.map((day) => ({
+  id: String(day.value),
+  label: day.label,
+}));
 
 interface GroupScheduleEditorProps {
   value: GroupScheduleEntry[];
@@ -47,19 +53,19 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
           key={i}
           className="grid grid-cols-12 gap-2 rounded-lg border border-slate-200 bg-slate-50/60 p-2"
         >
-          <select
-            value={entry.dayOfWeek}
-            onChange={(e) => updateEntry(i, { dayOfWeek: Number(e.target.value) })}
-            disabled={disabled}
-            className="unified-native-select col-span-4 rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
-            aria-label="Day of week"
-          >
-            {DAY_OPTIONS.map((d) => (
-              <option key={d.value} value={d.value}>
-                {d.label}
-              </option>
-            ))}
-          </select>
+          <div className="col-span-4">
+            <SingleSelectDropdown
+              id={`schedule-day-${i}`}
+              options={DAY_DROPDOWN_OPTIONS}
+              value={String(entry.dayOfWeek)}
+              onValueChange={(nextValue) => {
+                if (!nextValue) return;
+                updateEntry(i, { dayOfWeek: Number(nextValue) });
+              }}
+              disabled={disabled}
+              placeholder="Day"
+            />
+          </div>
           <input
             type="time"
             value={entry.startTime}

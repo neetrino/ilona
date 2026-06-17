@@ -80,23 +80,25 @@ export function CRMFilters({
           }
         />
       </div>
-      <div className="min-w-0">
-        <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateFrom')}</label>
-        <DatePickerInput
-          id="crm-filter-date-from"
-          value={filters.dateFrom ?? ''}
-          placeholder={t('dateFrom')}
-          onValueChange={(nextDate) => onFiltersChange({ ...filters, dateFrom: nextDate || undefined })}
-        />
-      </div>
-      <div className="min-w-0">
-        <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateTo')}</label>
-        <DatePickerInput
-          id="crm-filter-date-to"
-          value={filters.dateTo ?? ''}
-          placeholder={t('dateTo')}
-          onValueChange={(nextDate) => onFiltersChange({ ...filters, dateTo: nextDate || undefined })}
-        />
+      <div className="min-w-0 grid grid-cols-2 gap-3 sm:contents">
+        <div className="min-w-0">
+          <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateFrom')}</label>
+          <DatePickerInput
+            id="crm-filter-date-from"
+            value={filters.dateFrom ?? ''}
+            placeholder={t('dateFrom')}
+            onValueChange={(nextDate) => onFiltersChange({ ...filters, dateFrom: nextDate || undefined })}
+          />
+        </div>
+        <div className="min-w-0">
+          <label className="block text-xs font-medium text-slate-500 mb-1">{t('dateTo')}</label>
+          <DatePickerInput
+            id="crm-filter-date-to"
+            value={filters.dateTo ?? ''}
+            placeholder={t('dateTo')}
+            onValueChange={(nextDate) => onFiltersChange({ ...filters, dateTo: nextDate || undefined })}
+          />
+        </div>
       </div>
     </div>
   );

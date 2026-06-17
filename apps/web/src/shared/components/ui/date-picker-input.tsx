@@ -71,7 +71,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
     const [monthDate, setMonthDate] = React.useState<Date>(() => selectedDate ?? new Date());
     const [open, setOpen] = React.useState(false);
     const rootRef = React.useRef<HTMLDivElement>(null);
-    const [popoverPosition, setPopoverPosition] = React.useState<PopoverPosition>({ left: 8, top: 8 });
+    const [popoverPosition, setPopoverPosition] = React.useState<PopoverPosition | null>(null);
     const generatedId = React.useId();
     const triggerId = id ?? `date-picker-${generatedId}`;
 
@@ -125,6 +125,19 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       setPopoverPosition({ left, top });
     }, []);
 
+    const handleOpenChange = React.useCallback(
+      (nextOpen: boolean) => {
+        if (!nextOpen) {
+          setOpen(false);
+          setPopoverPosition(null);
+          return;
+        }
+        updatePopoverPosition();
+        setOpen(true);
+      },
+      [updatePopoverPosition]
+    );
+
     React.useEffect(() => {
       if (!selectedDate) return;
       setMonthDate(selectedDate);
@@ -134,10 +147,10 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       if (!open) return;
       const onPointerDown = (event: MouseEvent) => {
         if (rootRef.current?.contains(event.target as Node)) return;
-        setOpen(false);
+        handleOpenChange(false);
       };
       const onEscape = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') setOpen(false);
+        if (event.key === 'Escape') handleOpenChange(false);
       };
 
       updatePopoverPosition();
@@ -152,7 +165,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
         window.removeEventListener('resize', updatePopoverPosition);
         window.removeEventListener('scroll', updatePopoverPosition, true);
       };
-    }, [open, updatePopoverPosition]);
+    }, [handleOpenChange, open, updatePopoverPosition]);
 
     const monthLabel = format(monthDate, 'MMMM yyyy', { locale: dateLocale });
     const days = React.useMemo(() => createCalendarDays(monthDate), [monthDate]);
@@ -195,7 +208,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
         <button
           type="button"
           data-role="date-trigger"
-          onClick={() => !disabled && setOpen((prev) => !prev)}
+          onClick={() => !disabled && handleOpenChange(!open)}
           className={cn(
             'h-10 w-full rounded-lg border border-slate-300 px-3 text-left text-[16px] transition-colors lg:text-sm',
             'focus:outline-none focus:ring-2 focus:ring-[#3036b6]/25',
@@ -211,7 +224,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
           {displayValue || placeholder || ''}
         </button>
 
-        {open ? (
+        {open && popoverPosition ? (
           <div
             id={`${triggerId}-dialog`}
             role="dialog"

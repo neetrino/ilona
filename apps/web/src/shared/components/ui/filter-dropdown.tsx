@@ -153,7 +153,7 @@ export function FilterDropdown({
                 No options available
               </div>
             ) : (
-              <div className="py-1">
+              <div className="space-y-1 px-1 py-1">
                 {options.map((option) => {
                   const isSelected = selectedIds.has(option.id);
                   return (

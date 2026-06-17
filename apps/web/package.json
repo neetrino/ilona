@@ -5,7 +5,7 @@
   "description": "Next.js Frontend for Ilona English Center",
   "scripts": {
     "dev": "node ./scripts/dev-network-url.cjs",
-    "dev:next": "next dev --turbo -H 0.0.0.0",
+    "dev:next": "node ./scripts/dev-network-url.cjs",
     "build": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "eslint .",

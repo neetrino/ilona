@@ -2,7 +2,7 @@
 
 import { cn } from '@/shared/lib/utils';
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
@@ -73,6 +73,8 @@ function formatLessonSchedule(iso: string): string {
   });
 }
 
+const MOBILE_PAGE_SIZE = 5;
+
 export default function AdminDailyPlanPage() {
   const tNav = useTranslations('nav');
   const t = useTranslations('dailyPlanPage');
@@ -89,6 +91,8 @@ export default function AdminDailyPlanPage() {
   const [search, setSearch] = useState('');
   const [teacherId, setTeacherId] = useState('');
   const [viewing, setViewing] = useState<DailyPlan | null>(null);
+  const [mobilePage, setMobilePage] = useState(0);
+  const cardsStartRef = useRef<HTMLDivElement | null>(null);
 
   const { data: centersData } = useCenters({ isActive: true });
   const allCenters = useMemo(
@@ -128,12 +132,90 @@ export default function AdminDailyPlanPage() {
     !managerMissingCenter,
   );
   const items = data?.items ?? [];
+  const totalPages = Math.max(1, Math.ceil(items.length / MOBILE_PAGE_SIZE));
+  const safePage = Math.min(mobilePage, totalPages - 1);
+  const mobileItems = useMemo(
+    () =>
+      items.slice(
+        safePage * MOBILE_PAGE_SIZE,
+        safePage * MOBILE_PAGE_SIZE + MOBILE_PAGE_SIZE,
+      ),
+    [items, safePage],
+  );
+
+  useEffect(() => {
+    setMobilePage(0);
+  }, [search, teacherId, dateFrom, dateTo, items.length]);
+
+  const goToMobilePage = (nextPage: number) => {
+    setMobilePage(nextPage);
+    requestAnimationFrame(() => {
+      cardsStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
 
   const subtitle = managerMissingCenter
     ? t('subtitleNoBranch')
     : user?.role === 'MANAGER' && managerBranchName
       ? t('subtitleManager', { branch: managerBranchName })
       : t('subtitleAll');
+
+  const renderPlanCard = (plan: DailyPlan, keyPrefix = '') => {
+    const name = `${plan.teacher.user.firstName} ${plan.teacher.user.lastName}`;
+    const lessonAt = plan.lesson?.scheduledAt
+      ? formatLessonSchedule(plan.lesson.scheduledAt)
+      : null;
+    return (
+      <li key={`${keyPrefix}${plan.id}`}>
+        <button
+          type="button"
+          onClick={() => setViewing(plan)}
+          className={cn(
+            'flex h-full w-full flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 text-left shadow-sm transition hover:border-[#1010a3]/40 hover:shadow-md',
+            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+          )}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="font-semibold text-[#1010a3]">{name}</p>
+              <p className="text-xs text-[#8b8b90] mt-0.5">
+                {centerLabel(plan)}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-[#f0f0fc] px-2.5 py-0.5 text-xs font-medium text-[#1010a3]">
+              {formatPlanDate(plan.date)}
+            </span>
+          </div>
+          {lessonAt && (
+            <p className="mt-2 text-xs text-[#8b8b90]">
+              {t('lessonPrefix')} · {lessonAt}
+            </p>
+          )}
+          <p className="mt-3 text-sm text-[#3b3b40] line-clamp-2">
+            {plan.group?.name && (
+              <span className="font-medium text-[#3b3b40]">
+                {plan.group.name}
+                {' · '}
+              </span>
+            )}
+            {!plan.group?.name && plan.lesson?.group?.name && (
+              <span className="font-medium text-[#3b3b40]">
+                {plan.lesson.group.name}
+                {' · '}
+              </span>
+            )}
+            {contentSummary(plan, t)}
+          </p>
+          <span className="mt-4 text-xs font-medium text-[#1010a3]">
+            {t('viewDetails')}
+          </span>
+        </button>
+      </li>
+    );
+  };
 
   return (
     <DashboardLayout title={tNav('dailyPlan')} subtitle={subtitle}>
@@ -152,7 +234,7 @@ export default function AdminDailyPlanPage() {
 
         {!managerMissingCenter && (
         <div className="flex flex-col gap-4 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:p-5 shadow-sm">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-[#3b3b40]">{tCommon('from')}</span>
               <DatePickerInput
@@ -169,7 +251,7 @@ export default function AdminDailyPlanPage() {
                 className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] px-3 text-[#3b3b40]"
               />
             </label>
-            <div className="flex flex-col gap-1 text-sm sm:col-span-2 lg:col-span-2">
+            <div className="col-span-2 flex flex-col gap-1 text-sm lg:col-span-2">
               <span className="font-medium text-[#3b3b40]">{tCommon('teacher')}</span>
               <SingleSelectDropdown
                 id="daily-plan-teacher-filter"
@@ -213,61 +295,58 @@ export default function AdminDailyPlanPage() {
             {t('empty')}
           </div>
         ) : !managerMissingCenter ? (
-          <ul className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
-            {items.map((plan) => {
-              const name = `${plan.teacher.user.firstName} ${plan.teacher.user.lastName}`;
-              const lessonAt = plan.lesson?.scheduledAt
-                ? formatLessonSchedule(plan.lesson.scheduledAt)
-                : null;
-              return (
-                <li key={plan.id}>
+          <div className="space-y-4">
+            <div ref={cardsStartRef} className="md:hidden" />
+            <ul className="grid w-full min-w-0 grid-cols-1 gap-4 md:hidden">
+              {mobileItems.map((plan) => renderPlanCard(plan, 'mobile-'))}
+            </ul>
+            <ul className="hidden w-full min-w-0 grid-cols-1 gap-4 md:grid md:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
+              {items.map((plan) => renderPlanCard(plan, 'desktop-'))}
+            </ul>
+            {items.length > MOBILE_PAGE_SIZE && (
+              <div className="flex items-center justify-between text-sm text-[#8b8b90] md:hidden">
+                <span>
+                  {safePage * MOBILE_PAGE_SIZE + 1}-
+                  {Math.min((safePage + 1) * MOBILE_PAGE_SIZE, items.length)} / {items.length}
+                </span>
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => setViewing(plan)}
-                    className={cn(
-                      'flex h-full w-full flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 text-left shadow-sm transition hover:border-[#1010a3]/40 hover:shadow-md',
-                      'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-                    )}
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                      safePage === 0
+                        ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                        : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                    }`}
+                    disabled={safePage === 0}
+                    onClick={() => goToMobilePage(Math.max(0, safePage - 1))}
+                    aria-label="Previous page"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-semibold text-[#1010a3]">{name}</p>
-                        <p className="text-xs text-[#8b8b90] mt-0.5">
-                          {centerLabel(plan)}
-                        </p>
-                      </div>
-                      <span className="shrink-0 rounded-full bg-[#f0f0fc] px-2.5 py-0.5 text-xs font-medium text-[#1010a3]">
-                        {formatPlanDate(plan.date)}
-                      </span>
-                    </div>
-                    {lessonAt && (
-                      <p className="mt-2 text-xs text-[#8b8b90]">
-                        {t('lessonPrefix')} · {lessonAt}
-                      </p>
-                    )}
-                    <p className="mt-3 text-sm text-[#3b3b40] line-clamp-2">
-                      {plan.group?.name && (
-                        <span className="font-medium text-[#3b3b40]">
-                          {plan.group.name}
-                          {' · '}
-                        </span>
-                      )}
-                      {!plan.group?.name && plan.lesson?.group?.name && (
-                        <span className="font-medium text-[#3b3b40]">
-                          {plan.lesson.group.name}
-                          {' · '}
-                        </span>
-                      )}
-                      {contentSummary(plan, t)}
-                    </p>
-                    <span className="mt-4 text-xs font-medium text-[#1010a3]">
-                      {t('viewDetails')}
-                    </span>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
                   </button>
-                </li>
-              );
-            })}
-          </ul>
+                  <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                    {safePage + 1}
+                  </span>
+                  <button
+                    type="button"
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                      safePage >= totalPages - 1
+                        ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                        : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                    }`}
+                    disabled={safePage >= totalPages - 1}
+                    onClick={() => goToMobilePage(Math.min(totalPages - 1, safePage + 1))}
+                    aria-label="Next page"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         ) : null}
 
         {!managerMissingCenter && data && data.total > data.take && (

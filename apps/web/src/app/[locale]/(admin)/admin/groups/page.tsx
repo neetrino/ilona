@@ -1,7 +1,7 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { GroupsTab } from './components/GroupsTab';
@@ -36,6 +36,12 @@ export default function GroupsPage() {
   const [centerPage, setCenterPage] = useState(0);
   const [renderedTab, setRenderedTab] = useState<TabType>('groups');
   const [isTabContentVisible, setIsTabContentVisible] = useState(true);
+  const tabsTrackRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<TabType, HTMLButtonElement | null>>({
+    groups: null,
+    centers: null,
+  });
+  const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
 
   // View mode state with URL persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -137,6 +143,28 @@ export default function GroupsPage() {
     return () => window.clearTimeout(timeout);
   }, [activeTab, isLg, renderedTab]);
 
+  useEffect(() => {
+    if (isManager) return;
+
+    const syncIndicator = () => {
+      const activeTabEl = tabRefs.current[activeTab];
+      const tabsTrackEl = tabsTrackRef.current;
+      if (!activeTabEl || !tabsTrackEl) {
+        setTabIndicator((prev) => ({ ...prev, visible: false }));
+        return;
+      }
+      setTabIndicator({
+        x: activeTabEl.offsetLeft,
+        width: activeTabEl.offsetWidth,
+        visible: true,
+      });
+    };
+
+    syncIndicator();
+    window.addEventListener('resize', syncIndicator);
+    return () => window.removeEventListener('resize', syncIndicator);
+  }, [activeTab, isManager]);
+
   // Handle search
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -157,8 +185,11 @@ export default function GroupsPage() {
         {/* Tabs */}
         <div className="border-b border-[rgba(14,14,16,0.07)]">
           {!isManager ? (
-            <nav className="flex gap-1">
+            <nav ref={tabsTrackRef} className="relative flex gap-1">
               <button
+                ref={(node) => {
+                  tabRefs.current.centers = node;
+                }}
                 onClick={() => {
                   if (activeTab === 'centers') return;
                   setActiveTab('centers');
@@ -166,15 +197,17 @@ export default function GroupsPage() {
                 }}
                 className={cn(
                   'relative px-4 py-2 text-sm font-medium transition-colors focus:outline-none',
-                  'after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[#1010a3] after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.22,1,0.36,1)]',
                   activeTab === 'centers'
-                    ? 'text-[#1010a3] after:scale-x-100'
-                    : 'text-[#3b3b40] after:scale-x-0'
+                    ? 'text-[#1010a3]'
+                    : 'text-[#3b3b40]'
                 )}
               >
                 Centers / Branches
               </button>
               <button
+                ref={(node) => {
+                  tabRefs.current.groups = node;
+                }}
                 onClick={() => {
                   if (activeTab === 'groups') return;
                   setActiveTab('groups');
@@ -182,14 +215,22 @@ export default function GroupsPage() {
                 }}
                 className={cn(
                   'relative px-4 py-2 text-sm font-medium transition-colors focus:outline-none',
-                  'after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[#1010a3] after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.22,1,0.36,1)]',
                   activeTab === 'groups'
-                    ? 'text-[#1010a3] after:scale-x-100'
-                    : 'text-[#3b3b40] after:scale-x-0'
+                    ? 'text-[#1010a3]'
+                    : 'text-[#3b3b40]'
                 )}
               >
                 Groups
               </button>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-[#1010a3] transition-[transform,width,opacity] duration-300 ease-out"
+                style={{
+                  width: `${tabIndicator.width}px`,
+                  transform: `translateX(${tabIndicator.x}px)`,
+                  opacity: tabIndicator.visible ? 1 : 0,
+                }}
+              />
             </nav>
           ) : (
             <nav className="flex gap-1">

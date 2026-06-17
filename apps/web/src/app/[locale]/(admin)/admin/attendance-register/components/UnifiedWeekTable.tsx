@@ -4,6 +4,7 @@ import type { Group } from '@/features/groups';
 import type { Lesson } from '@/features/lessons';
 import type { TeacherAssignedItem } from '@/features/students';
 import { isOnboardingItem } from '@/features/students';
+import { useLocale, useTranslations } from 'next-intl';
 import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { getItemKey } from '../hooks/useAttendanceData';
 
@@ -45,6 +46,21 @@ function getStatusBadge(status: DayStatus): { label: string; className: string }
   }
 }
 
+function getStatusTitle(status: DayStatus, t: (key: string) => string): string {
+  switch (status) {
+    case 'present':
+      return t('present');
+    case 'absent_justified':
+      return t('absentJustifiedLegend');
+    case 'absent_unjustified':
+      return t('absentUnjustifiedLegend');
+    case 'not_marked':
+      return t('notMarked');
+    default:
+      return t('noSession');
+  }
+}
+
 export function UnifiedWeekTable({
   students,
   groups,
@@ -52,6 +68,8 @@ export function UnifiedWeekTable({
   attendanceData,
   weekDates,
 }: UnifiedWeekTableProps) {
+  const t = useTranslations('attendance');
+  const locale = useLocale();
   const lessonsByDate = new Map<string, Lesson[]>();
   for (const lesson of lessons) {
     const key = lesson.scheduledAt.split('T')[0];
@@ -66,17 +84,17 @@ export function UnifiedWeekTable({
         <thead>
           <tr>
             <th className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-3 py-2 text-left text-xs font-semibold uppercase text-[#8b8b90]">
-              Student
+              {t('studentColumn')}
             </th>
             <th className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-3 py-2 text-left text-xs font-semibold uppercase text-[#8b8b90]">
-              Group
+              {t('registerGroupLabel')}
             </th>
             {weekDates.map((date) => (
               <th
                 key={date.toISOString()}
                 className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-3 py-2 text-center text-xs font-semibold uppercase text-[#8b8b90]"
               >
-                {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                {date.toLocaleDateString(locale, { weekday: 'short' })}
               </th>
             ))}
           </tr>
@@ -87,7 +105,7 @@ export function UnifiedWeekTable({
             const groupId = isOnboardingItem(student) ? student.groupId : student.groupId;
             const groupName = groupId ? groups.find((group) => group.id === groupId)?.name ?? '—' : '—';
             const fullName = isOnboardingItem(student)
-              ? `${student.firstName ?? ''} ${student.lastName ?? ''}`.trim() || 'Unknown'
+              ? `${student.firstName ?? ''} ${student.lastName ?? ''}`.trim() || t('unknownStudent')
               : `${student.user.firstName} ${student.user.lastName}`;
 
             return (
@@ -106,7 +124,7 @@ export function UnifiedWeekTable({
                     <td key={`${studentId}-${dateKey}`} className="px-3 py-2 text-center">
                       <span
                         className={`inline-flex h-6 w-6 items-center justify-center rounded border text-xs font-semibold ${badge.className}`}
-                        title={status.replaceAll('_', ' ')}
+                        title={getStatusTitle(status, t)}
                       >
                         {badge.label}
                       </span>

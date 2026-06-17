@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 
@@ -37,6 +38,8 @@ interface DailyPlanListSectionProps {
   deleteError?: string | null;
 }
 
+const MOBILE_PAGE_SIZE = 5;
+
 export function DailyPlanListSection({
   search,
   onSearchChange,
@@ -54,6 +57,32 @@ export function DailyPlanListSection({
 }: DailyPlanListSectionProps) {
   const trimmedSearch = search.trim();
   const isDeletePending = deletingPlanId !== null;
+  const [mobilePage, setMobilePage] = useState(0);
+  const cardsStartRef = useRef<HTMLDivElement | null>(null);
+  const totalPages = Math.max(1, Math.ceil(items.length / MOBILE_PAGE_SIZE));
+  const safePage = Math.min(mobilePage, totalPages - 1);
+  const mobileItems = useMemo(
+    () =>
+      items.slice(
+        safePage * MOBILE_PAGE_SIZE,
+        safePage * MOBILE_PAGE_SIZE + MOBILE_PAGE_SIZE,
+      ),
+    [items, safePage],
+  );
+
+  useEffect(() => {
+    setMobilePage(0);
+  }, [trimmedSearch, items.length]);
+
+  const goToMobilePage = (nextPage: number) => {
+    setMobilePage(nextPage);
+    requestAnimationFrame(() => {
+      cardsStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -106,8 +135,10 @@ export function DailyPlanListSection({
           {trimmedSearch ? emptySearchMessage(trimmedSearch) : emptyDefaultMessage}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {items.map((plan) => (
+        <div className="space-y-4">
+          <div ref={cardsStartRef} className="md:hidden" />
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+          {mobileItems.map((plan) => (
             <article
               key={plan.id}
               className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/40 transition-colors"
@@ -221,6 +252,166 @@ export function DailyPlanListSection({
               </ul>
             </article>
           ))}
+          </div>
+          <div className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
+            {items.map((plan) => (
+              <article
+                key={`desktop-${plan.id}`}
+                className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/40 transition-colors"
+                onClick={() => onView(plan)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onView(plan);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <header className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wide">
+                      {formatDate(plan.date)}
+                    </div>
+                    <div className="font-semibold text-slate-800">
+                      {plan.group?.name ?? 'No group'}{' '}
+                      {plan.group?.level && (
+                        <span className="text-slate-500 font-normal">
+                          · {plan.group.level}
+                        </span>
+                      )}
+                    </div>
+                    {plan.lesson && (
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        Linked to lesson · {formatDate(plan.lesson.scheduledAt)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-start gap-1">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onEdit(plan);
+                      }}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-primary/10 disabled:opacity-60"
+                      aria-label="Edit daily plan"
+                      title="Edit"
+                      disabled={isDeletePending}
+                    >
+                      <Pencil className="h-5 w-5" />
+                    </button>
+                    {onDelete && (
+                      <button
+                        type="button"
+                        onClick={async (event) => {
+                          event.stopPropagation();
+                          if (isDeletePending) {
+                            return;
+                          }
+                          if (confirm('Delete this daily plan? This cannot be undone.')) {
+                            await onDelete(plan);
+                          }
+                        }}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label="Delete daily plan"
+                        title="Delete"
+                        disabled={isDeletePending}
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    )}
+                  </div>
+                </header>
+                <ul className="space-y-2">
+                  {plan.topics.map((topic) => (
+                    <li
+                      key={topic.id}
+                      className="border border-slate-100 rounded-md px-3 py-2 bg-slate-50"
+                    >
+                      <div className="font-medium text-slate-700 text-sm">
+                        {topic.title}
+                      </div>
+                      {topic.resources.length > 0 && (
+                        <ul className="mt-1 text-xs text-slate-600 space-y-0.5">
+                          {topic.resources.map((resource) => (
+                            <li key={resource.id} className="flex gap-1">
+                              <span className="text-slate-400 w-16 shrink-0">
+                                {KIND_LABEL[resource.kind]}
+                              </span>
+                              <span className="truncate">
+                                {resource.link ? (
+                                  <a
+                                    href={resource.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline"
+                                  >
+                                    {resource.title}
+                                  </a>
+                                ) : (
+                                  resource.title
+                                )}
+                                {resource.description && (
+                                  <span className="text-slate-400">
+                                    {' '}
+                                    — {resource.description}
+                                  </span>
+                                )}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+          {items.length > MOBILE_PAGE_SIZE && (
+            <div className="flex items-center justify-between text-sm text-[#8b8b90] md:hidden">
+              <span>
+                {safePage * MOBILE_PAGE_SIZE + 1}-
+                {Math.min((safePage + 1) * MOBILE_PAGE_SIZE, items.length)} / {items.length}
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                    safePage === 0
+                      ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                      : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  }`}
+                  disabled={safePage === 0}
+                  onClick={() => goToMobilePage(Math.max(0, safePage - 1))}
+                  aria-label="Previous page"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                  {safePage + 1}
+                </span>
+                <button
+                  type="button"
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                    safePage >= totalPages - 1
+                      ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                      : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  }`}
+                  disabled={safePage >= totalPages - 1}
+                  onClick={() => goToMobilePage(Math.min(totalPages - 1, safePage + 1))}
+                  aria-label="Next page"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

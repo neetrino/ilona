@@ -3,6 +3,27 @@
  */
 
 export type ViewMode = 'day' | 'week' | 'month';
+const SUPPORTED_LOCALES = new Set(['en', 'hy']);
+
+function getPageLocale(): string | undefined {
+  if (typeof window !== 'undefined') {
+    const [, maybeLocale] = window.location.pathname.split('/');
+    if (maybeLocale && SUPPORTED_LOCALES.has(maybeLocale)) {
+      return maybeLocale;
+    }
+  }
+
+  if (typeof document === 'undefined') {
+    return undefined;
+  }
+
+  const locale = document.documentElement.lang?.trim();
+  if (locale && SUPPORTED_LOCALES.has(locale)) {
+    return locale;
+  }
+
+  return undefined;
+}
 
 /**
  * Get today's date in YYYY-MM-DD format
@@ -129,7 +150,7 @@ export function formatDateString(date: Date): string {
  * Format date for display
  */
 export function formatDateDisplay(date: Date, options?: Intl.DateTimeFormatOptions): string {
-  return date.toLocaleDateString('en-US', options || {
+  return date.toLocaleDateString(getPageLocale(), options || {
     weekday: 'short',
     year: 'numeric',
     month: 'short',
@@ -143,8 +164,9 @@ export function formatDateDisplay(date: Date, options?: Intl.DateTimeFormatOptio
 export function formatWeekRange(date: Date): string {
   const weekStart = getWeekStart(date);
   const weekEnd = getWeekEnd(date);
-  const startStr = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const endStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const locale = getPageLocale();
+  const startStr = weekStart.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+  const endStr = weekEnd.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
   return `${startStr}–${endStr}`;
 }
 
@@ -152,7 +174,7 @@ export function formatWeekRange(date: Date): string {
  * Format month for display
  */
 export function formatMonthDisplay(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  return date.toLocaleDateString(getPageLocale(), { month: 'long', year: 'numeric' });
 }
 
 /**

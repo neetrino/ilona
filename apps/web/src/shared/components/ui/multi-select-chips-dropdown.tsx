@@ -264,7 +264,7 @@ export function MultiSelectChipsDropdown({
                 {filteredOptions.length === 0 ? (
                   <div className="p-3 text-sm text-slate-500">{noResultsHint}</div>
                 ) : (
-                  <div className="py-1">
+                  <div className="space-y-1 px-1 py-1">
                     {filteredOptions.map((option) => {
                       const isSelected = selectedIds.has(option.id);
                       return (

@@ -181,7 +181,7 @@ export function InlineSelect({
           width: `${position.width}px`,
         }}
       >
-        <div className="py-1">
+        <div className="space-y-1 px-1 py-1">
           <button
             type="button"
             onClick={() => handleSelect(null)}

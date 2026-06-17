@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { GlobalSearchBar } from './GlobalSearchBar';
 import { cn } from '@/shared/lib/utils';
@@ -11,24 +11,38 @@ const SEARCH_INPUT_CLASS =
 type PortalMobileSearchSheetProps = {
   open: boolean;
   onClose: () => void;
+  backdropClassName?: string;
+  containerClassName?: string;
 };
 
 export function PortalMobileSearchSheet({
   open,
   onClose,
+  backdropClassName,
+  containerClassName,
 }: PortalMobileSearchSheetProps) {
+  const DRAG_CLOSE_THRESHOLD = 96;
+  const DRAG_HANDLE_ZONE = 72;
   const t = useTranslations('common');
   const [isMounted, setIsMounted] = useState(open);
   const [isVisible, setIsVisible] = useState(open);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const touchStartY = useRef<number | null>(null);
+  const touchCurrentY = useRef<number | null>(null);
 
   useEffect(() => {
     if (open) {
       setIsMounted(true);
+      setDragOffsetY(0);
+      setIsDragging(false);
       const frame = window.requestAnimationFrame(() => setIsVisible(true));
       return () => window.cancelAnimationFrame(frame);
     }
 
     setIsVisible(false);
+    setDragOffsetY(0);
+    setIsDragging(false);
     const timeout = window.setTimeout(() => setIsMounted(false), 360);
     return () => window.clearTimeout(timeout);
   }, [open]);
@@ -46,6 +60,45 @@ export function PortalMobileSearchSheet({
     return null;
   }
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touchY = event.touches[0]?.clientY ?? null;
+    if (touchY === null) return;
+    const top = event.currentTarget.getBoundingClientRect().top;
+    const withinHandleZone = touchY - top <= DRAG_HANDLE_ZONE;
+    if (!withinHandleZone) {
+      touchStartY.current = null;
+      touchCurrentY.current = null;
+      setIsDragging(false);
+      return;
+    }
+
+    touchStartY.current = touchY;
+    touchCurrentY.current = touchY;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDragging || touchStartY.current === null) return;
+    touchCurrentY.current = event.touches[0]?.clientY ?? null;
+    const delta = (touchCurrentY.current ?? touchStartY.current) - touchStartY.current;
+    const nextOffset = Math.max(0, delta);
+    setDragOffsetY(nextOffset);
+    if (nextOffset > 0) {
+      event.preventDefault();
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (isDragging && dragOffsetY > DRAG_CLOSE_THRESHOLD) {
+      onClose();
+    } else {
+      setDragOffsetY(0);
+    }
+    setIsDragging(false);
+    touchStartY.current = null;
+    touchCurrentY.current = null;
+  };
+
   return (
     <>
       <button
@@ -53,6 +106,7 @@ export function PortalMobileSearchSheet({
         className={cn(
           'fixed inset-0 z-[70] bg-black/45 transition-opacity duration-300 ease-out lg:hidden',
           isVisible ? 'opacity-100' : 'opacity-0',
+          backdropClassName,
         )}
         aria-label={t('close')}
         onClick={onClose}
@@ -60,11 +114,23 @@ export function PortalMobileSearchSheet({
 
       <div
         className={cn(
-          'fixed inset-x-0 bottom-0 z-[80] transition-transform duration-350 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden',
+          'fixed inset-x-0 bottom-0 z-[80] lg:hidden',
+          isDragging
+            ? 'transition-none'
+            : 'transition-transform duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]',
           isVisible ? 'translate-y-0' : 'translate-y-full',
+          containerClassName,
         )}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        style={isVisible ? { transform: `translateY(${dragOffsetY}px)` } : undefined}
       >
         <div className="flex h-[72vh] min-h-[26rem] max-h-[80vh] flex-col rounded-t-[1.5rem] border border-b-0 border-[rgba(14,14,16,0.07)] bg-white shadow-[0_-12px_36px_rgba(0,0,0,0.16)]">
+          <div className="flex justify-center pt-2">
+            <span className="h-1.5 w-12 rounded-full bg-[#d8d8de]" aria-hidden />
+          </div>
           <div className="flex items-center justify-between border-b border-[rgba(14,14,16,0.07)] px-4 py-3">
             <h2 className="text-base font-semibold text-[#3b3b40]">{t('globalSearch')}</h2>
             <button

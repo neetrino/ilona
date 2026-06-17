@@ -132,6 +132,8 @@ export function AdminPortalBottomNav() {
       <PortalMobileSearchSheet
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
+        backdropClassName="z-[50]"
+        containerClassName="z-[60]"
       />
 
       <nav
