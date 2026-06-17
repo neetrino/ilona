@@ -31,8 +31,8 @@ export function AdminDashboardHeader({
     user?.role,
   );
   return (
-    <header className="shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.5rem,1vw,0.75rem)]">
-      <div className="w-full min-w-0 rounded-[1.5rem] border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.75rem,1.5vw,1.25rem)] sm:rounded-[2rem] lg:rounded-[4rem]">
+    <header className="shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.35rem,0.8vw,0.6rem)]">
+      <div className="w-full min-w-0 rounded-[1.5rem] border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.55rem,1vw,0.9rem)] sm:rounded-[2rem] lg:rounded-[4rem]">
         <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {onMenuClick ? (
@@ -56,7 +56,7 @@ export function AdminDashboardHeader({
             <div className="min-w-0 flex-1">
               {isSubpage ? (
                 <>
-                  <h1 className="truncate text-[1.125rem] font-semibold leading-tight tracking-tight text-[#1010a3] sm:text-[1.375rem]">
+                  <h1 className="truncate px-5 text-[1.125rem] font-semibold leading-tight tracking-tight text-[#1010a3] sm:text-[1.375rem]">
                     {pageTitle}
                   </h1>
                   {pageSubtitle ? (
@@ -70,7 +70,7 @@ export function AdminDashboardHeader({
                   <p className="truncate text-[0.625rem] tracking-wide text-[#8b8b90] sm:text-[0.6875rem]">
                     {t('greeting', { name: firstName })}
                   </p>
-                  <h1 className="truncate text-[1.125rem] font-semibold leading-tight tracking-tight text-[#1010a3] sm:text-[1.5rem]">
+                  <h1 className="truncate px-5 text-[1.125rem] font-semibold leading-tight tracking-tight text-[#1010a3] sm:text-[1.5rem]">
                     {t('title')}
                   </h1>
                 </>

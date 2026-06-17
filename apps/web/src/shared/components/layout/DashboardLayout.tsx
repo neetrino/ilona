@@ -65,6 +65,7 @@ export function DashboardLayout({
     (variant === 'default' && (role === 'ADMIN' || role === 'MANAGER') && isAdminRoute);
   const isPortalShell = isStudentPortal || isTeacherPortal || isAdminPortal;
   const isDashboardHome = isPortalShell && !title;
+  const adminPageSubtitle = isAdminPortal ? undefined : subtitle;
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -163,7 +164,7 @@ export function DashboardLayout({
           ) : isAdminPortal ? (
             <AdminDashboardHeader
               pageTitle={isDashboardHome ? undefined : title}
-              pageSubtitle={isDashboardHome ? undefined : subtitle}
+              pageSubtitle={isDashboardHome ? undefined : adminPageSubtitle}
               headerContent={headerContent}
             />
           ) : (
