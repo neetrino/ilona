@@ -551,36 +551,38 @@ export default function AdminRecordingPage() {
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="rec-date-from"
-            className="block text-sm font-medium text-[#3b3b40] mb-1.5"
-          >
-            {tCommon('from')}
-          </label>
-          <DatePickerInput
-            id="rec-date-from"
-            value={dateFrom}
-            max={dateTo || undefined}
-            onValueChange={setDateFrom}
-            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
-          />
-        </div>
+        <div className="grid grid-cols-2 gap-3 sm:contents">
+          <div>
+            <label
+              htmlFor="rec-date-from"
+              className="block text-sm font-medium text-[#3b3b40] mb-1.5"
+            >
+              {tCommon('from')}
+            </label>
+            <DatePickerInput
+              id="rec-date-from"
+              value={dateFrom}
+              max={dateTo || undefined}
+              onValueChange={setDateFrom}
+              className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+            />
+          </div>
 
-        <div>
-          <label
-            htmlFor="rec-date-to"
-            className="block text-sm font-medium text-[#3b3b40] mb-1.5"
-          >
-            {tCommon('to')}
-          </label>
-          <DatePickerInput
-            id="rec-date-to"
-            value={dateTo}
-            min={dateFrom || undefined}
-            onValueChange={setDateTo}
-            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
-          />
+          <div>
+            <label
+              htmlFor="rec-date-to"
+              className="block text-sm font-medium text-[#3b3b40] mb-1.5"
+            >
+              {tCommon('to')}
+            </label>
+            <DatePickerInput
+              id="rec-date-to"
+              value={dateTo}
+              min={dateFrom || undefined}
+              onValueChange={setDateTo}
+              className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+            />
+          </div>
         </div>
       </div>
 

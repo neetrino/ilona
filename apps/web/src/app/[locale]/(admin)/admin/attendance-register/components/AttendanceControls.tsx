@@ -4,6 +4,7 @@ import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import { MultiSelectGroupDropdown } from '@/shared/components/ui/multi-select-group-dropdown';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import {
   getTodayDate,
   formatDateString,
@@ -65,6 +66,21 @@ export function AttendanceControls({
 }: AttendanceControlsProps) {
   const t = useTranslations('attendance');
   const tc = useTranslations('common');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const sync = () => setIsMobile(mediaQuery.matches);
+    sync();
+    mediaQuery.addEventListener('change', sync);
+    return () => mediaQuery.removeEventListener('change', sync);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile && viewMode === 'month') {
+      onViewModeChange('week');
+    }
+  }, [isMobile, viewMode, onViewModeChange]);
 
   const absenceFilterOptions: { value: AbsenceFilterType; label: string }[] = [
     { value: 'all', label: tc('all') },
@@ -102,6 +118,7 @@ export function AttendanceControls({
           value={viewMode}
           onChange={onViewModeChange}
           disabled={safeSelectedGroupIds.length === 0}
+          availableModes={isMobile ? ['day', 'week'] : undefined}
         />
       </div>
 
