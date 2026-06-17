@@ -246,7 +246,9 @@ export function LessonListTable({
   const hasSelectedLessons = selectedLessons.size > 0;
   const obligationIds: LessonActionId[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
   const cardRows: Array<{ lesson: Lesson; category?: TeacherCalendarRowCategory }> = sectionedCalendarList
-    ? sectionedPageRows.map((row) => ({ lesson: row.lesson, category: row.category }))
+    ? (useMobileCards
+        ? sectionedOrderedRows.map((row) => ({ lesson: row.lesson, category: row.category }))
+        : sectionedPageRows.map((row) => ({ lesson: row.lesson, category: row.category })))
     : sortedLessons.map((lesson) => ({ lesson }));
   const mobileCardsTotalPages = Math.max(
     1,
@@ -685,7 +687,12 @@ export function LessonListTable({
         </table>
       </div>
       {sectionedCalendarList && sectionedTotalPages > 1 && (
-        <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div
+          className={cn(
+            'flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between',
+            useMobileCards && 'hidden'
+          )}
+        >
           <p className="text-center text-sm text-slate-600 sm:text-left">
             {tCal('paginationSummary', {
               showingFrom: (sectionedListPage - 1) * TEACHER_CALENDAR_LIST_PAGE_SIZE + 1,

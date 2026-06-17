@@ -140,43 +140,6 @@ export function FinanceFilters({
           </div>
         ) : null}
       </div>
-      {/* Pagination - positioned below search input */}
-      {page !== undefined && pageSize !== undefined && total !== undefined && totalPages !== undefined && onPageChange && (
-        <div className="flex items-center justify-between text-sm text-[#8b8b90]">
-          <span>
-            Showing {Math.min(page * pageSize + 1, total)}-{Math.min((page + 1) * pageSize, total)} of {total}
-          </span>
-          <div className="flex items-center gap-2">
-            <button 
-              className={`p-2 rounded-lg border transition-colors ${
-                page === 0
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-              }`}
-              disabled={page === 0}
-              onClick={() => onPageChange(Math.max(0, page - 1))}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <span>Page {page + 1} of {totalPages || 1}</span>
-            <button 
-              className={`p-2 rounded-lg border transition-colors ${
-                page >= totalPages - 1
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-              }`}
-              disabled={page >= totalPages - 1}
-              onClick={() => onPageChange(page + 1)}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

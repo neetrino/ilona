@@ -33,6 +33,7 @@ export default function FinancePage() {
   const [isSmUp, setIsSmUp] = useState<boolean | undefined>(undefined);
   const pageSize = isSmUp === false ? 5 : 10;
   const cardsListStartRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollToCardsRef = useRef(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 640px)');
@@ -143,6 +144,20 @@ export default function FinancePage() {
   const totalSalaries = salariesData?.total || 0;
   const salariesTotalPages = salariesData?.totalPages || 1;
 
+  useEffect(() => {
+    if (isSmUp !== false || !shouldScrollToCardsRef.current) return;
+    const isActiveTabFetching = activeTab === 'payments' ? isFetchingPayments : isFetchingSalaries;
+    if (isActiveTabFetching) return;
+
+    requestAnimationFrame(() => {
+      cardsListStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+    shouldScrollToCardsRef.current = false;
+  }, [isSmUp, activeTab, isFetchingPayments, isFetchingSalaries, paymentsPage, salariesPage]);
+
   const isLoading = activeTab === 'payments' ? isLoadingPayments : activeTab === 'salaries' ? isLoadingSalaries : false;
 
   // Checkbox state for payments (current page only)
@@ -237,17 +252,18 @@ export default function FinancePage() {
   };
 
   const handlePageChangeWithScroll = (nextPage: number) => {
+    const currentPage = activeTab === 'payments' ? paymentsPage : salariesPage;
+    if (nextPage === currentPage) return;
+
+    if (isSmUp === false) {
+      shouldScrollToCardsRef.current = true;
+    }
+
     if (activeTab === 'payments') {
       handlePaymentsPageChange(nextPage);
     } else {
       handleSalariesPageChange(nextPage);
     }
-    requestAnimationFrame(() => {
-      cardsListStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
   };
 
   return (
@@ -320,6 +336,69 @@ export default function FinancePage() {
             searchTerm={debouncedSearchQuery.trim()}
             noResultsKey="noSalariesMatch"
           />
+        )}
+
+        {/* Pagination - bottom aligned */}
+        {((activeTab === 'payments' ? totalPayments : totalSalaries) > 0) && (
+          <div className="flex items-center justify-between text-sm text-[#8b8b90]">
+            <span>
+              {Math.min(
+                (activeTab === 'payments' ? paymentsPage : salariesPage) * pageSize + 1,
+                activeTab === 'payments' ? totalPayments : totalSalaries
+              )}
+              -
+              {Math.min(
+                ((activeTab === 'payments' ? paymentsPage : salariesPage) + 1) * pageSize,
+                activeTab === 'payments' ? totalPayments : totalSalaries
+              )}{' '}
+              / {activeTab === 'payments' ? totalPayments : totalSalaries}
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  (activeTab === 'payments' ? paymentsPage : salariesPage) === 0
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
+                disabled={(activeTab === 'payments' ? paymentsPage : salariesPage) === 0}
+                onClick={() =>
+                  handlePageChangeWithScroll(
+                    Math.max(0, (activeTab === 'payments' ? paymentsPage : salariesPage) - 1),
+                  )
+                }
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                {(activeTab === 'payments' ? paymentsPage : salariesPage) + 1}
+              </span>
+              <button
+                type="button"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  (activeTab === 'payments' ? paymentsPage : salariesPage) >=
+                  ((activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages) - 1)
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
+                disabled={
+                  (activeTab === 'payments' ? paymentsPage : salariesPage) >=
+                  ((activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages) - 1)
+                }
+                onClick={() =>
+                  handlePageChangeWithScroll(
+                    (activeTab === 'payments' ? paymentsPage : salariesPage) + 1,
+                  )
+                }
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Salary Details Modal */}
