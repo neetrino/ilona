@@ -263,16 +263,11 @@ export function AttendanceContextHeader({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-xs font-semibold text-[#8b8b90] uppercase tracking-wide">
-                {viewMode === 'week' ? t('registerWeekLabel') : t('registerDateLabel')}
+                {t('registerDateLabel')}
               </span>
               <span className="text-xl font-bold text-[#1010a3]">
-                {viewMode === 'week' ? weekRange : date ? formatDateDisplay(date) : tStudents('notAvailable')}
+                {date ? formatDateDisplay(date) : tStudents('notAvailable')}
               </span>
-              {isCurrentDateToday && viewMode === 'day' && (
-                <span className="px-2 py-0.5 text-xs font-semibold bg-[#1010a3]/20 text-[#1010a3] rounded-full">
-                  {tCommon('today')}
-                </span>
-              )}
             </div>
           </div>
           <div className="flex items-center gap-4 text-sm text-[#3b3b40]">
