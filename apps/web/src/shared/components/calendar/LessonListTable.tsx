@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, type ReactElement } from 'react';
+import { useState, useMemo, useEffect, useRef, type ReactElement } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
@@ -53,6 +53,8 @@ interface LessonListTableProps {
   useMobileCards?: boolean;
 }
 
+const MOBILE_CARD_PAGE_SIZE = 5;
+
 export function LessonListTable({
   lessons,
   isLoading = false,
@@ -77,9 +79,11 @@ export function LessonListTable({
   const tActions = useTranslations('calendar.lessonActions');
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
   const [sectionedListPage, setSectionedListPage] = useState(1);
+  const [mobileCardsPage, setMobileCardsPage] = useState(1);
   const { user } = useAuthStore();
   const isTeacher = user?.role === 'TEACHER';
   const router = useRouter();
+  const mobileCardsStartRef = useRef<HTMLDivElement | null>(null);
 
   const sectionedOrderedRows = useMemo(
     () => (sectionedCalendarList ? buildTeacherCalendarOrderedRows(lessons) : []),
@@ -244,6 +248,23 @@ export function LessonListTable({
   const cardRows: Array<{ lesson: Lesson; category?: TeacherCalendarRowCategory }> = sectionedCalendarList
     ? sectionedPageRows.map((row) => ({ lesson: row.lesson, category: row.category }))
     : sortedLessons.map((lesson) => ({ lesson }));
+  const mobileCardsTotalPages = Math.max(
+    1,
+    Math.ceil(cardRows.length / MOBILE_CARD_PAGE_SIZE),
+  );
+  const safeMobileCardsPage = Math.min(mobileCardsPage, mobileCardsTotalPages);
+  const mobilePaginatedCardRows = useMemo(
+    () =>
+      cardRows.slice(
+        (safeMobileCardsPage - 1) * MOBILE_CARD_PAGE_SIZE,
+        safeMobileCardsPage * MOBILE_CARD_PAGE_SIZE,
+      ),
+    [cardRows, safeMobileCardsPage],
+  );
+
+  useEffect(() => {
+    setMobileCardsPage(1);
+  }, [sectionedCalendarList, sectionedLessonsKey, sortedLessons.length]);
 
   const handleView = (lessonId: string) => {
     const currentPath = window.location.pathname;
@@ -257,6 +278,16 @@ export function LessonListTable({
       return;
     }
     router.push(`/calendar/${lessonId}`);
+  };
+
+  const goToMobileCardsPage = (nextPage: number) => {
+    setMobileCardsPage(nextPage);
+    requestAnimationFrame(() => {
+      mobileCardsStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
   };
 
   return (
@@ -291,15 +322,19 @@ export function LessonListTable({
       )}
 
       <div className={cn('space-y-3 p-3 sm:hidden', !useMobileCards && 'hidden')}>
-        {cardRows.map((row, idx) => {
+        <div ref={mobileCardsStartRef} />
+        {mobilePaginatedCardRows.map((row, idx) => {
           const lesson = row.lesson;
           const actions = getLessonActionsDerived(lesson);
           const actionMap = new Map(actions.map((action) => [action.id, action]));
           const isLocked = isTeacher && lesson.isLockedForTeacher;
           const section = row.category ? teacherCalendarRowSection(row.category) : null;
+          const globalRowIndex =
+            (safeMobileCardsPage - 1) * MOBILE_CARD_PAGE_SIZE + idx;
+          const prevGlobalRow = globalRowIndex > 0 ? cardRows[globalRowIndex - 1] : null;
           const prevSection =
-            idx > 0 && cardRows[idx - 1]?.category
-              ? teacherCalendarRowSection(cardRows[idx - 1].category!)
+            prevGlobalRow?.category
+              ? teacherCalendarRowSection(prevGlobalRow.category)
               : null;
           const showSectionHeader = sectionedCalendarList && section !== prevSection;
 
@@ -446,6 +481,53 @@ export function LessonListTable({
             </div>
           );
         })}
+        {cardRows.length > MOBILE_CARD_PAGE_SIZE && (
+          <div className="flex items-center justify-between px-1 text-sm text-[#8b8b90]">
+            <span>
+              {(safeMobileCardsPage - 1) * MOBILE_CARD_PAGE_SIZE + 1}-
+              {Math.min(
+                safeMobileCardsPage * MOBILE_CARD_PAGE_SIZE,
+                cardRows.length,
+              )}{' '}
+              / {cardRows.length}
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  safeMobileCardsPage <= 1
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
+                disabled={safeMobileCardsPage <= 1}
+                onClick={() => goToMobileCardsPage(Math.max(1, safeMobileCardsPage - 1))}
+                aria-label={tCal('paginationPrevious')}
+              >
+                <ChevronLeft className="h-4 w-4" aria-hidden />
+              </button>
+              <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                {safeMobileCardsPage}
+              </span>
+              <button
+                type="button"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  safeMobileCardsPage >= mobileCardsTotalPages
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
+                disabled={safeMobileCardsPage >= mobileCardsTotalPages}
+                onClick={() =>
+                  goToMobileCardsPage(
+                    Math.min(mobileCardsTotalPages, safeMobileCardsPage + 1),
+                  )
+                }
+                aria-label={tCal('paginationNext')}
+              >
+                <ChevronRight className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Table */}

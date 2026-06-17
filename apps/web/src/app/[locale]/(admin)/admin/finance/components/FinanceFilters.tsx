@@ -148,7 +148,11 @@ export function FinanceFilters({
           </span>
           <div className="flex items-center gap-2">
             <button 
-              className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50" 
+              className={`p-2 rounded-lg border transition-colors ${
+                page === 0
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
               disabled={page === 0}
               onClick={() => onPageChange(Math.max(0, page - 1))}
             >
@@ -158,7 +162,11 @@ export function FinanceFilters({
             </button>
             <span>Page {page + 1} of {totalPages || 1}</span>
             <button 
-              className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50"
+              className={`p-2 rounded-lg border transition-colors ${
+                page >= totalPages - 1
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
               disabled={page >= totalPages - 1}
               onClick={() => onPageChange(page + 1)}
             >

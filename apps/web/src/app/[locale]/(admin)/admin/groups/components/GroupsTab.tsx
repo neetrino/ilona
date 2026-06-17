@@ -79,6 +79,8 @@ interface GroupsTabProps {
   selectedCenterId?: string | null;
 }
 
+const MOBILE_BOARD_PAGE_SIZE = 5;
+
 export function GroupsTab({
   searchQuery,
   onSearchChange,
@@ -98,6 +100,8 @@ export function GroupsTab({
   const { user } = useAuthStore();
   const portalBasePath = getAdminPortalBasePath(user?.role);
   const isLg = useIsLgViewport();
+  const [mobileBoardPage, setMobileBoardPage] = useState(0);
+  const mobileBoardStartRef = useRef<HTMLDivElement | null>(null);
   const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
   /** Captured at open; optimistic updates must not change dialog copy */
   const [statusDialog, setStatusDialog] = useState<{
@@ -216,6 +220,33 @@ export function GroupsTab({
   ]);
 
   const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
+  const mobileBoardTotalPages = Math.max(
+    1,
+    Math.ceil(groups.length / MOBILE_BOARD_PAGE_SIZE),
+  );
+  const safeMobileBoardPage = Math.min(mobileBoardPage, mobileBoardTotalPages - 1);
+  const mobileBoardGroups = useMemo(
+    () =>
+      groups.slice(
+        safeMobileBoardPage * MOBILE_BOARD_PAGE_SIZE,
+        safeMobileBoardPage * MOBILE_BOARD_PAGE_SIZE + MOBILE_BOARD_PAGE_SIZE,
+      ),
+    [groups, safeMobileBoardPage],
+  );
+
+  useEffect(() => {
+    setMobileBoardPage(0);
+  }, [viewMode, activeBranchTabId, searchQuery, groups.length]);
+
+  const goToMobileBoardPage = (nextPage: number) => {
+    setMobileBoardPage(nextPage);
+    requestAnimationFrame(() => {
+      mobileBoardStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
 
   const handleBranchTabClick = (centerId: string) => {
     setPage(0);
@@ -768,18 +799,81 @@ export function GroupsTab({
                 {searchQuery ? t('noGroupsMatch') : t('noGroupsInBranch')}
               </div>
             ) : (
-              <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {groups.map((group) => (
-                  <GroupCard
-                    key={group.id}
-                    group={group}
-                    onEdit={() => handleEditGroupIdChange(group.id)}
-                    onDelete={() => handleDeleteClick(group.id)}
-                    onToggleActive={() => openGroupStatusDialog(group.id, group.isActive)}
-                    onStudentClick={openStudentFromGroupCard}
-                    isStatusTogglePending={isGroupStatusTogglePending}
-                  />
-                ))}
+              <div className="space-y-4">
+                <div ref={mobileBoardStartRef} className="sm:hidden" />
+                <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:hidden">
+                  {mobileBoardGroups.map((group) => (
+                    <GroupCard
+                      key={group.id}
+                      group={group}
+                      onEdit={() => handleEditGroupIdChange(group.id)}
+                      onDelete={() => handleDeleteClick(group.id)}
+                      onToggleActive={() => openGroupStatusDialog(group.id, group.isActive)}
+                      onStudentClick={openStudentFromGroupCard}
+                      isStatusTogglePending={isGroupStatusTogglePending}
+                    />
+                  ))}
+                </div>
+                <div className="hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+                  {groups.map((group) => (
+                    <GroupCard
+                      key={group.id}
+                      group={group}
+                      onEdit={() => handleEditGroupIdChange(group.id)}
+                      onDelete={() => handleDeleteClick(group.id)}
+                      onToggleActive={() => openGroupStatusDialog(group.id, group.isActive)}
+                      onStudentClick={openStudentFromGroupCard}
+                      isStatusTogglePending={isGroupStatusTogglePending}
+                    />
+                  ))}
+                </div>
+                {groups.length > MOBILE_BOARD_PAGE_SIZE && (
+                  <div className="flex items-center justify-between text-sm text-[#8b8b90] sm:hidden">
+                    <span>
+                      {safeMobileBoardPage * MOBILE_BOARD_PAGE_SIZE + 1}-
+                      {Math.min((safeMobileBoardPage + 1) * MOBILE_BOARD_PAGE_SIZE, groups.length)} / {groups.length}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                          safeMobileBoardPage === 0
+                            ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                            : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                        }`}
+                        disabled={safeMobileBoardPage === 0}
+                        onClick={() => goToMobileBoardPage(Math.max(0, safeMobileBoardPage - 1))}
+                        aria-label="Previous cards page"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                        {safeMobileBoardPage + 1}
+                      </span>
+                      <button
+                        type="button"
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                          safeMobileBoardPage >= mobileBoardTotalPages - 1
+                            ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                            : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                        }`}
+                        disabled={safeMobileBoardPage >= mobileBoardTotalPages - 1}
+                        onClick={() =>
+                          goToMobileBoardPage(
+                            Math.min(mobileBoardTotalPages - 1, safeMobileBoardPage + 1),
+                          )
+                        }
+                        aria-label="Next cards page"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

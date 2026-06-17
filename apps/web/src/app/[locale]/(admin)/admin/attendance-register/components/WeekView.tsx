@@ -225,7 +225,11 @@ export function WeekView({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] disabled:opacity-40"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  safeMobileCardPage === 0
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
                 disabled={safeMobileCardPage === 0}
                 onClick={() =>
                   goToMobileCardsPage(Math.max(0, safeMobileCardPage - 1))
@@ -241,7 +245,11 @@ export function WeekView({
               </span>
               <button
                 type="button"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] disabled:opacity-40"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  safeMobileCardPage >= totalMobileCardPages - 1
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
                 disabled={safeMobileCardPage >= totalMobileCardPages - 1}
                 onClick={() =>
                   goToMobileCardsPage(

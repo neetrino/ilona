@@ -3,6 +3,7 @@
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
@@ -29,7 +30,17 @@ export default function FinancePage() {
   const t = useTranslations('finance');
   const params = useParams();
   const locale = params.locale as string;
-  const pageSize = 10;
+  const [isSmUp, setIsSmUp] = useState<boolean | undefined>(undefined);
+  const pageSize = isSmUp === false ? 5 : 10;
+  const cardsListStartRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 640px)');
+    const sync = () => setIsSmUp(mediaQuery.matches);
+    sync();
+    mediaQuery.addEventListener('change', sync);
+    return () => mediaQuery.removeEventListener('change', sync);
+  }, []);
 
   const {
     // State
@@ -225,6 +236,20 @@ export default function FinancePage() {
     }
   };
 
+  const handlePageChangeWithScroll = (nextPage: number) => {
+    if (activeTab === 'payments') {
+      handlePaymentsPageChange(nextPage);
+    } else {
+      handleSalariesPageChange(nextPage);
+    }
+    requestAnimationFrame(() => {
+      cardsListStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
+
   return (
     <DashboardLayout 
       title={t('title')} 
@@ -262,10 +287,11 @@ export default function FinancePage() {
           pageSize={pageSize}
           totalPages={activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages}
           total={activeTab === 'payments' ? totalPayments : totalSalaries}
-          onPageChange={activeTab === 'payments' ? handlePaymentsPageChange : handleSalariesPageChange}
+          onPageChange={handlePageChangeWithScroll}
         />
 
         {/* Table */}
+        <div ref={cardsListStartRef} />
         {activeTab === 'payments' ? (
           <PaymentsTable
             payments={payments}

@@ -1,7 +1,7 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -174,6 +174,7 @@ export default function AdminRecordingPage() {
   const [page, setPage] = useState(0);
   const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const cardsListStartRef = useRef<HTMLDivElement | null>(null);
 
   // Hydrate filters from localStorage
   useEffect(() => {
@@ -494,6 +495,16 @@ export default function AdminRecordingPage() {
     setDateTo('');
   };
 
+  const goToPage = (nextPage: number) => {
+    setPage(nextPage);
+    requestAnimationFrame(() => {
+      cardsListStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
+
   return (
     <DashboardLayout
       title={tNav('recordings')}
@@ -603,6 +614,7 @@ export default function AdminRecordingPage() {
       </div>
 
       {/* Mobile cards */}
+      <div ref={cardsListStartRef} />
       <div className="space-y-3 sm:hidden">
         {isLoading || isLoadingDirectory ? (
           Array.from({ length: 4 }).map((_, idx) => (
@@ -851,9 +863,13 @@ export default function AdminRecordingPage() {
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] disabled:opacity-40"
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
+                safePage === 0
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
               disabled={safePage === 0}
-              onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+              onClick={() => goToPage(Math.max(0, safePage - 1))}
               aria-label="Previous page"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -865,9 +881,13 @@ export default function AdminRecordingPage() {
             </span>
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] disabled:opacity-40"
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
+                safePage >= totalPages - 1
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
               disabled={safePage >= totalPages - 1}
-              onClick={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
+              onClick={() => goToPage(Math.min(totalPages - 1, safePage + 1))}
               aria-label="Next page"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
