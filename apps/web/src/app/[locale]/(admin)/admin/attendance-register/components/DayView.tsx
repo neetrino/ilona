@@ -89,7 +89,7 @@ export function DayView({
   // If only one group or no multi-select, show single view (backward compatibility)
   if (selectedGroups.length <= 1) {
     return (
-      <div className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
+      <div className="rounded-[30px] border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:p-7">
         <AttendanceContextHeader
           group={group || null}
           date={currentDate}
@@ -100,26 +100,28 @@ export function DayView({
           isCurrentDateToday={isCurrentDateToday}
         />
 
-        {isLoadingLessons || isLoadingStudents || isLoadingAttendance ? (
-          <AttendanceLoadingState isLoadingAttendance={isLoadingAttendance} />
-        ) : attendanceQueries.some((q) => q.isError) ? (
-          <AttendanceErrorState />
-        ) : filteredLessons.length === 0 ? (
-          <AttendanceEmptyState date={currentDate} />
-        ) : (
-          <AttendanceGrid
-            students={students.map(toAttendanceRow)}
-            lessons={filteredLessons}
-            initialAttendance={attendanceData}
-            onLessonSave={onLessonSave}
-            isLoading={isLoadingAttendance}
-            isSaving={savingLessons}
-            dateRange={effectiveDateRange}
-            onSaveSuccess={onSaveSuccess}
-            onSaveError={onSaveError}
-            onUnsavedChangesChange={onUnsavedChangesChange}
-          />
-        )}
+        <div className="mt-5">
+          {isLoadingLessons || isLoadingStudents || isLoadingAttendance ? (
+            <AttendanceLoadingState isLoadingAttendance={isLoadingAttendance} />
+          ) : attendanceQueries.some((q) => q.isError) ? (
+            <AttendanceErrorState />
+          ) : filteredLessons.length === 0 ? (
+            <AttendanceEmptyState date={currentDate} />
+          ) : (
+            <AttendanceGrid
+              students={students.map(toAttendanceRow)}
+              lessons={filteredLessons}
+              initialAttendance={attendanceData}
+              onLessonSave={onLessonSave}
+              isLoading={isLoadingAttendance}
+              isSaving={savingLessons}
+              dateRange={effectiveDateRange}
+              onSaveSuccess={onSaveSuccess}
+              onSaveError={onSaveError}
+              onUnsavedChangesChange={onUnsavedChangesChange}
+            />
+          )}
+        </div>
       </div>
     );
   }
@@ -140,7 +142,7 @@ export function DayView({
         });
 
         return (
-          <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
+          <div key={selectedGroup.id} className="rounded-[30px] border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:p-7">
             <AttendanceContextHeader
               group={selectedGroup}
               date={currentDate}
@@ -151,26 +153,28 @@ export function DayView({
               isCurrentDateToday={isCurrentDateToday}
             />
 
-            {isLoadingLessons || isLoadingStudents || isLoadingAttendance ? (
-              <AttendanceLoadingState isLoadingAttendance={isLoadingAttendance} />
-            ) : attendanceQueries.some((q) => q.isError) ? (
-              <AttendanceErrorState />
-            ) : groupLessons.length === 0 ? (
-              <AttendanceEmptyState date={currentDate} />
-            ) : (
-              <AttendanceGrid
-                students={groupStudents.map(toAttendanceRow)}
-                lessons={groupLessons}
-                initialAttendance={groupAttendanceData}
-                onLessonSave={onLessonSave}
-                isLoading={isLoadingAttendance}
-                isSaving={savingLessons}
-                dateRange={effectiveDateRange}
-                onSaveSuccess={onSaveSuccess}
-                onSaveError={onSaveError}
-                onUnsavedChangesChange={onUnsavedChangesChange}
-              />
-            )}
+            <div className="mt-5">
+              {isLoadingLessons || isLoadingStudents || isLoadingAttendance ? (
+                <AttendanceLoadingState isLoadingAttendance={isLoadingAttendance} />
+              ) : attendanceQueries.some((q) => q.isError) ? (
+                <AttendanceErrorState />
+              ) : groupLessons.length === 0 ? (
+                <AttendanceEmptyState date={currentDate} />
+              ) : (
+                <AttendanceGrid
+                  students={groupStudents.map(toAttendanceRow)}
+                  lessons={groupLessons}
+                  initialAttendance={groupAttendanceData}
+                  onLessonSave={onLessonSave}
+                  isLoading={isLoadingAttendance}
+                  isSaving={savingLessons}
+                  dateRange={effectiveDateRange}
+                  onSaveSuccess={onSaveSuccess}
+                  onSaveError={onSaveError}
+                  onUnsavedChangesChange={onUnsavedChangesChange}
+                />
+              )}
+            </div>
           </div>
         );
       })}
