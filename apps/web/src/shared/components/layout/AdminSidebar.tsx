@@ -120,6 +120,7 @@ export function AdminSidebar({
   const tCommon = useTranslations('common');
   const { user } = useAuthStore();
   const role = user?.role ?? 'ADMIN';
+  const isArmenianLocale = locale === 'hy';
 
   const isDrawer = layout === 'drawer';
   const showLabels = isDrawer || !collapsed;
@@ -145,7 +146,11 @@ export function AdminSidebar({
           ? 'w-full py-2 pl-2 pr-2'
           : cn(
               'h-screen py-3 pl-3 pr-2 sm:pl-4 sm:pr-3',
-              collapsed ? 'w-[4.5rem]' : 'w-[clamp(11.5rem,14vw,17rem)]',
+              collapsed
+                ? 'w-[4.5rem]'
+                : isArmenianLocale
+                  ? 'w-[clamp(13rem,16vw,19rem)]'
+                  : 'w-[clamp(11.5rem,14vw,17rem)]',
             ),
       )}
     >
@@ -204,7 +209,8 @@ export function AdminSidebar({
 
         <nav
           className={cn(
-            'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto px-3 py-4 pr-3.5',
+            'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto py-4 pr-3.5',
+            isArmenianLocale ? 'px-3.5' : 'px-3',
             NAV_LIST_GAP_CLASS,
           )}
         >
