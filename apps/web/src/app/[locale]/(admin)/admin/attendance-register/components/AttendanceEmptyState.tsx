@@ -28,7 +28,7 @@ export function AttendanceEmptyState({ date, dateString, message }: AttendanceEm
         <span className="absolute right-5 top-7 text-[#7b84ff]">✦</span>
         <span className="absolute bottom-7 left-7 text-[#c2c9de]">✧</span>
       </div>
-      <p className="mb-2 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[#141b3b]">
+      <p className="mb-6 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[#141b3b]">
         {message || t('noLessonsFound')}
       </p>
       {subtitle && <p className="text-[16px] leading-tight text-[#7f859d]">{subtitle}</p>}
