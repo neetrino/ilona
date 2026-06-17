@@ -1122,6 +1122,7 @@
     "justificationPending": "Add a required comment for each justified absence before saving ({count} pending).",
     "sessionsCount": "{count, plural, one {# session} other {# sessions}}",
     "noSessionsScheduled": "No sessions",
+    "selectLessons": "Select lessons",
     "cellAria": "{name} - {date} - {status}",
     "clickToMarkCycle": "Click to mark: {next}",
     "clickPencilToEdit": "Click pencil icon to enable editing",

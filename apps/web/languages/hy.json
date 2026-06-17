@@ -1122,6 +1122,7 @@
     "justificationPending": "Պահպանելուց առաջ ավելացրեք պարտադիր մեկնաբանություն յուրաքանչյուր հիմնավորված բացակայության համար ({count} սպասում է)։",
     "sessionsCount": "{count, plural, one {# նիստ} other {# նիստ}}",
     "noSessionsScheduled": "Նիստեր չկան",
+    "selectLessons": "Ընտրել դասերը",
     "cellAria": "{name} - {date} - {status}",
     "clickToMarkCycle": "Սեղմեք նշելու համար՝ {next}",
     "clickPencilToEdit": "Սեղմեք մատիտի պատկերակը խմբագրումը միացնելու համար",
