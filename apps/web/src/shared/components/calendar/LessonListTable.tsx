@@ -357,11 +357,11 @@ export function LessonListTable({
                     <Checkbox
                       checked={selectedLessons.has(lesson.id)}
                       onCheckedChange={(checked) => handleSelectLesson(lesson.id, checked === true)}
-                      className="mt-1.5 h-5 w-5 rounded-md"
+                      className="relative -top-[1px] h-5 w-5 rounded-md"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-[1.2rem] leading-none font-semibold text-[#111827]">
+                        <p className="whitespace-normal break-words text-[1.2rem] leading-tight font-semibold text-[#111827]">
                           {lesson.group?.name || tCal('unknownGroupName')}
                         </p>
                         {lesson.completionStatus === 'DONE' ? (
