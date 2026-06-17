@@ -93,7 +93,7 @@ function LessonRow({
       </div>
       <Link
         href={`/${locale}${basePath}/schedule`}
-        className="ml-auto inline-flex h-11 items-center rounded-full bg-[#d9d9f4] pl-4 pr-1.5 text-sm font-semibold text-[#1010a3] transition-colors hover:bg-[#ccccf2]"
+        className="mt-1 inline-flex h-11 w-full items-center justify-between rounded-full bg-[#d9d9f4] pl-4 pr-1.5 text-sm font-semibold text-[#1010a3] transition-colors hover:bg-[#ccccf2] sm:ml-auto sm:mt-0 sm:w-auto sm:justify-start"
       >
         {detailsLabel}
         <span className="ml-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#1010d0]">

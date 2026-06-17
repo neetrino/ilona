@@ -265,7 +265,7 @@
     "revenueLast6Months": "Revenue (last 6 months)",
     "branchSchedule": "Today's Lessons",
     "viewAll": "View all",
-    "viewSchedule": "View schedule",
+    "viewSchedule": "Open the schedule",
     "loading": "Loading…",
     "noUnpaid": "All payments are up to date.",
     "noCapacity": "All groups are full.",
@@ -351,7 +351,7 @@
     },
     "teacherStats": {
       "todayLessons": "Today's lessons",
-      "todayLessonsCaption": "Scheduled for today",
+      "todayLessonsCaption": "Planned today",
       "completed": "{count} completed",
       "students": "Total students",
       "studentsCaption": "Across your assigned groups",
