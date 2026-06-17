@@ -151,7 +151,7 @@ export function TeachersFilters({
               d="M12 4v16m8-8H4"
             />
           </svg>
-          <span className={locale === 'hy' ? 'text-sm' : 'text-base'}>+ {t('addTeacher')}</span>
+          <span className={locale === 'hy' ? 'text-sm' : 'text-base'}>{t('addTeacher')}</span>
         </Button>
       </div>
       </div>
