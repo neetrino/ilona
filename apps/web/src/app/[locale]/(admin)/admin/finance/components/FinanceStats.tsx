@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { StatCard } from '@/shared/components/ui';
 import type { FinanceDashboard } from '@/features/finance';
 import { formatCurrency } from '@/shared/lib/utils';
@@ -12,6 +13,7 @@ interface FinanceStatsProps {
 
 export function FinanceStats({ dashboard, isLoading }: FinanceStatsProps) {
   const t = useTranslations('finance');
+  const locale = useLocale();
 
   if (isLoading) {
     return (
@@ -45,7 +47,7 @@ export function FinanceStats({ dashboard, isLoading }: FinanceStatsProps) {
         value={formatCurrency(dashboard?.expenses?.totalExpenses || 0)}
         change={{ value: t('salariesPaid', { count: dashboard?.expenses?.salariesPaid || 0 }), type: 'neutral' }}
         wrapTitle
-        stackChangeOnDesktop
+        stackChangeOnDesktop={locale !== 'en'}
       />
       <StatCard
         title={t('netProfit')}
