@@ -234,7 +234,7 @@ export default function AdminDailyPlanPage() {
 
         {!managerMissingCenter && (
         <div className="flex flex-col gap-4 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:p-5 shadow-sm">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-[#3b3b40]">{tCommon('from')}</span>
               <DatePickerInput
@@ -251,7 +251,7 @@ export default function AdminDailyPlanPage() {
                 className="h-10 rounded-lg border border-[rgba(14,14,16,0.07)] px-3 text-[#3b3b40]"
               />
             </label>
-            <div className="flex flex-col gap-1 text-sm sm:col-span-2 lg:col-span-2">
+            <div className="col-span-2 flex flex-col gap-1 text-sm lg:col-span-2">
               <span className="font-medium text-[#3b3b40]">{tCommon('teacher')}</span>
               <SingleSelectDropdown
                 id="daily-plan-teacher-filter"

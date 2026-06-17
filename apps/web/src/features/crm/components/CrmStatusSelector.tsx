@@ -169,20 +169,22 @@ export function CrmStatusSelector({
               width: `${position.width}px`,
             }}
           >
-            {options.map((status) => (
-              <button
-                key={status}
-                type="button"
-                onClick={(e) => handleSelect(e, status)}
-                className={cn(
-                  DROPDOWN_OPTION_BASE_CLASS,
-                  DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                  value === status && DROPDOWN_OPTION_SELECTED_CLASS
-                )}
-              >
-                {statusLabels[status] ?? status}
-              </button>
-            ))}
+            <div className="space-y-1 px-1 py-1">
+              {options.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={(e) => handleSelect(e, status)}
+                  className={cn(
+                    DROPDOWN_OPTION_BASE_CLASS,
+                    DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                    value === status && DROPDOWN_OPTION_SELECTED_CLASS
+                  )}
+                >
+                  {statusLabels[status] ?? status}
+                </button>
+              ))}
+            </div>
           </div>,
           document.body
         )}

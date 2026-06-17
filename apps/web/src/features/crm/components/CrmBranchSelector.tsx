@@ -129,31 +129,33 @@ export function CrmBranchSelector({
               width: `${position.width}px`,
             }}
           >
-            <button
-              type="button"
-              onClick={(e) => handleSelect(e, null)}
-              className={cn(
-                DROPDOWN_OPTION_BASE_CLASS,
-                DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                !value && DROPDOWN_OPTION_SELECTED_CLASS
-              )}
-            >
-              No branch
-            </button>
-            {options.map((branch) => (
+            <div className="space-y-1 px-1 py-1">
               <button
-                key={branch.id}
                 type="button"
-                onClick={(e) => handleSelect(e, branch.id)}
+                onClick={(e) => handleSelect(e, null)}
                 className={cn(
                   DROPDOWN_OPTION_BASE_CLASS,
                   DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                  value === branch.id && DROPDOWN_OPTION_SELECTED_CLASS
+                  !value && DROPDOWN_OPTION_SELECTED_CLASS
                 )}
               >
-                {branch.name}
+                No branch
               </button>
-            ))}
+              {options.map((branch) => (
+                <button
+                  key={branch.id}
+                  type="button"
+                  onClick={(e) => handleSelect(e, branch.id)}
+                  className={cn(
+                    DROPDOWN_OPTION_BASE_CLASS,
+                    DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                    value === branch.id && DROPDOWN_OPTION_SELECTED_CLASS
+                  )}
+                >
+                  {branch.name}
+                </button>
+              ))}
+            </div>
           </div>,
           document.body
         )}

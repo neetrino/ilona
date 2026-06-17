@@ -18,6 +18,7 @@ import type { GroupIconKey } from '@ilona/types';
 import { defaultMonthDateRange, scheduleSlotsValidationError } from '../group-schedule-utils';
 import { cn } from '@/shared/lib/utils';
 import { X } from 'lucide-react';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 type CreateGroupFormData = {
   name: string;
@@ -105,6 +106,8 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
     },
   });
   const watchedTeacherId = watch('teacherId');
+  const watchedCenterId = watch('centerId');
+  const watchedSubstituteTeacherId = watch('substituteTeacherId');
 
   // Watch centerId to update when defaultCenterId changes
   const centerId = watch('centerId');
@@ -383,24 +386,25 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
             <Label htmlFor="centerId">
               {tCommon('center')} <span className="text-red-500">*</span>
             </Label>
-            <select
+            <input type="hidden" {...register('centerId')} />
+            <SingleSelectDropdown
               id="centerId"
-              {...register('centerId')}
+              options={centers.map((center) => ({
+                id: center.id,
+                label: center.name,
+              }))}
+              value={watchedCenterId || null}
+              onValueChange={(nextValue) =>
+                setValue('centerId', nextValue ?? '', {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+              placeholder={tForm('selectCenter')}
+              isLoading={isLoadingCenters}
+              error={errors.centerId?.message ?? null}
               disabled={isSubmitting || isLoadingCenters || centers.length === 0}
-              className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
-                errors.centerId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || isLoadingCenters || centers.length === 0 ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
-            >
-              <option value="">{tForm('selectCenter')}</option>
-              {centers.map((center) => (
-                <option key={center.id} value={center.id}>
-                  {center.name}
-                </option>
-              ))}
-            </select>
-            {errors.centerId && (
-              <p className="text-sm text-red-600">{errors.centerId.message}</p>
-            )}
+            />
             {isLoadingCenters && (
               <p className="text-sm text-slate-500">{tForm('loadingCenters')}</p>
             )}
@@ -418,24 +422,32 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
                 tForm('optional')
               )}
             </Label>
-            <select
+            <input type="hidden" {...register('teacherId')} />
+            <SingleSelectDropdown
               id="teacherId"
-              {...register('teacherId')}
+              options={teachers.map((teacher) => ({
+                id: teacher.id,
+                label: `${teacher.user.firstName} ${teacher.user.lastName}`,
+              }))}
+              value={watchedTeacherId || null}
+              onValueChange={(nextValue) => {
+                const nextTeacherId = nextValue ?? '';
+                setValue('teacherId', nextTeacherId, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+                if (watchedSubstituteTeacherId && watchedSubstituteTeacherId === nextTeacherId) {
+                  setValue('substituteTeacherId', '', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+              }}
+              placeholder={tForm('noTeacherAssigned')}
+              isLoading={isLoadingTeachers}
+              error={errors.teacherId?.message ?? null}
               disabled={isSubmitting || createGroup.isPending || isLoadingTeachers}
-              className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
-                errors.teacherId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
-            >
-              <option value="">{tForm('noTeacherAssigned')}</option>
-              {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.user.firstName} {teacher.user.lastName}
-                </option>
-              ))}
-            </select>
-            {errors.teacherId && (
-              <p className="text-sm text-red-600">{errors.teacherId.message}</p>
-            )}
+            />
             {isLoadingTeachers && (
               <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>
             )}
@@ -443,23 +455,27 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
 
           <div className="space-y-2">
             <Label htmlFor="substituteTeacherId">{tForm('substituteTeacherOptional')}</Label>
-            <select
+            <input type="hidden" {...register('substituteTeacherId')} />
+            <SingleSelectDropdown
               id="substituteTeacherId"
-              {...register('substituteTeacherId')}
+              options={teachers
+                .filter((teacher) => teacher.id !== watchedTeacherId)
+                .map((teacher) => ({
+                  id: teacher.id,
+                  label: `${teacher.user.firstName} ${teacher.user.lastName}`,
+                }))}
+              value={watchedSubstituteTeacherId || null}
+              onValueChange={(nextValue) =>
+                setValue('substituteTeacherId', nextValue ?? '', {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+              placeholder={tForm('noSubstitute')}
+              isLoading={isLoadingTeachers}
+              error={errors.substituteTeacherId?.message ?? null}
               disabled={isSubmitting || createGroup.isPending || isLoadingTeachers}
-              className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm ${
-                errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || createGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
-            >
-              <option value="">{tForm('noSubstitute')}</option>
-              {teachers
-                .filter((t) => t.id !== watchedTeacherId)
-                .map((teacher) => (
-                  <option key={teacher.id} value={teacher.id}>
-                    {teacher.user.firstName} {teacher.user.lastName}
-                  </option>
-                ))}
-            </select>
+            />
           </div>
 
           <GroupCalendarScheduleSection
