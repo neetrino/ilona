@@ -99,7 +99,11 @@ export function InactiveManagersDialog({ open, onOpenChange }: InactiveManagersD
           if (!next) setFeedback(null);
         }}
       >
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogContent
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          overlayClassName="duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          className="w-[calc(100%-1.5rem)] max-w-lg rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-[85vh] overflow-hidden flex flex-col sm:w-full [&>button]:border-0 [&>button]:bg-transparent [&>button]:outline-none [&>button]:ring-0 [&>button]:focus:outline-none [&>button]:focus:ring-0 [&>button]:focus-visible:outline-none [&>button]:focus-visible:ring-0 [&>button[data-state=open]]:bg-transparent"
+        >
           <DialogHeader>
             <DialogTitle>{t('inactiveManagersTitle')}</DialogTitle>
             <DialogDescription>{t('inactiveManagersDescription')}</DialogDescription>

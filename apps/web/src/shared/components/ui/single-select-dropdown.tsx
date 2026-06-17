@@ -35,6 +35,7 @@ interface SingleSelectDropdownProps {
   error?: string | null;
   className?: string;
   disabled?: boolean;
+  wrapText?: boolean;
 }
 
 export function SingleSelectDropdown({
@@ -49,6 +50,7 @@ export function SingleSelectDropdown({
   error = null,
   className,
   disabled = false,
+  wrapText = false,
 }: SingleSelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
@@ -222,7 +224,8 @@ export function SingleSelectDropdown({
         >
           <div className="flex min-w-0 items-center justify-between gap-2">
             <span className={cn(
-              'truncate text-sm',
+              'text-sm',
+              'truncate',
               !selectedOption ? DROPDOWN_PLACEHOLDER_TEXT_CLASS : DROPDOWN_VALUE_TEXT_CLASS
             )}>
               {isLoading ? 'Loading...' : displayText}
@@ -288,7 +291,9 @@ export function SingleSelectDropdown({
                         activeIndex === index && 'bg-slate-50 text-[#1010a3]'
                       )}
                     >
-                      <span className="block truncate">{option.label}</span>
+                      <span className={cn('block', wrapText ? 'whitespace-normal break-words text-left' : 'truncate')}>
+                        {option.label}
+                      </span>
                     </button>
                   );
                 })}

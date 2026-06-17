@@ -1,25 +1,22 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   Input,
   Label,
 } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useCenters } from '@/features/centers';
 import { useManagers, useUpdateManager, type ManagerAccount } from '@/features/settings';
 import { getCentersTakenByActiveManagers } from '@/features/settings/utils/manager-display';
 import { getErrorMessage } from '@/shared/lib/api';
+import { cn } from '@/shared/lib/utils';
 
 const activeManagerSchema = z.object({
   firstName: z.string().min(2).max(50),
@@ -76,6 +73,13 @@ export function EditManagerForm({
   const { data: managers } = useManagers();
   const updateManager = useUpdateManager();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(open);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeForm = useForm<ActiveManagerFormData>({
     resolver: zodResolver(activeManagerSchema),
@@ -162,6 +166,92 @@ export function EditManagerForm({
     setErrorMessage(null);
   }, [manager, open, isInactiveVariant, centersTakenByOthers, activeForm, inactiveForm]);
 
+  useEffect(() => {
+    setIsDialogOpen(open);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setDragOffsetY(0);
+      setIsDragging(false);
+      setIsSettling(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) {
+        clearTimeout(settleTimerRef.current);
+      }
+    };
+  }, []);
+
+  const requestClose = useCallback(() => {
+    setIsDialogOpen(false);
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const isMobileViewport = () =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
+  const resetDragRefs = () => {
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    setIsDragging(false);
+  };
+
+  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    touchStartYRef.current = firstTouch.clientY;
+    touchStartXRef.current = firstTouch.clientX;
+    setIsSettling(false);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    const deltaY = firstTouch.clientY - touchStartYRef.current;
+    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
+    if (deltaY <= 0 || deltaY <= deltaX) return;
+    event.preventDefault();
+    setDragOffsetY(Math.min(deltaY * 0.95, 340));
+  };
+
+  const handleDragEnd = () => {
+    if (!isMobileViewport()) return;
+    if (!isDragging) return;
+    const shouldClose = dragOffsetY > 110;
+    resetDragRefs();
+    if (shouldClose) {
+      setDragOffsetY(0);
+      requestClose();
+      return;
+    }
+    setIsSettling(true);
+    setDragOffsetY(0);
+    settleTimerRef.current = setTimeout(() => {
+      setIsSettling(false);
+      settleTimerRef.current = null;
+    }, 280);
+  };
+
+  const dragStyle =
+    dragOffsetY > 0 || isSettling
+      ? {
+          transform: `translateY(${dragOffsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }
+      : undefined;
+
   const onSubmitActive = async (values: ActiveManagerFormData) => {
     if (!manager) return;
     setErrorMessage(null);
@@ -208,81 +298,117 @@ export function EditManagerForm({
   };
 
   const isSubmitting = updateManager.isPending;
+  const title = isInactiveVariant ? t('editInactiveManager') : t('editManager');
+  const description = isInactiveVariant
+    ? t('editInactiveManagerDescription')
+    : t('editManagerDescription');
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isInactiveVariant ? t('editInactiveManager') : t('editManager')}
-          </DialogTitle>
-          <DialogDescription>
-            {isInactiveVariant
-              ? t('editInactiveManagerDescription')
-              : t('editManagerDescription')}
-          </DialogDescription>
-        </DialogHeader>
-
-        {isInactiveVariant ? (
-          <form onSubmit={inactiveForm.handleSubmit(onSubmitInactive)} className="space-y-4">
-            {errorMessage && <FormError message={errorMessage} />}
-            <ProfileFields form={inactiveForm as FormLike} t={t} />
-            <CenterSelect
-              form={inactiveForm as FormLike}
-              t={t}
-              selectableCenters={selectableCenters}
-              disabled={false}
-              hint={t('managerInactiveEditCenterHint')}
+    <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content
+          style={dragStyle}
+          className={cn(
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-lg sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
+            'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0'
+          )}
+          aria-describedby="edit-manager-description"
+        >
+          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sm:hidden">
+            <div
+              className="absolute inset-x-0 -top-2 h-14"
+              onTouchStart={handleDragStart}
+              onTouchMove={handleDragMove}
+              onTouchEnd={handleDragEnd}
+              onTouchCancel={handleDragEnd}
             />
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                {tCommon('cancel')}
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? t('saving') : t('saveChanges')}
-              </Button>
-            </DialogFooter>
-          </form>
-        ) : (
-          <form onSubmit={activeForm.handleSubmit(onSubmitActive)} className="space-y-4">
-            {errorMessage && <FormError message={errorMessage} />}
-            <ProfileFields form={activeForm as FormLike} t={t} />
-            <CenterSelect
-              form={activeForm as FormLike}
-              t={t}
-              selectableCenters={selectableCenters}
-              disabled={watchedStatus === 'INACTIVE'}
-              hint={watchedStatus === 'INACTIVE' ? t('managerInactiveCenterHint') : undefined}
-              centerError={activeForm.formState.errors.centerId?.message}
-            />
-            <div className="space-y-2">
-              <Label htmlFor="manager-status">{t('managerStatus')}</Label>
-              <select
-                id="manager-status"
-                className="unified-native-select flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-                {...activeForm.register('status')}
-              >
-                <option value="ACTIVE">{tStatus('active')}</option>
-                <option value="INACTIVE">{tStatus('inactive')}</option>
-              </select>
-              {watchedStatus === 'INACTIVE' && (
-                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-2">
-                  {t('managerSetInactiveHint')}
-                </p>
-              )}
+            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
+          </div>
+          <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
+          <DialogPrimitive.Description id="edit-manager-description" className="sr-only">
+            {description}
+          </DialogPrimitive.Description>
+          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-[#3b3b40]">{title}</h2>
+              <p className="mt-1 text-sm text-[#8b8b90]">{description}</p>
             </div>
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                {tCommon('cancel')}
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? t('saving') : t('saveChanges')}
-              </Button>
-            </DialogFooter>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
+
+            {isInactiveVariant ? (
+              <form onSubmit={inactiveForm.handleSubmit(onSubmitInactive)} className="space-y-4">
+                {errorMessage && <FormError message={errorMessage} />}
+                <ProfileFields form={inactiveForm as FormLike} t={t} />
+                <CenterSelect
+                  form={inactiveForm as FormLike}
+                  t={t}
+                  selectableCenters={selectableCenters}
+                  disabled={false}
+                  hint={t('managerInactiveEditCenterHint')}
+                />
+                <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+                  <Button type="button" variant="outline" onClick={requestClose}>
+                    {tCommon('cancel')}
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? t('saving') : t('saveChanges')}
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={activeForm.handleSubmit(onSubmitActive)} className="space-y-4">
+                {errorMessage && <FormError message={errorMessage} />}
+                <ProfileFields form={activeForm as FormLike} t={t} />
+                <div className="grid grid-cols-2 gap-4">
+                  <CenterSelect
+                    form={activeForm as FormLike}
+                    t={t}
+                    selectableCenters={selectableCenters}
+                    disabled={watchedStatus === 'INACTIVE'}
+                    hint={watchedStatus === 'INACTIVE' ? t('managerInactiveCenterHint') : undefined}
+                    centerError={activeForm.formState.errors.centerId?.message}
+                  />
+                  <div className="space-y-2">
+                    <SingleSelectDropdown
+                      id="manager-status"
+                      label={t('managerStatus')}
+                      options={[
+                        { id: 'ACTIVE', label: tStatus('active') },
+                        { id: 'INACTIVE', label: tStatus('inactive') },
+                      ]}
+                      value={watchedStatus ?? 'ACTIVE'}
+                      onValueChange={(value) => {
+                        activeForm.setValue('status', (value as 'ACTIVE' | 'INACTIVE') ?? 'ACTIVE', {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                    />
+                    {watchedStatus === 'INACTIVE' && (
+                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-2">
+                        {t('managerSetInactiveHint')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+                  <Button type="button" variant="outline" onClick={requestClose}>
+                    {tCommon('cancel')}
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? t('saving') : t('saveChanges')}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 
@@ -310,7 +436,7 @@ type ManagerFormFields = {
   status?: 'ACTIVE' | 'INACTIVE';
 };
 
-type FormLike = Pick<UseFormReturn<ManagerFormFields>, 'register' | 'formState'>;
+type FormLike = Pick<UseFormReturn<ManagerFormFields>, 'register' | 'formState' | 'watch' | 'setValue'>;
 
 function ProfileFields({ form, t }: { form: FormLike; t: (key: string) => string }) {
   return (
@@ -377,22 +503,23 @@ function CenterSelect({
   hint?: string;
   centerError?: string;
 }) {
+  const currentCenterId = form.watch('centerId') ?? '';
+
   return (
     <div className="space-y-2">
-      <Label htmlFor="manager-center">{t('managerSelectCenter')}</Label>
-      <select
+      <SingleSelectDropdown
         id="manager-center"
-        className="unified-native-select flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-        {...form.register('centerId')}
+        label={t('managerSelectCenter')}
+        options={selectableCenters.map((center) => ({ id: center.id, label: center.name }))}
+        value={currentCenterId}
+        onValueChange={(value) =>
+          form.setValue('centerId', value ?? '', { shouldDirty: true, shouldValidate: true })
+        }
         disabled={disabled}
-      >
-        <option value="">{t('managerSelectCenter')}</option>
-        {selectableCenters.map((center) => (
-          <option key={center.id} value={center.id}>
-            {center.name}
-          </option>
-        ))}
-      </select>
+        allowDeselect
+        wrapText
+        placeholder={t('managerSelectCenter')}
+      />
       {hint && <p className="text-xs text-slate-500">{hint}</p>}
       {centerError && <p className="text-xs text-red-600">{centerError}</p>}
     </div>
