@@ -1,7 +1,7 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
@@ -176,13 +176,46 @@ export default function AdminAnalyticsPage() {
     { id: 'feedback', label: 'Feedback' },
     { id: 'risk', label: 'Risk Distribution' },
   ];
+  const tabsTrackRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<AdminAnalyticsTab, HTMLButtonElement | null>>({
+    attendance: null,
+    payments: null,
+    recordings: null,
+    feedback: null,
+    risk: null,
+  });
+  const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
+
+  useEffect(() => {
+    const syncIndicator = () => {
+      const activeTabEl = tabRefs.current[activeTab];
+      const tabsTrackEl = tabsTrackRef.current;
+      if (!activeTabEl || !tabsTrackEl) {
+        setTabIndicator((prev) => ({ ...prev, visible: false }));
+        return;
+      }
+      setTabIndicator({
+        x: activeTabEl.offsetLeft,
+        width: activeTabEl.offsetWidth,
+        visible: true,
+      });
+    };
+
+    syncIndicator();
+    window.addEventListener('resize', syncIndicator);
+    return () => window.removeEventListener('resize', syncIndicator);
+  }, [activeTab]);
 
   return (
     <DashboardLayout title={t('title')} subtitle={t('adminSubtitle')}>
-      <div className="mb-6 flex w-full min-w-0 overflow-x-auto border-b border-[rgba(14,14,16,0.07)] [-webkit-overflow-scrolling:touch]">
+      <div className="mb-6 w-full min-w-0 overflow-x-auto border-b border-[rgba(14,14,16,0.07)] [-webkit-overflow-scrolling:touch] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div ref={tabsTrackRef} className="relative flex w-max min-w-full">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            ref={(node) => {
+              tabRefs.current[tab.id] = node;
+            }}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
               'px-4 py-3 text-sm font-medium transition-colors relative whitespace-nowrap',
@@ -192,11 +225,18 @@ export default function AdminAnalyticsPage() {
             )}
           >
             {tab.label}
-            {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
-            )}
           </button>
         ))}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 h-0.5 bg-blue-600 transition-[transform,width,opacity] duration-300 ease-out"
+            style={{
+              width: `${tabIndicator.width}px`,
+              transform: `translateX(${tabIndicator.x}px)`,
+              opacity: tabIndicator.visible ? 1 : 0,
+            }}
+          />
+        </div>
       </div>
 
       {activeTab === 'attendance' && (
@@ -245,6 +285,7 @@ export default function AdminAnalyticsPage() {
             </p>
             <AnalyticsTimeFilterBar
               {...paymentsTimeFilterBarProps}
+              variant="admin"
               className="transition-all duration-200"
               applyAction={{
                 onApply: onApplyPaymentsTime,

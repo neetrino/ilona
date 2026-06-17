@@ -25,7 +25,7 @@ type AnalyticsTimeFilterBarProps = {
   onCustomToYmd: (v: string) => void;
   className?: string;
   /** Student dashboard color system */
-  variant?: 'default' | 'student';
+  variant?: 'default' | 'student' | 'admin';
   /** When set, shows an Apply control (used when API requests must not run until explicit confirm). */
   applyAction?: ApplyAction;
 };
@@ -47,6 +47,8 @@ export function AnalyticsTimeFilterBar({
 }: AnalyticsTimeFilterBarProps) {
   const t = useTranslations('analytics');
   const isStudent = variant === 'student';
+  const isAdmin = variant === 'admin';
+  const usesGroupAccent = isStudent || isAdmin;
   const modes: { id: TimeFilterMode; label: string }[] = [
     { id: 'day', label: t('timeFilterDay') },
     { id: 'week', label: t('timeFilterWeek') },
@@ -57,7 +59,7 @@ export function AnalyticsTimeFilterBar({
     <div
       className={cn(
         'flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-end sm:justify-between',
-        isStudent
+        usesGroupAccent
           ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]'
           : 'border-slate-200 bg-slate-50/80',
         className,
@@ -80,10 +82,14 @@ export function AnalyticsTimeFilterBar({
               mode === m.id
                 ? isStudent
                   ? 'bg-[#1010a3] text-white'
-                  : 'bg-primary text-white shadow-sm'
+                  : isAdmin
+                    ? 'bg-[#1010a3] text-white shadow-sm'
+                    : 'bg-primary text-white shadow-sm'
                 : isStudent
                   ? 'bg-transparent text-[#3b3b40] hover:text-[#1010a3]'
-                  : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50',
+                  : isAdmin
+                    ? 'bg-white text-[#3b3b40] ring-1 ring-[rgba(14,14,16,0.08)] hover:text-[#1010a3]'
+                    : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50',
             )}
           >
             {m.label}
@@ -94,7 +100,7 @@ export function AnalyticsTimeFilterBar({
       <div
         className={cn(
           'flex flex-wrap items-center gap-3 text-sm',
-          isStudent ? 'text-[#3b3b40]' : 'text-slate-600',
+          usesGroupAccent ? 'text-[#3b3b40]' : 'text-slate-600',
         )}
       >
         {mode === 'day' && (
@@ -102,7 +108,7 @@ export function AnalyticsTimeFilterBar({
             <span
               className={cn(
                 'whitespace-nowrap',
-                isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+                usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
               )}
             >
               {t('timeFilterSelectDay')}
@@ -110,7 +116,7 @@ export function AnalyticsTimeFilterBar({
             <DatePickerInput
               className={cn(
                 'rounded-[0.875rem] border bg-white px-2 py-1.5',
-                isStudent
+                usesGroupAccent
                   ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
                   : 'rounded-md border-slate-200 text-slate-800',
               )}
@@ -124,7 +130,7 @@ export function AnalyticsTimeFilterBar({
             <span
               className={cn(
                 'whitespace-nowrap',
-                isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+                usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
               )}
             >
               {t('timeFilterSelectWeek')}
@@ -132,7 +138,7 @@ export function AnalyticsTimeFilterBar({
             <DatePickerInput
               className={cn(
                 'rounded-[0.875rem] border bg-white px-2 py-1.5',
-                isStudent
+                usesGroupAccent
                   ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
                   : 'rounded-md border-slate-200 text-slate-800',
               )}
@@ -146,7 +152,7 @@ export function AnalyticsTimeFilterBar({
             <span
               className={cn(
                 'whitespace-nowrap',
-                isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+                usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
               )}
             >
               {t('timeFilterFrom')}
@@ -154,7 +160,7 @@ export function AnalyticsTimeFilterBar({
             <DatePickerInput
               className={cn(
                 'rounded-[0.875rem] border bg-white px-2 py-1.5',
-                isStudent
+                usesGroupAccent
                   ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
                   : 'rounded-md border-slate-200 text-slate-800',
               )}
@@ -164,7 +170,7 @@ export function AnalyticsTimeFilterBar({
             <span
               className={cn(
                 'whitespace-nowrap',
-                isStudent ? 'text-[#8b8b90]' : 'text-slate-500',
+                usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
               )}
             >
               {t('timeFilterTo')}
@@ -172,7 +178,7 @@ export function AnalyticsTimeFilterBar({
             <DatePickerInput
               className={cn(
                 'rounded-[0.875rem] border bg-white px-2 py-1.5',
-                isStudent
+                usesGroupAccent
                   ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
                   : 'rounded-md border-slate-200 text-slate-800',
               )}
@@ -197,7 +203,9 @@ export function AnalyticsTimeFilterBar({
                 'inline-flex w-full min-w-[7rem] items-center justify-center px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50',
                 isStudent
                   ? 'rounded-full bg-[#1010a3]'
-                  : 'rounded-lg bg-primary shadow-sm ring-1 ring-slate-200/40',
+                  : isAdmin
+                    ? 'rounded-lg bg-[#1010a3] shadow-sm ring-1 ring-[rgba(14,14,16,0.12)]'
+                    : 'rounded-lg bg-primary shadow-sm ring-1 ring-slate-200/40',
               )}
             >
               {t('applyTimeFilter')}
