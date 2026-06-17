@@ -82,7 +82,7 @@ export default function AdminAttendanceRegisterPage() {
 
   // Handle save success
   const handleSaveSuccess = (_id: string) => {
-    setSaveMessages({ type: 'success', message: 'Attendance saved successfully' });
+    setSaveMessages({ type: 'success', message: t('attendanceSaved') });
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);
     }
@@ -93,7 +93,7 @@ export default function AdminAttendanceRegisterPage() {
 
   // Handle save error
   const handleSaveError = (id: string, error: string) => {
-    setSaveMessages({ type: 'error', message: `Failed to save attendance: ${error}` });
+    setSaveMessages({ type: 'error', message: t('failedToSaveAttendance', { error }) });
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);
     }

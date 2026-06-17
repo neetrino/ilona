@@ -196,7 +196,7 @@ export function AttendanceControls({
           {showAbsenceTypeFilter && onAbsenceFilterChange ? (
             <div className="w-full">
               <label className="block text-sm font-medium text-[#3b3b40] mb-2">
-                Filter by type
+                {t('filterByType')}
               </label>
               <SingleSelectDropdown
                 id="attendance-absence-type-filter"
@@ -206,6 +206,11 @@ export function AttendanceControls({
                   onAbsenceFilterChange((nextValue as AbsenceFilterType | null) ?? 'all')
                 }
                 disabled={safeSelectedGroupIds.length === 0}
+                className="
+                  [&>div>button>div>span]:flex-1
+                  [&>div>button>div>span]:text-center
+                  sm:[&>div>button>div>span]:text-left
+                "
               />
             </div>
           ) : (
@@ -215,7 +220,7 @@ export function AttendanceControls({
               variant={isCurrentDateToday && viewMode === 'day' ? 'outline' : 'default'}
               className="w-full"
             >
-              {isCurrentDateToday && viewMode === 'day' ? 'Today' : 'Back to Today'}
+              {isCurrentDateToday && viewMode === 'day' ? tc('today') : t('backToToday')}
             </Button>
           )}
         </div>

@@ -77,14 +77,18 @@ function run() {
   }
   console.log("");
 
-  // Listen on all interfaces: localhost works locally, LAN IP works on other devices.
-  const hostArgs = hasCustomHost ? [] : ["-H", "0.0.0.0"];
+  // On macOS, localhost usually resolves to ::1 first.
+  // Using "::" keeps localhost working while still exposing the app on LAN.
+  const defaultHost = process.platform === "win32" ? "0.0.0.0" : "::";
+  const hostArgs = hasCustomHost ? [] : ["-H", defaultHost];
   const args = ["exec", "next", "dev", "--turbo", ...hostArgs, ...passthroughArgs];
   const networkUrl = lanIp ? "http://" + lanIp + ":" + port : null;
   const replacements = networkUrl
     ? [
         ["http://0.0.0.0:" + port, networkUrl],
         ["0.0.0.0:" + port, lanIp + ":" + port],
+        ["http://[::]:" + port, networkUrl],
+        ["[::]:" + port, lanIp + ":" + port],
       ]
     : [];
   const child =

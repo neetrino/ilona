@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   getPreviousWeek,
   getNextWeek,
@@ -28,6 +29,7 @@ export function useAttendanceNavigation({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations('attendance');
 
   // Initialize view mode from URL query params, with fallback to 'week'
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -128,6 +130,9 @@ export function useAttendanceNavigation({
     return true;
   };
 
+  const confirmWithAction = (actionKey: 'switchViewMode' | 'changeDate' | 'switchGroups' | 'navigate' | 'selectDifferentDay') =>
+    confirmWithUnsavedChanges(t('unsavedChangesWarning', { action: t(actionKey) }));
+
   // Helper function to go back to today
   const goToToday = () => {
     setCurrentDate(new Date());
@@ -150,9 +155,7 @@ export function useAttendanceNavigation({
 
   // Handle view mode change
   const handleViewModeChange = (newMode: ViewMode) => {
-    if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to switch view mode? Your changes will be lost.'
-    )) {
+    if (!confirmWithAction('switchViewMode')) {
       return;
     }
     setViewMode(newMode);
@@ -165,9 +168,7 @@ export function useAttendanceNavigation({
 
   // Handle date change
   const handleDateChange = (newDate: string) => {
-    if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to change the date? Your changes will be lost.'
-    )) {
+    if (!confirmWithAction('changeDate')) {
       return;
     }
     setCurrentDate(new Date(newDate));
@@ -176,9 +177,7 @@ export function useAttendanceNavigation({
 
   // Handle group change (single group - for backward compatibility)
   const handleGroupChange = (newGroupId: string | null) => {
-    if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to switch groups? Your changes will be lost.'
-    )) {
+    if (!confirmWithAction('switchGroups')) {
       return;
     }
     const newGroupIds = newGroupId ? [newGroupId] : [];
@@ -190,9 +189,7 @@ export function useAttendanceNavigation({
 
   // Handle multiple groups change
   const handleGroupsChange = (newGroupIds: string[]) => {
-    if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to switch groups? Your changes will be lost.'
-    )) {
+    if (!confirmWithAction('switchGroups')) {
       return;
     }
     setSelectedGroupIds(newGroupIds);
@@ -204,9 +201,7 @@ export function useAttendanceNavigation({
 
   // Navigation handlers
   const handlePrevious = () => {
-    if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to navigate? Your changes will be lost.'
-    )) {
+    if (!confirmWithAction('navigate')) {
       return;
     }
     if (viewMode === 'week') {
@@ -218,9 +213,7 @@ export function useAttendanceNavigation({
   };
 
   const handleNext = () => {
-    if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to navigate? Your changes will be lost.'
-    )) {
+    if (!confirmWithAction('navigate')) {
       return;
     }
     if (viewMode === 'week') {
@@ -233,9 +226,7 @@ export function useAttendanceNavigation({
 
   // Handle day selection in month view
   const handleDaySelect = (date: Date) => {
-    if (!confirmWithUnsavedChanges(
-      'You have unsaved changes. Are you sure you want to select a different day? Your changes will be lost.'
-    )) {
+    if (!confirmWithAction('selectDifferentDay')) {
       return;
     }
     const dateStr = formatDateString(date);
