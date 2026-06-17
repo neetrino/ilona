@@ -273,6 +273,7 @@ export default function AdminAnalyticsPage() {
             isLoading={isLoadingTeachers || isLoadingAttendance}
             metric="absenceMarkedRate"
             metricLabel={t('attendanceMarkingRate')}
+            mobilePercentOnly
           />
         </div>
       )}
@@ -418,6 +419,7 @@ export default function AdminAnalyticsPage() {
           isLoading={isLoadingTeachers}
           metric="voiceRate"
           metricLabel="Recording Completion Rate"
+          mobilePercentOnly
         />
       )}
 
@@ -427,6 +429,7 @@ export default function AdminAnalyticsPage() {
           isLoading={isLoadingTeachers}
           metric="feedbacksRate"
           metricLabel="Feedback Completion Rate"
+          mobilePercentOnly
         />
       )}
 

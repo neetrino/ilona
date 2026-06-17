@@ -17,6 +17,8 @@ interface TeacherRatioTableProps {
   metricLabel: string;
   /** Right-rail column rendered after the metric. Defaults to "Completed" */
   trailingHeader?: string;
+  /** Mobile: show metric as percent only (hide bar and trailing column). */
+  mobilePercentOnly?: boolean;
 }
 
 function rateColor(rate: number): string {
@@ -25,17 +27,25 @@ function rateColor(rate: number): string {
   return 'bg-red-500';
 }
 
-function MetricBar({ value }: { value: number }) {
+function MetricBar({
+  value,
+  mobilePercentOnly = false,
+}: {
+  value: number;
+  mobilePercentOnly?: boolean;
+}) {
   const pct = Math.max(0, Math.min(100, value));
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 bg-slate-200 rounded-full h-2">
+    <div className={cn('flex items-center gap-2', mobilePercentOnly && 'justify-center sm:justify-normal')}>
+      <div className={cn('flex-1 bg-slate-200 rounded-full h-2', mobilePercentOnly && 'hidden sm:block')}>
         <div
           className={cn('h-2 rounded-full transition-all', rateColor(pct))}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-sm font-medium w-12 text-right">{pct}%</span>
+      <span className={cn('text-sm font-medium', mobilePercentOnly ? 'w-auto text-center sm:w-12 sm:text-right' : 'w-12 text-right')}>
+        {pct}%
+      </span>
     </div>
   );
 }
@@ -46,6 +56,7 @@ export function TeacherRatioTable({
   metric,
   metricLabel,
   trailingHeader = 'Completed Lessons',
+  mobilePercentOnly = false,
 }: TeacherRatioTableProps) {
   const sorted = [...teachers].sort((a, b) => {
     const av = a[metric] ?? 0;
@@ -97,7 +108,7 @@ export function TeacherRatioTable({
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <MetricBar value={value} />
+                      <MetricBar value={value} mobilePercentOnly={mobilePercentOnly} />
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className="font-semibold">
