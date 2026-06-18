@@ -319,16 +319,53 @@ function Tabs({
     students: counts?.students,
     groups: counts?.groups,
   };
+  const tabsTrackRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
+    teachers: null,
+    students: null,
+    groups: null,
+    schedule: null,
+    info: null,
+  });
+  const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
+
+  useEffect(() => {
+    const syncIndicator = () => {
+      const activeTabEl = tabRefs.current[activeTab];
+      const tabsTrackEl = tabsTrackRef.current;
+      if (!activeTabEl || !tabsTrackEl) {
+        setTabIndicator((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+        return;
+      }
+
+      setTabIndicator({
+        x: activeTabEl.offsetLeft,
+        width: activeTabEl.offsetWidth,
+        visible: true,
+      });
+    };
+
+    syncIndicator();
+    window.addEventListener('resize', syncIndicator);
+    return () => window.removeEventListener('resize', syncIndicator);
+  }, [activeTab, counts?.groups, counts?.students, counts?.teachers]);
 
   return (
     <div className="overflow-x-auto border-b border-[#e6e8ee] bg-white px-2 pt-2.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:overflow-visible sm:border-slate-200 sm:px-3 sm:pt-2">
-      <div role="tablist" className="flex min-w-max items-end gap-0.5 sm:min-w-0 sm:gap-1">
+      <div
+        ref={tabsTrackRef}
+        role="tablist"
+        className="relative flex min-w-max items-end gap-0.5 sm:min-w-0 sm:gap-1"
+      >
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = tab.id === activeTab;
           const count = countByTab[tab.id];
           return (
             <button
+              ref={(node) => {
+                tabRefs.current[tab.id] = node;
+              }}
               key={tab.id}
               type="button"
               role="tab"
@@ -337,7 +374,7 @@ function Tabs({
               className={cn(
                 'flex h-full flex-none items-center justify-center gap-2 rounded-t-lg border-b-2 px-3 py-[0.6875rem] text-sm font-medium transition-colors sm:flex-1 sm:px-3 sm:py-2',
                 isActive
-                  ? 'border-[#1010a3] text-[#1010a3]'
+                  ? 'border-transparent text-[#1010a3]'
                   : 'border-transparent text-slate-600 hover:text-slate-900',
               )}
             >
@@ -351,6 +388,15 @@ function Tabs({
             </button>
           );
         })}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-[#1010a3] transition-[transform,width,opacity] duration-300 ease-out"
+          style={{
+            width: `${tabIndicator.width}px`,
+            transform: `translateX(${tabIndicator.x}px)`,
+            opacity: tabIndicator.visible ? 1 : 0,
+          }}
+        />
       </div>
     </div>
   );

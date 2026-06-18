@@ -227,6 +227,19 @@ export function GroupsTab({
   ]);
 
   const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
+  /** Branch tabs when no group context yet — filter by branch name */
+  const centersForBranchTabs = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allCenters;
+    return allCenters.filter((c) => c.name.toLowerCase().includes(q));
+  }, [allCenters, searchQuery]);
+  const branchTabsTrackRef = useRef<HTMLDivElement | null>(null);
+  const branchTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [branchTabIndicator, setBranchTabIndicator] = useState({
+    x: 0,
+    width: 0,
+    visible: false,
+  });
   const mobileBoardTotalPages = Math.max(
     1,
     Math.ceil(groups.length / mobileBoardPageSize),
@@ -264,6 +277,40 @@ export function GroupsTab({
   useEffect(() => {
     setDesktopBoardPage(0);
   }, [viewMode, activeBranchTabId, searchQuery, groups.length]);
+
+  useEffect(() => {
+    if (viewMode !== 'board' || isLg === false || isIPad || isLoadingBranchTabs) {
+      setBranchTabIndicator((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+      return;
+    }
+
+    const syncBranchIndicator = () => {
+      const targetTabId = activeBranchTabId ?? centersForBranchTabs[0]?.id;
+      const activeTabEl = targetTabId ? branchTabRefs.current[targetTabId] : null;
+      const tabsTrackEl = branchTabsTrackRef.current;
+      if (!activeTabEl || !tabsTrackEl) {
+        setBranchTabIndicator((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+        return;
+      }
+
+      setBranchTabIndicator({
+        x: activeTabEl.offsetLeft,
+        width: activeTabEl.offsetWidth,
+        visible: true,
+      });
+    };
+
+    syncBranchIndicator();
+    window.addEventListener('resize', syncBranchIndicator);
+    return () => window.removeEventListener('resize', syncBranchIndicator);
+  }, [
+    activeBranchTabId,
+    centersForBranchTabs,
+    isIPad,
+    isLg,
+    isLoadingBranchTabs,
+    viewMode,
+  ]);
 
   const goToMobileBoardPage = (nextPage: number) => {
     setMobileBoardPage(nextPage);
@@ -404,13 +451,6 @@ export function GroupsTab({
   };
 
   /** Board with a selected branch: only one column — that branch only (never all centers). */
-  /** Branch tabs when no group context yet — filter by branch name */
-  const centersForBranchTabs = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return allCenters;
-    return allCenters.filter((c) => c.name.toLowerCase().includes(q));
-  }, [allCenters, searchQuery]);
-
   const groupColumns = useMemo(
     () => [
       {
@@ -741,7 +781,8 @@ export function GroupsTab({
             ) : (
               <div className="overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <nav
-                  className="flex min-w-max items-center gap-2.5"
+                  ref={branchTabsTrackRef}
+                  className="relative flex min-w-max items-center gap-2.5 pb-1"
                   role="tablist"
                   aria-label={t('branches')}
                 >
@@ -757,6 +798,9 @@ export function GroupsTab({
                       <button
                         type="button"
                         key={center.id}
+                        ref={(node) => {
+                          branchTabRefs.current[center.id] = node;
+                        }}
                         role="tab"
                         aria-selected={isActive}
                         id={`branch-tab-${center.id}`}
@@ -810,6 +854,17 @@ export function GroupsTab({
                       </button>
                     );
                   })}
+                  {isLg !== false && !isIPad ? (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-[#1010a3] transition-[transform,width,opacity] duration-300 ease-out"
+                      style={{
+                        width: `${branchTabIndicator.width}px`,
+                        transform: `translateX(${branchTabIndicator.x}px)`,
+                        opacity: branchTabIndicator.visible ? 1 : 0,
+                      }}
+                    />
+                  ) : null}
                 </nav>
               </div>
             )}
