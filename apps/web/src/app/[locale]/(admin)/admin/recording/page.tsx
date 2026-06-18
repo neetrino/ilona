@@ -870,7 +870,7 @@ export default function AdminRecordingPage() {
       </div>
 
       {visibleRecordings.length > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
+        <div className={`mt-4 flex items-center text-sm text-[#8b8b90] ${isIPad ? 'justify-start gap-4' : 'justify-between lg:justify-start lg:gap-4'}`}>
           <span>
             Showing {rangeStart}-{rangeEnd} of {visibleRecordings.length}
           </span>

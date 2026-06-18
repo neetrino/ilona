@@ -7,6 +7,7 @@ import { TeachersCentersStrip } from './TeachersCentersStrip';
 import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
 import { useTranslations as useTranslationsRuntime, type useTranslations } from 'next-intl';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 interface TeachersListProps {
   centers: Center[];
@@ -82,6 +83,7 @@ export function TeachersList({
   tStatus,
 }: TeachersListProps) {
   const tc = useTranslationsRuntime('common');
+  const isIPad = useIsIPad();
   const safeTotalPages = Math.max(1, totalPages);
   const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
   const hasTeachers = totalTeachers > 0;
@@ -155,7 +157,7 @@ export function TeachersList({
       />
       {table}
       <div className="border-t border-[rgba(14,14,16,0.07)] px-4 py-3 sm:px-5">
-        <div className="flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
+        <div className={`flex items-center text-sm text-[#8b8b90] ${isIPad ? 'justify-start gap-4' : 'justify-between lg:justify-start lg:gap-4'}`}>
           <span>
             {t('showing', {
               start: showingStart,

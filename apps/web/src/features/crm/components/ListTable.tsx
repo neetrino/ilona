@@ -5,6 +5,7 @@ import type { CrmLead } from '@/features/crm/types';
 import { ActionButtons } from '@/shared/components/ui';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
 import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 interface ListTableProps {
   leads: CrmLead[];
@@ -34,6 +35,7 @@ export function ListTable({
   const t = useTranslations('crm');
   const tc = useTranslations('common');
   const statusLabels = useCrmStatusLabels();
+  const isIPad = useIsIPad();
   const pageSize = 10;
   const safeTotalPages = Math.max(1, totalPages);
   const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
@@ -186,7 +188,7 @@ export function ListTable({
       </table>
       </div>
       <div className="border-t border-[rgba(14,14,16,0.07)] px-4 py-3 sm:px-5">
-        <div className="flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
+        <div className={`flex items-center text-sm text-[#8b8b90] ${isIPad ? 'justify-start gap-4' : 'justify-between lg:justify-start lg:gap-4'}`}>
           <span>
             {t('showingLeads', {
               start: showingStart,
