@@ -76,14 +76,14 @@ export function GlobalSearchBar({
 
   useEffect(() => {
     if (!open) return;
-    const onDocMouseDown = (e: MouseEvent) => {
+    const onDocPointerDown = (e: PointerEvent) => {
       const el = containerRef.current;
       if (el && !el.contains(e.target as Node)) {
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', onDocMouseDown);
-    return () => document.removeEventListener('mousedown', onDocMouseDown);
+    document.addEventListener('pointerdown', onDocPointerDown);
+    return () => document.removeEventListener('pointerdown', onDocPointerDown);
   }, [open]);
 
   useEffect(() => {

@@ -64,7 +64,7 @@ export function CrmBranchSelector({
     window.addEventListener('scroll', updatePosition, true);
     window.addEventListener('resize', updatePosition);
 
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: PointerEvent) {
       const target = event.target as Node;
       if (triggerRef.current?.contains(target) || menuRef.current?.contains(target)) {
         return;
@@ -73,14 +73,14 @@ export function CrmBranchSelector({
     }
 
     const timeoutId = setTimeout(() => {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('pointerdown', handleClickOutside);
     }, 0);
 
     return () => {
       window.removeEventListener('scroll', updatePosition, true);
       window.removeEventListener('resize', updatePosition);
       clearTimeout(timeoutId);
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('pointerdown', handleClickOutside);
     };
   }, [open]);
 

@@ -145,7 +145,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
 
     React.useEffect(() => {
       if (!open) return;
-      const onPointerDown = (event: MouseEvent) => {
+      const onPointerDown = (event: PointerEvent) => {
         if (rootRef.current?.contains(event.target as Node)) return;
         handleOpenChange(false);
       };
@@ -154,13 +154,13 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       };
 
       updatePopoverPosition();
-      document.addEventListener('mousedown', onPointerDown);
+      document.addEventListener('pointerdown', onPointerDown);
       document.addEventListener('keydown', onEscape);
       window.addEventListener('resize', updatePopoverPosition);
       window.addEventListener('scroll', updatePopoverPosition, true);
 
       return () => {
-        document.removeEventListener('mousedown', onPointerDown);
+        document.removeEventListener('pointerdown', onPointerDown);
         document.removeEventListener('keydown', onEscape);
         window.removeEventListener('resize', updatePopoverPosition);
         window.removeEventListener('scroll', updatePopoverPosition, true);

@@ -116,7 +116,7 @@ export function InlineSelect({
     window.addEventListener('scroll', updatePosition, true);
     window.addEventListener('resize', updatePosition);
     
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: PointerEvent) {
       if (
         buttonRef.current && 
         !buttonRef.current.contains(event.target as Node) &&
@@ -129,14 +129,14 @@ export function InlineSelect({
 
     // Use a small delay to avoid immediate close on open
     const timeoutId = setTimeout(() => {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('pointerdown', handleClickOutside);
     }, 0);
 
     return () => {
       window.removeEventListener('scroll', updatePosition, true);
       window.removeEventListener('resize', updatePosition);
       clearTimeout(timeoutId);
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('pointerdown', handleClickOutside);
     };
   }, [isOpen, options.length]);
 

@@ -83,7 +83,7 @@ export function SingleSelectDropdown({
   }, []);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: PointerEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
@@ -91,13 +91,13 @@ export function SingleSelectDropdown({
 
     if (isOpen) {
       updateMenuPosition();
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('pointerdown', handleClickOutside);
       window.addEventListener('resize', updateMenuPosition);
       window.addEventListener('scroll', updateMenuPosition, true);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('pointerdown', handleClickOutside);
       window.removeEventListener('resize', updateMenuPosition);
       window.removeEventListener('scroll', updateMenuPosition, true);
     };

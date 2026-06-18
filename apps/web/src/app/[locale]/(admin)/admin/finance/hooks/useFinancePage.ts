@@ -56,7 +56,10 @@ export function useFinancePage() {
       }
     });
 
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    const nextQs = params.toString();
+    const currentQs = searchParams.toString();
+    if (nextQs === currentQs) return;
+    router.replace(nextQs ? `${pathname}?${nextQs}` : pathname, { scroll: false });
   }, [router, pathname, searchParams]);
 
   // Debounce search: update committed value and URL after delay; reset page only when search actually changed.
