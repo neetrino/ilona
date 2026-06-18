@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { TeacherDetailsModal, TeacherShowcaseCard, type Teacher } from '@/features/teachers';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { cn } from '@/shared/lib/utils';
 import { Sparkles } from 'lucide-react';
 import {
   StudentCountChip,
@@ -40,6 +42,7 @@ export default function StudentOurTeachersPage() {
   const tCommon = useTranslations('common');
   const tTeachers = useTranslations('teachers');
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
+  const isIPad = useIsIPad();
 
   const { data: teachers = [], isLoading, error } = useQuery({
     queryKey: ['student', 'our-teachers', 'all'],
@@ -65,7 +68,12 @@ export default function StudentOurTeachersPage() {
         )}
 
         {!isLoading && !error && teachers.length > 0 && (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div
+            className={cn(
+              'grid grid-cols-1 gap-5 sm:grid-cols-2',
+              isIPad ? 'lg:grid-cols-2 xl:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4',
+            )}
+          >
             {teachers.map((teacher) => (
               <TeacherShowcaseCard
                 key={teacher.id}

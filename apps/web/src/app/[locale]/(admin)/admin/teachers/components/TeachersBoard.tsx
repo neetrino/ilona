@@ -7,6 +7,7 @@ import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
 import { useLocale, useTranslations, type useTranslations as useTranslationsType } from 'next-intl';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { cn } from '@/shared/lib/utils';
 
 const CENTER_NAME_PAIRS = [
   { en: 'Andranik 40', hy: 'Անդրանիկի 40' },
@@ -205,7 +206,14 @@ export function TeachersBoard({
                 />
               ))}
             </div>
-            <div className="hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))]">
+            <div
+              className={cn(
+                'hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2',
+                isIPad
+                  ? 'lg:grid-cols-2 xl:grid-cols-2'
+                  : 'lg:grid-cols-3 xl:grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))]',
+              )}
+            >
               {(isIPad ? paginatedTeachers : selectedTeachers).map((teacher) => (
                 <TeacherCard
                   key={teacher.id}
