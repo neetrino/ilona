@@ -93,22 +93,16 @@ export function useAdminAnalyticsUrl() {
 
   const updateParams = useCallback(
     (mutate: (p: URLSearchParams) => void) => {
-      const p = typeof window === 'undefined'
-        ? new URLSearchParams(searchParams.toString())
-        : new URLSearchParams(window.location.search);
+      const p = new URLSearchParams(searchParams.toString());
       mutate(p);
-      const qs = p.toString();
-      const nextUrl = qs ? `${pathname}?${qs}` : pathname;
-      const currentUrl = typeof window === 'undefined'
-        ? `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
-        : `${window.location.pathname}${window.location.search}`;
-
-      if (nextUrl === currentUrl) {
+      const nextQs = p.toString();
+      const currentQs = searchParams.toString();
+      if (nextQs === currentQs) {
         return;
       }
 
       startTransition(() => {
-        router.replace(nextUrl, { scroll: false });
+        router.replace(nextQs ? `${pathname}?${nextQs}` : pathname, { scroll: false });
       });
     },
     [pathname, router, searchParams],
