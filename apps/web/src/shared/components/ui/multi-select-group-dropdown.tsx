@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { Checkbox } from './checkbox';
@@ -14,6 +14,7 @@ import {
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
   DROPDOWN_VALUE_TEXT_CLASS,
 } from './dropdown-theme';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 
 export interface MultiSelectOption {
   id: string;
@@ -50,22 +51,14 @@ export function MultiSelectGroupDropdown({
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setSearchQuery('');
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
+  useOutsidePress(
+    dropdownRef,
+    () => {
+      setIsOpen(false);
+      setSearchQuery('');
+    },
+    { enabled: isOpen },
+  );
 
   // Filter options based on search query
   const filteredOptions = searchable && searchQuery

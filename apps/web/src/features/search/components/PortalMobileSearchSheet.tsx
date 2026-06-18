@@ -106,7 +106,7 @@ export function PortalMobileSearchSheet({
         type="button"
         className={cn(
           'fixed inset-0 z-[70] bg-black/45 transition-opacity duration-300 ease-out lg:hidden',
-          isVisible ? 'opacity-100' : 'opacity-0',
+          isVisible ? 'opacity-100' : 'pointer-events-none opacity-0',
           backdropClassName,
         )}
         aria-label={t('close')}
@@ -119,7 +119,7 @@ export function PortalMobileSearchSheet({
           isDragging
             ? 'transition-none'
             : 'transition-transform duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]',
-          isVisible ? 'translate-y-0' : 'translate-y-full',
+          isVisible ? 'translate-y-0' : 'pointer-events-none translate-y-full',
           containerClassName,
         )}
         onTouchStart={handleTouchStart}

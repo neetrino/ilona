@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { usePortalShell } from '@/shared/context/portal-shell-context';
 import { portalLabelClass, portalInputClass } from '@/shared/lib/portal-theme';
@@ -15,6 +15,7 @@ import {
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
   DROPDOWN_VALUE_TEXT_CLASS,
 } from './dropdown-theme';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 
 export interface FilterOption {
   id: string;
@@ -46,19 +47,7 @@ export function FilterDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  useOutsidePress(dropdownRef, () => setIsOpen(false));
 
   const handleToggle = (optionId: string) => {
     const newSelected = new Set(selectedIds);
