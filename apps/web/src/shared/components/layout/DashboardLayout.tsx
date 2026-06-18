@@ -125,7 +125,7 @@ export function DashboardLayout({
         className={cn(
           'flex min-h-screen w-full max-w-[100vw]',
           isAdminPortal
-            ? 'h-screen overflow-hidden'
+            ? 'min-h-[100dvh] overflow-visible md:min-h-screen md:h-screen md:overflow-hidden md:overflow-x-hidden'
             : 'lg:h-screen lg:overflow-hidden lg:overflow-x-hidden',
           isPortalShell ? PORTAL_SHELL_BG : 'bg-slate-50',
         )}
@@ -159,7 +159,7 @@ export function DashboardLayout({
         <main
           className={cn(
             'flex min-h-0 min-w-0 flex-1 flex-col',
-            isAdminPortal ? 'overflow-hidden' : 'overflow-visible lg:overflow-hidden',
+            isAdminPortal ? 'overflow-visible md:overflow-hidden' : 'overflow-visible lg:overflow-hidden',
           )}
         >
           {isStudentPortal ? (
@@ -186,7 +186,7 @@ export function DashboardLayout({
           <div
             className={cn(
               isAdminPortal
-                ? 'flex-1 min-h-0 overflow-x-hidden overflow-y-auto'
+                ? 'flex-1 overflow-visible md:min-h-0 md:overflow-x-hidden md:overflow-y-auto'
                 : 'flex-1 overflow-visible lg:min-h-0 lg:overflow-x-hidden lg:overflow-y-auto',
               mainPadding,
               hasAdminBottomNav && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,

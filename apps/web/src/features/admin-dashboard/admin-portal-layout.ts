@@ -7,8 +7,8 @@ export const ADMIN_PORTAL_MOBILE_NAV_OFFSET =
 
 /** Tailwind class for scroll area padding above fixed admin mobile bottom nav. */
 export const ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS =
-  'pb-[calc(3.75rem+env(safe-area-inset-bottom))] lg:pb-0';
+  'pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-[calc(3.75rem+env(safe-area-inset-bottom))] lg:pb-0';
 
 /** Position search overlay above the fixed admin mobile bottom nav. */
 export const ADMIN_PORTAL_MOBILE_BOTTOM_NAV_SEARCH_OFFSET_CLASS =
-  'bottom-[calc(3.75rem+env(safe-area-inset-bottom))]';
+  'bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-[calc(3.75rem+env(safe-area-inset-bottom))]';
