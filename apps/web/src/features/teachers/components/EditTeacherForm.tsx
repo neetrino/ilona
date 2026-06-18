@@ -13,6 +13,7 @@ import { useCenters } from '@/features/centers';
 import { getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
 import { cn } from '@/shared/lib/utils';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { X } from 'lucide-react';
 
 type UpdateTeacherFormData = {
   firstName: string;
@@ -281,6 +282,12 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
           <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
+          <DialogPrimitive.Close
+            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1025px]:inline-flex"
+            aria-label={tCommon('close')}
+          >
+            <X className="h-4 w-4" />
+          </DialogPrimitive.Close>
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1025px]:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>

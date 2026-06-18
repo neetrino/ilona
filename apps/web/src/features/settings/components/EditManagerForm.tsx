@@ -17,6 +17,7 @@ import { useManagers, useUpdateManager, type ManagerAccount } from '@/features/s
 import { getCentersTakenByActiveManagers } from '@/features/settings/utils/manager-display';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
+import { X } from 'lucide-react';
 
 const activeManagerSchema = z.object({
   firstName: z.string().min(2).max(50),
@@ -333,6 +334,12 @@ export function EditManagerForm({
           <DialogPrimitive.Description id="edit-manager-description" className="sr-only">
             {description}
           </DialogPrimitive.Description>
+          <DialogPrimitive.Close
+            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1025px]:inline-flex"
+            aria-label={tCommon('close')}
+          >
+            <X className="h-4 w-4" />
+          </DialogPrimitive.Close>
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1025px]:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-[#3b3b40]">{title}</h2>
