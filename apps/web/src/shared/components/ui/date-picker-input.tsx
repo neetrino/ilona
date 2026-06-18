@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { addDays, addMonths, format, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek } from 'date-fns';
 import { enUS, hy } from 'date-fns/locale';
 import { cn } from '@/shared/lib/utils';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 
 const WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
 
@@ -143,24 +144,20 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       setMonthDate(selectedDate);
     }, [selectedDate]);
 
+    useOutsidePress(rootRef, () => handleOpenChange(false), { enabled: open });
+
     React.useEffect(() => {
       if (!open) return;
-      const onPointerDown = (event: PointerEvent) => {
-        if (rootRef.current?.contains(event.target as Node)) return;
-        handleOpenChange(false);
-      };
       const onEscape = (event: KeyboardEvent) => {
         if (event.key === 'Escape') handleOpenChange(false);
       };
 
       updatePopoverPosition();
-      document.addEventListener('pointerdown', onPointerDown);
       document.addEventListener('keydown', onEscape);
       window.addEventListener('resize', updatePopoverPosition);
       window.addEventListener('scroll', updatePopoverPosition, true);
 
       return () => {
-        document.removeEventListener('pointerdown', onPointerDown);
         document.removeEventListener('keydown', onEscape);
         window.removeEventListener('resize', updatePopoverPosition);
         window.removeEventListener('scroll', updatePopoverPosition, true);

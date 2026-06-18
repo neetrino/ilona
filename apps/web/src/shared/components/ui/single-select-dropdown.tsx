@@ -17,6 +17,7 @@ import {
   DROPDOWN_TRIGGER_OPEN_CLASS,
   DROPDOWN_VALUE_TEXT_CLASS,
 } from './dropdown-theme';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 
 export interface SingleSelectOption {
   id: string;
@@ -82,22 +83,14 @@ export function SingleSelectDropdown({
     setMenuMaxHeight(Math.min(320, Math.floor(availableSpace)));
   }, []);
 
+  useOutsidePress(dropdownRef, () => setIsOpen(false), { enabled: isOpen });
+
   useEffect(() => {
-    function handleClickOutside(event: PointerEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    if (isOpen) {
-      updateMenuPosition();
-      document.addEventListener('pointerdown', handleClickOutside);
-      window.addEventListener('resize', updateMenuPosition);
-      window.addEventListener('scroll', updateMenuPosition, true);
-    }
-
+    if (!isOpen) return;
+    updateMenuPosition();
+    window.addEventListener('resize', updateMenuPosition);
+    window.addEventListener('scroll', updateMenuPosition, true);
     return () => {
-      document.removeEventListener('pointerdown', handleClickOutside);
       window.removeEventListener('resize', updateMenuPosition);
       window.removeEventListener('scroll', updateMenuPosition, true);
     };

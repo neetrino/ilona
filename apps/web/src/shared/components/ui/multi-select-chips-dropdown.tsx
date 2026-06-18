@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Checkbox } from './checkbox';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import {
   DROPDOWN_CHEVRON_CLASS,
   DROPDOWN_LABEL_CLASS,
@@ -65,21 +66,14 @@ export function MultiSelectChipsDropdown({
     return m;
   }, [options]);
 
-  useEffect(() => {
-    function handleClickOutside(event: PointerEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setSearchQuery('');
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('pointerdown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('pointerdown', handleClickOutside);
-    };
-  }, [isOpen]);
+  useOutsidePress(
+    dropdownRef,
+    () => {
+      setIsOpen(false);
+      setSearchQuery('');
+    },
+    { enabled: isOpen },
+  );
 
   const filteredOptions = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();

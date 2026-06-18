@@ -11,6 +11,7 @@ import { getErrorMessage } from '@/shared/lib/api';
 import { isGlobalSearchPageNavKey } from '../nav-keys';
 import { normalizeSearchQuery } from '../utils/normalize-search-query';
 import { cn } from '@/shared/lib/utils';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 
 const DEBOUNCE_MS = 300;
 
@@ -74,17 +75,7 @@ export function GlobalSearchBar({
 
   const { data, isLoading, isError, error, refetch } = useGlobalSearch(debouncedQuery, open);
 
-  useEffect(() => {
-    if (!open) return;
-    const onDocPointerDown = (e: PointerEvent) => {
-      const el = containerRef.current;
-      if (el && !el.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', onDocPointerDown);
-    return () => document.removeEventListener('pointerdown', onDocPointerDown);
-  }, [open]);
+  useOutsidePress(containerRef, () => setOpen(false), { enabled: open });
 
   useEffect(() => {
     if (!open || dropdownPlacement !== 'below') {
