@@ -21,6 +21,8 @@ const config: Config = {
       screens: {
         /** Landing: mobile layout below 744px; canvas desktop from 744px */
         tablet: '744px',
+        /** Modal sheets: keep mobile sheet UX through iPad mini width (768px) */
+        sheet: '769px',
         /** Landing navbar: burger below this; inline links from here up (above iPad Pro 12.9" landscape) */
         navDesktop: '1367px',
       },

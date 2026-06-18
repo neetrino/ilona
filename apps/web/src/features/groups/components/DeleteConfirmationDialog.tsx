@@ -33,10 +33,12 @@ export function DeleteConfirmationDialog({
 }: DeleteConfirmationDialogProps) {
   const dialogTitle = title || `Delete ${itemType === 'group' ? 'Group' : 'Center'}`;
   const itemLabel = itemType === 'group' ? 'group' : 'center';
-  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent
+        overlayClassName="duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="w-[calc(100%-1.5rem)] max-w-sm rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full"
+      >
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
@@ -46,16 +48,17 @@ export function DeleteConfirmationDialog({
           </DialogDescription>
         </DialogHeader>
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
+            className="rounded-full px-5"
           >
             Cancel
           </Button>
@@ -64,6 +67,7 @@ export function DeleteConfirmationDialog({
             variant="destructive"
             onClick={onConfirm}
             isLoading={isLoading}
+            className="rounded-full px-5"
           >
             {isLoading ? 'Deleting...' : 'Delete'}
           </Button>

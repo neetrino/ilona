@@ -94,7 +94,7 @@ export function TeacherShowcaseCard({
           name={fullName}
           size="xl"
           className={cn(
-            'z-10 h-48 w-48 rounded-full border ring-2 ring-white shadow-sm transition-transform duration-300 sm:h-64 sm:w-full sm:rounded-3xl md:h-80',
+            'z-10 h-48 w-48 rounded-full border ring-2 ring-white shadow-sm transition-transform duration-300 sheet:h-64 sheet:w-full sheet:rounded-3xl lg:h-80',
             isStudent ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]' : 'border-slate-100 bg-slate-50',
             interactive && 'group-hover:scale-[1.01]',
             isMuted && 'opacity-90',

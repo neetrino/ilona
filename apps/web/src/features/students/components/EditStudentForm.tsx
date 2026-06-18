@@ -282,7 +282,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   }, []);
 
   const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
 
   const resetDragRefs = () => {
     touchStartYRef.current = null;
@@ -408,10 +408,10 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
           'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
           'h-[calc(94dvh+7px)]',
-          'sm:left-[50%] sm:top-[50%] sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-lg sm:border sm:bg-background sm:p-6'
+          'sheet:left-[50%] sheet:top-[50%] sheet:h-auto sheet:max-h-[90vh] sheet:max-w-2xl sheet:-translate-x-1/2 sheet:-translate-y-1/2 sheet:rounded-lg sheet:border sheet:bg-background sheet:p-6'
         )}
       >
-        <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sm:hidden">
+        <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sheet:hidden">
           <div
             className="absolute inset-x-0 -top-2 h-14"
             style={{ touchAction: 'pan-y' }}
@@ -422,7 +422,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           />
           <div className="h-1.5 w-14 rounded-full bg-slate-400" />
         </div>
-        <div className="overflow-y-auto overflow-x-hidden px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:px-0 sm:pb-0 sm:pt-0">
+        <div className="overflow-y-auto overflow-x-hidden px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sheet:px-0 sheet:pb-0 sheet:pt-0">
           <DialogHeader>
             <DialogTitle>{tForm('editTitle')}</DialogTitle>
             <DialogDescription>{tForm('editDescription')}</DialogDescription>
