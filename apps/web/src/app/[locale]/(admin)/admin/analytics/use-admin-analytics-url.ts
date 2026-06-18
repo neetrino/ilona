@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { startTransition, useCallback, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   defaultCustomRangeSixMonths,
@@ -93,10 +93,23 @@ export function useAdminAnalyticsUrl() {
 
   const updateParams = useCallback(
     (mutate: (p: URLSearchParams) => void) => {
-      const p = new URLSearchParams(searchParams.toString());
+      const p = typeof window === 'undefined'
+        ? new URLSearchParams(searchParams.toString())
+        : new URLSearchParams(window.location.search);
       mutate(p);
       const qs = p.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      const nextUrl = qs ? `${pathname}?${qs}` : pathname;
+      const currentUrl = typeof window === 'undefined'
+        ? `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+        : `${window.location.pathname}${window.location.search}`;
+
+      if (nextUrl === currentUrl) {
+        return;
+      }
+
+      startTransition(() => {
+        router.replace(nextUrl, { scroll: false });
+      });
     },
     [pathname, router, searchParams],
   );
