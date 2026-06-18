@@ -46,6 +46,7 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
 const ARCHIVE_PARAM = 'archive';
 const EDIT_LEAD_PARAM = 'editLead';
 const VIEW_PARAM = 'view';
+const CRM_LIST_PAGE_SIZE = 10;
 
 function normalize(value?: unknown): string {
   if (value === null || value === undefined) {
@@ -120,6 +121,7 @@ export default function AdminCrmPage() {
   const searchParams = useSearchParams();
   const isLg = useIsLgViewport();
   const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
+  const [listPage, setListPage] = useState(0);
   const [viewMode, setViewMode] = useState<'board' | 'list'>(() => {
     const modeFromUrl = searchParams.get(VIEW_PARAM);
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
@@ -359,6 +361,25 @@ export default function AdminCrmPage() {
       : undefined;
   const teachers = teachersData?.items ?? [];
   const groups = groupsData?.items ?? [];
+  const totalListPages = Math.max(1, Math.ceil(leads.length / CRM_LIST_PAGE_SIZE));
+  const safeListPage = Math.min(Math.max(0, listPage), totalListPages - 1);
+  const paginatedListLeads = useMemo(() => {
+    const startIndex = safeListPage * CRM_LIST_PAGE_SIZE;
+    return leads.slice(startIndex, startIndex + CRM_LIST_PAGE_SIZE);
+  }, [leads, safeListPage]);
+
+  useEffect(() => {
+    if (viewMode !== 'list') {
+      return;
+    }
+    if (listPage >= totalListPages) {
+      setListPage(Math.max(0, totalListPages - 1));
+    }
+  }, [listPage, totalListPages, viewMode]);
+
+  useEffect(() => {
+    setListPage(0);
+  }, [filters, viewMode]);
 
   const openEditLead = (id: string) => {
     setSelectedLeadId(null);
@@ -521,12 +542,16 @@ export default function AdminCrmPage() {
           />
         ) : (
           <ListTable
-            leads={leads}
+            leads={paginatedListLeads}
             onRowClick={handleCardClick}
             isLoading={isLoading}
             canDeleteLead={isAdmin}
             onLeadDeleteRequest={isAdmin ? handleLeadDeleteRequest : undefined}
             deleteInProgress={deleteLeadMutation.isPending}
+            page={safeListPage}
+            totalPages={totalListPages}
+            totalLeads={leads.length}
+            onPageChange={setListPage}
           />
         )}
 
