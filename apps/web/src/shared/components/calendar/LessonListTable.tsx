@@ -54,6 +54,7 @@ interface LessonListTableProps {
 }
 
 const MOBILE_CARD_PAGE_SIZE = 5;
+const IPAD_CARD_PAGE_SIZE = 10;
 
 export function LessonListTable({
   lessons,
@@ -80,6 +81,7 @@ export function LessonListTable({
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
   const [sectionedListPage, setSectionedListPage] = useState(1);
   const [mobileCardsPage, setMobileCardsPage] = useState(1);
+  const [isIPad, setIsIPad] = useState(false);
   const { user } = useAuthStore();
   const isTeacher = user?.role === 'TEACHER';
   const router = useRouter();
@@ -89,6 +91,17 @@ export function LessonListTable({
     () => (sectionedCalendarList ? buildTeacherCalendarOrderedRows(lessons) : []),
     [lessons, sectionedCalendarList],
   );
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+
+    const platform = navigator.platform ?? '';
+    const userAgent = navigator.userAgent ?? '';
+    const detectedIPad =
+      /iPad/i.test(userAgent) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    setIsIPad(detectedIPad);
+  }, []);
 
   const sectionedLessonsKey = useMemo(() => lessons.map((l) => l.id).join('|'), [lessons]);
 
@@ -250,18 +263,19 @@ export function LessonListTable({
         ? sectionedOrderedRows.map((row) => ({ lesson: row.lesson, category: row.category }))
         : sectionedPageRows.map((row) => ({ lesson: row.lesson, category: row.category })))
     : sortedLessons.map((lesson) => ({ lesson }));
+  const mobileCardPageSize = isIPad ? IPAD_CARD_PAGE_SIZE : MOBILE_CARD_PAGE_SIZE;
   const mobileCardsTotalPages = Math.max(
     1,
-    Math.ceil(cardRows.length / MOBILE_CARD_PAGE_SIZE),
+    Math.ceil(cardRows.length / mobileCardPageSize),
   );
   const safeMobileCardsPage = Math.min(mobileCardsPage, mobileCardsTotalPages);
   const mobilePaginatedCardRows = useMemo(
     () =>
       cardRows.slice(
-        (safeMobileCardsPage - 1) * MOBILE_CARD_PAGE_SIZE,
-        safeMobileCardsPage * MOBILE_CARD_PAGE_SIZE,
+        (safeMobileCardsPage - 1) * mobileCardPageSize,
+        safeMobileCardsPage * mobileCardPageSize,
       ),
-    [cardRows, safeMobileCardsPage],
+    [cardRows, safeMobileCardsPage, mobileCardPageSize],
   );
 
   useEffect(() => {
@@ -332,7 +346,7 @@ export function LessonListTable({
           const isLocked = isTeacher && lesson.isLockedForTeacher;
           const section = row.category ? teacherCalendarRowSection(row.category) : null;
           const globalRowIndex =
-            (safeMobileCardsPage - 1) * MOBILE_CARD_PAGE_SIZE + idx;
+            (safeMobileCardsPage - 1) * mobileCardPageSize + idx;
           const prevGlobalRow = globalRowIndex > 0 ? cardRows[globalRowIndex - 1] : null;
           const prevSection =
             prevGlobalRow?.category
@@ -483,12 +497,12 @@ export function LessonListTable({
             </div>
           );
         })}
-        {cardRows.length > MOBILE_CARD_PAGE_SIZE && (
+        {cardRows.length > mobileCardPageSize && (
           <div className="flex items-center justify-between px-1 text-sm text-[#8b8b90]">
             <span>
-              {(safeMobileCardsPage - 1) * MOBILE_CARD_PAGE_SIZE + 1}-
+              {(safeMobileCardsPage - 1) * mobileCardPageSize + 1}-
               {Math.min(
-                safeMobileCardsPage * MOBILE_CARD_PAGE_SIZE,
+                safeMobileCardsPage * mobileCardPageSize,
                 cardRows.length,
               )}{' '}
               / {cardRows.length}

@@ -27,6 +27,7 @@ interface WeekLessonGridProps {
    */
   highlightPastLessonCards?: boolean;
   theme?: ScheduleUiVariant;
+  forceMobileLayout?: boolean;
 }
 
 interface MonthLessonGridProps {
@@ -169,6 +170,7 @@ export function WeekLessonGrid({
   isLoading,
   highlightPastLessonCards = false,
   theme = 'default',
+  forceMobileLayout = false,
 }: WeekLessonGridProps) {
   const isStudent = theme === 'student';
   const referenceTime = new Date();
@@ -257,9 +259,19 @@ export function WeekLessonGrid({
 
   return (
     <div className="h-full">
-      <div className="flex h-full min-h-0 flex-col sm:hidden">
+      <div
+        className={cn(
+          'flex h-full min-h-0 flex-col',
+          forceMobileLayout ? 'min-[769px]:hidden' : 'sm:hidden',
+        )}
+      >
         <div className="border-b border-[rgba(14,14,16,0.08)] px-3 pb-3 pt-2">
-          <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div
+            className={cn(
+              'flex gap-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+              forceMobileLayout ? 'justify-center overflow-x-visible' : 'overflow-x-auto',
+            )}
+          >
             {weekDates.map((date, idx) => {
               const isActive = idx === selectedDayIndex;
               return (
@@ -345,7 +357,12 @@ export function WeekLessonGrid({
         </div>
       </div>
 
-      <table className="hidden h-full w-full border-collapse table-fixed sm:table">
+      <table
+        className={cn(
+          'hidden h-full w-full border-collapse table-fixed',
+          forceMobileLayout ? 'min-[769px]:table' : 'sm:table',
+        )}
+      >
         <thead>
           <tr>
             <th

@@ -12,8 +12,10 @@ import type { TeacherAssignedItem } from '@/features/students';
 import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { toAttendanceRow } from '../hooks/useAttendanceData';
 import type { AbsenceType } from '@/features/attendance';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 const MOBILE_GROUP_CARDS_PAGE_SIZE = 5;
+const IPAD_GROUP_CARDS_PAGE_SIZE = 10;
 
 interface MonthViewProps {
   group: Group | undefined;
@@ -90,20 +92,22 @@ export function MonthView({
   const selectedGroups = safeSelectedGroupIds
     .map(id => safeGroups.find(g => g.id === id))
     .filter((g): g is Group => g !== undefined);
+  const isIPad = useIsIPad();
+  const mobileCardsPageSize = isIPad ? IPAD_GROUP_CARDS_PAGE_SIZE : MOBILE_GROUP_CARDS_PAGE_SIZE;
   const [mobileCardPage, setMobileCardPage] = useState(0);
   const mobileCardsStartRef = useRef<HTMLDivElement | null>(null);
   const totalMobileCardPages = Math.max(
     1,
-    Math.ceil(selectedGroups.length / MOBILE_GROUP_CARDS_PAGE_SIZE),
+    Math.ceil(selectedGroups.length / mobileCardsPageSize),
   );
   const safeMobileCardPage = Math.min(mobileCardPage, totalMobileCardPages - 1);
   const mobilePaginatedGroups = useMemo(
     () =>
       selectedGroups.slice(
-        safeMobileCardPage * MOBILE_GROUP_CARDS_PAGE_SIZE,
-        safeMobileCardPage * MOBILE_GROUP_CARDS_PAGE_SIZE + MOBILE_GROUP_CARDS_PAGE_SIZE,
+        safeMobileCardPage * mobileCardsPageSize,
+        safeMobileCardPage * mobileCardsPageSize + mobileCardsPageSize,
       ),
-    [safeMobileCardPage, selectedGroups],
+    [safeMobileCardPage, selectedGroups, mobileCardsPageSize],
   );
 
   useEffect(() => {
@@ -214,11 +218,11 @@ export function MonthView({
                   </div>
                 );
               })}
-              {selectedGroups.length > MOBILE_GROUP_CARDS_PAGE_SIZE && (
+              {selectedGroups.length > mobileCardsPageSize && (
                 <div className="flex items-center justify-between text-sm text-[#8b8b90]">
                   <span>
-                    {safeMobileCardPage * MOBILE_GROUP_CARDS_PAGE_SIZE + 1}-
-                    {Math.min((safeMobileCardPage + 1) * MOBILE_GROUP_CARDS_PAGE_SIZE, selectedGroups.length)} / {selectedGroups.length}
+                    {safeMobileCardPage * mobileCardsPageSize + 1}-
+                    {Math.min((safeMobileCardPage + 1) * mobileCardsPageSize, selectedGroups.length)} / {selectedGroups.length}
                   </span>
                   <div className="flex items-center gap-3">
                     <button

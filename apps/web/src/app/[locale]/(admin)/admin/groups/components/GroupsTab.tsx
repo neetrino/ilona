@@ -25,6 +25,7 @@ import { StudentDetailsModal } from './StudentDetailsModal';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 interface SelectAllCheckboxProps {
   checked: boolean;
@@ -80,6 +81,7 @@ interface GroupsTabProps {
 }
 
 const MOBILE_BOARD_PAGE_SIZE = 5;
+const IPAD_BOARD_PAGE_SIZE = 10;
 
 export function GroupsTab({
   searchQuery,
@@ -100,6 +102,8 @@ export function GroupsTab({
   const { user } = useAuthStore();
   const portalBasePath = getAdminPortalBasePath(user?.role);
   const isLg = useIsLgViewport();
+  const isIPad = useIsIPad();
+  const mobileBoardPageSize = isIPad ? IPAD_BOARD_PAGE_SIZE : MOBILE_BOARD_PAGE_SIZE;
   const [mobileBoardPage, setMobileBoardPage] = useState(0);
   const mobileBoardStartRef = useRef<HTMLDivElement | null>(null);
   const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
@@ -222,16 +226,16 @@ export function GroupsTab({
   const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
   const mobileBoardTotalPages = Math.max(
     1,
-    Math.ceil(groups.length / MOBILE_BOARD_PAGE_SIZE),
+    Math.ceil(groups.length / mobileBoardPageSize),
   );
   const safeMobileBoardPage = Math.min(mobileBoardPage, mobileBoardTotalPages - 1);
   const mobileBoardGroups = useMemo(
     () =>
       groups.slice(
-        safeMobileBoardPage * MOBILE_BOARD_PAGE_SIZE,
-        safeMobileBoardPage * MOBILE_BOARD_PAGE_SIZE + MOBILE_BOARD_PAGE_SIZE,
+        safeMobileBoardPage * mobileBoardPageSize,
+        safeMobileBoardPage * mobileBoardPageSize + mobileBoardPageSize,
       ),
-    [groups, safeMobileBoardPage],
+    [groups, safeMobileBoardPage, mobileBoardPageSize],
   );
 
   useEffect(() => {
@@ -800,8 +804,14 @@ export function GroupsTab({
               </div>
             ) : (
               <div className="space-y-4">
-                <div ref={mobileBoardStartRef} className="sm:hidden" />
-                <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:hidden">
+                <div ref={mobileBoardStartRef} className={isIPad ? '' : 'sm:hidden'} />
+                <div
+                  className={cn(
+                    'grid w-full min-w-0 gap-4',
+                    isIPad ? 'grid-cols-2' : 'grid-cols-1',
+                    !isIPad && 'sm:hidden',
+                  )}
+                >
                   {mobileBoardGroups.map((group) => (
                     <GroupCard
                       key={group.id}
@@ -814,7 +824,7 @@ export function GroupsTab({
                     />
                   ))}
                 </div>
-                <div className="hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+                <div className={cn('hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3', isIPad && 'sm:hidden')}>
                   {groups.map((group) => (
                     <GroupCard
                       key={group.id}
@@ -827,11 +837,11 @@ export function GroupsTab({
                     />
                   ))}
                 </div>
-                {groups.length > MOBILE_BOARD_PAGE_SIZE && (
-                  <div className="flex items-center justify-between text-sm text-[#8b8b90] sm:hidden">
+                {groups.length > mobileBoardPageSize && (
+                  <div className={cn('flex items-center justify-between text-sm text-[#8b8b90]', !isIPad && 'sm:hidden')}>
                     <span>
-                      {safeMobileBoardPage * MOBILE_BOARD_PAGE_SIZE + 1}-
-                      {Math.min((safeMobileBoardPage + 1) * MOBILE_BOARD_PAGE_SIZE, groups.length)} / {groups.length}
+                      {safeMobileBoardPage * mobileBoardPageSize + 1}-
+                      {Math.min((safeMobileBoardPage + 1) * mobileBoardPageSize, groups.length)} / {groups.length}
                     </span>
                     <div className="flex items-center gap-3">
                       <button
