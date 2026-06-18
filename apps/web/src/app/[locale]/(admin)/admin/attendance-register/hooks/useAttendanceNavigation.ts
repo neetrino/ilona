@@ -21,7 +21,7 @@ interface UseAttendanceNavigationProps {
 }
 
 const getDefaultViewMode = (): ViewMode => {
-  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches) {
     return 'day';
   }
   return 'week';

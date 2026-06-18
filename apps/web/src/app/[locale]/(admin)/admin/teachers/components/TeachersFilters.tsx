@@ -131,29 +131,40 @@ export function TeachersFilters({
         </div>
       ) : null}
 
-      {/* Add Teacher Button (mobile) */}
-      <div className="w-full shrink-0 sm:hidden">
-        <Button 
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#1010a3] px-4 font-medium text-white hover:bg-[#1010a3]/90"
-          onClick={onAddTeacher}
-          disabled={isDeleting}
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      {/* Add Teacher Button (mobile + tablet) */}
+      {!isLg ? (
+        <div className="w-full shrink-0">
+          <div className="hidden w-full items-center justify-end gap-3 tablet:flex">
+            <Button
+              className="h-10 whitespace-nowrap rounded-lg bg-[#1010a3] px-4 text-sm font-medium text-white hover:bg-[#1010a3]/90"
+              onClick={onAddTeacher}
+              disabled={isDeleting}
+            >
+              + {t('addTeacher')}
+            </Button>
+          </div>
+          <Button
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#1010a3] px-4 font-medium text-white hover:bg-[#1010a3]/90 tablet:hidden"
+            onClick={onAddTeacher}
+            disabled={isDeleting}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          <span className={locale === 'hy' ? 'text-sm' : 'text-base'}>{t('addTeacher')}</span>
-        </Button>
-      </div>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            <span className={locale === 'hy' ? 'text-sm' : 'text-base'}>{t('addTeacher')}</span>
+          </Button>
+        </div>
+      ) : null}
       </div>
 
       {/* Pagination - shown only in list view */}
