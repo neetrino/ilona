@@ -26,6 +26,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { useIsIPadPro } from '@/shared/hooks/useIsIPadPro';
 
 interface SelectAllCheckboxProps {
   checked: boolean;
@@ -104,7 +105,9 @@ export function GroupsTab({
   const portalBasePath = getAdminPortalBasePath(user?.role);
   const isLg = useIsLgViewport();
   const isIPad = useIsIPad();
-  const mobileBoardPageSize = isIPad ? IPAD_BOARD_PAGE_SIZE : MOBILE_BOARD_PAGE_SIZE;
+  const isIPadPro = useIsIPadPro();
+  const isCompactIPad = isIPad && !isIPadPro;
+  const mobileBoardPageSize = isCompactIPad ? IPAD_BOARD_PAGE_SIZE : MOBILE_BOARD_PAGE_SIZE;
   const [mobileBoardPage, setMobileBoardPage] = useState(0);
   const [desktopBoardPage, setDesktopBoardPage] = useState(0);
   const mobileBoardStartRef = useRef<HTMLDivElement | null>(null);
@@ -731,7 +734,7 @@ export function GroupsTab({
 
       {/* Board: branch tabs + groups directly underneath */}
       {viewMode === 'board' && (
-        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm animate-in fade-in-0 duration-150">
           <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
             {isLoadingBranchTabs ? (
               <div className="py-4 text-sm text-[#8b8b90]">{t('loadingBranches')}</div>
@@ -836,13 +839,13 @@ export function GroupsTab({
               </div>
             ) : (
               <div className="space-y-4">
-                <div ref={mobileBoardStartRef} className={isIPad ? '' : 'sm:hidden'} />
-                <div ref={desktopBoardStartRef} className={cn('hidden sm:block', isIPad && 'sm:hidden')} />
+                <div ref={mobileBoardStartRef} className={isCompactIPad ? '' : 'sm:hidden'} />
+                <div ref={desktopBoardStartRef} className={cn('hidden sm:block', isCompactIPad && 'sm:hidden')} />
                 <div
                   className={cn(
                     'grid w-full min-w-0 gap-4',
-                    isIPad ? 'grid-cols-2' : 'grid-cols-1',
-                    !isIPad && 'sm:hidden',
+                    isCompactIPad ? 'grid-cols-2' : 'grid-cols-1',
+                    !isCompactIPad && 'sm:hidden',
                   )}
                 >
                   {mobileBoardGroups.map((group) => (
@@ -857,7 +860,7 @@ export function GroupsTab({
                     />
                   ))}
                 </div>
-                <div className={cn('hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3', isIPad && 'sm:hidden')}>
+                <div className={cn('hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3', isCompactIPad && 'sm:hidden')}>
                   {desktopBoardGroups.map((group) => (
                     <GroupCard
                       key={group.id}
@@ -870,7 +873,7 @@ export function GroupsTab({
                     />
                   ))}
                 </div>
-                {!isIPad && groups.length > DESKTOP_BOARD_PAGE_SIZE && (
+                {!isCompactIPad && groups.length > DESKTOP_BOARD_PAGE_SIZE && (
                   <div className="hidden items-center justify-between text-sm text-[#8b8b90] sm:flex lg:justify-start lg:gap-4">
                     <span>
                       {safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE + 1}-
@@ -920,7 +923,7 @@ export function GroupsTab({
                   </div>
                 )}
                 {groups.length > mobileBoardPageSize && (
-                  <div className={cn('flex items-center justify-between text-sm text-[#8b8b90]', !isIPad && 'sm:hidden')}>
+                  <div className={cn('flex items-center justify-between text-sm text-[#8b8b90]', !isCompactIPad && 'sm:hidden')}>
                     <span>
                       {safeMobileBoardPage * mobileBoardPageSize + 1}-
                       {Math.min((safeMobileBoardPage + 1) * mobileBoardPageSize, groups.length)} / {groups.length}
@@ -974,7 +977,7 @@ export function GroupsTab({
 
       {/* Groups View */}
       {viewMode === 'list' ? (
-        <>
+        <div className="animate-in fade-in-0 duration-150">
           {/* Groups Table */}
           <DataTable
             columns={
@@ -989,7 +992,7 @@ export function GroupsTab({
           />
 
           {/* Pagination */}
-          <div className="flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
+          <div className="mt-4 flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
             <span>
               {t('showingGroups', {
                 start: Math.min(page * pageSize + 1, totalGroups),
@@ -1037,7 +1040,7 @@ export function GroupsTab({
               </button>
             </div>
           </div>
-        </>
+        </div>
       ) : null}
 
       {/* Modals */}

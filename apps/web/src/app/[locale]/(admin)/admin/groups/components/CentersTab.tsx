@@ -16,6 +16,7 @@ import { getErrorMessage } from '@/shared/lib/api';
 import { useCentersManagement } from '../hooks/useCentersManagement';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { useIsIPadPro } from '@/shared/hooks/useIsIPadPro';
 
 const DESKTOP_BOARD_PAGE_SIZE = 9;
 
@@ -37,6 +38,8 @@ export function CentersTab({
   const t = useTranslations('groups');
   const isLg = useIsLgViewport();
   const isIPad = useIsIPad();
+  const isIPadPro = useIsIPadPro();
+  const isCompactIPad = isIPad && !isIPadPro;
   const {
     centers,
     totalCenters,
@@ -60,7 +63,7 @@ export function CentersTab({
   const [detailsCenterId, setDetailsCenterId] = React.useState<string | null>(null);
   const [desktopBoardPage, setDesktopBoardPage] = React.useState(0);
   const desktopCentersStartRef = useRef<HTMLDivElement | null>(null);
-  const isDesktopBoard = isLg !== false && !isIPad;
+  const isDesktopBoard = isLg !== false && !isCompactIPad;
   const desktopBoardTotalPages = Math.max(
     1,
     Math.ceil(centers.length / DESKTOP_BOARD_PAGE_SIZE),
@@ -232,7 +235,7 @@ export function CentersTab({
       </div>
 
       {isDesktopBoard && centers.length > DESKTOP_BOARD_PAGE_SIZE && (
-        <div className="flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
+        <div className="mt-4 flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
           <span>
             {safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE + 1}-
             {Math.min((safeDesktopBoardPage + 1) * DESKTOP_BOARD_PAGE_SIZE, centers.length)} / {centers.length}
