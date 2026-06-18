@@ -128,24 +128,11 @@ export function PortalMobileSearchSheet({
         style={isVisible ? { transform: `translateY(${dragOffsetY}px)` } : undefined}
       >
         <div className="flex h-[72vh] min-h-[26rem] max-h-[80vh] flex-col rounded-t-[1.5rem] border border-b-0 border-[rgba(14,14,16,0.07)] bg-white shadow-[0_-12px_36px_rgba(0,0,0,0.16)]">
-          <div className="flex justify-center pt-2">
+          <div className="flex justify-center pt-3">
             <span className="h-1.5 w-12 rounded-full bg-[#d8d8de]" aria-hidden />
           </div>
-          <div className="flex items-center justify-between border-b border-[rgba(14,14,16,0.07)] px-4 py-3">
-            <h2 className="text-base font-semibold text-[#3b3b40]">{t('globalSearch')}</h2>
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#5b5b62] hover:bg-[#f3f3f4]"
-              aria-label={t('close')}
-              onClick={onClose}
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-3">
+          <div className="flex-1 overflow-y-auto px-4 pt-6 pb-3">
             <GlobalSearchBar
               key="portal-mobile-search"
               className="w-full max-w-none"

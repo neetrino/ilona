@@ -45,30 +45,31 @@ export function TeacherDashboardHeader({
               </button>
             ) : null}
 
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 text-center lg:text-left flex min-h-11 flex-col justify-center">
               {isSubpage ? (
                 <>
-                  <h1 className="truncate text-[1.125rem] font-semibold leading-tight tracking-tight text-[#1010a3] sm:text-[1.375rem]">
+                  <h1 className="flex h-11 items-center justify-center truncate text-[1.125rem] font-semibold leading-none tracking-tight text-[#1010a3] sm:block sm:h-auto sm:text-[1.375rem] sm:leading-tight">
                     {pageTitle}
                   </h1>
                   {pageSubtitle ? (
-                    <p className="mt-1.5 line-clamp-2 text-xs text-[#8b8b90] sm:text-sm">
+                    <p className="mt-1.5 line-clamp-2 text-xs text-[#8b8b90] sm:text-sm lg:text-left">
                       {pageSubtitle}
                     </p>
                   ) : null}
                 </>
               ) : (
                 <>
-                  <p className="truncate text-[0.625rem] tracking-wide text-[#8b8b90] sm:text-[0.6875rem]">
+                  <p className="truncate text-[0.625rem] tracking-wide text-[#8b8b90] sm:text-[0.6875rem] lg:text-left">
                     {t('greeting', { name: firstName })}
                   </p>
-                  <h1 className="truncate text-[1.125rem] font-semibold leading-tight tracking-tight sm:text-[1.5rem]">
+                  <h1 className="flex h-11 items-center justify-center truncate text-[1.125rem] font-semibold leading-none tracking-tight sm:block sm:h-auto sm:text-[1.5rem] sm:leading-tight">
                     <span className="text-[#1010a3]">{t('titleMy')} </span>
                     <span className="font-normal text-[#5b5b62]">{t('titleTeaching')}</span>
                   </h1>
                 </>
               )}
             </div>
+            {onMenuClick ? <div className="h-11 w-11 shrink-0 lg:hidden" aria-hidden /> : null}
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">

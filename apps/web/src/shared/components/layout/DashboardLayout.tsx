@@ -118,7 +118,7 @@ export function DashboardLayout({
     <PortalShellProvider enabled={isPortalShell}>
       <div
         className={cn(
-          'flex min-h-screen w-full max-w-[100vw] overflow-x-hidden lg:h-screen lg:overflow-hidden',
+          'flex min-h-screen w-full max-w-[100vw] lg:overflow-x-hidden lg:h-screen lg:overflow-hidden',
           isPortalShell ? PORTAL_SHELL_BG : 'bg-slate-50',
         )}
       >
@@ -172,7 +172,7 @@ export function DashboardLayout({
           )}
           <div
             className={cn(
-              'flex-1 overflow-x-hidden overflow-visible lg:min-h-0 lg:overflow-y-auto',
+              'flex-1 overflow-visible lg:min-h-0 lg:overflow-x-hidden lg:overflow-y-auto',
               mainPadding,
               isAdminPortal && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
             )}
