@@ -50,13 +50,22 @@ export function useSettingsPage() {
     }
   }, [searchParams]); // Only depend on searchParams to sync with URL changes
 
+  const updateParams = useCallback((mutate: (params: URLSearchParams) => void) => {
+    const params = new URLSearchParams(searchParams.toString());
+    mutate(params);
+    const nextQs = params.toString();
+    const currentQs = searchParams.toString();
+    if (nextQs === currentQs) return;
+    router.replace(nextQs ? `${pathname}?${nextQs}` : pathname, { scroll: false });
+  }, [router, pathname, searchParams]);
+
   // Update URL when tab changes
   const handleTabChange = useCallback((tab: SettingsTab) => {
     setActiveTab(tab);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('tab', tab);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [router, pathname, searchParams]);
+    updateParams((params) => {
+      params.set('tab', tab);
+    });
+  }, [updateParams]);
 
   return {
     activeTab,

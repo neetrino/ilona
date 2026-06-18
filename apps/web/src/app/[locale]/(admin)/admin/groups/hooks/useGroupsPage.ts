@@ -153,7 +153,10 @@ export function useGroupsPage() {
     } else {
       params.delete('view');
     }
-    router.push(`${pathname}?${params.toString()}`);
+    const nextQs = params.toString();
+    const currentQs = searchParams.toString();
+    if (nextQs === currentQs) return;
+    router.replace(nextQs ? `${pathname}?${nextQs}` : pathname, { scroll: false });
   };
 
   const handleViewModeChange = (mode: ViewMode) => {
