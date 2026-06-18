@@ -4,10 +4,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
-import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { Button, Input, Label } from '@/shared/components/ui';
 import { useUpdateCenter, useCenter, type UpdateCenterDto } from '@/features/centers';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
+import { cn } from '@/shared/lib/utils';
+import { X } from 'lucide-react';
 
 type UpdateCenterFormData = {
   name?: string;
@@ -54,6 +57,13 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(open);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const updateCenter = useUpdateCenter();
   const { data: center, isLoading } = useCenter(centerId, open);
 
@@ -92,13 +102,94 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
     }
   }, [center, reset]);
 
+  useEffect(() => {
+    setIsDialogOpen(open);
+  }, [open]);
+
   // Reset form when dialog closes
   useEffect(() => {
     if (!open) {
       setErrorMessage(null);
       setSuccessMessage(null);
+      setDragOffsetY(0);
+      setIsDragging(false);
+      setIsSettling(false);
     }
   }, [open]);
+
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) {
+        clearTimeout(settleTimerRef.current);
+      }
+    };
+  }, []);
+
+  const requestClose = useCallback(() => {
+    setIsDialogOpen(false);
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const isMobileViewport = () =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+
+  const resetDragRefs = () => {
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    setIsDragging(false);
+  };
+
+  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    touchStartYRef.current = firstTouch.clientY;
+    touchStartXRef.current = firstTouch.clientX;
+    setIsSettling(false);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isMobileViewport()) return;
+    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
+    const firstTouch = event.touches[0];
+    if (!firstTouch) return;
+    const deltaY = firstTouch.clientY - touchStartYRef.current;
+    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
+    if (deltaY <= 0 || deltaY <= deltaX) return;
+    event.preventDefault();
+    setDragOffsetY(Math.min(deltaY * 0.95, 340));
+  };
+
+  const handleDragEnd = () => {
+    if (!isMobileViewport()) return;
+    if (!isDragging) return;
+    const shouldClose = dragOffsetY > 110;
+    resetDragRefs();
+    if (shouldClose) {
+      setDragOffsetY(0);
+      requestClose();
+      return;
+    }
+    setIsSettling(true);
+    setDragOffsetY(0);
+    settleTimerRef.current = setTimeout(() => {
+      setIsSettling(false);
+      settleTimerRef.current = null;
+    }, 280);
+  };
+
+  const dragStyle =
+    dragOffsetY > 0 || isSettling
+      ? {
+          transform: `translateY(${dragOffsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+        }
+      : undefined;
 
   const onSubmit = async (data: UpdateCenterFormData) => {
     setErrorMessage(null);
@@ -122,7 +213,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
       
       // Close modal after a brief delay
       setTimeout(() => {
-        onOpenChange(false);
+        requestClose();
         setSuccessMessage(null);
       }, 1500);
     } catch (error: unknown) {
@@ -137,194 +228,255 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
 
   if (isLoading) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{tForm('editTitle')}</DialogTitle>
-            <DialogDescription>{tForm('loadingCenter')}</DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center justify-center py-8">
-            <div className="text-slate-500">{tCommon('loading')}</div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Content
+            style={dragStyle}
+            className={cn(
+              'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+              'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sheet:duration-350 sheet:ease-[cubic-bezier(0.22,1,0.36,1)]',
+              'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
+              'h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+              'sheet:inset-0 sheet:m-auto sheet:w-[95vw] sheet:max-w-2xl sheet:h-auto sheet:max-h-[90vh] sheet:translate-x-0 sheet:translate-y-0 sheet:rounded-2xl',
+              'sheet:data-[state=open]:fade-in-0 sheet:data-[state=closed]:fade-out-0 sheet:data-[state=open]:slide-in-from-bottom-0 sheet:data-[state=closed]:slide-out-to-bottom-0',
+            )}
+            aria-describedby={undefined}
+          >
+            <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sheet:hidden">
+              <div
+                className="absolute inset-x-0 -top-2 h-14"
+                onTouchStart={handleDragStart}
+                onTouchMove={handleDragMove}
+                onTouchEnd={handleDragEnd}
+                onTouchCancel={handleDragEnd}
+              />
+              <div className="h-1.5 w-14 rounded-full bg-slate-400" />
+            </div>
+            <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
+            <DialogPrimitive.Close
+              className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sheet:inline-flex"
+              aria-label={tCommon('close')}
+            >
+              <X className="h-4 w-4" />
+            </DialogPrimitive.Close>
+            <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sheet:p-6">
+              <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
+              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('loadingCenter')}</p>
+              <div className="flex items-center justify-center py-8">
+                <div className="text-slate-500">{tCommon('loading')}</div>
+              </div>
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
     );
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{tForm('editTitle')}</DialogTitle>
-          <DialogDescription>{tForm('editDescription')}</DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {successMessage && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-600">{successMessage}</p>
-            </div>
+    <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content
+          style={dragStyle}
+          className={cn(
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sheet:duration-350 sheet:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'sheet:inset-0 sheet:m-auto sheet:w-[95vw] sheet:max-w-2xl sheet:h-auto sheet:max-h-[90vh] sheet:translate-x-0 sheet:translate-y-0 sheet:rounded-2xl',
+            'sheet:data-[state=open]:fade-in-0 sheet:data-[state=closed]:fade-out-0 sheet:data-[state=open]:slide-in-from-bottom-0 sheet:data-[state=closed]:slide-out-to-bottom-0',
           )}
-          {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{errorMessage}</p>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              {tForm('centerName')} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="name"
-              {...register('name')}
-              error={errors.name?.message}
-              placeholder={tForm('namePlaceholder')}
+          aria-describedby={undefined}
+        >
+          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sheet:hidden">
+            <div
+              className="absolute inset-x-0 -top-2 h-14"
+              onTouchStart={handleDragStart}
+              onTouchMove={handleDragMove}
+              onTouchEnd={handleDragEnd}
+              onTouchCancel={handleDragEnd}
             />
+            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="address">{tForm('address')}</Label>
-            <Input
-              id="address"
-              {...register('address')}
-              error={errors.address?.message}
-              placeholder={tForm('addressPlaceholder')}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">{tForm('phone')}</Label>
-              <Input
-                id="phone"
-                {...register('phone')}
-                error={errors.phone?.message}
-                placeholder={tForm('phonePlaceholder')}
-              />
+          <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
+          <DialogPrimitive.Close
+            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sheet:inline-flex"
+            aria-label={tCommon('close')}
+          >
+            <X className="h-4 w-4" />
+          </DialogPrimitive.Close>
+          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sheet:p-6">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
+              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('editDescription')}</p>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">{tForm('email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                {...register('email')}
-                error={errors.email?.message}
-                placeholder={tForm('emailPlaceholder')}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">{tForm('description')}</Label>
-            <textarea
-              id="description"
-              {...register('description')}
-              rows={4}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-              placeholder={tForm('descriptionPlaceholder')}
-            />
-            {errors.description && (
-              <p className="text-sm text-red-600">{errors.description.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="colorHex">{tForm('centerColor')}</Label>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <input
-                  type="color"
-                  id="colorHex"
-                  value={watch('colorHex') || '#253046'}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    setValue('colorHex', newValue, { shouldValidate: true });
-                  }}
-                  className="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
-                />
-              </div>
-              <div className="flex-1">
+            
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {successMessage && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-600">{successMessage}</p>
+                </div>
+              )}
+              {errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{errorMessage}</p>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  {tForm('centerName')} <span className="text-red-500">*</span>
+                </Label>
                 <Input
-                  id="colorHexText"
-                  value={watch('colorHex') || ''}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    setValue('colorHex', newValue, { shouldValidate: true });
-                  }}
-                  onBlur={() => {
-                    // Normalize hex color on blur
-                    const value = watch('colorHex');
-                    if (value && value.startsWith('#')) {
-                      // Already has #, just validate
-                      return;
-                    } else if (value && !value.startsWith('#')) {
-                      // Add # if missing
-                      setValue('colorHex', `#${value}`, { shouldValidate: true });
-                    }
-                  }}
-                  error={errors.colorHex?.message}
-                  placeholder={tForm('colorPlaceholder')}
-                  className="font-mono"
+                  id="name"
+                  {...register('name')}
+                  error={errors.name?.message}
+                  placeholder={tForm('namePlaceholder')}
                 />
               </div>
-              {watch('colorHex') && (
+              
+              <div className="space-y-2">
+                <Label htmlFor="address">{tForm('address')}</Label>
+                <Input
+                  id="address"
+                  {...register('address')}
+                  error={errors.address?.message}
+                  placeholder={tForm('addressPlaceholder')}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">{tForm('phone')}</Label>
+                  <Input
+                    id="phone"
+                    {...register('phone')}
+                    error={errors.phone?.message}
+                    placeholder={tForm('phonePlaceholder')}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">{tForm('email')}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    {...register('email')}
+                    error={errors.email?.message}
+                    placeholder={tForm('emailPlaceholder')}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">{tForm('description')}</Label>
+                <textarea
+                  id="description"
+                  {...register('description')}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+                  placeholder={tForm('descriptionPlaceholder')}
+                />
+                {errors.description && (
+                  <p className="text-sm text-red-600">{errors.description.message}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="colorHex">{tForm('centerColor')}</Label>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <input
+                      type="color"
+                      id="colorHex"
+                      value={watch('colorHex') || '#253046'}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        setValue('colorHex', newValue, { shouldValidate: true });
+                      }}
+                      className="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      id="colorHexText"
+                      value={watch('colorHex') || ''}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        setValue('colorHex', newValue, { shouldValidate: true });
+                      }}
+                      onBlur={() => {
+                        const value = watch('colorHex');
+                        if (value && value.startsWith('#')) {
+                          return;
+                        } else if (value && !value.startsWith('#')) {
+                          setValue('colorHex', `#${value}`, { shouldValidate: true });
+                        }
+                      }}
+                      error={errors.colorHex?.message}
+                      placeholder={tForm('colorPlaceholder')}
+                      className="font-mono"
+                    />
+                  </div>
+                  {watch('colorHex') && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        reset({
+                          ...watch(),
+                          colorHex: '',
+                        });
+                      }}
+                      className="text-sm"
+                    >
+                      {tForm('resetToDefault')}
+                    </Button>
+                  )}
+                </div>
+                <p className="text-sm text-slate-500">{tForm('colorHint')}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    {...register('isActive')}
+                    className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
+                  />
+                  <Label htmlFor="isActive" className="cursor-pointer">
+                    {tForm('activeCenter')}
+                  </Label>
+                </div>
+                <p className="text-sm text-slate-500">
+                  {isActive ? tForm('activeCenterHint') : tForm('inactiveCenterHint')}
+                </p>
+              </div>
+              
+              <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    reset({
-                      ...watch(),
-                      colorHex: '',
-                    });
-                  }}
-                  className="text-sm"
+                  variant="outline"
+                  onClick={requestClose}
+                  disabled={isSubmitting}
                 >
-                  {tForm('resetToDefault')}
+                  {tCommon('cancel')}
                 </Button>
-              )}
-            </div>
-            <p className="text-sm text-slate-500">{tForm('colorHint')}</p>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  {isSubmitting ? tForm('saving') : tForm('saveChanges')}
+                </Button>
+              </div>
+            </form>
           </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isActive"
-                {...register('isActive')}
-                className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
-              />
-              <Label htmlFor="isActive" className="cursor-pointer">
-                {tForm('activeCenter')}
-              </Label>
-            </div>
-            <p className="text-sm text-slate-500">
-              {isActive ? tForm('activeCenterHint') : tForm('inactiveCenterHint')}
-            </p>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              {isSubmitting ? tForm('saving') : tForm('saveChanges')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 

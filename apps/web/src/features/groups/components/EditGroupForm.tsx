@@ -480,7 +480,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
               disabled={isSubmitting || isLoadingCenters || centers.length === 0}
               className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
                 errors.centerId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || isLoadingCenters || centers.length === 0 ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+              } ${isSubmitting || isLoadingCenters || centers.length === 0 ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'} !text-base`}
             >
               <option value="">{tForm('selectCenter')}</option>
               {centers.map((center) => (
@@ -509,7 +509,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
               disabled={isSubmitting || updateGroup.isPending || isLoadingTeachers}
               className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
                 errors.teacherId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || updateGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+              } ${isSubmitting || updateGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'} !text-base`}
             >
               <option value="">{tForm('noTeacherAssigned')}</option>
               {teachers.map((teacher) => (
@@ -531,7 +531,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
               disabled={isSubmitting || updateGroup.isPending || isLoadingTeachers}
               className={`unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm ${
                 errors.substituteTeacherId ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting || updateGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+              } ${isSubmitting || updateGroup.isPending || isLoadingTeachers ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'} !text-base`}
             >
               <option value="">{tForm('noSubstitute')}</option>
               {teachers
