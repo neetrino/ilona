@@ -129,11 +129,6 @@ export default function TeachersPage() {
           t={t}
           tStatus={tStatus}
           isDeleting={deleteTeachers.isPending || deleteTeacher.isPending}
-          page={page}
-          totalPages={totalPages}
-          totalTeachers={totalTeachers}
-          onPageChange={handlePageChange}
-          isUpdating={updateTeacher.isPending}
         />
 
         {/* Bulk Delete Button (shown when teachers are selected) */}
@@ -180,6 +175,10 @@ export default function TeachersPage() {
             isLoading={isLoading}
             isDeleting={deleteTeachers.isPending || deleteTeacher.isPending}
             isUpdating={updateTeacher.isPending}
+            page={page}
+            totalPages={totalPages}
+            totalTeachers={totalTeachers}
+            onPageChange={handlePageChange}
             searchQuery={searchQuery}
             centerOptions={(centersData?.items || []).map((center) => ({
               id: center.id,

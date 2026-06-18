@@ -154,7 +154,7 @@ export function StudentsList({
                 : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
             }`}
             disabled={page >= totalPages - 1 || isDeleting || isUpdating}
-            onClick={() => onPageChange(page + 1)}
+            onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

@@ -121,10 +121,7 @@ export function TeachersBoard({
     1,
     Math.ceil(selectedTeachers.length / teachersPageSize),
   );
-  const safeMobileTeachersPage = Math.min(
-    mobileTeachersPage,
-    totalMobileTeachersPages - 1,
-  );
+  const safeMobileTeachersPage = Math.min(Math.max(0, mobileTeachersPage), totalMobileTeachersPages - 1);
   const paginatedTeachers = useMemo(
     () =>
       selectedTeachers.slice(
@@ -133,10 +130,13 @@ export function TeachersBoard({
       ),
     [safeMobileTeachersPage, selectedTeachers, teachersPageSize],
   );
-
   useEffect(() => {
     setMobileTeachersPage(0);
   }, [activeCenterTabId, searchQuery, selectedTeachers.length]);
+
+  useEffect(() => {
+    setMobileTeachersPage(0);
+  }, [isIPad]);
 
   const goToMobileTeachersPage = (nextPage: number) => {
     setMobileTeachersPage(nextPage);
@@ -211,7 +211,7 @@ export function TeachersBoard({
                 'hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2',
                 isIPad
                   ? 'lg:grid-cols-2 xl:grid-cols-2'
-                  : 'lg:grid-cols-3 xl:grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))]',
+                  : 'lg:grid-cols-4 xl:grid-cols-4',
               )}
             >
               {(isIPad ? paginatedTeachers : selectedTeachers).map((teacher) => (

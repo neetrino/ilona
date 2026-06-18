@@ -393,7 +393,10 @@ export default function FinancePage() {
                 }
                 onClick={() =>
                   handlePageChangeWithScroll(
-                    (activeTab === 'payments' ? paymentsPage : salariesPage) + 1,
+                    Math.min(
+                      (activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages) - 1,
+                      (activeTab === 'payments' ? paymentsPage : salariesPage) + 1,
+                    ),
                   )
                 }
               >

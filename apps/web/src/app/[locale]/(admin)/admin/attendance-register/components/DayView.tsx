@@ -16,6 +16,7 @@ import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 const MOBILE_GROUP_CARDS_PAGE_SIZE = 5;
 const IPAD_GROUP_CARDS_PAGE_SIZE = 10;
+const DESKTOP_GROUP_CARDS_PAGE_SIZE = 10;
 
 interface DayViewProps {
   group: Group | undefined;
@@ -93,7 +94,9 @@ export function DayView({
   const isIPad = useIsIPad();
   const mobileCardsPageSize = isIPad ? IPAD_GROUP_CARDS_PAGE_SIZE : MOBILE_GROUP_CARDS_PAGE_SIZE;
   const [mobileCardPage, setMobileCardPage] = useState(0);
+  const [desktopCardPage, setDesktopCardPage] = useState(0);
   const mobileCardsStartRef = useRef<HTMLDivElement | null>(null);
+  const desktopCardsStartRef = useRef<HTMLDivElement | null>(null);
   const totalMobileCardPages = Math.max(
     1,
     Math.ceil(selectedGroups.length / mobileCardsPageSize),
@@ -107,15 +110,42 @@ export function DayView({
       ),
     [safeMobileCardPage, selectedGroups, mobileCardsPageSize],
   );
+  const totalDesktopCardPages = Math.max(
+    1,
+    Math.ceil(selectedGroups.length / DESKTOP_GROUP_CARDS_PAGE_SIZE),
+  );
+  const safeDesktopCardPage = Math.min(desktopCardPage, totalDesktopCardPages - 1);
+  const desktopPaginatedGroups = useMemo(
+    () =>
+      selectedGroups.slice(
+        safeDesktopCardPage * DESKTOP_GROUP_CARDS_PAGE_SIZE,
+        safeDesktopCardPage * DESKTOP_GROUP_CARDS_PAGE_SIZE + DESKTOP_GROUP_CARDS_PAGE_SIZE,
+      ),
+    [safeDesktopCardPage, selectedGroups],
+  );
 
   useEffect(() => {
     setMobileCardPage(0);
+  }, [currentDate, selectedGroups.length, safeSelectedGroupIds.join(',')]);
+
+  useEffect(() => {
+    setDesktopCardPage(0);
   }, [currentDate, selectedGroups.length, safeSelectedGroupIds.join(',')]);
 
   const goToMobileCardsPage = (nextPage: number) => {
     setMobileCardPage(nextPage);
     requestAnimationFrame(() => {
       mobileCardsStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
+
+  const goToDesktopCardsPage = (nextPage: number) => {
+    setDesktopCardPage(nextPage);
+    requestAnimationFrame(() => {
+      desktopCardsStartRef.current?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
@@ -267,7 +297,8 @@ export function DayView({
       )}
       </div>
       <div className="hidden space-y-6 md:block">
-      {selectedGroups.map((selectedGroup) => {
+      <div ref={desktopCardsStartRef} />
+      {desktopPaginatedGroups.map((selectedGroup) => {
         const groupLessons = lessonsByGroup[selectedGroup.id] || [];
         const groupStudents = studentsByGroup[selectedGroup.id] || [];
         
@@ -316,6 +347,55 @@ export function DayView({
           </div>
         );
       })}
+      {selectedGroups.length > DESKTOP_GROUP_CARDS_PAGE_SIZE && (
+        <div className="flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
+          <span>
+            {safeDesktopCardPage * DESKTOP_GROUP_CARDS_PAGE_SIZE + 1}-
+            {Math.min((safeDesktopCardPage + 1) * DESKTOP_GROUP_CARDS_PAGE_SIZE, selectedGroups.length)} / {selectedGroups.length}
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                safeDesktopCardPage === 0
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
+              disabled={safeDesktopCardPage === 0}
+              onClick={() =>
+                goToDesktopCardsPage(Math.max(0, safeDesktopCardPage - 1))
+              }
+              aria-label="Previous cards page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+              {safeDesktopCardPage + 1}
+            </span>
+            <button
+              type="button"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                safeDesktopCardPage >= totalDesktopCardPages - 1
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
+              disabled={safeDesktopCardPage >= totalDesktopCardPages - 1}
+              onClick={() =>
+                goToDesktopCardsPage(
+                  Math.min(totalDesktopCardPages - 1, safeDesktopCardPage + 1),
+                )
+              }
+              aria-label="Next cards page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

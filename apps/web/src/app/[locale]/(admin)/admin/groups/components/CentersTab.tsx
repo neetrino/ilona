@@ -59,6 +59,7 @@ export function CentersTab({
   const [deactivateError, setDeactivateError] = React.useState<string | null>(null);
   const [detailsCenterId, setDetailsCenterId] = React.useState<string | null>(null);
   const [desktopBoardPage, setDesktopBoardPage] = React.useState(0);
+  const desktopCentersStartRef = useRef<HTMLDivElement | null>(null);
   const isDesktopBoard = isLg !== false && !isIPad;
   const desktopBoardTotalPages = Math.max(
     1,
@@ -74,6 +75,16 @@ export function CentersTab({
     [centers, safeDesktopBoardPage],
   );
   const visibleCenters = isDesktopBoard ? desktopBoardCenters : centers;
+
+  const goToDesktopCentersPage = (nextPage: number) => {
+    setDesktopBoardPage(nextPage);
+    requestAnimationFrame(() => {
+      desktopCentersStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
 
   // Ref to track if we're intentionally closing to prevent effect from reopening
   const isClosingRef = useRef(false);
@@ -202,7 +213,9 @@ export function CentersTab({
             </div>
           </div>
         ) : (
-          <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
+          <>
+            <div ref={desktopCentersStartRef} />
+            <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
             {visibleCenters.map((center) => (
               <CenterCard
                 key={center.id}
@@ -214,6 +227,7 @@ export function CentersTab({
               />
             ))}
           </div>
+          </>
         )}
       </div>
 
@@ -232,7 +246,9 @@ export function CentersTab({
                   : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
               }`}
               disabled={safeDesktopBoardPage === 0}
-              onClick={() => setDesktopBoardPage((prev) => Math.max(0, prev - 1))}
+              onClick={() =>
+                goToDesktopCentersPage(Math.max(0, safeDesktopBoardPage - 1))
+              }
               aria-label="Previous centers page"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,8 +267,8 @@ export function CentersTab({
               }`}
               disabled={safeDesktopBoardPage >= desktopBoardTotalPages - 1}
               onClick={() =>
-                setDesktopBoardPage((prev) =>
-                  Math.min(desktopBoardTotalPages - 1, prev + 1),
+                goToDesktopCentersPage(
+                  Math.min(desktopBoardTotalPages - 1, safeDesktopBoardPage + 1),
                 )
               }
               aria-label="Next centers page"

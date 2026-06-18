@@ -108,6 +108,7 @@ export function GroupsTab({
   const [mobileBoardPage, setMobileBoardPage] = useState(0);
   const [desktopBoardPage, setDesktopBoardPage] = useState(0);
   const mobileBoardStartRef = useRef<HTMLDivElement | null>(null);
+  const desktopBoardStartRef = useRef<HTMLDivElement | null>(null);
   const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
   /** Captured at open; optimistic updates must not change dialog copy */
   const [statusDialog, setStatusDialog] = useState<{
@@ -268,6 +269,16 @@ export function GroupsTab({
     setMobileBoardPage(nextPage);
     requestAnimationFrame(() => {
       mobileBoardStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
+
+  const goToDesktopBoardPage = (nextPage: number) => {
+    setDesktopBoardPage(nextPage);
+    requestAnimationFrame(() => {
+      desktopBoardStartRef.current?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
@@ -827,6 +838,7 @@ export function GroupsTab({
             ) : (
               <div className="space-y-4">
                 <div ref={mobileBoardStartRef} className={isIPad ? '' : 'sm:hidden'} />
+                <div ref={desktopBoardStartRef} className={cn('hidden sm:block', isIPad && 'sm:hidden')} />
                 <div
                   className={cn(
                     'grid w-full min-w-0 gap-4',
@@ -874,7 +886,9 @@ export function GroupsTab({
                             : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
                         }`}
                         disabled={safeDesktopBoardPage === 0}
-                        onClick={() => setDesktopBoardPage((prev) => Math.max(0, prev - 1))}
+                        onClick={() =>
+                          goToDesktopBoardPage(Math.max(0, safeDesktopBoardPage - 1))
+                        }
                         aria-label="Previous cards page"
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -893,8 +907,8 @@ export function GroupsTab({
                         }`}
                         disabled={safeDesktopBoardPage >= desktopBoardTotalPages - 1}
                         onClick={() =>
-                          setDesktopBoardPage((prev) =>
-                            Math.min(desktopBoardTotalPages - 1, prev + 1),
+                          goToDesktopBoardPage(
+                            Math.min(desktopBoardTotalPages - 1, safeDesktopBoardPage + 1),
                           )
                         }
                         aria-label="Next cards page"
@@ -1014,7 +1028,7 @@ export function GroupsTab({
                 }`}
                 disabled={page >= totalPages - 1}
                 onClick={() => {
-                  setPage(p => p + 1);
+                  setPage(p => Math.min(totalPages - 1, p + 1));
                   setSelectedGroupIds(new Set());
                 }}
               >
