@@ -171,7 +171,12 @@ export function StudentSidebar({
             ),
       )}
     >
-      <aside className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto overflow-x-visible rounded-[2rem] bg-white">
+      <aside
+        className={cn(
+          'flex h-full min-h-0 flex-1 flex-col overflow-y-auto overflow-x-visible rounded-[2rem] bg-white',
+          !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+        )}
+      >
         {/* Brand */}
         <div
           className={cn(
@@ -229,6 +234,7 @@ export function StudentSidebar({
           className={cn(
             'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto px-3 py-4 pr-3.5',
             NAV_LIST_GAP_CLASS,
+            !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
           )}
         >
           {navItems.map((item) => (
