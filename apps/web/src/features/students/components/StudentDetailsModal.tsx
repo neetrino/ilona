@@ -232,7 +232,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
         )}
         aria-describedby={undefined}
       >
-      <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sheet:hidden">
+      <div className="relative flex h-9 w-full items-center justify-center bg-white sheet:hidden">
         <div
           className="absolute inset-x-0 -top-2 h-14"
           onTouchStart={handleDragStart}
@@ -243,7 +243,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
         <div className="h-1.5 w-14 rounded-full bg-slate-400" />
       </div>
       <DialogPrimitive.Title className="sr-only">{t('studentDetails')}</DialogPrimitive.Title>
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sheet:px-6">
+      <div className="flex items-center border-b border-slate-200 bg-white px-4 py-3 sheet:justify-between sheet:px-6">
         <div className="flex items-center gap-2">
           <Image
             src="/students-logo.webp"
@@ -252,12 +252,12 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
             width={20}
             height={20}
           />
-          <h2 className="text-base font-semibold text-[#3b3b40] sm:text-lg">{t('studentDetails')}</h2>
+          <h2 className="mt-0.5 text-[1.0625rem] font-semibold text-[#3b3b40] sheet:mt-0 sheet:text-lg">{t('studentDetails')}</h2>
         </div>
         <button
           type="button"
           onClick={requestClose}
-          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 sheet:inline-flex"
           aria-label={tCommon('close')}
         >
           <X className="h-4 w-4" />
@@ -296,7 +296,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
               type="button"
               onClick={() => student.user?.avatarUrl && setPhotoPreviewOpen(true)}
               className={cn(
-                'rounded-xl flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
+                'rounded-full sheet:rounded-xl flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
                 !student.user?.avatarUrl && 'cursor-default pointer-events-none',
               )}
               aria-label={student.user?.avatarUrl ? tTeachers('viewFullPhoto') : undefined}
@@ -305,7 +305,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                 src={student.user?.avatarUrl}
                 name={fullName}
                 size="xl"
-                className="w-40 h-40 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-xl"
+                className="w-40 h-40 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-full sheet:rounded-xl"
                 alt={fullName}
               />
             </button>
@@ -341,7 +341,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
             </div>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-5 pt-[10px] sheet:pt-0">
             <h4 className="font-semibold text-slate-800 text-base sm:text-lg">{tTeachers('basicInformation')}</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
