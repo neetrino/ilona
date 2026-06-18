@@ -78,7 +78,7 @@ export function AttendanceControls({
 
   useEffect(() => {
     if (isMobile && viewMode === 'month') {
-      onViewModeChange('week');
+      onViewModeChange('day');
     }
   }, [isMobile, viewMode, onViewModeChange]);
 
