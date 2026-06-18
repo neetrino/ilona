@@ -151,7 +151,7 @@ export function TeachersBoard({
   const panelTitle = activeCenterTabId === 'unassigned' ? tc('unassigned') : selectedCenter?.name || tc('center');
 
   return (
-    <div className="mb-6 overflow-hidden rounded-2xl border-0 bg-white shadow-sm sm:border">
+    <div className="overflow-hidden rounded-2xl border-0 bg-white shadow-sm sm:border">
       <TeachersCentersStrip
         centers={sortedCenters}
         teachersByCenter={teachersByCenter}

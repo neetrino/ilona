@@ -39,6 +39,8 @@ interface DashboardLayoutProps {
   promoBanner?: React.ReactNode;
   /** Student/teacher/admin dashboards use the Figma portal shell */
   variant?: 'default' | 'student' | 'teacher' | 'admin';
+  /** Optional class for the main content scroll container */
+  contentScrollClassName?: string;
 }
 
 export function DashboardLayout({
@@ -48,6 +50,7 @@ export function DashboardLayout({
   headerContent,
   promoBanner,
   variant = 'default',
+  contentScrollClassName,
 }: DashboardLayoutProps) {
   const pathname = usePathname();
   const { user } = useAuthStore();
@@ -118,7 +121,10 @@ export function DashboardLayout({
     <PortalShellProvider enabled={isPortalShell}>
       <div
         className={cn(
-          'flex min-h-screen w-full max-w-[100vw] lg:overflow-x-hidden lg:h-screen lg:overflow-hidden',
+          'flex min-h-screen w-full max-w-[100vw]',
+          isAdminPortal
+            ? 'h-screen overflow-hidden'
+            : 'lg:h-screen lg:overflow-hidden lg:overflow-x-hidden',
           isPortalShell ? PORTAL_SHELL_BG : 'bg-slate-50',
         )}
       >
@@ -148,7 +154,12 @@ export function DashboardLayout({
           </>
         ) : null}
 
-        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-visible lg:overflow-hidden">
+        <main
+          className={cn(
+            'flex min-h-0 min-w-0 flex-1 flex-col',
+            isAdminPortal ? 'overflow-hidden' : 'overflow-visible lg:overflow-hidden',
+          )}
+        >
           {isStudentPortal ? (
             <StudentDashboardHeader
               pageTitle={isDashboardHome ? undefined : title}
@@ -172,9 +183,12 @@ export function DashboardLayout({
           )}
           <div
             className={cn(
-              'flex-1 overflow-visible lg:min-h-0 lg:overflow-x-hidden lg:overflow-y-auto',
+              isAdminPortal
+                ? 'flex-1 min-h-0 overflow-x-hidden overflow-y-auto'
+                : 'flex-1 overflow-visible lg:min-h-0 lg:overflow-x-hidden lg:overflow-y-auto',
               mainPadding,
               isAdminPortal && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+              contentScrollClassName,
             )}
           >
             {promoBanner ? <div className="mb-4 sm:mb-6">{promoBanner}</div> : null}

@@ -114,6 +114,7 @@ export default function TeachersPage() {
     <DashboardLayout 
       title={t('title')} 
       subtitle={t('subtitle')}
+      contentScrollClassName={viewMode === 'board' ? 'overscroll-y-none' : undefined}
     >
       <div className={portalPageStackClass}>
         {/* Search, Filter & Actions Bar */}
