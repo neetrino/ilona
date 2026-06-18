@@ -5,6 +5,7 @@ import type { Lesson } from '@/features/lessons';
 import { WeekLessonGrid, MonthLessonGrid } from '@/features/schedule/ScheduleLessonViews';
 import { scheduleDateKeyFromIso, type ScheduleViewMode } from '@/features/schedule/schedule-dates';
 import type { ReactNode } from 'react';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 function buildLessonsByDate(lessons: Lesson[]): Record<string, Lesson[]> {
   return lessons.reduce<Record<string, Lesson[]>>((acc, lesson) => {
@@ -59,14 +60,18 @@ export function ScheduleBoard({
   hideMonthOnMobile = false,
 }: ScheduleBoardProps) {
   const isStudent = variant === 'student';
+  const isIPad = useIsIPad();
   const [isIPadMini, setIsIPadMini] = useState(false);
+  const isIPadAirLayout = isIPad && !isIPadMini;
   const lessonsByDate = useMemo(
     () => buildLessonsByDate(lessons),
     [lessons],
   );
   const headerCenterContentClass = isIPadMini
     ? 'order-none ml-auto w-[14.5rem] shrink-0 [&>*]:w-full [&>*]:md:w-full'
-    : 'order-last w-full md:pointer-events-auto md:absolute md:left-1/2 md:top-1/2 md:z-10 md:w-[min(20rem,calc(100%-24rem))] md:-translate-x-1/2 md:-translate-y-1/2';
+    : isIPadAirLayout
+      ? 'order-last w-full md:mt-3 md:flex md:justify-end md:[&>*]:w-[20rem]'
+      : 'order-last w-full md:pointer-events-auto md:absolute md:left-1/2 md:top-1/2 md:z-10 md:w-[min(20rem,calc(100%-24rem))] md:-translate-x-1/2 md:-translate-y-1/2';
   const mobileToggleVisibilityClass =
     hideMonthOnMobile
       ? isIPadMini
@@ -101,8 +106,12 @@ export function ScheduleBoard({
         <div
           className={
             isStudent
-              ? 'relative flex flex-col gap-3 border-b border-[rgba(14,14,16,0.07)] p-4 md:flex-row md:items-center md:justify-between'
-              : 'relative flex flex-col gap-3 border-b border-slate-200 p-4 md:flex-row md:items-center md:justify-between'
+              ? `relative flex flex-col gap-3 border-b border-[rgba(14,14,16,0.07)] p-4 md:flex-row md:items-center md:justify-between${
+                  isIPadAirLayout ? ' md:flex-wrap' : ''
+                }`
+              : `relative flex flex-col gap-3 border-b border-slate-200 p-4 md:flex-row md:items-center md:justify-between${
+                  isIPadAirLayout ? ' md:flex-wrap' : ''
+                }`
           }
         >
           <div className="flex items-center gap-2">
