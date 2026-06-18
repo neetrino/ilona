@@ -6,16 +6,24 @@ export function useIsIPad(): boolean {
   const [isIPad, setIsIPad] = useState(false);
 
   useEffect(() => {
-    if (typeof navigator === 'undefined') {
+    if (typeof navigator === 'undefined' || typeof window === 'undefined') {
       return;
     }
 
-    const platform = navigator.platform ?? '';
-    const userAgent = navigator.userAgent ?? '';
-    const detectedIPad =
-      /iPad/i.test(userAgent) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const detectIPad = () => {
+      const platform = navigator.platform ?? '';
+      const userAgent = navigator.userAgent ?? '';
+      const isAppleIPadUa =
+        /iPad/i.test(userAgent) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isTabletTouchViewport = window.matchMedia(
+        '(pointer: coarse) and (min-width: 768px) and (max-width: 1366px)',
+      ).matches;
+      setIsIPad(isAppleIPadUa || isTabletTouchViewport);
+    };
 
-    setIsIPad(detectedIPad);
+    detectIPad();
+    window.addEventListener('resize', detectIPad);
+    return () => window.removeEventListener('resize', detectIPad);
   }, []);
 
   return isIPad;

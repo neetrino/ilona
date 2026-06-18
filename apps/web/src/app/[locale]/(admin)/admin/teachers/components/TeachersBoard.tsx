@@ -6,6 +6,7 @@ import { TeachersCentersStrip } from './TeachersCentersStrip';
 import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
 import { useLocale, useTranslations, type useTranslations as useTranslationsType } from 'next-intl';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 const CENTER_NAME_PAIRS = [
   { en: 'Andranik 40', hy: 'Անդրանիկի 40' },
@@ -102,7 +103,7 @@ export function TeachersBoard({
   const isArmenianLocale = locale === 'hy';
   const tc = useTranslations('common');
   const [mobileTeachersPage, setMobileTeachersPage] = useState(0);
-  const [isIPad, setIsIPad] = useState(false);
+  const isIPad = useIsIPad();
   const mobileTeachersStartRef = useRef<HTMLDivElement | null>(null);
   const sortedCenters = (centersData ?? []).map((center) => ({
     ...center,
@@ -131,17 +132,6 @@ export function TeachersBoard({
       ),
     [safeMobileTeachersPage, selectedTeachers, teachersPageSize],
   );
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined') return;
-
-    const platform = navigator.platform ?? '';
-    const userAgent = navigator.userAgent ?? '';
-    const detectedIPad =
-      /iPad/i.test(userAgent) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    setIsIPad(detectedIPad);
-  }, []);
 
   useEffect(() => {
     setMobileTeachersPage(0);

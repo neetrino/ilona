@@ -192,7 +192,7 @@ export function EditManagerForm({
   }, [onOpenChange]);
 
   const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches;
 
   const resetDragRefs = () => {
     touchStartYRef.current = null;
@@ -311,15 +311,15 @@ export function EditManagerForm({
           style={dragStyle}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sheet:duration-350 sheet:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1025px]:duration-350 min-[1025px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
             'h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-            'sheet:inset-0 sheet:m-auto sheet:w-[95vw] sheet:max-w-lg sheet:h-auto sheet:max-h-[90vh] sheet:translate-x-0 sheet:translate-y-0 sheet:rounded-2xl',
-            'sheet:data-[state=open]:fade-in-0 sheet:data-[state=closed]:fade-out-0 sheet:data-[state=open]:slide-in-from-bottom-0 sheet:data-[state=closed]:slide-out-to-bottom-0'
+            'min-[1025px]:inset-0 min-[1025px]:m-auto min-[1025px]:w-[95vw] min-[1025px]:max-w-lg min-[1025px]:h-auto min-[1025px]:max-h-[90vh] min-[1025px]:translate-x-0 min-[1025px]:translate-y-0 min-[1025px]:rounded-2xl',
+            'min-[1025px]:data-[state=open]:fade-in-0 min-[1025px]:data-[state=closed]:fade-out-0 min-[1025px]:data-[state=open]:slide-in-from-bottom-0 min-[1025px]:data-[state=closed]:slide-out-to-bottom-0'
           )}
           aria-describedby="edit-manager-description"
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sheet:hidden">
+          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1025px]:hidden">
             <div
               className="absolute inset-x-0 -top-2 h-14"
               onTouchStart={handleDragStart}
@@ -333,7 +333,7 @@ export function EditManagerForm({
           <DialogPrimitive.Description id="edit-manager-description" className="sr-only">
             {description}
           </DialogPrimitive.Description>
-          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sheet:p-6">
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1025px]:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-[#3b3b40]">{title}</h2>
               <p className="mt-1 text-sm text-[#8b8b90]">{description}</p>

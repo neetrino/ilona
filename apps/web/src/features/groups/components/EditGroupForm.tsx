@@ -366,7 +366,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
               <div className="h-1.5 w-14 rounded-full bg-slate-400" />
             </div>
             <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
-            <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1025px]:p-6">
+            <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1025px]:p-6">
               <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
               <p className="mt-1 text-sm text-[#8b8b90]">{tForm('loadingGroupData')}</p>
             </div>
@@ -404,7 +404,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
           <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
-          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1025px]:p-6">
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1025px]:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
               <p className="mt-1 text-sm text-[#8b8b90]">{tForm('editDescription')}</p>
