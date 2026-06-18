@@ -275,7 +275,7 @@ export default function FinancePage() {
     >
       <div className={portalPageStackClass}>
         {/* Stats Grid */}
-        <FinanceStats dashboard={dashboard} isLoading={isLoadingDashboard} />
+        <FinanceStats dashboard={dashboard} isLoading={isLoadingDashboard} isIPad={isIPad} />
 
         {/* Tabs */}
         <FinanceTabs

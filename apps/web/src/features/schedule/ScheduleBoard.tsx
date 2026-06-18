@@ -78,6 +78,12 @@ export function ScheduleBoard({
         ? 'hidden min-[769px]:inline-flex '
         : 'hidden sm:inline-flex '
       : '';
+  const studentBoardSizeClass = isIPad
+    ? 'flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white md:min-h-[min(75vh,36rem)]'
+    : 'flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white md:min-h-[min(75vh,36rem)] lg:h-[calc(100vh-260px)] lg:min-h-0';
+  const defaultBoardSizeClass = isIPad
+    ? 'flex min-h-[min(70vh,32rem)] w-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:min-h-[min(75vh,36rem)]'
+    : 'flex min-h-[min(70vh,32rem)] w-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:min-h-[min(75vh,36rem)] lg:h-[min(calc(100vh-260px),75vh)] lg:min-h-0';
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || typeof window === 'undefined') {
@@ -99,8 +105,8 @@ export function ScheduleBoard({
       <div
         className={
           isStudent
-            ? 'flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white md:min-h-[min(75vh,36rem)] lg:h-[calc(100vh-260px)] lg:min-h-0'
-            : 'flex min-h-[min(70vh,32rem)] w-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:min-h-[min(75vh,36rem)] lg:h-[min(calc(100vh-260px),75vh)] lg:min-h-0'
+            ? studentBoardSizeClass
+            : defaultBoardSizeClass
         }
       >
         <div

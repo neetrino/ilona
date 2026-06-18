@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 type SettingsTab =
   | 'security'
@@ -20,6 +21,7 @@ interface SettingsSidebarProps {
 export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: SettingsSidebarProps) {
   const t = useTranslations('settings');
   const locale = useLocale();
+  const isIPad = useIsIPad();
   const isArmenianLocale = locale === 'hy';
 
   const allTabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
@@ -85,17 +87,26 @@ export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: Setting
     : allTabs;
 
   return (
-    <div className={`w-full shrink-0 ${isArmenianLocale ? 'lg:w-[22rem]' : 'lg:w-64'}`}>
+    <div
+      className={`w-full shrink-0 ${
+        isIPad ? '' : isArmenianLocale ? 'lg:w-[22rem]' : 'lg:w-64'
+      }`}
+    >
       <nav
-        className="flex gap-1 overflow-x-auto overflow-y-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-2 [&::-webkit-scrollbar]:hidden lg:flex-col lg:overflow-visible"
+        className={`flex gap-1 overflow-x-auto overflow-y-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-2 [&::-webkit-scrollbar]:hidden ${
+          isIPad ? '' : 'lg:flex-col lg:overflow-visible'
+        }`}
         style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
       >
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`flex shrink-0 items-center gap-3 whitespace-nowrap rounded-xl py-3 text-left transition-colors lg:w-full ${
-              isArmenianLocale ? 'px-5' : 'px-4'
+            title={tab.label}
+            className={`flex min-w-0 shrink-0 items-center gap-3 rounded-xl text-left transition-colors ${
+              isIPad ? 'max-w-[12rem] py-2.5' : 'py-3 lg:w-full'
+            } ${
+              isArmenianLocale ? (isIPad ? 'px-3.5' : 'px-5') : isIPad ? 'px-3' : 'px-4'
             } ${
               activeTab === tab.id
                 ? 'bg-[#f0f0fc] text-[#1010a3]'
@@ -103,7 +114,13 @@ export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: Setting
             }`}
           >
             <span className="shrink-0">{tab.icon}</span>
-            <span className={`font-medium ${isArmenianLocale ? 'pl-0.5' : ''}`}>{tab.label}</span>
+            <span
+              className={`min-w-0 font-medium ${
+                isArmenianLocale ? 'pl-0.5' : ''
+              } ${isIPad ? 'truncate text-sm' : ''}`}
+            >
+              {tab.label}
+            </span>
           </button>
         ))}
       </nav>

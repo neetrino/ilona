@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -18,10 +19,21 @@ import {
   StudentInnerCard,
   StudentSectionHeader,
 } from '@/features/student-ui';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 export default function TeacherDashboardPage() {
   const tDash = useTranslations('dashboard');
+  const isIPad = useIsIPad();
+  const [isDesktopUp, setIsDesktopUp] = useState(false);
   useAuthStore();
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const sync = () => setIsDesktopUp(mediaQuery.matches);
+    sync();
+    mediaQuery.addEventListener('change', sync);
+    return () => mediaQuery.removeEventListener('change', sync);
+  }, []);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -43,6 +55,7 @@ export default function TeacherDashboardPage() {
   const scheduledLessons = todayLessons.filter((l) => l.status === 'SCHEDULED').length;
   const completedLessons = todayLessons.filter((l) => l.status === 'COMPLETED').length;
   const vocabularySent = todayLessons.filter((l) => l.vocabularySent).length;
+  const isIPadProLayout = isIPad && isDesktopUp;
 
   const handleStartLesson = async (id: string) => {
     try {
@@ -82,6 +95,31 @@ export default function TeacherDashboardPage() {
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] xl:gap-6">
           <div className="flex min-w-0 flex-col gap-5 lg:gap-6">
+            {isIPadProLayout && groups.length > 0 ? (
+              <StudentCard>
+                <StudentSectionHeader title={tDash('teacherStats.myGroups')} />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {groups.slice(0, 6).map((group) => (
+                    <StudentInnerCard key={group.id}>
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <h4 className="font-medium text-[#1010a3]">{group.name}</h4>
+                        {group.level ? (
+                          <StudentBadge variant="info">{group.level}</StudentBadge>
+                        ) : null}
+                      </div>
+                      <p className="text-sm text-[#8b8b90]">
+                        {group._count?.students || 0} students · {group._count?.lessons || 0}{' '}
+                        lessons
+                      </p>
+                      {group.center?.name ? (
+                        <p className="mt-1 text-xs text-[#8b8b90]">{group.center.name}</p>
+                      ) : null}
+                    </StudentInnerCard>
+                  ))}
+                </div>
+              </StudentCard>
+            ) : null}
+
             <TeacherTodayLessonsCard
               lessons={todayLessons}
               isLoading={isLoadingLessons}
@@ -91,7 +129,7 @@ export default function TeacherDashboardPage() {
               isCompletePending={completeLesson.isPending}
             />
 
-            {groups.length > 0 ? (
+            {!isIPadProLayout && groups.length > 0 ? (
               <StudentCard>
                 <StudentSectionHeader title={tDash('teacherStats.myGroups')} />
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

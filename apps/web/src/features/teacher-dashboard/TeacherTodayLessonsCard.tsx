@@ -58,33 +58,47 @@ function LessonRow({
   const studentCount = lesson.group?._count?.students ?? lesson._count?.attendances ?? 0;
 
   return (
-    <div className="flex flex-col gap-3 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4 lg:flex-row lg:items-center lg:gap-4">
-      <div className="relative h-[4.625rem] w-[3.375rem] shrink-0">
-        <PublicAssetImage
-          src={STUDENT_DASHBOARD_ASSETS.calendarIcon}
-          alt=""
-          fill
-          className="object-contain object-left"
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 text-center">
-          <span className="text-[0.625rem] font-medium uppercase text-[#8b8b90]">{weekday}</span>
-          <span className="text-lg font-bold leading-none text-[#1010a3]">{dayNum}</span>
+    <article className="rounded-2xl border border-[rgba(14,14,16,0.09)] bg-white px-4 py-4 shadow-[0_1px_2px_rgba(14,14,16,0.03)]">
+      <div className="flex items-start gap-3">
+        <div className="relative h-[4.625rem] w-[3.375rem] shrink-0">
+          <PublicAssetImage
+            src={STUDENT_DASHBOARD_ASSETS.calendarIcon}
+            alt=""
+            fill
+            className="object-contain object-left"
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 text-center">
+            <span className="text-[0.625rem] font-medium uppercase text-[#8b8b90]">{weekday}</span>
+            <span className="text-lg font-bold leading-none text-[#1010a3]">{dayNum}</span>
+          </div>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <p className="min-w-0 flex-1 break-words text-[1.05rem] font-semibold leading-tight tracking-tight text-[#1010a3]">
+              {lesson.topic?.trim() || t('untitledLesson')}
+            </p>
+            <StudentBadge variant={lessonStatusVariant(lesson.status)}>
+              {statusLabel(lesson.status)}
+            </StudentBadge>
+          </div>
+          <p className="mt-1 text-sm text-[#64748b]">{groupName}</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-xl border border-[rgba(14,14,16,0.08)] px-3 py-2">
+              <p className="text-sm font-semibold text-[#1f2937]">{time}</p>
+              <p className="mt-0.5 text-xs text-[#8b8b90]">{lesson.duration} min</p>
+            </div>
+            <div className="rounded-xl border border-[rgba(14,14,16,0.08)] px-3 py-2">
+              <p className="text-sm font-semibold text-[#1f2937]">
+                {studentCount} {t('students')}
+              </p>
+              <p className="mt-0.5 text-xs text-[#8b8b90]">{weekday}</p>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold tracking-tight text-[#1010a3]">
-          {lesson.topic?.trim() || t('untitledLesson')}
-        </p>
-        <p className="mt-1 text-xs text-[#8b8b90]">
-          {groupName} · {time} · {lesson.duration} min · {studentCount} {t('students')}
-        </p>
-        <div className="mt-2">
-          <StudentBadge variant={lessonStatusVariant(lesson.status)}>
-            {statusLabel(lesson.status)}
-          </StudentBadge>
-        </div>
-      </div>
-      <div className="flex shrink-0 flex-wrap items-center gap-2">
+
+      <div className="mt-3 border-t border-[rgba(14,14,16,0.08)] pt-3">
+        <div className="flex flex-wrap items-center gap-2">
         {lesson.status === 'SCHEDULED' ? (
           <StudentPrimaryButton
             type="button"
@@ -116,8 +130,9 @@ function LessonRow({
             {t('viewLesson')}
           </StudentGhostButton>
         ) : null}
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 

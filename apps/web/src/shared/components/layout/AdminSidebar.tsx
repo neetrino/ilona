@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
@@ -139,6 +140,7 @@ export function AdminSidebar({
   const tCommon = useTranslations('common');
   const { user } = useAuthStore();
   const role = user?.role ?? 'ADMIN';
+  const isIPad = useIsIPad();
   const isArmenianLocale = locale === 'hy';
 
   const isDrawer = layout === 'drawer';
@@ -168,8 +170,10 @@ export function AdminSidebar({
               collapsed
                 ? 'w-[4.5rem]'
                 : isArmenianLocale
-                  ? 'w-[clamp(13rem,16vw,19rem)]'
-                  : 'w-[clamp(11.5rem,14vw,17rem)]',
+                  ? isIPad
+                    ? 'w-[clamp(15.5rem,19vw,21.5rem)]'
+                    : 'w-[clamp(14rem,17vw,20rem)]'
+                  : 'w-[clamp(12.5rem,15vw,18rem)]',
             ),
       )}
     >

@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { useMyDashboard, type StudentUpcomingLesson } from '@/features/students';
 import { getFullApiUrl } from '@/shared/lib/api';
@@ -109,6 +110,8 @@ export function StudentSidebar({
   const locale = useLocale();
   const t = useTranslations('nav');
   const tCommon = useTranslations('common');
+  const isIPad = useIsIPad();
+  const isArmenianLocale = locale === 'hy';
   const { data: logoData } = useLogo();
   const { data: dashboard } = useMyDashboard();
 
@@ -160,7 +163,11 @@ export function StudentSidebar({
           ? 'w-full py-2 pl-2 pr-2'
           : cn(
               'h-screen py-3 pl-3 pr-2 sm:pl-4 sm:pr-3',
-              collapsed ? 'w-[4.5rem]' : 'w-[clamp(11.5rem,14vw,17rem)]',
+              collapsed
+                ? 'w-[4.5rem]'
+                : isArmenianLocale && isIPad
+                  ? 'w-[clamp(14.75rem,18vw,20.75rem)]'
+                  : 'w-[clamp(12.5rem,15vw,18rem)]',
             ),
       )}
     >
