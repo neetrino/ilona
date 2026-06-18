@@ -46,6 +46,7 @@ export function GlobalSearchBar({
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [open, setOpen] = useState(false);
+  const [dropdownMaxHeightPx, setDropdownMaxHeightPx] = useState<number | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -84,6 +85,39 @@ export function GlobalSearchBar({
     document.addEventListener('mousedown', onDocMouseDown);
     return () => document.removeEventListener('mousedown', onDocMouseDown);
   }, [open]);
+
+  useEffect(() => {
+    if (!open || dropdownPlacement !== 'below') {
+      setDropdownMaxHeightPx(undefined);
+      return;
+    }
+
+    const updateDropdownMaxHeight = () => {
+      const inputEl = inputRef.current;
+      if (!inputEl) return;
+
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const inputBottom = inputEl.getBoundingClientRect().bottom;
+      const availableHeight = Math.max(120, Math.floor(viewportHeight - inputBottom - 12));
+
+      setDropdownMaxHeightPx((current) =>
+        current === availableHeight ? current : availableHeight,
+      );
+    };
+
+    updateDropdownMaxHeight();
+
+    const visualViewport = window.visualViewport;
+    visualViewport?.addEventListener('resize', updateDropdownMaxHeight);
+    visualViewport?.addEventListener('scroll', updateDropdownMaxHeight);
+    window.addEventListener('resize', updateDropdownMaxHeight);
+
+    return () => {
+      visualViewport?.removeEventListener('resize', updateDropdownMaxHeight);
+      visualViewport?.removeEventListener('scroll', updateDropdownMaxHeight);
+      window.removeEventListener('resize', updateDropdownMaxHeight);
+    };
+  }, [open, dropdownPlacement]);
 
   const navigateTo = useCallback(
     (href: string) => {
@@ -169,6 +203,7 @@ export function GlobalSearchBar({
         getBadgeLabel={getBadgeLabel}
         getTitle={getTitle}
         placement={dropdownPlacement}
+        maxHeightPx={dropdownMaxHeightPx}
       />
     </div>
   );

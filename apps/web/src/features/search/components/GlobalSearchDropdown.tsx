@@ -70,6 +70,7 @@ export type GlobalSearchDropdownProps = {
   getBadgeLabel: (item: GlobalSearchResult) => string;
   getTitle: (item: GlobalSearchResult) => string;
   placement?: 'below' | 'above';
+  maxHeightPx?: number;
 };
 
 export function GlobalSearchDropdown({
@@ -90,6 +91,7 @@ export function GlobalSearchDropdown({
   getBadgeLabel,
   getTitle,
   placement = 'below',
+  maxHeightPx,
 }: GlobalSearchDropdownProps) {
   const trimmed = normalizeSearchQuery(query);
 
@@ -104,9 +106,12 @@ export function GlobalSearchDropdown({
     <div
       className={cn(
         DROPDOWN_MENU_SURFACE_CLASS,
-        placement === 'above' ? 'bottom-full mb-1 max-h-[min(50vh,320px)]' : 'top-full mt-1 max-h-[min(70vh,420px)]',
-        'py-1',
+        placement === 'above'
+          ? 'bottom-full mb-1 max-h-[min(50vh,320px)]'
+          : 'top-full mt-1 max-h-[min(52vh,320px)] sm:max-h-[min(70vh,420px)]',
+        'overscroll-contain py-1 touch-pan-y [-webkit-overflow-scrolling:touch]',
       )}
+      style={maxHeightPx ? { maxHeight: `${maxHeightPx}px` } : undefined}
       role="listbox"
       aria-label="Search results"
     >

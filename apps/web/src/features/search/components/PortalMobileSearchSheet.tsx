@@ -22,7 +22,6 @@ export function PortalMobileSearchSheet({
   containerClassName,
 }: PortalMobileSearchSheetProps) {
   const DRAG_CLOSE_THRESHOLD = 96;
-  const DRAG_HANDLE_ZONE = 72;
   const t = useTranslations('common');
   const [isMounted, setIsMounted] = useState(open);
   const [isVisible, setIsVisible] = useState(open);
@@ -61,16 +60,18 @@ export function PortalMobileSearchSheet({
   }
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    const touchY = event.touches[0]?.clientY ?? null;
-    if (touchY === null) return;
-    const top = event.currentTarget.getBoundingClientRect().top;
-    const withinHandleZone = touchY - top <= DRAG_HANDLE_ZONE;
-    if (!withinHandleZone) {
+    const target = event.target;
+    const isHandleTouch =
+      target instanceof Element && target.closest('[data-drag-handle="true"]') !== null;
+    if (!isHandleTouch) {
       touchStartY.current = null;
       touchCurrentY.current = null;
       setIsDragging(false);
       return;
     }
+
+    const touchY = event.touches[0]?.clientY ?? null;
+    if (touchY === null) return;
 
     touchStartY.current = touchY;
     touchCurrentY.current = touchY;
@@ -128,11 +129,11 @@ export function PortalMobileSearchSheet({
         style={isVisible ? { transform: `translateY(${dragOffsetY}px)` } : undefined}
       >
         <div className="flex h-[72vh] min-h-[26rem] max-h-[80vh] flex-col rounded-t-[1.5rem] border border-b-0 border-[rgba(14,14,16,0.07)] bg-white shadow-[0_-12px_36px_rgba(0,0,0,0.16)]">
-          <div className="flex justify-center pt-3">
+          <div className="flex justify-center pt-3" data-drag-handle="true">
             <span className="h-1.5 w-12 rounded-full bg-[#d8d8de]" aria-hidden />
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 pt-6 pb-3">
+          <div className="flex-1 overflow-visible px-4 pt-6 pb-3">
             <GlobalSearchBar
               key="portal-mobile-search"
               className="w-full max-w-none"

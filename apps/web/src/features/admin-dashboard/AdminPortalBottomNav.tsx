@@ -12,6 +12,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
 import {
   ADMIN_PORTAL_MOBILE_HORIZONTAL_PADDING,
+  ADMIN_PORTAL_MOBILE_BOTTOM_NAV_SEARCH_OFFSET_CLASS,
 } from './admin-portal-layout';
 import { cn } from '@/shared/lib/utils';
 
@@ -133,7 +134,7 @@ export function AdminPortalBottomNav() {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         backdropClassName="z-[50]"
-        containerClassName="z-[60]"
+        containerClassName={cn('z-[60]', ADMIN_PORTAL_MOBILE_BOTTOM_NAV_SEARCH_OFFSET_CLASS)}
       />
 
       <nav
