@@ -25,6 +25,10 @@ export function AdminDashboardHeader({
   const pathname = usePathname();
   const { user } = useAuthStore();
   const firstName = user?.firstName ?? tNav('user');
+  const scrollToTop = () => {
+    if (!window.matchMedia('(max-width: 767px)').matches) return;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const isSubpage = Boolean(pageTitle);
   const isAdminMobileSubpage = isAdminPortalSubpage(
     pathname.replace(/^\/[a-z]{2}\//, '/'),
@@ -32,7 +36,10 @@ export function AdminDashboardHeader({
   );
   const shouldShowSecondaryRowOnMobile = !isAdminMobileSubpage || Boolean(headerContent);
   return (
-    <header className="sticky top-0 z-40 shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.35rem,0.8vw,0.6rem)] md:static">
+    <header
+      id="admin-portal-mobile-header"
+      className="sticky top-0 z-40 shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.35rem,0.8vw,0.6rem)] md:static"
+    >
       <div className="w-full min-w-0 rounded-full border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.55rem,1vw,0.9rem)] lg:rounded-[4rem]">
         <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -58,7 +65,13 @@ export function AdminDashboardHeader({
               {isSubpage ? (
                 <>
                   <h1 className="flex h-11 items-center justify-center truncate px-0 text-[1.125rem] font-bold leading-none tracking-tight text-[#1010a3] sm:block sm:h-auto sm:px-5 sm:text-[1.375rem] sm:leading-tight">
-                    {pageTitle}
+                    <button
+                      type="button"
+                      onClick={scrollToTop}
+                      className="max-w-full truncate border-0 bg-transparent p-0 text-inherit cursor-pointer sm:cursor-default"
+                    >
+                      {pageTitle}
+                    </button>
                   </h1>
                   {pageSubtitle ? (
                     <p className="mt-1.5 line-clamp-2 text-xs text-[#8b8b90] sm:text-sm lg:text-left">
@@ -72,7 +85,13 @@ export function AdminDashboardHeader({
                     {t('greeting', { name: firstName })}
                   </p>
                   <h1 className="flex h-11 items-center justify-center truncate px-0 text-[1.125rem] font-bold leading-none tracking-tight text-[#1010a3] sm:block sm:h-auto sm:px-5 sm:text-[1.5rem] sm:leading-tight">
-                    {t('title')}
+                    <button
+                      type="button"
+                      onClick={scrollToTop}
+                      className="max-w-full truncate border-0 bg-transparent p-0 text-inherit cursor-pointer sm:cursor-default"
+                    >
+                      {t('title')}
+                    </button>
                   </h1>
                 </>
               )}

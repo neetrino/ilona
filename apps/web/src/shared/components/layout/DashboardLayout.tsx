@@ -184,6 +184,7 @@ export function DashboardLayout({
             <Header title={title} subtitle={subtitle} headerContent={headerContent} />
           )}
           <div
+            id={isAdminPortal ? 'admin-portal-content-scroll' : undefined}
             className={cn(
               isAdminPortal
                 ? 'flex-1 overflow-visible md:min-h-0 md:overflow-x-hidden md:overflow-y-auto'
