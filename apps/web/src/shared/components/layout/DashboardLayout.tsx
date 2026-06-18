@@ -15,7 +15,7 @@ import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PortalShellProvider } from '@/shared/context/portal-shell-context';
 import { cn } from '@/shared/lib/utils';
-import { isAdminPortalPath } from '@/shared/lib/role-routes';
+import { isAdminPortalPath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
 import {
   PORTAL_MAIN_PADDING,
   PORTAL_MOBILE_NAV_WIDTH,
@@ -66,6 +66,8 @@ export function DashboardLayout({
   const isAdminPortal =
     variant === 'admin' ||
     (variant === 'default' && (role === 'ADMIN' || role === 'MANAGER') && isAdminRoute);
+  const normalizedPath = pathname.replace(/^\/[a-z]{2}\//, '/');
+  const hasAdminBottomNav = isAdminPortal && isAdminPortalSubpage(normalizedPath, role);
   const isPortalShell = isStudentPortal || isTeacherPortal || isAdminPortal;
   const isDashboardHome = isPortalShell && !title;
   const adminPageSubtitle = isAdminPortal ? undefined : subtitle;
@@ -187,7 +189,7 @@ export function DashboardLayout({
                 ? 'flex-1 min-h-0 overflow-x-hidden overflow-y-auto'
                 : 'flex-1 overflow-visible lg:min-h-0 lg:overflow-x-hidden lg:overflow-y-auto',
               mainPadding,
-              isAdminPortal && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+              hasAdminBottomNav && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
               contentScrollClassName,
             )}
           >
