@@ -234,6 +234,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
 
   const scheduleMode = useWatch({ control, name: 'scheduleMode' });
   const teacherIdW = useWatch({ control, name: 'teacherId' });
+  const groupIdW = useWatch({ control, name: 'groupId' });
   const startDateW = useWatch({ control, name: 'startDate' });
   const endDateW = useWatch({ control, name: 'endDate' });
   const weekdaysW = useWatch({ control, name: 'weekdays' });
@@ -556,24 +557,30 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
             <Label htmlFor="groupId">
               {tCommon('group')} <span className="text-red-500">*</span>
             </Label>
-            <select
+            <input type="hidden" {...register('groupId')} />
+            <SingleSelectDropdown
               id="groupId"
-              {...register('groupId')}
+              options={[
+                {
+                  id: '',
+                  label: !hasTeacher ? tForm('selectTeacherFirst') : tForm('selectGroup'),
+                },
+                ...groups.map((group) => ({
+                  id: group.id,
+                  label: `${group.name}${group.level ? ` (${group.level})` : ''}${group.center ? ` - ${group.center.name}` : ''}`,
+                })),
+              ]}
+              value={groupIdW || ''}
+              onValueChange={(nextValue) =>
+                setValue('groupId', nextValue ?? '', {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                  shouldTouch: true,
+                })
+              }
               disabled={groupSelectDisabled}
-              className={cn(
-                'unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
-                errors.groupId ? 'border-red-300' : 'border-slate-300',
-                groupSelectDisabled && 'bg-slate-100 cursor-not-allowed',
-                !groupSelectDisabled && 'bg-white'
-              )}
-            >
-              <option value="">{!hasTeacher ? tForm('selectTeacherFirst') : tForm('selectGroup')}</option>
-              {groups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name} {group.level ? `(${group.level})` : ''} {group.center ? `- ${group.center.name}` : ''}
-                </option>
-              ))}
-            </select>
+              error={errors.groupId?.message ?? null}
+            />
             {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}
             {!hasTeacher && <p className="text-sm text-slate-500">{tForm('selectTeacherForGroups')}</p>}
             {hasTeacher && isLoadingGroups && <p className="text-sm text-slate-500">{tForm('loadingGroups')}</p>}

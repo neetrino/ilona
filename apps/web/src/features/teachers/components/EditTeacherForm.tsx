@@ -12,6 +12,7 @@ import { getErrorMessage } from '@/shared/lib/api';
 import { useCenters } from '@/features/centers';
 import { getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
 import { cn } from '@/shared/lib/utils';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 type UpdateTeacherFormData = {
   firstName: string;
@@ -104,6 +105,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
   });
 
   const selectedCenterIds = watch('centerIds') ?? [];
+  const watchedStatus = watch('status') ?? 'ACTIVE';
 
   const toggleCenter = (centerId: string) => {
     const next = selectedCenterIds.includes(centerId)
@@ -341,15 +343,22 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
 
             <div className="space-y-2">
               <Label htmlFor="status">{tCommon('status')}</Label>
-              <select
+              <input type="hidden" {...register('status')} />
+              <SingleSelectDropdown
                 id="status"
-                {...register('status')}
-                className="unified-native-select flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="ACTIVE">{tStatus('active')}</option>
-                <option value="INACTIVE">{tStatus('inactive')}</option>
-                <option value="SUSPENDED">{tStatus('suspended')}</option>
-              </select>
+                options={[
+                  { id: 'ACTIVE', label: tStatus('active') },
+                  { id: 'INACTIVE', label: tStatus('inactive') },
+                  { id: 'SUSPENDED', label: tStatus('suspended') },
+                ]}
+                value={watchedStatus}
+                onValueChange={(nextValue) =>
+                  setValue('status', (nextValue as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED') ?? 'ACTIVE', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
               {errors.status && (
                 <p className="text-sm text-red-600">{errors.status.message}</p>
               )}

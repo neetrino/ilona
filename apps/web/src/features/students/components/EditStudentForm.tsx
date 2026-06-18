@@ -14,6 +14,7 @@ import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -144,6 +145,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const watchedCenterId = watch('centerId') || '';
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
+  const watchedStatus = watch('status') || 'ACTIVE';
   const watchedDob = watch('dateOfBirth');
   const watchedAge = watch('age');
   const computedAge = useMemo(() => computeAgeFromDob(watchedDob), [watchedDob]);
@@ -223,11 +225,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     ];
     return [...new Set([...fromLinks, ...fromGroups])].join(', ');
   }, [selectedTeacher, groupsForTeacher]);
-
-  const selectFieldClass =
-    'unified-native-select flex w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50';
-
-  const { onChange: onCenterChangeField, ...centerIdFieldRest } = register('centerId');
 
   // Pre-fill form when student data is loaded
   useEffect(() => {
@@ -509,15 +506,22 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
             <div className="space-y-2">
               <Label htmlFor="status">{tCommon('status')}</Label>
-              <select
+              <input type="hidden" {...register('status')} />
+              <SingleSelectDropdown
                 id="status"
-                {...register('status')}
-                className={selectFieldClass}
-              >
-                <option value="ACTIVE">{tStatus('active')}</option>
-                <option value="INACTIVE">{tStatus('inactive')}</option>
-                <option value="SUSPENDED">{tStatus('suspended')}</option>
-              </select>
+                options={[
+                  { id: 'ACTIVE', label: tStatus('active') },
+                  { id: 'INACTIVE', label: tStatus('inactive') },
+                  { id: 'SUSPENDED', label: tStatus('suspended') },
+                ]}
+                value={watchedStatus}
+                onValueChange={(nextValue) =>
+                  setValue('status', (nextValue as UserStatus) ?? 'ACTIVE', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
               {errors.status && (
                 <p className="text-sm text-red-600">{errors.status.message}</p>
               )}
@@ -525,24 +529,24 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
             <div className="space-y-2">
               <Label htmlFor="centerId">{tCommon('center')}</Label>
-              <select
+              <input type="hidden" {...register('centerId')} />
+              <SingleSelectDropdown
                 id="centerId"
-                {...centerIdFieldRest}
-                className={selectFieldClass}
-                disabled={isLoadingCenters || isSubmitting}
-                onChange={(e) => {
-                  onCenterChangeField(e);
-                  setValue('teacherId', '', { shouldDirty: true });
-                  setValue('groupId', '', { shouldDirty: true });
+                options={[
+                  { id: '', label: tCommon('notAssigned') },
+                  ...centers.map((center) => ({
+                    id: center.id,
+                    label: center.name,
+                  })),
+                ]}
+                value={watchedCenterId}
+                onValueChange={(nextValue) => {
+                  setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true });
+                  setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
+                  setValue('groupId', '', { shouldDirty: true, shouldValidate: true });
                 }}
-              >
-                <option value="">{tCommon('notAssigned')}</option>
-                {centers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                disabled={isLoadingCenters || isSubmitting}
+              />
               {errors.centerId && (
                 <p className="text-sm text-red-600">{errors.centerId.message}</p>
               )}
@@ -551,22 +555,28 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="teacherId">{t('teacher')}</Label>
-                <select
+                <input type="hidden" {...register('teacherId')} />
+                <SingleSelectDropdown
                   id="teacherId"
-                  {...register('teacherId')}
-                  className={selectFieldClass}
+                  options={[
+                    {
+                      id: '',
+                      label: watchedCenterId ? t('selectTeacher') : tForm('selectCenter'),
+                    },
+                    ...teachersForCenter.map((teacher) => ({
+                      id: teacher.id,
+                      label: `${teacher.user.firstName} ${teacher.user.lastName}${teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}`,
+                    })),
+                  ]}
+                  value={watchedTeacherId}
+                  onValueChange={(nextValue) =>
+                    setValue('teacherId', nextValue ?? '', {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
                   disabled={isLoadingTeachers || isSubmitting || !watchedCenterId}
-                >
-                  <option value="">
-                    {watchedCenterId ? t('selectTeacher') : tForm('selectCenter')}
-                  </option>
-                  {teachersForCenter.map((teacher) => (
-                    <option key={teacher.id} value={teacher.id}>
-                      {teacher.user.firstName} {teacher.user.lastName}
-                      {teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}
-                    </option>
-                  ))}
-                </select>
+                />
                 {errors.teacherId && (
                   <p className="text-sm text-red-600">{errors.teacherId.message}</p>
                 )}
@@ -582,21 +592,28 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
               <div className="space-y-2">
                 <Label htmlFor="groupId">{t('group')}</Label>
-                <select
+                <input type="hidden" {...register('groupId')} />
+                <SingleSelectDropdown
                   id="groupId"
-                  {...register('groupId')}
-                  className={selectFieldClass}
+                  options={[
+                    {
+                      id: '',
+                      label: watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst'),
+                    },
+                    ...groupsForTeacher.map((group) => ({
+                      id: group.id,
+                      label: `${group.name}${group.level ? ` (${group.level})` : ''}`,
+                    })),
+                  ]}
+                  value={watchedGroupId}
+                  onValueChange={(nextValue) =>
+                    setValue('groupId', nextValue ?? '', {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
                   disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
-                >
-                  <option value="">
-                    {watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst')}
-                  </option>
-                  {groupsForTeacher.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name} {group.level ? `(${group.level})` : ''}
-                    </option>
-                  ))}
-                </select>
+                />
                 {errors.groupId && (
                   <p className="text-sm text-red-600">{errors.groupId.message}</p>
                 )}
