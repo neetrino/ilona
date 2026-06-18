@@ -1,10 +1,11 @@
 'use client';
 
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
-import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
+import { Button, Input, Label } from '@/shared/components/ui';
 import { useUpdateStudent, useStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
@@ -372,7 +373,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
       // Nothing changed: just close without a redundant API call.
       if (Object.keys(payload).length === 0) {
-        onOpenChange(false);
+        requestClose();
         return;
       }
 
@@ -384,7 +385,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
       // Close modal after a brief delay
       setTimeout(() => {
-        onOpenChange(false);
+        requestClose();
         setSuccessMessage(null);
       }, 1500);
     } catch (error: unknown) {
@@ -395,18 +396,29 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     }
   };
 
+  const requestClose = () => {
+    reset();
+    onOpenChange(false);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <DialogPrimitive.Content
         style={dragStyle}
         onOpenAutoFocus={(event) => event.preventDefault()}
         className={cn(
-          'bottom-[7px] left-0 top-auto z-50 w-full max-w-none translate-x-0 translate-y-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] p-0 [&>button]:hidden',
+          'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
           'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
           'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-          'h-[calc(94dvh+7px)]',
-          'sheet:left-[50%] sheet:top-[50%] sheet:h-auto sheet:max-h-[90vh] sheet:max-w-2xl sheet:-translate-x-1/2 sheet:-translate-y-1/2 sheet:rounded-lg sheet:border sheet:bg-background sheet:p-6'
+          'h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+          'sheet:inset-0 sheet:m-auto sheet:w-[95vw] sheet:max-w-2xl sheet:h-auto sheet:max-h-[90vh] sheet:translate-x-0 sheet:translate-y-0 sheet:rounded-2xl',
+          'sheet:data-[state=open]:fade-in-0 sheet:data-[state=closed]:fade-out-0 sheet:data-[state=open]:slide-in-from-bottom-0 sheet:data-[state=closed]:slide-out-to-bottom-0'
         )}
+        aria-describedby={undefined}
       >
         <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sheet:hidden">
           <div
@@ -419,11 +431,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           />
           <div className="h-1.5 w-14 rounded-full bg-slate-400" />
         </div>
+        <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
         <div className="overflow-y-auto overflow-x-hidden px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sheet:px-0 sheet:pb-0 sheet:pt-0">
-          <DialogHeader>
-            <DialogTitle>{tForm('editTitle')}</DialogTitle>
-            <DialogDescription>{tForm('editDescription')}</DialogDescription>
-          </DialogHeader>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
+            <p className="mt-1 text-sm text-[#8b8b90]">{tForm('editDescription')}</p>
+          </div>
 
         {isLoadingStudent ? (
           <div className="flex items-center justify-center py-8">
@@ -732,16 +745,11 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               </Label>
             </div>
 
-            <DialogFooter className="gap-2">
+            <div className="flex flex-col-reverse gap-2 pt-2 sheet:flex-row sheet:justify-end">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  reset();
-                  onOpenChange(false);
-                  setErrorMessage(null);
-                  setSuccessMessage(null);
-                }}
+                onClick={requestClose}
                 disabled={isSubmitting || updateStudent.isPending}
               >
                 {tCommon('cancel')}
@@ -749,11 +757,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               <Button type="submit" isLoading={isSubmitting || updateStudent.isPending}>
                 {isSubmitting || updateStudent.isPending ? tSettings('saving') : tSettings('saveChanges')}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
