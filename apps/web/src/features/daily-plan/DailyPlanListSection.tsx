@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 const KIND_LABEL: Record<DailyPlanResourceKind, string> = {
   READING: 'Reading',
@@ -39,6 +40,7 @@ interface DailyPlanListSectionProps {
 }
 
 const MOBILE_PAGE_SIZE = 5;
+const IPAD_PAGE_SIZE = 10;
 
 export function DailyPlanListSection({
   search,
@@ -57,17 +59,19 @@ export function DailyPlanListSection({
 }: DailyPlanListSectionProps) {
   const trimmedSearch = search.trim();
   const isDeletePending = deletingPlanId !== null;
+  const isIPad = useIsIPad();
+  const pageSize = isIPad ? IPAD_PAGE_SIZE : MOBILE_PAGE_SIZE;
   const [mobilePage, setMobilePage] = useState(0);
   const cardsStartRef = useRef<HTMLDivElement | null>(null);
-  const totalPages = Math.max(1, Math.ceil(items.length / MOBILE_PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const safePage = Math.min(mobilePage, totalPages - 1);
   const mobileItems = useMemo(
     () =>
       items.slice(
-        safePage * MOBILE_PAGE_SIZE,
-        safePage * MOBILE_PAGE_SIZE + MOBILE_PAGE_SIZE,
+        safePage * pageSize,
+        safePage * pageSize + pageSize,
       ),
-    [items, safePage],
+    [items, safePage, pageSize],
   );
 
   useEffect(() => {
@@ -369,11 +373,11 @@ export function DailyPlanListSection({
               </article>
             ))}
           </div>
-          {items.length > MOBILE_PAGE_SIZE && (
+          {items.length > pageSize && (
             <div className="flex items-center justify-between text-sm text-[#8b8b90] md:hidden">
               <span>
-                {safePage * MOBILE_PAGE_SIZE + 1}-
-                {Math.min((safePage + 1) * MOBILE_PAGE_SIZE, items.length)} / {items.length}
+                {safePage * pageSize + 1}-
+                {Math.min((safePage + 1) * pageSize, items.length)} / {items.length}
               </span>
               <div className="flex items-center gap-3">
                 <button

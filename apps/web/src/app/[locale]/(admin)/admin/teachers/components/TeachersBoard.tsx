@@ -6,6 +6,8 @@ import { TeachersCentersStrip } from './TeachersCentersStrip';
 import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
 import { useLocale, useTranslations, type useTranslations as useTranslationsType } from 'next-intl';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { cn } from '@/shared/lib/utils';
 
 const CENTER_NAME_PAIRS = [
   { en: 'Andranik 40', hy: 'Անդրանիկի 40' },
@@ -82,6 +84,7 @@ interface TeachersBoardProps {
 }
 
 const MOBILE_TEACHERS_PAGE_SIZE = 5;
+const IPAD_TEACHERS_PAGE_SIZE = 10;
 
 export function TeachersBoard({
   teachersByCenter,
@@ -101,6 +104,7 @@ export function TeachersBoard({
   const isArmenianLocale = locale === 'hy';
   const tc = useTranslations('common');
   const [mobileTeachersPage, setMobileTeachersPage] = useState(0);
+  const isIPad = useIsIPad();
   const mobileTeachersStartRef = useRef<HTMLDivElement | null>(null);
   const sortedCenters = (centersData ?? []).map((center) => ({
     ...center,
@@ -112,26 +116,27 @@ export function TeachersBoard({
     activeCenterTabId === 'unassigned'
       ? teachersByCenter.unassigned || []
       : teachersByCenter[activeCenterTabId || ''] || [];
+  const teachersPageSize = isIPad ? IPAD_TEACHERS_PAGE_SIZE : MOBILE_TEACHERS_PAGE_SIZE;
   const totalMobileTeachersPages = Math.max(
     1,
-    Math.ceil(selectedTeachers.length / MOBILE_TEACHERS_PAGE_SIZE),
+    Math.ceil(selectedTeachers.length / teachersPageSize),
   );
-  const safeMobileTeachersPage = Math.min(
-    mobileTeachersPage,
-    totalMobileTeachersPages - 1,
-  );
-  const mobilePaginatedTeachers = useMemo(
+  const safeMobileTeachersPage = Math.min(Math.max(0, mobileTeachersPage), totalMobileTeachersPages - 1);
+  const paginatedTeachers = useMemo(
     () =>
       selectedTeachers.slice(
-        safeMobileTeachersPage * MOBILE_TEACHERS_PAGE_SIZE,
-        safeMobileTeachersPage * MOBILE_TEACHERS_PAGE_SIZE + MOBILE_TEACHERS_PAGE_SIZE,
+        safeMobileTeachersPage * teachersPageSize,
+        safeMobileTeachersPage * teachersPageSize + teachersPageSize,
       ),
-    [safeMobileTeachersPage, selectedTeachers],
+    [safeMobileTeachersPage, selectedTeachers, teachersPageSize],
   );
-
   useEffect(() => {
     setMobileTeachersPage(0);
   }, [activeCenterTabId, searchQuery, selectedTeachers.length]);
+
+  useEffect(() => {
+    setMobileTeachersPage(0);
+  }, [isIPad]);
 
   const goToMobileTeachersPage = (nextPage: number) => {
     setMobileTeachersPage(nextPage);
@@ -147,7 +152,7 @@ export function TeachersBoard({
   const panelTitle = activeCenterTabId === 'unassigned' ? tc('unassigned') : selectedCenter?.name || tc('center');
 
   return (
-    <div className="mb-6 overflow-hidden rounded-2xl border-0 bg-white shadow-sm sm:border">
+    <div className="overflow-hidden rounded-2xl border-0 bg-white shadow-sm sm:border">
       <TeachersCentersStrip
         centers={sortedCenters}
         teachersByCenter={teachersByCenter}
@@ -190,7 +195,7 @@ export function TeachersBoard({
           <div className="space-y-4">
             <div ref={mobileTeachersStartRef} className="sm:hidden" />
             <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:hidden">
-              {mobilePaginatedTeachers.map((teacher) => (
+              {paginatedTeachers.map((teacher) => (
                 <TeacherCard
                   key={teacher.id}
                   teacher={teacher}
@@ -201,8 +206,15 @@ export function TeachersBoard({
                 />
               ))}
             </div>
-            <div className="hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))]">
-              {selectedTeachers.map((teacher) => (
+            <div
+              className={cn(
+                'hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2',
+                isIPad
+                  ? 'lg:grid-cols-2 xl:grid-cols-2'
+                  : 'lg:grid-cols-4 xl:grid-cols-4',
+              )}
+            >
+              {(isIPad ? paginatedTeachers : selectedTeachers).map((teacher) => (
                 <TeacherCard
                   key={teacher.id}
                   teacher={teacher}
@@ -213,11 +225,11 @@ export function TeachersBoard({
                 />
               ))}
             </div>
-            {selectedTeachers.length > MOBILE_TEACHERS_PAGE_SIZE && (
-              <div className="flex items-center justify-between text-sm text-[#8b8b90] sm:hidden">
+            {selectedTeachers.length > teachersPageSize && (
+              <div className={`flex items-center justify-between text-sm text-[#8b8b90] ${isIPad ? '' : 'sm:hidden'}`}>
                 <span>
-                  {safeMobileTeachersPage * MOBILE_TEACHERS_PAGE_SIZE + 1}-
-                  {Math.min((safeMobileTeachersPage + 1) * MOBILE_TEACHERS_PAGE_SIZE, selectedTeachers.length)} / {selectedTeachers.length}
+                  {safeMobileTeachersPage * teachersPageSize + 1}-
+                  {Math.min((safeMobileTeachersPage + 1) * teachersPageSize, selectedTeachers.length)} / {selectedTeachers.length}
                 </span>
                 <div className="flex items-center gap-3">
                   <button

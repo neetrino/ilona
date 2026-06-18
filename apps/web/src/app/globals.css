@@ -81,7 +81,7 @@
     background-position: right 0.75rem center;
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 1025px) {
     .unified-native-select {
       font-size: 0.875rem !important;
     }
@@ -133,7 +133,7 @@
  * iOS Safari auto-zooms focused fields when font-size < 16px.
  * Apply 16px on mobile/tablet; desktop (lg+) keeps compact UI text.
  */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
   :is(
     input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']):not([type='range']):not([type='color']),
     textarea,

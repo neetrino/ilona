@@ -1,9 +1,10 @@
 'use client';
 
-import type { ReactNode, KeyboardEvent } from 'react';
+import { useEffect, useState, type ReactNode, type KeyboardEvent } from 'react';
 import { Avatar } from '@/shared/components/ui';
 import { Award } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import type { Teacher } from '../types';
 import { formatExperienceLabel, getExperienceYearsFromHireDate } from '../utils/experience';
 
@@ -39,6 +40,24 @@ export function TeacherShowcaseCard({
     getExperienceYearsFromHireDate(teacher.hireDate)
   );
   const interactive = Boolean(onCardClick);
+  const isIPad = useIsIPad();
+  const [isIPadPro, setIsIPadPro] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isIPad) {
+      setIsIPadPro(false);
+      return;
+    }
+
+    const detectIPadPro = () => {
+      const maxViewportSide = Math.max(window.innerWidth, window.innerHeight);
+      setIsIPadPro(maxViewportSide >= 1366);
+    };
+
+    detectIPadPro();
+    window.addEventListener('resize', detectIPadPro);
+    return () => window.removeEventListener('resize', detectIPadPro);
+  }, [isIPad]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (!interactive) return;
@@ -94,7 +113,8 @@ export function TeacherShowcaseCard({
           name={fullName}
           size="xl"
           className={cn(
-            'z-10 h-48 w-48 rounded-full border ring-2 ring-white shadow-sm transition-transform duration-300 sm:h-64 sm:w-full sm:rounded-3xl md:h-80',
+            'z-10 h-48 w-48 rounded-full border ring-2 ring-white shadow-sm transition-transform duration-300 lg:h-80',
+            (!isIPad || isIPadPro) && 'sheet:h-64 sheet:w-full sheet:rounded-3xl',
             isStudent ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]' : 'border-slate-100 bg-slate-50',
             interactive && 'group-hover:scale-[1.01]',
             isMuted && 'opacity-90',

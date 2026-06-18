@@ -152,7 +152,7 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
   }, [open]);
 
   const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
 
   const resetDragRefs = () => {
     touchStartYRef.current = null;
@@ -219,15 +219,15 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
         <DialogPrimitive.Content
           style={dragStyle}
           className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] grid-rows-[auto_auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl sm:grid-rows-[auto_auto_1fr]',
-            'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-4xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
-            'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0',
+            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl min-[1367px]:grid-rows-[auto_auto_1fr]',
+            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-4xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
+            'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0',
           )}
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-white sm:hidden">
+          <div className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden">
             <div
               className="absolute inset-x-0 -top-2 h-14"
               onTouchStart={handleDragStart}
@@ -243,7 +243,7 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
           <Header center={data?.center ?? null} onClose={onClose} />
           <Tabs activeTab={activeTab} setActiveTab={setActiveTab} counts={data?.counts} />
 
-          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
+          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
             {isLoading && <p className="text-sm text-slate-500">Loading…</p>}
             {error && (
               <p className="text-sm text-red-600">
@@ -296,7 +296,7 @@ function Header({
       <button
         type="button"
         onClick={onClose}
-        className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:inline-flex"
+        className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
         aria-label="Close"
       >
         <X className="size-5" />
@@ -319,16 +319,53 @@ function Tabs({
     students: counts?.students,
     groups: counts?.groups,
   };
+  const tabsTrackRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
+    teachers: null,
+    students: null,
+    groups: null,
+    schedule: null,
+    info: null,
+  });
+  const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
+
+  useEffect(() => {
+    const syncIndicator = () => {
+      const activeTabEl = tabRefs.current[activeTab];
+      const tabsTrackEl = tabsTrackRef.current;
+      if (!activeTabEl || !tabsTrackEl) {
+        setTabIndicator((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+        return;
+      }
+
+      setTabIndicator({
+        x: activeTabEl.offsetLeft,
+        width: activeTabEl.offsetWidth,
+        visible: true,
+      });
+    };
+
+    syncIndicator();
+    window.addEventListener('resize', syncIndicator);
+    return () => window.removeEventListener('resize', syncIndicator);
+  }, [activeTab, counts?.groups, counts?.students, counts?.teachers]);
 
   return (
     <div className="overflow-x-auto border-b border-[#e6e8ee] bg-white px-2 pt-2.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:overflow-visible sm:border-slate-200 sm:px-3 sm:pt-2">
-      <div role="tablist" className="flex min-w-max items-end gap-0.5 sm:min-w-0 sm:gap-1">
+      <div
+        ref={tabsTrackRef}
+        role="tablist"
+        className="relative flex min-w-max items-end gap-0.5 sm:min-w-0 sm:gap-1"
+      >
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = tab.id === activeTab;
           const count = countByTab[tab.id];
           return (
             <button
+              ref={(node) => {
+                tabRefs.current[tab.id] = node;
+              }}
               key={tab.id}
               type="button"
               role="tab"
@@ -337,7 +374,7 @@ function Tabs({
               className={cn(
                 'flex h-full flex-none items-center justify-center gap-2 rounded-t-lg border-b-2 px-3 py-[0.6875rem] text-sm font-medium transition-colors sm:flex-1 sm:px-3 sm:py-2',
                 isActive
-                  ? 'border-[#1010a3] text-[#1010a3]'
+                  ? 'border-transparent text-[#1010a3]'
                   : 'border-transparent text-slate-600 hover:text-slate-900',
               )}
             >
@@ -351,6 +388,15 @@ function Tabs({
             </button>
           );
         })}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-[#1010a3] transition-[transform,width,opacity] duration-300 ease-out"
+          style={{
+            width: `${tabIndicator.width}px`,
+            transform: `translateX(${tabIndicator.x}px)`,
+            opacity: tabIndicator.visible ? 1 : 0,
+          }}
+        />
       </div>
     </div>
   );

@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Lesson } from '@/features/lessons';
 import { WeekLessonGrid, MonthLessonGrid } from '@/features/schedule/ScheduleLessonViews';
 import { scheduleDateKeyFromIso, type ScheduleViewMode } from '@/features/schedule/schedule-dates';
 import type { ReactNode } from 'react';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 function buildLessonsByDate(lessons: Lesson[]): Record<string, Lesson[]> {
   return lessons.reduce<Record<string, Lesson[]>>((acc, lesson) => {
@@ -59,10 +60,44 @@ export function ScheduleBoard({
   hideMonthOnMobile = false,
 }: ScheduleBoardProps) {
   const isStudent = variant === 'student';
+  const isIPad = useIsIPad();
+  const [isIPadMini, setIsIPadMini] = useState(false);
+  const isIPadAirLayout = isIPad && !isIPadMini;
   const lessonsByDate = useMemo(
     () => buildLessonsByDate(lessons),
     [lessons],
   );
+  const headerCenterContentClass = isIPadMini
+    ? 'order-none ml-auto w-[14.5rem] shrink-0 [&>*]:w-full [&>*]:md:w-full'
+    : isIPadAirLayout
+      ? 'order-last w-full md:mt-3 md:flex md:justify-end md:[&>*]:w-[20rem]'
+      : 'order-last w-full md:pointer-events-auto md:absolute md:left-1/2 md:top-1/2 md:z-10 md:w-[min(20rem,calc(100%-24rem))] md:-translate-x-1/2 md:-translate-y-1/2';
+  const mobileToggleVisibilityClass =
+    hideMonthOnMobile
+      ? isIPadMini
+        ? 'hidden min-[769px]:inline-flex '
+        : 'hidden sm:inline-flex '
+      : '';
+  const studentBoardSizeClass = isIPad
+    ? 'flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white md:min-h-[min(75vh,36rem)]'
+    : 'flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white md:min-h-[min(75vh,36rem)] lg:h-[calc(100vh-260px)] lg:min-h-0';
+  const defaultBoardSizeClass = isIPad
+    ? 'flex min-h-[min(70vh,32rem)] w-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:min-h-[min(75vh,36rem)]'
+    : 'flex min-h-[min(70vh,32rem)] w-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:min-h-[min(75vh,36rem)] lg:h-[min(calc(100vh-260px),75vh)] lg:min-h-0';
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || typeof window === 'undefined') {
+      return;
+    }
+
+    const platform = navigator.platform ?? '';
+    const userAgent = navigator.userAgent ?? '';
+    const isIPadDevice =
+      /iPad/i.test(userAgent) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const shortestScreenSide = Math.min(window.screen.width, window.screen.height);
+
+    setIsIPadMini(isIPadDevice && shortestScreenSide <= 768);
+  }, []);
 
   return (
     <>
@@ -70,15 +105,19 @@ export function ScheduleBoard({
       <div
         className={
           isStudent
-            ? 'flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white md:min-h-[min(75vh,36rem)] lg:h-[calc(100vh-260px)] lg:min-h-0'
-            : 'flex min-h-[min(70vh,32rem)] w-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:min-h-[min(75vh,36rem)] lg:h-[min(calc(100vh-260px),75vh)] lg:min-h-0'
+            ? studentBoardSizeClass
+            : defaultBoardSizeClass
         }
       >
         <div
           className={
             isStudent
-              ? 'relative flex flex-col gap-3 border-b border-[rgba(14,14,16,0.07)] p-4 md:flex-row md:items-center md:justify-between'
-              : 'relative flex flex-col gap-3 border-b border-slate-200 p-4 md:flex-row md:items-center md:justify-between'
+              ? `relative flex flex-col gap-3 border-b border-[rgba(14,14,16,0.07)] p-4 md:flex-row md:items-center md:justify-between${
+                  isIPadAirLayout ? ' md:flex-wrap' : ''
+                }`
+              : `relative flex flex-col gap-3 border-b border-slate-200 p-4 md:flex-row md:items-center md:justify-between${
+                  isIPadAirLayout ? ' md:flex-wrap' : ''
+                }`
           }
         >
           <div className="flex items-center gap-2">
@@ -129,7 +168,7 @@ export function ScheduleBoard({
           </div>
 
           {headerCenterContent ? (
-            <div className="order-last w-full md:pointer-events-auto md:absolute md:left-1/2 md:top-1/2 md:z-10 md:w-[min(20rem,calc(100%-24rem))] md:-translate-x-1/2 md:-translate-y-1/2">
+            <div className={headerCenterContentClass}>
               {headerCenterContent}
             </div>
           ) : managerBranchName ? (
@@ -149,8 +188,8 @@ export function ScheduleBoard({
           <div
             className={
               isStudent
-                ? `${hideMonthOnMobile ? 'hidden sm:inline-flex ' : ''}relative items-center self-start rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1 md:self-auto`
-                : `${hideMonthOnMobile ? 'hidden sm:inline-flex ' : ''}relative items-center self-start rounded-lg border border-slate-200 bg-slate-50 p-1 md:self-auto`
+                ? `${mobileToggleVisibilityClass}relative items-center self-start rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1 md:self-auto`
+                : `${mobileToggleVisibilityClass}relative items-center self-start rounded-lg border border-slate-200 bg-slate-50 p-1 md:self-auto`
             }
           >
             <span
@@ -182,7 +221,7 @@ export function ScheduleBoard({
             <button
               type="button"
               onClick={() => onViewModeChange('month')}
-              className={`${hideMonthOnMobile ? 'hidden sm:inline-flex ' : ''}${
+              className={`${mobileToggleVisibilityClass}${
                 viewMode === 'month'
                   ? isStudent
                     ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-white transition-colors duration-300'
@@ -205,6 +244,7 @@ export function ScheduleBoard({
               isLoading={isLoading}
               highlightPastLessonCards={highlightPastLessonCards}
               theme={isStudent ? 'student' : 'default'}
+              forceMobileLayout={isIPadMini}
             />
           ) : (
             <MonthLessonGrid

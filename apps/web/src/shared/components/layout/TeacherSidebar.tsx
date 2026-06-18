@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import {
@@ -84,6 +85,8 @@ export function TeacherSidebar({
   const locale = useLocale();
   const t = useTranslations('nav');
   const tCommon = useTranslations('common');
+  const isIPad = useIsIPad();
+  const isArmenianLocale = locale === 'hy';
 
   const isDrawer = layout === 'drawer';
   const showLabels = isDrawer || !collapsed;
@@ -125,11 +128,20 @@ export function TeacherSidebar({
           ? 'w-full py-2 pl-2 pr-2'
           : cn(
               'h-screen py-3 pl-3 pr-2 sm:pl-4 sm:pr-3',
-              collapsed ? 'w-[4.5rem]' : 'w-[clamp(11.5rem,14vw,17rem)]',
+              collapsed
+                ? 'w-[4.5rem]'
+                : isArmenianLocale && isIPad
+                  ? 'w-[clamp(14.75rem,18vw,20.75rem)]'
+                  : 'w-[clamp(12.5rem,15vw,18rem)]',
             ),
       )}
     >
-      <aside className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto overflow-x-visible rounded-[2rem] bg-white">
+      <aside
+        className={cn(
+          'flex h-full min-h-0 flex-1 flex-col overflow-y-auto overflow-x-visible rounded-[2rem] bg-white',
+          !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+        )}
+      >
         <div
           className={cn(
             'flex shrink-0 border-b border-transparent pb-2 pt-5',
@@ -186,6 +198,7 @@ export function TeacherSidebar({
           className={cn(
             'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto px-3 py-4 pr-3.5',
             NAV_LIST_GAP_CLASS,
+            !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
           )}
         >
           {navItems.map((item) => (

@@ -1692,7 +1692,8 @@
     "passportPlaceholder": "XX0000000",
     "noLeadSelected": "No lead selected.",
     "deleteVoiceLeadConfirm": "Delete this voice lead? This cannot be undone.",
-    "deleting": "Deleting…"
+    "deleting": "Deleting…",
+    "showingLeads": "Showing {start}-{end} of {total} leads"
   },
   "language": {
     "english": "English",

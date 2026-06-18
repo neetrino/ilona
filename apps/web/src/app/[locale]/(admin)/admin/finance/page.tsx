@@ -25,11 +25,13 @@ import { FinanceTabs } from './components/FinanceTabs';
 import { FinanceFilters } from './components/FinanceFilters';
 import { PaymentsTable } from './components/PaymentsTable';
 import { SalariesTable } from './components/SalariesTable';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 export default function FinancePage() {
   const t = useTranslations('finance');
   const params = useParams();
   const locale = params.locale as string;
+  const isIPad = useIsIPad();
   const [isSmUp, setIsSmUp] = useState<boolean | undefined>(undefined);
   const pageSize = isSmUp === false ? 5 : 10;
   const cardsListStartRef = useRef<HTMLDivElement | null>(null);
@@ -145,7 +147,7 @@ export default function FinancePage() {
   const salariesTotalPages = salariesData?.totalPages || 1;
 
   useEffect(() => {
-    if (isSmUp !== false || !shouldScrollToCardsRef.current) return;
+    if ((isSmUp !== false && !isIPad) || !shouldScrollToCardsRef.current) return;
     const isActiveTabFetching = activeTab === 'payments' ? isFetchingPayments : isFetchingSalaries;
     if (isActiveTabFetching) return;
 
@@ -156,7 +158,7 @@ export default function FinancePage() {
       });
     });
     shouldScrollToCardsRef.current = false;
-  }, [isSmUp, activeTab, isFetchingPayments, isFetchingSalaries, paymentsPage, salariesPage]);
+  }, [isSmUp, isIPad, activeTab, isFetchingPayments, isFetchingSalaries, paymentsPage, salariesPage]);
 
   const isLoading = activeTab === 'payments' ? isLoadingPayments : activeTab === 'salaries' ? isLoadingSalaries : false;
 
@@ -255,7 +257,7 @@ export default function FinancePage() {
     const currentPage = activeTab === 'payments' ? paymentsPage : salariesPage;
     if (nextPage === currentPage) return;
 
-    if (isSmUp === false) {
+    if (isSmUp === false || isIPad) {
       shouldScrollToCardsRef.current = true;
     }
 
@@ -273,7 +275,7 @@ export default function FinancePage() {
     >
       <div className={portalPageStackClass}>
         {/* Stats Grid */}
-        <FinanceStats dashboard={dashboard} isLoading={isLoadingDashboard} />
+        <FinanceStats dashboard={dashboard} isLoading={isLoadingDashboard} isIPad={isIPad} />
 
         {/* Tabs */}
         <FinanceTabs
@@ -312,6 +314,7 @@ export default function FinancePage() {
           <PaymentsTable
             payments={payments}
             isLoading={isLoading || isLoadingDashboard}
+            isIPad={isIPad}
             updatePaymentStatus={updatePaymentStatus}
             updatePaymentMethod={updatePaymentMethod}
             searchTerm={debouncedSearchQuery.trim()}
@@ -326,6 +329,7 @@ export default function FinancePage() {
           <SalariesTable
             salaries={salaries}
             isLoading={isLoading || isLoadingDashboard}
+            isIPad={isIPad}
             allSalariesSelected={allSalariesSelected}
             someSalariesSelected={someSalariesSelected}
             selectedSalaryIds={selectedSalaryIds}
@@ -340,7 +344,7 @@ export default function FinancePage() {
 
         {/* Pagination - bottom aligned */}
         {((activeTab === 'payments' ? totalPayments : totalSalaries) > 0) && (
-          <div className="flex items-center justify-between text-sm text-[#8b8b90]">
+          <div className="flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
             <span>
               {Math.min(
                 (activeTab === 'payments' ? paymentsPage : salariesPage) * pageSize + 1,
@@ -389,7 +393,10 @@ export default function FinancePage() {
                 }
                 onClick={() =>
                   handlePageChangeWithScroll(
-                    (activeTab === 'payments' ? paymentsPage : salariesPage) + 1,
+                    Math.min(
+                      (activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages) - 1,
+                      (activeTab === 'payments' ? paymentsPage : salariesPage) + 1,
+                    ),
                   )
                 }
               >

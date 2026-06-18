@@ -15,7 +15,7 @@ import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PortalShellProvider } from '@/shared/context/portal-shell-context';
 import { cn } from '@/shared/lib/utils';
-import { isAdminPortalPath } from '@/shared/lib/role-routes';
+import { isAdminPortalPath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
 import {
   PORTAL_MAIN_PADDING,
   PORTAL_MOBILE_NAV_WIDTH,
@@ -39,6 +39,8 @@ interface DashboardLayoutProps {
   promoBanner?: React.ReactNode;
   /** Student/teacher/admin dashboards use the Figma portal shell */
   variant?: 'default' | 'student' | 'teacher' | 'admin';
+  /** Optional class for the main content scroll container */
+  contentScrollClassName?: string;
 }
 
 export function DashboardLayout({
@@ -48,6 +50,7 @@ export function DashboardLayout({
   headerContent,
   promoBanner,
   variant = 'default',
+  contentScrollClassName,
 }: DashboardLayoutProps) {
   const pathname = usePathname();
   const { user } = useAuthStore();
@@ -63,6 +66,8 @@ export function DashboardLayout({
   const isAdminPortal =
     variant === 'admin' ||
     (variant === 'default' && (role === 'ADMIN' || role === 'MANAGER') && isAdminRoute);
+  const normalizedPath = pathname.replace(/^\/[a-z]{2}\//, '/');
+  const hasAdminBottomNav = isAdminPortal && isAdminPortalSubpage(normalizedPath, role);
   const isPortalShell = isStudentPortal || isTeacherPortal || isAdminPortal;
   const isDashboardHome = isPortalShell && !title;
   const adminPageSubtitle = isAdminPortal ? undefined : subtitle;
@@ -118,7 +123,10 @@ export function DashboardLayout({
     <PortalShellProvider enabled={isPortalShell}>
       <div
         className={cn(
-          'flex min-h-screen w-full max-w-[100vw] overflow-x-hidden lg:h-screen lg:overflow-hidden',
+          'flex min-h-screen w-full max-w-[100vw]',
+          isAdminPortal
+            ? 'min-h-[100dvh] overflow-visible md:min-h-screen md:h-screen md:overflow-hidden md:overflow-x-hidden'
+            : 'lg:h-screen lg:overflow-hidden lg:overflow-x-hidden',
           isPortalShell ? PORTAL_SHELL_BG : 'bg-slate-50',
         )}
       >
@@ -148,7 +156,12 @@ export function DashboardLayout({
           </>
         ) : null}
 
-        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-visible lg:overflow-hidden">
+        <main
+          className={cn(
+            'flex min-h-0 min-w-0 flex-1 flex-col',
+            isAdminPortal ? 'overflow-visible md:overflow-hidden' : 'overflow-visible lg:overflow-hidden',
+          )}
+        >
           {isStudentPortal ? (
             <StudentDashboardHeader
               pageTitle={isDashboardHome ? undefined : title}
@@ -171,10 +184,14 @@ export function DashboardLayout({
             <Header title={title} subtitle={subtitle} headerContent={headerContent} />
           )}
           <div
+            id={isAdminPortal ? 'admin-portal-content-scroll' : undefined}
             className={cn(
-              'flex-1 overflow-x-hidden overflow-visible lg:min-h-0 lg:overflow-y-auto',
+              isAdminPortal
+                ? 'flex-1 overflow-visible md:min-h-0 md:overflow-x-hidden md:overflow-y-auto'
+                : 'flex-1 overflow-visible lg:min-h-0 lg:overflow-x-hidden lg:overflow-y-auto',
               mainPadding,
-              isAdminPortal && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+              hasAdminBottomNav && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+              contentScrollClassName,
             )}
           >
             {promoBanner ? <div className="mb-4 sm:mb-6">{promoBanner}</div> : null}

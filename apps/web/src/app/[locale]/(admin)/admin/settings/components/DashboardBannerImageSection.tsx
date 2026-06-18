@@ -43,6 +43,7 @@ const isSafeImageSrc = (source: string | null | undefined): source is string => 
 
 export function DashboardBannerImageSection() {
   const t = useTranslations('settings');
+  const tCommon = useTranslations('common');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: bannerData, isLoading } = useDashboardBanner();
   const uploadMutation = useUploadDashboardBanner();
@@ -146,7 +147,7 @@ export function DashboardBannerImageSection() {
           </div>
         </div>
         <p className="mt-3 text-xs text-[#8b8b90]">
-          {isLoading ? t('loading') : t('dashboardBannerFormatsHint')}
+          {isLoading ? tCommon('loading') : t('dashboardBannerFormatsHint')}
         </p>
       </div>
 

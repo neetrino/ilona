@@ -13,6 +13,7 @@ import { useTeachers } from '@/features/teachers';
 import { useDailyPlans } from '@/features/daily-plan';
 import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 function defaultDateRangeStrings(): { from: string; to: string } {
   const to = new Date();
@@ -74,6 +75,7 @@ function formatLessonSchedule(iso: string): string {
 }
 
 const MOBILE_PAGE_SIZE = 5;
+const IPAD_PAGE_SIZE = 10;
 
 export default function AdminDailyPlanPage() {
   const tNav = useTranslations('nav');
@@ -91,6 +93,8 @@ export default function AdminDailyPlanPage() {
   const [search, setSearch] = useState('');
   const [teacherId, setTeacherId] = useState('');
   const [viewing, setViewing] = useState<DailyPlan | null>(null);
+  const isIPad = useIsIPad();
+  const pageSize = isIPad ? IPAD_PAGE_SIZE : MOBILE_PAGE_SIZE;
   const [mobilePage, setMobilePage] = useState(0);
   const cardsStartRef = useRef<HTMLDivElement | null>(null);
 
@@ -132,15 +136,15 @@ export default function AdminDailyPlanPage() {
     !managerMissingCenter,
   );
   const items = data?.items ?? [];
-  const totalPages = Math.max(1, Math.ceil(items.length / MOBILE_PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const safePage = Math.min(mobilePage, totalPages - 1);
   const mobileItems = useMemo(
     () =>
       items.slice(
-        safePage * MOBILE_PAGE_SIZE,
-        safePage * MOBILE_PAGE_SIZE + MOBILE_PAGE_SIZE,
+        safePage * pageSize,
+        safePage * pageSize + pageSize,
       ),
-    [items, safePage],
+    [items, safePage, pageSize],
   );
 
   useEffect(() => {
@@ -303,11 +307,11 @@ export default function AdminDailyPlanPage() {
             <ul className="hidden w-full min-w-0 grid-cols-1 gap-4 md:grid md:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
               {items.map((plan) => renderPlanCard(plan, 'desktop-'))}
             </ul>
-            {items.length > MOBILE_PAGE_SIZE && (
+            {items.length > pageSize && (
               <div className="flex items-center justify-between text-sm text-[#8b8b90] md:hidden">
                 <span>
-                  {safePage * MOBILE_PAGE_SIZE + 1}-
-                  {Math.min((safePage + 1) * MOBILE_PAGE_SIZE, items.length)} / {items.length}
+                  {safePage * pageSize + 1}-
+                  {Math.min((safePage + 1) * pageSize, items.length)} / {items.length}
                 </span>
                 <div className="flex items-center gap-3">
                   <button

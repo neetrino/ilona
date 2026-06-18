@@ -20,6 +20,13 @@ interface UseAttendanceNavigationProps {
   onGroupChange?: (groupId: string | null) => void;
 }
 
+const getDefaultViewMode = (): ViewMode => {
+  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches) {
+    return 'day';
+  }
+  return 'week';
+};
+
 export function useAttendanceNavigation({
   groups,
   todayLessons,
@@ -31,13 +38,13 @@ export function useAttendanceNavigation({
   const searchParams = useSearchParams();
   const t = useTranslations('attendance');
 
-  // Initialize view mode from URL query params, with fallback to 'week'
+  // Initialize view mode from URL query params, with mobile fallback to first available mode ('day')
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const modeFromUrl = searchParams.get('viewMode');
     if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'month') {
       return modeFromUrl;
     }
-    return 'week';
+    return getDefaultViewMode();
   });
 
   // Date state
@@ -114,8 +121,9 @@ export function useAttendanceNavigation({
       });
     } else if (!modeFromUrl) {
       setViewMode((currentMode) => {
-        if (currentMode !== 'week') {
-          return 'week';
+        const defaultMode = getDefaultViewMode();
+        if (currentMode !== defaultMode) {
+          return defaultMode;
         }
         return currentMode;
       });

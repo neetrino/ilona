@@ -12,6 +12,7 @@ import type { SalaryRecord, SalaryStatus } from '@/features/finance';
 interface SalariesTableProps {
   salaries: SalaryRecord[];
   isLoading: boolean;
+  isIPad?: boolean;
   allSalariesSelected: boolean;
   someSalariesSelected: boolean;
   selectedSalaryIds: Set<string>;
@@ -29,6 +30,7 @@ interface SalariesTableProps {
 export function SalariesTable({
   salaries,
   isLoading,
+  isIPad = false,
   allSalariesSelected,
   someSalariesSelected,
   selectedSalaryIds,
@@ -62,7 +64,11 @@ export function SalariesTable({
 
   return (
     <>
-      <div className="space-y-3 sm:hidden">
+      <div
+        className={`${
+          isIPad ? 'grid grid-cols-2 gap-3' : 'space-y-3'
+        } ${isIPad ? '' : 'sm:hidden'}`}
+      >
         {isLoading ? (
           Array.from({ length: 3 }).map((_, idx) => (
             <div
@@ -75,7 +81,7 @@ export function SalariesTable({
             </div>
           ))
         ) : salaries.length === 0 ? (
-          <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white px-4 py-10 text-center text-sm text-[#8b8b90]">
+          <div className={`rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white px-4 py-10 text-center text-sm text-[#8b8b90] ${isIPad ? 'col-span-2' : ''}`}>
             {emptyMessage}
           </div>
         ) : (
@@ -210,7 +216,7 @@ export function SalariesTable({
         )}
       </div>
 
-      <div className="hidden sm:block">
+      <div className={`hidden ${isIPad ? '' : 'sm:block'}`}>
         <DataTable
           columns={columns}
           data={salaries}

@@ -132,7 +132,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
   }, [onClose]);
 
   const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
 
   const resetDragRefs = () => {
     touchStartYRef.current = null;
@@ -223,16 +223,16 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
       <DialogPrimitive.Content
         style={dragStyle}
         className={cn(
-          'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
-          'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
+          'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
+          'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
           'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-          'h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-          'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-4xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
-          'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0'
+          'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+          'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-4xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
+          'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
         )}
         aria-describedby={undefined}
       >
-      <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sm:hidden">
+      <div className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden">
         <div
           className="absolute inset-x-0 -top-2 h-14"
           onTouchStart={handleDragStart}
@@ -243,7 +243,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
         <div className="h-1.5 w-14 rounded-full bg-slate-400" />
       </div>
       <DialogPrimitive.Title className="sr-only">{t('studentDetails')}</DialogPrimitive.Title>
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
+      <div className="flex items-center border-b border-slate-200 bg-white px-4 py-3 min-[1367px]:justify-between min-[1367px]:px-6">
         <div className="flex items-center gap-2">
           <Image
             src="/students-logo.webp"
@@ -252,18 +252,18 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
             width={20}
             height={20}
           />
-          <h2 className="text-base font-semibold text-[#3b3b40] sm:text-lg">{t('studentDetails')}</h2>
+          <h2 className="mt-0.5 text-[1.0625rem] font-semibold text-[#3b3b40] min-[1367px]:mt-0 min-[1367px]:text-lg">{t('studentDetails')}</h2>
         </div>
         <button
           type="button"
           onClick={requestClose}
-          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
           aria-label={tCommon('close')}
         >
           <X className="h-4 w-4" />
         </button>
       </div>
-      <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
+      <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
       {!studentId ? (
         <p className="text-slate-500">{t('noStudentSelected')}</p>
       ) : isLoading ? (
@@ -296,7 +296,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
               type="button"
               onClick={() => student.user?.avatarUrl && setPhotoPreviewOpen(true)}
               className={cn(
-                'rounded-xl flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
+                'rounded-full min-[1367px]:rounded-xl flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
                 !student.user?.avatarUrl && 'cursor-default pointer-events-none',
               )}
               aria-label={student.user?.avatarUrl ? tTeachers('viewFullPhoto') : undefined}
@@ -305,7 +305,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                 src={student.user?.avatarUrl}
                 name={fullName}
                 size="xl"
-                className="w-40 h-40 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-xl"
+                className="w-40 h-40 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-full min-[1367px]:rounded-xl"
                 alt={fullName}
               />
             </button>
@@ -341,7 +341,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
             </div>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-5 pt-[10px] min-[1367px]:pt-0">
             <h4 className="font-semibold text-slate-800 text-base sm:text-lg">{tTeachers('basicInformation')}</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">

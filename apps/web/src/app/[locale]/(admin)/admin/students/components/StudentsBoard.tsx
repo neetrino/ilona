@@ -147,7 +147,7 @@ export function StudentsBoard({
   }, []);
 
   const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
 
   const resetDragRefs = () => {
     touchStartYRef.current = null;
@@ -225,7 +225,7 @@ export function StudentsBoard({
 
   return (
     <>
-      <div className="grid w-full min-w-0 grid-cols-1 gap-3 pb-3 sm:hidden">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-3 pb-3 sheet:hidden">
         {centerCards.map((center) => {
           const primaryColor = center.colorHex || '#253046';
           const softColor = center.isUnassigned ? '#f6f6f7' : lightenColor(primaryColor, 0.65);
@@ -272,8 +272,8 @@ export function StudentsBoard({
         })}
       </div>
 
-      <div className="hidden w-full min-w-0 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sm:block">
-        <div className="flex gap-3 pb-4 sm:gap-4">
+      <div className="hidden w-full min-w-0 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sheet:block">
+        <div className="flex gap-3 pb-4 sheet:gap-4">
           {/* Center Columns */}
           {allCenters
             .filter((center) => {
@@ -393,11 +393,11 @@ export function StudentsBoard({
 
       <DialogPrimitive.Root open={isSheetOpen} onOpenChange={(open) => !open && setSelectedCenterId(null)}>
         <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 sm:hidden" />
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 sheet:hidden" />
           <DialogPrimitive.Content
             style={dragStyle}
             className={cn(
-              'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 sm:hidden',
+              'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 sheet:hidden',
               'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
               'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
               'h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-white shadow-xl'

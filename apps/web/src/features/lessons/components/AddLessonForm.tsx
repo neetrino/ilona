@@ -234,6 +234,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
 
   const scheduleMode = useWatch({ control, name: 'scheduleMode' });
   const teacherIdW = useWatch({ control, name: 'teacherId' });
+  const groupIdW = useWatch({ control, name: 'groupId' });
   const startDateW = useWatch({ control, name: 'startDate' });
   const endDateW = useWatch({ control, name: 'endDate' });
   const weekdaysW = useWatch({ control, name: 'weekdays' });
@@ -309,7 +310,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
   }, [onOpenChange]);
 
   const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
 
   const resetDragRefs = () => {
     touchStartYRef.current = null;
@@ -444,16 +445,16 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
         <DialogPrimitive.Content
           style={dragStyle}
           className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-            'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-2xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
-            'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0'
+            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
+            'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
           )}
           aria-describedby={undefined}
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sm:hidden">
+          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
             <div
               className="absolute inset-x-0 -top-2 h-14"
               onTouchStart={handleDragStart}
@@ -465,13 +466,13 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
           </div>
           <DialogPrimitive.Title className="sr-only">{tForm('addTitle')}</DialogPrimitive.Title>
           <DialogPrimitive.Close
-            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:inline-flex"
+            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
             aria-label={tCommon('close')}
           >
             <X className="h-4 w-4" />
           </DialogPrimitive.Close>
 
-          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:p-6">
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
               <p className="mt-1 text-sm text-[#8b8b90]">{tForm('addDescription')}</p>
@@ -556,24 +557,30 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
             <Label htmlFor="groupId">
               {tCommon('group')} <span className="text-red-500">*</span>
             </Label>
-            <select
+            <input type="hidden" {...register('groupId')} />
+            <SingleSelectDropdown
               id="groupId"
-              {...register('groupId')}
+              options={[
+                {
+                  id: '',
+                  label: !hasTeacher ? tForm('selectTeacherFirst') : tForm('selectGroup'),
+                },
+                ...groups.map((group) => ({
+                  id: group.id,
+                  label: `${group.name}${group.level ? ` (${group.level})` : ''}${group.center ? ` - ${group.center.name}` : ''}`,
+                })),
+              ]}
+              value={groupIdW || ''}
+              onValueChange={(nextValue) =>
+                setValue('groupId', nextValue ?? '', {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                  shouldTouch: true,
+                })
+              }
               disabled={groupSelectDisabled}
-              className={cn(
-                'unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
-                errors.groupId ? 'border-red-300' : 'border-slate-300',
-                groupSelectDisabled && 'bg-slate-100 cursor-not-allowed',
-                !groupSelectDisabled && 'bg-white'
-              )}
-            >
-              <option value="">{!hasTeacher ? tForm('selectTeacherFirst') : tForm('selectGroup')}</option>
-              {groups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name} {group.level ? `(${group.level})` : ''} {group.center ? `- ${group.center.name}` : ''}
-                </option>
-              ))}
-            </select>
+              error={errors.groupId?.message ?? null}
+            />
             {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}
             {!hasTeacher && <p className="text-sm text-slate-500">{tForm('selectTeacherForGroups')}</p>}
             {hasTeacher && isLoadingGroups && <p className="text-sm text-slate-500">{tForm('loadingGroups')}</p>}

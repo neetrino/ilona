@@ -1,10 +1,11 @@
 'use client';
 
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
-import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
+import { Button, Input, Label } from '@/shared/components/ui';
 import { useUpdateStudent, useStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
 import { useTeachers } from '@/features/teachers';
@@ -14,6 +15,7 @@ import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -144,6 +146,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const watchedCenterId = watch('centerId') || '';
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
+  const watchedStatus = watch('status') || 'ACTIVE';
   const watchedDob = watch('dateOfBirth');
   const watchedAge = watch('age');
   const computedAge = useMemo(() => computeAgeFromDob(watchedDob), [watchedDob]);
@@ -224,11 +227,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     return [...new Set([...fromLinks, ...fromGroups])].join(', ');
   }, [selectedTeacher, groupsForTeacher]);
 
-  const selectFieldClass =
-    'unified-native-select flex w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50';
-
-  const { onChange: onCenterChangeField, ...centerIdFieldRest } = register('centerId');
-
   // Pre-fill form when student data is loaded
   useEffect(() => {
     if (student && open) {
@@ -282,7 +280,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   }, []);
 
   const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
 
   const resetDragRefs = () => {
     touchStartYRef.current = null;
@@ -375,7 +373,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
       // Nothing changed: just close without a redundant API call.
       if (Object.keys(payload).length === 0) {
-        onOpenChange(false);
+        requestClose();
         return;
       }
 
@@ -387,7 +385,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
       // Close modal after a brief delay
       setTimeout(() => {
-        onOpenChange(false);
+        requestClose();
         setSuccessMessage(null);
       }, 1500);
     } catch (error: unknown) {
@@ -398,20 +396,31 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     }
   };
 
+  const requestClose = () => {
+    reset();
+    onOpenChange(false);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <DialogPrimitive.Content
         style={dragStyle}
         onOpenAutoFocus={(event) => event.preventDefault()}
         className={cn(
-          'bottom-[7px] left-0 top-auto z-50 w-full max-w-none translate-x-0 translate-y-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] p-0 [&>button]:hidden',
-          'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
+          'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
+          'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
           'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-          'h-[calc(94dvh+7px)]',
-          'sm:left-[50%] sm:top-[50%] sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-lg sm:border sm:bg-background sm:p-6'
+          'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+          'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
+          'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
         )}
+        aria-describedby={undefined}
       >
-        <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] sm:hidden">
+        <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
           <div
             className="absolute inset-x-0 -top-2 h-14"
             style={{ touchAction: 'pan-y' }}
@@ -422,11 +431,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           />
           <div className="h-1.5 w-14 rounded-full bg-slate-400" />
         </div>
-        <div className="overflow-y-auto overflow-x-hidden px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:px-0 sm:pb-0 sm:pt-0">
-          <DialogHeader>
-            <DialogTitle>{tForm('editTitle')}</DialogTitle>
-            <DialogDescription>{tForm('editDescription')}</DialogDescription>
-          </DialogHeader>
+        <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
+        <div className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-0 min-[1367px]:pb-0 min-[1367px]:pt-0">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
+            <p className="mt-1 text-sm text-[#8b8b90]">{tForm('editDescription')}</p>
+          </div>
 
         {isLoadingStudent ? (
           <div className="flex items-center justify-center py-8">
@@ -509,15 +519,22 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
             <div className="space-y-2">
               <Label htmlFor="status">{tCommon('status')}</Label>
-              <select
+              <input type="hidden" {...register('status')} />
+              <SingleSelectDropdown
                 id="status"
-                {...register('status')}
-                className={selectFieldClass}
-              >
-                <option value="ACTIVE">{tStatus('active')}</option>
-                <option value="INACTIVE">{tStatus('inactive')}</option>
-                <option value="SUSPENDED">{tStatus('suspended')}</option>
-              </select>
+                options={[
+                  { id: 'ACTIVE', label: tStatus('active') },
+                  { id: 'INACTIVE', label: tStatus('inactive') },
+                  { id: 'SUSPENDED', label: tStatus('suspended') },
+                ]}
+                value={watchedStatus}
+                onValueChange={(nextValue) =>
+                  setValue('status', (nextValue as UserStatus) ?? 'ACTIVE', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
               {errors.status && (
                 <p className="text-sm text-red-600">{errors.status.message}</p>
               )}
@@ -525,24 +542,24 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
             <div className="space-y-2">
               <Label htmlFor="centerId">{tCommon('center')}</Label>
-              <select
+              <input type="hidden" {...register('centerId')} />
+              <SingleSelectDropdown
                 id="centerId"
-                {...centerIdFieldRest}
-                className={selectFieldClass}
-                disabled={isLoadingCenters || isSubmitting}
-                onChange={(e) => {
-                  onCenterChangeField(e);
-                  setValue('teacherId', '', { shouldDirty: true });
-                  setValue('groupId', '', { shouldDirty: true });
+                options={[
+                  { id: '', label: tCommon('notAssigned') },
+                  ...centers.map((center) => ({
+                    id: center.id,
+                    label: center.name,
+                  })),
+                ]}
+                value={watchedCenterId}
+                onValueChange={(nextValue) => {
+                  setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true });
+                  setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
+                  setValue('groupId', '', { shouldDirty: true, shouldValidate: true });
                 }}
-              >
-                <option value="">{tCommon('notAssigned')}</option>
-                {centers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                disabled={isLoadingCenters || isSubmitting}
+              />
               {errors.centerId && (
                 <p className="text-sm text-red-600">{errors.centerId.message}</p>
               )}
@@ -551,22 +568,28 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="teacherId">{t('teacher')}</Label>
-                <select
+                <input type="hidden" {...register('teacherId')} />
+                <SingleSelectDropdown
                   id="teacherId"
-                  {...register('teacherId')}
-                  className={selectFieldClass}
+                  options={[
+                    {
+                      id: '',
+                      label: watchedCenterId ? t('selectTeacher') : tForm('selectCenter'),
+                    },
+                    ...teachersForCenter.map((teacher) => ({
+                      id: teacher.id,
+                      label: `${teacher.user.firstName} ${teacher.user.lastName}${teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}`,
+                    })),
+                  ]}
+                  value={watchedTeacherId}
+                  onValueChange={(nextValue) =>
+                    setValue('teacherId', nextValue ?? '', {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
                   disabled={isLoadingTeachers || isSubmitting || !watchedCenterId}
-                >
-                  <option value="">
-                    {watchedCenterId ? t('selectTeacher') : tForm('selectCenter')}
-                  </option>
-                  {teachersForCenter.map((teacher) => (
-                    <option key={teacher.id} value={teacher.id}>
-                      {teacher.user.firstName} {teacher.user.lastName}
-                      {teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}
-                    </option>
-                  ))}
-                </select>
+                />
                 {errors.teacherId && (
                   <p className="text-sm text-red-600">{errors.teacherId.message}</p>
                 )}
@@ -582,21 +605,28 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
               <div className="space-y-2">
                 <Label htmlFor="groupId">{t('group')}</Label>
-                <select
+                <input type="hidden" {...register('groupId')} />
+                <SingleSelectDropdown
                   id="groupId"
-                  {...register('groupId')}
-                  className={selectFieldClass}
+                  options={[
+                    {
+                      id: '',
+                      label: watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst'),
+                    },
+                    ...groupsForTeacher.map((group) => ({
+                      id: group.id,
+                      label: `${group.name}${group.level ? ` (${group.level})` : ''}`,
+                    })),
+                  ]}
+                  value={watchedGroupId}
+                  onValueChange={(nextValue) =>
+                    setValue('groupId', nextValue ?? '', {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
                   disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
-                >
-                  <option value="">
-                    {watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst')}
-                  </option>
-                  {groupsForTeacher.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name} {group.level ? `(${group.level})` : ''}
-                    </option>
-                  ))}
-                </select>
+                />
                 {errors.groupId && (
                   <p className="text-sm text-red-600">{errors.groupId.message}</p>
                 )}
@@ -715,16 +745,11 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               </Label>
             </div>
 
-            <DialogFooter className="gap-2">
+            <div className="flex flex-col-reverse gap-2 pt-2 min-[1367px]:flex-row min-[1367px]:justify-end">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  reset();
-                  onOpenChange(false);
-                  setErrorMessage(null);
-                  setSuccessMessage(null);
-                }}
+                onClick={requestClose}
                 disabled={isSubmitting || updateStudent.isPending}
               >
                 {tCommon('cancel')}
@@ -732,11 +757,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               <Button type="submit" isLoading={isSubmitting || updateStudent.isPending}>
                 {isSubmitting || updateStudent.isPending ? tSettings('saving') : tSettings('saveChanges')}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

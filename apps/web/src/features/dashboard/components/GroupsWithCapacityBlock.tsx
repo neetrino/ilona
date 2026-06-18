@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useGroups } from '@/features/groups/hooks/useGroups';
 import type { Group } from '@/features/groups/types';
@@ -11,6 +11,7 @@ import { PublicAssetImage } from '@/shared/components/ui';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 interface CapacityRow {
   group: Group;
@@ -33,11 +34,22 @@ function toRows(groups: Group[]): CapacityRow[] {
 
 export function GroupsWithCapacityBlock({ centerId }: { centerId?: string }) {
   const t = useTranslations('dashboard');
+  const isIPad = useIsIPad();
+  const [isDesktopUp, setIsDesktopUp] = useState(false);
   const { locale } = useParams<{ locale: string }>();
   const { user } = useAuthStore();
   const basePath = getAdminPortalBasePath(user?.role);
   const { data, isLoading } = useGroups({ centerId, take: 100 });
   const rows = useMemo(() => toRows(data?.items ?? []), [data?.items]);
+  const isIPadProLayout = isIPad && isDesktopUp;
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const sync = () => setIsDesktopUp(mediaQuery.matches);
+    sync();
+    mediaQuery.addEventListener('change', sync);
+    return () => mediaQuery.removeEventListener('change', sync);
+  }, []);
 
   return (
     <section className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#f6f7ff] p-5 shadow-[0_10px_30px_-24px_rgba(16,16,163,0.45)] sm:p-6">
@@ -57,7 +69,7 @@ export function GroupsWithCapacityBlock({ centerId }: { centerId?: string }) {
       ) : rows.length === 0 ? (
         <p className="text-sm text-[#8b8b90]">{t('noCapacity')}</p>
       ) : (
-        <ul className="space-y-3">
+        <ul className={isIPadProLayout ? 'grid grid-cols-2 gap-3' : 'space-y-3'}>
           {rows.map(({ group, occupied, free }) => (
             <li
               key={group.id}

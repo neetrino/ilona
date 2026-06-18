@@ -14,6 +14,11 @@ import {
 import { DeleteConfirmationDialog } from '@/features/groups';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCentersManagement } from '../hooks/useCentersManagement';
+import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { useIsIPadPro } from '@/shared/hooks/useIsIPadPro';
+
+const DESKTOP_BOARD_PAGE_SIZE = 9;
 
 interface CentersTabProps {
   centerSearchQuery: string;
@@ -31,6 +36,10 @@ export function CentersTab({
   searchParams,
 }: CentersTabProps) {
   const t = useTranslations('groups');
+  const isLg = useIsLgViewport();
+  const isIPad = useIsIPad();
+  const isIPadPro = useIsIPadPro();
+  const isCompactIPad = isIPad && !isIPadPro;
   const {
     centers,
     totalCenters,
@@ -52,6 +61,33 @@ export function CentersTab({
   const [deactivateCenter, setDeactivateCenter] = React.useState<CenterWithCount | null>(null);
   const [deactivateError, setDeactivateError] = React.useState<string | null>(null);
   const [detailsCenterId, setDetailsCenterId] = React.useState<string | null>(null);
+  const [desktopBoardPage, setDesktopBoardPage] = React.useState(0);
+  const desktopCentersStartRef = useRef<HTMLDivElement | null>(null);
+  const isDesktopBoard = isLg !== false && !isCompactIPad;
+  const desktopBoardTotalPages = Math.max(
+    1,
+    Math.ceil(centers.length / DESKTOP_BOARD_PAGE_SIZE),
+  );
+  const safeDesktopBoardPage = Math.min(desktopBoardPage, desktopBoardTotalPages - 1);
+  const desktopBoardCenters = React.useMemo(
+    () =>
+      centers.slice(
+        safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE,
+        safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE + DESKTOP_BOARD_PAGE_SIZE,
+      ),
+    [centers, safeDesktopBoardPage],
+  );
+  const visibleCenters = isDesktopBoard ? desktopBoardCenters : centers;
+
+  const goToDesktopCentersPage = (nextPage: number) => {
+    setDesktopBoardPage(nextPage);
+    requestAnimationFrame(() => {
+      desktopCentersStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
 
   // Ref to track if we're intentionally closing to prevent effect from reopening
   const isClosingRef = useRef(false);
@@ -73,6 +109,10 @@ export function CentersTab({
       }
     }
   }, [searchParams, editCenterId, setEditCenterId]);
+
+  useEffect(() => {
+    setDesktopBoardPage(0);
+  }, [centerSearchQuery, centers.length, isDesktopBoard]);
 
   // Update URL when editCenterId changes (but not from URL sync)
   const handleEditCenterIdChange = (id: string | null) => {
@@ -176,8 +216,10 @@ export function CentersTab({
             </div>
           </div>
         ) : (
-          <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
-            {centers.map((center) => (
+          <>
+            <div ref={desktopCentersStartRef} />
+            <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
+            {visibleCenters.map((center) => (
               <CenterCard
                 key={center.id}
                 center={center}
@@ -188,8 +230,59 @@ export function CentersTab({
               />
             ))}
           </div>
+          </>
         )}
       </div>
+
+      {isDesktopBoard && centers.length > DESKTOP_BOARD_PAGE_SIZE && (
+        <div className="mt-4 flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
+          <span>
+            {safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE + 1}-
+            {Math.min((safeDesktopBoardPage + 1) * DESKTOP_BOARD_PAGE_SIZE, centers.length)} / {centers.length}
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                safeDesktopBoardPage === 0
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
+              disabled={safeDesktopBoardPage === 0}
+              onClick={() =>
+                goToDesktopCentersPage(Math.max(0, safeDesktopBoardPage - 1))
+              }
+              aria-label="Previous centers page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+              {safeDesktopBoardPage + 1}
+            </span>
+            <button
+              type="button"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                safeDesktopBoardPage >= desktopBoardTotalPages - 1
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
+              disabled={safeDesktopBoardPage >= desktopBoardTotalPages - 1}
+              onClick={() =>
+                goToDesktopCentersPage(
+                  Math.min(desktopBoardTotalPages - 1, safeDesktopBoardPage + 1),
+                )
+              }
+              aria-label="Next centers page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       <CreateCenterForm 

@@ -25,6 +25,8 @@ import { StudentDetailsModal } from './StudentDetailsModal';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { useIsIPadPro } from '@/shared/hooks/useIsIPadPro';
 
 interface SelectAllCheckboxProps {
   checked: boolean;
@@ -80,6 +82,8 @@ interface GroupsTabProps {
 }
 
 const MOBILE_BOARD_PAGE_SIZE = 5;
+const IPAD_BOARD_PAGE_SIZE = 10;
+const DESKTOP_BOARD_PAGE_SIZE = 9;
 
 export function GroupsTab({
   searchQuery,
@@ -100,8 +104,14 @@ export function GroupsTab({
   const { user } = useAuthStore();
   const portalBasePath = getAdminPortalBasePath(user?.role);
   const isLg = useIsLgViewport();
+  const isIPad = useIsIPad();
+  const isIPadPro = useIsIPadPro();
+  const isCompactIPad = isIPad && !isIPadPro;
+  const mobileBoardPageSize = isCompactIPad ? IPAD_BOARD_PAGE_SIZE : MOBILE_BOARD_PAGE_SIZE;
   const [mobileBoardPage, setMobileBoardPage] = useState(0);
+  const [desktopBoardPage, setDesktopBoardPage] = useState(0);
   const mobileBoardStartRef = useRef<HTMLDivElement | null>(null);
+  const desktopBoardStartRef = useRef<HTMLDivElement | null>(null);
   const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
   /** Captured at open; optimistic updates must not change dialog copy */
   const [statusDialog, setStatusDialog] = useState<{
@@ -220,28 +230,64 @@ export function GroupsTab({
   ]);
 
   const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
+  /** Branch tabs when no group context yet — filter by branch name */
+  const centersForBranchTabs = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allCenters;
+    return allCenters.filter((c) => c.name.toLowerCase().includes(q));
+  }, [allCenters, searchQuery]);
   const mobileBoardTotalPages = Math.max(
     1,
-    Math.ceil(groups.length / MOBILE_BOARD_PAGE_SIZE),
+    Math.ceil(groups.length / mobileBoardPageSize),
   );
   const safeMobileBoardPage = Math.min(mobileBoardPage, mobileBoardTotalPages - 1);
   const mobileBoardGroups = useMemo(
     () =>
       groups.slice(
-        safeMobileBoardPage * MOBILE_BOARD_PAGE_SIZE,
-        safeMobileBoardPage * MOBILE_BOARD_PAGE_SIZE + MOBILE_BOARD_PAGE_SIZE,
+        safeMobileBoardPage * mobileBoardPageSize,
+        safeMobileBoardPage * mobileBoardPageSize + mobileBoardPageSize,
       ),
-    [groups, safeMobileBoardPage],
+    [groups, safeMobileBoardPage, mobileBoardPageSize],
+  );
+  const desktopBoardTotalPages = Math.max(
+    1,
+    Math.ceil(groups.length / DESKTOP_BOARD_PAGE_SIZE),
+  );
+  const safeDesktopBoardPage = Math.min(
+    desktopBoardPage,
+    desktopBoardTotalPages - 1,
+  );
+  const desktopBoardGroups = useMemo(
+    () =>
+      groups.slice(
+        safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE,
+        safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE + DESKTOP_BOARD_PAGE_SIZE,
+      ),
+    [groups, safeDesktopBoardPage],
   );
 
   useEffect(() => {
     setMobileBoardPage(0);
   }, [viewMode, activeBranchTabId, searchQuery, groups.length]);
 
+  useEffect(() => {
+    setDesktopBoardPage(0);
+  }, [viewMode, activeBranchTabId, searchQuery, groups.length]);
+
   const goToMobileBoardPage = (nextPage: number) => {
     setMobileBoardPage(nextPage);
     requestAnimationFrame(() => {
       mobileBoardStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
+
+  const goToDesktopBoardPage = (nextPage: number) => {
+    setDesktopBoardPage(nextPage);
+    requestAnimationFrame(() => {
+      desktopBoardStartRef.current?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
@@ -367,13 +413,6 @@ export function GroupsTab({
   };
 
   /** Board with a selected branch: only one column — that branch only (never all centers). */
-  /** Branch tabs when no group context yet — filter by branch name */
-  const centersForBranchTabs = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return allCenters;
-    return allCenters.filter((c) => c.name.toLowerCase().includes(q));
-  }, [allCenters, searchQuery]);
-
   const groupColumns = useMemo(
     () => [
       {
@@ -695,7 +734,7 @@ export function GroupsTab({
 
       {/* Board: branch tabs + groups directly underneath */}
       {viewMode === 'board' && (
-        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm animate-in fade-in-0 duration-150">
           <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
             {isLoadingBranchTabs ? (
               <div className="py-4 text-sm text-[#8b8b90]">{t('loadingBranches')}</div>
@@ -800,8 +839,15 @@ export function GroupsTab({
               </div>
             ) : (
               <div className="space-y-4">
-                <div ref={mobileBoardStartRef} className="sm:hidden" />
-                <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:hidden">
+                <div ref={mobileBoardStartRef} className={isCompactIPad ? '' : 'sm:hidden'} />
+                <div ref={desktopBoardStartRef} className={cn('hidden sm:block', isCompactIPad && 'sm:hidden')} />
+                <div
+                  className={cn(
+                    'grid w-full min-w-0 gap-4',
+                    isCompactIPad ? 'grid-cols-2' : 'grid-cols-1',
+                    !isCompactIPad && 'sm:hidden',
+                  )}
+                >
                   {mobileBoardGroups.map((group) => (
                     <GroupCard
                       key={group.id}
@@ -814,8 +860,8 @@ export function GroupsTab({
                     />
                   ))}
                 </div>
-                <div className="hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3">
-                  {groups.map((group) => (
+                <div className={cn('hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3', isCompactIPad && 'sm:hidden')}>
+                  {desktopBoardGroups.map((group) => (
                     <GroupCard
                       key={group.id}
                       group={group}
@@ -827,11 +873,60 @@ export function GroupsTab({
                     />
                   ))}
                 </div>
-                {groups.length > MOBILE_BOARD_PAGE_SIZE && (
-                  <div className="flex items-center justify-between text-sm text-[#8b8b90] sm:hidden">
+                {!isCompactIPad && groups.length > DESKTOP_BOARD_PAGE_SIZE && (
+                  <div className="hidden items-center justify-between text-sm text-[#8b8b90] sm:flex lg:justify-start lg:gap-4">
                     <span>
-                      {safeMobileBoardPage * MOBILE_BOARD_PAGE_SIZE + 1}-
-                      {Math.min((safeMobileBoardPage + 1) * MOBILE_BOARD_PAGE_SIZE, groups.length)} / {groups.length}
+                      {safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE + 1}-
+                      {Math.min((safeDesktopBoardPage + 1) * DESKTOP_BOARD_PAGE_SIZE, groups.length)} / {groups.length}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                          safeDesktopBoardPage === 0
+                            ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                            : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                        }`}
+                        disabled={safeDesktopBoardPage === 0}
+                        onClick={() =>
+                          goToDesktopBoardPage(Math.max(0, safeDesktopBoardPage - 1))
+                        }
+                        aria-label="Previous cards page"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                        {safeDesktopBoardPage + 1}
+                      </span>
+                      <button
+                        type="button"
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                          safeDesktopBoardPage >= desktopBoardTotalPages - 1
+                            ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                            : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                        }`}
+                        disabled={safeDesktopBoardPage >= desktopBoardTotalPages - 1}
+                        onClick={() =>
+                          goToDesktopBoardPage(
+                            Math.min(desktopBoardTotalPages - 1, safeDesktopBoardPage + 1),
+                          )
+                        }
+                        aria-label="Next cards page"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {groups.length > mobileBoardPageSize && (
+                  <div className={cn('flex items-center justify-between text-sm text-[#8b8b90]', !isCompactIPad && 'sm:hidden')}>
+                    <span>
+                      {safeMobileBoardPage * mobileBoardPageSize + 1}-
+                      {Math.min((safeMobileBoardPage + 1) * mobileBoardPageSize, groups.length)} / {groups.length}
                     </span>
                     <div className="flex items-center gap-3">
                       <button
@@ -882,7 +977,7 @@ export function GroupsTab({
 
       {/* Groups View */}
       {viewMode === 'list' ? (
-        <>
+        <div className="animate-in fade-in-0 duration-150">
           {/* Groups Table */}
           <DataTable
             columns={
@@ -897,7 +992,7 @@ export function GroupsTab({
           />
 
           {/* Pagination */}
-          <div className="flex items-center justify-between text-sm text-[#8b8b90]">
+          <div className="mt-4 flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
             <span>
               {t('showingGroups', {
                 start: Math.min(page * pageSize + 1, totalGroups),
@@ -905,9 +1000,14 @@ export function GroupsTab({
                 total: totalGroups,
               })}
             </span>
-            <div className="flex items-center gap-2">
-              <button 
-                className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50" 
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  page === 0
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
                 disabled={page === 0}
                 onClick={() => {
                   setPage(p => Math.max(0, p - 1));
@@ -918,12 +1018,19 @@ export function GroupsTab({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <span>{t('pageOf', { current: page + 1, total: totalPages || 1 })}</span>
-              <button 
-                className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50"
+              <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                {page + 1}
+              </span>
+              <button
+                type="button"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  page >= totalPages - 1
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
                 disabled={page >= totalPages - 1}
                 onClick={() => {
-                  setPage(p => p + 1);
+                  setPage(p => Math.min(totalPages - 1, p + 1));
                   setSelectedGroupIds(new Set());
                 }}
               >
@@ -933,7 +1040,7 @@ export function GroupsTab({
               </button>
             </div>
           </div>
-        </>
+        </div>
       ) : null}
 
       {/* Modals */}

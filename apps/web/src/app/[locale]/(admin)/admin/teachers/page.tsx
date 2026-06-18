@@ -114,6 +114,7 @@ export default function TeachersPage() {
     <DashboardLayout 
       title={t('title')} 
       subtitle={t('subtitle')}
+      contentScrollClassName={viewMode === 'board' ? 'overscroll-y-none' : undefined}
     >
       <div className={portalPageStackClass}>
         {/* Search, Filter & Actions Bar */}
@@ -128,11 +129,6 @@ export default function TeachersPage() {
           t={t}
           tStatus={tStatus}
           isDeleting={deleteTeachers.isPending || deleteTeacher.isPending}
-          page={page}
-          totalPages={totalPages}
-          totalTeachers={totalTeachers}
-          onPageChange={handlePageChange}
-          isUpdating={updateTeacher.isPending}
         />
 
         {/* Bulk Delete Button (shown when teachers are selected) */}
@@ -179,6 +175,10 @@ export default function TeachersPage() {
             isLoading={isLoading}
             isDeleting={deleteTeachers.isPending || deleteTeacher.isPending}
             isUpdating={updateTeacher.isPending}
+            page={page}
+            totalPages={totalPages}
+            totalTeachers={totalTeachers}
+            onPageChange={handlePageChange}
             searchQuery={searchQuery}
             centerOptions={(centersData?.items || []).map((center) => ({
               id: center.id,

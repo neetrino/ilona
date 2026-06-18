@@ -51,7 +51,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
 
   useEffect(() => {
     return () => {
@@ -126,15 +126,15 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
         <DialogPrimitive.Content
           style={dragStyle}
           className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out sm:duration-350 sm:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr_auto] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-white shadow-xl sm:grid-rows-[auto_1fr_auto]',
-            'sm:inset-0 sm:m-auto sm:w-[95vw] sm:max-w-3xl sm:h-auto sm:max-h-[90vh] sm:translate-x-0 sm:translate-y-0 sm:rounded-2xl',
-            'sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0',
+            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-white shadow-xl min-[1367px]:grid-rows-[auto_1fr]',
+            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-3xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
+            'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0',
           )}
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-white sm:hidden">
+          <div className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden">
             <div
               className="absolute inset-x-0 -top-2 h-14"
               onTouchStart={handleDragStart}
@@ -170,7 +170,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
             <button
               type="button"
               onClick={onClose}
-              className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:inline-flex"
+              className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
               aria-label="Close"
             >
               <X className="size-5" />
@@ -212,15 +212,6 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
             ))}
           </div>
 
-          <footer className="sticky bottom-0 flex justify-end border-t border-slate-200 bg-white p-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-10 rounded-lg border border-slate-200 px-4 text-slate-700 hover:bg-slate-50"
-            >
-              Close
-            </button>
-          </footer>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

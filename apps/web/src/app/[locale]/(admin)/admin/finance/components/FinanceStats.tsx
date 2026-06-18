@@ -9,15 +9,19 @@ import { formatCurrency } from '@/shared/lib/utils';
 interface FinanceStatsProps {
   dashboard: FinanceDashboard | undefined;
   isLoading: boolean;
+  isIPad?: boolean;
 }
 
-export function FinanceStats({ dashboard, isLoading }: FinanceStatsProps) {
+export function FinanceStats({ dashboard, isLoading, isIPad = false }: FinanceStatsProps) {
   const t = useTranslations('finance');
   const locale = useLocale();
+  const gridClass = isIPad
+    ? 'grid w-full min-w-0 grid-cols-2 gap-3'
+    : 'grid w-full min-w-0 grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6';
 
   if (isLoading) {
     return (
-      <div className="grid w-full min-w-0 grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6">
+      <div className={gridClass}>
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="h-24 bg-[#f6f6f7] rounded-xl animate-pulse" />
         ))}
@@ -26,7 +30,7 @@ export function FinanceStats({ dashboard, isLoading }: FinanceStatsProps) {
   }
 
   return (
-    <div className="grid w-full min-w-0 grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6">
+    <div className={gridClass}>
       <StatCard
         title={t('totalRevenue')}
         value={formatCurrency(dashboard?.revenue?.totalRevenue || 0)}

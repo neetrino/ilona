@@ -17,6 +17,7 @@ import {
 import { chatKeys } from '@/features/chat/hooks/useChat';
 import type { Group } from '@/features/groups/types';
 import type { Student, TeacherAssignedItem } from '@/features/students/types';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 function formatDateTime(value: string): string {
   return new Date(value).toLocaleString(undefined, {
@@ -34,6 +35,7 @@ function formatIsoDay(value: string): string {
 
 const DIRECTORY_PAGE_SIZE = 100;
 const RECORDINGS_PAGE_SIZE = 5;
+const IPAD_RECORDINGS_PAGE_SIZE = 10;
 const FILTERS_STORAGE_KEY = 'admin-recordings:filters-v3';
 const LEGACY_FILTERS_KEY = 'admin-recordings:filters-v2';
 const LEGACY_GROUP_KEY = 'admin-recordings:selected-group';
@@ -162,6 +164,8 @@ export default function AdminRecordingPage() {
   const tNav = useTranslations('nav');
   const t = useTranslations('recordings');
   const tCommon = useTranslations('common');
+  const isIPad = useIsIPad();
+  const recordingsPageSize = isIPad ? IPAD_RECORDINGS_PAGE_SIZE : RECORDINGS_PAGE_SIZE;
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -473,19 +477,19 @@ export default function AdminRecordingPage() {
     setPage(0);
   }, [selectedGroupIds, selectedStudentUserIds, search, dateFrom, dateTo]);
 
-  const totalPages = Math.max(1, Math.ceil(visibleRecordings.length / RECORDINGS_PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(visibleRecordings.length / recordingsPageSize));
   const safePage = Math.min(page, totalPages - 1);
   const paginatedRecordings = useMemo(
     () =>
       visibleRecordings.slice(
-        safePage * RECORDINGS_PAGE_SIZE,
-        safePage * RECORDINGS_PAGE_SIZE + RECORDINGS_PAGE_SIZE,
+        safePage * recordingsPageSize,
+        safePage * recordingsPageSize + recordingsPageSize,
       ),
-    [safePage, visibleRecordings],
+    [safePage, visibleRecordings, recordingsPageSize],
   );
 
-  const rangeStart = visibleRecordings.length === 0 ? 0 : safePage * RECORDINGS_PAGE_SIZE + 1;
-  const rangeEnd = Math.min((safePage + 1) * RECORDINGS_PAGE_SIZE, visibleRecordings.length);
+  const rangeStart = visibleRecordings.length === 0 ? 0 : safePage * recordingsPageSize + 1;
+  const rangeEnd = Math.min((safePage + 1) * recordingsPageSize, visibleRecordings.length);
 
   const clearAllFilters = () => {
     setSelectedGroupIds(new Set());
@@ -617,7 +621,11 @@ export default function AdminRecordingPage() {
 
       {/* Mobile cards */}
       <div ref={cardsListStartRef} />
-      <div className="space-y-3 sm:hidden">
+      <div
+        className={`${
+          isIPad ? 'grid grid-cols-2 gap-3' : 'space-y-3'
+        } ${isIPad ? '' : 'sm:hidden'}`}
+      >
         {isLoading || isLoadingDirectory ? (
           Array.from({ length: 4 }).map((_, idx) => (
             <div
@@ -725,7 +733,11 @@ export default function AdminRecordingPage() {
       </div>
 
       {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-xl border border-[rgba(14,14,16,0.07)] bg-white sm:block">
+      <div
+        className={`hidden overflow-hidden rounded-xl border border-[rgba(14,14,16,0.07)] bg-white ${
+          isIPad ? '' : 'sm:block'
+        }`}
+      >
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
@@ -858,7 +870,7 @@ export default function AdminRecordingPage() {
       </div>
 
       {visibleRecordings.length > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-[#8b8b90]">
+        <div className={`mt-4 flex items-center text-sm text-[#8b8b90] ${isIPad ? 'justify-start gap-4' : 'justify-between lg:justify-start lg:gap-4'}`}>
           <span>
             Showing {rangeStart}-{rangeEnd} of {visibleRecordings.length}
           </span>

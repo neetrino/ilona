@@ -41,9 +41,9 @@ function parseTab(v: string | null): AdminAnalyticsTab {
   return 'attendance';
 }
 
-function parseTimeMode(v: string | null): TimeFilterMode {
-  if (v === 'day' || v === 'week' || v === 'date') {
-    return v;
+function getDefaultPaymentsTimeMode(): TimeFilterMode {
+  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches) {
+    return 'day';
   }
   return 'date';
 }
@@ -61,7 +61,13 @@ export function useAdminAnalyticsUrl() {
   );
 
   const timeMode = useMemo(
-    () => parseTimeMode(searchParams.get('pm')),
+    () => {
+      const modeFromUrl = searchParams.get('pm');
+      if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'date') {
+        return modeFromUrl;
+      }
+      return getDefaultPaymentsTimeMode();
+    },
     [searchParams],
   );
 

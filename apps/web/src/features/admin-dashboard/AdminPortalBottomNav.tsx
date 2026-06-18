@@ -12,10 +12,13 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
 import {
   ADMIN_PORTAL_MOBILE_HORIZONTAL_PADDING,
+  ADMIN_PORTAL_MOBILE_BOTTOM_NAV_SEARCH_OFFSET_CLASS,
 } from './admin-portal-layout';
 import { cn } from '@/shared/lib/utils';
 
 const BOTTOM_NAV_ICON_CLASS = 'h-[1.625rem] w-[1.625rem] stroke-[2]';
+const ADMIN_PORTAL_CONTENT_SCROLL_ID = 'admin-portal-content-scroll';
+const ADMIN_PORTAL_MOBILE_HEADER_ID = 'admin-portal-mobile-header';
 
 function BottomNavItem({
   ariaLabel,
@@ -97,6 +100,23 @@ export function AdminPortalBottomNav() {
     [chats],
   );
 
+  const scrollToAdminMobileHeader = () => {
+    const header = document.getElementById(ADMIN_PORTAL_MOBILE_HEADER_ID);
+    const contentScroller = document.getElementById(ADMIN_PORTAL_CONTENT_SCROLL_ID);
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    contentScroller?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    header?.scrollIntoView({ block: 'start', behavior: 'auto' });
+  };
+
+  const navigateToTop = (callback: () => void) => {
+    callback();
+    requestAnimationFrame(() => {
+      scrollToAdminMobileHeader();
+      requestAnimationFrame(scrollToAdminMobileHeader);
+    });
+  };
+
   useEffect(() => {
     setSearchOpen(false);
   }, [pathname]);
@@ -107,23 +127,27 @@ export function AdminPortalBottomNav() {
 
   const handleChatClick = () => {
     if (!user?.role) return;
-    navigateToPortalChat({
-      router,
-      locale,
-      role: user.role,
-      pathname,
-      searchParams,
+    navigateToTop(() => {
+      navigateToPortalChat({
+        router,
+        locale,
+        role: user.role,
+        pathname,
+        searchParams,
+      });
     });
   };
 
   const handleNotificationsClick = () => {
     if (!user?.role) return;
-    navigateToPortalNotifications({
-      router,
-      locale,
-      role: user.role,
-      pathname,
-      searchParams,
+    navigateToTop(() => {
+      navigateToPortalNotifications({
+        router,
+        locale,
+        role: user.role,
+        pathname,
+        searchParams,
+      });
     });
   };
 
@@ -133,7 +157,7 @@ export function AdminPortalBottomNav() {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         backdropClassName="z-[50]"
-        containerClassName="z-[60]"
+        containerClassName={cn('z-[60]', ADMIN_PORTAL_MOBILE_BOTTOM_NAV_SEARCH_OFFSET_CLASS)}
       />
 
       <nav
@@ -145,7 +169,15 @@ export function AdminPortalBottomNav() {
         aria-label={tNav('dashboard')}
       >
         <div className="relative z-[1] flex items-stretch overflow-visible pb-1.5 pt-1">
-          <BottomNavItem href={portalHomeHref} ariaLabel={tHome('home')} label={tHome('home')}>
+          <BottomNavItem
+            ariaLabel={tHome('home')}
+            label={tHome('home')}
+            onClick={() =>
+              navigateToTop(() => {
+                router.push(portalHomeHref);
+              })
+            }
+          >
             <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path
                 strokeLinecap="round"

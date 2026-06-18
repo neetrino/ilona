@@ -5,6 +5,7 @@ import type { CrmLead } from '@/features/crm/types';
 import { ActionButtons } from '@/shared/components/ui';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
 import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 interface ListTableProps {
   leads: CrmLead[];
@@ -13,6 +14,10 @@ interface ListTableProps {
   canDeleteLead?: boolean;
   onLeadDeleteRequest?: (lead: CrmLead) => void;
   deleteInProgress?: boolean;
+  page: number;
+  totalPages: number;
+  totalLeads: number;
+  onPageChange: (page: number) => void;
 }
 
 export function ListTable({
@@ -22,10 +27,21 @@ export function ListTable({
   canDeleteLead,
   onLeadDeleteRequest,
   deleteInProgress,
+  page,
+  totalPages,
+  totalLeads,
+  onPageChange,
 }: ListTableProps) {
   const t = useTranslations('crm');
   const tc = useTranslations('common');
   const statusLabels = useCrmStatusLabels();
+  const isIPad = useIsIPad();
+  const pageSize = 10;
+  const safeTotalPages = Math.max(1, totalPages);
+  const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
+  const hasLeads = totalLeads > 0;
+  const showingStart = hasLeads ? safePage * pageSize + 1 : 0;
+  const showingEnd = hasLeads ? Math.min((safePage + 1) * pageSize, totalLeads) : 0;
 
   const headers = [
     tc('name'),
@@ -170,6 +186,52 @@ export function ListTable({
           ))}
         </tbody>
       </table>
+      </div>
+      <div className="border-t border-[rgba(14,14,16,0.07)] px-4 py-3 sm:px-5">
+        <div className={`flex items-center text-sm text-[#8b8b90] ${isIPad ? 'justify-start gap-4' : 'justify-between lg:justify-start lg:gap-4'}`}>
+          <span>
+            {t('showingLeads', {
+              start: showingStart,
+              end: showingEnd,
+              total: totalLeads,
+            })}
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                safePage === 0 || deleteInProgress || !hasLeads
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
+              disabled={safePage === 0 || deleteInProgress || !hasLeads}
+              onClick={() => onPageChange(Math.max(0, safePage - 1))}
+              aria-label="Previous page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+              {hasLeads ? safePage + 1 : 0}
+            </span>
+            <button
+              type="button"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                safePage >= safeTotalPages - 1 || deleteInProgress || !hasLeads
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+              }`}
+              disabled={safePage >= safeTotalPages - 1 || deleteInProgress || !hasLeads}
+              onClick={() => onPageChange(Math.min(safeTotalPages - 1, safePage + 1))}
+              aria-label="Next page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

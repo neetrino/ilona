@@ -1715,7 +1715,8 @@
     "passportPlaceholder": "XX0000000",
     "noLeadSelected": "Լիդ չի ընտրվել։",
     "deleteVoiceLeadConfirm": "Ջնջե՞լ այս ձայնային լիդը։ Գործողությունը հնարավոր չէ հետարկել։",
-    "deleting": "Ջնջվում է…"
+    "deleting": "Ջնջվում է…",
+    "showingLeads": "Ցուցադրվում է {start}-{end} {total} լիդերից"
   },
   "language": {
     "english": "Անգլերեն",

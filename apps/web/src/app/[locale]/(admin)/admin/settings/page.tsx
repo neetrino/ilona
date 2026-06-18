@@ -14,10 +14,12 @@ import { DashboardBannerTab } from './components/DashboardBannerTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChangePassword, useUpdateProfile } from '@/features/settings';
 import { Button } from '@/shared/components/ui';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
   const { user } = useAuthStore();
+  const isIPad = useIsIPad();
   const isManager = user?.role === 'MANAGER';
   
   const { activeTab, isSaving, setIsSaving, handleTabChange } = useSettingsPage();
@@ -77,7 +79,7 @@ export default function SettingsPage() {
         title={t('title')}
         subtitle={t('subtitle')}
       >
-        <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:gap-6">
+        <div className={`flex min-w-0 flex-col gap-4 ${isIPad ? '' : 'lg:flex-row lg:gap-6'}`}>
           <SettingsSidebar
             activeTab="security"
             onTabChange={() => {}}
@@ -173,7 +175,7 @@ export default function SettingsPage() {
       title={t('title')} 
       subtitle={t('subtitle')}
     >
-      <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:gap-6">
+      <div className={`flex min-w-0 flex-col gap-4 ${isIPad ? '' : 'lg:flex-row lg:gap-6'}`}>
         {/* Sidebar */}
         <SettingsSidebar
           activeTab={activeTab}
