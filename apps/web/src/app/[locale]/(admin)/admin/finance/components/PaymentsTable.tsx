@@ -10,6 +10,7 @@ import type { Payment, PaymentStatus } from '@/features/finance';
 interface PaymentsTableProps {
   payments: Payment[];
   isLoading: boolean;
+  isIPad?: boolean;
   allPaymentsSelected: boolean;
   somePaymentsSelected: boolean;
   selectedPaymentIds: Set<string>;
@@ -54,6 +55,7 @@ function formatMethodLabel(method: string | null | undefined, t: (key: string) =
 export function PaymentsTable({
   payments,
   isLoading,
+  isIPad = false,
   allPaymentsSelected,
   somePaymentsSelected,
   selectedPaymentIds,
@@ -88,7 +90,11 @@ export function PaymentsTable({
 
   return (
     <>
-      <div className="space-y-3 sm:hidden">
+      <div
+        className={`${
+          isIPad ? 'grid grid-cols-2 gap-3' : 'space-y-3'
+        } ${isIPad ? '' : 'sm:hidden'}`}
+      >
         {isLoading ? (
           Array.from({ length: 3 }).map((_, idx) => (
             <div
@@ -101,7 +107,7 @@ export function PaymentsTable({
             </div>
           ))
         ) : payments.length === 0 ? (
-          <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white px-4 py-10 text-center text-sm text-[#8b8b90]">
+          <div className={`rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white px-4 py-10 text-center text-sm text-[#8b8b90] ${isIPad ? 'col-span-2' : ''}`}>
             {emptyMessage}
           </div>
         ) : (
@@ -205,7 +211,7 @@ export function PaymentsTable({
         )}
       </div>
 
-      <div className="hidden sm:block">
+      <div className={`hidden ${isIPad ? '' : 'sm:block'}`}>
         <DataTable
           columns={columns}
           data={payments}

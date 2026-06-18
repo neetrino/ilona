@@ -337,8 +337,14 @@ export function LessonListTable({
         </div>
       )}
 
-      <div className={cn('space-y-3 p-3 sm:hidden', !useMobileCards && 'hidden')}>
-        <div ref={mobileCardsStartRef} />
+      <div
+        className={cn(
+          isIPad ? 'grid grid-cols-2 gap-3 p-3' : 'space-y-3 p-3',
+          !useMobileCards && 'hidden',
+          !isIPad && 'sm:hidden',
+        )}
+      >
+        <div ref={mobileCardsStartRef} className={cn(isIPad && 'col-span-2')} />
         {mobilePaginatedCardRows.map((row, idx) => {
           const lesson = row.lesson;
           const actions = getLessonActionsDerived(lesson);
@@ -355,9 +361,9 @@ export function LessonListTable({
           const showSectionHeader = sectionedCalendarList && section !== prevSection;
 
           return (
-            <div key={lesson.id}>
+            <div key={lesson.id} className={cn(isIPad && showSectionHeader && 'contents')}>
               {showSectionHeader ? (
-                <p className="mb-2 px-1 text-xs font-bold uppercase tracking-wide text-slate-500">
+                <p className={cn('mb-2 px-1 text-xs font-bold uppercase tracking-wide text-slate-500', isIPad && 'col-span-2')}>
                   {section === 'upcoming'
                     ? tCal('sectionUpcoming')
                     : section === 'today'
@@ -498,7 +504,7 @@ export function LessonListTable({
           );
         })}
         {cardRows.length > mobileCardPageSize && (
-          <div className="flex items-center justify-between px-1 text-sm text-[#8b8b90]">
+          <div className={cn('flex items-center justify-between px-1 text-sm text-[#8b8b90]', isIPad && 'col-span-2')}>
             <span>
               {(safeMobileCardsPage - 1) * mobileCardPageSize + 1}-
               {Math.min(
@@ -547,7 +553,13 @@ export function LessonListTable({
       </div>
 
       {/* Table */}
-      <div className={cn('overflow-x-auto', useMobileCards && 'hidden sm:block')}>
+      <div
+        className={cn(
+          'overflow-x-auto',
+          useMobileCards && !isIPad && 'hidden sm:block',
+          useMobileCards && isIPad && 'hidden',
+        )}
+      >
         <table className="w-full">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>

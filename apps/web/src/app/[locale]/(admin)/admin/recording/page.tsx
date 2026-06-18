@@ -621,7 +621,11 @@ export default function AdminRecordingPage() {
 
       {/* Mobile cards */}
       <div ref={cardsListStartRef} />
-      <div className="space-y-3 sm:hidden">
+      <div
+        className={`${
+          isIPad ? 'grid grid-cols-2 gap-3' : 'space-y-3'
+        } ${isIPad ? '' : 'sm:hidden'}`}
+      >
         {isLoading || isLoadingDirectory ? (
           Array.from({ length: 4 }).map((_, idx) => (
             <div
@@ -729,7 +733,11 @@ export default function AdminRecordingPage() {
       </div>
 
       {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-xl border border-[rgba(14,14,16,0.07)] bg-white sm:block">
+      <div
+        className={`hidden overflow-hidden rounded-xl border border-[rgba(14,14,16,0.07)] bg-white ${
+          isIPad ? '' : 'sm:block'
+        }`}
+      >
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
