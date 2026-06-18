@@ -82,6 +82,7 @@ interface GroupsTabProps {
 
 const MOBILE_BOARD_PAGE_SIZE = 5;
 const IPAD_BOARD_PAGE_SIZE = 10;
+const DESKTOP_BOARD_PAGE_SIZE = 9;
 
 export function GroupsTab({
   searchQuery,
@@ -105,6 +106,7 @@ export function GroupsTab({
   const isIPad = useIsIPad();
   const mobileBoardPageSize = isIPad ? IPAD_BOARD_PAGE_SIZE : MOBILE_BOARD_PAGE_SIZE;
   const [mobileBoardPage, setMobileBoardPage] = useState(0);
+  const [desktopBoardPage, setDesktopBoardPage] = useState(0);
   const mobileBoardStartRef = useRef<HTMLDivElement | null>(null);
   const [boardTabCenterId, setBoardTabCenterId] = useState<string | null>(null);
   /** Captured at open; optimistic updates must not change dialog copy */
@@ -237,9 +239,29 @@ export function GroupsTab({
       ),
     [groups, safeMobileBoardPage, mobileBoardPageSize],
   );
+  const desktopBoardTotalPages = Math.max(
+    1,
+    Math.ceil(groups.length / DESKTOP_BOARD_PAGE_SIZE),
+  );
+  const safeDesktopBoardPage = Math.min(
+    desktopBoardPage,
+    desktopBoardTotalPages - 1,
+  );
+  const desktopBoardGroups = useMemo(
+    () =>
+      groups.slice(
+        safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE,
+        safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE + DESKTOP_BOARD_PAGE_SIZE,
+      ),
+    [groups, safeDesktopBoardPage],
+  );
 
   useEffect(() => {
     setMobileBoardPage(0);
+  }, [viewMode, activeBranchTabId, searchQuery, groups.length]);
+
+  useEffect(() => {
+    setDesktopBoardPage(0);
   }, [viewMode, activeBranchTabId, searchQuery, groups.length]);
 
   const goToMobileBoardPage = (nextPage: number) => {
@@ -825,7 +847,7 @@ export function GroupsTab({
                   ))}
                 </div>
                 <div className={cn('hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-3', isIPad && 'sm:hidden')}>
-                  {groups.map((group) => (
+                  {desktopBoardGroups.map((group) => (
                     <GroupCard
                       key={group.id}
                       group={group}
@@ -837,6 +859,53 @@ export function GroupsTab({
                     />
                   ))}
                 </div>
+                {!isIPad && groups.length > DESKTOP_BOARD_PAGE_SIZE && (
+                  <div className="hidden items-center justify-between text-sm text-[#8b8b90] sm:flex lg:justify-start lg:gap-4">
+                    <span>
+                      {safeDesktopBoardPage * DESKTOP_BOARD_PAGE_SIZE + 1}-
+                      {Math.min((safeDesktopBoardPage + 1) * DESKTOP_BOARD_PAGE_SIZE, groups.length)} / {groups.length}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                          safeDesktopBoardPage === 0
+                            ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                            : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                        }`}
+                        disabled={safeDesktopBoardPage === 0}
+                        onClick={() => setDesktopBoardPage((prev) => Math.max(0, prev - 1))}
+                        aria-label="Previous cards page"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                        {safeDesktopBoardPage + 1}
+                      </span>
+                      <button
+                        type="button"
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                          safeDesktopBoardPage >= desktopBoardTotalPages - 1
+                            ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                            : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                        }`}
+                        disabled={safeDesktopBoardPage >= desktopBoardTotalPages - 1}
+                        onClick={() =>
+                          setDesktopBoardPage((prev) =>
+                            Math.min(desktopBoardTotalPages - 1, prev + 1),
+                          )
+                        }
+                        aria-label="Next cards page"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {groups.length > mobileBoardPageSize && (
                   <div className={cn('flex items-center justify-between text-sm text-[#8b8b90]', !isIPad && 'sm:hidden')}>
                     <span>
@@ -907,7 +976,7 @@ export function GroupsTab({
           />
 
           {/* Pagination */}
-          <div className="flex items-center justify-between text-sm text-[#8b8b90]">
+          <div className="flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
             <span>
               {t('showingGroups', {
                 start: Math.min(page * pageSize + 1, totalGroups),
@@ -915,9 +984,14 @@ export function GroupsTab({
                 total: totalGroups,
               })}
             </span>
-            <div className="flex items-center gap-2">
-              <button 
-                className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50" 
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  page === 0
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
                 disabled={page === 0}
                 onClick={() => {
                   setPage(p => Math.max(0, p - 1));
@@ -928,9 +1002,16 @@ export function GroupsTab({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <span>{t('pageOf', { current: page + 1, total: totalPages || 1 })}</span>
-              <button 
-                className="p-2 rounded-lg hover:bg-[#f6f6f7] disabled:opacity-50"
+              <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                {page + 1}
+              </span>
+              <button
+                type="button"
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  page >= totalPages - 1
+                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                }`}
                 disabled={page >= totalPages - 1}
                 onClick={() => {
                   setPage(p => p + 1);

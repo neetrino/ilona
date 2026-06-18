@@ -169,7 +169,7 @@ export function TeachersFilters({
 
       {/* Pagination - shown only in list view */}
       {viewMode === 'list' && onPageChange && (
-        <div className="flex items-center justify-between text-sm text-[#8b8b90]">
+        <div className="flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
           <span>
             {t('showing', {
               start: page * PAGE_SIZE + 1,
