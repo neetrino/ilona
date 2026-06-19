@@ -82,7 +82,6 @@ export default function StudentsPage() {
     handleSearchChange,
     handlePageChange,
     setViewMode,
-    updateViewModeInUrl,
     handleSort,
     handleToggleSelect,
     handleSelectAll,
@@ -132,7 +131,6 @@ export default function StudentsPage() {
   // Handle view mode change with proper state updates
   const handleViewModeChange = (mode: 'list' | 'board') => {
     setViewMode(mode);
-    updateViewModeInUrl(mode);
     setPage(0);
     setSelectedStudentIds(new Set());
   };

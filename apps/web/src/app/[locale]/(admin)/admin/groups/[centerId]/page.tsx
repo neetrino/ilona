@@ -27,7 +27,8 @@ export default function CenterGroupsPage() {
   useEffect(() => {
     const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
     if (managerCenterId && centerId !== managerCenterId) {
-      router.replace(`/${locale}${portalBasePath}/groups`);
+      const search = typeof window !== 'undefined' ? window.location.search : '';
+      router.replace(`/${locale}${portalBasePath}/groups${search}`);
     }
   }, [user, centerId, router, locale, portalBasePath]);
 

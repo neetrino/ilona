@@ -1,15 +1,11 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
-  useRef,
   useState,
 } from 'react';
 import type { ScheduleViewMode } from '@/features/schedule/schedule-dates';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
-
-const STORAGE_KEY = 'ilona.schedule.view';
 
 function parseView(value: string | null | undefined): ScheduleViewMode | null {
   if (value === 'week' || value === 'month') return value;
@@ -38,63 +34,10 @@ export function useScheduleViewMode(): {
     }
   }, [pendingViewMode, readViewFromUrl]);
 
-  const storageHydrated = useRef(false);
-  const skipUrlSync = useRef(true);
-
-  useLayoutEffect(() => {
-    if (storageHydrated.current) {
-      return;
-    }
-
-    const fromUrl = parseView(readUrlSearchParam('view', searchParams));
-    if (fromUrl !== null) {
-      try {
-        localStorage.setItem(STORAGE_KEY, fromUrl);
-      } catch {
-        // ignore
-      }
-    } else {
-      const fromStorage = parseView(
-        typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null,
-      );
-      if (fromStorage === 'month') {
-        setPendingViewMode('month');
-        replaceParams({ view: 'month' });
-      }
-    }
-    storageHydrated.current = true;
-  }, [replaceParams, searchParams]);
-
-  useEffect(() => {
-    if (skipUrlSync.current) {
-      skipUrlSync.current = false;
-      return;
-    }
-    const v = parseView(readUrlSearchParam('view', searchParams));
-    if (v === null) {
-      try {
-        localStorage.setItem(STORAGE_KEY, 'week');
-      } catch {
-        // ignore
-      }
-    } else {
-      try {
-        localStorage.setItem(STORAGE_KEY, v);
-      } catch {
-        // ignore
-      }
-    }
-  }, [searchParams, urlRevision]);
-
   const setViewMode = useCallback(
     (mode: ScheduleViewMode) => {
       setPendingViewMode(mode);
-      try {
-        localStorage.setItem(STORAGE_KEY, mode);
-      } catch {
-        // ignore
-      }
-      replaceParams({ view: mode });
+      replaceParams({ view: mode }, { mode: 'replace' });
     },
     [replaceParams],
   );

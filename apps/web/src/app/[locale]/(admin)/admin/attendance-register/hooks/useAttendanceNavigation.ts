@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
@@ -60,10 +60,9 @@ export function useAttendanceNavigation({
   // Date state
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
-  // Initialize selectedGroupIds from URL query params (support both single and multiple)
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(() => {
-    const groupIdsParam = readUrlSearchParam('groupIds', searchParams);
-    const groupIdParam = readUrlSearchParam('groupId', searchParams);
+  const selectedGroupIds = useMemo(() => {
+    const groupIdsParam = readUrlSearchParam('groupIds', searchParams, urlRevision);
+    const groupIdParam = readUrlSearchParam('groupId', searchParams, urlRevision);
     if (groupIdsParam) {
       return groupIdsParam.split(',').filter(Boolean);
     }
@@ -71,7 +70,7 @@ export function useAttendanceNavigation({
       return [groupIdParam];
     }
     return [];
-  });
+  }, [searchParams, urlRevision]);
 
   const [selectedDayForMonthView, setSelectedDayForMonthView] = useState<string | null>(null);
 
@@ -86,26 +85,6 @@ export function useAttendanceNavigation({
     setPendingViewMode(mode);
     replaceParams({ viewMode: mode === 'week' ? null : mode });
   };
-
-  // Sync selectedGroupIds from URL on mount or when URL changes
-  useEffect(() => {
-    const groupIdsParam = readUrlSearchParam('groupIds', searchParams);
-    const groupIdParam = readUrlSearchParam('groupId', searchParams);
-    let newGroupIds: string[] = [];
-    if (groupIdsParam) {
-      newGroupIds = groupIdsParam.split(',').filter(Boolean);
-    } else if (groupIdParam) {
-      newGroupIds = [groupIdParam];
-    }
-    setSelectedGroupIds((currentGroupIds) => {
-      const currentStr = [...currentGroupIds].sort().join(',');
-      const newStr = [...newGroupIds].sort().join(',');
-      if (currentStr !== newStr) {
-        return newGroupIds;
-      }
-      return currentGroupIds;
-    });
-  }, [searchParams, urlRevision]);
 
   // Confirmation helper
   const confirmWithUnsavedChanges = (message: string): boolean => {
@@ -128,7 +107,6 @@ export function useAttendanceNavigation({
       );
       if (groupWithLesson) {
         const newGroupIds = [groupWithLesson.id];
-        setSelectedGroupIds(newGroupIds);
         updateGroupIdsInUrl(newGroupIds);
         onGroupChange?.(groupWithLesson.id);
       }
@@ -165,7 +143,6 @@ export function useAttendanceNavigation({
       return;
     }
     const newGroupIds = newGroupId ? [newGroupId] : [];
-    setSelectedGroupIds(newGroupIds);
     updateGroupIdsInUrl(newGroupIds);
     setSelectedDayForMonthView(null);
     onGroupChange?.(newGroupId);
@@ -176,7 +153,6 @@ export function useAttendanceNavigation({
     if (!confirmWithAction('switchGroups')) {
       return;
     }
-    setSelectedGroupIds(newGroupIds);
     updateGroupIdsInUrl(newGroupIds);
     setSelectedDayForMonthView(null);
     // For backward compatibility, call onGroupChange with first group or null

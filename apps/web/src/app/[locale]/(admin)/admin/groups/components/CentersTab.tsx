@@ -25,7 +25,7 @@ interface CentersTabProps {
   centerSearchQuery: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   centerPage: number;
-  updateUrl: (updates: Record<string, string | null>) => void;
+  updateUrl: (updates: Record<string, string | null>, options?: { mode?: 'push' | 'replace' }) => void;
   searchParams: URLSearchParams;
 }
 
