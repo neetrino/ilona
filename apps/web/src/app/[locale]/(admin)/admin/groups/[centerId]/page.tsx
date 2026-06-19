@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -22,13 +22,14 @@ export default function CenterGroupsPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+
+  const viewMode = useMemo((): ViewMode => {
     const modeFromUrl = searchParams.get('view');
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       return modeFromUrl;
     }
     return 'board';
-  });
+  }, [searchParams]);
 
   useEffect(() => {
     const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
@@ -47,26 +48,29 @@ export default function CenterGroupsPage() {
           nextParams.set(key, value);
         }
       });
-      router.replace(`${pathname}?${nextParams.toString()}`);
+      const nextQuery = nextParams.toString();
+      const currentQuery = searchParams.toString();
+      if (nextQuery === currentQuery) {
+        return;
+      }
+      const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+      router.replace(nextUrl, { scroll: false });
     },
     [pathname, router, searchParams]
   );
 
   const updateViewModeInUrl = useCallback(
     (mode: ViewMode) => {
-      updateUrl({ view: mode !== 'board' ? mode : null });
+      updateUrl({ view: mode });
     },
     [updateUrl]
   );
 
   useEffect(() => {
-    const modeFromUrl = searchParams.get('view');
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      setViewMode(modeFromUrl);
-    } else if (!modeFromUrl) {
-      setViewMode('board');
+    if (!searchParams.get('view')) {
+      updateUrl({ view: 'board' });
     }
-  }, [searchParams]);
+  }, [searchParams, updateUrl]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -84,7 +88,6 @@ export default function CenterGroupsPage() {
         page={page}
         setPage={setPage}
         viewMode={viewMode}
-        setViewMode={setViewMode}
         updateViewModeInUrl={updateViewModeInUrl}
         updateUrl={updateUrl}
         searchParams={searchParams}
