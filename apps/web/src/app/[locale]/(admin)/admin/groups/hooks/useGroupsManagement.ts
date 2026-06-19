@@ -3,8 +3,10 @@ import { useGroups, useDeleteGroup, useToggleGroupActive, type Group } from '@/f
 import { useCenters, useCenter } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { calculateGroupStats } from '../utils';
 
 const PAGE_SIZE = 10;
+const STATS_FETCH_SIZE = 100;
 
 export function useGroupsManagement(
   viewMode: 'list' | 'board',
@@ -45,12 +47,27 @@ export function useGroupsManagement(
   } = useGroups(
     {
       skip: shouldFetchAll ? 0 : page * PAGE_SIZE,
-      take: shouldFetchAll ? 100 : PAGE_SIZE,
+      take: shouldFetchAll ? STATS_FETCH_SIZE : PAGE_SIZE,
       search: searchQuery || undefined,
       centerId: groupCenterFilter,
       includeStudents: viewMode === 'board',
     },
     shouldFetchGroups
+  );
+
+  const shouldFetchStats = shouldFetchGroups && !showBoardCenterPicker && !shouldFetchAll;
+
+  const {
+    data: statsGroupsData,
+    isLoading: isLoadingStatsGroups,
+  } = useGroups(
+    {
+      skip: 0,
+      take: STATS_FETCH_SIZE,
+      search: searchQuery || undefined,
+      centerId: groupCenterFilter,
+    },
+    shouldFetchStats
   );
 
   const {
@@ -82,7 +99,21 @@ export function useGroupsManagement(
     return groups;
   }, [groups, viewMode, activeCenterId]);
 
-  const totalGroups = groupsData?.total || 0;
+  const statsSourceGroups = useMemo(
+    () => (shouldFetchAll ? displayGroups : (statsGroupsData?.items ?? [])),
+    [shouldFetchAll, displayGroups, statsGroupsData?.items],
+  );
+
+  const totalGroups = shouldFetchAll
+    ? (groupsData?.total ?? 0)
+    : (statsGroupsData?.total ?? groupsData?.total ?? 0);
+
+  const {
+    activeGroups,
+    totalStudentsInGroups,
+    averageGroupSize,
+  } = useMemo(() => calculateGroupStats(statsSourceGroups), [statsSourceGroups]);
+
   const totalPages = groupsData?.totalPages || 1;
 
   const allCenters = useMemo(() => {
@@ -128,14 +159,10 @@ export function useGroupsManagement(
     drillDownCenter,
   ]);
 
-  const activeGroups = displayGroups.filter((g) => g.isActive).length;
-  const totalStudentsInGroups = displayGroups.reduce((sum, g) => sum + (g._count?.students || 0), 0);
-  const averageGroupSize =
-    displayGroups.length > 0 ? Math.round(totalStudentsInGroups / displayGroups.length) : 0;
-
   const isLoading =
     (viewMode === 'board' && isLoadingBoardCenters) ||
     (shouldFetchGroups && isLoadingGroups) ||
+    (shouldFetchStats && isLoadingStatsGroups) ||
     (!!routeSelectedCenterId && isLoadingDrillDownCenter && !drillDownCenter);
 
   const handleDeleteClick = (id: string) => {

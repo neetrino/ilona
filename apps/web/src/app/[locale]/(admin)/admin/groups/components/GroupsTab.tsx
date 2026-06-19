@@ -126,10 +126,10 @@ export function GroupsTab({
 
   useEffect(() => {
     const branch = searchParams.get('branch');
-    if (viewMode === 'board' && !selectedCenterId) {
+    if (!selectedCenterId) {
       setBoardTabCenterId(branch);
     }
-  }, [searchParams, viewMode, selectedCenterId]);
+  }, [searchParams, selectedCenterId]);
 
   const {
     groups,
