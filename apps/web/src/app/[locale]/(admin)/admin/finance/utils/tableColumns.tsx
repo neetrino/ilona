@@ -1,11 +1,11 @@
 'use client';
 
 import { InlineSelect } from '@/features/students/components/InlineSelect';
-import { Eye } from 'lucide-react';
+import { Eye, FileText } from 'lucide-react';
 import { SelectAllCheckbox } from '../components/SelectAllCheckbox';
 import type { Payment, SalaryRecord, PaymentStatus, SalaryStatus } from '@/features/finance';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { formatCurrency } from '@/shared/lib/utils';
 
 // Get month string in YYYY-MM format from salary record
@@ -19,18 +19,17 @@ function getMonthString(salary: SalaryRecord): string {
 
 // Component for the action cell that can use hooks
 function SalaryActionCell({ salary, locale }: { salary: SalaryRecord; locale: string }) {
-  const searchParams = useSearchParams();
-  
+  const { readParam } = useAppSearchUrl();
+
   const firstName = salary.teacher?.user?.firstName || '';
   const lastName = salary.teacher?.user?.lastName || '';
   const teacherName = `${firstName} ${lastName}`;
   const monthStr = getMonthString(salary);
-  
-  // Build URL with query params to preserve state
-  const tab = searchParams.get('tab');
-  const salariesPage = searchParams.get('salariesPage');
-  const salaryStatus = searchParams.get('salaryStatus');
-  const q = searchParams.get('q');
+
+  const tab = readParam('tab');
+  const salariesPage = readParam('salariesPage');
+  const salaryStatus = readParam('salaryStatus');
+  const q = readParam('q');
   
   const params = new URLSearchParams();
   if (tab) params.set('tab', tab);
@@ -265,6 +264,7 @@ interface SalaryColumnsProps {
   onSelectAll: () => void;
   onSelectOne: (salaryId: string, checked: boolean) => void;
   locale: string;
+  onOpenSalaryDetail?: (salaryId: string) => void;
 }
 
 export function getSalaryColumns({
@@ -277,6 +277,7 @@ export function getSalaryColumns({
   onSelectAll,
   onSelectOne,
   locale,
+  onOpenSalaryDetail,
 }: SalaryColumnsProps) {
   return [
     {
@@ -415,7 +416,22 @@ export function getSalaryColumns({
       header: t('actions'),
       className: 'text-left',
       render: (salary: SalaryRecord) => (
-        <SalaryActionCell salary={salary} locale={locale} />
+        <div className="flex items-center justify-start gap-1">
+          {onOpenSalaryDetail ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenSalaryDetail(salary.id);
+              }}
+              className="p-2 hover:bg-[#f6f6f7] rounded-lg transition-colors"
+              aria-label="View salary details"
+            >
+              <FileText className="w-5 h-5 text-[#3b3b40]" />
+            </button>
+          ) : null}
+          <SalaryActionCell salary={salary} locale={locale} />
+        </div>
       ),
     },
   ];

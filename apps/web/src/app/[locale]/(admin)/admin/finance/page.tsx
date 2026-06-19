@@ -62,9 +62,9 @@ export default function FinancePage() {
     isDeletePaymentsDialogOpen,
     deleteError,
     deletePaymentsError,
+    closeSalaryDetail,
+    openSalaryDetail,
     // Setters
-    setSelectedSalaryId,
-    setIsDetailModalOpen,
     setSelectedSalaryIds,
     setSelectedPaymentIds,
     setIsDeleteDialogOpen,
@@ -339,6 +339,7 @@ export default function FinancePage() {
             locale={locale}
             searchTerm={debouncedSearchQuery.trim()}
             noResultsKey="noSalariesMatch"
+            onOpenSalaryDetail={openSalaryDetail}
           />
         )}
 
@@ -412,10 +413,7 @@ export default function FinancePage() {
         <SalaryDetailsModal
           salaryId={selectedSalaryId}
           open={isDetailModalOpen}
-          onClose={() => {
-            setIsDetailModalOpen(false);
-            setSelectedSalaryId(null);
-          }}
+          onClose={closeSalaryDetail}
         />
 
         {/* Delete Confirmation Dialog */}

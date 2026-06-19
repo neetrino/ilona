@@ -1,42 +1,71 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef, startTransition } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useState, useCallback, useEffect, useRef, startTransition, useMemo } from 'react';
 import type { PaymentStatus, SalaryStatus } from '@/features/finance';
-import { replaceAppSearchUrl } from '@/shared/lib/url-search-params';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 
 const SEARCH_DEBOUNCE_MS = 300;
+const SALARY_ID_PARAM = 'salaryId';
+
+const PAYMENT_STATUSES = new Set(['PENDING', 'PAID', 'OVERDUE', 'CANCELLED', 'REFUNDED']);
+const SALARY_STATUSES = new Set(['PENDING', 'PAID']);
+
+function parsePageParam(value: string | null, fallback = 0): number {
+  const page = parseInt(value || String(fallback), 10);
+  return Number.isNaN(page) ? fallback : Math.max(0, page);
+}
+
+function parseTab(value: string | null): 'payments' | 'salaries' {
+  return value === 'salaries' ? 'salaries' : 'payments';
+}
+
+function parsePaymentStatus(value: string | null): PaymentStatus | '' {
+  return value && PAYMENT_STATUSES.has(value) ? (value as PaymentStatus) : '';
+}
+
+function parseSalaryStatus(value: string | null): SalaryStatus | '' {
+  return value && SALARY_STATUSES.has(value) ? (value as SalaryStatus) : '';
+}
 
 export function useFinancePage() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  
-  // Initialize state from URL params
-  const [activeTab, setActiveTab] = useState<'payments' | 'salaries'>(() => {
-    const tabFromUrl = searchParams.get('tab');
-    return (tabFromUrl === 'payments' || tabFromUrl === 'salaries') ? tabFromUrl : 'payments';
-  });
-  const [paymentsPage, setPaymentsPage] = useState(() => {
-    const page = parseInt(searchParams.get('paymentsPage') || '0', 10);
-    return isNaN(page) ? 0 : Math.max(0, page);
-  });
-  const [salariesPage, setSalariesPage] = useState(() => {
-    const page = parseInt(searchParams.get('salariesPage') || '0', 10);
-    return isNaN(page) ? 0 : Math.max(0, page);
-  });
-  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(() => searchParams.get('q') || '');
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | ''>(() => {
-    const status = searchParams.get('paymentStatus') as PaymentStatus | null;
-    return status && ['PENDING', 'PAID', 'OVERDUE', 'CANCELLED', 'REFUNDED'].includes(status) ? status : '';
-  });
-  const [salaryStatus, setSalaryStatus] = useState<SalaryStatus | ''>(() => {
-    const status = searchParams.get('salaryStatus') as SalaryStatus | null;
-    return status && ['PENDING', 'PAID'].includes(status) ? status : '';
-  });
-  const [selectedSalaryId, setSelectedSalaryId] = useState<string | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const { router, pathname, searchParams, urlRevision, replaceParams } = useAppSearchUrl();
+  const isSalaryModalClosingRef = useRef(false);
+
+  const activeTab = useMemo(
+    () => parseTab(readUrlSearchParam('tab', searchParams, urlRevision)),
+    [searchParams, urlRevision],
+  );
+
+  const paymentsPage = useMemo(
+    () => parsePageParam(readUrlSearchParam('paymentsPage', searchParams, urlRevision)),
+    [searchParams, urlRevision],
+  );
+
+  const salariesPage = useMemo(
+    () => parsePageParam(readUrlSearchParam('salariesPage', searchParams, urlRevision)),
+    [searchParams, urlRevision],
+  );
+
+  const paymentStatus = useMemo(
+    () => parsePaymentStatus(readUrlSearchParam('paymentStatus', searchParams, urlRevision)),
+    [searchParams, urlRevision],
+  );
+
+  const salaryStatus = useMemo(
+    () => parseSalaryStatus(readUrlSearchParam('salaryStatus', searchParams, urlRevision)),
+    [searchParams, urlRevision],
+  );
+
+  const selectedSalaryId = useMemo(
+    () => readUrlSearchParam(SALARY_ID_PARAM, searchParams, urlRevision),
+    [searchParams, urlRevision],
+  );
+
+  const isDetailModalOpen = !!selectedSalaryId;
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedSalaryIds, setSelectedSalaryIds] = useState<Set<string>>(new Set());
   const [selectedPaymentIds, setSelectedPaymentIds] = useState<Set<string>>(new Set());
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -45,19 +74,13 @@ export function useFinancePage() {
   const [deletePaymentsError, setDeletePaymentsError] = useState<string | null>(null);
   const prevDebouncedQRef = useRef(debouncedSearchQuery);
 
-  // Update URL params when filters change
-  const updateUrlParams = useCallback((updates: Record<string, string | number | null>) => {
-    replaceAppSearchUrl({
-      router,
-      pathname,
-      updates,
-      scroll: false,
-    });
-  }, [router, pathname]);
+  useEffect(() => {
+    const qFromUrl = readUrlSearchParam('q', searchParams, urlRevision) || '';
+    setSearchQuery(qFromUrl);
+    setDebouncedSearchQuery(qFromUrl);
+    prevDebouncedQRef.current = qFromUrl;
+  }, [searchParams, urlRevision]);
 
-  // Debounce search: update committed value and URL after delay; reset page only when search actually changed.
-  // Do URL/page updates in the timeout callback (not inside setState updater) to avoid updating Router during render.
-  // Use startTransition so React can chunk work and avoid "setTimeout handler took Xms" violations.
   useEffect(() => {
     const timer = setTimeout(() => {
       startTransition(() => {
@@ -67,60 +90,78 @@ export function useFinancePage() {
         setDebouncedSearchQuery(next);
         if (isNewSearch) {
           if (activeTab === 'payments') {
-            setPaymentsPage(0);
-            updateUrlParams({ q: next || null, paymentsPage: null });
+            replaceParams({ q: next || null, paymentsPage: null });
           } else {
-            setSalariesPage(0);
-            updateUrlParams({ q: next || null, salariesPage: null });
+            replaceParams({ q: next || null, salariesPage: null });
           }
         }
       });
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [searchQuery, activeTab, updateUrlParams]);
+  }, [searchQuery, activeTab, replaceParams]);
 
-  // Handle tab change
-  const handleTabChange = useCallback((tab: 'payments' | 'salaries') => {
-    setActiveTab(tab);
-    if (tab === 'salaries') setSelectedPaymentIds(new Set());
-    if (tab === 'payments') setSelectedSalaryIds(new Set());
-    updateUrlParams({ tab });
-  }, [updateUrlParams]);
+  const handleTabChange = useCallback(
+    (tab: 'payments' | 'salaries') => {
+      if (tab === 'salaries') setSelectedPaymentIds(new Set());
+      if (tab === 'payments') setSelectedSalaryIds(new Set());
+      replaceParams({ tab: tab === 'payments' ? null : tab });
+    },
+    [replaceParams],
+  );
 
-  // Handle search change (only updates input; debounce effect handles API + URL + page reset)
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
   }, []);
 
-  // Handle payment status change
-  const handlePaymentStatusChange = useCallback((status: PaymentStatus | '') => {
-    setPaymentStatus(status);
-    setPaymentsPage(0);
-    updateUrlParams({ paymentStatus: status || null, paymentsPage: null });
-  }, [updateUrlParams]);
+  const handlePaymentStatusChange = useCallback(
+    (status: PaymentStatus | '') => {
+      setSelectedPaymentIds(new Set());
+      replaceParams({ paymentStatus: status || null, paymentsPage: null });
+    },
+    [replaceParams],
+  );
 
-  // Handle salary status change
-  const handleSalaryStatusChange = useCallback((status: SalaryStatus | '') => {
-    setSalaryStatus(status);
-    setSalariesPage(0);
-    updateUrlParams({ salaryStatus: status || null, salariesPage: null });
-  }, [updateUrlParams]);
+  const handleSalaryStatusChange = useCallback(
+    (status: SalaryStatus | '') => {
+      setSelectedSalaryIds(new Set());
+      replaceParams({ salaryStatus: status || null, salariesPage: null });
+    },
+    [replaceParams],
+  );
 
-  // Handle page changes
-  const handlePaymentsPageChange = useCallback((page: number) => {
-    setPaymentsPage(page);
-    setSelectedPaymentIds(new Set());
-    updateUrlParams({ paymentsPage: page || null });
-  }, [updateUrlParams]);
+  const handlePaymentsPageChange = useCallback(
+    (page: number) => {
+      setSelectedPaymentIds(new Set());
+      replaceParams({ paymentsPage: page || null });
+    },
+    [replaceParams],
+  );
 
-  const handleSalariesPageChange = useCallback((page: number) => {
-    setSalariesPage(page);
-    setSelectedSalaryIds(new Set());
-    updateUrlParams({ salariesPage: page || null });
-  }, [updateUrlParams]);
+  const handleSalariesPageChange = useCallback(
+    (page: number) => {
+      setSelectedSalaryIds(new Set());
+      replaceParams({ salariesPage: page || null });
+    },
+    [replaceParams],
+  );
+
+  const openSalaryDetail = useCallback(
+    (salaryId: string) => {
+      isSalaryModalClosingRef.current = false;
+      replaceParams({ [SALARY_ID_PARAM]: salaryId });
+    },
+    [replaceParams],
+  );
+
+  const closeSalaryDetail = useCallback(() => {
+    isSalaryModalClosingRef.current = true;
+    replaceParams({ [SALARY_ID_PARAM]: null });
+    setTimeout(() => {
+      isSalaryModalClosingRef.current = false;
+    }, 100);
+  }, [replaceParams]);
 
   return {
-    // State
     activeTab,
     paymentsPage,
     salariesPage,
@@ -136,26 +177,23 @@ export function useFinancePage() {
     isDeletePaymentsDialogOpen,
     deleteError,
     deletePaymentsError,
-    // Setters
-    setSelectedSalaryId,
-    setIsDetailModalOpen,
     setSelectedSalaryIds,
     setSelectedPaymentIds,
     setIsDeleteDialogOpen,
     setIsDeletePaymentsDialogOpen,
     setDeleteError,
     setDeletePaymentsError,
-    // Handlers
     handleTabChange,
     handleSearchChange,
     handlePaymentStatusChange,
     handleSalaryStatusChange,
     handlePaymentsPageChange,
     handleSalariesPageChange,
-    // Router utilities
+    openSalaryDetail,
+    closeSalaryDetail,
     router,
     pathname,
     searchParams,
+    urlRevision,
   };
 }
-

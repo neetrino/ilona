@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   getLiveSearchParams,
@@ -10,14 +10,28 @@ import {
   type SearchParamUpdates,
 } from '@/shared/lib/url-search-params';
 
+/** Re-render URL-driven UI after browser back/forward (Next searchParams can lag). */
+export function usePopstateUrlSync(setRevision: Dispatch<SetStateAction<number>>): void {
+  useEffect(() => {
+    const bumpRevision = () => setRevision((revision) => revision + 1);
+    window.addEventListener('popstate', bumpRevision);
+    return () => window.removeEventListener('popstate', bumpRevision);
+  }, [setRevision]);
+}
+
 export function useAppSearchUrl() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [urlRevision, setUrlRevision] = useState(0);
 
+  usePopstateUrlSync(setUrlRevision);
+
   const readParam = useCallback(
-    (key: string) => readUrlSearchParam(key, searchParams, urlRevision),
+    (key: string, fallback?: string) => {
+      const value = readUrlSearchParam(key, searchParams, urlRevision);
+      return value ?? fallback ?? null;
+    },
     [searchParams, urlRevision],
   );
 

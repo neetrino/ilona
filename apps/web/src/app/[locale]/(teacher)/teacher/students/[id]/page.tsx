@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Badge, Button } from '@/shared/components/ui';
 import { useStudent } from '@/features/students';
@@ -22,7 +23,7 @@ function formatUserStatus(
 export default function TeacherStudentProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { readParam } = useAppSearchUrl();
   const locale = useLocale();
   const t = useTranslations('students.teacherView');
   const tCommon = useTranslations('common');
@@ -38,8 +39,8 @@ export default function TeacherStudentProfilePage() {
 
   // Build back URL preserving search/filter state
   const getBackUrl = () => {
-    const groupId = searchParams.get('groupId');
-    const search = searchParams.get('search');
+    const groupId = readParam('groupId');
+    const search = readParam('search');
     const urlParams = new URLSearchParams();
     if (groupId) urlParams.set('groupId', groupId);
     if (search) urlParams.set('search', search);

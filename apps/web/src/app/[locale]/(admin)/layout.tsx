@@ -41,20 +41,22 @@ export default function AdminLayout({
   useEffect(() => {
     if (!isHydrated || !isAuthenticated) return;
 
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+
     if (isManager) {
       if (isManagerRestrictedPath) {
-        router.replace('/manager/dashboard');
+        router.replace(`/manager/dashboard${search}`);
         return;
       }
 
       if (isAdminPath) {
-        router.replace(managerPathFromAdmin);
+        router.replace(`${managerPathFromAdmin}${search}`);
       }
       return;
     }
 
     if (isAdmin && isManagerPath) {
-      router.replace(adminPathFromManager);
+      router.replace(`${adminPathFromManager}${search}`);
     }
   }, [isHydrated, isAuthenticated, isManager, isAdmin, router, isManagerRestrictedPath, isAdminPath, isManagerPath, managerPathFromAdmin, adminPathFromManager]);
 

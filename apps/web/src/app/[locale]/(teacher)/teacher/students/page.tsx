@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
+import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyAssignedStudents, studentKeys, type Student } from '@/features/students';
@@ -47,6 +48,7 @@ export default function TeacherStudentsPage() {
   const { data: groups, isLoading: isLoadingGroups } = useMyGroups();
   const groupsList = useMemo(() => groups || [], [groups]);
   const [urlRevision, setUrlRevision] = useState(0);
+  usePopstateUrlSync(setUrlRevision);
   const [pendingGroupId, setPendingGroupId] = useState<string | null>(null);
 
   const replaceParams = useCallback(
@@ -62,7 +64,7 @@ export default function TeacherStudentsPage() {
     [pathname, router],
   );
 
-  const urlGroupId = readUrlSearchParam('groupId', searchParams);
+  const urlGroupId = readUrlSearchParam('groupId', searchParams, urlRevision);
 
   const validSelectedGroupId = useMemo(() => {
     const effectiveGroupId = pendingGroupId ?? urlGroupId;

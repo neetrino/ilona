@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { getLiveSearchParams, readUrlSearchParam, replaceAppSearchParams } from '@/shared/lib/url-search-params';
+import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { ChatList } from './ChatList';
 import { StudentChatList } from './StudentChatList';
@@ -41,6 +42,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const { data: teachers = [], isLoading: isLoadingTeachers } = useMyTeachers(user?.role === 'STUDENT');
   const isInitialMount = useRef(true);
   const [urlRevision, setUrlRevision] = useState(0);
+  usePopstateUrlSync(setUrlRevision);
 
   const replaceSearchParams = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
@@ -62,7 +64,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const ui = getChatThemeForRole(user?.role);
 
   // Get returnTo from query params
-  const returnToParam = readUrlSearchParam('returnTo', searchParams);
+  const returnToParam = readUrlSearchParam('returnTo', searchParams, urlRevision);
   const returnTo = returnToParam ? decodeURIComponent(returnToParam) : null;
 
   // Handle back to previous page
@@ -101,9 +103,62 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   // Initialize socket connection
   useSocket();
 
-  // Get conversationId from URL (support both chatId and conversationId for backward compatibility)
-  const conversationIdFromUrl =
-    readUrlSearchParam('conversationId', searchParams) || readUrlSearchParam('chatId', searchParams);
+  const conversationIdFromUrl = useMemo(
+    () =>
+      readUrlSearchParam('conversationId', searchParams, urlRevision) ||
+      readUrlSearchParam('chatId', searchParams, urlRevision),
+    [searchParams, urlRevision],
+  );
+
+  // Restore or clear conversation when URL changes (back/forward)
+  useEffect(() => {
+    if (isInitialMount.current || isLoadingChats) return;
+
+    if (!conversationIdFromUrl) {
+      if (activeChat) {
+        setActiveChat(null);
+        setMobileListVisible(true);
+      }
+      return;
+    }
+
+    if (activeChat?.id === conversationIdFromUrl) return;
+
+    const fromList = chats.find((chat) => chat.id === conversationIdFromUrl);
+    if (fromList) {
+      setActiveChat(fromList);
+      setMobileListVisible(false);
+      return;
+    }
+
+    let cancelled = false;
+    fetchChat(conversationIdFromUrl)
+      .then((chat) => {
+        if (cancelled) return;
+        setActiveChat(chat);
+        setMobileListVisible(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        replaceSearchParams((params) => {
+          params.delete('chatId');
+          params.delete('conversationId');
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    conversationIdFromUrl,
+    urlRevision,
+    activeChat,
+    chats,
+    isLoadingChats,
+    replaceSearchParams,
+    setActiveChat,
+    setMobileListVisible,
+  ]);
 
   // Restore chat from URL on initial mount when chats are loaded
   // CRITICAL: Only restore if conversationId is explicitly in URL (user navigated with it)

@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { getLiveSearchParams, readUrlSearchParam, replaceAppSearchParams } from '@/shared/lib/url-search-params';
+import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
+import { fetchChat } from '../api/chat.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { AdminChatList } from './AdminChatList';
@@ -30,6 +32,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
     useChatStore();
   const isInitialMount = useRef(true);
   const [urlRevision, setUrlRevision] = useState(0);
+  usePopstateUrlSync(setUrlRevision);
 
   const replaceSearchParams = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
@@ -52,18 +55,21 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
     setAccountKey(key);
   }, [user?.id, user?.role, setAccountKey]);
 
-  // Get tab from URL, no default - user must select a tab
-  const tabFromUrl = readUrlSearchParam('tab', searchParams) as AdminChatTab | null;
+  const tabFromUrl = readUrlSearchParam('tab', searchParams, urlRevision) as AdminChatTab | null;
   const validTabs = useMemo<AdminChatTab[]>(() => ['students', 'teachers', 'groups'], []);
-  const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : null;
+  const initialTab = tabFromUrl && validTabs.includes(tabFromUrl) ? tabFromUrl : null;
   const [activeTab, setActiveTab] = useState<AdminChatTab | null>(initialTab);
   const [showCreateGroupChatModal, setShowCreateGroupChatModal] = useState(false);
 
-  const conversationIdFromUrl =
-    readUrlSearchParam('conversationId', searchParams) || readUrlSearchParam('chatId', searchParams);
+  const conversationIdFromUrl = useMemo(
+    () =>
+      readUrlSearchParam('conversationId', searchParams, urlRevision) ||
+      readUrlSearchParam('chatId', searchParams, urlRevision),
+    [searchParams, urlRevision],
+  );
 
   // Get returnTo from query params
-  const returnToParam = readUrlSearchParam('returnTo', searchParams);
+  const returnToParam = readUrlSearchParam('returnTo', searchParams, urlRevision);
   const returnTo = returnToParam ? decodeURIComponent(returnToParam) : null;
 
   // Initialize socket connection
@@ -78,13 +84,54 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
 
   // Sync tab with URL
   useEffect(() => {
-    const tab = readUrlSearchParam('tab', searchParams) as AdminChatTab | null;
+    const tab = readUrlSearchParam('tab', searchParams, urlRevision) as AdminChatTab | null;
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     } else if (!tab) {
       setActiveTab(null);
     }
   }, [searchParams, urlRevision, validTabs]);
+
+  // Restore or clear conversation when URL changes (back/forward)
+  useEffect(() => {
+    if (isInitialMount.current) return;
+
+    if (!conversationIdFromUrl) {
+      if (activeChat) {
+        setActiveChat(null);
+        setMobileListVisible(true);
+      }
+      return;
+    }
+
+    if (activeChat?.id === conversationIdFromUrl) return;
+
+    let cancelled = false;
+    fetchChat(conversationIdFromUrl)
+      .then((chat) => {
+        if (cancelled) return;
+        setActiveChat(chat);
+        setMobileListVisible(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        replaceSearchParams((params) => {
+          params.delete('conversationId');
+          params.delete('chatId');
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    conversationIdFromUrl,
+    urlRevision,
+    activeChat,
+    replaceSearchParams,
+    setActiveChat,
+    setMobileListVisible,
+  ]);
 
   // Handle tab change
   const handleTabChange = (tab: AdminChatTab) => {
@@ -164,7 +211,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   useEffect(() => {
     if (isInitialMount.current) return;
     
-    const conversationIdInUrl = readUrlSearchParam('conversationId', searchParams);
+    const conversationIdInUrl = readUrlSearchParam('conversationId', searchParams, urlRevision);
     if (activeChat) {
       if (activeChat.id !== conversationIdInUrl) {
         replaceSearchParams((params) => {
