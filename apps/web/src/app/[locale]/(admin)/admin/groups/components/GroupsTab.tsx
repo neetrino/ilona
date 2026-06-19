@@ -73,7 +73,7 @@ interface GroupsTabProps {
   page: number;
   setPage: (page: number | ((prev: number) => number)) => void;
   viewMode: 'list' | 'board';
-  updateViewModeInUrl: (mode: 'list' | 'board') => void;
+  onViewModeChange: (mode: 'list' | 'board', extra?: Record<string, string | null>) => void;
   updateUrl: (updates: Record<string, string | null>) => void;
   searchParams: URLSearchParams;
   /** When set (center drill-down route), groups are loaded only for this center */
@@ -90,7 +90,7 @@ export function GroupsTab({
   page,
   setPage,
   viewMode,
-  updateViewModeInUrl,
+  onViewModeChange,
   updateUrl,
   searchParams,
   selectedCenterId = null,
@@ -379,11 +379,11 @@ export function GroupsTab({
 
   useEffect(() => {
     if (isLg === false && viewMode !== 'board') {
-      updateViewModeInUrl('board');
+      onViewModeChange('board');
       setPage(0);
       setSelectedGroupIds(new Set());
     }
-  }, [isLg, setPage, setSelectedGroupIds, updateViewModeInUrl, viewMode]);
+  }, [isLg, onViewModeChange, setPage, setSelectedGroupIds, viewMode]);
 
   // Students modal state from URL so it survives refresh
   const studentsGroupId = searchParams.get('studentsGroup');
@@ -685,7 +685,7 @@ export function GroupsTab({
                 setSelectedGroupIds(new Set());
 
                 if (mode === 'list') {
-                  updateViewModeInUrl('list');
+                  onViewModeChange('list');
                   return;
                 }
 
@@ -700,8 +700,7 @@ export function GroupsTab({
                   setBoardTabCenterId(nextBoardCenterId);
                 }
 
-                updateUrl({
-                  view: 'board',
+                onViewModeChange('board', {
                   branch: selectedCenterId ? null : nextBoardCenterId,
                 });
               }}

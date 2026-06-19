@@ -1,21 +1,19 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { GroupsTab } from './components/GroupsTab';
 import { CentersTab } from './components/CentersTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
+import { useGroupsViewUrl } from './hooks/useGroupsViewUrl';
 import { cn } from '@/shared/lib/utils';
 
 type TabType = 'groups' | 'centers';
-type ViewMode = 'list' | 'board';
 
 export default function GroupsPage() {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const isLg = useIsLgViewport();
@@ -43,60 +41,8 @@ export default function GroupsPage() {
   });
   const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
 
-  // View mode: URL is the source of truth (`view=list` | `view=board`)
-  const viewModeFromUrl = useMemo((): ViewMode => {
-    const modeFromUrl = searchParams.get('view');
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      return modeFromUrl;
-    }
-    return 'board';
-  }, [searchParams]);
-
-  const viewMode: ViewMode = isLg === false ? 'board' : viewModeFromUrl;
-
-  // Update URL helper function
-  const updateUrl = useCallback((updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === null || value === '') {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
-    });
-    const nextQuery = params.toString();
-    const currentQuery = searchParams.toString();
-    if (nextQuery === currentQuery) {
-      return;
-    }
-    const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
-    router.replace(nextUrl, { scroll: false });
-  }, [pathname, router, searchParams]);
-
-  // Update URL when view mode changes
-  const updateViewModeInUrl = useCallback((mode: ViewMode) => {
-    updateUrl({ view: mode });
-  }, [updateUrl]);
-
-  // Keep `view` in the URL so refresh restores the same layout
-  useEffect(() => {
-    if (isLg === undefined) {
-      return;
-    }
-
-    const modeFromUrl = searchParams.get('view');
-
-    if (isLg === false) {
-      if (modeFromUrl && modeFromUrl !== 'board') {
-        updateUrl({ view: 'board' });
-      }
-      return;
-    }
-
-    if (!modeFromUrl) {
-      updateUrl({ view: 'board' });
-    }
-  }, [isLg, searchParams, updateUrl]);
+  const { viewMode, updateUrl, handleViewModeChange, searchParams: groupsSearchParams } =
+    useGroupsViewUrl();
 
   // Update URL when tab changes
   const updateTabInUrl = useCallback((tab: TabType) => {
@@ -264,9 +210,9 @@ export default function GroupsPage() {
               page={page}
               setPage={setPage}
               viewMode={viewMode}
-              updateViewModeInUrl={updateViewModeInUrl}
+              onViewModeChange={handleViewModeChange}
               updateUrl={updateUrl}
-              searchParams={searchParams}
+              searchParams={groupsSearchParams}
             />
           )}
         </div>
