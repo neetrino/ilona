@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { readGroupsViewMode, readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
+import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
 
 export type GroupsViewMode = 'list' | 'board';
 
@@ -22,6 +23,7 @@ export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
   const isLg = useIsLgViewport();
   const [pendingViewMode, setPendingViewMode] = useState<GroupsViewMode | null>(null);
   const [urlRevision, setUrlRevision] = useState(0);
+  usePopstateUrlSync(setUrlRevision);
 
   useEffect(() => {
     if (pendingViewMode === null) {
@@ -36,8 +38,7 @@ export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
 
   const viewModeFromUrl = readGroupsViewMode(searchParams);
 
-  const viewMode: GroupsViewMode =
-    enforceBoardOnMobile && isLg === false ? 'board' : (pendingViewMode ?? viewModeFromUrl);
+  const viewMode: GroupsViewMode = pendingViewMode ?? viewModeFromUrl;
 
   const updateUrl = useCallback(
     (updates: Record<string, string | null>) => {
@@ -68,16 +69,20 @@ export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
     const modeFromUrl = readGroupsViewMode(searchParams);
 
     if (enforceBoardOnMobile && isLg === false) {
+      const explicitView = readUrlSearchParam('view', searchParams, urlRevision);
+      if (explicitView === 'list' || explicitView === 'board') {
+        return;
+      }
       if (modeFromUrl !== 'board') {
         updateUrl({ view: 'board' });
       }
       return;
     }
 
-    if (!readUrlSearchParam('view', searchParams)) {
+    if (!readUrlSearchParam('view', searchParams, urlRevision)) {
       updateUrl({ view: 'board' });
     }
-  }, [enforceBoardOnMobile, isLg, normalizeMissingView, searchParams, updateUrl]);
+  }, [enforceBoardOnMobile, isLg, normalizeMissingView, searchParams, updateUrl, urlRevision]);
 
   return {
     viewMode,

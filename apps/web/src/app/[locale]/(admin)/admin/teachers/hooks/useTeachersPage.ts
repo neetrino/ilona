@@ -13,6 +13,7 @@ import {
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
+import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
 import { countUniqueTeachers, filterTeachersByBranches, groupTeachersByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
@@ -39,6 +40,7 @@ export function useTeachersPage() {
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
   const [urlRevision, setUrlRevision] = useState(0);
+  usePopstateUrlSync(setUrlRevision);
 
   const replaceParams = useCallback(
     (updates: Record<string, string | number | null | undefined>) => {

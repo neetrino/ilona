@@ -26,6 +26,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
+import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
 
 // Helper to get week dates
 function getWeekDates(date: Date): Date[] {
@@ -113,6 +114,7 @@ export default function CalendarPage() {
   const { user } = useAuthStore();
   const portalBasePath = getAdminPortalBasePath(user?.role);
   const [urlRevision, setUrlRevision] = useState(0);
+  usePopstateUrlSync(setUrlRevision);
 
   const replaceParams = useCallback(
     (updates: Record<string, string | number | null | undefined>) => {
@@ -147,25 +149,11 @@ export default function CalendarPage() {
     }
   }, [pendingViewMode, readViewModeFromUrl]);
   
-  // Initialize sort state from URL query params
-  const [sortBy, setSortBy] = useState<string | undefined>(() => {
-    return searchParams.get('sortBy') || undefined;
-  });
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(() => {
-    const order = searchParams.get('sortOrder');
-    if (order === 'asc' || order === 'desc') {
-      return order;
-    }
-    return undefined;
-  });
-
-  // Initialize filter state from URL query params
-  const [searchQuery, setSearchQuery] = useState<string>(() => {
-    return searchParams.get('q') || '';
-  });
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>(() => {
-    return searchParams.get('teacherId') || '';
-  });
+  // Initialize sort/filter state from URL (synced via effect for back/forward)
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(() => isAddLessonModalOpen(searchParams));
@@ -206,10 +194,10 @@ export default function CalendarPage() {
     replaceParams({ view: mode === 'list' ? null : mode });
   };
   
-  // Sync filter/sort/modal state from URL (browser back/forward)
+  // Sync filter/sort/modal state from URL (browser back/forward and client replace)
   useEffect(() => {
-    const sortByFromUrl = readUrlSearchParam('sortBy', searchParams);
-    const sortOrderFromUrl = readUrlSearchParam('sortOrder', searchParams);
+    const sortByFromUrl = readUrlSearchParam('sortBy', searchParams, urlRevision);
+    const sortOrderFromUrl = readUrlSearchParam('sortOrder', searchParams, urlRevision);
     setSortBy(sortByFromUrl || undefined);
     if (sortOrderFromUrl === 'asc' || sortOrderFromUrl === 'desc') {
       setSortOrder(sortOrderFromUrl);
@@ -217,8 +205,8 @@ export default function CalendarPage() {
       setSortOrder(undefined);
     }
 
-    setSearchQuery(readUrlSearchParam('q', searchParams) || '');
-    setSelectedTeacherId(readUrlSearchParam('teacherId', searchParams) || '');
+    setSearchQuery(readUrlSearchParam('q', searchParams, urlRevision) || '');
+    setSelectedTeacherId(readUrlSearchParam('teacherId', searchParams, urlRevision) || '');
 
     if (!isAddLessonClosingRef.current) {
       setIsAddLessonOpen(isAddLessonModalOpen(searchParams));

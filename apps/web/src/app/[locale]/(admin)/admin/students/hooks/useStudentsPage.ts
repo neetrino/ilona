@@ -19,6 +19,7 @@ import { useGroups } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
+import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
 import { groupStudentsByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
@@ -65,6 +66,7 @@ export function useStudentsPage() {
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
   const [urlRevision, setUrlRevision] = useState(0);
+  usePopstateUrlSync(setUrlRevision);
 
   const replaceParams = useCallback(
     (updates: Record<string, string | number | null | undefined>) => {
@@ -133,6 +135,7 @@ export function useStudentsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const isFeedbackClosingRef = useRef(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedStudentForFeedback, setSelectedStudentForFeedback] = useState<Student | null>(null);
 
@@ -202,12 +205,17 @@ export function useStudentsPage() {
     setIsStudentDetailsModalOpen(!!studentIdFromUrl);
   }, [searchParams, urlRevision]);
 
-  const feedbackStudentIdFromUrl = readUrlSearchParam('feedback', searchParams);
+  const feedbackStudentIdFromUrl = readUrlSearchParam('feedback', searchParams, urlRevision);
   useEffect(() => {
+    if (isFeedbackClosingRef.current) {
+      return;
+    }
     if (feedbackStudentIdFromUrl) {
       setIsFeedbackModalOpen(true);
+    } else {
+      setIsFeedbackModalOpen(false);
     }
-  }, [feedbackStudentIdFromUrl]);
+  }, [feedbackStudentIdFromUrl, urlRevision]);
 
   // Debounce search query (300ms). Use debounced value for API to avoid request on every keystroke.
   useEffect(() => {
@@ -458,17 +466,25 @@ export function useStudentsPage() {
 
   // Handle message/feedback icon click — update URL so refresh keeps modal open
   const handleShowFeedback = (student: Student) => {
+    isFeedbackClosingRef.current = false;
     setSelectedStudentForFeedback(student);
     setIsFeedbackModalOpen(true);
     replaceParams({ feedback: student.id });
   };
 
   const handleFeedbackModalOpenChange = (open: boolean) => {
-    setIsFeedbackModalOpen(open);
-    if (!open) {
-      setSelectedStudentForFeedback(null);
-      replaceParams({ feedback: null });
+    if (open) {
+      isFeedbackClosingRef.current = false;
+      setIsFeedbackModalOpen(true);
+      return;
     }
+    isFeedbackClosingRef.current = true;
+    setIsFeedbackModalOpen(false);
+    setSelectedStudentForFeedback(null);
+    replaceParams({ feedback: null });
+    setTimeout(() => {
+      isFeedbackClosingRef.current = false;
+    }, 100);
   };
 
   // Handle deactivate button click

@@ -95,7 +95,7 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
   const fullName = `${firstName} ${lastName}`.trim() || t('unknownTeacher');
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose(); }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('salaryDetailsTitle')}</DialogTitle>

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { DataTable } from '@/shared/components/ui';
 import { Button, StatCard } from '@/shared/components/ui';
@@ -41,14 +42,14 @@ export default function SalaryBreakdownPage() {
   const tCommon = useTranslations('common');
   const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { readParam } = useAppSearchUrl();
   const queryClient = useQueryClient();
 
   const teacherId = params.teacherId as string;
   const month = params.month as string;
   const locale = params.locale as string;
 
-  const teacherNameFromUrl = searchParams.get('teacherName');
+  const teacherNameFromUrl = readParam('teacherName');
   const teacherName = teacherNameFromUrl ? decodeURIComponent(teacherNameFromUrl) : t('teacher');
 
   const { data: breakdown, isLoading, error, refetch } = useSalaryBreakdown(teacherId, month, !!teacherId);
@@ -183,10 +184,10 @@ export default function SalaryBreakdownPage() {
   };
 
   const getBackUrl = () => {
-    const tab = searchParams.get('tab');
-    const salariesPage = searchParams.get('salariesPage');
-    const salaryStatus = searchParams.get('salaryStatus');
-    const q = searchParams.get('q');
+    const tab = readParam('tab');
+    const salariesPage = readParam('salariesPage');
+    const salaryStatus = readParam('salaryStatus');
+    const q = readParam('q');
 
     const backParams = new URLSearchParams();
     if (tab) backParams.set('tab', tab);
