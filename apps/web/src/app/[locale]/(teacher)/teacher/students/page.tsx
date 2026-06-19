@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
-import { useRouter } from '@/config/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyAssignedStudents, studentKeys, type Student } from '@/features/students';
@@ -32,7 +31,6 @@ function getLevelDisplay(level?: string): string {
 
 export default function TeacherStudentsPage() {
   const params = useParams();
-  const router = useRouter();
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const locale = params.locale as string;
   const [searchQuery, setSearchQuery] = useState('');
