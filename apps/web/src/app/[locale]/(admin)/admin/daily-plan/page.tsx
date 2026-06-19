@@ -135,7 +135,7 @@ export default function AdminDailyPlanPage() {
     filters,
     !managerMissingCenter,
   );
-  const items = data?.items ?? [];
+  const items = useMemo(() => data?.items ?? [], [data?.items]);
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const safePage = Math.min(mobilePage, totalPages - 1);
   const mobileItems = useMemo(

@@ -107,9 +107,11 @@ export function WeekView({
     [safeMobileCardPage, selectedGroups, mobileCardsPageSize],
   );
 
+  const selectedGroupIdsKey = safeSelectedGroupIds.join(',');
+
   useEffect(() => {
     setMobileCardPage(0);
-  }, [currentDate, selectedGroups.length, safeSelectedGroupIds.join(',')]);
+  }, [currentDate, selectedGroups.length, selectedGroupIdsKey]);
 
   const goToMobileCardsPage = (nextPage: number) => {
     setMobileCardPage(nextPage);

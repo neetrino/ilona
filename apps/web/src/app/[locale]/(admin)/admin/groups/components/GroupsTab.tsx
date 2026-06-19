@@ -689,7 +689,7 @@ export function GroupsTab({
 
                 if (mode === 'list') {
                   setViewMode('list');
-                  updateUrl({ view: 'list' });
+                  updateViewModeInUrl('list');
                   return;
                 }
 

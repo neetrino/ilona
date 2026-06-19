@@ -81,33 +81,28 @@ export default function GroupsPage() {
     updateUrl({ tab: tab !== 'groups' ? tab : null });
   }, [updateUrl]);
 
-  // Force board mode on mobile
-  useEffect(() => {
-    if (isLg !== false) return;
-    if (viewMode !== 'board') {
-      setViewMode('board');
-    }
-    if (searchParams.get('view')) {
-      updateUrl({ view: null });
-    }
-  }, [isLg, searchParams, updateUrl, viewMode]);
-
-  // Sync view mode from URL
+  // Sync view mode from URL; force board on mobile once viewport is known
   useEffect(() => {
     const modeFromUrl = searchParams.get('view');
+
     if (isLg === false) {
-      if (viewMode !== 'board') {
-        setViewMode('board');
+      setViewMode('board');
+      if (modeFromUrl) {
+        updateUrl({ view: null });
       }
       return;
     }
 
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      setViewMode((prev) => (prev === modeFromUrl ? prev : modeFromUrl));
-    } else if (!modeFromUrl) {
-      setViewMode((prev) => (prev === 'board' ? prev : 'board'));
+    if (isLg === undefined) {
+      return;
     }
-  }, [isLg, searchParams, viewMode]);
+
+    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
+      setViewMode(modeFromUrl);
+    } else if (!modeFromUrl) {
+      setViewMode('board');
+    }
+  }, [isLg, searchParams, updateUrl]);
 
   // Sync active tab from URL
   useEffect(() => {

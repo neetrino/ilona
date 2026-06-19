@@ -44,11 +44,11 @@ export function FinanceFilters({
   isDeleting,
   isDeletingPayments,
   isSearching,
-  page,
-  pageSize,
-  totalPages,
-  total,
-  onPageChange,
+  page: _page,
+  pageSize: _pageSize,
+  totalPages: _totalPages,
+  total: _total,
+  onPageChange: _onPageChange,
 }: FinanceFiltersProps) {
   const t = useTranslations('finance');
   const statusOptions =

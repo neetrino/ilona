@@ -112,10 +112,13 @@ export function TeachersBoard({
   }));
   const hasUnassigned = (teachersByCenter.unassigned?.length || 0) > 0;
 
-  const selectedTeachers =
-    activeCenterTabId === 'unassigned'
-      ? teachersByCenter.unassigned || []
-      : teachersByCenter[activeCenterTabId || ''] || [];
+  const selectedTeachers = useMemo(
+    () =>
+      activeCenterTabId === 'unassigned'
+        ? teachersByCenter.unassigned || []
+        : teachersByCenter[activeCenterTabId || ''] || [],
+    [activeCenterTabId, teachersByCenter],
+  );
   const teachersPageSize = isIPad ? IPAD_TEACHERS_PAGE_SIZE : MOBILE_TEACHERS_PAGE_SIZE;
   const totalMobileTeachersPages = Math.max(
     1,
