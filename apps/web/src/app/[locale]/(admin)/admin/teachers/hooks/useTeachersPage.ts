@@ -54,8 +54,7 @@ export function useTeachersPage() {
   );
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
-    void urlRevision;
-    const mode = readUrlSearchParam('view', searchParams);
+    const mode = readUrlSearchParam('view', searchParams, urlRevision);
     if (mode === 'list' || mode === 'board') {
       return mode;
     }

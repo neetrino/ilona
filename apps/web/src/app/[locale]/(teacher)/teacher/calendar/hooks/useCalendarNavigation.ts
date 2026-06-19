@@ -11,7 +11,7 @@ export function useCalendarNavigation() {
   const [urlRevision, setUrlRevision] = useState(0);
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
-    const viewFromUrl = readUrlSearchParam('view', searchParams);
+    const viewFromUrl = readUrlSearchParam('view', searchParams, urlRevision);
     if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
       return viewFromUrl;
     }

@@ -128,7 +128,7 @@ export default function CalendarPage() {
   );
 
   const readViewModeFromUrl = useCallback((): 'week' | 'month' | 'list' => {
-    const viewFromUrl = readUrlSearchParam('view', searchParams);
+    const viewFromUrl = readUrlSearchParam('view', searchParams, urlRevision);
     if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
       return viewFromUrl;
     }

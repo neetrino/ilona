@@ -10,7 +10,12 @@ export function getLiveSearchParams(searchParams: URLSearchParams): URLSearchPar
 }
 
 /** Read a query param from the live browser URL first (production-safe), then from Next searchParams. */
-export function readUrlSearchParam(key: string, searchParams: URLSearchParams): string | null {
+export function readUrlSearchParam(
+  key: string,
+  searchParams: URLSearchParams,
+  urlSyncRevision?: number,
+): string | null {
+  void urlSyncRevision;
   return getLiveSearchParams(searchParams).get(key);
 }
 

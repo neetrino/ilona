@@ -178,7 +178,7 @@ export default function TeacherDailyPlanPage() {
   const [urlRevision, setUrlRevision] = useState(0);
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
-    const viewFromUrl = readUrlSearchParam('view', searchParams);
+    const viewFromUrl = readUrlSearchParam('view', searchParams, urlRevision);
     if (viewFromUrl === 'week' || viewFromUrl === 'today') {
       return viewFromUrl;
     }

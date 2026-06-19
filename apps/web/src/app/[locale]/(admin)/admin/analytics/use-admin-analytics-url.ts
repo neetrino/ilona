@@ -62,13 +62,13 @@ export function useAdminAnalyticsUrl() {
   const todayYmd = useMemo(() => toYmd(new Date()), []);
 
   const activeTab = useMemo(
-    () => parseTab(readUrlSearchParam('tab', searchParams)),
+    () => parseTab(readUrlSearchParam('tab', searchParams, urlRevision)),
     [searchParams, urlRevision],
   );
 
   const timeMode = useMemo(
     () => {
-      const modeFromUrl = readUrlSearchParam('pm', searchParams);
+      const modeFromUrl = readUrlSearchParam('pm', searchParams, urlRevision);
       if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'date') {
         return modeFromUrl;
       }
@@ -78,22 +78,22 @@ export function useAdminAnalyticsUrl() {
   );
 
   const dayYmd = useMemo(
-    () => parseYmdParam(readUrlSearchParam('pd', searchParams), todayYmd),
+    () => parseYmdParam(readUrlSearchParam('pd', searchParams, urlRevision), todayYmd),
     [searchParams, todayYmd, urlRevision],
   );
 
   const weekAnchorYmd = useMemo(
-    () => parseYmdParam(readUrlSearchParam('pw', searchParams), todayYmd),
+    () => parseYmdParam(readUrlSearchParam('pw', searchParams, urlRevision), todayYmd),
     [searchParams, todayYmd, urlRevision],
   );
 
   const customFromYmd = useMemo(
-    () => parseYmdParam(readUrlSearchParam('cfrom', searchParams), defRange.fromYmd),
+    () => parseYmdParam(readUrlSearchParam('cfrom', searchParams, urlRevision), defRange.fromYmd),
     [searchParams, defRange.fromYmd, urlRevision],
   );
 
   const customToYmd = useMemo(
-    () => parseYmdParam(readUrlSearchParam('cto', searchParams), defRange.toYmd),
+    () => parseYmdParam(readUrlSearchParam('cto', searchParams, urlRevision), defRange.toYmd),
     [searchParams, defRange.toYmd, urlRevision],
   );
 

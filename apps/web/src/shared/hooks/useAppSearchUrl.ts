@@ -17,7 +17,7 @@ export function useAppSearchUrl() {
   const [urlRevision, setUrlRevision] = useState(0);
 
   const readParam = useCallback(
-    (key: string) => readUrlSearchParam(key, searchParams),
+    (key: string) => readUrlSearchParam(key, searchParams, urlRevision),
     [searchParams, urlRevision],
   );
 

@@ -54,7 +54,7 @@ export function useAttendanceNavigation({
   );
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
-    const modeFromUrl = readUrlSearchParam('viewMode', searchParams);
+    const modeFromUrl = readUrlSearchParam('viewMode', searchParams, urlRevision);
     if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'month') {
       return modeFromUrl;
     }

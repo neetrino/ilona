@@ -26,7 +26,7 @@ export function useScheduleViewMode(): {
   const [urlRevision, setUrlRevision] = useState(0);
 
   const readViewFromUrl = useCallback((): ScheduleViewMode => {
-    return parseView(readUrlSearchParam('view', searchParams)) ?? 'week';
+    return parseView(readUrlSearchParam('view', searchParams, urlRevision)) ?? 'week';
   }, [searchParams, urlRevision]);
 
   const [pendingViewMode, setPendingViewMode] = useState<ScheduleViewMode | null>(null);

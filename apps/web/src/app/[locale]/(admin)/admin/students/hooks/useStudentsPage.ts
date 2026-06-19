@@ -80,7 +80,7 @@ export function useStudentsPage() {
   );
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
-    const mode = readUrlSearchParam('view', searchParams);
+    const mode = readUrlSearchParam('view', searchParams, urlRevision);
     if (mode === 'list' || mode === 'board') {
       return mode;
     }

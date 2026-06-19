@@ -137,7 +137,7 @@ export default function AdminCrmPage() {
   );
 
   const readCrmViewMode = useCallback((): 'board' | 'list' => {
-    const mode = readUrlSearchParam(VIEW_PARAM, searchParams);
+    const mode = readUrlSearchParam(VIEW_PARAM, searchParams, urlRevision);
     if (mode === 'list' || mode === 'board') {
       return mode;
     }

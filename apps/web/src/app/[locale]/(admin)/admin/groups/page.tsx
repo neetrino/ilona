@@ -23,14 +23,13 @@ export default function GroupsPage() {
 
   const [pendingTab, setPendingTab] = useState<TabType | null>(null);
 
-  const readTabFromUrl = (): TabType => {
-    void urlRevision;
-    const tabFromUrl = readUrlSearchParam('tab', searchParams);
+  const readTabFromUrl = useCallback((): TabType => {
+    const tabFromUrl = readUrlSearchParam('tab', searchParams, urlRevision);
     if (!isManager && (tabFromUrl === 'groups' || tabFromUrl === 'centers')) {
       return tabFromUrl;
     }
     return 'groups';
-  };
+  }, [searchParams, urlRevision, isManager]);
 
   const activeTab = pendingTab ?? readTabFromUrl();
 
@@ -41,7 +40,7 @@ export default function GroupsPage() {
     if (readTabFromUrl() === pendingTab) {
       setPendingTab(null);
     }
-  }, [pendingTab, searchParams, urlRevision, isManager]);
+  }, [pendingTab, readTabFromUrl]);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
