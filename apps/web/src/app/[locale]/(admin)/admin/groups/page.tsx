@@ -1,7 +1,7 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { GroupsTab } from './components/GroupsTab';
@@ -43,14 +43,16 @@ export default function GroupsPage() {
   });
   const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
 
-  // View mode state with URL persistence
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+  // View mode: URL is the source of truth (`view=list` | `view=board`)
+  const viewModeFromUrl = useMemo((): ViewMode => {
     const modeFromUrl = searchParams.get('view');
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
       return modeFromUrl;
     }
     return 'board';
-  });
+  }, [searchParams]);
+
+  const viewMode: ViewMode = isLg === false ? 'board' : viewModeFromUrl;
 
   // Update URL helper function
   const updateUrl = useCallback((updates: Record<string, string | null>) => {
@@ -68,41 +70,38 @@ export default function GroupsPage() {
       return;
     }
     const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
-    router.replace(nextUrl);
+    router.replace(nextUrl, { scroll: false });
   }, [pathname, router, searchParams]);
 
   // Update URL when view mode changes
   const updateViewModeInUrl = useCallback((mode: ViewMode) => {
-    updateUrl({ view: mode !== 'board' ? mode : null });
+    updateUrl({ view: mode });
   }, [updateUrl]);
+
+  // Keep `view` in the URL so refresh restores the same layout
+  useEffect(() => {
+    if (isLg === undefined) {
+      return;
+    }
+
+    const modeFromUrl = searchParams.get('view');
+
+    if (isLg === false) {
+      if (modeFromUrl && modeFromUrl !== 'board') {
+        updateUrl({ view: 'board' });
+      }
+      return;
+    }
+
+    if (!modeFromUrl) {
+      updateUrl({ view: 'board' });
+    }
+  }, [isLg, searchParams, updateUrl]);
 
   // Update URL when tab changes
   const updateTabInUrl = useCallback((tab: TabType) => {
     updateUrl({ tab: tab !== 'groups' ? tab : null });
   }, [updateUrl]);
-
-  // Sync view mode from URL; force board on mobile once viewport is known
-  useEffect(() => {
-    const modeFromUrl = searchParams.get('view');
-
-    if (isLg === false) {
-      setViewMode('board');
-      if (modeFromUrl) {
-        updateUrl({ view: null });
-      }
-      return;
-    }
-
-    if (isLg === undefined) {
-      return;
-    }
-
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      setViewMode(modeFromUrl);
-    } else if (!modeFromUrl) {
-      setViewMode('board');
-    }
-  }, [isLg, searchParams, updateUrl]);
 
   // Sync active tab from URL
   useEffect(() => {
@@ -265,7 +264,6 @@ export default function GroupsPage() {
               page={page}
               setPage={setPage}
               viewMode={viewMode}
-              setViewMode={setViewMode}
               updateViewModeInUrl={updateViewModeInUrl}
               updateUrl={updateUrl}
               searchParams={searchParams}

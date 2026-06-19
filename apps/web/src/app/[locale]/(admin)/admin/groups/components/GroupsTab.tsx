@@ -73,7 +73,6 @@ interface GroupsTabProps {
   page: number;
   setPage: (page: number | ((prev: number) => number)) => void;
   viewMode: 'list' | 'board';
-  setViewMode: (mode: 'list' | 'board') => void;
   updateViewModeInUrl: (mode: 'list' | 'board') => void;
   updateUrl: (updates: Record<string, string | null>) => void;
   searchParams: URLSearchParams;
@@ -91,7 +90,6 @@ export function GroupsTab({
   page,
   setPage,
   viewMode,
-  setViewMode,
   updateViewModeInUrl,
   updateUrl,
   searchParams,
@@ -381,12 +379,11 @@ export function GroupsTab({
 
   useEffect(() => {
     if (isLg === false && viewMode !== 'board') {
-      setViewMode('board');
       updateViewModeInUrl('board');
       setPage(0);
       setSelectedGroupIds(new Set());
     }
-  }, [isLg, setPage, setSelectedGroupIds, setViewMode, updateViewModeInUrl, viewMode]);
+  }, [isLg, setPage, setSelectedGroupIds, updateViewModeInUrl, viewMode]);
 
   // Students modal state from URL so it survives refresh
   const studentsGroupId = searchParams.get('studentsGroup');
@@ -688,7 +685,6 @@ export function GroupsTab({
                 setSelectedGroupIds(new Set());
 
                 if (mode === 'list') {
-                  setViewMode('list');
                   updateViewModeInUrl('list');
                   return;
                 }
@@ -700,14 +696,12 @@ export function GroupsTab({
                   allCenters[0]?.id ??
                   null;
 
-                setViewMode('board');
-
                 if (!selectedCenterId) {
                   setBoardTabCenterId(nextBoardCenterId);
                 }
 
                 updateUrl({
-                  view: null,
+                  view: 'board',
                   branch: selectedCenterId ? null : nextBoardCenterId,
                 });
               }}
