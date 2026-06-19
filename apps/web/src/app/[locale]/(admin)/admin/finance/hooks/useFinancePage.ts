@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef, startTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import type { PaymentStatus, SalaryStatus } from '@/features/finance';
+import { replaceAppSearchUrl } from '@/shared/lib/url-search-params';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -46,21 +47,13 @@ export function useFinancePage() {
 
   // Update URL params when filters change
   const updateUrlParams = useCallback((updates: Record<string, string | number | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === null || value === '' || value === 0) {
-        params.delete(key);
-      } else {
-        params.set(key, String(value));
-      }
+    replaceAppSearchUrl({
+      router,
+      pathname,
+      updates,
+      scroll: false,
     });
-
-    const nextQs = params.toString();
-    const currentQs = searchParams.toString();
-    if (nextQs === currentQs) return;
-    router.replace(nextQs ? `${pathname}?${nextQs}` : pathname, { scroll: false });
-  }, [router, pathname, searchParams]);
+  }, [router, pathname]);
 
   // Debounce search: update committed value and URL after delay; reset page only when search actually changed.
   // Do URL/page updates in the timeout callback (not inside setState updater) to avoid updating Router during render.

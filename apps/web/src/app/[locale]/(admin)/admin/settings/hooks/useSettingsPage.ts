@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { readUrlSearchParam, replaceAppSearchParams, getLiveSearchParams } from '@/shared/lib/url-search-params';
 
 type SettingsTab =
   | 'security'
@@ -30,33 +31,31 @@ export function useSettingsPage() {
   
   const [activeTab, setActiveTab] = useState<SettingsTab>(getInitialTab);
   const [isSaving, setIsSaving] = useState(false);
+  const [urlRevision, setUrlRevision] = useState(0);
 
   // Sync activeTab with URL when URL changes (e.g., browser back/forward)
   useEffect(() => {
-    const tabFromUrl = searchParams.get('tab') as SettingsTab | null;
+    const tabFromUrl = readUrlSearchParam('tab', searchParams) as SettingsTab | null;
     if (
       tabFromUrl &&
       ['security', 'notifications', 'system', 'penalty', 'manager', 'dashboard-banner'].includes(tabFromUrl)
     ) {
-      setActiveTab((currentTab) => {
-        // Only update if different to avoid unnecessary re-renders
-        return tabFromUrl !== currentTab ? tabFromUrl : currentTab;
-      });
+      setActiveTab((currentTab) => (tabFromUrl !== currentTab ? tabFromUrl : currentTab));
     } else {
-      // If URL has no tab param, reset to security
-      setActiveTab((currentTab) => {
-        return currentTab !== 'security' ? 'security' : currentTab;
-      });
+      setActiveTab((currentTab) => (currentTab !== 'security' ? 'security' : currentTab));
     }
-  }, [searchParams]); // Only depend on searchParams to sync with URL changes
+  }, [searchParams, urlRevision]);
 
   const updateParams = useCallback((mutate: (params: URLSearchParams) => void) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = getLiveSearchParams(searchParams);
     mutate(params);
-    const nextQs = params.toString();
-    const currentQs = searchParams.toString();
-    if (nextQs === currentQs) return;
-    router.replace(nextQs ? `${pathname}?${nextQs}` : pathname, { scroll: false });
+    replaceAppSearchParams({
+      router,
+      pathname,
+      params,
+      scroll: false,
+      onReplaced: () => setUrlRevision((revision) => revision + 1),
+    });
   }, [router, pathname, searchParams]);
 
   // Update URL when tab changes

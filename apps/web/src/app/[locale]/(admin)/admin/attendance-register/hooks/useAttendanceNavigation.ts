@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
 import {
   getPreviousWeek,
   getNextWeek,
@@ -37,23 +38,48 @@ export function useAttendanceNavigation({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations('attendance');
+  const [urlRevision, setUrlRevision] = useState(0);
 
-  // Initialize view mode from URL query params, with mobile fallback to first available mode ('day')
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const modeFromUrl = searchParams.get('viewMode');
+  const replaceParams = useCallback(
+    (updates: Record<string, string | number | null | undefined>) => {
+      replaceAppSearchUrl({
+        router,
+        pathname,
+        updates,
+        scroll: false,
+        onReplaced: () => setUrlRevision((revision) => revision + 1),
+      });
+    },
+    [pathname, router],
+  );
+
+  const readViewModeFromUrl = useCallback((): ViewMode => {
+    const modeFromUrl = readUrlSearchParam('viewMode', searchParams);
     if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'month') {
       return modeFromUrl;
     }
     return getDefaultViewMode();
-  });
+  }, [searchParams, urlRevision]);
+
+  const [pendingViewMode, setPendingViewMode] = useState<ViewMode | null>(null);
+  const viewMode = pendingViewMode ?? readViewModeFromUrl();
+
+  useEffect(() => {
+    if (pendingViewMode === null) {
+      return;
+    }
+    if (readViewModeFromUrl() === pendingViewMode) {
+      setPendingViewMode(null);
+    }
+  }, [pendingViewMode, readViewModeFromUrl]);
 
   // Date state
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
   // Initialize selectedGroupIds from URL query params (support both single and multiple)
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(() => {
-    const groupIdParam = searchParams.get('groupId');
-    const groupIdsParam = searchParams.get('groupIds');
+    const groupIdsParam = readUrlSearchParam('groupIds', searchParams);
+    const groupIdParam = readUrlSearchParam('groupId', searchParams);
     if (groupIdsParam) {
       return groupIdsParam.split(',').filter(Boolean);
     }
@@ -65,34 +91,22 @@ export function useAttendanceNavigation({
 
   const [selectedDayForMonthView, setSelectedDayForMonthView] = useState<string | null>(null);
 
-  // Update URL query params when selectedGroupIds changes
   const updateGroupIdsInUrl = (groupIds: string[]) => {
-    const params = new URLSearchParams(searchParams.toString());
-    // Remove old single groupId param for backward compatibility
-    params.delete('groupId');
-    if (groupIds.length > 0) {
-      params.set('groupIds', groupIds.join(','));
-    } else {
-      params.delete('groupIds');
-    }
-    router.push(`${pathname}?${params.toString()}`);
+    replaceParams({
+      groupId: null,
+      groupIds: groupIds.length > 0 ? groupIds.join(',') : null,
+    });
   };
 
-  // Update URL query params when viewMode changes
   const updateViewModeInUrl = (mode: ViewMode) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode !== 'week') {
-      params.set('viewMode', mode);
-    } else {
-      params.delete('viewMode');
-    }
-    router.push(`${pathname}?${params.toString()}`);
+    setPendingViewMode(mode);
+    replaceParams({ viewMode: mode === 'week' ? null : mode });
   };
 
   // Sync selectedGroupIds from URL on mount or when URL changes
   useEffect(() => {
-    const groupIdParam = searchParams.get('groupId');
-    const groupIdsParam = searchParams.get('groupIds');
+    const groupIdsParam = readUrlSearchParam('groupIds', searchParams);
+    const groupIdParam = readUrlSearchParam('groupId', searchParams);
     let newGroupIds: string[] = [];
     if (groupIdsParam) {
       newGroupIds = groupIdsParam.split(',').filter(Boolean);
@@ -100,35 +114,14 @@ export function useAttendanceNavigation({
       newGroupIds = [groupIdParam];
     }
     setSelectedGroupIds((currentGroupIds) => {
-      const currentStr = currentGroupIds.sort().join(',');
-      const newStr = newGroupIds.sort().join(',');
+      const currentStr = [...currentGroupIds].sort().join(',');
+      const newStr = [...newGroupIds].sort().join(',');
       if (currentStr !== newStr) {
         return newGroupIds;
       }
       return currentGroupIds;
     });
-  }, [searchParams]);
-
-  // Sync viewMode from URL on mount or when URL changes
-  useEffect(() => {
-    const modeFromUrl = searchParams.get('viewMode');
-    if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'month') {
-      setViewMode((currentMode) => {
-        if (modeFromUrl !== currentMode) {
-          return modeFromUrl;
-        }
-        return currentMode;
-      });
-    } else if (!modeFromUrl) {
-      setViewMode((currentMode) => {
-        const defaultMode = getDefaultViewMode();
-        if (currentMode !== defaultMode) {
-          return defaultMode;
-        }
-        return currentMode;
-      });
-    }
-  }, [searchParams]);
+  }, [searchParams, urlRevision]);
 
   // Confirmation helper
   const confirmWithUnsavedChanges = (message: string): boolean => {
@@ -166,7 +159,6 @@ export function useAttendanceNavigation({
     if (!confirmWithAction('switchViewMode')) {
       return;
     }
-    setViewMode(newMode);
     updateViewModeInUrl(newMode);
     setSelectedDayForMonthView(null);
     if (newMode === 'day') {

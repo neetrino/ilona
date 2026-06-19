@@ -20,7 +20,7 @@ export default function CenterGroupsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
 
-  const { viewMode, updateUrl, handleViewModeChange, searchParams } = useGroupsViewUrl({
+  const { viewMode, updateUrl, handleViewModeChange, searchParams, urlRevision } = useGroupsViewUrl({
     enforceBoardOnMobile: false,
   });
 
@@ -50,6 +50,7 @@ export default function CenterGroupsPage() {
         onViewModeChange={handleViewModeChange}
         updateUrl={updateUrl}
         searchParams={searchParams}
+        urlRevision={urlRevision}
         selectedCenterId={centerId}
       />
     </DashboardLayout>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { getLiveSearchParams, readUrlSearchParam, replaceAppSearchParams } from '@/shared/lib/url-search-params';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { ChatList } from './ChatList';
 import { StudentChatList } from './StudentChatList';
@@ -39,12 +40,29 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const createDirectChat = useCreateDirectChat();
   const { data: teachers = [], isLoading: isLoadingTeachers } = useMyTeachers(user?.role === 'STUDENT');
   const isInitialMount = useRef(true);
+  const [urlRevision, setUrlRevision] = useState(0);
+
+  const replaceSearchParams = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
+      const params = getLiveSearchParams(searchParams);
+      mutate(params);
+      replaceAppSearchParams({
+        router,
+        pathname,
+        params,
+        scroll: false,
+        onReplaced: () => setUrlRevision((revision) => revision + 1),
+      });
+    },
+    [pathname, router, searchParams],
+  );
+
   const isStudent = user?.role === 'STUDENT';
   const isTeacher = user?.role === 'TEACHER';
   const ui = getChatThemeForRole(user?.role);
 
   // Get returnTo from query params
-  const returnToParam = searchParams.get('returnTo');
+  const returnToParam = readUrlSearchParam('returnTo', searchParams);
   const returnTo = returnToParam ? decodeURIComponent(returnToParam) : null;
 
   // Handle back to previous page
@@ -84,7 +102,8 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   useSocket();
 
   // Get conversationId from URL (support both chatId and conversationId for backward compatibility)
-  const conversationIdFromUrl = searchParams.get('conversationId') || searchParams.get('chatId');
+  const conversationIdFromUrl =
+    readUrlSearchParam('conversationId', searchParams) || readUrlSearchParam('chatId', searchParams);
 
   // Restore chat from URL on initial mount when chats are loaded
   // CRITICAL: Only restore if conversationId is explicitly in URL (user navigated with it)
@@ -93,8 +112,8 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
     if (isLoadingChats || !isInitialMount.current) return;
     
     // For students, also wait for teachers to load if we need to handle teacherId param
-    const typeFromUrl = searchParams.get('type');
-    const teacherIdFromUrl = searchParams.get('teacherId');
+    const typeFromUrl = readUrlSearchParam('type', searchParams);
+    const teacherIdFromUrl = readUrlSearchParam('teacherId', searchParams);
     if (isStudent && typeFromUrl === 'dm' && teacherIdFromUrl && isLoadingTeachers) {
       return;
     }
@@ -126,11 +145,11 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
           setActiveChat(existingChat);
           setMobileListVisible(false);
           // Update URL to use chatId
-          const params = new URLSearchParams(searchParams.toString());
-          params.delete('type');
-          params.delete('teacherId');
-          params.set('chatId', existingChat.id);
-          router.replace(`${pathname}?${params.toString()}`);
+          replaceSearchParams((params) => {
+            params.delete('type');
+            params.delete('teacherId');
+            params.set('chatId', existingChat.id);
+          });
         } else {
           // Create new chat
           createDirectChat.mutate(teacher.userId, {
@@ -138,11 +157,11 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
               setActiveChat(newChat);
               setMobileListVisible(false);
               // Update URL to use chatId
-              const params = new URLSearchParams(searchParams.toString());
-              params.delete('type');
-              params.delete('teacherId');
-              params.set('chatId', newChat.id);
-              router.replace(`${pathname}?${params.toString()}`);
+              replaceSearchParams((params) => {
+                params.delete('type');
+                params.delete('teacherId');
+                params.set('chatId', newChat.id);
+              });
             },
           });
         }
@@ -167,65 +186,62 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
             })
             .catch(() => {
               // Chat doesn't exist or user doesn't have access, remove from URL
-              const params = new URLSearchParams(searchParams.toString());
-              params.delete('chatId');
-              params.delete('conversationId');
-              router.replace(`${pathname}?${params.toString()}`);
+              replaceSearchParams((params) => {
+                params.delete('chatId');
+                params.delete('conversationId');
+              });
             });
         } else {
-          // For students, remove chatId if not found
-          const params = new URLSearchParams(searchParams.toString());
-          params.delete('chatId');
-          params.delete('conversationId');
-          router.replace(`${pathname}?${params.toString()}`);
+          replaceSearchParams((params) => {
+            params.delete('chatId');
+            params.delete('conversationId');
+          });
         }
       }
       isInitialMount.current = false;
     }
     // Note: If no chatIdFromUrl and no teacherIdFromUrl, we already handled it above
-  }, [chats, isLoadingChats, isLoadingTeachers, teachers, searchParams, setActiveChat, setMobileListVisible, router, pathname, isTeacher, isStudent, createDirectChat, conversationIdFromUrl, activeChat]);
+  }, [chats, isLoadingChats, isLoadingTeachers, teachers, searchParams, setActiveChat, setMobileListVisible, replaceSearchParams, isTeacher, isStudent, createDirectChat, conversationIdFromUrl, activeChat]);
 
   // Sync URL when activeChat changes (but skip on initial mount)
   useEffect(() => {
     if (isInitialMount.current) return;
     
-    const chatIdFromUrl = conversationIdFromUrl;
+    const chatIdInUrl = conversationIdFromUrl;
     if (activeChat) {
-      if (activeChat.id !== chatIdFromUrl) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('conversationId', activeChat.id);
-        params.delete('chatId'); // Remove old chatId param for consistency
-        router.replace(`${pathname}?${params.toString()}`);
+      if (activeChat.id !== chatIdInUrl) {
+        replaceSearchParams((params) => {
+          params.set('conversationId', activeChat.id);
+          params.delete('chatId');
+        });
       }
-    } else if (chatIdFromUrl) {
-      // activeChat is null but URL has conversationId/chatId - remove it
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('chatId');
-      params.delete('conversationId');
-      router.replace(`${pathname}?${params.toString()}`);
+    } else if (chatIdInUrl) {
+      replaceSearchParams((params) => {
+        params.delete('chatId');
+        params.delete('conversationId');
+      });
     }
-  }, [activeChat, searchParams, router, pathname, conversationIdFromUrl]);
+  }, [activeChat, conversationIdFromUrl, replaceSearchParams, urlRevision]);
 
   const handleSelectChat = (chat: Chat) => {
     setActiveChat(chat);
     setMobileListVisible(false);
     // Update URL immediately - remove type and teacherId params if present
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('type');
-    params.delete('teacherId');
-    params.set('conversationId', chat.id);
-    params.delete('chatId'); // Remove old chatId param for consistency
-    router.replace(`${pathname}?${params.toString()}`);
+    replaceSearchParams((params) => {
+      params.delete('type');
+      params.delete('teacherId');
+      params.set('conversationId', chat.id);
+      params.delete('chatId');
+    });
   };
 
   const handleBack = () => {
     setMobileListVisible(true);
     setActiveChat(null);
-    // Update URL
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('chatId');
-    params.delete('conversationId');
-    router.replace(`${pathname}?${params.toString()}`);
+    replaceSearchParams((params) => {
+      params.delete('chatId');
+      params.delete('conversationId');
+    });
   };
 
   // Check if we're in full-screen mode (when className includes rounded-none)

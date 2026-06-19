@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { getLiveSearchParams, readUrlSearchParam, replaceAppSearchParams } from '@/shared/lib/url-search-params';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { AdminChatList } from './AdminChatList';
@@ -28,6 +29,22 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible, setAccountKey } =
     useChatStore();
   const isInitialMount = useRef(true);
+  const [urlRevision, setUrlRevision] = useState(0);
+
+  const replaceSearchParams = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
+      const params = getLiveSearchParams(searchParams);
+      mutate(params);
+      replaceAppSearchParams({
+        router,
+        pathname,
+        params,
+        scroll: false,
+        onReplaced: () => setUrlRevision((revision) => revision + 1),
+      });
+    },
+    [pathname, router, searchParams],
+  );
 
   // Isolate chat state per account so Admin selection does not affect Student (and vice versa)
   useEffect(() => {
@@ -36,17 +53,17 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   }, [user?.id, user?.role, setAccountKey]);
 
   // Get tab from URL, no default - user must select a tab
-  const tabFromUrl = searchParams.get('tab') as AdminChatTab | null;
+  const tabFromUrl = readUrlSearchParam('tab', searchParams) as AdminChatTab | null;
   const validTabs = useMemo<AdminChatTab[]>(() => ['students', 'teachers', 'groups'], []);
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : null;
   const [activeTab, setActiveTab] = useState<AdminChatTab | null>(initialTab);
   const [showCreateGroupChatModal, setShowCreateGroupChatModal] = useState(false);
 
-  // Get conversationId from URL (support both chatId and conversationId for backward compatibility)
-  const conversationIdFromUrl = searchParams.get('conversationId') || searchParams.get('chatId');
+  const conversationIdFromUrl =
+    readUrlSearchParam('conversationId', searchParams) || readUrlSearchParam('chatId', searchParams);
 
   // Get returnTo from query params
-  const returnToParam = searchParams.get('returnTo');
+  const returnToParam = readUrlSearchParam('returnTo', searchParams);
   const returnTo = returnToParam ? decodeURIComponent(returnToParam) : null;
 
   // Initialize socket connection
@@ -61,25 +78,21 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
 
   // Sync tab with URL
   useEffect(() => {
-    const tabFromUrl = searchParams.get('tab') as AdminChatTab | null;
-    if (tabFromUrl && validTabs.includes(tabFromUrl) && tabFromUrl !== activeTab) {
-      setActiveTab(tabFromUrl);
-    } else if (!tabFromUrl && activeTab !== null) {
-      // If URL has no tab but state has one, clear it
+    const tab = readUrlSearchParam('tab', searchParams) as AdminChatTab | null;
+    if (tab && validTabs.includes(tab)) {
+      setActiveTab(tab);
+    } else if (!tab) {
       setActiveTab(null);
     }
-  }, [searchParams, activeTab, validTabs]);
+  }, [searchParams, urlRevision, validTabs]);
 
   // Handle tab change
   const handleTabChange = (tab: AdminChatTab) => {
     setActiveTab(tab);
-    // Update URL
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('tab', tab);
-    // Clear conversationId when switching tabs
-    params.delete('conversationId');
-    router.replace(`${pathname}?${params.toString()}`);
-    // Clear active chat when switching tabs
+    replaceSearchParams((params) => {
+      params.set('tab', tab);
+      params.delete('conversationId');
+    });
     setActiveChat(null);
   };
 
@@ -111,9 +124,9 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
           // Group chat - select groups tab
           if (activeTab !== 'groups') {
             setActiveTab('groups');
-            const params = new URLSearchParams(searchParams.toString());
-            params.set('tab', 'groups');
-            router.replace(`${pathname}?${params.toString()}`);
+            replaceSearchParams((params) => {
+              params.set('tab', 'groups');
+            });
           }
         } else if (chatFromUrl.type === 'DIRECT') {
           // Direct chat - determine if it's a student or teacher
@@ -122,14 +135,14 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
             const otherUserRole = otherParticipant.user.role;
             if (otherUserRole === 'STUDENT' && activeTab !== 'students') {
               setActiveTab('students');
-              const params = new URLSearchParams(searchParams.toString());
-              params.set('tab', 'students');
-              router.replace(`${pathname}?${params.toString()}`);
+              replaceSearchParams((params) => {
+                params.set('tab', 'students');
+              });
             } else if (otherUserRole === 'TEACHER' && activeTab !== 'teachers') {
               setActiveTab('teachers');
-              const params = new URLSearchParams(searchParams.toString());
-              params.set('tab', 'teachers');
-              router.replace(`${pathname}?${params.toString()}`);
+              replaceSearchParams((params) => {
+                params.set('tab', 'teachers');
+              });
             }
           }
         }
@@ -137,38 +150,36 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
         isInitialMount.current = false;
       } else if (!isLoadingChatFromUrl && isChatError) {
         // Chat failed to load - clear conversationId from URL and mark as not initial mount
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete('conversationId');
-        router.replace(`${pathname}?${params.toString()}`);
+        replaceSearchParams((params) => {
+          params.delete('conversationId');
+        });
         isInitialMount.current = false;
       }
       // If still loading, wait for the next render
     }
     // Note: If no conversationIdFromUrl, we already handled it above
-  }, [conversationIdFromUrl, chatFromUrl, isLoadingChatFromUrl, isChatError, setActiveChat, setMobileListVisible, searchParams, router, pathname, activeTab, user, activeChat]);
+  }, [conversationIdFromUrl, chatFromUrl, isLoadingChatFromUrl, isChatError, setActiveChat, setMobileListVisible, searchParams, replaceSearchParams, activeTab, user, activeChat]);
 
   // Sync URL when activeChat changes (but skip on initial mount)
   useEffect(() => {
     if (isInitialMount.current) return;
     
-    const conversationIdFromUrl = searchParams.get('conversationId');
+    const conversationIdInUrl = readUrlSearchParam('conversationId', searchParams);
     if (activeChat) {
-      if (activeChat.id !== conversationIdFromUrl) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('conversationId', activeChat.id);
-        // Ensure tab is set if we have one
-        if (!params.get('tab') && activeTab) {
-          params.set('tab', activeTab);
-        }
-        router.replace(`${pathname}?${params.toString()}`);
+      if (activeChat.id !== conversationIdInUrl) {
+        replaceSearchParams((params) => {
+          params.set('conversationId', activeChat.id);
+          if (!params.get('tab') && activeTab) {
+            params.set('tab', activeTab);
+          }
+        });
       }
-    } else if (conversationIdFromUrl) {
-      // activeChat is null but URL has conversationId - remove it
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('conversationId');
-      router.replace(`${pathname}?${params.toString()}`);
+    } else if (conversationIdInUrl) {
+      replaceSearchParams((params) => {
+        params.delete('conversationId');
+      });
     }
-  }, [activeChat, searchParams, router, pathname, activeTab]);
+  }, [activeChat, activeTab, replaceSearchParams, searchParams, urlRevision]);
 
   // Handle back to previous page
   const handleBackToPrevious = () => {
@@ -221,22 +232,20 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
       }
     );
     
-    // Update URL immediately
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('conversationId', chat.id);
-    if (activeTab) {
-      params.set('tab', activeTab);
-    }
-    router.replace(`${pathname}?${params.toString()}`);
+    replaceSearchParams((params) => {
+      params.set('conversationId', chat.id);
+      if (activeTab) {
+        params.set('tab', activeTab);
+      }
+    });
   };
 
   const handleBack = () => {
     setMobileListVisible(true);
     setActiveChat(null);
-    // Update URL
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('conversationId');
-    router.replace(`${pathname}?${params.toString()}`);
+    replaceSearchParams((params) => {
+      params.delete('conversationId');
+    });
   };
 
   const handleCustomGroupChatCreated = (chat: Chat) => {
@@ -249,10 +258,10 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
       if (existing) return oldData;
       return [chat, ...oldData];
     });
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('conversationId', chat.id);
-    if (activeTab) params.set('tab', activeTab);
-    router.replace(`${pathname}?${params.toString()}`);
+    replaceSearchParams((params) => {
+      params.set('conversationId', chat.id);
+      if (activeTab) params.set('tab', activeTab);
+    });
   };
 
   // Check if we're in full-screen mode (when className includes rounded-none)

@@ -18,6 +18,7 @@ import { useTeachers } from '@/features/teachers';
 import { useGroups } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
+import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
 import { groupStudentsByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
@@ -63,6 +64,28 @@ export function useStudentsPage() {
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
+  const [urlRevision, setUrlRevision] = useState(0);
+
+  const replaceParams = useCallback(
+    (updates: Record<string, string | number | null | undefined>) => {
+      replaceAppSearchUrl({
+        router,
+        pathname,
+        updates,
+        scroll: false,
+        onReplaced: () => setUrlRevision((revision) => revision + 1),
+      });
+    },
+    [pathname, router],
+  );
+
+  const readViewModeFromUrl = useCallback((): ViewMode => {
+    const mode = readUrlSearchParam('view', searchParams);
+    if (mode === 'list' || mode === 'board') {
+      return mode;
+    }
+    return 'list';
+  }, [searchParams, urlRevision]);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +100,7 @@ export function useStudentsPage() {
   
   // Modal/Dialog states — local state + URL sync (same pattern as Groups createGroup / Calendar add-lesson).
   const [isAddStudentOpen, setIsAddStudentOpenState] = useState(
-    () => searchParams.get(ADD_STUDENT_URL_PARAM) === '1',
+    () => readUrlSearchParam(ADD_STUDENT_URL_PARAM, searchParams) === '1',
   );
   const isAddStudentClosingRef = useRef(false);
 
@@ -85,31 +108,26 @@ export function useStudentsPage() {
     if (isAddStudentClosingRef.current) {
       return;
     }
-    const shouldOpen = searchParams.get(ADD_STUDENT_URL_PARAM) === '1';
-    if (isAddStudentOpen !== shouldOpen) {
-      setIsAddStudentOpenState(shouldOpen);
-    }
-  }, [searchParams, isAddStudentOpen]);
+    const shouldOpen = readUrlSearchParam(ADD_STUDENT_URL_PARAM, searchParams) === '1';
+    setIsAddStudentOpenState(shouldOpen);
+  }, [searchParams, urlRevision]);
 
   const setIsAddStudentOpen = useCallback(
     (open: boolean) => {
-      const next = new URLSearchParams(searchParams.toString());
       if (open) {
         isAddStudentClosingRef.current = false;
         setIsAddStudentOpenState(true);
-        next.set(ADD_STUDENT_URL_PARAM, '1');
+        replaceParams({ [ADD_STUDENT_URL_PARAM]: '1' });
       } else {
         isAddStudentClosingRef.current = true;
         setIsAddStudentOpenState(false);
-        next.delete(ADD_STUDENT_URL_PARAM);
+        replaceParams({ [ADD_STUDENT_URL_PARAM]: null });
         setTimeout(() => {
           isAddStudentClosingRef.current = false;
         }, 100);
       }
-      const url = next.toString() ? `${pathname}?${next.toString()}` : pathname;
-      router.replace(url, { scroll: false });
     },
-    [pathname, router, searchParams],
+    [replaceParams],
   );
   const [isEditStudentOpen, setIsEditStudentOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -150,43 +168,41 @@ export function useStudentsPage() {
   const nowForPage = now;
   
   // View mode state with URL persistence
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const modeFromUrl = searchParams.get('view');
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      return modeFromUrl;
+  const [pendingViewMode, setPendingViewMode] = useState<ViewMode | null>(null);
+  const viewMode = pendingViewMode ?? readViewModeFromUrl();
+
+  useEffect(() => {
+    if (pendingViewMode === null) {
+      return;
     }
-    return 'list'; // Default to list view
-  });
+    if (readViewModeFromUrl() === pendingViewMode) {
+      setPendingViewMode(null);
+    }
+  }, [pendingViewMode, readViewModeFromUrl]);
 
   // Update URL when view mode changes
-  const updateViewModeInUrl = (mode: ViewMode) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode !== 'list') {
-      params.set('view', mode);
-    } else {
-      params.delete('view');
-    }
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  const updateViewModeInUrl = useCallback(
+    (mode: ViewMode) => {
+      setPendingViewMode(mode);
+      replaceParams({ view: mode === 'list' ? null : mode });
+    },
+    [replaceParams],
+  );
 
-  // Sync view mode from URL
-  useEffect(() => {
-    const modeFromUrl = searchParams.get('view');
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      setViewMode(modeFromUrl);
-    } else if (!modeFromUrl) {
-      setViewMode('list');
-    }
-  }, [searchParams]);
+  const setViewMode = useCallback(
+    (mode: ViewMode) => {
+      updateViewModeInUrl(mode);
+    },
+    [updateViewModeInUrl],
+  );
 
   useEffect(() => {
-    const studentIdFromUrl = searchParams.get('studentId');
+    const studentIdFromUrl = readUrlSearchParam('studentId', searchParams);
     setSelectedStudentIdForDetails(studentIdFromUrl);
     setIsStudentDetailsModalOpen(!!studentIdFromUrl);
-  }, [searchParams]);
+  }, [searchParams, urlRevision]);
 
-  // Feedback modal: read student id from URL so refresh keeps modal open
-  const feedbackStudentIdFromUrl = searchParams.get('feedback') || null;
+  const feedbackStudentIdFromUrl = readUrlSearchParam('feedback', searchParams);
   useEffect(() => {
     if (feedbackStudentIdFromUrl) {
       setIsFeedbackModalOpen(true);
@@ -444,22 +460,14 @@ export function useStudentsPage() {
   const handleShowFeedback = (student: Student) => {
     setSelectedStudentForFeedback(student);
     setIsFeedbackModalOpen(true);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('feedback', student.id);
-    router.push(`${pathname}?${params.toString()}`);
+    replaceParams({ feedback: student.id });
   };
 
   const handleFeedbackModalOpenChange = (open: boolean) => {
     setIsFeedbackModalOpen(open);
     if (!open) {
       setSelectedStudentForFeedback(null);
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('feedback');
-      if (params.toString()) {
-        router.push(`${pathname}?${params.toString()}`);
-      } else {
-        router.push(pathname);
-      }
+      replaceParams({ feedback: null });
     }
   };
 
@@ -608,18 +616,13 @@ export function useStudentsPage() {
   const handleStudentDetailsOpen = (student: Student) => {
     setSelectedStudentIdForDetails(student.id);
     setIsStudentDetailsModalOpen(true);
-    const next = new URLSearchParams(searchParams.toString());
-    next.set('studentId', student.id);
-    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    replaceParams({ studentId: student.id });
   };
 
   const handleStudentDetailsClose = () => {
     setIsStudentDetailsModalOpen(false);
     setSelectedStudentIdForDetails(null);
-    const next = new URLSearchParams(searchParams.toString());
-    next.delete('studentId');
-    const url = next.toString() ? `${pathname}?${next.toString()}` : pathname;
-    router.replace(url, { scroll: false });
+    replaceParams({ studentId: null });
   };
 
   // Stats calculation (only full students have user.status; onboarding items are not counted as active)
