@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
-import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
+import { useParams } from 'next/navigation';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { useRouter } from '@/config/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyAssignedStudents, studentKeys, type Student } from '@/features/students';
@@ -32,8 +33,7 @@ function getLevelDisplay(level?: string): string {
 export default function TeacherStudentsPage() {
   const params = useParams();
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const locale = params.locale as string;
   const [searchQuery, setSearchQuery] = useState('');
   const [transferLeadId, setTransferLeadId] = useState<string | null>(null);
@@ -47,22 +47,7 @@ export default function TeacherStudentsPage() {
 
   const { data: groups, isLoading: isLoadingGroups } = useMyGroups();
   const groupsList = useMemo(() => groups || [], [groups]);
-  const [urlRevision, setUrlRevision] = useState(0);
-  usePopstateUrlSync(setUrlRevision);
   const [pendingGroupId, setPendingGroupId] = useState<string | null>(null);
-
-  const replaceParams = useCallback(
-    (updates: Record<string, string | number | null | undefined>) => {
-      replaceAppSearchUrl({
-        router,
-        pathname,
-        updates,
-        scroll: false,
-        onReplaced: () => setUrlRevision((revision) => revision + 1),
-      });
-    },
-    [pathname, router],
-  );
 
   const urlGroupId = readUrlSearchParam('groupId', searchParams, urlRevision);
 

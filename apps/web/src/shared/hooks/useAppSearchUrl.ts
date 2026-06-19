@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from '@/config/navigation';
 import {
   getLiveSearchParams,
   readUrlSearchParam,

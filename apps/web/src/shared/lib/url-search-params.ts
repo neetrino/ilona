@@ -1,6 +1,35 @@
+import { startTransition } from 'react';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 export type SearchParamUpdates = Record<string, string | number | null | undefined>;
+
+/** Browser pathname is the source of truth in production (localePrefix: never). */
+function resolveAppPathname(fallbackPathname: string): string {
+  if (typeof window !== 'undefined' && window.location.pathname) {
+    return window.location.pathname;
+  }
+  return fallbackPathname;
+}
+
+function getBrowserUrl(): string {
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+/** Keep address bar in sync when Next.js router.replace reverts query params in production. */
+function commitBrowserSearchUrl(
+  nextUrl: string,
+  router: Pick<AppRouterInstance, 'replace'>,
+  scroll: boolean,
+): void {
+  window.history.replaceState(window.history.state, '', nextUrl);
+
+  startTransition(() => {
+    router.replace(nextUrl, { scroll });
+    if (getBrowserUrl() !== nextUrl) {
+      window.history.replaceState(window.history.state, '', nextUrl);
+    }
+  });
+}
 
 export function getLiveSearchParams(searchParams: URLSearchParams): URLSearchParams {
   if (typeof window !== 'undefined') {
@@ -57,19 +86,20 @@ export function replaceAppSearchUrl({
     return false;
   }
 
+  const appPathname = resolveAppPathname(pathname);
   const currentSearch = window.location.search.startsWith('?')
     ? window.location.search.slice(1)
     : window.location.search;
   const nextQuery = applySearchParamUpdates(currentSearch, updates);
-  const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
-  const currentUrl = `${pathname}${window.location.search}`;
+  const nextUrl = nextQuery ? `${appPathname}?${nextQuery}` : appPathname;
+  const currentUrl = getBrowserUrl();
 
   if (currentUrl === nextUrl) {
+    onReplaced?.();
     return false;
   }
 
-  window.history.replaceState(window.history.state, '', nextUrl);
-  router.replace(nextUrl, { scroll });
+  commitBrowserSearchUrl(nextUrl, router, scroll);
   onReplaced?.();
   return true;
 }
@@ -94,16 +124,17 @@ export function replaceAppSearchParams({
     return false;
   }
 
+  const appPathname = resolveAppPathname(pathname);
   const nextQuery = params.toString();
-  const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
-  const currentUrl = `${pathname}${window.location.search}`;
+  const nextUrl = nextQuery ? `${appPathname}?${nextQuery}` : appPathname;
+  const currentUrl = getBrowserUrl();
 
   if (currentUrl === nextUrl) {
+    onReplaced?.();
     return false;
   }
 
-  window.history.replaceState(window.history.state, '', nextUrl);
-  router.replace(nextUrl, { scroll });
+  commitBrowserSearchUrl(nextUrl, router, scroll);
   onReplaced?.();
   return true;
 }

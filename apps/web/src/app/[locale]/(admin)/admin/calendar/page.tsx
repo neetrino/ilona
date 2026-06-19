@@ -2,7 +2,6 @@
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useMemo, useEffect, useCallback, startTransition, useRef } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Button } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
@@ -23,10 +22,11 @@ import { useTeachers } from '@/features/teachers';
 import { CalendarFilters } from './components/CalendarFilters';
 import { SubstituteLessonModal } from './components/SubstituteLessonModal';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from '@/config/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
-import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
-import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 
 // Helper to get week dates
 function getWeekDates(date: Date): Date[] {
@@ -106,28 +106,12 @@ function isAddLessonModalOpen(searchParams: URLSearchParams): boolean {
 
 export default function CalendarPage() {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const t = useTranslations('calendar');
   const tLessons = useTranslations('lessons');
   const locale = useLocale();
   const { user } = useAuthStore();
   const portalBasePath = getAdminPortalBasePath(user?.role);
-  const [urlRevision, setUrlRevision] = useState(0);
-  usePopstateUrlSync(setUrlRevision);
-
-  const replaceParams = useCallback(
-    (updates: Record<string, string | number | null | undefined>) => {
-      replaceAppSearchUrl({
-        router,
-        pathname,
-        updates,
-        scroll: false,
-        onReplaced: () => setUrlRevision((revision) => revision + 1),
-      });
-    },
-    [pathname, router],
-  );
 
   const readViewModeFromUrl = useCallback((): 'week' | 'month' | 'list' => {
     const viewFromUrl = readUrlSearchParam('view', searchParams, urlRevision);

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { getLiveSearchParams, readUrlSearchParam, replaceAppSearchParams } from '@/shared/lib/url-search-params';
-import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { useRouter } from '@/config/navigation';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { ChatList } from './ChatList';
 import { StudentChatList } from './StudentChatList';
@@ -25,8 +25,7 @@ interface ChatContainerProps {
 
 function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceAllParams } = useAppSearchUrl();
   const { user } = useAuthStore();
   const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible, setAccountKey } =
     useChatStore();
@@ -41,22 +40,12 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const createDirectChat = useCreateDirectChat();
   const { data: teachers = [], isLoading: isLoadingTeachers } = useMyTeachers(user?.role === 'STUDENT');
   const isInitialMount = useRef(true);
-  const [urlRevision, setUrlRevision] = useState(0);
-  usePopstateUrlSync(setUrlRevision);
 
   const replaceSearchParams = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
-      const params = getLiveSearchParams(searchParams);
-      mutate(params);
-      replaceAppSearchParams({
-        router,
-        pathname,
-        params,
-        scroll: false,
-        onReplaced: () => setUrlRevision((revision) => revision + 1),
-      });
+      replaceAllParams(mutate);
     },
-    [pathname, router, searchParams],
+    [replaceAllParams],
   );
 
   const isStudent = user?.role === 'STUDENT';

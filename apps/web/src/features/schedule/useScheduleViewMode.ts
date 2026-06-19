@@ -5,9 +5,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { ScheduleViewMode } from '@/features/schedule/schedule-dates';
-import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 
 const STORAGE_KEY = 'ilona.schedule.view';
 
@@ -20,10 +20,7 @@ export function useScheduleViewMode(): {
   viewMode: ScheduleViewMode;
   setViewMode: (mode: ScheduleViewMode) => void;
 } {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [urlRevision, setUrlRevision] = useState(0);
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
 
   const readViewFromUrl = useCallback((): ScheduleViewMode => {
     return parseView(readUrlSearchParam('view', searchParams, urlRevision)) ?? 'week';
@@ -40,19 +37,6 @@ export function useScheduleViewMode(): {
       setPendingViewMode(null);
     }
   }, [pendingViewMode, readViewFromUrl]);
-
-  const replaceParams = useCallback(
-    (updates: Record<string, string | number | null | undefined>) => {
-      replaceAppSearchUrl({
-        router,
-        pathname,
-        updates,
-        scroll: false,
-        onReplaced: () => setUrlRevision((revision) => revision + 1),
-      });
-    },
-    [pathname, router],
-  );
 
   const storageHydrated = useRef(false);
   const skipUrlSync = useRef(true);
@@ -79,7 +63,7 @@ export function useScheduleViewMode(): {
       }
     }
     storageHydrated.current = true;
-  }, [pathname, replaceParams, searchParams]);
+  }, [replaceParams, searchParams]);
 
   useEffect(() => {
     if (skipUrlSync.current) {

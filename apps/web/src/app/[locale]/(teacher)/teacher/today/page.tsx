@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
   useTodayLessons,
@@ -172,10 +172,7 @@ function LessonCard({
 }
 
 export default function TeacherDailyPlanPage() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [urlRevision, setUrlRevision] = useState(0);
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
     const viewFromUrl = readUrlSearchParam('view', searchParams, urlRevision);
@@ -219,12 +216,7 @@ export default function TeacherDailyPlanPage() {
   // Update URL when view mode changes
   const updateViewModeInUrl = (mode: ViewMode) => {
     setPendingViewMode(mode);
-    replaceAppSearchUrl({
-      router,
-      pathname,
-      updates: { view: mode === 'today' ? null : mode },
-      onReplaced: () => setUrlRevision((revision) => revision + 1),
-    });
+    replaceParams({ view: mode === 'today' ? null : mode });
   };
 
   // Fetch data
