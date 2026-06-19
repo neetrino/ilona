@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo, startTransition } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useMemo, useCallback, useRef, startTransition } from 'react';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
   useTeachers, 
@@ -12,9 +12,9 @@ import {
 } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
+import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
 import { countUniqueTeachers, filterTeachersByBranches, groupTeachersByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 type ViewMode = 'list' | 'board';
 
@@ -30,6 +30,7 @@ const EDIT_TEACHER_URL_PARAM = 'editTeacherId';
 export function useTeachersPage() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const locale = params.locale as string;
   const t = useTranslations('teachers');
@@ -37,7 +38,28 @@ export function useTeachersPage() {
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
-  const portalBasePath = getAdminPortalBasePath(user?.role);
+  const [urlRevision, setUrlRevision] = useState(0);
+
+  const replaceParams = useCallback(
+    (updates: Record<string, string | number | null | undefined>) => {
+      replaceAppSearchUrl({
+        router,
+        pathname,
+        updates,
+        scroll: false,
+        onReplaced: () => setUrlRevision((revision) => revision + 1),
+      });
+    },
+    [pathname, router],
+  );
+
+  const readViewModeFromUrl = useCallback((): ViewMode => {
+    const mode = readUrlSearchParam('view', searchParams, urlRevision);
+    if (mode === 'list' || mode === 'board') {
+      return mode;
+    }
+    return 'list';
+  }, [searchParams, urlRevision]);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,50 +92,86 @@ export function useTeachersPage() {
   // Filter states
   const [selectedBranchIds, setSelectedBranchIds] = useState<Set<string>>(new Set());
   const [selectedStatus, setSelectedStatus] = useState<'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | ''>(() => {
-    const statusFromUrl = searchParams.get('status');
+    const statusFromUrl = readUrlSearchParam('status', searchParams);
     return (statusFromUrl === 'ACTIVE' || statusFromUrl === 'INACTIVE' || statusFromUrl === 'SUSPENDED') ? statusFromUrl : '';
   });
   
-  // View mode state with URL persistence
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const modeFromUrl = searchParams.get('view');
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      return modeFromUrl;
-    }
-    return 'list'; // Default to list view
-  });
+  const [pendingViewMode, setPendingViewMode] = useState<ViewMode | null>(null);
+  const viewMode = pendingViewMode ?? readViewModeFromUrl();
 
-  // Details modal: URL is the only source of truth (avoids stale id for one frame before useEffect)
-  const selectedTeacherIdForDetails = searchParams.get('teacherId');
+  useEffect(() => {
+    if (pendingViewMode === null) {
+      return;
+    }
+    if (readViewModeFromUrl() === pendingViewMode) {
+      setPendingViewMode(null);
+    }
+  }, [pendingViewMode, readViewModeFromUrl]);
+
+  const selectedTeacherIdForDetails = readUrlSearchParam('teacherId', searchParams);
   const isDetailsDrawerOpen = Boolean(selectedTeacherIdForDetails);
 
-  const isAddTeacherOpen = searchParams.get(ADD_TEACHER_URL_PARAM) === ADD_TEACHER_URL_VALUE;
+  const [isAddTeacherOpen, setIsAddTeacherOpenState] = useState(
+    () => readUrlSearchParam(ADD_TEACHER_URL_PARAM, searchParams) === ADD_TEACHER_URL_VALUE,
+  );
+  const isAddTeacherClosingRef = useRef(false);
 
-  const selectedTeacherIdForEdit = searchParams.get(EDIT_TEACHER_URL_PARAM);
+  useEffect(() => {
+    if (isAddTeacherClosingRef.current) {
+      return;
+    }
+    const shouldOpen = readUrlSearchParam(ADD_TEACHER_URL_PARAM, searchParams) === ADD_TEACHER_URL_VALUE;
+    setIsAddTeacherOpenState(shouldOpen);
+  }, [searchParams, urlRevision]);
+
+  const [selectedTeacherIdForEdit, setSelectedTeacherIdForEdit] = useState<string | null>(
+    () => readUrlSearchParam(EDIT_TEACHER_URL_PARAM, searchParams),
+  );
+  const isEditTeacherClosingRef = useRef(false);
   const isEditTeacherOpen = Boolean(selectedTeacherIdForEdit);
 
-  const setIsAddTeacherOpen = (open: boolean) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (open) {
-      params.set(ADD_TEACHER_URL_PARAM, ADD_TEACHER_URL_VALUE);
-      params.delete('teacherId');
-      params.delete(EDIT_TEACHER_URL_PARAM);
-    } else {
-      params.delete(ADD_TEACHER_URL_PARAM);
+  useEffect(() => {
+    if (isEditTeacherClosingRef.current) {
+      return;
     }
-    const qs = params.toString();
-    const path = qs ? `/${locale}${portalBasePath}/teachers?${qs}` : `/${locale}${portalBasePath}/teachers`;
-    router.replace(path, { scroll: false });
-  };
+    setSelectedTeacherIdForEdit(readUrlSearchParam(EDIT_TEACHER_URL_PARAM, searchParams));
+  }, [searchParams, urlRevision]);
 
-  const setIsEditTeacherOpen = (open: boolean) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (!open) {
-      params.delete(EDIT_TEACHER_URL_PARAM);
-    }
-    const qs = params.toString();
-    router.replace(qs ? `/${locale}${portalBasePath}/teachers?${qs}` : `/${locale}${portalBasePath}/teachers`, { scroll: false });
-  };
+  const setIsAddTeacherOpen = useCallback(
+    (open: boolean) => {
+      if (open) {
+        isAddTeacherClosingRef.current = false;
+        setIsAddTeacherOpenState(true);
+        replaceParams({
+          [ADD_TEACHER_URL_PARAM]: ADD_TEACHER_URL_VALUE,
+          teacherId: null,
+          [EDIT_TEACHER_URL_PARAM]: null,
+        });
+      } else {
+        isAddTeacherClosingRef.current = true;
+        setIsAddTeacherOpenState(false);
+        replaceParams({ [ADD_TEACHER_URL_PARAM]: null });
+        setTimeout(() => {
+          isAddTeacherClosingRef.current = false;
+        }, 100);
+      }
+    },
+    [replaceParams],
+  );
+
+  const setIsEditTeacherOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        isEditTeacherClosingRef.current = true;
+        setSelectedTeacherIdForEdit(null);
+        replaceParams({ [EDIT_TEACHER_URL_PARAM]: null });
+        setTimeout(() => {
+          isEditTeacherClosingRef.current = false;
+        }, 100);
+      }
+    },
+    [replaceParams],
+  );
 
   // Debounce search query (300ms delay). Use startTransition to avoid "setTimeout handler took Xms" violations.
   useEffect(() => {
@@ -126,16 +184,6 @@ export function useTeachersPage() {
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
-
-  // Sync view mode from URL
-  useEffect(() => {
-    const modeFromUrl = searchParams.get('view');
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      setViewMode(modeFromUrl);
-    } else if (!modeFromUrl) {
-      setViewMode('list');
-    }
-  }, [searchParams]);
 
   // Fetch teachers
   const { 
@@ -298,14 +346,7 @@ export function useTeachersPage() {
     setSelectedStatus(status);
     setPage(0);
     setSelectedTeacherIds(new Set());
-    // Update URL
-    const params = new URLSearchParams(searchParams.toString());
-    if (status) {
-      params.set('status', status);
-    } else {
-      params.delete('status');
-    }
-    router.push(`/${locale}${portalBasePath}/teachers?${params.toString()}`);
+    replaceParams({ status: status || null });
   };
 
   const handleSort = (key: string) => {
@@ -355,18 +396,15 @@ export function useTeachersPage() {
     }
   };
 
-  const updateViewModeInUrl = (mode: ViewMode) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode !== 'list') {
-      params.set('view', mode);
-    } else {
-      params.delete('view');
-    }
-    router.push(`/${locale}${portalBasePath}/teachers?${params.toString()}`);
-  };
+  const updateViewModeInUrl = useCallback(
+    (mode: ViewMode) => {
+      setPendingViewMode(mode);
+      replaceParams({ view: mode === 'list' ? null : mode });
+    },
+    [replaceParams],
+  );
 
   const handleViewModeChange = (mode: ViewMode) => {
-    setViewMode(mode);
     updateViewModeInUrl(mode);
     setPage(0);
     setSelectedTeacherIds(new Set());
@@ -380,11 +418,12 @@ export function useTeachersPage() {
 
   const handleEditClick = (teacher: Teacher) => {
     setSelectedTeacher(teacher);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(EDIT_TEACHER_URL_PARAM, teacher.id);
-    params.delete(ADD_TEACHER_URL_PARAM);
-    params.delete('teacherId');
-    router.replace(`/${locale}${portalBasePath}/teachers?${params.toString()}`, { scroll: false });
+    setSelectedTeacherIdForEdit(teacher.id);
+    replaceParams({
+      [EDIT_TEACHER_URL_PARAM]: teacher.id,
+      [ADD_TEACHER_URL_PARAM]: null,
+      teacherId: null,
+    });
   };
 
   const handleDeleteClick = (teacher: Teacher) => {
@@ -407,11 +446,8 @@ export function useTeachersPage() {
       setIsDeleteDialogOpen(false);
       setSelectedTeacher(null);
 
-      const params = new URLSearchParams(searchParams.toString());
-      if (params.get(EDIT_TEACHER_URL_PARAM) === deletedId) {
-        params.delete(EDIT_TEACHER_URL_PARAM);
-        const qs = params.toString();
-        router.replace(qs ? `/${locale}${portalBasePath}/teachers?${qs}` : `/${locale}${portalBasePath}/teachers`, { scroll: false });
+      if (readUrlSearchParam(EDIT_TEACHER_URL_PARAM, searchParams) === deletedId) {
+        replaceParams({ [EDIT_TEACHER_URL_PARAM]: null });
       }
 
       setTimeout(() => {
@@ -445,12 +481,9 @@ export function useTeachersPage() {
       setIsBulkDeleteDialogOpen(false);
       setSelectedTeacherIds(new Set());
 
-      const editId = searchParams.get(EDIT_TEACHER_URL_PARAM);
+      const editId = readUrlSearchParam(EDIT_TEACHER_URL_PARAM, searchParams);
       if (editId && idsArray.includes(editId)) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete(EDIT_TEACHER_URL_PARAM);
-        const qs = params.toString();
-        router.replace(qs ? `/${locale}${portalBasePath}/teachers?${qs}` : `/${locale}${portalBasePath}/teachers`, { scroll: false });
+        replaceParams({ [EDIT_TEACHER_URL_PARAM]: null });
       }
 
       setTimeout(() => {
@@ -498,18 +531,15 @@ export function useTeachersPage() {
   };
 
   const handleRowClick = (teacher: Teacher) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('teacherId', teacher.id);
-    params.delete(ADD_TEACHER_URL_PARAM);
-    params.delete(EDIT_TEACHER_URL_PARAM);
-    router.replace(`/${locale}${portalBasePath}/teachers?${params.toString()}`, { scroll: false });
+    replaceParams({
+      teacherId: teacher.id,
+      [ADD_TEACHER_URL_PARAM]: null,
+      [EDIT_TEACHER_URL_PARAM]: null,
+    });
   };
 
   const handleDetailsDrawerClose = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('teacherId');
-    const newUrl = params.toString() ? `/${locale}${portalBasePath}/teachers?${params.toString()}` : `/${locale}${portalBasePath}/teachers`;
-    router.replace(newUrl, { scroll: false });
+    replaceParams({ teacherId: null });
   };
 
   const uniqueTeachersCount = useMemo(() => {

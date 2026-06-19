@@ -267,7 +267,9 @@ export class ApiClient {
 
     // Diagnostics logging for 401 (dev only)
     if (isDev && response.status === 401) {
-      console.warn(`[ApiClient] 401 Unauthorized on ${fetchOptions.method || 'GET'} ${endpoint}`, {
+      console.warn('[ApiClient] 401 Unauthorized', {
+        method: fetchOptions.method || 'GET',
+        endpoint,
         hadAuthHeader: hasAuthHeader,
         responseMessage: (data as ApiErrorResponse).message || (data as ApiErrorResponse).error,
       });

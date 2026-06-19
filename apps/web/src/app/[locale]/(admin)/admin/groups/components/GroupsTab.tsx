@@ -20,6 +20,7 @@ import {
 } from '@/features/groups';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
+import { readUrlSearchParam, getLiveSearchParams } from '../utils/url';
 import { GroupStudentsModal } from './GroupStudentsModal';
 import { StudentDetailsModal } from './StudentDetailsModal';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -76,6 +77,8 @@ interface GroupsTabProps {
   onViewModeChange: (mode: 'list' | 'board', extra?: Record<string, string | null>) => void;
   updateUrl: (updates: Record<string, string | null>) => void;
   searchParams: URLSearchParams;
+  /** Bumped whenever updateUrl writes to the browser URL (production-safe sync). */
+  urlRevision?: number;
   /** When set (center drill-down route), groups are loaded only for this center */
   selectedCenterId?: string | null;
 }
@@ -93,6 +96,7 @@ export function GroupsTab({
   onViewModeChange,
   updateUrl,
   searchParams,
+  urlRevision = 0,
   selectedCenterId = null,
 }: GroupsTabProps) {
   const locale = useLocale();
@@ -125,11 +129,11 @@ export function GroupsTab({
   }, [selectedCenterId]);
 
   useEffect(() => {
-    const branch = searchParams.get('branch');
+    const branch = readUrlSearchParam('branch', searchParams);
     if (!selectedCenterId) {
       setBoardTabCenterId(branch);
     }
-  }, [searchParams, selectedCenterId]);
+  }, [searchParams, selectedCenterId, urlRevision]);
 
   const {
     groups,
@@ -206,7 +210,7 @@ export function GroupsTab({
       return;
     }
 
-    if (searchParams.get('branch') || boardTabCenterId) {
+    if (readUrlSearchParam('branch', searchParams) || boardTabCenterId) {
       return;
     }
 
@@ -296,7 +300,7 @@ export function GroupsTab({
     setPage(0);
     setSelectedGroupIds(new Set());
     if (selectedCenterId) {
-      const next = new URLSearchParams(searchParams.toString());
+      const next = getLiveSearchParams(searchParams);
       next.delete('view');
       router.push(`/${locale}${portalBasePath}/groups/${centerId}?${next.toString()}`);
     } else {
@@ -312,21 +316,18 @@ export function GroupsTab({
 
   // Sync editGroupId from URL on mount and when URL changes
   useEffect(() => {
-    // Skip sync if we're in the process of closing
     if (isClosingRef.current) {
       return;
     }
 
-    const editGroupFromUrl = searchParams.get('editGroup');
-    if (editGroupFromUrl !== editGroupId) {
-      if (editGroupFromUrl) {
-        setEditGroupId(editGroupFromUrl);
-      } else {
-        // If URL doesn't have editGroup but state does, clear state
-        setEditGroupId(null);
-      }
+    const editGroupFromUrl = readUrlSearchParam('editGroup', searchParams);
+    if (editGroupFromUrl) {
+      setEditGroupId(editGroupFromUrl);
+      return;
     }
-  }, [searchParams, editGroupId, setEditGroupId]);
+
+    setEditGroupId(null);
+  }, [searchParams, urlRevision, setEditGroupId]);
 
   // Update URL when editGroupId changes (but not from URL sync)
   const handleEditGroupIdChange = useCallback((id: string | null) => {
@@ -353,11 +354,9 @@ export function GroupsTab({
       return;
     }
 
-    const shouldOpenCreateGroup = searchParams.get('createGroup') === '1';
-    if (createGroupOpen !== shouldOpenCreateGroup) {
-      setCreateGroupOpen(shouldOpenCreateGroup);
-    }
-  }, [searchParams, createGroupOpen, setCreateGroupOpen]);
+    const shouldOpenCreateGroup = readUrlSearchParam('createGroup', searchParams) === '1';
+    setCreateGroupOpen(shouldOpenCreateGroup);
+  }, [searchParams, urlRevision, setCreateGroupOpen]);
 
   const handleCreateGroupOpenChange = (open: boolean) => {
     if (!open) {
@@ -386,26 +385,53 @@ export function GroupsTab({
   }, [isLg, onViewModeChange, setPage, setSelectedGroupIds, viewMode]);
 
   // Students modal state from URL so it survives refresh
-  const studentsGroupId = searchParams.get('studentsGroup');
-  const selectedStudentId = searchParams.get('studentId');
+  const [pendingStudentsGroupId, setPendingStudentsGroupId] = useState<string | null>(null);
+  const [pendingStudentId, setPendingStudentId] = useState<string | null>(null);
+  const studentsGroupId =
+    pendingStudentsGroupId ?? readUrlSearchParam('studentsGroup', searchParams);
+  const selectedStudentId =
+    pendingStudentId ?? readUrlSearchParam('studentId', searchParams);
+
+  useEffect(() => {
+    if (pendingStudentsGroupId !== null) {
+      const fromUrl = readUrlSearchParam('studentsGroup', searchParams);
+      if (fromUrl === pendingStudentsGroupId || (!fromUrl && pendingStudentsGroupId === '')) {
+        setPendingStudentsGroupId(null);
+      }
+    }
+    if (pendingStudentId !== null) {
+      const fromUrl = readUrlSearchParam('studentId', searchParams);
+      if (fromUrl === pendingStudentId || (!fromUrl && pendingStudentId === '')) {
+        setPendingStudentId(null);
+      }
+    }
+  }, [pendingStudentId, pendingStudentsGroupId, searchParams, urlRevision]);
   const { data: studentsGroupData } = useGroup(studentsGroupId ?? '', !!studentsGroupId);
   const studentsModalGroupName =
     groups.find((g) => g.id === studentsGroupId)?.name ?? studentsGroupData?.name ?? t('groupFallback');
 
   const openStudentsModal = useCallback((groupId: string) => {
+    setPendingStudentsGroupId(groupId);
+    setPendingStudentId('');
     updateUrl({ studentsGroup: groupId, studentId: null });
   }, [updateUrl]);
   const openStudentDetails = (studentId: string) => {
+    setPendingStudentId(studentId);
     updateUrl({ studentId });
   };
   /** From group card: open student profile without opening the group list first */
   const openStudentFromGroupCard = (studentId: string) => {
+    setPendingStudentsGroupId('');
+    setPendingStudentId(studentId);
     updateUrl({ studentsGroup: null, studentId });
   };
   const closeStudentDetails = () => {
+    setPendingStudentId('');
     updateUrl({ studentId: null });
   };
   const closeStudentsModal = () => {
+    setPendingStudentsGroupId('');
+    setPendingStudentId('');
     updateUrl({ studentsGroup: null, studentId: null });
   };
 
@@ -691,7 +717,7 @@ export function GroupsTab({
 
                 const nextBoardCenterId =
                   selectedCenterId ??
-                  searchParams.get('branch') ??
+                  readUrlSearchParam('branch', searchParams) ??
                   boardTabCenterId ??
                   allCenters[0]?.id ??
                   null;

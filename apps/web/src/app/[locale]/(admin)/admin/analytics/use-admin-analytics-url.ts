@@ -1,12 +1,17 @@
 'use client';
 
-import { startTransition, useCallback, useMemo } from 'react';
+import { startTransition, useCallback, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   defaultCustomRangeSixMonths,
   toYmd,
   type TimeFilterMode,
 } from '@/shared/lib/analytics-time-range';
+import {
+  getLiveSearchParams,
+  readUrlSearchParam,
+  replaceAppSearchParams,
+} from '@/shared/lib/url-search-params';
 
 export type AdminAnalyticsTab =
   | 'attendance'
@@ -52,57 +57,58 @@ export function useAdminAnalyticsUrl() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [urlRevision, setUrlRevision] = useState(0);
   const defRange = useMemo(() => defaultCustomRangeSixMonths(), []);
   const todayYmd = useMemo(() => toYmd(new Date()), []);
 
   const activeTab = useMemo(
-    () => parseTab(searchParams.get('tab')),
-    [searchParams],
+    () => parseTab(readUrlSearchParam('tab', searchParams, urlRevision)),
+    [searchParams, urlRevision],
   );
 
   const timeMode = useMemo(
     () => {
-      const modeFromUrl = searchParams.get('pm');
+      const modeFromUrl = readUrlSearchParam('pm', searchParams, urlRevision);
       if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'date') {
         return modeFromUrl;
       }
       return getDefaultPaymentsTimeMode();
     },
-    [searchParams],
+    [searchParams, urlRevision],
   );
 
   const dayYmd = useMemo(
-    () => parseYmdParam(searchParams.get('pd'), todayYmd),
-    [searchParams, todayYmd],
+    () => parseYmdParam(readUrlSearchParam('pd', searchParams, urlRevision), todayYmd),
+    [searchParams, todayYmd, urlRevision],
   );
 
   const weekAnchorYmd = useMemo(
-    () => parseYmdParam(searchParams.get('pw'), todayYmd),
-    [searchParams, todayYmd],
+    () => parseYmdParam(readUrlSearchParam('pw', searchParams, urlRevision), todayYmd),
+    [searchParams, todayYmd, urlRevision],
   );
 
   const customFromYmd = useMemo(
-    () => parseYmdParam(searchParams.get('cfrom'), defRange.fromYmd),
-    [searchParams, defRange.fromYmd],
+    () => parseYmdParam(readUrlSearchParam('cfrom', searchParams, urlRevision), defRange.fromYmd),
+    [searchParams, defRange.fromYmd, urlRevision],
   );
 
   const customToYmd = useMemo(
-    () => parseYmdParam(searchParams.get('cto'), defRange.toYmd),
-    [searchParams, defRange.toYmd],
+    () => parseYmdParam(readUrlSearchParam('cto', searchParams, urlRevision), defRange.toYmd),
+    [searchParams, defRange.toYmd, urlRevision],
   );
 
   const updateParams = useCallback(
     (mutate: (p: URLSearchParams) => void) => {
-      const p = new URLSearchParams(searchParams.toString());
-      mutate(p);
-      const nextQs = p.toString();
-      const currentQs = searchParams.toString();
-      if (nextQs === currentQs) {
-        return;
-      }
-
+      const params = getLiveSearchParams(searchParams);
+      mutate(params);
       startTransition(() => {
-        router.replace(nextQs ? `${pathname}?${nextQs}` : pathname, { scroll: false });
+        replaceAppSearchParams({
+          router,
+          pathname,
+          params,
+          scroll: false,
+          onReplaced: () => setUrlRevision((revision) => revision + 1),
+        });
       });
     },
     [pathname, router, searchParams],

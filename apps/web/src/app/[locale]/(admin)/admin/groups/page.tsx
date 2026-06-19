@@ -2,31 +2,45 @@
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { GroupsTab } from './components/GroupsTab';
 import { CentersTab } from './components/CentersTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { useGroupsViewUrl } from './hooks/useGroupsViewUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { cn } from '@/shared/lib/utils';
 
 type TabType = 'groups' | 'centers';
 
 export default function GroupsPage() {
-  const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const isLg = useIsLgViewport();
   const isManager = user?.role === 'MANAGER';
-  
-  // Initialize active tab from URL
-  const [activeTab, setActiveTab] = useState<TabType>(() => {
-    const tabFromUrl = searchParams.get('tab');
+
+  const { viewMode, updateUrl, handleViewModeChange, searchParams, urlRevision } =
+    useGroupsViewUrl();
+
+  const [pendingTab, setPendingTab] = useState<TabType | null>(null);
+
+  const readTabFromUrl = useCallback((): TabType => {
+    const tabFromUrl = readUrlSearchParam('tab', searchParams, urlRevision);
     if (!isManager && (tabFromUrl === 'groups' || tabFromUrl === 'centers')) {
       return tabFromUrl;
     }
     return 'groups';
-  });
+  }, [searchParams, urlRevision, isManager]);
+
+  const activeTab = pendingTab ?? readTabFromUrl();
+
+  useEffect(() => {
+    if (pendingTab === null) {
+      return;
+    }
+    if (readTabFromUrl() === pendingTab) {
+      setPendingTab(null);
+    }
+  }, [pendingTab, readTabFromUrl]);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
@@ -41,26 +55,22 @@ export default function GroupsPage() {
   });
   const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
 
-  const { viewMode, updateUrl, handleViewModeChange, searchParams: groupsSearchParams } =
-    useGroupsViewUrl();
-
   // Update URL when tab changes
   const updateTabInUrl = useCallback((tab: TabType) => {
+    setPendingTab(tab);
     updateUrl({ tab: tab !== 'groups' ? tab : null });
   }, [updateUrl]);
 
-  // Sync active tab from URL
+  // Sync active tab from URL (back/forward)
   useEffect(() => {
-    const tabFromUrl = searchParams.get('tab');
-    if (!isManager && (tabFromUrl === 'groups' || tabFromUrl === 'centers')) {
-      setActiveTab(tabFromUrl);
-    } else if (!tabFromUrl) {
-      setActiveTab('groups');
-    } else if (isManager && tabFromUrl === 'centers') {
-      setActiveTab('groups');
-      updateTabInUrl('groups');
+    if (pendingTab !== null) {
+      return;
     }
-  }, [isManager, searchParams, updateTabInUrl]);
+    const tabFromUrl = readUrlSearchParam('tab', searchParams);
+    if (isManager && tabFromUrl === 'centers') {
+      updateUrl({ tab: null });
+    }
+  }, [isManager, pendingTab, searchParams, updateUrl, urlRevision]);
 
   useEffect(() => {
     if (isLg === false) {
@@ -132,7 +142,6 @@ export default function GroupsPage() {
                 }}
                 onClick={() => {
                   if (activeTab === 'centers') return;
-                  setActiveTab('centers');
                   updateTabInUrl('centers');
                 }}
                 className={cn(
@@ -150,7 +159,6 @@ export default function GroupsPage() {
                 }}
                 onClick={() => {
                   if (activeTab === 'groups') return;
-                  setActiveTab('groups');
                   updateTabInUrl('groups');
                 }}
                 className={cn(
@@ -212,7 +220,8 @@ export default function GroupsPage() {
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
               updateUrl={updateUrl}
-              searchParams={groupsSearchParams}
+              searchParams={searchParams}
+              urlRevision={urlRevision}
             />
           )}
         </div>

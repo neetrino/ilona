@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -35,6 +35,7 @@ import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
+import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
 
 const DEFAULT_FILTERS: CrmLeadFilters = {
   skip: 0,
@@ -120,22 +121,53 @@ export default function AdminCrmPage() {
   const authScopeKey = `${userRole ?? 'UNKNOWN'}:${user?.id ?? 'anonymous'}:${managerCenterId ?? 'all-centers'}`;
   const searchParams = useSearchParams();
   const isLg = useIsLgViewport();
-  const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
-  const [listPage, setListPage] = useState(0);
-  const [viewMode, setViewMode] = useState<'board' | 'list'>(() => {
-    const modeFromUrl = searchParams.get(VIEW_PARAM);
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      return modeFromUrl;
+  const [urlRevision, setUrlRevision] = useState(0);
+
+  const replaceParams = useCallback(
+    (updates: Record<string, string | number | null | undefined>) => {
+      replaceAppSearchUrl({
+        router,
+        pathname,
+        updates,
+        scroll: false,
+        onReplaced: () => setUrlRevision((revision) => revision + 1),
+      });
+    },
+    [pathname, router],
+  );
+
+  const readCrmViewMode = useCallback((): 'board' | 'list' => {
+    const mode = readUrlSearchParam(VIEW_PARAM, searchParams, urlRevision);
+    if (mode === 'list' || mode === 'board') {
+      return mode;
     }
     return 'board';
-  });
+  }, [searchParams, urlRevision]);
+
+  const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
+  const [listPage, setListPage] = useState(0);
+  const [pendingViewMode, setPendingViewMode] = useState<'board' | 'list' | null>(null);
+  const viewMode = pendingViewMode ?? readCrmViewMode();
+
+  useEffect(() => {
+    if (pendingViewMode === null) {
+      return;
+    }
+    if (readCrmViewMode() === pendingViewMode) {
+      setPendingViewMode(null);
+    }
+  }, [pendingViewMode, readCrmViewMode]);
+
   const [showArchiveColumn, setShowArchiveColumn] = useState(
-    () => searchParams.get(ARCHIVE_PARAM) === '1'
+    () => readUrlSearchParam(ARCHIVE_PARAM, searchParams) === '1',
   );
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [createLeadModalOpen, setCreateLeadModalOpen] = useState(false);
-  const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
+  const [editLeadId, setEditLeadId] = useState<string | null>(
+    () => readUrlSearchParam(EDIT_LEAD_PARAM, searchParams),
+  );
+  const isEditLeadClosingRef = useRef(false);
   const [paidRegLeadId, setPaidRegLeadId] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [leadIdPendingDelete, setLeadIdPendingDelete] = useState<string | null>(null);
@@ -143,46 +175,34 @@ export default function AdminCrmPage() {
 
   // Restore Archive column visibility from URL after refresh
   useEffect(() => {
-    setShowArchiveColumn(searchParams.get(ARCHIVE_PARAM) === '1');
-  }, [searchParams]);
+    setShowArchiveColumn(readUrlSearchParam(ARCHIVE_PARAM, searchParams) === '1');
+  }, [searchParams, urlRevision]);
 
   // Restore edit lead modal from URL after refresh
   useEffect(() => {
-    setEditLeadId(searchParams.get(EDIT_LEAD_PARAM));
-  }, [searchParams]);
-
-  const updateViewModeInUrl = useCallback((mode: 'board' | 'list') => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode === 'list') {
-      params.set(VIEW_PARAM, 'list');
-    } else {
-      params.delete(VIEW_PARAM);
-    }
-    const url = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.replace(url, { scroll: false });
-  }, [pathname, router, searchParams]);
-
-  useEffect(() => {
-    if (isLg === false && viewMode !== 'board') {
-      setViewMode('board');
-      updateViewModeInUrl('board');
-    }
-  }, [isLg, updateViewModeInUrl, viewMode]);
-
-  // Restore view mode from URL after refresh/navigation
-  useEffect(() => {
-    const modeFromUrl = searchParams.get(VIEW_PARAM);
-    if (isLg === false) {
-      setViewMode('board');
+    if (isEditLeadClosingRef.current) {
       return;
     }
+    setEditLeadId(readUrlSearchParam(EDIT_LEAD_PARAM, searchParams));
+  }, [searchParams, urlRevision]);
 
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      setViewMode(modeFromUrl);
+  const updateViewModeInUrl = useCallback(
+    (mode: 'board' | 'list') => {
+      setPendingViewMode(mode);
+      replaceParams({ view: mode });
+    },
+    [replaceParams],
+  );
+
+  useEffect(() => {
+    if (isLg !== false) {
       return;
     }
-    setViewMode('board');
-  }, [isLg, searchParams]);
+    if (readCrmViewMode() !== 'board') {
+      setPendingViewMode('board');
+      replaceParams({ view: 'board' });
+    }
+  }, [isLg, readCrmViewMode, replaceParams]);
 
   const queryClient = useQueryClient();
   const scopedFilters = useMemo<CrmLeadFilters>(() => filters, [filters]);
@@ -308,9 +328,7 @@ export default function AdminCrmPage() {
       setSelectedLeadId((id) => (id === leadId ? null : id));
       setEditLeadId((id) => {
         if (id !== leadId) return id;
-        const url = new URL(window.location.href);
-        url.searchParams.delete(EDIT_LEAD_PARAM);
-        window.history.replaceState(null, '', url.pathname + (url.search || ''));
+        replaceParams({ [EDIT_LEAD_PARAM]: null });
         return null;
       });
       setPaidRegLeadId((id) => (id === leadId ? null : id));
@@ -384,16 +402,16 @@ export default function AdminCrmPage() {
   const openEditLead = (id: string) => {
     setSelectedLeadId(null);
     setEditLeadId(id);
-    const url = new URL(window.location.href);
-    url.searchParams.set(EDIT_LEAD_PARAM, id);
-    window.history.replaceState(null, '', url.pathname + url.search);
+    replaceParams({ [EDIT_LEAD_PARAM]: id });
   };
 
   const closeEditLead = () => {
+    isEditLeadClosingRef.current = true;
     setEditLeadId(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete(EDIT_LEAD_PARAM);
-    window.history.replaceState(null, '', url.pathname + (url.search || ''));
+    replaceParams({ [EDIT_LEAD_PARAM]: null });
+    setTimeout(() => {
+      isEditLeadClosingRef.current = false;
+    }, 100);
   };
 
   const handleCardClick = (lead: CrmLead) => {
@@ -470,7 +488,6 @@ export default function AdminCrmPage() {
               <ListBoardViewToggle
                 value={viewMode}
                 onChange={(mode) => {
-                  setViewMode(mode);
                   updateViewModeInUrl(mode);
                 }}
                 listLabel={tCrm('viewList')}
@@ -483,10 +500,7 @@ export default function AdminCrmPage() {
                 onClick={() => {
                   const next = !showArchiveColumn;
                   setShowArchiveColumn(next);
-                  const url = new URL(window.location.href);
-                  if (next) url.searchParams.set(ARCHIVE_PARAM, '1');
-                  else url.searchParams.delete(ARCHIVE_PARAM);
-                  window.history.replaceState(null, '', url.pathname + url.search || '');
+                  replaceParams({ [ARCHIVE_PARAM]: next ? '1' : null });
                 }}
                 className={cn(
                   'rounded-lg p-1.5 text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] hover:text-[#1010a3]',

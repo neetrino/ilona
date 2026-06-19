@@ -3,24 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
+import { readGroupsViewMode, readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
 
 export type GroupsViewMode = 'list' | 'board';
-
-function readViewModeFromLocation(searchParams: URLSearchParams): GroupsViewMode {
-  if (typeof window !== 'undefined') {
-    const mode = new URLSearchParams(window.location.search).get('view');
-    if (mode === 'list' || mode === 'board') {
-      return mode;
-    }
-  }
-
-  const modeFromUrl = searchParams.get('view');
-  if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-    return modeFromUrl;
-  }
-
-  return 'board';
-}
 
 interface UseGroupsViewUrlOptions {
   /** When true (default), mobile viewports always use board and cannot persist list in the URL. */
@@ -36,49 +21,33 @@ export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
   const searchParams = useSearchParams();
   const isLg = useIsLgViewport();
   const [pendingViewMode, setPendingViewMode] = useState<GroupsViewMode | null>(null);
+  const [urlRevision, setUrlRevision] = useState(0);
 
   useEffect(() => {
     if (pendingViewMode === null) {
       return;
     }
 
-    const modeFromLocation = readViewModeFromLocation(searchParams);
+    const modeFromLocation = readGroupsViewMode(searchParams);
     if (modeFromLocation === pendingViewMode) {
       setPendingViewMode(null);
     }
-  }, [pendingViewMode, searchParams]);
+  }, [pendingViewMode, searchParams, urlRevision]);
 
-  const viewModeFromUrl = readViewModeFromLocation(searchParams);
+  const viewModeFromUrl = readGroupsViewMode(searchParams);
 
   const viewMode: GroupsViewMode =
     enforceBoardOnMobile && isLg === false ? 'board' : (pendingViewMode ?? viewModeFromUrl);
 
   const updateUrl = useCallback(
     (updates: Record<string, string | null>) => {
-      if (typeof window === 'undefined') {
-        return;
-      }
-
-      const params = new URLSearchParams(window.location.search);
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value === null || value === '') {
-          params.delete(key);
-        } else {
-          params.set(key, value);
-        }
+      replaceAppSearchUrl({
+        router,
+        pathname,
+        updates,
+        scroll: false,
+        onReplaced: () => setUrlRevision((revision) => revision + 1),
       });
-
-      const nextQuery = params.toString();
-      const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
-      const currentUrl = `${pathname}${window.location.search}`;
-
-      if (currentUrl === nextUrl) {
-        return;
-      }
-
-      // Sync the browser URL immediately; router.replace alone can lag in production builds.
-      window.history.replaceState(window.history.state, '', nextUrl);
-      router.replace(nextUrl, { scroll: false });
     },
     [pathname, router],
   );
@@ -96,16 +65,16 @@ export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
       return;
     }
 
-    const modeFromUrl = searchParams.get('view');
+    const modeFromUrl = readGroupsViewMode(searchParams);
 
     if (enforceBoardOnMobile && isLg === false) {
-      if (modeFromUrl && modeFromUrl !== 'board') {
+      if (modeFromUrl !== 'board') {
         updateUrl({ view: 'board' });
       }
       return;
     }
 
-    if (!modeFromUrl) {
+    if (!readUrlSearchParam('view', searchParams)) {
       updateUrl({ view: 'board' });
     }
   }, [enforceBoardOnMobile, isLg, normalizeMissingView, searchParams, updateUrl]);
@@ -115,5 +84,6 @@ export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
     updateUrl,
     handleViewModeChange,
     searchParams,
+    urlRevision,
   };
 }
