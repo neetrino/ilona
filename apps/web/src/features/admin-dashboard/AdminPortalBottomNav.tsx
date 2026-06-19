@@ -10,10 +10,7 @@ import { navigateToPortalNotifications } from '@/features/admin-dashboard/naviga
 import { PortalMobileSearchSheet } from '@/features/search/components/PortalMobileSearchSheet';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
-import {
-  ADMIN_PORTAL_MOBILE_HORIZONTAL_PADDING,
-  ADMIN_PORTAL_MOBILE_BOTTOM_NAV_SEARCH_OFFSET_CLASS,
-} from './admin-portal-layout';
+import { ADMIN_PORTAL_MOBILE_HORIZONTAL_PADDING } from './admin-portal-layout';
 import { cn } from '@/shared/lib/utils';
 
 const BOTTOM_NAV_ICON_CLASS = 'h-[1.625rem] w-[1.625rem] stroke-[2]';
@@ -157,7 +154,7 @@ export function AdminPortalBottomNav() {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         backdropClassName="z-[50]"
-        containerClassName={cn('z-[60]', ADMIN_PORTAL_MOBILE_BOTTOM_NAV_SEARCH_OFFSET_CLASS)}
+        containerClassName="z-[60]"
       />
 
       <nav
