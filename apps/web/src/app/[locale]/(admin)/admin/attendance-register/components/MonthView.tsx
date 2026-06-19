@@ -110,9 +110,11 @@ export function MonthView({
     [safeMobileCardPage, selectedGroups, mobileCardsPageSize],
   );
 
+  const selectedGroupIdsKey = safeSelectedGroupIds.join(',');
+
   useEffect(() => {
     setMobileCardPage(0);
-  }, [currentDate, selectedDayForMonthView, selectedGroups.length, safeSelectedGroupIds.join(',')]);
+  }, [currentDate, selectedDayForMonthView, selectedGroups.length, selectedGroupIdsKey]);
 
   const goToMobileCardsPage = (nextPage: number) => {
     setMobileCardPage(nextPage);

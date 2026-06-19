@@ -352,7 +352,7 @@ export default function AdminCrmPage() {
     enabled: isAuthReady,
   });
 
-  const leads = leadsData?.items ?? [];
+  const leads = useMemo(() => leadsData?.items ?? [], [leadsData?.items]);
   const countsByStatus = leadsData?.countsByStatus ?? {};
   const centers = centersData?.items ?? [];
   const managerCenterName =

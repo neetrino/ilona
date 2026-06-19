@@ -124,13 +124,15 @@ export function DayView({
     [safeDesktopCardPage, selectedGroups],
   );
 
+  const selectedGroupIdsKey = safeSelectedGroupIds.join(',');
+
   useEffect(() => {
     setMobileCardPage(0);
-  }, [currentDate, selectedGroups.length, safeSelectedGroupIds.join(',')]);
+  }, [currentDate, selectedGroups.length, selectedGroupIdsKey]);
 
   useEffect(() => {
     setDesktopCardPage(0);
-  }, [currentDate, selectedGroups.length, safeSelectedGroupIds.join(',')]);
+  }, [currentDate, selectedGroups.length, selectedGroupIdsKey]);
 
   const goToMobileCardsPage = (nextPage: number) => {
     setMobileCardPage(nextPage);

@@ -228,6 +228,34 @@ export function LessonListTable({
     }
   };
 
+  const cardRows = useMemo<Array<{ lesson: Lesson; category?: TeacherCalendarRowCategory }>>(
+    () =>
+      sectionedCalendarList
+        ? (useMobileCards
+            ? sectionedOrderedRows.map((row) => ({ lesson: row.lesson, category: row.category }))
+            : sectionedPageRows.map((row) => ({ lesson: row.lesson, category: row.category })))
+        : sortedLessons.map((lesson) => ({ lesson })),
+    [sectionedCalendarList, useMobileCards, sectionedOrderedRows, sectionedPageRows, sortedLessons],
+  );
+  const mobileCardPageSize = isIPad ? IPAD_CARD_PAGE_SIZE : MOBILE_CARD_PAGE_SIZE;
+  const mobileCardsTotalPages = Math.max(
+    1,
+    Math.ceil(cardRows.length / mobileCardPageSize),
+  );
+  const safeMobileCardsPage = Math.min(mobileCardsPage, mobileCardsTotalPages);
+  const mobilePaginatedCardRows = useMemo(
+    () =>
+      cardRows.slice(
+        (safeMobileCardsPage - 1) * mobileCardPageSize,
+        safeMobileCardsPage * mobileCardPageSize,
+      ),
+    [cardRows, safeMobileCardsPage, mobileCardPageSize],
+  );
+
+  useEffect(() => {
+    setMobileCardsPage(1);
+  }, [sectionedCalendarList, sectionedLessonsKey, sortedLessons.length]);
+
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-12">
@@ -258,29 +286,6 @@ export function LessonListTable({
   const showBulkBar = onBulkDelete && (showBulkBarWhenEmpty || selectedLessons.size > 0);
   const hasSelectedLessons = selectedLessons.size > 0;
   const obligationIds: LessonActionId[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
-  const cardRows: Array<{ lesson: Lesson; category?: TeacherCalendarRowCategory }> = sectionedCalendarList
-    ? (useMobileCards
-        ? sectionedOrderedRows.map((row) => ({ lesson: row.lesson, category: row.category }))
-        : sectionedPageRows.map((row) => ({ lesson: row.lesson, category: row.category })))
-    : sortedLessons.map((lesson) => ({ lesson }));
-  const mobileCardPageSize = isIPad ? IPAD_CARD_PAGE_SIZE : MOBILE_CARD_PAGE_SIZE;
-  const mobileCardsTotalPages = Math.max(
-    1,
-    Math.ceil(cardRows.length / mobileCardPageSize),
-  );
-  const safeMobileCardsPage = Math.min(mobileCardsPage, mobileCardsTotalPages);
-  const mobilePaginatedCardRows = useMemo(
-    () =>
-      cardRows.slice(
-        (safeMobileCardsPage - 1) * mobileCardPageSize,
-        safeMobileCardsPage * mobileCardPageSize,
-      ),
-    [cardRows, safeMobileCardsPage, mobileCardPageSize],
-  );
-
-  useEffect(() => {
-    setMobileCardsPage(1);
-  }, [sectionedCalendarList, sectionedLessonsKey, sortedLessons.length]);
 
   const handleView = (lessonId: string) => {
     const currentPath = window.location.pathname;
