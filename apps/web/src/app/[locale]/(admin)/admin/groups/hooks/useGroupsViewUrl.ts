@@ -1,10 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
-import { readGroupsViewMode, readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
-import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
+import { readGroupsViewMode, readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 
 export type GroupsViewMode = 'list' | 'board';
 
@@ -17,13 +16,9 @@ interface UseGroupsViewUrlOptions {
 
 export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
   const { enforceBoardOnMobile = true, normalizeMissingView = true } = options;
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const isLg = useIsLgViewport();
   const [pendingViewMode, setPendingViewMode] = useState<GroupsViewMode | null>(null);
-  const [urlRevision, setUrlRevision] = useState(0);
-  usePopstateUrlSync(setUrlRevision);
 
   useEffect(() => {
     if (pendingViewMode === null) {
@@ -42,15 +37,9 @@ export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
 
   const updateUrl = useCallback(
     (updates: Record<string, string | null>) => {
-      replaceAppSearchUrl({
-        router,
-        pathname,
-        updates,
-        scroll: false,
-        onReplaced: () => setUrlRevision((revision) => revision + 1),
-      });
+      replaceParams(updates);
     },
-    [pathname, router],
+    [replaceParams],
   );
 
   const handleViewModeChange = useCallback(

@@ -1,14 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 
 type ViewMode = 'week' | 'month' | 'list';
 
 export function useCalendarNavigation() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [urlRevision, setUrlRevision] = useState(0);
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
     const viewFromUrl = readUrlSearchParam('view', searchParams, urlRevision);
@@ -34,12 +31,7 @@ export function useCalendarNavigation() {
 
   const updateViewModeInUrl = (mode: ViewMode) => {
     setPendingViewMode(mode);
-    replaceAppSearchUrl({
-      router,
-      pathname,
-      updates: { view: mode === 'list' ? null : mode },
-      onReplaced: () => setUrlRevision((revision) => revision + 1),
-    });
+    replaceParams({ view: mode === 'list' ? null : mode });
   };
 
   const goToToday = () => setCurrentDate(new Date());

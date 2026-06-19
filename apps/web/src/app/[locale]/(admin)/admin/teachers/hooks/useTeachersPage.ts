@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef, startTransition } from 'react';
-import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
   useTeachers, 
@@ -12,8 +12,8 @@ import {
 } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
-import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
-import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { countUniqueTeachers, filterTeachersByBranches, groupTeachersByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
@@ -30,30 +30,13 @@ const EDIT_TEACHER_URL_PARAM = 'editTeacherId';
 
 export function useTeachersPage() {
   const params = useParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const locale = params.locale as string;
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
-  const [urlRevision, setUrlRevision] = useState(0);
-  usePopstateUrlSync(setUrlRevision);
-
-  const replaceParams = useCallback(
-    (updates: Record<string, string | number | null | undefined>) => {
-      replaceAppSearchUrl({
-        router,
-        pathname,
-        updates,
-        scroll: false,
-        onReplaced: () => setUrlRevision((revision) => revision + 1),
-      });
-    },
-    [pathname, router],
-  );
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
     const mode = readUrlSearchParam('view', searchParams, urlRevision);

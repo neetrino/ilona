@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef, startTransition } from 'react';
-import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   useStudents,
@@ -18,8 +18,8 @@ import { useTeachers } from '@/features/teachers';
 import { useGroups } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
-import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
-import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { groupStudentsByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
@@ -55,9 +55,7 @@ function isWithinNewStudentWindow(student: Student): boolean {
 
 export function useStudentsPage() {
   const params = useParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const locale = typeof params?.locale === 'string' ? params.locale : 'en';
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
@@ -65,21 +63,6 @@ export function useStudentsPage() {
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
-  const [urlRevision, setUrlRevision] = useState(0);
-  usePopstateUrlSync(setUrlRevision);
-
-  const replaceParams = useCallback(
-    (updates: Record<string, string | number | null | undefined>) => {
-      replaceAppSearchUrl({
-        router,
-        pathname,
-        updates,
-        scroll: false,
-        onReplaced: () => setUrlRevision((revision) => revision + 1),
-      });
-    },
-    [pathname, router],
-  );
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
     const mode = readUrlSearchParam('view', searchParams, urlRevision);

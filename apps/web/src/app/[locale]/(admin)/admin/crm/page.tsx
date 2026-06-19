@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -35,8 +34,8 @@ import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
-import { readUrlSearchParam, replaceAppSearchUrl } from '@/shared/lib/url-search-params';
-import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 
 const DEFAULT_FILTERS: CrmLeadFilters = {
   skip: 0,
@@ -111,8 +110,7 @@ function sortLeadsByFilters(leads: CrmLead[], filters: CrmLeadFilters): CrmLead[
 }
 
 export default function AdminCrmPage() {
-  const router = useRouter();
-  const pathname = usePathname();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const t = useTranslations('nav');
   const tCrm = useTranslations('crm');
   const user = useAuthStore((state) => state.user);
@@ -124,23 +122,7 @@ export default function AdminCrmPage() {
   const managerCenterId = userRole === 'MANAGER' ? user?.managerCenterId ?? undefined : undefined;
   const isAuthReady = isHydrated && isAuthenticated && hasAccessToken && !!user?.id;
   const authScopeKey = `${userRole ?? 'UNKNOWN'}:${user?.id ?? 'anonymous'}:${managerCenterId ?? 'all-centers'}`;
-  const searchParams = useSearchParams();
   const isLg = useIsLgViewport();
-  const [urlRevision, setUrlRevision] = useState(0);
-  usePopstateUrlSync(setUrlRevision);
-
-  const replaceParams = useCallback(
-    (updates: Record<string, string | number | null | undefined>) => {
-      replaceAppSearchUrl({
-        router,
-        pathname,
-        updates,
-        scroll: false,
-        onReplaced: () => setUrlRevision((revision) => revision + 1),
-      });
-    },
-    [pathname, router],
-  );
 
   const readCrmViewMode = useCallback((): 'board' | 'list' => {
     const mode = readUrlSearchParam(VIEW_PARAM, searchParams, urlRevision);

@@ -12,7 +12,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { locales, type Locale } from '@/config/i18n';
+import { appTimeZone, locales, type Locale } from '@/config/i18n';
 import { persistLocalePreference } from '@/shared/lib/locale-persistence';
 
 type ClientIntlProviderProps = {
@@ -95,7 +95,7 @@ export function ClientIntlProvider({
 
   return (
     <LocaleSwitchContext.Provider value={contextValue}>
-      <NextIntlClientProvider locale={locale} messages={messages}>
+      <NextIntlClientProvider locale={locale} messages={messages} timeZone={appTimeZone}>
         {children}
       </NextIntlClientProvider>
     </LocaleSwitchContext.Provider>

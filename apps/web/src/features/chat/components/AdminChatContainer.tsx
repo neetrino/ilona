@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { getLiveSearchParams, readUrlSearchParam, replaceAppSearchParams } from '@/shared/lib/url-search-params';
-import { usePopstateUrlSync } from '@/shared/hooks/useAppSearchUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { useRouter } from '@/config/navigation';
 import { fetchChat } from '../api/chat.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
@@ -25,28 +25,17 @@ interface AdminChatContainerProps {
 
 function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChatContainerProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceAllParams } = useAppSearchUrl();
   const { user } = useAuthStore();
   const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible, setAccountKey } =
     useChatStore();
   const isInitialMount = useRef(true);
-  const [urlRevision, setUrlRevision] = useState(0);
-  usePopstateUrlSync(setUrlRevision);
 
   const replaceSearchParams = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
-      const params = getLiveSearchParams(searchParams);
-      mutate(params);
-      replaceAppSearchParams({
-        router,
-        pathname,
-        params,
-        scroll: false,
-        onReplaced: () => setUrlRevision((revision) => revision + 1),
-      });
+      replaceAllParams(mutate);
     },
-    [pathname, router, searchParams],
+    [replaceAllParams],
   );
 
   // Isolate chat state per account so Admin selection does not affect Student (and vice versa)
