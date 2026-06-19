@@ -10,12 +10,12 @@ export type GroupsViewMode = 'list' | 'board';
 interface UseGroupsViewUrlOptions {
   /** When true (default), mobile viewports always use board and cannot persist list in the URL. */
   enforceBoardOnMobile?: boolean;
-  /** When true (default), add `view=board` if the param is missing on desktop. */
+  /** When true, add `view=board` if the param is missing on desktop. */
   normalizeMissingView?: boolean;
 }
 
 export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
-  const { enforceBoardOnMobile = true, normalizeMissingView = true } = options;
+  const { enforceBoardOnMobile = true, normalizeMissingView = false } = options;
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const isLg = useIsLgViewport();
   const [pendingViewMode, setPendingViewMode] = useState<GroupsViewMode | null>(null);
@@ -36,8 +36,8 @@ export function useGroupsViewUrl(options: UseGroupsViewUrlOptions = {}) {
   const viewMode: GroupsViewMode = pendingViewMode ?? viewModeFromUrl;
 
   const updateUrl = useCallback(
-    (updates: Record<string, string | null>) => {
-      replaceParams(updates);
+    (updates: Record<string, string | null>, options?: { mode?: 'push' | 'replace' }) => {
+      replaceParams(updates, options);
     },
     [replaceParams],
   );

@@ -75,7 +75,7 @@ interface GroupsTabProps {
   setPage: (page: number | ((prev: number) => number)) => void;
   viewMode: 'list' | 'board';
   onViewModeChange: (mode: 'list' | 'board', extra?: Record<string, string | null>) => void;
-  updateUrl: (updates: Record<string, string | null>) => void;
+  updateUrl: (updates: Record<string, string | null>, options?: { mode?: 'push' | 'replace' }) => void;
   searchParams: URLSearchParams;
   /** Bumped whenever updateUrl writes to the browser URL (production-safe sync). */
   urlRevision?: number;
@@ -150,8 +150,6 @@ export function GroupsTab({
     averageGroupSize,
     isLoading,
     deleteGroup,
-    createGroupOpen,
-    setCreateGroupOpen,
     editGroupId,
     setEditGroupId,
     deleteGroupId,
@@ -311,8 +309,6 @@ export function GroupsTab({
 
   // Ref to track edit modal closing to prevent effect from reopening
   const isClosingRef = useRef(false);
-  // Ref to track create modal closing to prevent effect from reopening
-  const isCreateClosingRef = useRef(false);
 
   // Sync editGroupId from URL on mount and when URL changes
   useEffect(() => {
@@ -348,30 +344,15 @@ export function GroupsTab({
     }
   }, [setEditGroupId, updateUrl]);
 
-  // Sync createGroupOpen from URL so create modal survives refresh
-  useEffect(() => {
-    if (isCreateClosingRef.current) {
-      return;
-    }
-
-    const shouldOpenCreateGroup = readUrlSearchParam('createGroup', searchParams) === '1';
-    setCreateGroupOpen(shouldOpenCreateGroup);
-  }, [searchParams, urlRevision, setCreateGroupOpen]);
+  const isAddGroupOpen = readUrlSearchParam('modal', searchParams) === 'add-group';
 
   const handleCreateGroupOpenChange = (open: boolean) => {
     if (!open) {
-      isCreateClosingRef.current = true;
-      setCreateGroupOpen(false);
-      updateUrl({ createGroup: null });
-      setTimeout(() => {
-        isCreateClosingRef.current = false;
-      }, 100);
+      updateUrl({ modal: null }, { mode: 'replace' });
       return;
     }
 
-    isCreateClosingRef.current = false;
-    setCreateGroupOpen(true);
-    updateUrl({ createGroup: '1' });
+    updateUrl({ modal: 'add-group' }, { mode: 'push' });
   };
 
   const pageSize = 10;
@@ -1064,7 +1045,7 @@ export function GroupsTab({
 
       {/* Modals */}
       <CreateGroupForm 
-        open={createGroupOpen} 
+        open={isAddGroupOpen} 
         onOpenChange={handleCreateGroupOpenChange}
         defaultCenterId={activeCenterId ?? undefined}
       />

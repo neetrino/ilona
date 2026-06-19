@@ -1,7 +1,6 @@
-import { startTransition } from 'react';
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
-
-export type SearchParamUpdates = Record<string, string | number | null | undefined>;
+export type SearchParamValue = string | number | boolean | null | undefined;
+export type SearchParamUpdates = Record<string, SearchParamValue>;
+export type UrlStateMode = 'push' | 'replace';
 
 /** Browser pathname is the source of truth in production (localePrefix: never). */
 function resolveAppPathname(fallbackPathname: string): string {
@@ -13,22 +12,6 @@ function resolveAppPathname(fallbackPathname: string): string {
 
 function getBrowserUrl(): string {
   return `${window.location.pathname}${window.location.search}`;
-}
-
-/** Keep address bar in sync when Next.js router.replace reverts query params in production. */
-function commitBrowserSearchUrl(
-  nextUrl: string,
-  router: Pick<AppRouterInstance, 'replace'>,
-  scroll: boolean,
-): void {
-  window.history.replaceState(window.history.state, '', nextUrl);
-
-  startTransition(() => {
-    router.replace(nextUrl, { scroll });
-    if (getBrowserUrl() !== nextUrl) {
-      window.history.replaceState(window.history.state, '', nextUrl);
-    }
-  });
 }
 
 export function getLiveSearchParams(searchParams: URLSearchParams): URLSearchParams {
@@ -56,7 +39,7 @@ export function applySearchParamUpdates(
   const params = new URLSearchParams(normalizedBase);
 
   Object.entries(updates).forEach(([key, value]) => {
-    if (value === null || value === undefined || value === '') {
+    if (value === null || value === undefined || value === '' || value === false) {
       params.delete(key);
     } else {
       params.set(key, String(value));
@@ -67,19 +50,17 @@ export function applySearchParamUpdates(
 }
 
 interface ReplaceAppSearchUrlOptions {
-  router: Pick<AppRouterInstance, 'replace'>;
   pathname: string;
   updates: SearchParamUpdates;
-  scroll?: boolean;
+  mode?: UrlStateMode;
   onReplaced?: () => void;
 }
 
-/** Apply query updates using the live URL, sync the address bar immediately, then notify Next.js. */
+/** Apply query updates with the native History API so query-only UI state does not trigger App Router navigation. */
 export function replaceAppSearchUrl({
-  router,
   pathname,
   updates,
-  scroll = false,
+  mode = 'replace',
   onReplaced,
 }: ReplaceAppSearchUrlOptions): boolean {
   if (typeof window === 'undefined') {
@@ -99,25 +80,27 @@ export function replaceAppSearchUrl({
     return false;
   }
 
-  commitBrowserSearchUrl(nextUrl, router, scroll);
+  if (mode === 'push') {
+    window.history.pushState(window.history.state, '', nextUrl);
+  } else {
+    window.history.replaceState(window.history.state, '', nextUrl);
+  }
   onReplaced?.();
   return true;
 }
 
 interface ReplaceAppSearchParamsOptions {
-  router: Pick<AppRouterInstance, 'replace'>;
   pathname: string;
   params: URLSearchParams;
-  scroll?: boolean;
+  mode?: UrlStateMode;
   onReplaced?: () => void;
 }
 
 /** Replace the full query string (for hooks that mutate URLSearchParams in place). */
 export function replaceAppSearchParams({
-  router,
   pathname,
   params,
-  scroll = false,
+  mode = 'replace',
   onReplaced,
 }: ReplaceAppSearchParamsOptions): boolean {
   if (typeof window === 'undefined') {
@@ -134,7 +117,11 @@ export function replaceAppSearchParams({
     return false;
   }
 
-  commitBrowserSearchUrl(nextUrl, router, scroll);
+  if (mode === 'push') {
+    window.history.pushState(window.history.state, '', nextUrl);
+  } else {
+    window.history.replaceState(window.history.state, '', nextUrl);
+  }
   onReplaced?.();
   return true;
 }

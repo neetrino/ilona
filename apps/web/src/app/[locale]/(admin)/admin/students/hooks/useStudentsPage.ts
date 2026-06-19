@@ -27,8 +27,8 @@ type ViewMode = 'list' | 'board';
 
 const PAGE_SIZE = 10;
 const NEW_STUDENT_BADGE_DAYS = 30;
-/** URL flag so Add Student modal survives refresh (same idea as `?studentId=`). */
-const ADD_STUDENT_URL_PARAM = 'addStudent';
+const MODAL_PARAM = 'modal';
+const ADD_STUDENT_MODAL = 'add-student';
 
 function isWithinNewStudentWindow(student: Student): boolean {
   if (student.isRecentlyPaidFromCrm !== undefined) {
@@ -55,7 +55,7 @@ function isWithinNewStudentWindow(student: Student): boolean {
 
 export function useStudentsPage() {
   const params = useParams();
-  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
+  const { searchParams, urlRevision, setParams, removeParams } = useAppSearchUrl();
   const locale = typeof params?.locale === 'string' ? params.locale : 'en';
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
@@ -83,36 +83,18 @@ export function useStudentsPage() {
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
-  // Modal/Dialog states — local state + URL sync (same pattern as Groups createGroup / Calendar add-lesson).
-  const [isAddStudentOpen, setIsAddStudentOpenState] = useState(
-    () => readUrlSearchParam(ADD_STUDENT_URL_PARAM, searchParams) === '1',
-  );
-  const isAddStudentClosingRef = useRef(false);
-
-  useEffect(() => {
-    if (isAddStudentClosingRef.current) {
-      return;
-    }
-    const shouldOpen = readUrlSearchParam(ADD_STUDENT_URL_PARAM, searchParams) === '1';
-    setIsAddStudentOpenState(shouldOpen);
-  }, [searchParams, urlRevision]);
+  const isAddStudentOpen =
+    readUrlSearchParam(MODAL_PARAM, searchParams, urlRevision) === ADD_STUDENT_MODAL;
 
   const setIsAddStudentOpen = useCallback(
     (open: boolean) => {
       if (open) {
-        isAddStudentClosingRef.current = false;
-        setIsAddStudentOpenState(true);
-        replaceParams({ [ADD_STUDENT_URL_PARAM]: '1' });
+        setParams({ [MODAL_PARAM]: ADD_STUDENT_MODAL }, { mode: 'push' });
       } else {
-        isAddStudentClosingRef.current = true;
-        setIsAddStudentOpenState(false);
-        replaceParams({ [ADD_STUDENT_URL_PARAM]: null });
-        setTimeout(() => {
-          isAddStudentClosingRef.current = false;
-        }, 100);
+        removeParams([MODAL_PARAM], { mode: 'replace' });
       }
     },
-    [replaceParams],
+    [removeParams, setParams],
   );
   const [isEditStudentOpen, setIsEditStudentOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -170,9 +152,9 @@ export function useStudentsPage() {
   const updateViewModeInUrl = useCallback(
     (mode: ViewMode) => {
       setPendingViewMode(mode);
-      replaceParams({ view: mode === 'list' ? null : mode });
+      setParams({ view: mode === 'list' ? null : mode }, { mode: 'replace' });
     },
-    [replaceParams],
+    [setParams],
   );
 
   const setViewMode = useCallback(
@@ -452,7 +434,7 @@ export function useStudentsPage() {
     isFeedbackClosingRef.current = false;
     setSelectedStudentForFeedback(student);
     setIsFeedbackModalOpen(true);
-    replaceParams({ feedback: student.id });
+    setParams({ feedback: student.id }, { mode: 'push' });
   };
 
   const handleFeedbackModalOpenChange = (open: boolean) => {
@@ -464,7 +446,7 @@ export function useStudentsPage() {
     isFeedbackClosingRef.current = true;
     setIsFeedbackModalOpen(false);
     setSelectedStudentForFeedback(null);
-    replaceParams({ feedback: null });
+    removeParams(['feedback'], { mode: 'replace' });
     setTimeout(() => {
       isFeedbackClosingRef.current = false;
     }, 100);
@@ -615,13 +597,13 @@ export function useStudentsPage() {
   const handleStudentDetailsOpen = (student: Student) => {
     setSelectedStudentIdForDetails(student.id);
     setIsStudentDetailsModalOpen(true);
-    replaceParams({ studentId: student.id });
+    setParams({ studentId: student.id }, { mode: 'push' });
   };
 
   const handleStudentDetailsClose = () => {
     setIsStudentDetailsModalOpen(false);
     setSelectedStudentIdForDetails(null);
-    replaceParams({ studentId: null });
+    removeParams(['studentId'], { mode: 'replace' });
   };
 
   // Stats calculation (only full students have user.status; onboarding items are not counted as active)
