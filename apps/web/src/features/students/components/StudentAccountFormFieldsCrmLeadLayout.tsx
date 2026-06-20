@@ -3,8 +3,8 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { PasswordInput } from '@/shared/components/ui';
-import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
+import { Input, Label, PasswordInput } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type { Group } from '@/features/groups';
 import type { CreateStudentFormData } from '../student-account-form.schema';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
@@ -14,7 +14,10 @@ const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 
 const inputClass =
   'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
-const selectClass = `unified-native-select ${inputClass}`;
+const additionalInfoInputClass =
+  'h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50';
+const additionalInfoLabelClass = 'text-sm font-medium text-slate-700';
+const additionalInfoHintClass = 'min-h-[1.25rem] text-xs leading-5 text-slate-500';
 
 const sectionTitle = 'text-xs font-semibold uppercase tracking-wide text-slate-500';
 
@@ -65,6 +68,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   const tCommon = useTranslations('common');
 
   const p = (id: string) => (idPrefix ? `${idPrefix}-${id}` : id);
+  const watchedLevelId = watch('levelId') || '';
   const watchedCenterId = watch('centerId') || '';
   const effectiveCenterId = lockedCenterId || watchedCenterId || '';
   const hasCenterScope = Boolean(effectiveCenterId);
@@ -98,8 +102,6 @@ export function StudentAccountFormFieldsCrmLeadLayout({
     groupsForAssignmentFilter,
     watchedTeacherId,
   ]);
-
-  const { onChange: onCenterFieldChange, ...centerIdRegisterRest } = register('centerId');
 
   return (
     <div className="space-y-6">
@@ -184,32 +186,55 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
       <section className="space-y-3">
         <h3 className={sectionTitle}>{tCrm('additionalInfo')}</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <label htmlFor={p('manualAge')} className="mb-1 block text-sm font-medium text-slate-700">
+        <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3 min-[1367px]:items-start">
+          <div className="col-span-2 flex flex-col gap-2 min-[1367px]:col-span-1">
+            <Label htmlFor={p('manualAge')} className={additionalInfoLabelClass}>
               {tForm('ageYears')}
-            </label>
-            <input id={p('manualAge')} type="number" min={0} {...register('manualAge')} className={inputClass} disabled={isSubmitting} />
-            {computedAge !== undefined && (
-              <p className="mt-1 text-xs text-slate-500">{tForm('effectiveAge', { age: computedAge })}</p>
-            )}
-            {errors.manualAge && <p className="mt-1 text-sm text-red-600">{errors.manualAge.message}</p>}
+            </Label>
+            <input
+              id={p('manualAge')}
+              type="number"
+              min={0}
+              {...register('manualAge')}
+              className={additionalInfoInputClass}
+              disabled={isSubmitting}
+            />
+            <p className={additionalInfoHintClass}>
+              {computedAge !== undefined ? tForm('effectiveAge', { age: computedAge }) : '\u00A0'}
+            </p>
+            {errors.manualAge && <p className="text-sm text-red-600">{errors.manualAge.message}</p>}
           </div>
-          <div>
-            <label htmlFor={p('dateOfBirth')} className="mb-1 block text-sm font-medium text-slate-700">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={p('dateOfBirth')} className={additionalInfoLabelClass}>
               {tCrm('dateOfBirth')}
-            </label>
-            <DatePickerInput id={p('dateOfBirth')} {...register('dateOfBirth')} className={inputClass} />
-            {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth.message}</p>}
+            </Label>
+            <Input
+              id={p('dateOfBirth')}
+              type="date"
+              {...register('dateOfBirth')}
+              className={additionalInfoInputClass}
+              error={errors.dateOfBirth?.message}
+              disabled={isSubmitting}
+            />
+            <p className={`${additionalInfoHintClass} min-[1367px]:block hidden`} aria-hidden>
+              {'\u00A0'}
+            </p>
           </div>
-          <div>
-            <label htmlFor={p('firstLessonDate')} className="mb-1 block text-sm font-medium text-slate-700">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={p('firstLessonDate')} className={additionalInfoLabelClass}>
               {tCrm('firstLessonDate')}
-            </label>
-            <DatePickerInput id={p('firstLessonDate')} {...register('firstLessonDate')} className={inputClass} />
-            {errors.firstLessonDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.firstLessonDate.message}</p>
-            )}
+            </Label>
+            <Input
+              id={p('firstLessonDate')}
+              type="date"
+              {...register('firstLessonDate')}
+              className={additionalInfoInputClass}
+              error={errors.firstLessonDate?.message}
+              disabled={isSubmitting}
+            />
+            <p className={`${additionalInfoHintClass} min-[1367px]:block hidden`} aria-hidden>
+              {'\u00A0'}
+            </p>
           </div>
         </div>
       </section>
@@ -299,101 +324,101 @@ export function StudentAccountFormFieldsCrmLeadLayout({
       <section className="space-y-3">
         <h3 className={sectionTitle}>{tCrm('academicInfo')}</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor={p('levelId')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCommon('level')}
-            </label>
-            <select id={p('levelId')} {...register('levelId')} className={selectClass} disabled={isSubmitting}>
-              <option value="">—</option>
-              {LEVEL_OPTIONS.map((l) => (
-                <option key={l} value={l}>
-                  {l}
-                </option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor={p('levelId')}>{tCommon('level')}</Label>
+            <input type="hidden" {...register('levelId')} />
+            <SingleSelectDropdown
+              id={p('levelId')}
+              options={LEVEL_OPTIONS.map((level) => ({
+                id: level,
+                label: level,
+              }))}
+              value={watchedLevelId || null}
+              onValueChange={(nextValue) =>
+                setValue('levelId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+              }
+              placeholder="—"
+              allowDeselect
+              error={errors.levelId?.message}
+              disabled={isSubmitting}
+            />
           </div>
           {showCenterSelect ? (
-            <div>
-              <label htmlFor={p('centerId')} className="mb-1 block text-sm font-medium text-slate-700">
-                {tCommon('center')}
-              </label>
-              <select
+            <div className="space-y-2">
+              <Label htmlFor={p('centerId')}>{tCommon('center')}</Label>
+              <input type="hidden" {...register('centerId')} />
+              <SingleSelectDropdown
                 id={p('centerId')}
-                {...centerIdRegisterRest}
-                className={selectClass}
-                disabled={isLoadingCenters || isSubmitting}
-                onChange={(e) => {
-                  onCenterFieldChange(e);
-                  setValue('teacherId', '', { shouldDirty: true });
-                  setValue('groupId', '', { shouldDirty: true });
+                options={centers.map((center) => ({
+                  id: center.id,
+                  label: center.name,
+                }))}
+                value={watchedCenterId || null}
+                onValueChange={(nextValue) => {
+                  setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true });
+                  setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
+                  setValue('groupId', '', { shouldDirty: true, shouldValidate: true });
                 }}
-              >
-                <option value="">—</option>
-                {centers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              {errors.centerId && <p className="mt-1 text-sm text-red-600">{errors.centerId.message}</p>}
+                placeholder="—"
+                isLoading={isLoadingCenters}
+                error={errors.centerId?.message}
+                disabled={isLoadingCenters || isSubmitting || centers.length === 0}
+              />
             </div>
           ) : assignedCenterDisplay ? (
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">{tCommon('center')}</label>
+            <div className="space-y-2">
+              <Label>{tCommon('center')}</Label>
               <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
                 {assignedCenterDisplay}
               </p>
             </div>
           ) : null}
-          <div>
-            <label htmlFor={p('teacherId')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCommon('teacher')}
-            </label>
-            <select
+          <div className="space-y-2">
+            <Label htmlFor={p('teacherId')}>{tCommon('teacher')}</Label>
+            <input type="hidden" {...register('teacherId')} />
+            <SingleSelectDropdown
               id={p('teacherId')}
-              {...register('teacherId')}
-              className={selectClass}
+              options={teachersScoped.map((teacher) => ({
+                id: teacher.id,
+                label: `${teacher.user?.firstName ?? ''} ${teacher.user?.lastName ?? ''}`.trim(),
+              }))}
+              value={watchedTeacherId || null}
+              onValueChange={(nextValue) => {
+                setValue('teacherId', nextValue ?? '', { shouldDirty: true, shouldValidate: true });
+                setValue('groupId', '', { shouldDirty: true, shouldValidate: true });
+              }}
+              placeholder={hasCenterScope ? t('selectTeacher') : tForm('selectCenterFirst')}
+              isLoading={isLoadingTeachers}
+              error={errors.teacherId?.message}
               disabled={isLoadingTeachers || isSubmitting || !hasCenterScope}
-            >
-              <option value="">
-                {hasCenterScope ? t('selectTeacher') : tForm('selectCenterFirst')}
-              </option>
-              {teachersScoped.map((te) => (
-                <option key={te.id} value={te.id}>
-                  {te.user?.firstName} {te.user?.lastName}
-                </option>
-              ))}
-            </select>
-            {errors.teacherId && <p className="mt-1 text-sm text-red-600">{errors.teacherId.message}</p>}
-            {isLoadingTeachers && <p className="mt-1 text-xs text-slate-500">{t('loadingTeachers')}</p>}
+            />
+            {isLoadingTeachers && <p className="text-sm text-slate-500">{t('loadingTeachers')}</p>}
             {watchedTeacherId && teacherCentersLabel ? (
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="text-xs text-slate-500">
                 {tForm('teacherCenters')}: {teacherCentersLabel}
               </p>
             ) : null}
           </div>
-          <div>
-            <label htmlFor={p('groupId')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCommon('group')}
-            </label>
-            <select
+          <div className="space-y-2">
+            <Label htmlFor={p('groupId')}>{tCommon('group')}</Label>
+            <input type="hidden" {...register('groupId')} />
+            <SingleSelectDropdown
               id={p('groupId')}
-              {...register('groupId')}
-              className={selectClass}
+              options={groupsForTeacher.map((group) => ({
+                id: group.id,
+                label: group.name,
+              }))}
+              value={watchedGroupId || null}
+              onValueChange={(nextValue) =>
+                setValue('groupId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+              }
+              placeholder={watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst')}
+              isLoading={isLoadingGroups}
+              error={errors.groupId?.message}
               disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
-            >
-              <option value="">
-                {watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst')}
-              </option>
-              {groupsForTeacher.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-            {errors.groupId && <p className="mt-1 text-sm text-red-600">{errors.groupId.message}</p>}
+            />
             {watchedGroupId ? (
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="text-xs text-slate-500">
                 {tForm('groupLocation', {
                   name: groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? '—',
                 })}
