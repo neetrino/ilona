@@ -65,11 +65,11 @@ function RevenueRows({ rows, locale }: { rows: RevenueData[]; locale: string }) 
   return rows.map((row) => (
     <tr key={row.month} className="hover:bg-[#fafafa]">
       <RevenuePeriodCell row={row} locale={locale} />
-      <td className="px-4 py-3 text-right font-medium text-green-600">{formatCurrency(row.income)}</td>
-      <td className="px-4 py-3 text-right font-medium text-red-600">{formatCurrency(row.expenses)}</td>
+      <td className="px-4 py-3 text-center font-medium text-green-600">{formatCurrency(row.income)}</td>
+      <td className="px-4 py-3 text-center font-medium text-red-600">{formatCurrency(row.expenses)}</td>
       <td
         className={cn(
-          'px-4 py-3 text-right font-semibold',
+          'px-4 py-3 text-center font-semibold',
           row.profit >= 0 ? 'text-blue-600' : 'text-orange-600',
         )}
       >
@@ -123,9 +123,9 @@ function RevenueTableHeader({ periodColumnLabel }: { periodColumnLabel: string }
         <th className="min-w-[5.25rem] whitespace-nowrap px-3 py-3 text-left text-sm font-medium text-[#3b3b40] sm:min-w-0 sm:px-4">
           {periodColumnLabel}
         </th>
-        <th className="px-4 py-3 text-right text-sm font-medium text-[#3b3b40]">Income</th>
-        <th className="px-4 py-3 text-right text-sm font-medium text-[#3b3b40]">Expenses</th>
-        <th className="px-4 py-3 text-right text-sm font-medium text-[#3b3b40]">Profit</th>
+        <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">Income</th>
+        <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">Expenses</th>
+        <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">Profit</th>
         <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]"># Payments</th>
       </tr>
     </thead>
