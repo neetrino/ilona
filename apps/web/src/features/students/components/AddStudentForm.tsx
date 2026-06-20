@@ -68,7 +68,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       dateOfBirth: '',
       firstLessonDate: '',
       manualAge: undefined,
-      levelId: '',
+      levelId: 'A1',
       groupId: '',
       teacherId: '',
       centerId: '',

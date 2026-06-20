@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { Input, Label, PasswordInput } from '@/shared/components/ui';
+import { Input, Label, PasswordInput, SegmentedControl } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type { Group } from '@/features/groups';
 import type { CreateStudentFormData } from '../student-account-form.schema';
@@ -327,21 +327,20 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           <div className="space-y-2">
             <Label htmlFor={p('levelId')}>{tCommon('level')}</Label>
             <input type="hidden" {...register('levelId')} />
-            <SingleSelectDropdown
-              id={p('levelId')}
+            <SegmentedControl
+              aria-label={tCommon('level')}
               options={LEVEL_OPTIONS.map((level) => ({
                 id: level,
                 label: level,
               }))}
-              value={watchedLevelId || null}
-              onValueChange={(nextValue) =>
-                setValue('levelId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+              value={watchedLevelId}
+              onChange={(nextValue) =>
+                setValue('levelId', nextValue, { shouldDirty: true, shouldValidate: true })
               }
-              placeholder="—"
               allowDeselect
-              error={errors.levelId?.message}
               disabled={isSubmitting}
             />
+            {errors.levelId && <p className="text-sm text-red-600">{errors.levelId.message}</p>}
           </div>
           {showCenterSelect ? (
             <div className="space-y-2">
