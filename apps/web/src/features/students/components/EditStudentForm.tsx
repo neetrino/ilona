@@ -14,6 +14,7 @@ import { useState, useEffect, useMemo, useRef, type TouchEvent } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { X } from 'lucide-react';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
@@ -415,6 +416,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
           'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
           'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+          'min-[1367px]:grid-rows-[auto_1fr]',
           'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
           'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
         )}
@@ -432,7 +434,15 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           <div className="h-1.5 w-14 rounded-full bg-slate-400" />
         </div>
         <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
-        <div className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-0 min-[1367px]:pb-0 min-[1367px]:pt-0">
+        <div className="hidden min-[1367px]:flex shrink-0 items-center justify-end bg-[#f8f9fb] px-2 pt-2">
+          <DialogPrimitive.Close
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            aria-label={tCommon('close')}
+          >
+            <X className="h-4 w-4" />
+          </DialogPrimitive.Close>
+        </div>
+        <div className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-2">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
             <p className="mt-1 text-sm text-[#8b8b90]">{tForm('editDescription')}</p>
