@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
   useMessages,
@@ -33,6 +33,7 @@ import {
 } from '../utils/chat-utils';
 import Image from 'next/image';
 import { getChatThemeForRole, isPortalChatRole } from '../lib/chat-theme';
+import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -44,6 +45,7 @@ interface ChatWindowProps {
 export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const { user } = useAuthStore();
   const senderLabels = useMemo(
     () => ({
@@ -77,6 +79,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const [showVoiceToTeacherRecorder, setShowVoiceToTeacherRecorder] = useState(false);
   const [isUploadingVoice, setIsUploadingVoice] = useState(false);
   const [isUploadingVoiceToTeacher, setIsUploadingVoiceToTeacher] = useState(false);
+  const [mobileDeleteMessageId, setMobileDeleteMessageId] = useState<string | null>(null);
+
+  const isLgViewport = useIsLgViewport();
+  const isMobileViewport = isLgViewport === false;
 
   const addMessageToCache = useAddMessageToCache();
   const createDirectChat = useCreateDirectChat();
@@ -87,6 +93,15 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
   const isStudent = user?.role === 'STUDENT';
   const ui = getChatThemeForRole(user?.role);
+  const mobilePlaceholderKey =
+    Boolean(onBack) && isMobileViewport && locale === 'hy' ? 'typeMessageMobile' : 'typeMessage';
+  const useMobileComposerSizing = Boolean(onBack) && isMobileViewport;
+  const mobileComposerBtnClass = useMobileComposerSizing
+    ? 'flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.875rem] p-0'
+    : 'flex-shrink-0 rounded-lg p-2';
+  const mobileComposerInputClass = useMobileComposerSizing
+    ? 'h-10 min-h-10 max-h-10 resize-none overflow-hidden py-0 leading-10'
+    : '';
 
   // Resolve teacher user id for "Send Voice to Teacher" (Student only): ONLY in direct 1:1 chat with assigned teacher
   const getOtherParticipantForVoice = () => {
@@ -255,17 +270,42 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   useLayoutEffect(() => {
     const ta = inputRef.current;
     if (!ta) return;
+    if (useMobileComposerSizing) {
+      ta.style.height = '40px';
+      ta.style.overflowY = 'hidden';
+      return;
+    }
     ta.style.overflowY = 'hidden';
     ta.style.height = '0';
     const contentHeight = ta.scrollHeight;
     const h = Math.max(MIN_TEXTAREA_HEIGHT, Math.min(contentHeight, MAX_TEXTAREA_HEIGHT));
     ta.style.height = `${h}px`;
     ta.style.overflowY = h >= MAX_TEXTAREA_HEIGHT ? 'auto' : 'hidden';
-  }, [inputValue]);
+  }, [inputValue, useMobileComposerSizing]);
 
   const handleOpenDeleteMessage = (messageId: string) => {
     setDeleteMessageError(null);
     setMessageIdToDelete(messageId);
+  };
+
+  useEffect(() => {
+    setMobileDeleteMessageId(null);
+  }, [chat.id]);
+
+  const handleMessagesContainerClick = () => {
+    if (isMobileViewport) {
+      setMobileDeleteMessageId(null);
+    }
+  };
+
+  const handleOwnMessageTap = (messageId: string, event: React.MouseEvent) => {
+    if (!isMobileViewport) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest('button, a, input, textarea')) return;
+
+    event.stopPropagation();
+    setMobileDeleteMessageId((prev) => (prev === messageId ? null : messageId));
   };
 
   const handleDeleteMessageDialogOpenChange = (open: boolean) => {
@@ -289,6 +329,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         return;
       }
       setMessageIdToDelete(null);
+      setMobileDeleteMessageId(null);
     } catch (error) {
       console.error('Failed to delete message:', error);
       setDeleteMessageError(tChat('deleteMessageFailed'));
@@ -646,6 +687,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       {/* Messages */}
       <div
         ref={messagesContainerRef}
+        onClick={handleMessagesContainerClick}
         className={cn(
           'min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain p-4 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]',
           ui.messagesBg,
@@ -753,15 +795,27 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                     </div>
                   )}
 
-                  <div className={cn('max-w-[70%] relative', isOwn && 'order-first')}>
+                  <div
+                    className={cn('max-w-[70%] relative', isOwn && 'order-first')}
+                    data-message-actions={isOwn ? '' : undefined}
+                    onClick={isOwn ? (event) => handleOwnMessageTap(message.id, event) : undefined}
+                  >
                     {/* Delete button (only for own messages) */}
                     {isOwn && (
                       <button
                         type="button"
-                        onClick={() => handleOpenDeleteMessage(message.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleOpenDeleteMessage(message.id);
+                        }}
                         disabled={isDeletingMessage && messageIdToDelete === message.id}
                         className={cn(
-                          'absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 disabled:opacity-50',
+                          'absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center transition-opacity hover:bg-red-600 disabled:opacity-50',
+                          isMobileViewport
+                            ? mobileDeleteMessageId === message.id
+                              ? 'opacity-100'
+                              : 'opacity-0'
+                            : 'opacity-0 group-hover:opacity-100',
                           isOwn ? '-right-1' : '-left-1'
                         )}
                         title={tChat('deleteMessage')}
@@ -887,24 +941,24 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
             )}
           </div>
         ) : (
-          <div className="flex items-end gap-2">
+          <div className={cn('flex gap-2', useMobileComposerSizing ? 'items-center' : 'items-end')}>
             {/* Text input */}
             <textarea
               ref={inputRef}
               value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder={tChat('typeMessage')}
+              placeholder={tChat(mobilePlaceholderKey)}
               rows={1}
-              className={ui.input}
-              style={{ minHeight: '40px' }}
+              className={cn(ui.input, mobileComposerInputClass)}
+              style={useMobileComposerSizing ? undefined : { minHeight: '40px' }}
             />
 
             {/* Microphone: start voice recording (all roles) */}
             <button
               type="button"
               onClick={() => setShowVoiceRecorder(true)}
-              className={cn('flex-shrink-0 rounded-lg p-2 transition-colors', ui.ghostBtn)}
+              className={cn(mobileComposerBtnClass, 'transition-colors', ui.ghostBtn)}
               title={tChat('recordVoiceMessage')}
               aria-label={tChat('recordVoiceMessage')}
             >
@@ -919,7 +973,14 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               <button
                 type="button"
                 onClick={() => setShowVoiceToTeacherRecorder(true)}
-                className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg flex-shrink-0 bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors border border-amber-200"
+                className={
+                  useMobileComposerSizing
+                    ? cn(
+                        mobileComposerBtnClass,
+                        'border border-amber-200 bg-amber-100 text-amber-800 transition-colors hover:bg-amber-200',
+                      )
+                    : 'flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-100 px-2.5 py-2 text-amber-800 transition-colors hover:bg-amber-200'
+                }
                 title={tChat('sendVoiceToTeacherTitle')}
                 aria-label={tChat('sendVoiceToTeacherTitle')}
               >
@@ -936,7 +997,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               onClick={handleSend}
               disabled={!inputValue.trim()}
               className={cn(
-                'flex-shrink-0 rounded-lg p-2 transition-colors',
+                mobileComposerBtnClass,
+                'transition-colors',
                 inputValue.trim() ? ui.primaryBtn : ui.primaryBtnDisabled,
               )}
             >
