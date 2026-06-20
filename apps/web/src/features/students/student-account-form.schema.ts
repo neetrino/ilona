@@ -1,6 +1,15 @@
 import { z } from 'zod';
+import { format, subYears } from 'date-fns';
 
 export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function getStudentDobMinDate(): string {
+  return format(subYears(new Date(), 120), 'yyyy-MM-dd');
+}
+
+export function getStudentDobMaxDate(): string {
+  return format(new Date(), 'yyyy-MM-dd');
+}
 
 export function computeAgeFromDob(dob: string | undefined): number | undefined {
   if (!dob || !ISO_DATE_RE.test(dob)) return undefined;

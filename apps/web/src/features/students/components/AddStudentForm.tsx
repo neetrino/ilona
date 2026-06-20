@@ -12,7 +12,11 @@ import { useTeachers } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
-import { createStudentSchema, type CreateStudentFormData } from '../student-account-form.schema';
+import {
+  computeAgeFromDob,
+  createStudentSchema,
+  type CreateStudentFormData,
+} from '../student-account-form.schema';
 import { formDataToCreateStudentDto } from '../student-account-form.payload';
 import { resolveAgeFromDobAndManual } from '../student-account-form.age';
 import { StudentAccountFormFieldsCrmLeadLayout } from './StudentAccountFormFieldsCrmLeadLayout';
@@ -123,6 +127,17 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   }, [watchedTeacherId, watchedGroupId, watchedLevelId, groupsData?.items, setValue]);
 
   const showParentSection = computedAge !== undefined && computedAge < 18;
+
+  useEffect(() => {
+    const fromDob = computeAgeFromDob(watchedDob?.trim() || undefined);
+    if (fromDob !== undefined) {
+      setValue('manualAge', fromDob, { shouldDirty: true, shouldValidate: true });
+      return;
+    }
+    if (!watchedDob?.trim()) {
+      setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
+    }
+  }, [watchedDob, setValue]);
 
   useEffect(() => {
     setIsDialogOpen(open);
@@ -303,7 +318,6 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             setValue={setValue}
             errors={errors}
             watch={watch}
-            computedAge={computedAge}
             showParentSection={showParentSection}
             groupsForTeacher={groupsForTeacher}
             teachers={teachers}

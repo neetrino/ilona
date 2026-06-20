@@ -7,6 +7,7 @@ import { Input, Label, PasswordInput, SegmentedControl } from '@/shared/componen
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type { Group } from '@/features/groups';
 import type { CreateStudentFormData } from '../student-account-form.schema';
+import { getStudentDobMaxDate, getStudentDobMinDate } from '../student-account-form.schema';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
 import type { StudentAccountGroupOption, StudentAccountTeacherOption } from './StudentAccountFormFields';
 
@@ -27,7 +28,6 @@ export interface StudentAccountFormFieldsCrmLeadLayoutProps {
   setValue: UseFormSetValue<CreateStudentFormData>;
   errors: FieldErrors<CreateStudentFormData>;
   watch: UseFormWatch<CreateStudentFormData>;
-  computedAge: number | undefined;
   showParentSection: boolean;
   groupsForTeacher: StudentAccountGroupOption[];
   teachers: StudentAccountTeacherOption[];
@@ -48,7 +48,6 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   setValue,
   errors,
   watch,
-  computedAge,
   showParentSection,
   groupsForTeacher,
   teachers,
@@ -188,7 +187,25 @@ export function StudentAccountFormFieldsCrmLeadLayout({
       <section className="space-y-3">
         <h3 className={sectionTitle}>{tCrm('additionalInfo')}</h3>
         <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3 min-[1367px]:items-start">
-          <div className="col-span-2 flex flex-col gap-2 min-[1367px]:col-span-1">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={p('dateOfBirth')} className={additionalInfoLabelClass}>
+              {tCrm('dateOfBirth')}
+            </Label>
+            <Input
+              id={p('dateOfBirth')}
+              type="date"
+              {...register('dateOfBirth')}
+              min={getStudentDobMinDate()}
+              max={getStudentDobMaxDate()}
+              className={additionalInfoInputClass}
+              error={errors.dateOfBirth?.message}
+              disabled={isSubmitting}
+            />
+            <p className={`${additionalInfoHintClass} min-[1367px]:block hidden`} aria-hidden>
+              {'\u00A0'}
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
             <Label htmlFor={p('manualAge')} className={additionalInfoLabelClass}>
               {tForm('ageYears')}
             </Label>
@@ -200,28 +217,12 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               className={additionalInfoInputClass}
               disabled={isSubmitting}
             />
-            <p className={additionalInfoHintClass}>
-              {computedAge !== undefined ? tForm('effectiveAge', { age: computedAge }) : '\u00A0'}
-            </p>
-            {errors.manualAge && <p className="text-sm text-red-600">{errors.manualAge.message}</p>}
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor={p('dateOfBirth')} className={additionalInfoLabelClass}>
-              {tCrm('dateOfBirth')}
-            </Label>
-            <Input
-              id={p('dateOfBirth')}
-              type="date"
-              {...register('dateOfBirth')}
-              className={additionalInfoInputClass}
-              error={errors.dateOfBirth?.message}
-              disabled={isSubmitting}
-            />
             <p className={`${additionalInfoHintClass} min-[1367px]:block hidden`} aria-hidden>
               {'\u00A0'}
             </p>
+            {errors.manualAge && <p className="text-sm text-red-600">{errors.manualAge.message}</p>}
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="col-span-2 flex flex-col gap-2 min-[1367px]:col-span-1">
             <Label htmlFor={p('firstLessonDate')} className={additionalInfoLabelClass}>
               {tCrm('firstLessonDate')}
             </Label>

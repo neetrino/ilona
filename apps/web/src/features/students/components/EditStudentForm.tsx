@@ -16,6 +16,7 @@ import { getErrorMessage } from '@/shared/lib/api';
 import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { X } from 'lucide-react';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
+import { getStudentDobMaxDate, getStudentDobMinDate } from '../student-account-form.schema';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -518,6 +519,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   id="dateOfBirth"
                   type="date"
                   {...register('dateOfBirth')}
+                  min={getStudentDobMinDate()}
+                  max={getStudentDobMaxDate()}
                   error={errors.dateOfBirth?.message}
                 />
                 {effectiveAge !== undefined ? (
