@@ -331,7 +331,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   // Check if we're in full-screen mode (when className includes rounded-none)
   const isFullScreen = className?.includes('rounded-none');
   const containerHeight = isFullScreen
-    ? 'min-h-0 flex-1 lg:h-[calc(100vh-200px)]'
+    ? 'min-h-0 flex-1 lg:min-h-0 lg:h-auto'
     : 'h-[calc(100vh-200px)]';
   const contentHeight = isFullScreen
     ? 'flex-1 min-h-0'
