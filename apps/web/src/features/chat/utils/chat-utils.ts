@@ -40,29 +40,68 @@ export function getInitialsFromParts(firstName?: string | null, lastName?: strin
 /**
  * Format time for message display
  */
-export function formatTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleTimeString('en-US', {
+export function formatTime(dateStr: string, locale: string): string {
+  return new Date(dateStr).toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',
   });
 }
 
+type DateSeparatorLabels = {
+  today: string;
+  yesterday: string;
+};
+
 /**
  * Format date separator for message grouping
  */
-export function formatDateSeparator(dateStr: string): string {
+export function formatDateSeparator(
+  dateStr: string,
+  locale: string,
+  labels: DateSeparatorLabels,
+): string {
   const date = new Date(dateStr);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
-  if (date.toDateString() === today.toDateString()) return 'Today';
-  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-  return date.toLocaleDateString('en-US', {
+  if (date.toDateString() === today.toDateString()) return labels.today;
+  if (date.toDateString() === yesterday.toDateString()) return labels.yesterday;
+  return date.toLocaleDateString(locale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   });
+}
+
+/**
+ * Format relative time for chat list sidebar
+ */
+export function formatChatListTime(
+  dateStr: string | undefined,
+  locale: string,
+  yesterdayLabel: string,
+): string {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+
+  if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
+    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  }
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (date.getDate() === yesterday.getDate()) {
+    return yesterdayLabel;
+  }
+
+  if (diff < 7 * 24 * 60 * 60 * 1000) {
+    return date.toLocaleDateString(locale, { weekday: 'short' });
+  }
+
+  return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 }
 
 /**

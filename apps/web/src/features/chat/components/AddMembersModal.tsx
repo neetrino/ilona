@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAdminAllUsers, useAddGroupChatMember, useAddCustomGroupChatMember } from '../hooks';
 import type { Chat } from '../types';
 import type { AdminChatAllUser } from '../api/chat.api';
@@ -21,6 +22,8 @@ export function AddMembersModal({
   chat,
   onMemberAdded,
 }: AddMembersModalProps) {
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -52,7 +55,6 @@ export function AddMembersModal({
         const updated = await fetchChat(chat.id);
         onMemberAdded(updated);
       }
-      // Keep modal open so admin can add more members
     } catch {
       // Error shown via mutation state / inline
     }
@@ -64,9 +66,9 @@ export function AddMembersModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden flex flex-col max-h-[80vh]">
         <div className="p-4 border-b border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-800">Add members</h3>
+          <h3 className="text-lg font-semibold text-slate-800">{tChat('addMembers')}</h3>
           <p className="text-sm text-slate-500 mt-1">
-            Search and add any registered user to this group chat
+            {tChat('addMembersDescription')}
           </p>
           <div className="mt-3 relative">
             <svg
@@ -84,7 +86,7 @@ export function AddMembersModal({
             </svg>
             <input
               type="search"
-              placeholder="Search by name, email, phone..."
+              placeholder={tChat('searchByNameEmailPhone')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -108,7 +110,7 @@ export function AddMembersModal({
           ) : users.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-sm text-slate-600">
-                {debouncedSearch ? 'No users found. Try a different search.' : 'No users available.'}
+                {debouncedSearch ? tChat('noUsersFoundSearch') : tChat('noUsersAvailable')}
               </p>
             </div>
           ) : (
@@ -149,7 +151,7 @@ export function AddMembersModal({
                     </div>
                     <div className="flex-shrink-0">
                       {alreadyIn ? (
-                        <span className="text-xs text-slate-500 font-medium">In group</span>
+                        <span className="text-xs text-slate-500 font-medium">{tChat('inGroup')}</span>
                       ) : (
                         <button
                           type="button"
@@ -161,7 +163,7 @@ export function AddMembersModal({
                             'disabled:opacity-50 disabled:cursor-not-allowed'
                           )}
                         >
-                          {adding ? 'Adding...' : 'Add'}
+                          {adding ? tChat('adding') : tCommon('add')}
                         </button>
                       )}
                     </div>
@@ -177,7 +179,7 @@ export function AddMembersModal({
             <p className="text-sm text-red-700">
               {(addGroupMember.error || addCustomGroupMember.error) instanceof Error
                 ? (addGroupMember.error || addCustomGroupMember.error)!.message
-                : 'Failed to add member. Please try again.'}
+                : tChat('failedAddMember')}
             </p>
           </div>
         )}
@@ -188,7 +190,7 @@ export function AddMembersModal({
             onClick={onClose}
             className="w-full py-2 px-4 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium"
           >
-            Close
+            {tCommon('close')}
           </button>
         </div>
       </div>

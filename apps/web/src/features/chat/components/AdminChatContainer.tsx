@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
@@ -28,6 +29,8 @@ interface AdminChatContainerProps {
 }
 
 function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChatContainerProps) {
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const { searchParams, urlRevision, replaceAllParams } = useAppSearchUrl();
   const { user } = useAuthStore();
@@ -355,7 +358,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
       >
         <ChatBackButton
           onClick={handleBackToPrevious}
-          aria-label="Back to previous page"
+          aria-label={tChat('backToPreviousPage')}
           className="lg:hidden"
         />
         <button
@@ -366,7 +369,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
             'text-[#3b3b40] transition-colors hover:text-[#1010a3]',
             'focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-2',
           )}
-          aria-label="Back to previous page"
+          aria-label={tChat('backToPreviousPage')}
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path
@@ -376,15 +379,15 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
               d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
-          <span className="text-sm font-medium">Back</span>
+          <span className="text-sm font-medium">{tCommon('back')}</span>
         </button>
-        <h2 className="text-lg font-bold text-[#3b3b40] sm:text-xl">Chat</h2>
+        <h2 className="text-lg font-bold text-[#3b3b40] sm:text-xl">{tChat('title')}</h2>
         <button
           type="button"
           onClick={() => setShowCreateGroupChatModal(true)}
           className="rounded-full bg-[#1010a3] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#1010a3]/90 sm:px-4 sm:text-sm"
         >
-          Create Group Chat
+          {tChat('createGroupChat')}
         </button>
       </div>
 
@@ -419,9 +422,9 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
             <ChatWindow chat={activeChat} onBack={handleBack} onChatUpdated={setActiveChat} />
           ) : (
             <ChatEmptyState
-              title={emptyTitle || 'Select a chat'}
+              title={emptyTitle || tChat('selectChat')}
               description={
-                emptyDescription || 'Choose a conversation from the list to start messaging'
+                emptyDescription || tChat('selectChatDescription')
               }
               className="bg-white lg:bg-[#fafafa]"
             />

@@ -5,13 +5,14 @@ import { ChatContainer } from '@/features/chat';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 
 export default function TeacherChatPage() {
-  const t = useTranslations('nav');
+  const tNav = useTranslations('nav');
+  const tChat = useTranslations('chat');
 
   return (
-    <DashboardLayout title={t('chat')}>
+    <DashboardLayout title={tNav('chat')}>
       <ChatContainer
-        emptyTitle="Select a group"
-        emptyDescription="Choose a group chat to communicate with students"
+        emptyTitle={tChat('selectGroup')}
+        emptyDescription={tChat('selectGroupDescription')}
       />
     </DashboardLayout>
   );

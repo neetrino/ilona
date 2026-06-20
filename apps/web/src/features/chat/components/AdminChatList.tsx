@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useAdminStudents, useAdminTeachers, useAdminGroups, useAdminUnreadCounts, useChats, useCustomGroupChats } from '../hooks';
 import { useChatStore } from '../store/chat.store';
@@ -24,12 +25,19 @@ interface AdminChatListProps {
 }
 
 export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminChatListProps) {
+  const tChat = useTranslations('chat');
   const { user: _user } = useAuthStore();
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
   const { counts: unreadCounts } = useAdminUnreadCounts();
   const { data: chats = [] } = useChats();
   const { isUserOnline } = useSocket();
+
+  const tabLabels: Record<AdminChatTab, string> = {
+    groups: tChat('groups'),
+    teachers: tChat('teachersTab'),
+    students: tChat('students'),
+  };
 
   // Reset search query when tab changes
   useEffect(() => {
@@ -135,10 +143,10 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             </svg>
           </div>
           <p className="text-sm font-medium text-slate-700 mb-1">
-            {searchQuery ? 'No students found' : 'No students available'}
+            {searchQuery ? tChat('noStudentsFound') : tChat('noStudentsAvailable')}
           </p>
           <p className="text-xs text-slate-500">
-            {searchQuery ? 'Try a different search term' : 'Students will appear here'}
+            {searchQuery ? tChat('tryDifferentSearch') : tChat('studentsAppearHere')}
           </p>
         </div>
       );
@@ -210,10 +218,10 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             </svg>
           </div>
           <p className="text-sm font-medium text-slate-700 mb-1">
-            {searchQuery ? 'No teachers found' : 'No teachers available'}
+            {searchQuery ? tChat('noTeachersFound') : tChat('noTeachersAvailable')}
           </p>
           <p className="text-xs text-slate-500">
-            {searchQuery ? 'Try a different search term' : 'Teachers will appear here'}
+            {searchQuery ? tChat('tryDifferentSearch') : tChat('teachersAppearHere')}
           </p>
         </div>
       );
@@ -302,10 +310,10 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             </svg>
           </div>
           <p className="text-sm font-medium text-slate-700 mb-1">
-            {searchQuery ? 'No groups found' : 'No groups available'}
+            {searchQuery ? tChat('noGroupsFound') : tChat('noGroupsAvailable')}
           </p>
           <p className="text-xs text-slate-500">
-            {searchQuery ? 'Try a different search term' : 'Create a group chat or select a class group'}
+            {searchQuery ? tChat('tryDifferentSearch') : tChat('createGroupOrSelectClass')}
           </p>
         </div>
       );
@@ -324,11 +332,11 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
             )}
           >
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-              {getInitials(chat.name || 'Group')}
+              {getInitials(chat.name || tChat('groupDefault'))}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="font-medium text-slate-900 truncate">{chat.name || 'Group chat'}</h3>
+                <h3 className="font-medium text-slate-900 truncate">{chat.name || tChat('groupChatLabel')}</h3>
                 {(groupUnreadMap.get(chat.id) || 0) > 0 && (
                   <Badge variant="error" className="flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5">
                     {groupUnreadMap.get(chat.id)}
@@ -336,7 +344,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
                 )}
               </div>
               <p className="text-sm text-slate-500 truncate">
-                Group chat · {chat.participants?.length ?? 0} participants
+                {tChat('groupChatParticipants', { count: chat.participants?.length ?? 0 })}
               </p>
             </div>
           </button>
@@ -382,81 +390,64 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
 
   const tabButtonClass = (tab: AdminChatTab) =>
     cn(
-      'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-sm font-medium transition-colors',
+      'flex w-full min-w-0 items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-sm font-medium transition-colors',
+      'sm:relative sm:gap-0 sm:px-1.5 sm:py-2.5 sm:text-center sm:text-xs lg:text-sm',
       activeTab === tab
         ? 'bg-[#e8eaf6] text-[#1010a3]'
         : 'bg-[#f6f6f7] text-[#8b8b90] hover:bg-[#ececec]',
     );
 
+  const tabUnreadBadgeClass =
+    'flex h-4 min-w-[18px] shrink-0 items-center justify-center px-1 text-xs sm:absolute sm:-right-0.5 sm:-top-0.5 sm:min-w-[16px] sm:px-0.5 sm:text-[10px] sm:leading-none';
+
+  const renderTabBar = () => (
+    <div className="mx-auto grid w-full max-w-full grid-cols-3 gap-2 sm:grid-cols-[0.82fr_1.09fr_1.09fr] sm:gap-1.5">
+      <button type="button" onClick={() => onTabChange('groups')} className={tabButtonClass('groups')}>
+        <span className="sm:px-0.5">{tChat('groups')}</span>
+        {unreadCounts.groups > 0 && (
+          <Badge variant="error" className={tabUnreadBadgeClass}>
+            {unreadCounts.groups}
+          </Badge>
+        )}
+      </button>
+      <button type="button" onClick={() => onTabChange('teachers')} className={tabButtonClass('teachers')}>
+        <span className="sm:px-0.5">{tChat('teachersTab')}</span>
+        {unreadCounts.teachers > 0 && (
+          <Badge variant="error" className={tabUnreadBadgeClass}>
+            {unreadCounts.teachers}
+          </Badge>
+        )}
+      </button>
+      <button type="button" onClick={() => onTabChange('students')} className={tabButtonClass('students')}>
+        <span className="sm:px-0.5">{tChat('students')}</span>
+        {unreadCounts.students > 0 && (
+          <Badge variant="error" className={tabUnreadBadgeClass}>
+            {unreadCounts.students}
+          </Badge>
+        )}
+      </button>
+    </div>
+  );
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
       {!activeTab ? (
         <>
-          <div className="shrink-0 border-b border-[rgba(14,14,16,0.07)] bg-white px-3 py-3">
-            <div className="flex gap-2">
-              <button onClick={() => onTabChange('groups')} className={tabButtonClass('groups')}>
-                Groups
-                {unreadCounts.groups > 0 && (
-                  <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
-                    {unreadCounts.groups}
-                  </Badge>
-                )}
-              </button>
-              <button onClick={() => onTabChange('teachers')} className={tabButtonClass('teachers')}>
-                Teachers
-                {unreadCounts.teachers > 0 && (
-                  <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
-                    {unreadCounts.teachers}
-                  </Badge>
-                )}
-              </button>
-              <button onClick={() => onTabChange('students')} className={tabButtonClass('students')}>
-                Students
-                {unreadCounts.students > 0 && (
-                  <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
-                    {unreadCounts.students}
-                  </Badge>
-                )}
-              </button>
-            </div>
+          <div className="shrink-0 overflow-x-hidden border-b border-[rgba(14,14,16,0.07)] bg-white px-3 py-3">
+            {renderTabBar()}
           </div>
           <div className="flex min-h-0 flex-1 flex-col">
             <ChatEmptyState
-              title="Select a category"
-              description="Choose Groups, Teachers, or Students to start browsing"
+              title={tChat('selectCategory')}
+              description={tChat('selectCategoryDescription')}
             />
           </div>
         </>
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
           <div className="sticky top-0 z-20 bg-white">
-            <div className="border-b border-[rgba(14,14,16,0.07)] px-3 py-3">
-              <div className="flex gap-2">
-                <button onClick={() => onTabChange('groups')} className={tabButtonClass('groups')}>
-                  Groups
-                  {unreadCounts.groups > 0 && (
-                    <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
-                      {unreadCounts.groups}
-                    </Badge>
-                  )}
-                </button>
-                <button onClick={() => onTabChange('teachers')} className={tabButtonClass('teachers')}>
-                  Teachers
-                  {unreadCounts.teachers > 0 && (
-                    <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
-                      {unreadCounts.teachers}
-                    </Badge>
-                  )}
-                </button>
-                <button onClick={() => onTabChange('students')} className={tabButtonClass('students')}>
-                  Students
-                  {unreadCounts.students > 0 && (
-                    <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
-                      {unreadCounts.students}
-                    </Badge>
-                  )}
-                </button>
-              </div>
+            <div className="overflow-x-hidden border-b border-[rgba(14,14,16,0.07)] px-3 py-3 sm:px-3">
+              {renderTabBar()}
             </div>
             <div className="border-b border-[rgba(14,14,16,0.07)] px-3 pb-3 pt-2">
               <div className="relative">
@@ -465,7 +456,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
                 </svg>
                 <input
                   type="search"
-                  placeholder={`Search ${activeTab}...`}
+                  placeholder={tChat('searchTab', { tab: activeTab ? tabLabels[activeTab] : '' })}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white py-2 pl-9 pr-4 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15"

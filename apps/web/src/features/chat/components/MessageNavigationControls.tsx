@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { getChatTheme, type ChatUiVariant } from '../lib/chat-theme';
 
@@ -18,6 +19,7 @@ export function MessageNavigationControls({
   canGoPrevious,
   canGoNext,
 }: MessageNavigationControlsProps) {
+  const tChat = useTranslations('chat');
   const ui = getChatTheme(variant);
   return (
     <div
@@ -34,8 +36,8 @@ export function MessageNavigationControls({
           'rounded-l-lg p-2 transition-colors',
           canGoPrevious ? cn(ui.body, ui.listHover) : cn(ui.subtle, 'cursor-not-allowed'),
         )}
-        title="Previous message"
-        aria-label="Previous message"
+        title={tChat('previousMessage')}
+        aria-label={tChat('previousMessage')}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -50,8 +52,8 @@ export function MessageNavigationControls({
           'rounded-r-lg p-2 transition-colors',
           canGoNext ? cn(ui.body, ui.listHover) : cn(ui.subtle, 'cursor-not-allowed'),
         )}
-        title="Next message"
-        aria-label="Next message"
+        title={tChat('nextMessage')}
+        aria-label={tChat('nextMessage')}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

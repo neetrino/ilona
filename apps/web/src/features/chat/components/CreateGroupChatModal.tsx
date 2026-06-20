@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { X } from 'lucide-react';
@@ -32,6 +33,8 @@ export function CreateGroupChatModal({
   onOpenChange,
   onCreated,
 }: CreateGroupChatModalProps) {
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const [name, setName] = useState('');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -216,45 +219,45 @@ export function CreateGroupChatModal({
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
 
-          <DialogPrimitive.Title className="sr-only">Create Group Chat</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">{tChat('createGroupChat')}</DialogPrimitive.Title>
           <DialogPrimitive.Close
             className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-            aria-label="Close"
+            aria-label={tCommon('close')}
           >
             <X className="h-4 w-4" />
           </DialogPrimitive.Close>
 
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="shrink-0 px-4 pt-4 min-[1367px]:px-6 min-[1367px]:pt-6">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">Create Group Chat</h2>
+              <h2 className="text-lg font-semibold text-[#3b3b40]">{tChat('createGroupChat')}</h2>
               <p className="mt-1 text-sm text-[#8b8b90]">
-                Create a standalone chat group and add any registered users. Not linked to classes.
+                {tChat('createGroupChatDescription')}
               </p>
 
               <div className="mt-4 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="group-chat-name">
-                    Group name <span className="text-red-500">*</span>
+                    {tChat('groupName')} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="group-chat-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Teachers"
+                    placeholder={tChat('groupNamePlaceholder')}
                     disabled={createChat.isPending}
                   />
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="group-chat-member-search">Members</Label>
+                  <Label htmlFor="group-chat-member-search">{tChat('members')}</Label>
                   {teacherIds.length > 0 && (
                     <button
                       type="button"
                       onClick={toggleAllTeachers}
                       className="text-xs font-medium text-[#1010a3] hover:opacity-80"
                     >
-                      {allTeachersSelected ? 'Remove all teachers' : 'Add all teachers'}
+                      {allTeachersSelected ? tChat('removeAllTeachers') : tChat('addAllTeachers')}
                     </button>
                   )}
                 </div>
@@ -280,7 +283,7 @@ export function CreateGroupChatModal({
                 <Input
                   id="group-chat-member-search"
                   type="search"
-                  placeholder="Search by name, email, phone..."
+                  placeholder={tChat('searchByNameEmailPhone')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="bg-white pl-9"
@@ -306,8 +309,8 @@ export function CreateGroupChatModal({
                 <div className="py-8 text-center">
                   <p className="text-sm text-[#8b8b90]">
                     {debouncedSearch
-                      ? 'No users found. Try a different search.'
-                      : 'No other users to add. You are automatically added as the group creator.'}
+                      ? tChat('noUsersFoundSearch')
+                      : tChat('noOtherUsersToAdd')}
                   </p>
                 </div>
               ) : (
@@ -373,7 +376,7 @@ export function CreateGroupChatModal({
                   <p className="text-sm text-red-600">
                     {createChat.error instanceof Error
                       ? createChat.error.message
-                      : 'Failed to create group chat. Please try again.'}
+                      : tChat('failedCreateGroupChat')}
                   </p>
                 </div>
               )}
@@ -385,7 +388,7 @@ export function CreateGroupChatModal({
                   onClick={requestClose}
                   disabled={createChat.isPending}
                 >
-                  Cancel
+                  {tCommon('cancel')}
                 </Button>
                 <Button
                   type="button"
@@ -393,7 +396,7 @@ export function CreateGroupChatModal({
                   disabled={!name.trim() || createChat.isPending}
                   className="bg-[#1010a3] text-white hover:bg-[#0d0d85]"
                 >
-                  {createChat.isPending ? 'Creating...' : 'Create Group Chat'}
+                  {createChat.isPending ? tChat('creating') : tChat('createGroupChat')}
                 </Button>
               </div>
             </div>

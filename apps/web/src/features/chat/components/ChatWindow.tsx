@@ -574,7 +574,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       >
         {/* Back button (mobile) */}
         {onBack ? (
-          <ChatBackButton onClick={onBack} className="lg:hidden" aria-label="Back to chat list" />
+          <ChatBackButton onClick={onBack} className="lg:hidden" aria-label={tChat('backToChatList')} />
         ) : null}
 
         {/* Avatar */}
@@ -752,7 +752,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                 {showDateSeparator && (
                   <div className="flex items-center justify-center my-4">
                     <span className={cn('rounded-full px-3 py-1 text-xs', ui.datePill)}>
-                      {formatDateSeparator(message.createdAt)}
+                      {formatDateSeparator(message.createdAt, locale, {
+                        today: tCommon('today'),
+                        yesterday: tChat('yesterday'),
+                      })}
                     </span>
                   </div>
                 )}
@@ -884,7 +887,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                       )}
                     >
                       <span className={cn('text-xs', ui.subtle)}>
-                        {formatTime(message.createdAt)}
+                        {formatTime(message.createdAt, locale)}
                       </span>
                       {message.isEdited && (
                         <span className={cn('text-xs', ui.subtle)}>{tChat('edited')}</span>

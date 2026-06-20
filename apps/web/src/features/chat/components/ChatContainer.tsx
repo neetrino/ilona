@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
@@ -26,6 +27,8 @@ interface ChatContainerProps {
 }
 
 function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerProps) {
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const { searchParams, urlRevision, replaceAllParams } = useAppSearchUrl();
   const { user } = useAuthStore();
@@ -329,7 +332,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
       >
         <ChatBackButton
           onClick={handleBackToPrevious}
-          aria-label="Back to previous page"
+          aria-label={tChat('backToPreviousPage')}
           className="lg:hidden"
         />
         <button
@@ -339,7 +342,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
             'hidden items-center gap-2 px-4 py-2 transition-colors lg:flex',
             ui.backBtn,
           )}
-          aria-label="Back to previous page"
+          aria-label={tChat('backToPreviousPage')}
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path
@@ -349,9 +352,9 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
               d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
-          <span className="font-medium">Back</span>
+          <span className="font-medium">{tCommon('back')}</span>
         </button>
-        <h2 className={cn('text-xl font-bold', ui.title)}>Chat</h2>
+        <h2 className={cn('text-xl font-bold', ui.title)}>{tChat('title')}</h2>
         <div className="w-20" /> {/* Spacer for centering */}
       </div>
 
@@ -401,10 +404,10 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
                   </svg>
                 </div>
                 <h3 className={cn('mb-1 text-lg font-semibold', ui.title)}>
-                  {emptyTitle || 'Select a chat'}
+                  {emptyTitle || tChat('selectChat')}
                 </h3>
                 <p className={cn('text-sm', ui.muted)}>
-                  {emptyDescription || 'Choose a conversation from the list to start messaging'}
+                  {emptyDescription || tChat('selectChatDescription')}
                 </p>
               </div>
             </div>

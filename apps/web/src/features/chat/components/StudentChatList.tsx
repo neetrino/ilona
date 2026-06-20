@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChats, useSocket, useCreateDirectChat } from '../hooks';
 import { useChatStore } from '../store/chat.store';
@@ -10,6 +11,7 @@ import type { AssignedTeacher } from '@/features/students/api/students.api';
 import { cn } from '@/shared/lib/utils';
 import { getChatTheme } from '../lib/chat-theme';
 import { formatMessagePreview } from '../utils';
+import { formatChatListTime } from '../utils/chat-utils';
 import Image from 'next/image';
 import { formatDisplayName, getInitials, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { OnlineStatusDot } from './OnlineStatusDot';
@@ -23,6 +25,8 @@ interface StudentChatListProps {
 }
 
 export function StudentChatList({ onSelectChat }: StudentChatListProps) {
+  const tChat = useTranslations('chat');
+  const locale = useLocale();
   const ui = getChatTheme('student');
   const { user } = useAuthStore();
   const { activeChat } = useChatStore();
@@ -36,6 +40,19 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
 
   // Socket for online status
   const { isConnected, isUserOnline } = useSocket();
+
+  const messagePreviewLabels = useMemo(
+    () => ({
+      noMessagesYet: tChat('noMessagesYet'),
+      voiceMessage: tChat('voiceMessage'),
+      photo: tChat('photo'),
+      video: tChat('video'),
+      attachment: tChat('attachment'),
+      systemMessage: tChat('systemMessage'),
+      message: tChat('message'),
+    }),
+    [tChat],
+  );
 
   // Chats filtered and sorted by recency
   const filteredChats = useMemo(() => {
@@ -89,7 +106,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
   const getChatInfo = (chat: Chat) => {
     if (chat.type === 'GROUP') {
       return {
-        name: chat.name || chat.group?.name || 'Group Chat',
+        name: chat.name || chat.group?.name || tChat('groupChat'),
         avatar: chat.name?.[0] || chat.group?.name?.[0] || 'G',
         avatarUrl: null,
         isGroup: true,
@@ -100,7 +117,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
     const otherParticipant = chat.participants.find((p) => p.userId !== user?.id);
     const name = otherParticipant
       ? formatDisplayName(otherParticipant.user.firstName, otherParticipant.user.lastName)
-      : 'Unknown';
+      : tChat('unknownUser');
 
     return {
       name,
@@ -113,40 +130,15 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
     };
   };
 
-  // Format last message time
-  const formatTime = (dateStr?: string) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-
-    // Today
-    if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
-      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // Yesterday
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (date.getDate() === yesterday.getDate()) {
-      return 'Yesterday';
-    }
-
-    // This week
-    if (diff < 7 * 24 * 60 * 60 * 1000) {
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
-    }
-
-    // Older
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
+  const formatTime = (dateStr?: string) =>
+    formatChatListTime(dateStr, locale, tChat('yesterday'));
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className={cn('p-4 border-b', ui.border)}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className={cn('text-lg font-semibold', ui.title)}>Messages</h2>
+          <h2 className={cn('text-lg font-semibold', ui.title)}>{tChat('messages')}</h2>
           {/* Connection status */}
           <div
             className={cn(
@@ -155,7 +147,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                 ? 'bg-green-100 text-green-700' 
                 : 'bg-red-100 text-red-700'
             )}
-            title={isConnected ? 'Connected' : 'Disconnected'}
+            title={isConnected ? tChat('connected') : tChat('disconnected')}
           >
             <div
               className={cn(
@@ -163,7 +155,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                 isConnected ? 'bg-green-500' : 'bg-red-500'
               )}
             />
-            {isConnected ? 'Online' : 'Offline'}
+            {isConnected ? tChat('online') : tChat('offline')}
           </div>
         </div>
 
@@ -179,7 +171,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
           </svg>
           <input
             type="search"
-            placeholder="Search chats..."
+            placeholder={tChat('searchChats')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={ui.searchInput}
@@ -214,12 +206,12 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                 </svg>
               </div>
               <p className={cn('mb-1 text-sm font-medium', ui.body)}>
-                {searchQuery ? 'No chats found' : 'No chats yet'}
+                {searchQuery ? tChat('noChatsFound') : tChat('noChatsYet')}
               </p>
               <p className={cn('text-xs', ui.muted)}>
                 {searchQuery
-                  ? 'Try a different search term'
-                  : 'Your conversations will appear here'}
+                  ? tChat('tryDifferentSearch')
+                  : tChat('conversationsAppearHere')}
               </p>
             </div>
           ) : (
@@ -268,7 +260,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                         <h3 className={cn('truncate font-medium', ui.body)}>{teacher.name}</h3>
                       </div>
                       <p className={cn('truncate text-sm', ui.muted)}>
-                        {isCreating ? 'Opening chat...' : 'My Teacher — tap to message'}
+                        {isCreating ? tChat('openingChat') : tChat('myTeacherTapToMessage')}
                       </p>
                     </div>
                   </button>
@@ -339,7 +331,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                           hasUnread ? 'font-medium text-[#3b3b40]' : ui.muted,
                         )}
                       >
-                        {formatMessagePreview(chat.lastMessage)}
+                        {formatMessagePreview(chat.lastMessage, messagePreviewLabels)}
                       </p>
                       {hasUnread && (
                         <span

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChats, useSocket } from '../hooks';
 import { useChatStore } from '../store/chat.store';
@@ -8,6 +9,7 @@ import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { formatMessagePreview } from '../utils';
+import { formatChatListTime } from '../utils/chat-utils';
 import Image from 'next/image';
 import { OnlineStatusDot } from './OnlineStatusDot';
 
@@ -16,6 +18,8 @@ interface ChatListProps {
 }
 
 export function ChatList({ onSelectChat }: ChatListProps) {
+  const tChat = useTranslations('chat');
+  const locale = useLocale();
   const { user } = useAuthStore();
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,6 +29,19 @@ export function ChatList({ onSelectChat }: ChatListProps) {
 
   // Socket for online status
   const { isConnected, isUserOnline } = useSocket();
+
+  const messagePreviewLabels = useMemo(
+    () => ({
+      noMessagesYet: tChat('noMessagesYet'),
+      voiceMessage: tChat('voiceMessage'),
+      photo: tChat('photo'),
+      video: tChat('video'),
+      attachment: tChat('attachment'),
+      systemMessage: tChat('systemMessage'),
+      message: tChat('message'),
+    }),
+    [tChat],
+  );
 
   // Sort chats by lastMessageAt (newest first), then filter by search
   const sortedChats = [...chats].sort((a, b) => {
@@ -60,7 +77,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
   const getChatInfo = (chat: Chat) => {
     if (chat.type === 'GROUP') {
       return {
-        name: chat.name || chat.group?.name || 'Group Chat',
+        name: chat.name || chat.group?.name || tChat('groupChat'),
         avatar: chat.name?.[0] || chat.group?.name?.[0] || 'G',
         avatarUrl: null,
         isGroup: true,
@@ -71,7 +88,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
     const otherParticipant = chat.participants.find((p) => p.userId !== user?.id);
     const name = otherParticipant
       ? formatDisplayName(otherParticipant.user.firstName, otherParticipant.user.lastName)
-      : 'Unknown';
+      : tChat('unknownUser');
 
     return {
       name,
@@ -84,40 +101,15 @@ export function ChatList({ onSelectChat }: ChatListProps) {
     };
   };
 
-  // Format last message time
-  const formatTime = (dateStr?: string) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-
-    // Today
-    if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
-      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // Yesterday
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (date.getDate() === yesterday.getDate()) {
-      return 'Yesterday';
-    }
-
-    // This week
-    if (diff < 7 * 24 * 60 * 60 * 1000) {
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
-    }
-
-    // Older
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
+  const formatTime = (dateStr?: string) =>
+    formatChatListTime(dateStr, locale, tChat('yesterday'));
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-slate-200">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-800">Messages</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{tChat('messages')}</h2>
           {/* Connection status */}
           <div
             className={cn(
@@ -126,7 +118,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
                 ? 'bg-green-100 text-green-700' 
                 : 'bg-red-100 text-red-700'
             )}
-            title={isConnected ? 'Connected' : 'Disconnected'}
+            title={isConnected ? tChat('connected') : tChat('disconnected')}
           >
             <div
               className={cn(
@@ -134,7 +126,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
                 isConnected ? 'bg-green-500' : 'bg-red-500'
               )}
             />
-            {isConnected ? 'Online' : 'Offline'}
+            {isConnected ? tChat('online') : tChat('offline')}
           </div>
         </div>
 
@@ -145,7 +137,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
           </svg>
           <input
             type="search"
-            placeholder="Search chats..."
+            placeholder={tChat('searchChats')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -175,12 +167,12 @@ export function ChatList({ onSelectChat }: ChatListProps) {
               </svg>
             </div>
             <p className="text-sm font-medium text-slate-700 mb-1">
-              {searchQuery ? 'No chats found' : 'No conversations yet'}
+              {searchQuery ? tChat('noChatsFound') : tChat('noConversationsYet')}
             </p>
             <p className="text-xs text-slate-500">
               {searchQuery 
-                ? 'Try a different search term' 
-                : 'Group chats will appear here when you join a group'}
+                ? tChat('tryDifferentSearch') 
+                : tChat('groupChatsAppearHere')}
             </p>
           </div>
         ) : (
@@ -249,7 +241,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
                         hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500'
                       )}
                     >
-                      {formatMessagePreview(chat.lastMessage)}
+                      {formatMessagePreview(chat.lastMessage, messagePreviewLabels)}
                     </p>
                     {hasUnread && (
                       <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
