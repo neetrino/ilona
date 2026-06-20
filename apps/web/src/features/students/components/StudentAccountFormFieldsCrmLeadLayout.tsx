@@ -20,6 +20,7 @@ const additionalInfoLabelClass = 'text-sm font-medium text-slate-700';
 const additionalInfoHintClass = 'min-h-[1.25rem] text-xs leading-5 text-slate-500';
 
 const sectionTitle = 'text-xs font-semibold uppercase tracking-wide text-slate-500';
+const parentSectionTitleClass = 'text-sm font-semibold text-[#1010a3]';
 
 export interface StudentAccountFormFieldsCrmLeadLayoutProps {
   register: UseFormRegister<CreateStudentFormData>;
@@ -241,7 +242,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
       {showParentSection && (
         <section className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-          <p className={sectionTitle}>{tCrm('parentDetailsUnder18')}</p>
+          <p className={parentSectionTitleClass}>{tCrm('parentDetailsUnder18')}</p>
           <div>
             <label htmlFor={p('parentName')} className="mb-1 block text-sm font-medium text-slate-700">
               {tCrm('parentName')} <span className="text-red-500">{tForm('requiredMark')}</span>
@@ -323,7 +324,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
       <section className="space-y-3">
         <h3 className={sectionTitle}>{tCrm('academicInfo')}</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor={p('levelId')}>{tCommon('level')}</Label>
             <input type="hidden" {...register('levelId')} />
