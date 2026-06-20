@@ -45,7 +45,8 @@ export function AdminPortalNavCard({ href, label, icon }: AdminPortalNavCardProp
     <Link
       href={href}
       className={cn(
-        'flex min-h-[4.25rem] flex-col items-center justify-center gap-2 rounded-2xl px-3 py-3',
+        'flex min-h-[4.25rem] flex-col items-center justify-center rounded-2xl px-3 py-3',
+        hasControlledLineBreak ? 'gap-0.5' : 'gap-1',
         'border border-[rgba(14,14,16,0.07)] bg-white',
         'transition-transform active:scale-[0.98]',
       )}
