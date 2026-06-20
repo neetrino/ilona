@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { getChatTheme, type ChatUiVariant } from '../lib/chat-theme';
 
@@ -17,6 +18,8 @@ export function VoiceRecorder({
   onCancel,
   conversationId: _conversationId,
 }: VoiceRecorderProps) {
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const ui = getChatTheme(variant);
   const [isRecording, setIsRecording] = useState(false);
   const [durationSec, setDurationSec] = useState(0);
@@ -159,16 +162,16 @@ export function VoiceRecorder({
       // Validate stream
       const audioTracks = stream.getAudioTracks();
       if (audioTracks.length === 0) {
-        throw new Error('No audio track available');
+        throw new Error(tChat('noAudioTrack'));
       }
 
       const audioTrack = audioTracks[0];
       if (!audioTrack.enabled) {
-        throw new Error('Audio track is disabled');
+        throw new Error(tChat('audioTrackDisabled'));
       }
 
       if (audioTrack.readyState !== 'live') {
-        throw new Error('Audio track is not live');
+        throw new Error(tChat('audioTrackNotLive'));
       }
 
       streamRef.current = stream;
@@ -212,7 +215,7 @@ export function VoiceRecorder({
             silenceCount++;
             if (silenceCount > 10) {
               // ~1 second of silence (assuming 100ms intervals)
-              setMicWarning('No microphone signal detected. Check mic permissions/device.');
+              setMicWarning(tChat('noMicSignal'));
             }
           } else {
             silenceCount = 0;
@@ -231,7 +234,7 @@ export function VoiceRecorder({
       // Get supported mimeType
       const mimeType = getSupportedMimeType();
       if (!mimeType) {
-        throw new Error('No supported audio format found');
+        throw new Error(tChat('noSupportedAudioFormat'));
       }
 
       // Create MediaRecorder
@@ -267,7 +270,7 @@ export function VoiceRecorder({
 
         // Validate blob
         if (blob.size === 0) {
-          setError('Recording failed (empty)');
+          setError(tChat('recordingFailedEmpty'));
           setCanSend(false);
           return;
         }
@@ -280,7 +283,7 @@ export function VoiceRecorder({
 
         // Validate duration
         if (!Number.isFinite(finalDuration) || finalDuration < 1 || finalDuration > 300) {
-          setError(`Invalid duration: ${finalDuration} seconds`);
+          setError(tChat('invalidDuration', { seconds: finalDuration }));
           setCanSend(false);
           return;
         }
@@ -323,7 +326,7 @@ export function VoiceRecorder({
         }
 
         if (isSilent) {
-          setError('No audio captured. Please check your microphone device.');
+          setError(tChat('noAudioCaptured'));
           setCanSend(false);
           return;
         }
@@ -342,7 +345,7 @@ export function VoiceRecorder({
       };
 
       recorder.onerror = (event) => {
-        setError('Recording error occurred');
+        setError(tChat('recordingError'));
         console.error('MediaRecorder error:', event);
       };
 
@@ -362,17 +365,17 @@ export function VoiceRecorder({
         }
       }, 1000);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to start recording';
+      const message = err instanceof Error ? err.message : tChat('failedStartRecording');
       if (message.includes('permission') || message.includes('Permission')) {
-        setError('Microphone permission denied. Please allow microphone access and try again.');
+        setError(tChat('micPermissionDenied'));
       } else if (message.includes('device') || message.includes('not found')) {
-        setError('No microphone found. Please connect a microphone and try again.');
+        setError(tChat('noMicrophoneFound'));
       } else {
         setError(message);
       }
       cleanup();
     }
-  }, [getSupportedMimeType, cleanup, isRecording, stopRecording]);
+  }, [getSupportedMimeType, cleanup, isRecording, stopRecording, tChat]);
 
   // Handle send
   const handleSend = useCallback(() => {
@@ -402,7 +405,7 @@ export function VoiceRecorder({
           <button
             onClick={startRecording}
             className="p-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors flex-shrink-0"
-            title="Start recording"
+            title={tChat('startRecording')}
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="6" />
@@ -419,7 +422,7 @@ export function VoiceRecorder({
                 'flex-shrink-0 rounded-full p-3 text-white transition-colors',
                 variant === 'student' ? 'bg-[#3b3b40] hover:bg-[#1010a3]' : 'bg-slate-600 hover:bg-slate-700',
               )}
-              title="Stop recording"
+              title={tChat('stopRecording')}
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <rect x="6" y="6" width="12" height="12" rx="2" />
@@ -429,12 +432,12 @@ export function VoiceRecorder({
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
                 <span className={cn('text-sm font-medium', ui.body)}>
-                  Recording... {formatDuration(durationSec)}
+                  {tChat('recording', { duration: formatDuration(durationSec) })}
                 </span>
               </div>
               {/* Microphone level meter */}
               <div className="mt-1 flex items-center gap-2">
-                <span className={cn('text-xs', ui.muted)}>Mic level:</span>
+                <span className={cn('text-xs', ui.muted)}>{tChat('micLevel')}</span>
                 <div className={cn('h-2 flex-1 overflow-hidden rounded-full', ui.skeleton)}>
                   <div
                     className={cn(
@@ -464,7 +467,7 @@ export function VoiceRecorder({
                   style={{ minWidth: '200px' }}
                   onError={(e) => {
                     console.error('[VoiceRecorder] Preview playback error:', e);
-                    setError('Preview playback failed. Please try recording again.');
+                    setError(tChat('previewPlaybackFailed'));
                   }}
                 />
               )}
@@ -477,7 +480,7 @@ export function VoiceRecorder({
                 onClick={onCancel}
                 className={cn('rounded-lg px-4 py-2 text-sm transition-colors', ui.ghostBtn)}
               >
-                Cancel
+                {tCommon('cancel')}
               </button>
               <button
                 onClick={handleSend}
@@ -487,7 +490,7 @@ export function VoiceRecorder({
                   canSend ? ui.primaryBtn : ui.primaryBtnDisabled
                 )}
               >
-                Send
+                {tChat('send')}
               </button>
             </div>
           </>

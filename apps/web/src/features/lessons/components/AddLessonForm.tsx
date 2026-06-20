@@ -8,6 +8,7 @@ import {
   Button,
   Input,
   Label,
+  SegmentedControl,
 } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useCreateLesson, useCreateRecurringLessons, type CreateLessonDto, type CreateRecurringLessonsDto } from '@/features/lessons';
@@ -495,32 +496,15 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
 
           <div className="space-y-2">
             <Label>{tForm('schedule')}</Label>
-            <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-slate-50/80 p-1">
-              <button
-                type="button"
-                onClick={() => onModeChange('single')}
-                className={cn(
-                  'rounded-md px-3 py-2 text-sm font-medium transition',
-                  scheduleMode === 'single'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                )}
-              >
-                {tForm('singleSession')}
-              </button>
-              <button
-                type="button"
-                onClick={() => onModeChange('recurring')}
-                className={cn(
-                  'rounded-md px-3 py-2 text-sm font-medium transition',
-                  scheduleMode === 'recurring'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                )}
-              >
-                {tForm('recurringSessions')}
-              </button>
-            </div>
+            <SegmentedControl
+              options={[
+                { id: 'single', label: tForm('singleSession') },
+                { id: 'recurring', label: tForm('recurringSessions') },
+              ]}
+              value={scheduleMode}
+              onChange={(value) => onModeChange(value as ScheduleMode)}
+              aria-label={tForm('schedule')}
+            />
             <p className="text-xs text-slate-500">{tForm('scheduleHint')}</p>
           </div>
 

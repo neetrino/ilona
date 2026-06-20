@@ -5,6 +5,8 @@ export { Input } from './input';
 export { DatePickerInput } from './date-picker-input';
 export { PasswordInput } from './password-input';
 export { Label } from './label';
+export { SegmentedControl } from './segmented-control';
+export type { SegmentedControlOption } from './segmented-control';
 export { StatCard } from './stat-card';
 export { PublicAssetImage } from './public-asset-image';
 export { DataTable } from './data-table';

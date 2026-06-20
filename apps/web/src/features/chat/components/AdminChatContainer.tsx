@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
@@ -10,10 +11,14 @@ import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store
 import { AdminChatList } from './AdminChatList';
 import { ChatWindow } from './ChatWindow';
 import { CreateGroupChatModal } from './CreateGroupChatModal';
+import { ChatBackButton } from './ChatBackButton';
+import { ChatEmptyState } from './ChatEmptyState';
+import { MobileChatSlidePanel } from './MobileChatSlidePanel';
 import { useChatStore } from '../store/chat.store';
 import { useSocket, useChatDetail, chatKeys } from '../hooks';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import { ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS } from '@/features/admin-dashboard/admin-portal-layout';
 
 type AdminChatTab = 'students' | 'teachers' | 'groups';
 
@@ -24,6 +29,8 @@ interface AdminChatContainerProps {
 }
 
 function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChatContainerProps) {
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const { searchParams, urlRevision, replaceAllParams } = useAppSearchUrl();
   const { user } = useAuthStore();
@@ -49,6 +56,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   const initialTab = tabFromUrl && validTabs.includes(tabFromUrl) ? tabFromUrl : null;
   const [activeTab, setActiveTab] = useState<AdminChatTab | null>(initialTab);
   const [showCreateGroupChatModal, setShowCreateGroupChatModal] = useState(false);
+  const [mobileChatPanelOpen, setMobileChatPanelOpen] = useState(false);
 
   const conversationIdFromUrl = useMemo(
     () =>
@@ -249,6 +257,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   const handleSelectChat = (chat: Chat) => {
     setActiveChat(chat);
     setMobileListVisible(false);
+    setMobileChatPanelOpen(true);
     
     // Add/update chat in cache so groupUnreadMap can access it
     queryClient.setQueryData(
@@ -284,9 +293,28 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
     });
   };
 
+  useEffect(() => {
+    if (activeChat && !isMobileListVisible) {
+      setMobileChatPanelOpen(true);
+    }
+  }, [activeChat, isMobileListVisible]);
+
+  const handleMobileBack = useCallback(() => {
+    setMobileChatPanelOpen(false);
+  }, []);
+
+  const finalizeMobileChatClose = useCallback(() => {
+    setMobileListVisible(true);
+    setActiveChat(null);
+    replaceSearchParams((params) => {
+      params.delete('conversationId');
+    });
+  }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
+
   const handleCustomGroupChatCreated = (chat: Chat) => {
     setActiveChat(chat);
     setMobileListVisible(false);
+    setMobileChatPanelOpen(true);
     setShowCreateGroupChatModal(false);
     queryClient.setQueryData(chatKeys.list(), (oldData: Chat[] | undefined) => {
       if (!oldData) return [chat];
@@ -302,30 +330,48 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
 
   // Check if we're in full-screen mode (when className includes rounded-none)
   const isFullScreen = className?.includes('rounded-none');
-  const containerHeight = isFullScreen ? 'h-screen' : 'h-[calc(100vh-200px)]';
-  const contentHeight = isFullScreen ? 'h-[calc(100vh-73px)]' : 'h-[calc(100%-73px)]';
+  const containerHeight = isFullScreen
+    ? 'min-h-0 flex-1 lg:min-h-0 lg:h-auto'
+    : 'h-[calc(100vh-200px)]';
+  const contentHeight = isFullScreen
+    ? 'flex-1 min-h-0'
+    : 'h-[calc(100%-73px)]';
 
   return (
-    <div className={cn(containerHeight, "bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col", className)}>
-      {/* Back Button Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white flex-shrink-0">
+    <div
+      className={cn(
+        containerHeight,
+        'flex flex-col overflow-hidden bg-white',
+        !isFullScreen && 'rounded-2xl border border-slate-200',
+        isFullScreen &&
+          'max-lg:max-h-[100dvh] max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-hidden',
+        activeChat && isFullScreen && 'max-lg:h-[100dvh]',
+        className,
+      )}
+    >
+      {/* Header — hidden on mobile when a conversation is open (ChatWindow has its own header) */}
+      <div
+        className={cn(
+          'flex shrink-0 items-center justify-between border-b border-[rgba(14,14,16,0.07)] bg-white px-3 py-3 sm:px-4',
+          activeChat && 'max-lg:hidden',
+        )}
+      >
+        <ChatBackButton
+          onClick={handleBackToPrevious}
+          aria-label={tChat('backToPreviousPage')}
+          className="lg:hidden"
+        />
         <button
+          type="button"
           onClick={handleBackToPrevious}
           className={cn(
-            'flex items-center gap-2 px-4 py-2',
-            'text-slate-700 hover:text-slate-900',
-            'hover:bg-slate-100 rounded-lg',
-            'transition-colors',
-            'focus:outline-none focus:ring-4 focus:ring-[#1010a3]/15 focus:ring-offset-2'
+            'hidden items-center gap-1.5 rounded-[0.875rem] px-2 py-2 lg:flex',
+            'text-[#3b3b40] transition-colors hover:text-[#1010a3]',
+            'focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-2',
           )}
-          aria-label="Back to previous page"
+          aria-label={tChat('backToPreviousPage')}
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -333,81 +379,76 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
               d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
-          <span className="font-medium">Back</span>
+          <span className="text-sm font-medium">{tCommon('back')}</span>
         </button>
-        <h2 className="text-lg font-semibold text-slate-800">Chat</h2>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowCreateGroupChatModal(true)}
-            className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90"
-          >
-            Create Group Chat
-          </button>
-        </div>
+        <h2 className="text-lg font-bold text-[#3b3b40] sm:text-xl">{tChat('title')}</h2>
+        <button
+          type="button"
+          onClick={() => setShowCreateGroupChatModal(true)}
+          className="rounded-full bg-[#1010a3] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#1010a3]/90 sm:px-4 sm:text-sm"
+        >
+          {tChat('createGroupChat')}
+        </button>
       </div>
 
-      <div className={cn("flex flex-1 overflow-hidden", contentHeight)}>
-        {/* Admin Chat List with Tabs */}
+      <div
+        className={cn(
+          'flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row',
+          contentHeight,
+          isFullScreen && !activeChat && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+        )}
+      >
+        {/* List panel */}
         <div
           className={cn(
-            'w-full lg:w-80 border-r border-slate-200 flex-shrink-0',
-            !isMobileListVisible && 'hidden lg:block'
+            'flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white lg:w-80 lg:shrink-0 lg:flex-none lg:border-r lg:border-[rgba(14,14,16,0.07)]',
+            !isMobileListVisible && 'hidden lg:flex',
           )}
         >
-          <AdminChatList 
-            activeTab={activeTab} 
+          <AdminChatList
+            activeTab={activeTab}
             onTabChange={handleTabChange}
             onSelectChat={handleSelectChat}
           />
         </div>
 
-        {/* Chat Window */}
+        {/* Chat panel — desktop only when browsing; full screen on mobile once a chat is open */}
         <div
           className={cn(
-            'flex-1 flex flex-col',
-            isMobileListVisible && !activeChat && 'hidden lg:flex'
+            'hidden min-h-0 flex-1 flex-col overflow-hidden bg-white lg:flex',
           )}
         >
           {activeChat ? (
-            <ChatWindow
-              chat={activeChat}
-              onBack={handleBack}
-              onChatUpdated={setActiveChat}
-            />
+            <ChatWindow chat={activeChat} onBack={handleBack} onChatUpdated={setActiveChat} />
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-slate-50">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-slate-200 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-8 h-8 text-slate-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-1">
-                  {emptyTitle || 'Select a chat'}
-                </h3>
-                <p className="text-sm text-slate-500">
-                  {emptyDescription || 'Choose a conversation from the list to start messaging'}
-                </p>
-              </div>
-            </div>
+            <ChatEmptyState
+              title={emptyTitle || tChat('selectChat')}
+              description={
+                emptyDescription || tChat('selectChatDescription')
+              }
+              className="bg-white lg:bg-[#fafafa]"
+            />
           )}
         </div>
       </div>
 
+      {activeChat ? (
+        <MobileChatSlidePanel
+          active={mobileChatPanelOpen}
+          onExitComplete={finalizeMobileChatClose}
+          className="lg:hidden"
+        >
+          <ChatWindow
+            chat={activeChat}
+            onBack={handleMobileBack}
+            onChatUpdated={setActiveChat}
+          />
+        </MobileChatSlidePanel>
+      ) : null}
+
       <CreateGroupChatModal
-        isOpen={showCreateGroupChatModal}
-        onClose={() => setShowCreateGroupChatModal(false)}
+        open={showCreateGroupChatModal}
+        onOpenChange={setShowCreateGroupChatModal}
         onCreated={handleCustomGroupChatCreated}
       />
     </div>
@@ -422,10 +463,20 @@ export function AdminChatContainer(props: AdminChatContainerProps) {
   }, []);
 
   if (!mounted) {
+    const isFullScreen = props.className?.includes('rounded-none');
     return (
-      <div className={cn("h-[calc(100vh-200px)] bg-white rounded-2xl border border-slate-200 overflow-hidden", props.className)}>
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div
+        className={cn(
+          isFullScreen
+            ? 'min-h-0 flex-1 lg:h-[calc(100vh-200px)]'
+            : 'h-[calc(100vh-200px)]',
+          'overflow-hidden bg-white',
+          !isFullScreen && 'rounded-2xl border border-slate-200',
+          props.className,
+        )}
+      >
+        <div className="flex h-full items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#1010a3]" />
         </div>
       </div>
     );

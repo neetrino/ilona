@@ -16,6 +16,7 @@ import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { getAdminNavEntries, type AdminNavEntry, type AdminNavIcon } from '@/shared/lib/admin-nav-entries';
 import { STUDENT_SIDEBAR_ASSETS } from '@/features/student-dashboard/studentSidebarAssets';
+import { PORTAL_SIDEBAR_NAV_ITEM_GAP_CLASS, PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS, getPortalSidebarWidthClass } from './student-layout';
 
 const NAV_LIST_GAP_CLASS = 'gap-0.5';
 const NAV_ICON_COLUMN_CLASS = 'flex h-12 w-[2.375rem] shrink-0 items-center justify-center';
@@ -84,20 +85,50 @@ function NavLink({
   collapsed,
   label,
   onNavigate,
+  isArmenianLocale,
+  isMobileSidebar,
+  t,
 }: {
   item: AdminNavEntry & { href: string };
   active: boolean;
   collapsed: boolean;
   label: string;
   onNavigate?: () => void;
+  isArmenianLocale: boolean;
+  isMobileSidebar: boolean;
+  t: (key: string) => string;
 }) {
+  const labelClassName = cn(
+    'min-w-0 flex-1 overflow-visible pr-0.5 text-sm italic leading-snug',
+    isArmenianLocale && PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS,
+    active ? 'font-semibold text-white' : 'font-medium text-[#787878]',
+  );
+
+  const renderLabel = () => {
+    if (isArmenianLocale && item.labelKey === 'dailyDuties') {
+      const mobileLabel = t('dailyDutiesMobile');
+      if (isMobileSidebar) {
+        return <span className={cn(labelClassName, 'whitespace-pre-line')}>{mobileLabel}</span>;
+      }
+      return (
+        <>
+          <span className={cn(labelClassName, 'whitespace-pre-line xl:hidden')}>{mobileLabel}</span>
+          <span className={cn(labelClassName, 'hidden xl:inline')}>{label}</span>
+        </>
+      );
+    }
+
+    return <span className={labelClassName}>{label}</span>;
+  };
+
   return (
     <Link
       href={item.href}
       title={collapsed ? label : undefined}
       onClick={onNavigate}
       className={cn(
-        'flex min-h-12 w-full items-center gap-1 transition-colors',
+        'flex min-h-12 w-full items-center transition-colors',
+        PORTAL_SIDEBAR_NAV_ITEM_GAP_CLASS,
         active
           ? collapsed
             ? 'rounded-[0.875rem] bg-transparent px-1.5 py-0'
@@ -107,16 +138,7 @@ function NavLink({
       )}
     >
       <AdminNavIconDisplay icon={item.icon} active={active} collapsed={collapsed} />
-      {!collapsed ? (
-        <span
-          className={cn(
-            'min-w-0 flex-1 overflow-visible pr-0.5 text-sm italic leading-snug',
-            active ? 'font-semibold text-white' : 'font-medium text-[#787878]',
-          )}
-        >
-          {label}
-        </span>
-      ) : null}
+      {!collapsed ? renderLabel() : null}
     </Link>
   );
 }
@@ -168,12 +190,8 @@ export function AdminSidebar({
           : cn(
               'h-screen py-3 pl-3 pr-2 sm:pl-4 sm:pr-3',
               collapsed
-                ? 'w-[4.5rem]'
-                : isArmenianLocale
-                  ? isIPad
-                    ? 'w-[clamp(15.5rem,19vw,21.5rem)]'
-                    : 'w-[clamp(14rem,17vw,20rem)]'
-                  : 'w-[clamp(12.5rem,15vw,18rem)]',
+                ? getPortalSidebarWidthClass(true, isArmenianLocale, isIPad)
+                : getPortalSidebarWidthClass(false, isArmenianLocale, isIPad),
             ),
       )}
     >
@@ -238,7 +256,7 @@ export function AdminSidebar({
         <nav
           className={cn(
             'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto py-4 pr-3.5',
-            isArmenianLocale ? 'px-3.5' : 'px-3',
+            isArmenianLocale ? 'px-4' : 'px-3',
             NAV_LIST_GAP_CLASS,
             !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
           )}
@@ -251,6 +269,9 @@ export function AdminSidebar({
               collapsed={!showLabels}
               label={t(item.labelKey)}
               onNavigate={onNavigate}
+              isArmenianLocale={isArmenianLocale}
+              isMobileSidebar={isDrawer}
+              t={t}
             />
           ))}
         </nav>

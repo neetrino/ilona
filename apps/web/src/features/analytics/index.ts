@@ -22,5 +22,8 @@ export type {
 } from './api/analytics.api';
 
 // Components
+export { analyticsTableScrollClass } from './analytics-table-scroll';
 export { TeacherRatioTable } from './components/TeacherRatioTable';
 export type { TeacherRatioMetric } from './components/TeacherRatioTable';
+export { RevenueBreakdownTable } from './components/RevenueBreakdownTable';
+export { AnalyticsMobilePagination } from './components/AnalyticsMobilePagination';

@@ -1,23 +1,11 @@
 'use client';
 
 import { Plus, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { GroupScheduleEntry } from '../types';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
-const DAY_OPTIONS: Array<{ value: number; label: string }> = [
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
-  { value: 0, label: 'Sunday' },
-];
-
-const DAY_DROPDOWN_OPTIONS = DAY_OPTIONS.map((day) => ({
-  id: String(day.value),
-  label: day.label,
-}));
+const DAY_VALUES = [1, 2, 3, 4, 5, 6, 0] as const;
 
 interface GroupScheduleEditorProps {
   value: GroupScheduleEntry[];
@@ -32,6 +20,24 @@ const DEFAULT_ENTRY: GroupScheduleEntry = {
 };
 
 export function GroupScheduleEditor({ value, onChange, disabled }: GroupScheduleEditorProps) {
+  const t = useTranslations('groups');
+  const tTeachers = useTranslations('teachers');
+
+  const dayLabelByValue: Record<number, string> = {
+    1: tTeachers('monday'),
+    2: tTeachers('tuesday'),
+    3: tTeachers('wednesday'),
+    4: tTeachers('thursday'),
+    5: tTeachers('friday'),
+    6: tTeachers('saturday'),
+    0: tTeachers('sunday'),
+  };
+
+  const dayDropdownOptions = DAY_VALUES.map((day) => ({
+    id: String(day),
+    label: dayLabelByValue[day],
+  }));
+
   const updateEntry = (index: number, patch: Partial<GroupScheduleEntry>) => {
     const next = value.map((e, i) => (i === index ? { ...e, ...patch } : e));
     onChange(next);
@@ -46,7 +52,7 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
   return (
     <div className="space-y-2">
       {value.length === 0 && (
-        <p className="text-xs text-slate-500">No working hours added yet.</p>
+        <p className="text-xs text-slate-500">{t('scheduleNoWorkingHours')}</p>
       )}
       {value.map((entry, i) => (
         <div
@@ -56,14 +62,14 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
           <div className="col-span-4">
             <SingleSelectDropdown
               id={`schedule-day-${i}`}
-              options={DAY_DROPDOWN_OPTIONS}
+              options={dayDropdownOptions}
               value={String(entry.dayOfWeek)}
               onValueChange={(nextValue) => {
                 if (!nextValue) return;
                 updateEntry(i, { dayOfWeek: Number(nextValue) });
               }}
               disabled={disabled}
-              placeholder="Day"
+              placeholder={t('scheduleDayPlaceholder')}
             />
           </div>
           <input
@@ -72,7 +78,7 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
             onChange={(e) => updateEntry(i, { startTime: e.target.value })}
             disabled={disabled}
             className="col-span-3 rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
-            aria-label="Start time"
+            aria-label={t('scheduleStartTime')}
           />
           <input
             type="time"
@@ -80,14 +86,14 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
             onChange={(e) => updateEntry(i, { endTime: e.target.value })}
             disabled={disabled}
             className="col-span-3 rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
-            aria-label="End time"
+            aria-label={t('scheduleEndTime')}
           />
           <button
             type="button"
             onClick={() => removeEntry(i)}
             disabled={disabled}
             className="col-span-2 inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-600 hover:bg-slate-100"
-            aria-label="Remove schedule entry"
+            aria-label={t('scheduleRemoveEntry')}
           >
             <Trash2 className="size-3.5" />
           </button>
@@ -99,7 +105,7 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
         disabled={disabled}
         className="inline-flex items-center gap-1 rounded-md border border-dashed border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
       >
-        <Plus className="size-3.5" /> Add slot
+        <Plus className="size-3.5" /> {t('scheduleAddSlot')}
       </button>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type TouchEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import {
   Building2,
   Users,
@@ -29,12 +30,12 @@ interface CenterDetailsModalProps {
 
 type TabId = 'teachers' | 'students' | 'groups' | 'schedule' | 'info';
 
-const TABS: Array<{ id: TabId; label: string; icon: typeof Users }> = [
-  { id: 'teachers', label: 'Teachers', icon: GraduationCap },
-  { id: 'students', label: 'Students', icon: Users },
-  { id: 'groups', label: 'Groups', icon: Building2 },
-  { id: 'schedule', label: 'Schedule', icon: CalendarDays },
-  { id: 'info', label: 'Info', icon: Info },
+const TAB_CONFIG: Array<{ id: TabId; icon: typeof Users }> = [
+  { id: 'teachers', icon: GraduationCap },
+  { id: 'students', icon: Users },
+  { id: 'groups', icon: Building2 },
+  { id: 'schedule', icon: CalendarDays },
+  { id: 'info', icon: Info },
 ];
 
 function userName(u: { firstName: string | null; lastName: string | null } | null): string {
@@ -117,6 +118,8 @@ function mapCenterGroupToScheduleGroup(data: CenterDetails, group: CenterDetails
 }
 
 export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsModalProps) {
+  const t = useTranslations('centers');
+  const tCommon = useTranslations('common');
   const [activeTab, setActiveTab] = useState<TabId>('teachers');
   const [dragOffsetY, setDragOffsetY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -238,16 +241,16 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
             <div className="h-1.5 w-14 rounded-full bg-slate-300" />
           </div>
           <DialogPrimitive.Title className="sr-only">
-            {data?.center.name ?? 'Center details'}
+            {data?.center.name ?? t('centerDetails')}
           </DialogPrimitive.Title>
-          <Header center={data?.center ?? null} onClose={onClose} />
+          <Header center={data?.center ?? null} onClose={onClose} closeLabel={tCommon('close')} />
           <Tabs activeTab={activeTab} setActiveTab={setActiveTab} counts={data?.counts} />
 
           <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
-            {isLoading && <p className="text-sm text-slate-500">Loading…</p>}
+            {isLoading && <p className="text-sm text-slate-500">{tCommon('loading')}</p>}
             {error && (
               <p className="text-sm text-red-600">
-                {error instanceof Error ? error.message : 'Failed to load center details'}
+                {error instanceof Error ? error.message : t('failedLoadCenterDetails')}
               </p>
             )}
             {data && activeTab === 'teachers' && <TeachersTab data={data} />}
@@ -265,9 +268,11 @@ export function CenterDetailsModal({ centerId, open, onClose }: CenterDetailsMod
 function Header({
   center,
   onClose,
+  closeLabel,
 }: {
   center: CenterDetails['center'] | null;
   onClose: () => void;
+  closeLabel: string;
 }) {
   const color = center?.colorHex ?? '#253046';
   return (
@@ -297,7 +302,7 @@ function Header({
         type="button"
         onClick={onClose}
         className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
-        aria-label="Close"
+        aria-label={closeLabel}
       >
         <X className="size-5" />
       </button>
@@ -314,6 +319,14 @@ function Tabs({
   setActiveTab: (t: TabId) => void;
   counts: CenterDetails['counts'] | undefined;
 }) {
+  const t = useTranslations('centers');
+  const tabLabelById: Record<TabId, string> = {
+    teachers: t('tabTeachers'),
+    students: t('tabStudents'),
+    groups: t('tabGroups'),
+    schedule: t('tabSchedule'),
+    info: t('tabInfo'),
+  };
   const countByTab: Partial<Record<TabId, number>> = {
     teachers: counts?.teachers,
     students: counts?.students,
@@ -357,7 +370,7 @@ function Tabs({
         role="tablist"
         className="relative flex min-w-max items-end gap-0.5 sm:min-w-0 sm:gap-1"
       >
-        {TABS.map((tab) => {
+        {TAB_CONFIG.map((tab) => {
           const Icon = tab.icon;
           const isActive = tab.id === activeTab;
           const count = countByTab[tab.id];
@@ -379,7 +392,7 @@ function Tabs({
               )}
             >
               <Icon className="size-4 shrink-0" />
-              <span className="truncate">{tab.label}</span>
+              <span className="truncate">{tabLabelById[tab.id]}</span>
               {count !== undefined && (
                 <span className="ml-1 rounded-full bg-[#eef0f4] px-2 py-0.5 text-xs font-medium text-slate-700">
                   {count}
@@ -403,29 +416,30 @@ function Tabs({
 }
 
 function TeachersTab({ data }: { data: CenterDetails }) {
+  const t = useTranslations('centers');
   if (data.teachers.length === 0) {
-    return <EmptyState message="No teachers assigned to this branch yet." />;
+    return <EmptyState message={t('noTeachersInBranch')} />;
   }
   return (
     <ul className="space-y-2.5 px-0">
-      {data.teachers.map((t) => (
+      {data.teachers.map((teacher) => (
         <li
-          key={t.id}
+          key={teacher.id}
           className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-[#e2e5ea] bg-white p-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 sm:animate-none sm:rounded-lg sm:border-slate-200 sm:p-3"
         >
           <div className="flex min-w-0 items-center gap-3">
-            <Avatar src={t.user?.avatarUrl ?? undefined} name={teacherName(t)} size="md" />
+            <Avatar src={teacher.user?.avatarUrl ?? undefined} name={teacherName(teacher)} size="md" />
             <div className="min-w-0">
-              <p className="truncate text-base font-semibold leading-tight text-slate-900 sm:text-sm sm:font-medium">{teacherName(t)}</p>
-              {t.user?.email && (
+              <p className="truncate text-base font-semibold leading-tight text-slate-900 sm:text-sm sm:font-medium">{teacherName(teacher)}</p>
+              {teacher.user?.email && (
                 <p className="truncate text-xs text-slate-500 sm:text-xs">
-                  {t.user.email}
+                  {teacher.user.email}
                 </p>
               )}
             </div>
           </div>
           <span className="inline-flex min-h-7 items-center justify-center self-center whitespace-nowrap rounded-full bg-[#eef0f4] px-2.5 py-0.5 text-center text-xs font-semibold leading-none text-slate-700">
-            {t._count?.groups ?? 0} groups
+            {t('teacherGroupCount', { count: teacher._count?.groups ?? 0 })}
           </span>
         </li>
       ))}
@@ -434,8 +448,9 @@ function TeachersTab({ data }: { data: CenterDetails }) {
 }
 
 function StudentsTab({ data }: { data: CenterDetails }) {
+  const t = useTranslations('centers');
   if (data.students.length === 0) {
-    return <EmptyState message="No students enrolled in this branch yet." />;
+    return <EmptyState message={t('noStudentsInBranch')} />;
   }
   return (
     <ul className="space-y-3 px-0">
@@ -465,8 +480,9 @@ function StudentsTab({ data }: { data: CenterDetails }) {
 }
 
 function GroupsTab({ data }: { data: CenterDetails }) {
+  const t = useTranslations('centers');
   if (data.groups.length === 0) {
-    return <EmptyState message="No groups in this branch." />;
+    return <EmptyState message={t('noGroupsInBranchDetail')} />;
   }
   return (
     <ul className="space-y-2">
@@ -479,19 +495,20 @@ function GroupsTab({ data }: { data: CenterDetails }) {
             <p className="truncate text-sm font-semibold text-slate-900">{g.name}</p>
             <div className="flex items-center gap-2 text-xs text-slate-600">
               <span className="rounded-full bg-slate-100 px-2 py-0.5 font-medium">
-                {g._count?.students ?? g.students.length} students
+                {t('studentsCountBadge', { count: g._count?.students ?? g.students.length })}
               </span>
               <span className="rounded-full bg-slate-100 px-2 py-0.5 font-medium">
-                {g._count?.lessons ?? 0} lessons
+                {t('lessonsCountBadge', { count: g._count?.lessons ?? 0 })}
               </span>
             </div>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Main teacher: <span className="text-slate-700">{teacherName(g.teacher)}</span>
+            {t('mainTeacherLabel')}{' '}
+            <span className="text-slate-700">{teacherName(g.teacher)}</span>
             {g.substituteTeacher && (
               <>
                 {' '}
-                · Substitute:{' '}
+                · {t('substituteTeacherLabel')}{' '}
                 <span className="text-slate-700">{teacherName(g.substituteTeacher)}</span>
               </>
             )}
@@ -503,13 +520,14 @@ function GroupsTab({ data }: { data: CenterDetails }) {
 }
 
 function ScheduleTab({ data }: { data: CenterDetails }) {
+  const t = useTranslations('centers');
   const scheduleGroups = data.groups
     .filter((g) => normalizeSchedule(g.schedule).length > 0)
     .map((group) => mapCenterGroupToScheduleGroup(data, group));
 
   if (scheduleGroups.length === 0) {
     return (
-      <EmptyState message="No schedules configured. Group schedules will appear here once added." />
+      <EmptyState message={t('noSchedulesConfigured')} />
     );
   }
 
@@ -517,14 +535,16 @@ function ScheduleTab({ data }: { data: CenterDetails }) {
 }
 
 function InfoTab({ data }: { data: CenterDetails }) {
+  const t = useTranslations('centers');
+  const tCommon = useTranslations('common');
   const c = data.center;
   const rows: Array<{ label: string; value: string | null }> = [
-    { label: 'Name', value: c.name },
-    { label: 'Address', value: c.address },
-    { label: 'Phone', value: formatPhoneForDisplay(c.phone) },
-    { label: 'Email', value: c.email },
-    { label: 'Status', value: c.isActive ? 'Active' : 'Inactive' },
-    { label: 'Description', value: c.description },
+    { label: tCommon('name'), value: c.name },
+    { label: t('form.address'), value: c.address },
+    { label: t('form.phone'), value: formatPhoneForDisplay(c.phone) },
+    { label: tCommon('email'), value: c.email },
+    { label: tCommon('status'), value: c.isActive ? t('activeStatus') : t('inactiveStatus') },
+    { label: t('form.description'), value: c.description },
   ];
   return (
     <dl className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white animate-in fade-in-0 slide-in-from-bottom-2 duration-500 sm:animate-none">

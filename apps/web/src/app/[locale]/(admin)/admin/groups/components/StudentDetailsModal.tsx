@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui';
 import { useStudent } from '@/features/students';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
@@ -11,7 +12,7 @@ interface StudentDetailsModalProps {
   studentId: string | null;
 }
 
-function formatDate(value?: string | null): string {
+function formatDate(value: string | null | undefined, locale: string): string {
   if (!value) {
     return '—';
   }
@@ -19,7 +20,7 @@ function formatDate(value?: string | null): string {
   if (Number.isNaN(date.getTime())) {
     return '—';
   }
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -32,10 +33,18 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDetailsModalProps) {
+  const locale = useLocale();
+  const t = useTranslations('groups');
+  const tCommon = useTranslations('common');
+  const tStudents = useTranslations('students');
+  const tSettings = useTranslations('settings');
+  const tAttendance = useTranslations('attendance');
   const { data: student, isLoading, isError, error } = useStudent(studentId ?? '', open && !!studentId);
   const age = student?.age ?? null;
   const isUnder18 = age !== null && age < 18;
-  const fullName = student ? `${student.user.firstName} ${student.user.lastName}` : 'Student';
+  const fullName = student
+    ? `${student.user.firstName} ${student.user.lastName}`
+    : t('studentFallback');
   const courseStartDate = student?.registerDate ?? student?.enrolledAt ?? null;
   const groupHistory = student?.groupHistory ?? [];
 
@@ -43,41 +52,41 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle>{fullName} - Student Details</DialogTitle>
+          <DialogTitle>{t('studentDetailsTitle', { name: fullName })}</DialogTitle>
         </DialogHeader>
 
         {isLoading ? (
-          <div className="py-8 text-center text-[#8b8b90]">Loading student details...</div>
+          <div className="py-8 text-center text-[#8b8b90]">{t('loadingStudentDetails')}</div>
         ) : isError ? (
           <div className="py-8 text-center text-red-600">
-            {error instanceof Error ? error.message : 'Failed to load student details.'}
+            {error instanceof Error ? error.message : tStudents('failedToLoadStudent')}
           </div>
         ) : !student ? (
-          <div className="py-8 text-center text-[#8b8b90]">Student details are not available.</div>
+          <div className="py-8 text-center text-[#8b8b90]">{t('studentDetailsUnavailable')}</div>
         ) : (
           <div className="space-y-6">
             <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
-              <h3 className="text-sm font-semibold text-[#1010a3] mb-2">Student Information</h3>
-              <InfoRow label="First Name" value={student.user.firstName || '—'} />
-              <InfoRow label="Last Name" value={student.user.lastName || '—'} />
-              <InfoRow label="Age" value={age ?? '—'} />
-              <InfoRow label="Phone Number" value={formatPhoneForDisplay(student.user.phone)} />
-              <InfoRow label="Course Start Date" value={formatDate(courseStartDate)} />
+              <h3 className="text-sm font-semibold text-[#1010a3] mb-2">{tCommon('studentInformation')}</h3>
+              <InfoRow label={tCommon('firstName')} value={student.user.firstName || '—'} />
+              <InfoRow label={tCommon('lastName')} value={student.user.lastName || '—'} />
+              <InfoRow label={tSettings('age')} value={age ?? '—'} />
+              <InfoRow label={tSettings('phoneNumber')} value={formatPhoneForDisplay(student.user.phone)} />
+              <InfoRow label={t('courseStartDate')} value={formatDate(courseStartDate, locale)} />
             </section>
 
             {isUnder18 && (
               <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
-                <h3 className="text-sm font-semibold text-[#1010a3] mb-2">Parent Information</h3>
-                <InfoRow label="Parent Name" value={student.parentName || '—'} />
-                <InfoRow label="Parent Phone Number" value={formatPhoneForDisplay(student.parentPhone)} />
-                <InfoRow label="Parent Passport Information" value={student.parentPassportInfo || '—'} />
+                <h3 className="text-sm font-semibold text-[#1010a3] mb-2">{tCommon('parentInformation')}</h3>
+                <InfoRow label={tStudents('parentName')} value={student.parentName || '—'} />
+                <InfoRow label={tStudents('parentPhone')} value={formatPhoneForDisplay(student.parentPhone)} />
+                <InfoRow label={t('parentPassportInfo')} value={student.parentPassportInfo || '—'} />
               </section>
             )}
 
             <section className="rounded-lg border border-[rgba(14,14,16,0.07)] p-4">
-              <h3 className="text-sm font-semibold text-[#1010a3] mb-3">Group History</h3>
+              <h3 className="text-sm font-semibold text-[#1010a3] mb-3">{tCommon('groupHistory')}</h3>
               {groupHistory.length === 0 ? (
-                <p className="text-sm text-[#8b8b90]">No group history found.</p>
+                <p className="text-sm text-[#8b8b90]">{t('noGroupHistory')}</p>
               ) : (
                 <ul className="space-y-2">
                   {groupHistory.map((entry) => (
@@ -87,7 +96,8 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
                         {entry.group.level ? ` (${entry.group.level})` : ''}
                       </p>
                       <p className="text-xs text-[#8b8b90]">
-                        {formatDate(entry.joinedAt)} - {entry.leftAt ? formatDate(entry.leftAt) : 'Present'}
+                        {formatDate(entry.joinedAt, locale)} -{' '}
+                        {entry.leftAt ? formatDate(entry.leftAt, locale) : tAttendance('present')}
                       </p>
                     </li>
                   ))}

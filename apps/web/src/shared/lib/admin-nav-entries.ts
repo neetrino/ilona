@@ -16,7 +16,7 @@ export function getAdminNavEntries(role: string): AdminNavEntry[] {
   const core: AdminNavEntry[] = [
     { labelKey: 'dashboard', href: '/admin/dashboard', icon: { type: 'sidebar', icon: 'iconDashboard' } },
     { labelKey: 'crm', href: '/admin/crm', icon: { type: 'sidebar', icon: 'iconCrm' } },
-    { labelKey: 'groups', href: '/admin/groups', icon: { type: 'sidebar', icon: 'iconGroups' } },
+    { labelKey: 'groupsSidebar', href: '/admin/groups', icon: { type: 'sidebar', icon: 'iconGroups' } },
     { labelKey: 'teachers', href: '/admin/teachers', icon: { type: 'sidebar', icon: 'iconTeachers' } },
     { labelKey: 'students', href: '/admin/students', icon: { type: 'sidebar', icon: 'iconStudents' } },
     { labelKey: 'schedule', href: '/admin/schedule', icon: { type: 'sidebar', icon: 'iconSchedule' } },
@@ -24,7 +24,7 @@ export function getAdminNavEntries(role: string): AdminNavEntry[] {
   ];
 
   const tail: AdminNavEntry[] = [
-    { labelKey: 'calendar', href: '/admin/calendar', icon: { type: 'sidebar', icon: 'iconCalendar' } },
+    { labelKey: 'dailyDuties', href: '/admin/calendar', icon: { type: 'sidebar', icon: 'iconCalendar' } },
     {
       labelKey: 'attendanceRegister',
       href: '/admin/attendance-register',

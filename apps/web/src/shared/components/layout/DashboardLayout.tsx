@@ -41,6 +41,8 @@ interface DashboardLayoutProps {
   variant?: 'default' | 'student' | 'teacher' | 'admin';
   /** Optional class for the main content scroll container */
   contentScrollClassName?: string;
+  /** Full-bleed mobile page: hide admin header and remove content padding below lg */
+  mobileFullBleed?: boolean;
 }
 
 export function DashboardLayout({
@@ -51,6 +53,7 @@ export function DashboardLayout({
   promoBanner,
   variant = 'default',
   contentScrollClassName,
+  mobileFullBleed = false,
 }: DashboardLayoutProps) {
   const pathname = usePathname();
   const { user } = useAuthStore();
@@ -89,7 +92,12 @@ export function DashboardLayout({
     window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
-  const mainPadding = isPortalShell ? PORTAL_MAIN_PADDING : 'p-8';
+  const mainPadding =
+    mobileFullBleed && isAdminPortal
+      ? 'p-0 lg:p-[clamp(0.75rem,2vw,2rem)] lg:py-[clamp(0.75rem,1.5vw,1.25rem)]'
+      : isPortalShell
+        ? PORTAL_MAIN_PADDING
+        : 'p-8';
 
   const portalSidebar = isStudentPortal ? (
     <StudentSidebar
@@ -120,7 +128,7 @@ export function DashboardLayout({
   );
 
   return (
-    <PortalShellProvider enabled={isPortalShell}>
+    <PortalShellProvider enabled={isPortalShell} sidebarCollapsed={sidebarCollapsed}>
       <div
         className={cn(
           'flex min-h-screen w-full max-w-[100vw]',
@@ -160,6 +168,7 @@ export function DashboardLayout({
           className={cn(
             'flex min-h-0 min-w-0 flex-1 flex-col',
             isAdminPortal ? 'overflow-visible md:overflow-hidden' : 'overflow-visible lg:overflow-hidden',
+            mobileFullBleed && 'max-lg:min-h-[100dvh] max-lg:bg-white',
           )}
         >
           {isStudentPortal ? (
@@ -175,11 +184,13 @@ export function DashboardLayout({
               onMenuClick={() => setMobileNavOpen(true)}
             />
           ) : isAdminPortal ? (
-            <AdminDashboardHeader
-              pageTitle={isDashboardHome ? undefined : title}
-              pageSubtitle={isDashboardHome ? undefined : adminPageSubtitle}
-              headerContent={headerContent}
-            />
+            <div className={cn(mobileFullBleed && 'hidden lg:block')}>
+              <AdminDashboardHeader
+                pageTitle={isDashboardHome ? undefined : title}
+                pageSubtitle={isDashboardHome ? undefined : adminPageSubtitle}
+                headerContent={headerContent}
+              />
+            </div>
           ) : (
             <Header title={title} subtitle={subtitle} headerContent={headerContent} />
           )}
@@ -190,12 +201,23 @@ export function DashboardLayout({
                 ? 'flex-1 overflow-visible md:min-h-0 md:overflow-x-hidden md:overflow-y-auto'
                 : 'flex-1 overflow-visible lg:min-h-0 lg:overflow-x-hidden lg:overflow-y-auto',
               mainPadding,
-              hasAdminBottomNav && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+              hasAdminBottomNav && !mobileFullBleed && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+              mobileFullBleed &&
+                'max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:bg-white max-lg:overflow-hidden lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden',
               contentScrollClassName,
             )}
           >
             {promoBanner ? <div className="mb-4 sm:mb-6">{promoBanner}</div> : null}
-            <div className="mx-auto w-full min-w-0 max-w-[90rem] pb-[30px]">{children}</div>
+            <div
+              className={cn(
+                'mx-auto w-full min-w-0 max-w-[90rem]',
+                mobileFullBleed ? 'pb-0' : 'pb-[30px]',
+                mobileFullBleed &&
+                  'max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:bg-white lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
+              )}
+            >
+              {children}
+            </div>
           </div>
         </main>
         {isAdminPortal ? <AdminPortalBottomNav /> : null}

@@ -5,13 +5,14 @@ import { ChatContainer } from '@/features/chat';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 
 export default function StudentChatPage() {
-  const t = useTranslations('nav');
+  const tNav = useTranslations('nav');
+  const tChat = useTranslations('chat');
 
   return (
-    <DashboardLayout title={t('chat')}>
+    <DashboardLayout title={tNav('chat')}>
       <ChatContainer
-        emptyTitle="Select a chat"
-        emptyDescription="Choose a conversation to view messages and vocabulary"
+        emptyTitle={tChat('selectChat')}
+        emptyDescription={tChat('selectChatWithVocabulary')}
       />
     </DashboardLayout>
   );

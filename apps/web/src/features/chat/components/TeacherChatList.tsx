@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useTeacherGroups, useTeacherStudents, useTeacherAdmin, useSocket, useCreateDirectChat, useTeacherUnreadCounts, useCustomGroupChats, useChats } from '../hooks';
 import { fetchGroupChat } from '../api/chat.api';
@@ -9,20 +10,37 @@ import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { ApiError } from '@/shared/lib/api';
 import { formatMessagePreview } from '../utils';
+import { formatChatListTime } from '../utils/chat-utils';
 import { Badge } from '@/shared/components/ui/badge';
 import Image from 'next/image';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { getGroupIconComponent } from '@/features/groups';
+import { OnlineStatusDot } from './OnlineStatusDot';
 
 interface TeacherChatListProps {
   onSelectChat: (chat: Chat) => void;
 }
 
 export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
+  const tChat = useTranslations('chat');
+  const locale = useLocale();
   const { user: _user } = useAuthStore();
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'admin' | 'groups' | 'students'>('groups');
+
+  const messagePreviewLabels = useMemo(
+    () => ({
+      noMessagesYet: tChat('noMessagesYet'),
+      voiceMessage: tChat('voiceMessage'),
+      photo: tChat('photo'),
+      video: tChat('video'),
+      attachment: tChat('attachment'),
+      systemMessage: tChat('systemMessage'),
+      message: tChat('message'),
+    }),
+    [tChat],
+  );
 
   // Fetch teacher's groups and students
   const { data: groups = [], isLoading: isLoadingGroups } = useTeacherGroups(
@@ -46,33 +64,8 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
   // Socket for online status
   const { isConnected, isUserOnline } = useSocket();
 
-  // Format last message time
-  const formatTime = (dateStr?: string) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-
-    // Today
-    if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
-      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // Yesterday
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (date.getDate() === yesterday.getDate()) {
-      return 'Yesterday';
-    }
-
-    // This week
-    if (diff < 7 * 24 * 60 * 60 * 1000) {
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
-    }
-
-    // Older
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
+  const formatTime = (dateStr?: string) =>
+    formatChatListTime(dateStr, locale, tChat('yesterday'));
 
   // Handle group click - fetch group chat
   const handleGroupClick = async (groupId: string, chatId: string | null) => {
@@ -90,9 +83,9 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
       console.error('Failed to open group chat:', error);
       const is403 = error instanceof ApiError && error.statusCode === 403;
       if (is403) {
-        alert('Only an administrator can create this group chat. Please ask an admin to open the group chat first.');
+        alert(tChat('adminOnlyCreateGroupChat'));
       } else {
-        alert('Failed to open group chat. Please try again.');
+        alert(tChat('failedOpenGroupChat'));
       }
     }
   };
@@ -144,7 +137,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
       {/* Header */}
       <div className="p-4 border-b border-slate-200">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-800">Messages</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{tChat('messages')}</h2>
           {/* Connection status */}
           <div
             className={cn(
@@ -153,7 +146,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 ? 'bg-green-100 text-green-700' 
                 : 'bg-red-100 text-red-700'
             )}
-            title={isConnected ? 'Connected' : 'Disconnected'}
+            title={isConnected ? tChat('connected') : tChat('disconnected')}
           >
             <div
               className={cn(
@@ -161,7 +154,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 isConnected ? 'bg-green-500' : 'bg-red-500'
               )}
             />
-            {isConnected ? 'Online' : 'Offline'}
+            {isConnected ? tChat('online') : tChat('offline')}
           </div>
         </div>
 
@@ -179,7 +172,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 : 'text-slate-600 hover:bg-slate-100'
             )}
           >
-            Groups
+            {tChat('groups')}
             {unreadCounts.groups > 0 && (
               <Badge 
                 variant="error" 
@@ -204,7 +197,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 : 'text-slate-600 hover:bg-slate-100'
             )}
           >
-            Students
+            {tChat('students')}
             {unreadCounts.students > 0 && (
               <Badge 
                 variant="error" 
@@ -229,7 +222,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 : 'text-slate-600 hover:bg-slate-100'
             )}
           >
-            Admin
+            {tChat('admin')}
             {unreadCounts.admin > 0 && (
               <Badge 
                 variant="error" 
@@ -251,7 +244,13 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
           </svg>
           <input
             type="search"
-            placeholder={activeTab === 'admin' ? 'Search admin...' : activeTab === 'groups' ? 'Search groups...' : 'Search students...'}
+            placeholder={
+              activeTab === 'admin'
+                ? tChat('searchAdmin')
+                : activeTab === 'groups'
+                  ? tChat('searchGroups')
+                  : tChat('searchStudents')
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -285,14 +284,26 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
               </svg>
             </div>
             <p className="text-sm font-medium text-slate-700 mb-1">
-              {searchQuery 
-                ? `No ${activeTab === 'admin' ? 'admin' : activeTab === 'groups' ? 'groups' : 'students'} found` 
-                : activeTab === 'admin' ? 'No admin available' : `No assigned ${activeTab === 'groups' ? 'groups' : 'students'}`}
+              {searchQuery
+                ? activeTab === 'admin'
+                  ? tChat('noAdminFound')
+                  : activeTab === 'groups'
+                    ? tChat('noGroupsFound')
+                    : tChat('noStudentsFound')
+                : activeTab === 'admin'
+                  ? tChat('noAdminAvailable')
+                  : activeTab === 'groups'
+                    ? tChat('noAssignedGroups')
+                    : tChat('noAssignedStudents')}
             </p>
             <p className="text-xs text-slate-500">
-              {searchQuery 
-                ? 'Try a different search term' 
-                : activeTab === 'admin' ? 'Admin contact will appear here' : `Your assigned ${activeTab === 'groups' ? 'groups' : 'students'} will appear here`}
+              {searchQuery
+                ? tChat('tryDifferentSearch')
+                : activeTab === 'admin'
+                  ? tChat('adminContactAppearHere')
+                  : activeTab === 'groups'
+                    ? tChat('assignedGroupsAppearHere')
+                    : tChat('assignedStudentsAppearHere')}
             </p>
           </div>
         ) : activeTab === 'admin' ? (
@@ -352,7 +363,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                             (admin.unreadCount || 0) > 0 ? 'text-slate-700 font-medium' : 'text-slate-500'
                           )}
                         >
-                          {formatMessagePreview(admin.lastMessage)}
+                          {formatMessagePreview(admin.lastMessage, messagePreviewLabels)}
                         </p>
                         {(admin.unreadCount || 0) > 0 && (
                           <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
@@ -362,7 +373,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                       </>
                     ) : (
                       <p className="text-sm text-slate-500 italic">
-                        Click to start conversation
+                        {tChat('clickToStartConversation')}
                       </p>
                     )}
                   </div>
@@ -397,7 +408,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <h3 className={cn('font-medium truncate', unread > 0 ? 'text-slate-900' : 'text-slate-700')}>
-                          {chat.name || 'Group chat'}
+                          {chat.name || tChat('groupChatLabel')}
                         </h3>
                         <span className="text-xs text-slate-500 flex-shrink-0">
                           {formatTime(lastMsg?.createdAt || chat.updatedAt)}
@@ -405,7 +416,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                       </div>
                       <div className="flex items-center justify-between">
                         <p className={cn('text-sm truncate', unread > 0 ? 'text-slate-700 font-medium' : 'text-slate-500')}>
-                          {formatMessagePreview(lastMsg)}
+                          {formatMessagePreview(lastMsg, messagePreviewLabels)}
                         </p>
                         {unread > 0 && (
                           <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
@@ -413,7 +424,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-400 mt-1">Group chat</p>
+                      <p className="text-xs text-slate-400 mt-1">{tChat('groupChatLabel')}</p>
                     </div>
                   </button>
                 );
@@ -477,19 +488,19 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                         hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500'
                       )}
                     >
-                      {formatMessagePreview(group.lastMessage)}
+                      {formatMessagePreview(group.lastMessage, messagePreviewLabels)}
                     </p>
                     {showBadge && (
                       <span
                         className="ml-1 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0 min-w-[1.25rem] text-center"
-                        aria-label={`${count} unread`}
+                        aria-label={tChat('unreadCount', { count })}
                       >
                         {count}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    {group.level ? `Class group · ${group.level}` : 'Class group'}
+                    {group.level ? tChat('classGroupWithLevel', { level: group.level }) : tChat('classGroup')}
                   </p>
                 </div>
               </button>
@@ -534,9 +545,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                       {initials}
                     </div>
                   )}
-                  {isOnline && (
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
-                  )}
+                  <OnlineStatusDot isOnline={isOnline} />
                 </div>
 
                 {/* Content */}
@@ -565,7 +574,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                             hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500'
                           )}
                         >
-                          {formatMessagePreview(student.lastMessage)}
+                          {formatMessagePreview(student.lastMessage, messagePreviewLabels)}
                         </p>
                         {hasUnread && (
                           <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
@@ -575,7 +584,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                       </>
                     ) : (
                       <p className="text-sm text-slate-500 italic">
-                        Click to start conversation
+                        {tChat('clickToStartConversation')}
                       </p>
                     )}
                   </div>
