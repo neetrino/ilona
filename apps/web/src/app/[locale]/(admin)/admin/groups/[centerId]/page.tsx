@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { GroupsTab } from '../components/GroupsTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -10,6 +10,7 @@ import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { useGroupsViewUrl } from '../hooks/useGroupsViewUrl';
 
 export default function CenterGroupsPage() {
+  const t = useTranslations('groups');
   const router = useRouter();
   const routeParams = useParams();
   const locale = useLocale();
@@ -39,8 +40,8 @@ export default function CenterGroupsPage() {
 
   return (
     <DashboardLayout
-      title="Groups by center"
-      subtitle="Manage groups for the selected branch."
+      title={t('groupsByCenterTitle')}
+      subtitle={t('groupsByCenterSubtitle')}
     >
       <GroupsTab
         searchQuery={searchQuery}

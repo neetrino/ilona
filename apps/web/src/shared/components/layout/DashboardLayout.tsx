@@ -128,7 +128,7 @@ export function DashboardLayout({
   );
 
   return (
-    <PortalShellProvider enabled={isPortalShell}>
+    <PortalShellProvider enabled={isPortalShell} sidebarCollapsed={sidebarCollapsed}>
       <div
         className={cn(
           'flex min-h-screen w-full max-w-[100vw]',

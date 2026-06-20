@@ -1,5 +1,8 @@
+'use client';
+
 import Image from 'next/image';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import type { Group } from '../types';
@@ -21,22 +24,34 @@ const actionButtonClass =
 function GroupCardActions({
   onEdit,
   onDelete,
+  editLabel,
+  deleteLabel,
   className,
 }: {
   onEdit: () => void;
   onDelete: () => void;
+  editLabel: string;
+  deleteLabel: string;
   className?: string;
 }) {
   return (
     <div className={cn('flex items-center gap-1', className)}>
-      <button type="button" onClick={onEdit} className={actionButtonClass} aria-label="Edit group">
+      <button type="button" onClick={onEdit} className={actionButtonClass} aria-label={editLabel}>
         <Pencil className="h-4 w-4" />
       </button>
-      <button type="button" onClick={onDelete} className={actionButtonClass} aria-label="Delete group">
+      <button type="button" onClick={onDelete} className={actionButtonClass} aria-label={deleteLabel}>
         <Trash2 className="h-4 w-4" />
       </button>
     </div>
   );
+}
+
+function getOccupancyLabelKey(
+  status: ReturnType<typeof getGroupOccupancyMeta>['status'],
+): 'occupancyFull' | 'occupancyFilling' | 'occupancyRed' {
+  if (status === 'full') return 'occupancyFull';
+  if (status === 'filling') return 'occupancyFilling';
+  return 'occupancyRed';
 }
 
 export function GroupCard({
@@ -46,6 +61,8 @@ export function GroupCard({
   onToggleActive,
   isStatusTogglePending = false,
 }: GroupCardProps) {
+  const t = useTranslations('groups');
+  const tCommon = useTranslations('common');
   const teacherName = group.teacher ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}` : null;
   const studentCount = group._count?.students || 0;
   const occupancy = getGroupOccupancyMeta(studentCount);
@@ -67,7 +84,13 @@ export function GroupCard({
             <p className="truncate text-[1.125rem] font-semibold text-[#3b3b40]">{group.name}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <GroupCardActions onEdit={onEdit} onDelete={onDelete} className="hidden sm:flex" />
+            <GroupCardActions
+              onEdit={onEdit}
+              onDelete={onDelete}
+              editLabel={t('editGroup')}
+              deleteLabel={t('deleteGroup')}
+              className="hidden sm:flex"
+            />
             <button
               type="button"
               onClick={onToggleActive}
@@ -75,7 +98,7 @@ export function GroupCard({
               className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${
                 group.isActive ? 'bg-[#22c55e]' : 'bg-slate-300'
               } ${isStatusTogglePending ? 'opacity-60' : ''}`}
-              aria-label={group.isActive ? 'Deactivate group' : 'Activate group'}
+              aria-label={group.isActive ? t('deactivateGroup') : t('activateGroup')}
             >
               <span
                 className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
@@ -91,9 +114,15 @@ export function GroupCard({
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex min-w-0 items-center gap-2">
             <Image src="/teachers-logo.webp" alt="" width={20} height={20} className="h-5 w-5 shrink-0 object-contain" />
-            <p className="truncate text-[1.125rem] font-medium text-[#3b3b40]">{teacherName || 'Not assigned'}</p>
+            <p className="truncate text-[1.125rem] font-medium text-[#3b3b40]">{teacherName || tCommon('notAssigned')}</p>
           </div>
-          <GroupCardActions onEdit={onEdit} onDelete={onDelete} className="sm:hidden" />
+          <GroupCardActions
+            onEdit={onEdit}
+            onDelete={onDelete}
+            editLabel={t('editGroup')}
+            deleteLabel={t('deleteGroup')}
+            className="sm:hidden"
+          />
         </div>
 
         <div className="mx-4 border-t border-[rgba(14,14,16,0.07)]" />
@@ -111,7 +140,7 @@ export function GroupCard({
         <div className="border-t border-[rgba(14,14,16,0.07)] px-4 py-3">
           <div className="flex items-center gap-2 text-slate-600">
             <span className={`inline-flex h-3 w-3 rounded-full ${dotColorClass}`} aria-hidden="true" />
-            <span className="text-[1.125rem] font-medium text-slate-700">{occupancy.label}</span>
+            <span className="text-[1.125rem] font-medium text-slate-700">{t(getOccupancyLabelKey(occupancy.status))}</span>
           </div>
         </div>
       </div>

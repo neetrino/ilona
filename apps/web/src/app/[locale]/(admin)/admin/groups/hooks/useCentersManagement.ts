@@ -1,4 +1,5 @@
 import { useState, startTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { useCenters, useDeleteCenter, useToggleCenterActive } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 
@@ -9,6 +10,7 @@ export function useCentersManagement(
   centerSearchQuery: string,
   centerPage: number
 ) {
+  const t = useTranslations('groups');
   const [createCenterOpen, setCreateCenterOpen] = useState(false);
   const [editCenterId, setEditCenterId] = useState<string | null>(null);
   const [deleteCenterId, setDeleteCenterId] = useState<string | null>(null);
@@ -96,7 +98,7 @@ export function useCentersManagement(
           await deleteCenter.mutateAsync(id);
           successCount++;
         } catch (err: unknown) {
-          const message = getErrorMessage(err, 'Failed to delete center.');
+          const message = getErrorMessage(err, t('failedDeleteCenter'));
           lastError = message;
         }
       }
@@ -116,10 +118,10 @@ export function useCentersManagement(
       }
 
       if (lastError && successCount < count) {
-        setBulkDeleteCentersError(`Deleted ${successCount} of ${count} centers. ${lastError}`);
+        setBulkDeleteCentersError(t('partialDeleteCenters', { success: successCount, total: count, error: lastError }));
       }
     } catch (err: unknown) {
-      const message = getErrorMessage(err, 'Failed to delete centers. Please try again.');
+      const message = getErrorMessage(err, t('failedDeleteCenters'));
       setBulkDeleteCentersError(message);
     }
   };
@@ -137,7 +139,7 @@ export function useCentersManagement(
       setDeleteCenterId(null);
       setDeleteCenterError(null);
     } catch (err: unknown) {
-      const message = getErrorMessage(err, 'Failed to delete center. Please try again.');
+      const message = getErrorMessage(err, t('failedDeleteCenterRetry'));
       setDeleteCenterError(message);
     }
   };

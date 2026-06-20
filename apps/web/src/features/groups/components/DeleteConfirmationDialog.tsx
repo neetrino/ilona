@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -31,8 +32,18 @@ export function DeleteConfirmationDialog({
   title,
   itemType = 'group',
 }: DeleteConfirmationDialogProps) {
-  const dialogTitle = title || `Delete ${itemType === 'group' ? 'Group' : 'Center'}`;
-  const itemLabel = itemType === 'group' ? 'group' : 'center';
+  const t = useTranslations('groups');
+  const tCommon = useTranslations('common');
+  const isGroup = itemType === 'group';
+  const dialogTitle = title || (isGroup ? t('deleteGroupTitle') : t('deleteCenterTitle'));
+  const description = itemName
+    ? isGroup
+      ? t('deleteGroupWithName', { name: itemName })
+      : t('deleteCenterWithName', { name: itemName })
+    : isGroup
+      ? t('deleteGroupGeneric')
+      : t('deleteCenterGeneric');
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -41,11 +52,7 @@ export function DeleteConfirmationDialog({
       >
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
-          <DialogDescription>
-            {itemName
-              ? `Are you sure you want to delete ${itemName}? This action cannot be undone and will permanently remove the ${itemLabel} and all associated data.`
-              : `Are you sure you want to delete this ${itemLabel}? This action cannot be undone and will permanently remove the ${itemLabel} and all associated data.`}
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         {error && (
           <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
@@ -60,7 +67,7 @@ export function DeleteConfirmationDialog({
             disabled={isLoading}
             className="rounded-full px-5"
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
@@ -69,11 +76,10 @@ export function DeleteConfirmationDialog({
             isLoading={isLoading}
             className="rounded-full px-5"
           >
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? t('deleting') : tCommon('delete')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
