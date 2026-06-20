@@ -11,6 +11,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { getInitials } from '@/shared/components/ui/avatar';
 import Image from 'next/image';
 import { getGroupIconComponent } from '@/features/groups';
+import { ChatEmptyState } from './ChatEmptyState';
 
 type AdminChatTab = 'students' | 'teachers' | 'groups';
 
@@ -362,73 +363,39 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
     );
   };
 
+  const tabButtonClass = (tab: AdminChatTab) =>
+    cn(
+      'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-sm font-medium transition-colors',
+      activeTab === tab
+        ? 'bg-[#e8eaf6] text-[#1010a3]'
+        : 'bg-[#f6f6f7] text-[#8b8b90] hover:bg-[#ececec]',
+    );
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col bg-white">
       {/* Tabs */}
-      <div className="p-2 border-b border-slate-200">
-        <div className="flex gap-1">
-          <button
-            onClick={() => onTabChange('groups')}
-            className={cn(
-              'flex-1 px-2 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5',
-              activeTab === 'groups'
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            )}
-          >
+      <div className="shrink-0 border-b border-[rgba(14,14,16,0.07)] px-3 py-3">
+        <div className="flex gap-2">
+          <button onClick={() => onTabChange('groups')} className={tabButtonClass('groups')}>
             Groups
             {unreadCounts.groups > 0 && (
-              <Badge 
-                variant="error" 
-                className={cn(
-                  "min-w-[18px] h-4 flex items-center justify-center px-1 text-xs",
-                  activeTab === 'groups' && "bg-red-500 text-white"
-                )}
-              >
+              <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
                 {unreadCounts.groups}
               </Badge>
             )}
           </button>
-          <button
-            onClick={() => onTabChange('teachers')}
-            className={cn(
-              'flex-1 px-2 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5',
-              activeTab === 'teachers'
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            )}
-          >
+          <button onClick={() => onTabChange('teachers')} className={tabButtonClass('teachers')}>
             Teachers
             {unreadCounts.teachers > 0 && (
-              <Badge 
-                variant="error" 
-                className={cn(
-                  "min-w-[18px] h-4 flex items-center justify-center px-1 text-xs",
-                  activeTab === 'teachers' && "bg-red-500 text-white"
-                )}
-              >
+              <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
                 {unreadCounts.teachers}
               </Badge>
             )}
           </button>
-          <button
-            onClick={() => onTabChange('students')}
-            className={cn(
-              'flex-1 px-2 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5',
-              activeTab === 'students'
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            )}
-          >
+          <button onClick={() => onTabChange('students')} className={tabButtonClass('students')}>
             Students
             {unreadCounts.students > 0 && (
-              <Badge 
-                variant="error" 
-                className={cn(
-                  "min-w-[18px] h-4 flex items-center justify-center px-1 text-xs",
-                  activeTab === 'students' && "bg-red-500 text-white"
-                )}
-              >
+              <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
                 {unreadCounts.students}
               </Badge>
             )}
@@ -437,10 +404,10 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
       </div>
 
       {/* Search */}
-      {activeTab && (
-        <div className="p-4 border-b border-slate-200">
+      {activeTab ? (
+        <div className="shrink-0 p-3 pb-0">
           <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -448,28 +415,25 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               placeholder={`Search ${activeTab}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white py-2 pl-9 pr-4 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15"
             />
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto">
+      <div
+        className={cn(
+          'min-h-0 flex-1 overflow-y-auto bg-white',
+          !activeTab && 'flex flex-col',
+          activeTab && 'pt-2',
+        )}
+      >
         {!activeTab ? (
-          <div className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-slate-700 mb-1">
-              Select a category
-            </p>
-            <p className="text-xs text-slate-500">
-              Choose Groups, Teachers, or Students to start browsing
-            </p>
-          </div>
+          <ChatEmptyState
+            title="Select a category"
+            description="Choose Groups, Teachers, or Students to start browsing"
+          />
         ) : (
           <>
             {activeTab === 'students' && renderStudents()}
