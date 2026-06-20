@@ -85,6 +85,14 @@ export function CreateGroupChatModal({
     [users, currentUserId],
   );
 
+  const teacherIds = useMemo(
+    () => teachers.filter((t) => t.id !== currentUserId).map((t) => t.id),
+    [teachers, currentUserId],
+  );
+
+  const allTeachersSelected =
+    teacherIds.length > 0 && teacherIds.every((id) => selectedIds.has(id));
+
   const requestClose = useCallback(() => {
     setIsDialogOpen(false);
     onOpenChange(false);
@@ -160,11 +168,17 @@ export function CreateGroupChatModal({
     });
   };
 
-  const addAllTeachers = () => {
-    const teacherIds = teachers
-      .filter((t) => t.id !== currentUserId)
-      .map((t) => t.id);
-    setSelectedIds((prev) => new Set([...prev, ...teacherIds]));
+  const toggleAllTeachers = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const allSelected = teacherIds.length > 0 && teacherIds.every((id) => prev.has(id));
+      if (allSelected) {
+        teacherIds.forEach((id) => next.delete(id));
+      } else {
+        teacherIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
   };
 
   const handleSubmit = async () => {
@@ -234,46 +248,48 @@ export function CreateGroupChatModal({
 
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="group-chat-member-search">Members</Label>
-                  {teachers.filter((t) => t.id !== currentUserId).length > 0 && (
+                  {teacherIds.length > 0 && (
                     <button
                       type="button"
-                      onClick={addAllTeachers}
+                      onClick={toggleAllTeachers}
                       className="text-xs font-medium text-[#1010a3] hover:opacity-80"
                     >
-                      Add all teachers
+                      {allTeachersSelected ? 'Remove all teachers' : 'Add all teachers'}
                     </button>
                   )}
-                </div>
-
-                <div className="relative">
-                  <svg
-                    className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                  <Input
-                    id="group-chat-member-search"
-                    type="search"
-                    placeholder="Search by name, email, phone..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9"
-                    disabled={createChat.isPending}
-                  />
                 </div>
               </div>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pt-3 min-[1367px]:px-6">
+            <div className="shrink-0 bg-[#f8f9fb] px-4 pt-2 pb-3 min-[1367px]:px-6">
+              <div className="relative">
+                <svg
+                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                <Input
+                  id="group-chat-member-search"
+                  type="search"
+                  placeholder="Search by name, email, phone..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="bg-white pl-9"
+                  disabled={createChat.isPending}
+                />
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-[#f8f9fb] [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 min-[1367px]:px-6">
               {isLoading ? (
                 <div className="space-y-3 py-2">
                   {[1, 2, 3, 4].map((i) => (
@@ -351,7 +367,7 @@ export function CreateGroupChatModal({
               )}
             </div>
 
-            <div className="shrink-0 space-y-3 bg-[#f8f9fb] px-4 py-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
+            <div className="shrink-0 space-y-3 bg-[#f8f9fb] px-4 pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:py-6 min-[1367px]:pb-6">
               {createChat.isError && (
                 <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-600">
