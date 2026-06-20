@@ -90,6 +90,7 @@ export function AdminPortalBottomNav() {
   const portalHomeHref = `/${locale}${getAdminPortalBasePath(role)}`;
   const isSubpage = isAdminPortalSubpage(pathWithoutLocale, role);
   const isOnChatRoute = pathname.includes('/chat');
+  const isOnNotificationsRoute = pathname.includes('/notifications');
 
   const { data: chats = [] } = useChats();
   const totalUnread = useMemo(
@@ -184,33 +185,70 @@ export function AdminPortalBottomNav() {
             </svg>
           </BottomNavItem>
 
-          <BottomNavItem
-            ariaLabel={tCommon('globalSearch')}
-            label={tCommon('search')}
-            onClick={() => setSearchOpen((open) => !open)}
-          >
-            <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </BottomNavItem>
+          {!searchOpen ? (
+            <BottomNavItem
+              ariaLabel={tCommon('globalSearch')}
+              label={tCommon('search')}
+              onClick={() => setSearchOpen(true)}
+            >
+              <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </BottomNavItem>
+          ) : (
+            <BottomNavItem
+              ariaLabel={tCommon('globalSearch')}
+              label={tCommon('search')}
+              labelClassName="text-white/90"
+              onClick={() => setSearchOpen(false)}
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
+                <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </span>
+            </BottomNavItem>
+          )}
 
-          <BottomNavItem
-            ariaLabel={tSettings('notifications')}
-            label={tSettings('notifications')}
-            onClick={handleNotificationsClick}
-          >
-            <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
-          </BottomNavItem>
+          {!isOnNotificationsRoute ? (
+            <BottomNavItem
+              ariaLabel={tSettings('notifications')}
+              label={tSettings('notifications')}
+              onClick={handleNotificationsClick}
+            >
+              <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+            </BottomNavItem>
+          ) : (
+            <BottomNavItem
+              ariaLabel={tSettings('notifications')}
+              label={tSettings('notifications')}
+              labelClassName="text-white/90"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
+                <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+              </span>
+            </BottomNavItem>
+          )}
 
           {!isOnChatRoute ? (
             <BottomNavItem
