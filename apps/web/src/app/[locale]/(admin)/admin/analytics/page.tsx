@@ -335,13 +335,15 @@ export default function AdminAnalyticsPage() {
     }
   }, [riskPage, riskTotalPages]);
 
-  useEffect(() => {
-    if (activeTab !== 'risk') return;
-    riskPageStartRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
+  const goToRiskPage = (nextPage: number) => {
+    setRiskPage(nextPage);
+    requestAnimationFrame(() => {
+      riskPageStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
     });
-  }, [activeTab, safeRiskPage]);
+  };
 
   return (
     <DashboardLayout title={t('title')} subtitle={t('adminSubtitle')}>
@@ -613,8 +615,8 @@ export default function AdminAnalyticsPage() {
               start={riskRangeStart}
               end={riskRangeEnd}
               total={students.length}
-              onPrevious={() => setRiskPage((prev) => Math.max(1, prev - 1))}
-              onNext={() => setRiskPage((prev) => Math.min(riskTotalPages, prev + 1))}
+              onPrevious={() => goToRiskPage(Math.max(1, safeRiskPage - 1))}
+              onNext={() => goToRiskPage(Math.min(riskTotalPages, safeRiskPage + 1))}
             />
           )}
         </div>

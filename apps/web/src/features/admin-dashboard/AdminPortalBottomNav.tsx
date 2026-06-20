@@ -257,7 +257,7 @@ export function AdminPortalBottomNav() {
               onClick={handleChatClick}
               badge={totalUnread}
             >
-              <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <svg className={cn(BOTTOM_NAV_ICON_CLASS, 'translate-x-[0.5px]')} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -272,7 +272,7 @@ export function AdminPortalBottomNav() {
               labelClassName="text-white/90"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
-                <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <svg className={cn(BOTTOM_NAV_ICON_CLASS, 'translate-x-[0.5px]')} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
