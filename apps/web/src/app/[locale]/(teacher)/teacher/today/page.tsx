@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
   useTodayLessons,
@@ -171,28 +172,27 @@ function LessonCard({
 }
 
 export default function TeacherDailyPlanPage() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  
-  // Initialize view mode from URL query params, with fallback to 'today'
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const viewFromUrl = searchParams.get('view');
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
+
+  const readViewModeFromUrl = useCallback((): ViewMode => {
+    const viewFromUrl = readUrlSearchParam('view', searchParams, urlRevision);
     if (viewFromUrl === 'week' || viewFromUrl === 'today') {
       return viewFromUrl;
     }
-    return 'today'; // Default to today view
-  });
+    return 'today';
+  }, [searchParams, urlRevision]);
 
-  // Sync view mode from URL (for browser back/forward navigation)
+  const [pendingViewMode, setPendingViewMode] = useState<ViewMode | null>(null);
+  const viewMode = pendingViewMode ?? readViewModeFromUrl();
+
   useEffect(() => {
-    const viewFromUrl = searchParams.get('view');
-    if (viewFromUrl === 'week' || viewFromUrl === 'today') {
-      setViewMode(viewFromUrl);
-    } else if (!viewFromUrl) {
-      setViewMode('today');
+    if (pendingViewMode === null) {
+      return;
     }
-  }, [searchParams]);
+    if (readViewModeFromUrl() === pendingViewMode) {
+      setPendingViewMode(null);
+    }
+  }, [pendingViewMode, readViewModeFromUrl]);
 
   // Get current date for display and calculations
   // We use a fresh date on each render for display, but memoize week calculations
@@ -215,18 +215,8 @@ export default function TeacherDailyPlanPage() {
 
   // Update URL when view mode changes
   const updateViewModeInUrl = (mode: ViewMode) => {
-    // Update state immediately for responsive UI
-    setViewMode(mode);
-    
-    // Update URL to persist the selection
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode === 'today') {
-      // Remove 'view' param for default today view to keep URL clean
-      params.delete('view');
-    } else {
-      params.set('view', mode);
-    }
-    router.push(`${pathname}?${params.toString()}`);
+    setPendingViewMode(mode);
+    replaceParams({ view: mode === 'today' ? null : mode });
   };
 
   // Fetch data

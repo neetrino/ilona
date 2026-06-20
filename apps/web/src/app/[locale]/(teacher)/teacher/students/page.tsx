@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyAssignedStudents, studentKeys, type Student } from '@/features/students';
@@ -29,9 +31,7 @@ function getLevelDisplay(level?: string): string {
 
 export default function TeacherStudentsPage() {
   const params = useParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const locale = params.locale as string;
   const [searchQuery, setSearchQuery] = useState('');
   const [transferLeadId, setTransferLeadId] = useState<string | null>(null);
@@ -45,33 +45,36 @@ export default function TeacherStudentsPage() {
 
   const { data: groups, isLoading: isLoadingGroups } = useMyGroups();
   const groupsList = useMemo(() => groups || [], [groups]);
+  const [pendingGroupId, setPendingGroupId] = useState<string | null>(null);
 
-  const urlGroupId = searchParams.get('groupId');
+  const urlGroupId = readUrlSearchParam('groupId', searchParams, urlRevision);
 
   const validSelectedGroupId = useMemo(() => {
-    if (!urlGroupId || isLoadingGroups) return null;
-    const exists = groupsList.some((g) => g.id === urlGroupId);
-    return exists ? urlGroupId : null;
-  }, [urlGroupId, groupsList, isLoadingGroups]);
+    const effectiveGroupId = pendingGroupId ?? urlGroupId;
+    if (!effectiveGroupId || isLoadingGroups) return null;
+    const exists = groupsList.some((g) => g.id === effectiveGroupId);
+    return exists ? effectiveGroupId : null;
+  }, [pendingGroupId, urlGroupId, groupsList, isLoadingGroups]);
+
+  useEffect(() => {
+    if (pendingGroupId !== null && urlGroupId === pendingGroupId) {
+      setPendingGroupId(null);
+    }
+  }, [pendingGroupId, urlGroupId, urlRevision]);
 
   useEffect(() => {
     if (isLoadingGroups) return;
     if (groupsList.length === 0) {
       if (urlGroupId) {
-        const p = new URLSearchParams(searchParams.toString());
-        p.delete('groupId');
-        const newUrl = p.toString() ? `${pathname}?${p.toString()}` : pathname;
-        router.replace(newUrl);
+        replaceParams({ groupId: null });
       }
       return;
     }
-    const needsUpdate = (urlGroupId && !validSelectedGroupId) || !urlGroupId;
-    if (needsUpdate) {
-      const p = new URLSearchParams(searchParams.toString());
-      p.set('groupId', groupsList[0].id);
-      router.replace(`${pathname}?${p.toString()}`);
+    const needsUpdate = (urlGroupId && !groupsList.some((g) => g.id === urlGroupId)) || !urlGroupId;
+    if (needsUpdate && pendingGroupId === null) {
+      replaceParams({ groupId: groupsList[0].id });
     }
-  }, [isLoadingGroups, groupsList, urlGroupId, validSelectedGroupId, pathname, router, searchParams]);
+  }, [groupsList, isLoadingGroups, pendingGroupId, replaceParams, urlGroupId, urlRevision]);
 
   const { data: studentsData, isLoading: isLoadingStudents } = useMyAssignedStudents({
     take: 100,
@@ -112,9 +115,8 @@ export default function TeacherStudentsPage() {
   const selectedGroupRole = selectedGroup ? getGroupRole(selectedGroup) : 'MAIN';
 
   const handleGroupSelect = (groupId: string) => {
-    const p = new URLSearchParams(searchParams.toString());
-    p.set('groupId', groupId);
-    router.push(`${pathname}?${p.toString()}`);
+    setPendingGroupId(groupId);
+    replaceParams({ groupId });
   };
 
   const isLoading = !isAuthReady || isLoadingGroups || isLoadingStudents;

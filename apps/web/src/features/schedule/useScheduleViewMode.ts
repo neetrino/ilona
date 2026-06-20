@@ -1,14 +1,11 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
-  useRef,
   useState,
 } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { ScheduleViewMode } from '@/features/schedule/schedule-dates';
-
-const STORAGE_KEY = 'ilona.schedule.view';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 
 function parseView(value: string | null | undefined): ScheduleViewMode | null {
   if (value === 'week' || value === 'month') return value;
@@ -19,84 +16,30 @@ export function useScheduleViewMode(): {
   viewMode: ScheduleViewMode;
   setViewMode: (mode: ScheduleViewMode) => void;
 } {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
 
-  const [viewMode, setViewModeState] = useState<ScheduleViewMode>(() => {
-    return parseView(searchParams.get('view')) ?? 'week';
-  });
+  const readViewFromUrl = useCallback((): ScheduleViewMode => {
+    return parseView(readUrlSearchParam('view', searchParams, urlRevision)) ?? 'week';
+  }, [searchParams, urlRevision]);
 
-  const storageHydrated = useRef(false);
-  const skipUrlSync = useRef(true);
-
-  useLayoutEffect(() => {
-    if (storageHydrated.current) {
-      return;
-    }
-
-    const fromUrl = parseView(searchParams.get('view'));
-    if (fromUrl !== null) {
-      try {
-        localStorage.setItem(STORAGE_KEY, fromUrl);
-      } catch {
-        // ignore
-      }
-    } else {
-      const fromStorage = parseView(
-        typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null,
-      );
-      if (fromStorage === 'month') {
-        setViewModeState('month');
-        const p = new URLSearchParams(searchParams);
-        p.set('view', 'month');
-        const q = p.toString();
-        router.replace(q ? `${pathname}?${q}` : pathname);
-      }
-    }
-    storageHydrated.current = true;
-  }, [pathname, router, searchParams]);
+  const [pendingViewMode, setPendingViewMode] = useState<ScheduleViewMode | null>(null);
+  const viewMode = pendingViewMode ?? readViewFromUrl();
 
   useEffect(() => {
-    if (skipUrlSync.current) {
-      skipUrlSync.current = false;
+    if (pendingViewMode === null) {
       return;
     }
-    const v = parseView(searchParams.get('view'));
-    if (v === null) {
-      setViewModeState((c) => {
-        if (c === 'week') return c;
-        return 'week';
-      });
-      try {
-        localStorage.setItem(STORAGE_KEY, 'week');
-      } catch {
-        // ignore
-      }
-    } else {
-      setViewModeState((c) => (c === v ? c : v));
-      try {
-        localStorage.setItem(STORAGE_KEY, v);
-      } catch {
-        // ignore
-      }
+    if (readViewFromUrl() === pendingViewMode) {
+      setPendingViewMode(null);
     }
-  }, [searchParams]);
+  }, [pendingViewMode, readViewFromUrl]);
 
   const setViewMode = useCallback(
     (mode: ScheduleViewMode) => {
-      setViewModeState(mode);
-      try {
-        localStorage.setItem(STORAGE_KEY, mode);
-      } catch {
-        // ignore
-      }
-      const p = new URLSearchParams(searchParams);
-      p.set('view', mode);
-      const q = p.toString();
-      router.replace(q ? `${pathname}?${q}` : pathname);
+      setPendingViewMode(mode);
+      replaceParams({ view: mode }, { mode: 'replace' });
     },
-    [pathname, router, searchParams],
+    [replaceParams],
   );
 
   return { viewMode, setViewMode };

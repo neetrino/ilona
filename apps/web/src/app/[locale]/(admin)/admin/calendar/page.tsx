@@ -1,8 +1,7 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
-import { useState, useMemo, useEffect, useCallback, startTransition } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useState, useMemo, useEffect, useCallback, startTransition, useRef } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { StatCard, Button } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
@@ -23,8 +22,11 @@ import { useTeachers } from '@/features/teachers';
 import { CalendarFilters } from './components/CalendarFilters';
 import { SubstituteLessonModal } from './components/SubstituteLessonModal';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from '@/config/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 
 // Helper to get week dates
 function getWeekDates(date: Date): Date[] {
@@ -98,53 +100,48 @@ const _statusConfig: Record<LessonStatus, { label: string; variant: 'success' | 
 const CALENDAR_MODAL_QUERY_KEY = 'modal';
 const ADD_LESSON_MODAL_QUERY_VALUE = 'add-lesson';
 
-function isAddLessonModalInSearchParams(params: URLSearchParams): boolean {
-  return params.get(CALENDAR_MODAL_QUERY_KEY) === ADD_LESSON_MODAL_QUERY_VALUE;
+function isAddLessonModalOpen(searchParams: URLSearchParams): boolean {
+  return readUrlSearchParam(CALENDAR_MODAL_QUERY_KEY, searchParams) === ADD_LESSON_MODAL_QUERY_VALUE;
 }
 
 export default function CalendarPage() {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const t = useTranslations('calendar');
   const tLessons = useTranslations('lessons');
   const locale = useLocale();
   const { user } = useAuthStore();
   const portalBasePath = getAdminPortalBasePath(user?.role);
-  
-  // Initialize view mode from URL query params, with fallback to 'list'
-  const [viewMode, setViewMode] = useState<'week' | 'month' | 'list'>(() => {
-    const viewFromUrl = searchParams.get('view');
+
+  const readViewModeFromUrl = useCallback((): 'week' | 'month' | 'list' => {
+    const viewFromUrl = readUrlSearchParam('view', searchParams, urlRevision);
     if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
       return viewFromUrl;
     }
-    return 'list'; // Default to list view
-  });
-  
-  // Initialize sort state from URL query params
-  const [sortBy, setSortBy] = useState<string | undefined>(() => {
-    return searchParams.get('sortBy') || undefined;
-  });
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(() => {
-    const order = searchParams.get('sortOrder');
-    if (order === 'asc' || order === 'desc') {
-      return order;
-    }
-    return undefined;
-  });
+    return 'list';
+  }, [searchParams, urlRevision]);
 
-  // Initialize filter state from URL query params
-  const [searchQuery, setSearchQuery] = useState<string>(() => {
-    return searchParams.get('q') || '';
-  });
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>(() => {
-    return searchParams.get('teacherId') || '';
-  });
+  const [pendingViewMode, setPendingViewMode] = useState<'week' | 'month' | 'list' | null>(null);
+  const viewMode = pendingViewMode ?? readViewModeFromUrl();
+
+  useEffect(() => {
+    if (pendingViewMode === null) {
+      return;
+    }
+    if (readViewModeFromUrl() === pendingViewMode) {
+      setPendingViewMode(null);
+    }
+  }, [pendingViewMode, readViewModeFromUrl]);
+  
+  // Initialize sort/filter state from URL (synced via effect for back/forward)
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
   
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [isAddLessonOpen, setIsAddLessonOpen] = useState(() =>
-    isAddLessonModalInSearchParams(searchParams)
-  );
+  const [isAddLessonOpen, setIsAddLessonOpen] = useState(() => isAddLessonModalOpen(searchParams));
+  const isAddLessonClosingRef = useRef(false);
   const [substituteLessonId, setSubstituteLessonId] = useState<string | null>(null);
   const [substituteLessonModalOpen, setSubstituteLessonModalOpen] = useState(false);
 
@@ -177,33 +174,14 @@ export default function CalendarPage() {
 
   // Update URL when view mode changes
   const updateViewModeInUrl = (mode: 'week' | 'month' | 'list') => {
-    // Update state immediately for responsive UI
-    setViewMode(mode);
-    
-    // Update URL to persist the selection
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode === 'list') {
-      // Remove 'view' param for default list view to keep URL clean
-      params.delete('view');
-    } else {
-      params.set('view', mode);
-    }
-    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.replace(newUrl);
+    setPendingViewMode(mode);
+    replaceParams({ view: mode === 'list' ? null : mode });
   };
   
-  // Sync view mode from URL (for browser back/forward navigation)
+  // Sync filter/sort/modal state from URL (browser back/forward and client replace)
   useEffect(() => {
-    const viewFromUrl = searchParams.get('view');
-    if (viewFromUrl === 'week' || viewFromUrl === 'month' || viewFromUrl === 'list') {
-      setViewMode(viewFromUrl);
-    } else if (!viewFromUrl) {
-      setViewMode('list');
-    }
-    
-    // Sync sort state from URL
-    const sortByFromUrl = searchParams.get('sortBy');
-    const sortOrderFromUrl = searchParams.get('sortOrder');
+    const sortByFromUrl = readUrlSearchParam('sortBy', searchParams, urlRevision);
+    const sortOrderFromUrl = readUrlSearchParam('sortOrder', searchParams, urlRevision);
     setSortBy(sortByFromUrl || undefined);
     if (sortOrderFromUrl === 'asc' || sortOrderFromUrl === 'desc') {
       setSortOrder(sortOrderFromUrl);
@@ -211,55 +189,52 @@ export default function CalendarPage() {
       setSortOrder(undefined);
     }
 
-    // Sync filter state from URL
-    setSearchQuery(searchParams.get('q') || '');
-    setSelectedTeacherId(searchParams.get('teacherId') || '');
+    setSearchQuery(readUrlSearchParam('q', searchParams, urlRevision) || '');
+    setSelectedTeacherId(readUrlSearchParam('teacherId', searchParams, urlRevision) || '');
 
-    setIsAddLessonOpen(isAddLessonModalInSearchParams(searchParams));
-  }, [searchParams]);
+    if (!isAddLessonClosingRef.current) {
+      setIsAddLessonOpen(isAddLessonModalOpen(searchParams));
+    }
+  }, [searchParams, urlRevision]);
 
   const updateAddLessonModalInUrl = useCallback(
     (open: boolean) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (open) {
-        params.set(CALENDAR_MODAL_QUERY_KEY, ADD_LESSON_MODAL_QUERY_VALUE);
-      } else {
-        params.delete(CALENDAR_MODAL_QUERY_KEY);
-      }
-      const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-      router.replace(newUrl, { scroll: false });
+      replaceParams({
+        [CALENDAR_MODAL_QUERY_KEY]: open ? ADD_LESSON_MODAL_QUERY_VALUE : null,
+      });
     },
-    [pathname, router, searchParams]
+    [replaceParams],
   );
 
   const handleAddLessonOpenChange = useCallback(
     (open: boolean) => {
-      setIsAddLessonOpen(open);
-      updateAddLessonModalInUrl(open);
+      if (open) {
+        isAddLessonClosingRef.current = false;
+        setIsAddLessonOpen(true);
+        updateAddLessonModalInUrl(true);
+      } else {
+        isAddLessonClosingRef.current = true;
+        setIsAddLessonOpen(false);
+        updateAddLessonModalInUrl(false);
+        setTimeout(() => {
+          isAddLessonClosingRef.current = false;
+        }, 100);
+      }
     },
-    [updateAddLessonModalInUrl]
+    [updateAddLessonModalInUrl],
   );
   
   // Handle sort toggle
   const handleSort = (key: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    
     if (sortBy === key && sortOrder) {
-      // Toggle order if already sorting by this column
       const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
       setSortOrder(newOrder);
-      params.set('sortBy', key);
-      params.set('sortOrder', newOrder);
+      replaceParams({ sortBy: key, sortOrder: newOrder });
     } else {
-      // Start sorting by this column (default to ascending)
       setSortBy(key);
       setSortOrder('asc');
-      params.set('sortBy', key);
-      params.set('sortOrder', 'asc');
+      replaceParams({ sortBy: key, sortOrder: 'asc' });
     }
-    
-    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.replace(newUrl);
   };
   
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
@@ -431,27 +406,13 @@ export default function CalendarPage() {
   // Handle filter changes and update URL - memoized to prevent infinite loops
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set('q', value);
-    } else {
-      params.delete('q');
-    }
-    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.replace(newUrl);
-  }, [searchParams, pathname, router]);
+    replaceParams({ q: value || null });
+  }, [replaceParams]);
 
   const handleTeacherChange = useCallback((teacherId: string) => {
     setSelectedTeacherId(teacherId);
-    const params = new URLSearchParams(searchParams.toString());
-    if (teacherId) {
-      params.set('teacherId', teacherId);
-    } else {
-      params.delete('teacherId');
-    }
-    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.replace(newUrl);
-  }, [searchParams, pathname, router]);
+    replaceParams({ teacherId: teacherId || null });
+  }, [replaceParams]);
 
   return (
     <DashboardLayout 

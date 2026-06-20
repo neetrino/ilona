@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -35,6 +34,8 @@ import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 
 const DEFAULT_FILTERS: CrmLeadFilters = {
   skip: 0,
@@ -45,6 +46,10 @@ const DEFAULT_FILTERS: CrmLeadFilters = {
 
 const ARCHIVE_PARAM = 'archive';
 const EDIT_LEAD_PARAM = 'editLead';
+const LEAD_ID_PARAM = 'leadId';
+const CREATE_LEAD_PARAM = 'createLead';
+const VOICE_LEAD_PARAM = 'voiceLead';
+const PAID_REG_LEAD_ID_PARAM = 'paidRegLeadId';
 const VIEW_PARAM = 'view';
 const CRM_LIST_PAGE_SIZE = 10;
 
@@ -105,8 +110,7 @@ function sortLeadsByFilters(leads: CrmLead[], filters: CrmLeadFilters): CrmLead[
 }
 
 export default function AdminCrmPage() {
-  const router = useRouter();
-  const pathname = usePathname();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const t = useTranslations('nav');
   const tCrm = useTranslations('crm');
   const user = useAuthStore((state) => state.user);
@@ -118,71 +122,118 @@ export default function AdminCrmPage() {
   const managerCenterId = userRole === 'MANAGER' ? user?.managerCenterId ?? undefined : undefined;
   const isAuthReady = isHydrated && isAuthenticated && hasAccessToken && !!user?.id;
   const authScopeKey = `${userRole ?? 'UNKNOWN'}:${user?.id ?? 'anonymous'}:${managerCenterId ?? 'all-centers'}`;
-  const searchParams = useSearchParams();
   const isLg = useIsLgViewport();
-  const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
-  const [listPage, setListPage] = useState(0);
-  const [viewMode, setViewMode] = useState<'board' | 'list'>(() => {
-    const modeFromUrl = searchParams.get(VIEW_PARAM);
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      return modeFromUrl;
+
+  const readCrmViewMode = useCallback((): 'board' | 'list' => {
+    const mode = readUrlSearchParam(VIEW_PARAM, searchParams, urlRevision);
+    if (mode === 'list' || mode === 'board') {
+      return mode;
     }
     return 'board';
-  });
+  }, [searchParams, urlRevision]);
+
+  const [filters, setFilters] = useState<CrmLeadFilters>(DEFAULT_FILTERS);
+  const [listPage, setListPage] = useState(0);
+  const [pendingViewMode, setPendingViewMode] = useState<'board' | 'list' | null>(null);
+  const viewMode = pendingViewMode ?? readCrmViewMode();
+
+  useEffect(() => {
+    if (pendingViewMode === null) {
+      return;
+    }
+    if (readCrmViewMode() === pendingViewMode) {
+      setPendingViewMode(null);
+    }
+  }, [pendingViewMode, readCrmViewMode]);
+
   const [showArchiveColumn, setShowArchiveColumn] = useState(
-    () => searchParams.get(ARCHIVE_PARAM) === '1'
+    () => readUrlSearchParam(ARCHIVE_PARAM, searchParams) === '1',
   );
-  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
-  const [createLeadModalOpen, setCreateLeadModalOpen] = useState(false);
-  const [editLeadId, setEditLeadId] = useState<string | null>(() => searchParams.get(EDIT_LEAD_PARAM));
-  const [paidRegLeadId, setPaidRegLeadId] = useState<string | null>(null);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(
+    () => readUrlSearchParam(LEAD_ID_PARAM, searchParams),
+  );
+  const isLeadDrawerClosingRef = useRef(false);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(
+    () => readUrlSearchParam(VOICE_LEAD_PARAM, searchParams) === '1',
+  );
+  const isVoiceModalClosingRef = useRef(false);
+  const [createLeadModalOpen, setCreateLeadModalOpen] = useState(
+    () => readUrlSearchParam(CREATE_LEAD_PARAM, searchParams) === '1',
+  );
+  const isCreateLeadClosingRef = useRef(false);
+  const [editLeadId, setEditLeadId] = useState<string | null>(
+    () => readUrlSearchParam(EDIT_LEAD_PARAM, searchParams),
+  );
+  const isEditLeadClosingRef = useRef(false);
+  const [paidRegLeadId, setPaidRegLeadId] = useState<string | null>(
+    () => readUrlSearchParam(PAID_REG_LEAD_ID_PARAM, searchParams),
+  );
+  const isPaidRegClosingRef = useRef(false);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [leadIdPendingDelete, setLeadIdPendingDelete] = useState<string | null>(null);
   const [deleteLeadError, setDeleteLeadError] = useState<string | null>(null);
 
   // Restore Archive column visibility from URL after refresh
   useEffect(() => {
-    setShowArchiveColumn(searchParams.get(ARCHIVE_PARAM) === '1');
-  }, [searchParams]);
+    setShowArchiveColumn(readUrlSearchParam(ARCHIVE_PARAM, searchParams, urlRevision) === '1');
+  }, [searchParams, urlRevision]);
+
+  // Restore lead drawer from URL
+  useEffect(() => {
+    if (isLeadDrawerClosingRef.current) {
+      return;
+    }
+    setSelectedLeadId(readUrlSearchParam(LEAD_ID_PARAM, searchParams, urlRevision));
+  }, [searchParams, urlRevision]);
 
   // Restore edit lead modal from URL after refresh
   useEffect(() => {
-    setEditLeadId(searchParams.get(EDIT_LEAD_PARAM));
-  }, [searchParams]);
-
-  const updateViewModeInUrl = useCallback((mode: 'board' | 'list') => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode === 'list') {
-      params.set(VIEW_PARAM, 'list');
-    } else {
-      params.delete(VIEW_PARAM);
-    }
-    const url = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.replace(url, { scroll: false });
-  }, [pathname, router, searchParams]);
-
-  useEffect(() => {
-    if (isLg === false && viewMode !== 'board') {
-      setViewMode('board');
-      updateViewModeInUrl('board');
-    }
-  }, [isLg, updateViewModeInUrl, viewMode]);
-
-  // Restore view mode from URL after refresh/navigation
-  useEffect(() => {
-    const modeFromUrl = searchParams.get(VIEW_PARAM);
-    if (isLg === false) {
-      setViewMode('board');
+    if (isEditLeadClosingRef.current) {
       return;
     }
+    setEditLeadId(readUrlSearchParam(EDIT_LEAD_PARAM, searchParams, urlRevision));
+  }, [searchParams, urlRevision]);
 
+  useEffect(() => {
+    if (isVoiceModalClosingRef.current) {
+      return;
+    }
+    setVoiceModalOpen(readUrlSearchParam(VOICE_LEAD_PARAM, searchParams, urlRevision) === '1');
+  }, [searchParams, urlRevision]);
+
+  useEffect(() => {
+    if (isCreateLeadClosingRef.current) {
+      return;
+    }
+    setCreateLeadModalOpen(readUrlSearchParam(CREATE_LEAD_PARAM, searchParams, urlRevision) === '1');
+  }, [searchParams, urlRevision]);
+
+  useEffect(() => {
+    if (isPaidRegClosingRef.current) {
+      return;
+    }
+    setPaidRegLeadId(readUrlSearchParam(PAID_REG_LEAD_ID_PARAM, searchParams, urlRevision));
+  }, [searchParams, urlRevision]);
+
+  const updateViewModeInUrl = useCallback(
+    (mode: 'board' | 'list') => {
+      setPendingViewMode(mode);
+      replaceParams({ view: mode });
+    },
+    [replaceParams],
+  );
+
+  useEffect(() => {
+    if (isLg !== false) {
+      return;
+    }
+    const modeFromUrl = readUrlSearchParam(VIEW_PARAM, searchParams, urlRevision);
     if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      setViewMode(modeFromUrl);
       return;
     }
-    setViewMode('board');
-  }, [isLg, searchParams]);
+    setPendingViewMode('board');
+    replaceParams({ view: 'board' });
+  }, [isLg, searchParams, urlRevision, replaceParams]);
 
   const queryClient = useQueryClient();
   const scopedFilters = useMemo<CrmLeadFilters>(() => filters, [filters]);
@@ -306,14 +357,17 @@ export default function AdminCrmPage() {
     onSuccess: (_void, leadId) => {
       setLeadIdPendingDelete(null);
       setSelectedLeadId((id) => (id === leadId ? null : id));
+      replaceParams({ [LEAD_ID_PARAM]: null });
       setEditLeadId((id) => {
         if (id !== leadId) return id;
-        const url = new URL(window.location.href);
-        url.searchParams.delete(EDIT_LEAD_PARAM);
-        window.history.replaceState(null, '', url.pathname + (url.search || ''));
+        replaceParams({ [EDIT_LEAD_PARAM]: null });
         return null;
       });
-      setPaidRegLeadId((id) => (id === leadId ? null : id));
+      setPaidRegLeadId((id) => {
+        if (id !== leadId) return id;
+        replaceParams({ [PAID_REG_LEAD_ID_PARAM]: null });
+        return null;
+      });
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
@@ -384,16 +438,52 @@ export default function AdminCrmPage() {
   const openEditLead = (id: string) => {
     setSelectedLeadId(null);
     setEditLeadId(id);
-    const url = new URL(window.location.href);
-    url.searchParams.set(EDIT_LEAD_PARAM, id);
-    window.history.replaceState(null, '', url.pathname + url.search);
+    replaceParams({ [LEAD_ID_PARAM]: null, [EDIT_LEAD_PARAM]: id });
   };
 
   const closeEditLead = () => {
+    isEditLeadClosingRef.current = true;
     setEditLeadId(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete(EDIT_LEAD_PARAM);
-    window.history.replaceState(null, '', url.pathname + (url.search || ''));
+    replaceParams({ [EDIT_LEAD_PARAM]: null });
+    setTimeout(() => {
+      isEditLeadClosingRef.current = false;
+    }, 100);
+  };
+
+  const closeLeadDrawer = () => {
+    isLeadDrawerClosingRef.current = true;
+    setSelectedLeadId(null);
+    replaceParams({ [LEAD_ID_PARAM]: null });
+    setTimeout(() => {
+      isLeadDrawerClosingRef.current = false;
+    }, 100);
+  };
+
+  const closeVoiceModal = () => {
+    isVoiceModalClosingRef.current = true;
+    setVoiceModalOpen(false);
+    replaceParams({ [VOICE_LEAD_PARAM]: null });
+    setTimeout(() => {
+      isVoiceModalClosingRef.current = false;
+    }, 100);
+  };
+
+  const closeCreateLeadModal = () => {
+    isCreateLeadClosingRef.current = true;
+    setCreateLeadModalOpen(false);
+    replaceParams({ [CREATE_LEAD_PARAM]: null });
+    setTimeout(() => {
+      isCreateLeadClosingRef.current = false;
+    }, 100);
+  };
+
+  const closePaidRegModal = () => {
+    isPaidRegClosingRef.current = true;
+    setPaidRegLeadId(null);
+    replaceParams({ [PAID_REG_LEAD_ID_PARAM]: null });
+    setTimeout(() => {
+      isPaidRegClosingRef.current = false;
+    }, 100);
   };
 
   const handleCardClick = (lead: CrmLead) => {
@@ -402,11 +492,13 @@ export default function AdminCrmPage() {
       openEditLead(lead.id);
     } else {
       setSelectedLeadId(lead.id);
+      replaceParams({ [LEAD_ID_PARAM]: lead.id, [EDIT_LEAD_PARAM]: null });
     }
   };
   const handleCardStatusChange = (leadId: string, status: CrmLeadStatus) => {
     if (status === 'PAID') {
       setPaidRegLeadId(leadId);
+      replaceParams({ [PAID_REG_LEAD_ID_PARAM]: leadId });
       return;
     }
     statusMutation.mutate({ leadId, status });
@@ -418,8 +510,10 @@ export default function AdminCrmPage() {
   const handleNewLeadFromBoard = () => {
     if (isAdmin) {
       setVoiceModalOpen(true);
+      replaceParams({ [VOICE_LEAD_PARAM]: '1' });
     } else {
       setCreateLeadModalOpen(true);
+      replaceParams({ [CREATE_LEAD_PARAM]: '1' });
     }
   };
 
@@ -470,7 +564,6 @@ export default function AdminCrmPage() {
               <ListBoardViewToggle
                 value={viewMode}
                 onChange={(mode) => {
-                  setViewMode(mode);
                   updateViewModeInUrl(mode);
                 }}
                 listLabel={tCrm('viewList')}
@@ -483,10 +576,7 @@ export default function AdminCrmPage() {
                 onClick={() => {
                   const next = !showArchiveColumn;
                   setShowArchiveColumn(next);
-                  const url = new URL(window.location.href);
-                  if (next) url.searchParams.set(ARCHIVE_PARAM, '1');
-                  else url.searchParams.delete(ARCHIVE_PARAM);
-                  window.history.replaceState(null, '', url.pathname + url.search || '');
+                  replaceParams({ [ARCHIVE_PARAM]: next ? '1' : null });
                 }}
                 className={cn(
                   'rounded-lg p-1.5 text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] hover:text-[#1010a3]',
@@ -581,7 +671,7 @@ export default function AdminCrmPage() {
 
         <LeadDrawer
           leadId={selectedLeadId}
-          onClose={() => setSelectedLeadId(null)}
+          onClose={closeLeadDrawer}
           onUpdated={() => refetch()}
         />
         <EditLeadModal
@@ -600,21 +690,21 @@ export default function AdminCrmPage() {
         {isAdmin ? (
           <VoiceLeadModal
             open={voiceModalOpen}
-            onClose={() => setVoiceModalOpen(false)}
+            onClose={closeVoiceModal}
             onCreated={(createdLead) => {
               upsertCreatedLeadIntoCaches(createdLead);
               void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
-              setVoiceModalOpen(false);
+              closeVoiceModal();
             }}
           />
         ) : null}
         <CreateLeadModal
           open={createLeadModalOpen}
-          onClose={() => setCreateLeadModalOpen(false)}
+          onClose={closeCreateLeadModal}
           onCreated={(createdLead) => {
             upsertCreatedLeadIntoCaches(createdLead);
             void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
-            setCreateLeadModalOpen(false);
+            closeCreateLeadModal();
           }}
           defaultCenterId={managerCenterId}
           defaultCenterName={managerCenterName}
@@ -623,9 +713,9 @@ export default function AdminCrmPage() {
         <PaidRegistrationModal
           open={paidRegLeadId != null}
           leadId={paidRegLeadId}
-          onClose={() => setPaidRegLeadId(null)}
+          onClose={closePaidRegModal}
           onSuccess={() => {
-            setPaidRegLeadId(null);
+            closePaidRegModal();
             void queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
           }}
         />

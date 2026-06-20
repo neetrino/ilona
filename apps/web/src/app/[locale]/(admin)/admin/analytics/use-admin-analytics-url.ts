@@ -1,12 +1,13 @@
 'use client';
 
-import { startTransition, useCallback, useMemo } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useMemo } from 'react';
 import {
   defaultCustomRangeSixMonths,
   toYmd,
   type TimeFilterMode,
 } from '@/shared/lib/analytics-time-range';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 
 export type AdminAnalyticsTab =
   | 'attendance'
@@ -49,121 +50,93 @@ function getDefaultPaymentsTimeMode(): TimeFilterMode {
 }
 
 export function useAdminAnalyticsUrl() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams, replaceAllParams } = useAppSearchUrl();
   const defRange = useMemo(() => defaultCustomRangeSixMonths(), []);
   const todayYmd = useMemo(() => toYmd(new Date()), []);
 
   const activeTab = useMemo(
-    () => parseTab(searchParams.get('tab')),
-    [searchParams],
+    () => parseTab(readUrlSearchParam('tab', searchParams, urlRevision)),
+    [searchParams, urlRevision],
   );
 
-  const timeMode = useMemo(
-    () => {
-      const modeFromUrl = searchParams.get('pm');
-      if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'date') {
-        return modeFromUrl;
-      }
-      return getDefaultPaymentsTimeMode();
-    },
-    [searchParams],
-  );
+  const timeMode = useMemo(() => {
+    const modeFromUrl = readUrlSearchParam('pm', searchParams, urlRevision);
+    if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'date') {
+      return modeFromUrl;
+    }
+    return getDefaultPaymentsTimeMode();
+  }, [searchParams, urlRevision]);
 
   const dayYmd = useMemo(
-    () => parseYmdParam(searchParams.get('pd'), todayYmd),
-    [searchParams, todayYmd],
+    () => parseYmdParam(readUrlSearchParam('pd', searchParams, urlRevision), todayYmd),
+    [searchParams, todayYmd, urlRevision],
   );
 
   const weekAnchorYmd = useMemo(
-    () => parseYmdParam(searchParams.get('pw'), todayYmd),
-    [searchParams, todayYmd],
+    () => parseYmdParam(readUrlSearchParam('pw', searchParams, urlRevision), todayYmd),
+    [searchParams, todayYmd, urlRevision],
   );
 
   const customFromYmd = useMemo(
-    () => parseYmdParam(searchParams.get('cfrom'), defRange.fromYmd),
-    [searchParams, defRange.fromYmd],
+    () => parseYmdParam(readUrlSearchParam('cfrom', searchParams, urlRevision), defRange.fromYmd),
+    [searchParams, defRange.fromYmd, urlRevision],
   );
 
   const customToYmd = useMemo(
-    () => parseYmdParam(searchParams.get('cto'), defRange.toYmd),
-    [searchParams, defRange.toYmd],
-  );
-
-  const updateParams = useCallback(
-    (mutate: (p: URLSearchParams) => void) => {
-      const p = new URLSearchParams(searchParams.toString());
-      mutate(p);
-      const nextQs = p.toString();
-      const currentQs = searchParams.toString();
-      if (nextQs === currentQs) {
-        return;
-      }
-
-      startTransition(() => {
-        router.replace(nextQs ? `${pathname}?${nextQs}` : pathname, { scroll: false });
-      });
-    },
-    [pathname, router, searchParams],
+    () => parseYmdParam(readUrlSearchParam('cto', searchParams, urlRevision), defRange.toYmd),
+    [searchParams, defRange.toYmd, urlRevision],
   );
 
   const setActiveTab = useCallback(
     (tab: AdminAnalyticsTab) => {
-      updateParams((p) => {
-        if (tab === 'attendance') {
-          p.delete('tab');
-        } else {
-          p.set('tab', tab);
-        }
-      });
+      replaceParams({ tab: tab === 'attendance' ? null : tab });
     },
-    [updateParams],
+    [replaceParams],
   );
 
   const setTimeMode = useCallback(
     (mode: TimeFilterMode) => {
-      updateParams((p) => {
-        p.set('pm', mode);
+      replaceAllParams((params) => {
+        params.set('pm', mode);
       });
     },
-    [updateParams],
+    [replaceAllParams],
   );
 
   const setDayYmd = useCallback(
     (v: string) => {
-      updateParams((p) => {
-        if (isValidYmd(v)) p.set('pd', v);
+      replaceAllParams((params) => {
+        if (isValidYmd(v)) params.set('pd', v);
       });
     },
-    [updateParams],
+    [replaceAllParams],
   );
 
   const setWeekAnchorYmd = useCallback(
     (v: string) => {
-      updateParams((p) => {
-        if (isValidYmd(v)) p.set('pw', v);
+      replaceAllParams((params) => {
+        if (isValidYmd(v)) params.set('pw', v);
       });
     },
-    [updateParams],
+    [replaceAllParams],
   );
 
   const setCustomFromYmd = useCallback(
     (v: string) => {
-      updateParams((p) => {
-        if (isValidYmd(v)) p.set('cfrom', v);
+      replaceAllParams((params) => {
+        if (isValidYmd(v)) params.set('cfrom', v);
       });
     },
-    [updateParams],
+    [replaceAllParams],
   );
 
   const setCustomToYmd = useCallback(
     (v: string) => {
-      updateParams((p) => {
-        if (isValidYmd(v)) p.set('cto', v);
+      replaceAllParams((params) => {
+        if (isValidYmd(v)) params.set('cto', v);
       });
     },
-    [updateParams],
+    [replaceAllParams],
   );
 
   const applyPaymentsTimeFilter = useCallback(
@@ -174,15 +147,15 @@ export function useAdminAnalyticsUrl() {
       customFromYmd: string;
       customToYmd: string;
     }) => {
-      updateParams((p) => {
-        p.set('pm', state.timeMode);
-        if (isValidYmd(state.dayYmd)) p.set('pd', state.dayYmd);
-        if (isValidYmd(state.weekAnchorYmd)) p.set('pw', state.weekAnchorYmd);
-        if (isValidYmd(state.customFromYmd)) p.set('cfrom', state.customFromYmd);
-        if (isValidYmd(state.customToYmd)) p.set('cto', state.customToYmd);
+      replaceAllParams((params) => {
+        params.set('pm', state.timeMode);
+        if (isValidYmd(state.dayYmd)) params.set('pd', state.dayYmd);
+        if (isValidYmd(state.weekAnchorYmd)) params.set('pw', state.weekAnchorYmd);
+        if (isValidYmd(state.customFromYmd)) params.set('cfrom', state.customFromYmd);
+        if (isValidYmd(state.customToYmd)) params.set('cto', state.customToYmd);
       });
     },
-    [updateParams],
+    [replaceAllParams],
   );
 
   return {

@@ -14,6 +14,7 @@ import {
 import { DeleteConfirmationDialog } from '@/features/groups';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCentersManagement } from '../hooks/useCentersManagement';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { useIsIPadPro } from '@/shared/hooks/useIsIPadPro';
@@ -24,7 +25,7 @@ interface CentersTabProps {
   centerSearchQuery: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   centerPage: number;
-  updateUrl: (updates: Record<string, string | null>) => void;
+  updateUrl: (updates: Record<string, string | null>, options?: { mode?: 'push' | 'replace' }) => void;
   searchParams: URLSearchParams;
 }
 
@@ -94,21 +95,17 @@ export function CentersTab({
 
   // Sync editCenterId from URL on mount and when URL changes
   useEffect(() => {
-    // Skip sync if we're in the process of closing
     if (isClosingRef.current) {
       return;
     }
 
-    const editCenterFromUrl = searchParams.get('editCenter');
-    if (editCenterFromUrl !== editCenterId) {
-      if (editCenterFromUrl) {
-        setEditCenterId(editCenterFromUrl);
-      } else {
-        // If URL doesn't have editCenter but state does, clear state
-        setEditCenterId(null);
-      }
+    const editCenterFromUrl = readUrlSearchParam('editCenter', searchParams);
+    if (editCenterFromUrl) {
+      setEditCenterId(editCenterFromUrl);
+    } else {
+      setEditCenterId(null);
     }
-  }, [searchParams, editCenterId, setEditCenterId]);
+  }, [searchParams, setEditCenterId]);
 
   useEffect(() => {
     setDesktopBoardPage(0);

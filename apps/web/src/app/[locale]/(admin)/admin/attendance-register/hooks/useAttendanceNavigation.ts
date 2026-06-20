@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import {
   getPreviousWeek,
   getNextWeek,
@@ -33,27 +34,35 @@ export function useAttendanceNavigation({
   hasUnsavedChanges,
   onGroupChange,
 }: UseAttendanceNavigationProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const t = useTranslations('attendance');
 
-  // Initialize view mode from URL query params, with mobile fallback to first available mode ('day')
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const modeFromUrl = searchParams.get('viewMode');
+  const readViewModeFromUrl = useCallback((): ViewMode => {
+    const modeFromUrl = readUrlSearchParam('viewMode', searchParams, urlRevision);
     if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'month') {
       return modeFromUrl;
     }
     return getDefaultViewMode();
-  });
+  }, [searchParams, urlRevision]);
+
+  const [pendingViewMode, setPendingViewMode] = useState<ViewMode | null>(null);
+  const viewMode = pendingViewMode ?? readViewModeFromUrl();
+
+  useEffect(() => {
+    if (pendingViewMode === null) {
+      return;
+    }
+    if (readViewModeFromUrl() === pendingViewMode) {
+      setPendingViewMode(null);
+    }
+  }, [pendingViewMode, readViewModeFromUrl]);
 
   // Date state
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
-  // Initialize selectedGroupIds from URL query params (support both single and multiple)
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(() => {
-    const groupIdParam = searchParams.get('groupId');
-    const groupIdsParam = searchParams.get('groupIds');
+  const selectedGroupIds = useMemo(() => {
+    const groupIdsParam = readUrlSearchParam('groupIds', searchParams, urlRevision);
+    const groupIdParam = readUrlSearchParam('groupId', searchParams, urlRevision);
     if (groupIdsParam) {
       return groupIdsParam.split(',').filter(Boolean);
     }
@@ -61,74 +70,21 @@ export function useAttendanceNavigation({
       return [groupIdParam];
     }
     return [];
-  });
+  }, [searchParams, urlRevision]);
 
   const [selectedDayForMonthView, setSelectedDayForMonthView] = useState<string | null>(null);
 
-  // Update URL query params when selectedGroupIds changes
   const updateGroupIdsInUrl = (groupIds: string[]) => {
-    const params = new URLSearchParams(searchParams.toString());
-    // Remove old single groupId param for backward compatibility
-    params.delete('groupId');
-    if (groupIds.length > 0) {
-      params.set('groupIds', groupIds.join(','));
-    } else {
-      params.delete('groupIds');
-    }
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
-  // Update URL query params when viewMode changes
-  const updateViewModeInUrl = (mode: ViewMode) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode !== 'week') {
-      params.set('viewMode', mode);
-    } else {
-      params.delete('viewMode');
-    }
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
-  // Sync selectedGroupIds from URL on mount or when URL changes
-  useEffect(() => {
-    const groupIdParam = searchParams.get('groupId');
-    const groupIdsParam = searchParams.get('groupIds');
-    let newGroupIds: string[] = [];
-    if (groupIdsParam) {
-      newGroupIds = groupIdsParam.split(',').filter(Boolean);
-    } else if (groupIdParam) {
-      newGroupIds = [groupIdParam];
-    }
-    setSelectedGroupIds((currentGroupIds) => {
-      const currentStr = currentGroupIds.sort().join(',');
-      const newStr = newGroupIds.sort().join(',');
-      if (currentStr !== newStr) {
-        return newGroupIds;
-      }
-      return currentGroupIds;
+    replaceParams({
+      groupId: null,
+      groupIds: groupIds.length > 0 ? groupIds.join(',') : null,
     });
-  }, [searchParams]);
+  };
 
-  // Sync viewMode from URL on mount or when URL changes
-  useEffect(() => {
-    const modeFromUrl = searchParams.get('viewMode');
-    if (modeFromUrl === 'day' || modeFromUrl === 'week' || modeFromUrl === 'month') {
-      setViewMode((currentMode) => {
-        if (modeFromUrl !== currentMode) {
-          return modeFromUrl;
-        }
-        return currentMode;
-      });
-    } else if (!modeFromUrl) {
-      setViewMode((currentMode) => {
-        const defaultMode = getDefaultViewMode();
-        if (currentMode !== defaultMode) {
-          return defaultMode;
-        }
-        return currentMode;
-      });
-    }
-  }, [searchParams]);
+  const updateViewModeInUrl = (mode: ViewMode) => {
+    setPendingViewMode(mode);
+    replaceParams({ viewMode: mode === 'week' ? null : mode });
+  };
 
   // Confirmation helper
   const confirmWithUnsavedChanges = (message: string): boolean => {
@@ -151,7 +107,6 @@ export function useAttendanceNavigation({
       );
       if (groupWithLesson) {
         const newGroupIds = [groupWithLesson.id];
-        setSelectedGroupIds(newGroupIds);
         updateGroupIdsInUrl(newGroupIds);
         onGroupChange?.(groupWithLesson.id);
       }
@@ -166,7 +121,6 @@ export function useAttendanceNavigation({
     if (!confirmWithAction('switchViewMode')) {
       return;
     }
-    setViewMode(newMode);
     updateViewModeInUrl(newMode);
     setSelectedDayForMonthView(null);
     if (newMode === 'day') {
@@ -189,7 +143,6 @@ export function useAttendanceNavigation({
       return;
     }
     const newGroupIds = newGroupId ? [newGroupId] : [];
-    setSelectedGroupIds(newGroupIds);
     updateGroupIdsInUrl(newGroupIds);
     setSelectedDayForMonthView(null);
     onGroupChange?.(newGroupId);
@@ -200,7 +153,6 @@ export function useAttendanceNavigation({
     if (!confirmWithAction('switchGroups')) {
       return;
     }
-    setSelectedGroupIds(newGroupIds);
     updateGroupIdsInUrl(newGroupIds);
     setSelectedDayForMonthView(null);
     // For backward compatibility, call onGroupChange with first group or null

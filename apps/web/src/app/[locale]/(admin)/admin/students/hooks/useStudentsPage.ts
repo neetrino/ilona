@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef, startTransition } from 'react';
-import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   useStudents,
@@ -18,6 +18,8 @@ import { useTeachers } from '@/features/teachers';
 import { useGroups } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { groupStudentsByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
@@ -25,8 +27,8 @@ type ViewMode = 'list' | 'board';
 
 const PAGE_SIZE = 10;
 const NEW_STUDENT_BADGE_DAYS = 30;
-/** URL flag so Add Student modal survives refresh (same idea as `?studentId=`). */
-const ADD_STUDENT_URL_PARAM = 'addStudent';
+const MODAL_PARAM = 'modal';
+const ADD_STUDENT_MODAL = 'add-student';
 
 function isWithinNewStudentWindow(student: Student): boolean {
   if (student.isRecentlyPaidFromCrm !== undefined) {
@@ -53,9 +55,7 @@ function isWithinNewStudentWindow(student: Student): boolean {
 
 export function useStudentsPage() {
   const params = useParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, urlRevision, setParams, removeParams } = useAppSearchUrl();
   const locale = typeof params?.locale === 'string' ? params.locale : 'en';
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
@@ -63,6 +63,14 @@ export function useStudentsPage() {
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
+
+  const readViewModeFromUrl = useCallback((): ViewMode => {
+    const mode = readUrlSearchParam('view', searchParams, urlRevision);
+    if (mode === 'list' || mode === 'board') {
+      return mode;
+    }
+    return 'list';
+  }, [searchParams, urlRevision]);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,46 +83,24 @@ export function useStudentsPage() {
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
-  // Modal/Dialog states — local state + URL sync (same pattern as Groups createGroup / Calendar add-lesson).
-  const [isAddStudentOpen, setIsAddStudentOpenState] = useState(
-    () => searchParams.get(ADD_STUDENT_URL_PARAM) === '1',
-  );
-  const isAddStudentClosingRef = useRef(false);
-
-  useEffect(() => {
-    if (isAddStudentClosingRef.current) {
-      return;
-    }
-    const shouldOpen = searchParams.get(ADD_STUDENT_URL_PARAM) === '1';
-    if (isAddStudentOpen !== shouldOpen) {
-      setIsAddStudentOpenState(shouldOpen);
-    }
-  }, [searchParams, isAddStudentOpen]);
+  const isAddStudentOpen =
+    readUrlSearchParam(MODAL_PARAM, searchParams, urlRevision) === ADD_STUDENT_MODAL;
 
   const setIsAddStudentOpen = useCallback(
     (open: boolean) => {
-      const next = new URLSearchParams(searchParams.toString());
       if (open) {
-        isAddStudentClosingRef.current = false;
-        setIsAddStudentOpenState(true);
-        next.set(ADD_STUDENT_URL_PARAM, '1');
+        setParams({ [MODAL_PARAM]: ADD_STUDENT_MODAL }, { mode: 'push' });
       } else {
-        isAddStudentClosingRef.current = true;
-        setIsAddStudentOpenState(false);
-        next.delete(ADD_STUDENT_URL_PARAM);
-        setTimeout(() => {
-          isAddStudentClosingRef.current = false;
-        }, 100);
+        removeParams([MODAL_PARAM], { mode: 'replace' });
       }
-      const url = next.toString() ? `${pathname}?${next.toString()}` : pathname;
-      router.replace(url, { scroll: false });
     },
-    [pathname, router, searchParams],
+    [removeParams, setParams],
   );
   const [isEditStudentOpen, setIsEditStudentOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const isFeedbackClosingRef = useRef(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedStudentForFeedback, setSelectedStudentForFeedback] = useState<Student | null>(null);
 
@@ -150,48 +136,51 @@ export function useStudentsPage() {
   const nowForPage = now;
   
   // View mode state with URL persistence
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const modeFromUrl = searchParams.get('view');
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      return modeFromUrl;
+  const [pendingViewMode, setPendingViewMode] = useState<ViewMode | null>(null);
+  const viewMode = pendingViewMode ?? readViewModeFromUrl();
+
+  useEffect(() => {
+    if (pendingViewMode === null) {
+      return;
     }
-    return 'list'; // Default to list view
-  });
+    if (readViewModeFromUrl() === pendingViewMode) {
+      setPendingViewMode(null);
+    }
+  }, [pendingViewMode, readViewModeFromUrl]);
 
   // Update URL when view mode changes
-  const updateViewModeInUrl = (mode: ViewMode) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (mode !== 'list') {
-      params.set('view', mode);
-    } else {
-      params.delete('view');
-    }
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  const updateViewModeInUrl = useCallback(
+    (mode: ViewMode) => {
+      setPendingViewMode(mode);
+      setParams({ view: mode === 'list' ? null : mode }, { mode: 'replace' });
+    },
+    [setParams],
+  );
 
-  // Sync view mode from URL
-  useEffect(() => {
-    const modeFromUrl = searchParams.get('view');
-    if (modeFromUrl === 'list' || modeFromUrl === 'board') {
-      setViewMode(modeFromUrl);
-    } else if (!modeFromUrl) {
-      setViewMode('list');
-    }
-  }, [searchParams]);
+  const setViewMode = useCallback(
+    (mode: ViewMode) => {
+      updateViewModeInUrl(mode);
+    },
+    [updateViewModeInUrl],
+  );
 
   useEffect(() => {
-    const studentIdFromUrl = searchParams.get('studentId');
+    const studentIdFromUrl = readUrlSearchParam('studentId', searchParams);
     setSelectedStudentIdForDetails(studentIdFromUrl);
     setIsStudentDetailsModalOpen(!!studentIdFromUrl);
-  }, [searchParams]);
+  }, [searchParams, urlRevision]);
 
-  // Feedback modal: read student id from URL so refresh keeps modal open
-  const feedbackStudentIdFromUrl = searchParams.get('feedback') || null;
+  const feedbackStudentIdFromUrl = readUrlSearchParam('feedback', searchParams, urlRevision);
   useEffect(() => {
+    if (isFeedbackClosingRef.current) {
+      return;
+    }
     if (feedbackStudentIdFromUrl) {
       setIsFeedbackModalOpen(true);
+    } else {
+      setIsFeedbackModalOpen(false);
     }
-  }, [feedbackStudentIdFromUrl]);
+  }, [feedbackStudentIdFromUrl, urlRevision]);
 
   // Debounce search query (300ms). Use debounced value for API to avoid request on every keystroke.
   useEffect(() => {
@@ -442,25 +431,25 @@ export function useStudentsPage() {
 
   // Handle message/feedback icon click — update URL so refresh keeps modal open
   const handleShowFeedback = (student: Student) => {
+    isFeedbackClosingRef.current = false;
     setSelectedStudentForFeedback(student);
     setIsFeedbackModalOpen(true);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('feedback', student.id);
-    router.push(`${pathname}?${params.toString()}`);
+    setParams({ feedback: student.id }, { mode: 'push' });
   };
 
   const handleFeedbackModalOpenChange = (open: boolean) => {
-    setIsFeedbackModalOpen(open);
-    if (!open) {
-      setSelectedStudentForFeedback(null);
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('feedback');
-      if (params.toString()) {
-        router.push(`${pathname}?${params.toString()}`);
-      } else {
-        router.push(pathname);
-      }
+    if (open) {
+      isFeedbackClosingRef.current = false;
+      setIsFeedbackModalOpen(true);
+      return;
     }
+    isFeedbackClosingRef.current = true;
+    setIsFeedbackModalOpen(false);
+    setSelectedStudentForFeedback(null);
+    removeParams(['feedback'], { mode: 'replace' });
+    setTimeout(() => {
+      isFeedbackClosingRef.current = false;
+    }, 100);
   };
 
   // Handle deactivate button click
@@ -608,18 +597,13 @@ export function useStudentsPage() {
   const handleStudentDetailsOpen = (student: Student) => {
     setSelectedStudentIdForDetails(student.id);
     setIsStudentDetailsModalOpen(true);
-    const next = new URLSearchParams(searchParams.toString());
-    next.set('studentId', student.id);
-    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    setParams({ studentId: student.id }, { mode: 'push' });
   };
 
   const handleStudentDetailsClose = () => {
     setIsStudentDetailsModalOpen(false);
     setSelectedStudentIdForDetails(null);
-    const next = new URLSearchParams(searchParams.toString());
-    next.delete('studentId');
-    const url = next.toString() ? `${pathname}?${next.toString()}` : pathname;
-    router.replace(url, { scroll: false });
+    removeParams(['studentId'], { mode: 'replace' });
   };
 
   // Stats calculation (only full students have user.status; onboarding items are not counted as active)

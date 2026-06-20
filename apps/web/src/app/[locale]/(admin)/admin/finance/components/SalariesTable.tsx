@@ -5,7 +5,7 @@ import { DataTable } from '@/shared/components/ui';
 import { getSalaryColumns } from '../utils/tableColumns';
 import { InlineSelect } from '@/features/students/components/InlineSelect';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { SalaryRecord, SalaryStatus } from '@/features/finance';
 
@@ -25,6 +25,7 @@ interface SalariesTableProps {
   locale: string;
   searchTerm?: string;
   noResultsKey?: string;
+  onOpenSalaryDetail?: (salaryId: string) => void;
 }
 
 export function SalariesTable({
@@ -40,9 +41,10 @@ export function SalariesTable({
   locale,
   searchTerm,
   noResultsKey,
+  onOpenSalaryDetail,
 }: SalariesTableProps) {
   const t = useTranslations('finance');
-  const searchParams = useSearchParams();
+  const { readParam } = useAppSearchUrl();
   const columns = getSalaryColumns({
     t: t as (key: string) => string,
     allSalariesSelected,
@@ -53,6 +55,7 @@ export function SalariesTable({
     onSelectAll,
     onSelectOne,
     locale,
+    onOpenSalaryDetail,
   });
   const emptyMessage =
     searchTerm && noResultsKey ? t(noResultsKey) : t('noSalariesFound');
@@ -110,10 +113,10 @@ export function SalariesTable({
                 : '';
 
             const params = new URLSearchParams();
-            const tab = searchParams.get('tab');
-            const salariesPage = searchParams.get('salariesPage');
-            const salaryStatus = searchParams.get('salaryStatus');
-            const q = searchParams.get('q');
+            const tab = readParam('tab');
+            const salariesPage = readParam('salariesPage');
+            const salaryStatus = readParam('salaryStatus');
+            const q = readParam('q');
             if (tab) params.set('tab', tab);
             if (salariesPage) params.set('salariesPage', salariesPage);
             if (salaryStatus) params.set('salaryStatus', salaryStatus);
@@ -199,7 +202,16 @@ export function SalariesTable({
                     </div>
                     <div className="flex min-h-[94px] flex-col justify-center rounded-2xl border border-[rgba(14,14,16,0.08)] px-4 py-3.5 text-[1rem]">
                       <p className="text-[#475569]">{t('actions')}</p>
-                      <div className="mt-2">
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {onOpenSalaryDetail ? (
+                          <button
+                            type="button"
+                            onClick={() => onOpenSalaryDetail(salary.id)}
+                            className="inline-flex items-center rounded-full border border-[rgba(14,14,16,0.12)] px-4 py-1.5 text-sm font-medium text-[#3b3b40]"
+                          >
+                            {t('salaryDetailsTitle')}
+                          </button>
+                        ) : null}
                         <Link
                           href={href}
                           className="inline-flex items-center rounded-full border border-amber-300 px-4 py-1.5 text-sm font-medium text-amber-700"
