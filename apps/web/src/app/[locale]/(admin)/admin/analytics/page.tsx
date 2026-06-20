@@ -10,8 +10,11 @@ import {
   useRevenueAnalyticsByRange,
   useAttendanceOverview,
   TeacherRatioTable,
+  RevenueBreakdownTable,
+  AnalyticsMobilePagination,
   type StudentRisk,
 } from '@/features/analytics';
+import { analyticsTableScrollClass } from '@/features/analytics/analytics-table-scroll';
 import { AnalyticsTimeFilterBar } from '@/shared/components/analytics/AnalyticsTimeFilterBar';
 import {
   buildTimeRange,
@@ -21,7 +24,7 @@ import { cn, formatCurrency } from '@/shared/lib/utils';
 import { useAdminAnalyticsUrl, type AdminAnalyticsTab } from './use-admin-analytics-url';
 import { useAdminPaymentsTimeFilter } from './use-payments-time-filter';
 
-const MOBILE_RISK_PAGE_SIZE = 6;
+const ANALYTICS_TABLE_PAGE_SIZE = 7;
 
 function initialFromName(name: string): string {
   return name
@@ -279,7 +282,7 @@ export default function AdminAnalyticsPage() {
     { id: 'risk', label: 'Risk Distribution' },
   ];
   const tabsTrackRef = useRef<HTMLDivElement | null>(null);
-  const riskMobileStartRef = useRef<HTMLDivElement | null>(null);
+  const riskPageStartRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Record<AdminAnalyticsTab, HTMLButtonElement | null>>({
     attendance: null,
     payments: null,
@@ -288,14 +291,18 @@ export default function AdminAnalyticsPage() {
     risk: null,
   });
   const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
-  const [riskMobilePage, setRiskMobilePage] = useState(1);
-  const riskMobileTotalPages = Math.max(1, Math.ceil(students.length / MOBILE_RISK_PAGE_SIZE));
-  const safeRiskMobilePage = Math.min(riskMobilePage, riskMobileTotalPages);
-  const riskMobileStart = students.length === 0 ? 0 : (safeRiskMobilePage - 1) * MOBILE_RISK_PAGE_SIZE + 1;
-  const riskMobileEnd = Math.min(students.length, safeRiskMobilePage * MOBILE_RISK_PAGE_SIZE);
-  const riskMobileStudents = useMemo(
-    () => students.slice((safeRiskMobilePage - 1) * MOBILE_RISK_PAGE_SIZE, safeRiskMobilePage * MOBILE_RISK_PAGE_SIZE),
-    [students, safeRiskMobilePage],
+  const [riskPage, setRiskPage] = useState(1);
+  const riskTotalPages = Math.max(1, Math.ceil(students.length / ANALYTICS_TABLE_PAGE_SIZE));
+  const safeRiskPage = Math.min(riskPage, riskTotalPages);
+  const riskRangeStart = students.length === 0 ? 0 : (safeRiskPage - 1) * ANALYTICS_TABLE_PAGE_SIZE + 1;
+  const riskRangeEnd = Math.min(students.length, safeRiskPage * ANALYTICS_TABLE_PAGE_SIZE);
+  const riskPaginatedStudents = useMemo(
+    () =>
+      students.slice(
+        (safeRiskPage - 1) * ANALYTICS_TABLE_PAGE_SIZE,
+        safeRiskPage * ANALYTICS_TABLE_PAGE_SIZE,
+      ),
+    [students, safeRiskPage],
   );
 
   useEffect(() => {
@@ -319,18 +326,22 @@ export default function AdminAnalyticsPage() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (riskMobilePage > riskMobileTotalPages) {
-      setRiskMobilePage(riskMobileTotalPages);
+    setRiskPage(1);
+  }, [students.length]);
+
+  useEffect(() => {
+    if (riskPage > riskTotalPages) {
+      setRiskPage(riskTotalPages);
     }
-  }, [riskMobilePage, riskMobileTotalPages]);
+  }, [riskPage, riskTotalPages]);
 
   useEffect(() => {
     if (activeTab !== 'risk') return;
-    riskMobileStartRef.current?.scrollIntoView({
+    riskPageStartRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
     });
-  }, [activeTab, safeRiskMobilePage]);
+  }, [activeTab, safeRiskPage]);
 
   return (
     <DashboardLayout title={t('title')} subtitle={t('adminSubtitle')}>
@@ -400,6 +411,7 @@ export default function AdminAnalyticsPage() {
             metric="absenceMarkedRate"
             metricLabel={t('attendanceMarkingRate')}
             mobilePercentOnly
+            mobilePageSize={ANALYTICS_TABLE_PAGE_SIZE}
           />
         </div>
       )}
@@ -460,82 +472,15 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] overflow-hidden">
-            <div className="p-4 border-b border-[rgba(14,14,16,0.07)]">
-              <h3 className="font-semibold text-[#3b3b40]">{tCommon('breakdown')}</h3>
-            </div>
-            <div className="w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch]">
-              <table className="w-full">
-                <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-[#3b3b40]">
-                      {t('periodColumn')}
-                    </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-[#3b3b40]">
-                      Income
-                    </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-[#3b3b40]">
-                      Expenses
-                    </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-[#3b3b40]">
-                      Profit
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">
-                      # Payments
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[rgba(14,14,16,0.07)]">
-                  {isLoadingRevenue ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-4 py-8 text-center text-[#8b8b90]"
-                      >
-                        {tCommon('loading')}
-                      </td>
-                    </tr>
-                  ) : revenue.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-4 py-8 text-center text-[#8b8b90]"
-                      >
-                        No data available
-                      </td>
-                    </tr>
-                  ) : (
-                    revenue.map((r) => (
-                      <tr key={r.month} className="hover:bg-[#fafafa]">
-                        <td className="px-4 py-3 font-medium text-[#3b3b40]">
-                          {r.monthName}
-                        </td>
-                        <td className="px-4 py-3 text-right text-green-600 font-medium">
-                          {formatCurrency(r.income)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-red-600 font-medium">
-                          {formatCurrency(r.expenses)}
-                        </td>
-                        <td
-                          className={cn(
-                            'px-4 py-3 text-right font-semibold',
-                            r.profit >= 0
-                              ? 'text-blue-600'
-                              : 'text-orange-600',
-                          )}
-                        >
-                          {formatCurrency(r.profit)}
-                        </td>
-                        <td className="px-4 py-3 text-center text-[#3b3b40]">
-                          {r.paymentsCount}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <RevenueBreakdownTable
+            revenue={revenue}
+            isLoading={isLoadingRevenue}
+            periodColumnLabel={t('periodColumn')}
+            breakdownTitle={tCommon('breakdown')}
+            loadingLabel={tCommon('loading')}
+            emptyLabel="No data available"
+            mobilePageSize={ANALYTICS_TABLE_PAGE_SIZE}
+          />
         </div>
       )}
 
@@ -546,6 +491,7 @@ export default function AdminAnalyticsPage() {
           metric="voiceRate"
           metricLabel="Recording Completion Rate"
           mobilePercentOnly
+          mobilePageSize={ANALYTICS_TABLE_PAGE_SIZE}
         />
       )}
 
@@ -556,6 +502,7 @@ export default function AdminAnalyticsPage() {
           metric="feedbacksRate"
           metricLabel="Feedback Completion Rate"
           mobilePercentOnly
+          mobilePageSize={ANALYTICS_TABLE_PAGE_SIZE}
         />
       )}
 
@@ -586,8 +533,8 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
 
+          <div ref={riskPageStartRef} />
           <div className="space-y-3 p-3 sm:hidden">
-            <div ref={riskMobileStartRef} />
             <RiskSummaryMobile
               highRisk={highRisk}
               mediumRisk={mediumRisk}
@@ -602,57 +549,13 @@ export default function AdminAnalyticsPage() {
                 No students found
               </div>
             ) : (
-              riskMobileStudents.map((student) => (
+              riskPaginatedStudents.map((student) => (
                 <StudentRiskMobileCard key={student.id} student={student} />
               ))
             )}
-            {!isLoadingStudents && students.length > MOBILE_RISK_PAGE_SIZE && (
-              <div className="flex items-center justify-between text-sm text-[#8b8b90]">
-                <span>
-                  {riskMobileStart}-{riskMobileEnd} / {students.length}
-                </span>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                      safeRiskMobilePage <= 1
-                        ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                        : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-                    }`}
-                    disabled={safeRiskMobilePage <= 1}
-                    onClick={() => setRiskMobilePage((prev) => Math.max(1, prev - 1))}
-                    aria-label="Previous risk page"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
-                    {safeRiskMobilePage}
-                  </span>
-                  <button
-                    type="button"
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                      safeRiskMobilePage >= riskMobileTotalPages
-                        ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                        : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-                    }`}
-                    disabled={safeRiskMobilePage >= riskMobileTotalPages}
-                    onClick={() =>
-                      setRiskMobilePage((prev) => Math.min(riskMobileTotalPages, prev + 1))
-                    }
-                    aria-label="Next risk page"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="hidden w-full min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch] sm:block">
+          <div className={cn('hidden sm:block', analyticsTableScrollClass)}>
             <table className="w-full">
               <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
                 <tr>
@@ -696,13 +599,24 @@ export default function AdminAnalyticsPage() {
                     </td>
                   </tr>
                 ) : (
-                  students.map((student) => (
+                  riskPaginatedStudents.map((student) => (
                     <StudentRiskRow key={student.id} student={student} />
                   ))
                 )}
               </tbody>
             </table>
           </div>
+          {!isLoadingStudents && students.length > ANALYTICS_TABLE_PAGE_SIZE && (
+            <AnalyticsMobilePagination
+              page={safeRiskPage}
+              totalPages={riskTotalPages}
+              start={riskRangeStart}
+              end={riskRangeEnd}
+              total={students.length}
+              onPrevious={() => setRiskPage((prev) => Math.max(1, prev - 1))}
+              onNext={() => setRiskPage((prev) => Math.min(riskTotalPages, prev + 1))}
+            />
+          )}
         </div>
       )}
     </DashboardLayout>

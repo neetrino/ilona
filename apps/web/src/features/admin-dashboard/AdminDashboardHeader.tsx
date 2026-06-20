@@ -38,7 +38,7 @@ export function AdminDashboardHeader({
   return (
     <header
       id="admin-portal-mobile-header"
-      className="sticky top-0 z-40 shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.35rem,0.8vw,0.6rem)] md:static"
+      className="shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.35rem,0.8vw,0.6rem)]"
     >
       <div className="w-full min-w-0 rounded-full border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.55rem,1vw,0.9rem)] lg:rounded-[4rem]">
         <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-4">
@@ -64,7 +64,7 @@ export function AdminDashboardHeader({
             <div className="min-w-0 flex-1 text-center lg:text-left flex min-h-11 flex-col justify-center">
               {isSubpage ? (
                 <>
-                  <h1 className="flex h-11 items-center justify-center truncate px-0 text-[1.125rem] font-bold leading-none tracking-tight text-[#1010a3] sm:block sm:h-auto sm:px-5 sm:text-[1.375rem] sm:leading-tight">
+                  <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:block sm:h-auto sm:px-5 sm:text-[1.375rem]">
                     <button
                       type="button"
                       onClick={scrollToTop}
@@ -84,7 +84,7 @@ export function AdminDashboardHeader({
                   <p className="truncate text-[0.625rem] tracking-wide text-[#8b8b90] sm:text-[0.6875rem] lg:text-left">
                     {t('greeting', { name: firstName })}
                   </p>
-                  <h1 className="flex h-11 items-center justify-center truncate px-0 text-[1.125rem] font-bold leading-none tracking-tight text-[#1010a3] sm:block sm:h-auto sm:px-5 sm:text-[1.5rem] sm:leading-tight">
+                  <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:block sm:h-auto sm:px-5 sm:text-[1.5rem]">
                     <button
                       type="button"
                       onClick={scrollToTop}

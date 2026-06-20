@@ -49,7 +49,7 @@ function BottomNavItem({
       </span>
       <span
         className={cn(
-          'relative z-50 flex min-h-[13px] w-full items-center justify-center overflow-visible truncate px-0.5 text-center text-[11px] font-medium leading-snug',
+          'relative z-50 w-full px-0.5 pb-0.5 text-center text-[11px] font-medium leading-normal',
           labelClassName,
         )}
       >
@@ -165,7 +165,7 @@ export function AdminPortalBottomNav() {
         )}
         aria-label={tNav('dashboard')}
       >
-        <div className="relative z-[1] flex items-stretch overflow-visible pb-1.5 pt-1">
+        <div className="relative z-[1] flex items-stretch overflow-visible pb-2.5 pt-1">
           <BottomNavItem
             ariaLabel={tHome('home')}
             label={tHome('home')}
