@@ -9,6 +9,7 @@ import { cn } from '@/shared/lib/utils';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { formatMessagePreview } from '../utils';
 import Image from 'next/image';
+import { OnlineStatusDot } from './OnlineStatusDot';
 
 interface ChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -223,9 +224,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
                       {info.avatar}
                     </div>
                   )}
-                  {!info.isGroup && isOnline && (
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
-                  )}
+                  {!info.isGroup && <OnlineStatusDot isOnline={isOnline} />}
                 </div>
 
                 {/* Content */}

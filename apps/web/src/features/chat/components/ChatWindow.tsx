@@ -20,6 +20,8 @@ import { VoiceRecorder } from './VoiceRecorder';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
 import { MessageNavigationControls } from './MessageNavigationControls';
+import { ChatBackButton } from './ChatBackButton';
+import { OnlineStatusDot } from './OnlineStatusDot';
 import { sendMessageHttp } from '../api/chat.api';
 import {
   formatTime,
@@ -515,22 +517,27 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   };
 
   const onlineStatus = getOnlineStatus();
+  const isMobileConversation = Boolean(onBack);
+  const isAdminPortalChat = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       {/* Header */}
-      <div className={cn('flex items-center gap-3 border-b p-4', ui.border, ui.headerBg)}>
-        {/* Back button (mobile) */}
-        {onBack && (
-          <button onClick={onBack} className={cn('lg:hidden -ml-2 p-2', ui.iconBtn)}>
-            <svg className={cn('h-5 w-5', ui.body)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+      <div
+        className={cn(
+          'flex shrink-0 items-center gap-3 border-b p-4',
+          isMobileConversation && 'max-lg:sticky max-lg:top-0 max-lg:z-20',
+          ui.border,
+          ui.headerBg,
         )}
+      >
+        {/* Back button (mobile) */}
+        {onBack ? (
+          <ChatBackButton onClick={onBack} className="lg:hidden" aria-label="Back to chat list" />
+        ) : null}
 
         {/* Avatar */}
-        <div className="relative">
+        <div>
           {getChatAvatarUrl() ? (
             <Image
               src={getChatAvatarUrl() ?? ''}
@@ -613,13 +620,21 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               canGoNext={canGoNext}
             />
           )}
-          <div
-            className={cn(
-              'w-2 h-2 rounded-full',
-              isConnected ? 'bg-green-500' : 'bg-red-500'
-            )}
-            title={isConnected ? tChat('connected') : tChat('reconnecting')}
-          />
+          {chat.type === 'DIRECT' && onlineStatus !== null ? (
+            <OnlineStatusDot
+              variant="inline"
+              isOnline={onlineStatus}
+              title={onlineStatus ? tChat('online') : tChat('offline')}
+            />
+          ) : (
+            <div
+              className={cn(
+                'h-2 w-2 rounded-full',
+                isConnected ? 'bg-green-500' : 'bg-red-500',
+              )}
+              title={isConnected ? tChat('connected') : tChat('reconnecting')}
+            />
+          )}
           <button className={cn('p-2', ui.iconBtn)}>
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
@@ -631,7 +646,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       {/* Messages */}
       <div
         ref={messagesContainerRef}
-        className={cn('flex-1 space-y-4 overflow-y-auto p-4', ui.messagesBg)}
+        className={cn(
+          'min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain p-4 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]',
+          ui.messagesBg,
+        )}
       >
         {/* Load more button */}
         {hasNextPage && (
@@ -829,7 +847,20 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       </div>
 
       {/* Input */}
-      <div className={cn('border-t p-4', ui.border, ui.headerBg)}>
+      <div
+        className={cn(
+          'shrink-0 border-t p-4',
+          isMobileConversation && 'max-lg:sticky max-lg:bottom-0 max-lg:z-20',
+          isMobileConversation &&
+            isAdminPortalChat &&
+            'max-lg:pb-[calc(6rem+env(safe-area-inset-bottom))]',
+          isMobileConversation &&
+            !isAdminPortalChat &&
+            'max-lg:pb-[env(safe-area-inset-bottom)]',
+          ui.border,
+          ui.headerBg,
+        )}
+      >
         {showVoiceRecorder ? (
           <div className="space-y-2">
             <VoiceRecorder

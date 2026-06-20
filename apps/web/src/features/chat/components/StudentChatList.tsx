@@ -12,6 +12,7 @@ import { getChatTheme } from '../lib/chat-theme';
 import { formatMessagePreview } from '../utils';
 import Image from 'next/image';
 import { formatDisplayName, getInitials, getInitialsFromParts } from '@/shared/components/ui/avatar';
+import { OnlineStatusDot } from './OnlineStatusDot';
 
 type ListItem =
   | { type: 'chat'; chat: Chat }
@@ -314,9 +315,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                         {info.avatar}
                       </div>
                     )}
-                    {!info.isGroup && isOnline && (
-                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
-                    )}
+                    {!info.isGroup && <OnlineStatusDot isOnline={isOnline} />}
                   </div>
 
                   <div className="flex-1 min-w-0">

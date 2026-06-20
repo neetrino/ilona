@@ -13,6 +13,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import Image from 'next/image';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { getGroupIconComponent } from '@/features/groups';
+import { OnlineStatusDot } from './OnlineStatusDot';
 
 interface TeacherChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -534,9 +535,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                       {initials}
                     </div>
                   )}
-                  {isOnline && (
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
-                  )}
+                  <OnlineStatusDot isOnline={isOnline} />
                 </div>
 
                 {/* Content */}

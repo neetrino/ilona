@@ -10,7 +10,9 @@ import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store
 import { AdminChatList } from './AdminChatList';
 import { ChatWindow } from './ChatWindow';
 import { CreateGroupChatModal } from './CreateGroupChatModal';
+import { ChatBackButton } from './ChatBackButton';
 import { ChatEmptyState } from './ChatEmptyState';
+import { MobileChatSlidePanel } from './MobileChatSlidePanel';
 import { useChatStore } from '../store/chat.store';
 import { useSocket, useChatDetail, chatKeys } from '../hooks';
 import type { Chat } from '../types';
@@ -51,6 +53,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   const initialTab = tabFromUrl && validTabs.includes(tabFromUrl) ? tabFromUrl : null;
   const [activeTab, setActiveTab] = useState<AdminChatTab | null>(initialTab);
   const [showCreateGroupChatModal, setShowCreateGroupChatModal] = useState(false);
+  const [mobileChatPanelOpen, setMobileChatPanelOpen] = useState(false);
 
   const conversationIdFromUrl = useMemo(
     () =>
@@ -251,6 +254,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   const handleSelectChat = (chat: Chat) => {
     setActiveChat(chat);
     setMobileListVisible(false);
+    setMobileChatPanelOpen(true);
     
     // Add/update chat in cache so groupUnreadMap can access it
     queryClient.setQueryData(
@@ -286,9 +290,28 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
     });
   };
 
+  useEffect(() => {
+    if (activeChat && !isMobileListVisible) {
+      setMobileChatPanelOpen(true);
+    }
+  }, [activeChat, isMobileListVisible]);
+
+  const handleMobileBack = useCallback(() => {
+    setMobileChatPanelOpen(false);
+  }, []);
+
+  const finalizeMobileChatClose = useCallback(() => {
+    setMobileListVisible(true);
+    setActiveChat(null);
+    replaceSearchParams((params) => {
+      params.delete('conversationId');
+    });
+  }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
+
   const handleCustomGroupChatCreated = (chat: Chat) => {
     setActiveChat(chat);
     setMobileListVisible(false);
+    setMobileChatPanelOpen(true);
     setShowCreateGroupChatModal(false);
     queryClient.setQueryData(chatKeys.list(), (oldData: Chat[] | undefined) => {
       if (!oldData) return [chat];
@@ -317,21 +340,35 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
         containerHeight,
         'flex flex-col overflow-hidden bg-white',
         !isFullScreen && 'rounded-2xl border border-slate-200',
+        isFullScreen &&
+          'max-lg:max-h-[100dvh] max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-hidden',
+        activeChat && isFullScreen && 'max-lg:h-[100dvh]',
         className,
       )}
     >
-      {/* Header */}
-      <div className="flex shrink-0 items-center justify-between border-b border-[rgba(14,14,16,0.07)] bg-white px-3 py-3 sm:px-4">
+      {/* Header — hidden on mobile when a conversation is open (ChatWindow has its own header) */}
+      <div
+        className={cn(
+          'flex shrink-0 items-center justify-between border-b border-[rgba(14,14,16,0.07)] bg-white px-3 py-3 sm:px-4',
+          activeChat && 'max-lg:hidden',
+        )}
+      >
+        <ChatBackButton
+          onClick={handleBackToPrevious}
+          aria-label="Back to previous page"
+          className="lg:hidden"
+        />
         <button
+          type="button"
           onClick={handleBackToPrevious}
           className={cn(
-            'flex items-center gap-1.5 rounded-[0.875rem] px-2 py-2',
+            'hidden items-center gap-1.5 rounded-[0.875rem] px-2 py-2 lg:flex',
             'text-[#3b3b40] transition-colors hover:text-[#1010a3]',
             'focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-2',
           )}
           aria-label="Back to previous page"
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -341,7 +378,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
           </svg>
           <span className="text-sm font-medium">Back</span>
         </button>
-        <h2 className="text-base font-semibold text-[#3b3b40] sm:text-lg">Chat</h2>
+        <h2 className="text-lg font-bold text-[#3b3b40] sm:text-xl">Chat</h2>
         <button
           type="button"
           onClick={() => setShowCreateGroupChatModal(true)}
@@ -355,13 +392,13 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
         className={cn(
           'flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row',
           contentHeight,
-          isFullScreen && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+          isFullScreen && !activeChat && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
         )}
       >
         {/* List panel */}
         <div
           className={cn(
-            'flex min-h-0 w-full flex-col overflow-hidden bg-white lg:w-80 lg:shrink-0 lg:border-r lg:border-[rgba(14,14,16,0.07)]',
+            'flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white lg:w-80 lg:shrink-0 lg:flex-none lg:border-r lg:border-[rgba(14,14,16,0.07)]',
             !isMobileListVisible && 'hidden lg:flex',
           )}
         >
@@ -375,8 +412,7 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
         {/* Chat panel — desktop only when browsing; full screen on mobile once a chat is open */}
         <div
           className={cn(
-            'flex min-h-0 flex-1 flex-col overflow-hidden bg-white',
-            isMobileListVisible && !activeChat && 'hidden lg:flex',
+            'hidden min-h-0 flex-1 flex-col overflow-hidden bg-white lg:flex',
           )}
         >
           {activeChat ? (
@@ -392,6 +428,20 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
           )}
         </div>
       </div>
+
+      {activeChat ? (
+        <MobileChatSlidePanel
+          active={mobileChatPanelOpen}
+          onExitComplete={finalizeMobileChatClose}
+          className="lg:hidden"
+        >
+          <ChatWindow
+            chat={activeChat}
+            onBack={handleMobileBack}
+            onChatUpdated={setActiveChat}
+          />
+        </MobileChatSlidePanel>
+      ) : null}
 
       <CreateGroupChatModal
         open={showCreateGroupChatModal}

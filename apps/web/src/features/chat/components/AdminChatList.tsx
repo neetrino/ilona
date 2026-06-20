@@ -12,6 +12,8 @@ import { getInitials } from '@/shared/components/ui/avatar';
 import Image from 'next/image';
 import { getGroupIconComponent } from '@/features/groups';
 import { ChatEmptyState } from './ChatEmptyState';
+import { OnlineStatusDot } from './OnlineStatusDot';
+import { useSocket } from '../hooks/useSocket';
 
 type AdminChatTab = 'students' | 'teachers' | 'groups';
 
@@ -27,6 +29,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
   const [searchQuery, setSearchQuery] = useState('');
   const { counts: unreadCounts } = useAdminUnreadCounts();
   const { data: chats = [] } = useChats();
+  const { isUserOnline } = useSocket();
 
   // Reset search query when tab changes
   useEffect(() => {
@@ -74,6 +77,14 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
       return c.participants.some((p) => p.userId === userId);
     });
     return chat?.unreadCount || 0;
+  };
+
+  const getUserOnlineStatus = (userId: string): boolean => {
+    const chat = chats.find(
+      (c) => c.type === 'DIRECT' && c.participants.some((p) => p.userId === userId),
+    );
+    if (!chat) return false;
+    return isUserOnline(chat.id, userId);
   };
 
   // Handle selecting a student/teacher (create or open DM)
@@ -144,12 +155,15 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               activeChat?.type === 'DIRECT' && activeChat?.participants.some(p => p.userId === student.id) && 'bg-primary/10 hover:bg-primary/10'
             )}
           >
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-semibold flex-shrink-0">
-              {student.avatarUrl ? (
-                <Image src={student.avatarUrl} alt={student.name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
-              ) : (
-                getInitials(student.name)
-              )}
+            <div className="relative w-12 h-12 flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
+                {student.avatarUrl ? (
+                  <Image src={student.avatarUrl} alt={student.name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
+                ) : (
+                  getInitials(student.name)
+                )}
+              </div>
+              <OnlineStatusDot isOnline={getUserOnlineStatus(student.id)} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
@@ -216,12 +230,15 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
               activeChat?.type === 'DIRECT' && activeChat?.participants.some(p => p.userId === teacher.id) && 'bg-primary/10 hover:bg-primary/10'
             )}
           >
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-              {teacher.avatarUrl ? (
-                <Image src={teacher.avatarUrl} alt={teacher.name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
-              ) : (
-                getInitials(teacher.name)
-              )}
+            <div className="relative w-12 h-12 flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                {teacher.avatarUrl ? (
+                  <Image src={teacher.avatarUrl} alt={teacher.name} width={48} height={48} className="w-full h-full rounded-full object-cover" unoptimized />
+                ) : (
+                  getInitials(teacher.name)
+                )}
+              </div>
+              <OnlineStatusDot isOnline={getUserOnlineStatus(teacher.id)} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
@@ -372,66 +389,93 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
     );
 
   return (
-    <div className="flex h-full flex-col bg-white">
-      {/* Tabs */}
-      <div className="shrink-0 border-b border-[rgba(14,14,16,0.07)] px-3 py-3">
-        <div className="flex gap-2">
-          <button onClick={() => onTabChange('groups')} className={tabButtonClass('groups')}>
-            Groups
-            {unreadCounts.groups > 0 && (
-              <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
-                {unreadCounts.groups}
-              </Badge>
-            )}
-          </button>
-          <button onClick={() => onTabChange('teachers')} className={tabButtonClass('teachers')}>
-            Teachers
-            {unreadCounts.teachers > 0 && (
-              <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
-                {unreadCounts.teachers}
-              </Badge>
-            )}
-          </button>
-          <button onClick={() => onTabChange('students')} className={tabButtonClass('students')}>
-            Students
-            {unreadCounts.students > 0 && (
-              <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
-                {unreadCounts.students}
-              </Badge>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {activeTab ? (
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
-          <div className="shrink-0 px-3 pb-3 pt-2">
-            <div className="relative">
-              <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="search"
-                placeholder={`Search ${activeTab}...`}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white py-2 pl-9 pr-4 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15"
-              />
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
+      {!activeTab ? (
+        <>
+          <div className="shrink-0 border-b border-[rgba(14,14,16,0.07)] bg-white px-3 py-3">
+            <div className="flex gap-2">
+              <button onClick={() => onTabChange('groups')} className={tabButtonClass('groups')}>
+                Groups
+                {unreadCounts.groups > 0 && (
+                  <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
+                    {unreadCounts.groups}
+                  </Badge>
+                )}
+              </button>
+              <button onClick={() => onTabChange('teachers')} className={tabButtonClass('teachers')}>
+                Teachers
+                {unreadCounts.teachers > 0 && (
+                  <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
+                    {unreadCounts.teachers}
+                  </Badge>
+                )}
+              </button>
+              <button onClick={() => onTabChange('students')} className={tabButtonClass('students')}>
+                Students
+                {unreadCounts.students > 0 && (
+                  <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
+                    {unreadCounts.students}
+                  </Badge>
+                )}
+              </button>
             </div>
           </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
-            {activeTab === 'students' && renderStudents()}
-            {activeTab === 'teachers' && renderTeachers()}
-            {activeTab === 'groups' && renderGroups()}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <ChatEmptyState
+              title="Select a category"
+              description="Choose Groups, Teachers, or Students to start browsing"
+            />
           </div>
-        </div>
+        </>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col">
-          <ChatEmptyState
-            title="Select a category"
-            description="Choose Groups, Teachers, or Students to start browsing"
-          />
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
+          <div className="sticky top-0 z-20 bg-white">
+            <div className="border-b border-[rgba(14,14,16,0.07)] px-3 py-3">
+              <div className="flex gap-2">
+                <button onClick={() => onTabChange('groups')} className={tabButtonClass('groups')}>
+                  Groups
+                  {unreadCounts.groups > 0 && (
+                    <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
+                      {unreadCounts.groups}
+                    </Badge>
+                  )}
+                </button>
+                <button onClick={() => onTabChange('teachers')} className={tabButtonClass('teachers')}>
+                  Teachers
+                  {unreadCounts.teachers > 0 && (
+                    <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
+                      {unreadCounts.teachers}
+                    </Badge>
+                  )}
+                </button>
+                <button onClick={() => onTabChange('students')} className={tabButtonClass('students')}>
+                  Students
+                  {unreadCounts.students > 0 && (
+                    <Badge variant="error" className="flex h-4 min-w-[18px] items-center justify-center px-1 text-xs">
+                      {unreadCounts.students}
+                    </Badge>
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className="border-b border-[rgba(14,14,16,0.07)] px-3 pb-3 pt-2">
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="search"
+                  placeholder={`Search ${activeTab}...`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white py-2 pl-9 pr-4 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15"
+                />
+              </div>
+            </div>
+          </div>
+          {activeTab === 'students' && renderStudents()}
+          {activeTab === 'teachers' && renderTeachers()}
+          {activeTab === 'groups' && renderGroups()}
         </div>
       )}
     </div>
