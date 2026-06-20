@@ -39,6 +39,8 @@ function AdminPortalNavCardIcon({ icon }: { icon: AdminNavIcon }) {
 }
 
 export function AdminPortalNavCard({ href, label, icon }: AdminPortalNavCardProps) {
+  const hasControlledLineBreak = label.includes('\n');
+
   return (
     <Link
       href={href}
@@ -51,7 +53,14 @@ export function AdminPortalNavCard({ href, label, icon }: AdminPortalNavCardProp
       <span className="flex h-10 w-10 shrink-0 items-center justify-center">
         <AdminPortalNavCardIcon icon={icon} />
       </span>
-      <span className="w-full text-center text-sm font-medium leading-snug text-[#242427] break-words [overflow-wrap:anywhere]">
+      <span
+        className={cn(
+          'w-full text-center text-sm font-medium leading-snug text-[#242427]',
+          hasControlledLineBreak
+            ? 'whitespace-pre-line'
+            : 'break-words [overflow-wrap:anywhere]',
+        )}
+      >
         {label}
       </span>
     </Link>

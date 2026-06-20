@@ -42,7 +42,7 @@ export function AdminDashboardHeader({
     >
       <div className="w-full min-w-0 rounded-full border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.55rem,1vw,0.9rem)] lg:rounded-[4rem]">
         <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-4">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3 lg:self-stretch lg:items-stretch">
             {onMenuClick ? (
               <button
                 type="button"
@@ -61,10 +61,10 @@ export function AdminDashboardHeader({
               </button>
             ) : null}
 
-            <div className="min-w-0 flex-1 text-center lg:text-left flex min-h-11 flex-col justify-center">
+            <div className="flex min-h-11 min-w-0 flex-1 flex-col justify-center text-center lg:min-h-full lg:text-left">
               {isSubpage ? (
                 <>
-                  <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:block sm:h-auto sm:px-5 sm:text-[1.375rem]">
+                  <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.375rem] lg:min-h-0 lg:flex-1 lg:justify-start">
                     <button
                       type="button"
                       onClick={scrollToTop}
@@ -84,7 +84,7 @@ export function AdminDashboardHeader({
                   <p className="truncate text-[0.625rem] tracking-wide text-[#8b8b90] sm:text-[0.6875rem] lg:text-left">
                     {t('greeting', { name: firstName })}
                   </p>
-                  <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:block sm:h-auto sm:px-5 sm:text-[1.5rem]">
+                  <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.5rem] lg:min-h-0 lg:justify-start">
                     <button
                       type="button"
                       onClick={scrollToTop}
