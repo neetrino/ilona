@@ -1,8 +1,14 @@
 import type { UserRole } from '@/types';
 
+const LOCALE_PATH_PREFIX = /^\/[a-z]{2}(?=\/)/;
 const ADMIN_BASE_PATH = '/admin';
 const MANAGER_BASE_PATH = '/manager';
 const ADMIN_ONLY_PREFIXES = ['/finance', '/analytics', '/recording'] as const;
+
+/** Strips `/en`, `/hy`, etc. only when followed by `/` — safe for `/admin/...` paths without locale. */
+export function stripLocaleFromPath(path: string): string {
+  return path.replace(LOCALE_PATH_PREFIX, '') || path;
+}
 
 /** Tailwind `lg` — docked sidebar and desktop admin entry from this width up. */
 export const PORTAL_DESKTOP_MIN_WIDTH = 1024;
@@ -25,7 +31,7 @@ export function isAdminPortalPath(path: string): boolean {
 }
 
 export function isAdminPortalRootPath(path: string): boolean {
-  const normalized = path.replace(/^\/[a-z]{2}/, '');
+  const normalized = stripLocaleFromPath(path);
   return normalized === ADMIN_BASE_PATH || normalized === MANAGER_BASE_PATH;
 }
 
@@ -34,7 +40,7 @@ export function isAdminPortalSubpage(path: string, role?: UserRole | null): bool
     return false;
   }
 
-  const normalized = path.replace(/^\/[a-z]{2}\//, '/');
+  const normalized = stripLocaleFromPath(path);
   return normalized !== getAdminPortalBasePath(role);
 }
 
