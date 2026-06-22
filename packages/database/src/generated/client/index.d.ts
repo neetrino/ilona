@@ -26991,6 +26991,8 @@ export namespace Prisma {
     lessonReminderHours: number | null
     logoUrl: string | null
     dashboardBannerUrl: string | null
+    dashboardBannerTitle: string | null
+    dashboardBannerSubtitle: string | null
     absencePercent: number | null
     feedbacksPercent: number | null
     voicePercent: number | null
@@ -27012,6 +27014,8 @@ export namespace Prisma {
     lessonReminderHours: number | null
     logoUrl: string | null
     dashboardBannerUrl: string | null
+    dashboardBannerTitle: string | null
+    dashboardBannerSubtitle: string | null
     absencePercent: number | null
     feedbacksPercent: number | null
     voicePercent: number | null
@@ -27033,6 +27037,8 @@ export namespace Prisma {
     lessonReminderHours: number
     logoUrl: number
     dashboardBannerUrl: number
+    dashboardBannerTitle: number
+    dashboardBannerSubtitle: number
     absencePercent: number
     feedbacksPercent: number
     voicePercent: number
@@ -27090,6 +27096,8 @@ export namespace Prisma {
     lessonReminderHours?: true
     logoUrl?: true
     dashboardBannerUrl?: true
+    dashboardBannerTitle?: true
+    dashboardBannerSubtitle?: true
     absencePercent?: true
     feedbacksPercent?: true
     voicePercent?: true
@@ -27111,6 +27119,8 @@ export namespace Prisma {
     lessonReminderHours?: true
     logoUrl?: true
     dashboardBannerUrl?: true
+    dashboardBannerTitle?: true
+    dashboardBannerSubtitle?: true
     absencePercent?: true
     feedbacksPercent?: true
     voicePercent?: true
@@ -27132,6 +27142,8 @@ export namespace Prisma {
     lessonReminderHours?: true
     logoUrl?: true
     dashboardBannerUrl?: true
+    dashboardBannerTitle?: true
+    dashboardBannerSubtitle?: true
     absencePercent?: true
     feedbacksPercent?: true
     voicePercent?: true
@@ -27240,6 +27252,8 @@ export namespace Prisma {
     lessonReminderHours: number
     logoUrl: string | null
     dashboardBannerUrl: string | null
+    dashboardBannerTitle: string | null
+    dashboardBannerSubtitle: string | null
     absencePercent: number
     feedbacksPercent: number
     voicePercent: number
@@ -27280,6 +27294,8 @@ export namespace Prisma {
     lessonReminderHours?: boolean
     logoUrl?: boolean
     dashboardBannerUrl?: boolean
+    dashboardBannerTitle?: boolean
+    dashboardBannerSubtitle?: boolean
     absencePercent?: boolean
     feedbacksPercent?: boolean
     voicePercent?: boolean
@@ -27301,6 +27317,8 @@ export namespace Prisma {
     lessonReminderHours?: boolean
     logoUrl?: boolean
     dashboardBannerUrl?: boolean
+    dashboardBannerTitle?: boolean
+    dashboardBannerSubtitle?: boolean
     absencePercent?: boolean
     feedbacksPercent?: boolean
     voicePercent?: boolean
@@ -27322,6 +27340,8 @@ export namespace Prisma {
     lessonReminderHours?: boolean
     logoUrl?: boolean
     dashboardBannerUrl?: boolean
+    dashboardBannerTitle?: boolean
+    dashboardBannerSubtitle?: boolean
     absencePercent?: boolean
     feedbacksPercent?: boolean
     voicePercent?: boolean
@@ -27347,6 +27367,8 @@ export namespace Prisma {
       lessonReminderHours: number
       logoUrl: string | null
       dashboardBannerUrl: string | null
+      dashboardBannerTitle: string | null
+      dashboardBannerSubtitle: string | null
       absencePercent: number
       feedbacksPercent: number
       voicePercent: number
@@ -27758,6 +27780,8 @@ export namespace Prisma {
     readonly lessonReminderHours: FieldRef<"SystemSettings", 'Int'>
     readonly logoUrl: FieldRef<"SystemSettings", 'String'>
     readonly dashboardBannerUrl: FieldRef<"SystemSettings", 'String'>
+    readonly dashboardBannerTitle: FieldRef<"SystemSettings", 'String'>
+    readonly dashboardBannerSubtitle: FieldRef<"SystemSettings", 'String'>
     readonly absencePercent: FieldRef<"SystemSettings", 'Int'>
     readonly feedbacksPercent: FieldRef<"SystemSettings", 'Int'>
     readonly voicePercent: FieldRef<"SystemSettings", 'Int'>
@@ -36737,6 +36761,8 @@ export namespace Prisma {
     lessonReminderHours: 'lessonReminderHours',
     logoUrl: 'logoUrl',
     dashboardBannerUrl: 'dashboardBannerUrl',
+    dashboardBannerTitle: 'dashboardBannerTitle',
+    dashboardBannerSubtitle: 'dashboardBannerSubtitle',
     absencePercent: 'absencePercent',
     feedbacksPercent: 'feedbacksPercent',
     voicePercent: 'voicePercent',
@@ -39247,6 +39273,8 @@ export namespace Prisma {
     lessonReminderHours?: IntFilter<"SystemSettings"> | number
     logoUrl?: StringNullableFilter<"SystemSettings"> | string | null
     dashboardBannerUrl?: StringNullableFilter<"SystemSettings"> | string | null
+    dashboardBannerTitle?: StringNullableFilter<"SystemSettings"> | string | null
+    dashboardBannerSubtitle?: StringNullableFilter<"SystemSettings"> | string | null
     absencePercent?: IntFilter<"SystemSettings"> | number
     feedbacksPercent?: IntFilter<"SystemSettings"> | number
     voicePercent?: IntFilter<"SystemSettings"> | number
@@ -39268,6 +39296,8 @@ export namespace Prisma {
     lessonReminderHours?: SortOrder
     logoUrl?: SortOrderInput | SortOrder
     dashboardBannerUrl?: SortOrderInput | SortOrder
+    dashboardBannerTitle?: SortOrderInput | SortOrder
+    dashboardBannerSubtitle?: SortOrderInput | SortOrder
     absencePercent?: SortOrder
     feedbacksPercent?: SortOrder
     voicePercent?: SortOrder
@@ -39292,6 +39322,8 @@ export namespace Prisma {
     lessonReminderHours?: IntFilter<"SystemSettings"> | number
     logoUrl?: StringNullableFilter<"SystemSettings"> | string | null
     dashboardBannerUrl?: StringNullableFilter<"SystemSettings"> | string | null
+    dashboardBannerTitle?: StringNullableFilter<"SystemSettings"> | string | null
+    dashboardBannerSubtitle?: StringNullableFilter<"SystemSettings"> | string | null
     absencePercent?: IntFilter<"SystemSettings"> | number
     feedbacksPercent?: IntFilter<"SystemSettings"> | number
     voicePercent?: IntFilter<"SystemSettings"> | number
@@ -39313,6 +39345,8 @@ export namespace Prisma {
     lessonReminderHours?: SortOrder
     logoUrl?: SortOrderInput | SortOrder
     dashboardBannerUrl?: SortOrderInput | SortOrder
+    dashboardBannerTitle?: SortOrderInput | SortOrder
+    dashboardBannerSubtitle?: SortOrderInput | SortOrder
     absencePercent?: SortOrder
     feedbacksPercent?: SortOrder
     voicePercent?: SortOrder
@@ -39342,6 +39376,8 @@ export namespace Prisma {
     lessonReminderHours?: IntWithAggregatesFilter<"SystemSettings"> | number
     logoUrl?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
     dashboardBannerUrl?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
+    dashboardBannerTitle?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
+    dashboardBannerSubtitle?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
     absencePercent?: IntWithAggregatesFilter<"SystemSettings"> | number
     feedbacksPercent?: IntWithAggregatesFilter<"SystemSettings"> | number
     voicePercent?: IntWithAggregatesFilter<"SystemSettings"> | number
@@ -42244,6 +42280,8 @@ export namespace Prisma {
     lessonReminderHours?: number
     logoUrl?: string | null
     dashboardBannerUrl?: string | null
+    dashboardBannerTitle?: string | null
+    dashboardBannerSubtitle?: string | null
     absencePercent?: number
     feedbacksPercent?: number
     voicePercent?: number
@@ -42265,6 +42303,8 @@ export namespace Prisma {
     lessonReminderHours?: number
     logoUrl?: string | null
     dashboardBannerUrl?: string | null
+    dashboardBannerTitle?: string | null
+    dashboardBannerSubtitle?: string | null
     absencePercent?: number
     feedbacksPercent?: number
     voicePercent?: number
@@ -42286,6 +42326,8 @@ export namespace Prisma {
     lessonReminderHours?: IntFieldUpdateOperationsInput | number
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    dashboardBannerTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    dashboardBannerSubtitle?: NullableStringFieldUpdateOperationsInput | string | null
     absencePercent?: IntFieldUpdateOperationsInput | number
     feedbacksPercent?: IntFieldUpdateOperationsInput | number
     voicePercent?: IntFieldUpdateOperationsInput | number
@@ -42307,6 +42349,8 @@ export namespace Prisma {
     lessonReminderHours?: IntFieldUpdateOperationsInput | number
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    dashboardBannerTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    dashboardBannerSubtitle?: NullableStringFieldUpdateOperationsInput | string | null
     absencePercent?: IntFieldUpdateOperationsInput | number
     feedbacksPercent?: IntFieldUpdateOperationsInput | number
     voicePercent?: IntFieldUpdateOperationsInput | number
@@ -42328,6 +42372,8 @@ export namespace Prisma {
     lessonReminderHours?: number
     logoUrl?: string | null
     dashboardBannerUrl?: string | null
+    dashboardBannerTitle?: string | null
+    dashboardBannerSubtitle?: string | null
     absencePercent?: number
     feedbacksPercent?: number
     voicePercent?: number
@@ -42349,6 +42395,8 @@ export namespace Prisma {
     lessonReminderHours?: IntFieldUpdateOperationsInput | number
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    dashboardBannerTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    dashboardBannerSubtitle?: NullableStringFieldUpdateOperationsInput | string | null
     absencePercent?: IntFieldUpdateOperationsInput | number
     feedbacksPercent?: IntFieldUpdateOperationsInput | number
     voicePercent?: IntFieldUpdateOperationsInput | number
@@ -42370,6 +42418,8 @@ export namespace Prisma {
     lessonReminderHours?: IntFieldUpdateOperationsInput | number
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    dashboardBannerTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    dashboardBannerSubtitle?: NullableStringFieldUpdateOperationsInput | string | null
     absencePercent?: IntFieldUpdateOperationsInput | number
     feedbacksPercent?: IntFieldUpdateOperationsInput | number
     voicePercent?: IntFieldUpdateOperationsInput | number
@@ -44916,6 +44966,8 @@ export namespace Prisma {
     lessonReminderHours?: SortOrder
     logoUrl?: SortOrder
     dashboardBannerUrl?: SortOrder
+    dashboardBannerTitle?: SortOrder
+    dashboardBannerSubtitle?: SortOrder
     absencePercent?: SortOrder
     feedbacksPercent?: SortOrder
     voicePercent?: SortOrder
@@ -44954,6 +45006,8 @@ export namespace Prisma {
     lessonReminderHours?: SortOrder
     logoUrl?: SortOrder
     dashboardBannerUrl?: SortOrder
+    dashboardBannerTitle?: SortOrder
+    dashboardBannerSubtitle?: SortOrder
     absencePercent?: SortOrder
     feedbacksPercent?: SortOrder
     voicePercent?: SortOrder
@@ -44975,6 +45029,8 @@ export namespace Prisma {
     lessonReminderHours?: SortOrder
     logoUrl?: SortOrder
     dashboardBannerUrl?: SortOrder
+    dashboardBannerTitle?: SortOrder
+    dashboardBannerSubtitle?: SortOrder
     absencePercent?: SortOrder
     feedbacksPercent?: SortOrder
     voicePercent?: SortOrder

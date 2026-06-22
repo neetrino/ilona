@@ -276,7 +276,10 @@ export class SettingsController {
   @ApiOperation({ summary: 'Get dashboard banner URL (public - all roles)' })
   async getDashboardBanner() {
     try {
-      const { dashboardBannerKey } = await this.settingsService.getDashboardBannerKey();
+      const [{ dashboardBannerKey }, { title, subtitle }] = await Promise.all([
+        this.settingsService.getDashboardBannerKey(),
+        this.settingsService.getDashboardBannerText(),
+      ]);
       const cacheBuster = dashboardBannerKey
         ? encodeURIComponent(dashboardBannerKey.split('/').pop() || dashboardBannerKey)
         : '';
@@ -285,6 +288,8 @@ export class SettingsController {
         bannerUrl: dashboardBannerKey
           ? `/api/settings/dashboard-banner/image?v=${cacheBuster}`
           : null,
+        title,
+        subtitle,
       };
     } catch (error) {
       this.logger.error(
@@ -475,6 +480,36 @@ export class SettingsController {
       );
       throw new InternalServerErrorException(
         'Failed to delete dashboard banner. Please try again later.',
+      );
+    }
+  }
+
+  /**
+   * Update dashboard banner text (Admin only)
+   */
+  @Post('dashboard-banner/text')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update dashboard banner text (Admin only)' })
+  async updateDashboardBannerText(
+    @Body() body: { title?: string | null; subtitle?: string | null },
+  ) {
+    try {
+      const result = await this.settingsService.updateDashboardBannerText(body);
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      this.logger.error(
+        `Failed to update dashboard banner text: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new InternalServerErrorException(
+        'Failed to update dashboard banner text. Please try again later.',
       );
     }
   }

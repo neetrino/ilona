@@ -133,10 +133,16 @@ export async function deleteLogo(): Promise<{ success: boolean }> {
 }
 
 /**
- * Get dashboard banner image URL (public - all roles)
+ * Get dashboard banner image URL and optional text overrides (public - all roles)
  */
-export async function fetchDashboardBanner(): Promise<{ bannerUrl: string | null }> {
-  return api.get<{ bannerUrl: string | null }>('/settings/dashboard-banner');
+export type DashboardBannerSettings = {
+  bannerUrl: string | null;
+  title: string | null;
+  subtitle: string | null;
+};
+
+export async function fetchDashboardBanner(): Promise<DashboardBannerSettings> {
+  return api.get<DashboardBannerSettings>('/settings/dashboard-banner');
 }
 
 /**
@@ -191,6 +197,29 @@ export async function uploadDashboardBanner(
  */
 export async function deleteDashboardBanner(): Promise<{ success: boolean }> {
   return api.post<{ success: boolean; message: string }>('/settings/dashboard-banner/delete');
+}
+
+export type UpdateDashboardBannerTextDto = {
+  title?: string | null;
+  subtitle?: string | null;
+};
+
+/**
+ * Update dashboard banner text (Admin only)
+ */
+export async function updateDashboardBannerText(
+  payload: UpdateDashboardBannerTextDto,
+): Promise<{ title: string | null; subtitle: string | null }> {
+  const response = await api.post<{
+    success: boolean;
+    data: { title: string | null; subtitle: string | null };
+  }>('/settings/dashboard-banner/text', payload);
+
+  if (response.success && response.data) {
+    return response.data;
+  }
+
+  throw new Error('Failed to update dashboard banner text: Invalid response from server');
 }
 
 /**

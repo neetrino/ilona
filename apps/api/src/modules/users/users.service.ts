@@ -691,7 +691,7 @@ export class UsersService {
       email?: string;
       videoUrl?: string | null;
       bio?: string | null;
-      experienceYears?: number;
+      experienceYears?: number | null;
     },
   ) {
     try {

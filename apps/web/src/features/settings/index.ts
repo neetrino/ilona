@@ -8,6 +8,7 @@ export {
   useDashboardBanner,
   useUploadDashboardBanner,
   useDeleteDashboardBanner,
+  useUpdateDashboardBannerText,
   useManagers,
   useCreateManager,
   useUpdateManager,

@@ -502,6 +502,8 @@ model SystemSettings {
   lessonReminderHours      Int      @default(24)
   logoUrl                  String?
   dashboardBannerUrl       String?
+  dashboardBannerTitle     String?
+  dashboardBannerSubtitle  String?
   absencePercent           Int      @default(25)
   feedbacksPercent         Int      @default(25)
   voicePercent             Int      @default(25)
