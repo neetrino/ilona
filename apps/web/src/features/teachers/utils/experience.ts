@@ -12,11 +12,14 @@ export function getExperienceYearsFromHireDate(hireDate?: string | Date | null):
   const parsedDate = new Date(hireDate);
   if (Number.isNaN(parsedDate.getTime())) return null;
   const currentYear = new Date().getFullYear();
-  return Math.max(0, currentYear - parsedDate.getFullYear());
+  const years = Math.max(0, currentYear - parsedDate.getFullYear());
+  return years > 0 ? years : null;
 }
 
 export function formatExperienceLabel(experienceYears: number | null | undefined): string | null {
-  if (experienceYears === null || experienceYears === undefined) return null;
+  if (experienceYears === null || experienceYears === undefined || experienceYears <= 0) {
+    return null;
+  }
   return `${experienceYears} ${experienceYears === 1 ? 'year' : 'years'} experience`;
 }
 
