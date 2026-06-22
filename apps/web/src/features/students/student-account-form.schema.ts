@@ -22,12 +22,14 @@ function preprocessManualAge(val: unknown): number | undefined {
   return Math.trunc(n);
 }
 
-const optionalDob = z.union([
+const optionalFormDate = z.union([
   z
     .string()
     .refine((value) => resolveDateOfBirthToIso(value) !== undefined, 'Use DD/MM/YYYY format'),
   z.literal(''),
 ]);
+
+const optionalDob = optionalFormDate;
 
 const createStudentBaseSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -46,9 +48,7 @@ const createStudentBaseSchema = z.object({
   phone: z.string().optional(),
   dateOfBirth: optionalDob.optional(),
   manualAge: z.preprocess(preprocessManualAge, z.number().int().min(1).max(120).optional()),
-  firstLessonDate: z
-    .union([z.string().regex(ISO_DATE_RE, 'Use YYYY-MM-DD format'), z.literal('')])
-    .optional(),
+  firstLessonDate: optionalFormDate.optional(),
   /** Matches CRM lead level ids (filters group list only; not sent to API). */
   levelId: z.string().max(10).optional(),
   groupId: z.string().optional(),

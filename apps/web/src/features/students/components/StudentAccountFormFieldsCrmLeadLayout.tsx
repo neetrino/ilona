@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { PasswordInput } from '@/shared/components/ui';
-import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import { formatDmyInputValue } from '../student-dob-date';
 import type { Group } from '@/features/groups';
 import type { CreateStudentWithConfirmFormData } from '../student-account-form.schema';
@@ -74,6 +73,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   const phoneDigits = (watch('phone') ?? '').replace(/\D/g, '');
   const parentPhoneDigits = (watch('parentPhone') ?? '').replace(/\D/g, '');
   const watchedDateOfBirth = watch('dateOfBirth') ?? '';
+  const watchedFirstLessonDate = watch('firstLessonDate') ?? '';
   const selectedTeacher = teachers.find((te) => te.id === watchedTeacherId);
   const centerNamesFromTeacher = [
     ...new Set((selectedTeacher?.centerLinks ?? []).map((l) => l.center.name).filter(Boolean)),
@@ -115,6 +115,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <input
               id={p('firstName')}
               type="text"
+              placeholder={tForm('firstNamePlaceholder')}
               {...register('firstName')}
               className={inputClass}
             />
@@ -127,6 +128,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <input
               id={p('lastName')}
               type="text"
+              placeholder={tForm('lastNamePlaceholder')}
               {...register('lastName')}
               className={inputClass}
             />
@@ -142,10 +144,11 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             type="tel"
             inputMode="numeric"
             autoComplete="tel"
-            value={phoneDigits !== '' ? `+${phoneDigits}` : '+'}
+            value={phoneDigits !== '' ? `+${phoneDigits}` : ''}
             onChange={(e) =>
               setValue('phone', e.target.value.replace(/\D/g, ''), { shouldValidate: true, shouldDirty: true })
             }
+            placeholder={tForm('phoneExamplePlaceholder')}
             className={inputClass}
             disabled={isSubmitting}
           />
@@ -163,6 +166,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             id={p('email')}
             type="email"
             autoComplete="email"
+            placeholder={tForm('emailPlaceholder')}
             {...register('email')}
             className={inputClass}
           />
@@ -176,6 +180,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <PasswordInput
               id={p('password')}
               autoComplete="new-password"
+              placeholder={tForm('passwordPlaceholder')}
               {...register('password')}
               className={inputClass}
               error={errors.password?.message}
@@ -188,6 +193,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <PasswordInput
               id={p('confirmPassword')}
               autoComplete="new-password"
+              placeholder={tForm('passwordPlaceholder')}
               {...register('confirmPassword')}
               className={inputClass}
               error={errors.confirmPassword?.message}
@@ -203,7 +209,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <label htmlFor={p('manualAge')} className="mb-1 block text-sm font-medium text-slate-700">
               {tForm('ageYears')}
             </label>
-            <input id={p('manualAge')} type="number" min={0} {...register('manualAge')} className={inputClass} disabled={isSubmitting} />
+            <input id={p('manualAge')} type="number" min={0} placeholder={tForm('ageExamplePlaceholder')} {...register('manualAge')} className={inputClass} disabled={isSubmitting} />
             {computedAge !== undefined && (
               <p className="mt-1 text-xs text-slate-500">{tForm('effectiveAge', { age: computedAge })}</p>
             )}
@@ -211,7 +217,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           </div>
           <div>
             <label htmlFor={p('dateOfBirth')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tForm('dateOfBirthDmy')}
+              {t('dateOfBirth')}
             </label>
             <input
               id={p('dateOfBirth')}
@@ -233,9 +239,23 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           </div>
           <div>
             <label htmlFor={p('firstLessonDate')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCrm('firstLessonDate')}
+              {tForm('firstLessonDate')}
             </label>
-            <DatePickerInput id={p('firstLessonDate')} {...register('firstLessonDate')} className={inputClass} />
+            <input
+              id={p('firstLessonDate')}
+              type="text"
+              inputMode="numeric"
+              placeholder={tForm('firstLessonDatePlaceholder')}
+              value={watchedFirstLessonDate}
+              onChange={(e) =>
+                setValue('firstLessonDate', formatDmyInputValue(e.target.value), {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+              className={inputClass}
+              disabled={isSubmitting}
+            />
             {errors.firstLessonDate && (
               <p className="mt-1 text-sm text-red-600">{errors.firstLessonDate.message}</p>
             )}
@@ -443,6 +463,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             type="number"
             step="0.01"
             min={0}
+            placeholder={tForm('monthlyFeePlaceholder')}
             {...register('monthlyFee', { valueAsNumber: true })}
             className={inputClass}
           />

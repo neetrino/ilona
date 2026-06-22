@@ -14,7 +14,7 @@ export function formDataToCreateStudentDto(data: CreateStudentFormData): CreateS
     lastName: data.lastName,
     phone: data.phone || undefined,
     dateOfBirth: dobIso,
-    firstLessonDate: data.firstLessonDate || undefined,
+    firstLessonDate: resolveDateOfBirthToIso(data.firstLessonDate?.trim()),
     age: effectiveAge,
     groupId: data.groupId || undefined,
     teacherId: data.teacherId || undefined,

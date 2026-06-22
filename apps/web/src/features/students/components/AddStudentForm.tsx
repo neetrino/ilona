@@ -20,6 +20,7 @@ import { formDataToCreateStudentDto } from '../student-account-form.payload';
 import { resolveAgeFromDobAndManual } from '../student-account-form.age';
 import { StudentAccountFormFieldsCrmLeadLayout } from './StudentAccountFormFieldsCrmLeadLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { X } from 'lucide-react';
 
@@ -29,6 +30,7 @@ interface AddStudentFormProps {
 }
 
 export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
+  const tForm = useTranslations('students.form');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(open);
@@ -81,7 +83,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       parentPhone: '',
       parentEmail: '',
       parentPassportInfo: '',
-      monthlyFee: 0,
+      monthlyFee: undefined,
       notes: '',
       receiveReports: true,
     },
@@ -284,10 +286,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-[#3b3b40]">Add New Student</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">
-                Basic info and phone first, then account credentials, dates, parent details when under 18, academic
-                assignment, then billing. Voice and lead comment stay on the CRM board only.
-              </p>
+              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('createDescription')}</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
