@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
-import { getExperienceYearsFromHireDate, formatExperienceLabel } from '../utils/experience';
+import { getExperienceLabelFromHireDate } from '../utils/experience';
 
 interface TeacherDetailsDrawerProps {
   teacherId: string | null;
@@ -194,12 +194,15 @@ export function TeacherDetailsDrawer({
                       {formatCurrency(hourlyRate)}/hr
                     </p>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600">Experience</label>
-                    <p className="text-slate-800 mt-1">
-                      {formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}
-                    </p>
-                  </div>
+                  {(() => {
+                    const experienceLabel = getExperienceLabelFromHireDate(teacher.hireDate);
+                    return experienceLabel ? (
+                      <div>
+                        <label className="text-sm font-medium text-slate-600">Experience</label>
+                        <p className="text-slate-800 mt-1">{experienceLabel}</p>
+                      </div>
+                    ) : null;
+                  })()}
                   {teacher.bio && (
                     <div>
                       <label className="text-sm font-medium text-slate-600">{t('bio')}</label>

@@ -12,6 +12,10 @@ import {
   PasswordInput,
 } from '@/shared/components/ui';
 import { useCreateTeacher, type CreateTeacherDto } from '@/features/teachers';
+import {
+  createOptionalExperienceYearsSchema,
+  experienceYearsFieldRegisterOptions,
+} from '@/features/teachers/utils/experience';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCenters } from '@/features/centers';
@@ -64,14 +68,9 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
           firstName: z.string().min(2, tVal('firstNameMin')).max(50, tVal('firstNameMax')),
           lastName: z.string().min(2, tVal('lastNameMin')).max(50, tVal('lastNameMax')),
           phone: z.string().optional(),
-          hourlyRate: z.number().min(0, tVal('hourlyRateMin')),
-          experienceYears: z
-            .number()
-            .int(tVal('experienceInt'))
-            .min(0, tVal('experienceMin'))
-            .max(80, tVal('experienceMax'))
-            .optional(),
-          videoUrl: z
+        hourlyRate: z.number().min(0, tVal('hourlyRateMin')),
+        experienceYears: createOptionalExperienceYearsSchema(tVal),
+        videoUrl: z
             .string()
             .trim()
             .max(500, tVal('videoUrlMax'))
@@ -106,7 +105,6 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
       lastName: '',
       phone: '',
       hourlyRate: 0,
-      experienceYears: 0,
       videoUrl: '',
       centerIds: [],
     },
@@ -221,7 +219,7 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
         lastName: data.lastName,
         phone: data.phone || undefined,
         hourlyRate: data.hourlyRate,
-        experienceYears: data.experienceYears,
+        ...(data.experienceYears !== undefined ? { experienceYears: data.experienceYears } : {}),
         videoUrl: data.videoUrl || undefined,
         centerIds: data.centerIds && data.centerIds.length > 0 ? data.centerIds : undefined,
       };
@@ -395,7 +393,7 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
                 min="0"
                 max="80"
                 step="1"
-                {...register('experienceYears', { valueAsNumber: true })}
+                {...register('experienceYears', experienceYearsFieldRegisterOptions)}
                 error={errors.experienceYears?.message}
                 placeholder={tForm('experiencePlaceholder')}
               />

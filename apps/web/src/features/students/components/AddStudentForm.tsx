@@ -12,7 +12,10 @@ import { useTeachers } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
-import { createStudentSchema, type CreateStudentFormData } from '../student-account-form.schema';
+import {
+  createStudentWithConfirmSchema,
+  type CreateStudentWithConfirmFormData,
+} from '../student-account-form.schema';
 import { formDataToCreateStudentDto } from '../student-account-form.payload';
 import { resolveAgeFromDobAndManual } from '../student-account-form.age';
 import { StudentAccountFormFieldsCrmLeadLayout } from './StudentAccountFormFieldsCrmLeadLayout';
@@ -57,11 +60,12 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     reset,
     watch,
     setValue,
-  } = useForm<CreateStudentFormData>({
-    resolver: zodResolver(createStudentSchema),
+  } = useForm<CreateStudentWithConfirmFormData>({
+    resolver: zodResolver(createStudentWithConfirmSchema),
     defaultValues: {
       email: '',
       password: '',
+      confirmPassword: '',
       firstName: '',
       lastName: '',
       phone: '',
@@ -223,7 +227,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     }
   }, [computedAge, setValue]);
 
-  const onSubmit = async (data: CreateStudentFormData) => {
+  const onSubmit = async (data: CreateStudentWithConfirmFormData) => {
     setErrorMessage(null);
     try {
       const payload = formDataToCreateStudentDto(data);

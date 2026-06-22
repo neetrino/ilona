@@ -24,7 +24,7 @@ export interface UpdateProfileDto {
   email?: string;
   videoUrl?: string | null;
   bio?: string | null;
-  experienceYears?: number;
+  experienceYears?: number | null;
 }
 
 export interface ChangePasswordDto {

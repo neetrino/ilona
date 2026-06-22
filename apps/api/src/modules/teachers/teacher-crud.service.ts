@@ -563,7 +563,7 @@ export class TeacherCrudService {
           hourlyRate: dto.hourlyRate,
           lessonRateAMD: dto.lessonRateAMD ?? undefined,
           hireDate:
-            dto.experienceYears !== undefined
+            dto.experienceYears !== undefined && dto.experienceYears !== null
               ? this.getHireDateFromExperienceYears(dto.experienceYears)
               : undefined,
           workingDays: dto.workingDays ?? ['MON', 'TUE', 'WED', 'THU', 'FRI'],
@@ -629,9 +629,11 @@ export class TeacherCrudService {
         hourlyRate: dto.hourlyRate,
         lessonRateAMD: dto.lessonRateAMD,
         hireDate:
-          dto.experienceYears !== undefined
-            ? this.getHireDateFromExperienceYears(dto.experienceYears)
-            : undefined,
+          dto.experienceYears === null
+            ? null
+            : dto.experienceYears !== undefined
+              ? this.getHireDateFromExperienceYears(dto.experienceYears)
+              : undefined,
         ...(dto.workingDays !== undefined ? { workingDays: dto.workingDays } : {}),
         ...(dto.workingHours !== undefined ? { workingHours: dto.workingHours } : {}),
         videoUrl: dto.videoUrl,

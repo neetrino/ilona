@@ -8994,7 +8994,7 @@ export namespace Prisma {
     videoUrl: string | null
     workingDays: string[]
     workingHours: JsonValue | null
-    hireDate: Date
+    hireDate: Date | null
     createdAt: Date
     updatedAt: Date
     _count: TeacherCountAggregateOutputType | null
@@ -9125,7 +9125,7 @@ export namespace Prisma {
       videoUrl: string | null
       workingDays: string[]
       workingHours: Prisma.JsonValue | null
-      hireDate: Date
+      hireDate: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["teacher"]>
@@ -37673,7 +37673,7 @@ export namespace Prisma {
     videoUrl?: StringNullableFilter<"Teacher"> | string | null
     workingDays?: StringNullableListFilter<"Teacher">
     workingHours?: JsonNullableFilter<"Teacher">
-    hireDate?: DateTimeFilter<"Teacher"> | Date | string
+    hireDate?: DateTimeNullableFilter<"Teacher"> | Date | string | null
     createdAt?: DateTimeFilter<"Teacher"> | Date | string
     updatedAt?: DateTimeFilter<"Teacher"> | Date | string
     crmLeads?: CrmLeadListRelationFilter
@@ -37701,7 +37701,7 @@ export namespace Prisma {
     videoUrl?: SortOrderInput | SortOrder
     workingDays?: SortOrder
     workingHours?: SortOrderInput | SortOrder
-    hireDate?: SortOrder
+    hireDate?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     crmLeads?: CrmLeadOrderByRelationAggregateInput
@@ -37732,7 +37732,7 @@ export namespace Prisma {
     videoUrl?: StringNullableFilter<"Teacher"> | string | null
     workingDays?: StringNullableListFilter<"Teacher">
     workingHours?: JsonNullableFilter<"Teacher">
-    hireDate?: DateTimeFilter<"Teacher"> | Date | string
+    hireDate?: DateTimeNullableFilter<"Teacher"> | Date | string | null
     createdAt?: DateTimeFilter<"Teacher"> | Date | string
     updatedAt?: DateTimeFilter<"Teacher"> | Date | string
     crmLeads?: CrmLeadListRelationFilter
@@ -37760,7 +37760,7 @@ export namespace Prisma {
     videoUrl?: SortOrderInput | SortOrder
     workingDays?: SortOrder
     workingHours?: SortOrderInput | SortOrder
-    hireDate?: SortOrder
+    hireDate?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: TeacherCountOrderByAggregateInput
@@ -37783,7 +37783,7 @@ export namespace Prisma {
     videoUrl?: StringNullableWithAggregatesFilter<"Teacher"> | string | null
     workingDays?: StringNullableListFilter<"Teacher">
     workingHours?: JsonNullableWithAggregatesFilter<"Teacher">
-    hireDate?: DateTimeWithAggregatesFilter<"Teacher"> | Date | string
+    hireDate?: DateTimeNullableWithAggregatesFilter<"Teacher"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Teacher"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Teacher"> | Date | string
   }
@@ -40523,7 +40523,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -40551,7 +40551,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -40577,7 +40577,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -40605,7 +40605,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -40632,7 +40632,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40646,7 +40646,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40661,7 +40661,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49409,7 +49409,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -49435,7 +49435,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -49779,7 +49779,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -49805,7 +49805,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -50572,7 +50572,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -50599,7 +50599,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -50629,7 +50629,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -50656,7 +50656,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -51023,7 +51023,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -51050,7 +51050,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -51086,7 +51086,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -51113,7 +51113,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -52241,7 +52241,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -52268,7 +52268,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -52348,7 +52348,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -52375,7 +52375,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -52445,7 +52445,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -52472,7 +52472,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -52513,7 +52513,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -52540,7 +52540,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -52844,7 +52844,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -52871,7 +52871,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -53317,7 +53317,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -53344,7 +53344,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -54181,7 +54181,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -54208,7 +54208,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -54238,7 +54238,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -54265,7 +54265,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -54450,7 +54450,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -54477,7 +54477,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -54513,7 +54513,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -54540,7 +54540,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -55128,7 +55128,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -55155,7 +55155,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -55340,7 +55340,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -55367,7 +55367,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -55536,7 +55536,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -55563,7 +55563,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -55604,7 +55604,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -55631,7 +55631,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -55656,7 +55656,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -55683,7 +55683,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -55724,7 +55724,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -55751,7 +55751,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -56519,7 +56519,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutTeacherInput
@@ -56546,7 +56546,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutTeacherInput
@@ -56733,7 +56733,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutTeacherNestedInput
@@ -56760,7 +56760,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutTeacherNestedInput
@@ -57634,7 +57634,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deductions?: DeductionCreateNestedManyWithoutTeacherInput
@@ -57661,7 +57661,7 @@ export namespace Prisma {
     videoUrl?: string | null
     workingDays?: TeacherCreateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: Date | string
+    hireDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deductions?: DeductionUncheckedCreateNestedManyWithoutTeacherInput
@@ -58043,7 +58043,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deductions?: DeductionUpdateManyWithoutTeacherNestedInput
@@ -58070,7 +58070,7 @@ export namespace Prisma {
     videoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     workingDays?: TeacherUpdateworkingDaysInput | string[]
     workingHours?: NullableJsonNullValueInput | InputJsonValue
-    hireDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hireDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deductions?: DeductionUncheckedUpdateManyWithoutTeacherNestedInput

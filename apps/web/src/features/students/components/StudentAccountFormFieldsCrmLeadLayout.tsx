@@ -5,8 +5,9 @@ import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { PasswordInput } from '@/shared/components/ui';
 import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
+import { formatDmyInputValue } from '../student-dob-date';
 import type { Group } from '@/features/groups';
-import type { CreateStudentFormData } from '../student-account-form.schema';
+import type { CreateStudentWithConfirmFormData } from '../student-account-form.schema';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
 import type { StudentAccountGroupOption, StudentAccountTeacherOption } from './StudentAccountFormFields';
 
@@ -19,10 +20,10 @@ const selectClass = `unified-native-select ${inputClass}`;
 const sectionTitle = 'text-xs font-semibold uppercase tracking-wide text-slate-500';
 
 export interface StudentAccountFormFieldsCrmLeadLayoutProps {
-  register: UseFormRegister<CreateStudentFormData>;
-  setValue: UseFormSetValue<CreateStudentFormData>;
-  errors: FieldErrors<CreateStudentFormData>;
-  watch: UseFormWatch<CreateStudentFormData>;
+  register: UseFormRegister<CreateStudentWithConfirmFormData>;
+  setValue: UseFormSetValue<CreateStudentWithConfirmFormData>;
+  errors: FieldErrors<CreateStudentWithConfirmFormData>;
+  watch: UseFormWatch<CreateStudentWithConfirmFormData>;
   computedAge: number | undefined;
   showParentSection: boolean;
   groupsForTeacher: StudentAccountGroupOption[];
@@ -72,6 +73,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   const watchedGroupId = watch('groupId') || '';
   const phoneDigits = (watch('phone') ?? '').replace(/\D/g, '');
   const parentPhoneDigits = (watch('parentPhone') ?? '').replace(/\D/g, '');
+  const watchedDateOfBirth = watch('dateOfBirth') ?? '';
   const selectedTeacher = teachers.find((te) => te.id === watchedTeacherId);
   const centerNamesFromTeacher = [
     ...new Set((selectedTeacher?.centerLinks ?? []).map((l) => l.center.name).filter(Boolean)),
@@ -153,20 +155,20 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
       <section className="space-y-3">
         <h3 className={sectionTitle}>{tForm('account')}</h3>
+        <div>
+          <label htmlFor={p('email')} className="mb-1 block text-sm font-medium text-slate-700">
+            {tCommon('email')} <span className="text-red-500">{tForm('requiredMark')}</span>
+          </label>
+          <input
+            id={p('email')}
+            type="email"
+            autoComplete="email"
+            {...register('email')}
+            className={inputClass}
+          />
+          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+        </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor={p('email')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCommon('email')} <span className="text-red-500">{tForm('requiredMark')}</span>
-            </label>
-            <input
-              id={p('email')}
-              type="email"
-              autoComplete="email"
-              {...register('email')}
-              className={inputClass}
-            />
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
-          </div>
           <div>
             <label htmlFor={p('password')} className="mb-1 block text-sm font-medium text-slate-700">
               {tForm('password')} <span className="text-red-500">{tForm('requiredMark')}</span>
@@ -177,6 +179,18 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               {...register('password')}
               className={inputClass}
               error={errors.password?.message}
+            />
+          </div>
+          <div>
+            <label htmlFor={p('confirmPassword')} className="mb-1 block text-sm font-medium text-slate-700">
+              {tForm('confirmPassword')} <span className="text-red-500">{tForm('requiredMark')}</span>
+            </label>
+            <PasswordInput
+              id={p('confirmPassword')}
+              autoComplete="new-password"
+              {...register('confirmPassword')}
+              className={inputClass}
+              error={errors.confirmPassword?.message}
             />
           </div>
         </div>
@@ -197,9 +211,24 @@ export function StudentAccountFormFieldsCrmLeadLayout({
           </div>
           <div>
             <label htmlFor={p('dateOfBirth')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCrm('dateOfBirth')}
+              {tForm('dateOfBirthDmy')}
             </label>
-            <DatePickerInput id={p('dateOfBirth')} {...register('dateOfBirth')} className={inputClass} />
+            <input
+              id={p('dateOfBirth')}
+              type="text"
+              inputMode="numeric"
+              autoComplete="bday"
+              placeholder={tForm('dateOfBirthPlaceholder')}
+              value={watchedDateOfBirth}
+              onChange={(e) =>
+                setValue('dateOfBirth', formatDmyInputValue(e.target.value), {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+              className={inputClass}
+              disabled={isSubmitting}
+            />
             {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth.message}</p>}
           </div>
           <div>

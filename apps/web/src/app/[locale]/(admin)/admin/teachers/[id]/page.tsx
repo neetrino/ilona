@@ -58,7 +58,6 @@ export default function TeacherProfilePage() {
       phone: '',
       status: 'ACTIVE' as UserStatus,
       hourlyRate: 0,
-      experienceYears: 0,
       workingDays: [],
     },
   });
@@ -85,7 +84,7 @@ export default function TeacherProfilePage() {
         phone: teacher.user?.phone || '',
         status: teacher.user?.status || 'ACTIVE',
         hourlyRate,
-        experienceYears: getExperienceYearsFromHireDate(teacher.hireDate),
+        experienceYears: getExperienceYearsFromHireDate(teacher.hireDate) ?? undefined,
         workingDays: teacher.workingDays || [],
       });
       setHasUnsavedChanges(false);
@@ -162,7 +161,7 @@ export default function TeacherProfilePage() {
         phone: data.phone || undefined,
         status: data.status,
         hourlyRate: data.hourlyRate,
-        experienceYears: data.experienceYears,
+        experienceYears: data.experienceYears ?? null,
         workingDays: data.workingDays,
       };
 

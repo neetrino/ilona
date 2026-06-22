@@ -734,10 +734,14 @@ export class UsersService {
 
       if (data.experienceYears !== undefined) {
         const currentYear = new Date().getFullYear();
-        const startYear = currentYear - data.experienceYears;
         await this.prisma.teacher.updateMany({
           where: { userId },
-          data: { hireDate: new Date(startYear, 0, 1) },
+          data: {
+            hireDate:
+              data.experienceYears === null
+                ? null
+                : new Date(currentYear - data.experienceYears, 0, 1),
+          },
         });
       }
 

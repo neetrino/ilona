@@ -43,7 +43,8 @@ export class UpdateUserDto {
   // Teacher-only field; ignored for non-teacher users.
   @IsInt()
   @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
   @Min(0)
   @Max(80)
-  experienceYears?: number;
+  experienceYears?: number | null;
 }

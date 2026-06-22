@@ -6,7 +6,7 @@ import { Award } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import type { Teacher } from '../types';
-import { formatExperienceLabel, getExperienceYearsFromHireDate } from '../utils/experience';
+import { getExperienceLabelFromHireDate } from '../utils/experience';
 
 export type TeacherShowcaseCardProps = {
   teacher: Teacher;
@@ -36,9 +36,7 @@ export function TeacherShowcaseCard({
 }: TeacherShowcaseCardProps) {
   const isStudent = variant === 'student';
   const fullName = getTeacherName(teacher);
-  const experienceLabel = formatExperienceLabel(
-    getExperienceYearsFromHireDate(teacher.hireDate)
-  );
+  const experienceLabel = getExperienceLabelFromHireDate(teacher.hireDate);
   const interactive = Boolean(onCardClick);
   const isIPad = useIsIPad();
   const [isIPadPro, setIsIPadPro] = useState(false);
@@ -133,23 +131,25 @@ export function TeacherShowcaseCard({
         >
           {fullName}
         </h3>
-        <p
-          className={cn(
-            'mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium sm:text-sm',
-            isStudent
-              ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#3b3b40]'
-              : 'border-slate-200 bg-slate-50 text-slate-600',
-          )}
-        >
-          <Award
+        {experienceLabel ? (
+          <p
             className={cn(
-              'h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4',
-              isStudent ? 'text-[#1010a3]' : 'text-slate-500',
+              'mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium sm:text-sm',
+              isStudent
+                ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#3b3b40]'
+                : 'border-slate-200 bg-slate-50 text-slate-600',
             )}
-            aria-hidden="true"
-          />
-          <span className="truncate">{experienceLabel}</span>
-        </p>
+          >
+            <Award
+              className={cn(
+                'h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4',
+                isStudent ? 'text-[#1010a3]' : 'text-slate-500',
+              )}
+              aria-hidden="true"
+            />
+            <span className="truncate">{experienceLabel}</span>
+          </p>
+        ) : null}
       </div>
 
       {afterExperience ? (

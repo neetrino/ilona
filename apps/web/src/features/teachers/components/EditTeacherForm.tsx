@@ -10,7 +10,11 @@ import { useUpdateTeacher, useTeacher, type UpdateTeacherDto } from '@/features/
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCenters } from '@/features/centers';
-import { getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
+import {
+  createOptionalExperienceYearsSchema,
+  experienceYearsFieldRegisterOptions,
+  getExperienceYearsFromHireDate,
+} from '@/features/teachers/utils/experience';
 import { cn } from '@/shared/lib/utils';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { X } from 'lucide-react';
@@ -63,12 +67,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
         phone: z.string().optional(),
         status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
         hourlyRate: z.number().min(0, tVal('hourlyRateMin')).optional(),
-        experienceYears: z
-          .number()
-          .int(tVal('experienceInt'))
-          .min(0, tVal('experienceMin'))
-          .max(80, tVal('experienceMax'))
-          .optional(),
+        experienceYears: createOptionalExperienceYearsSchema(tVal),
         videoUrl: z
           .string()
           .trim()
@@ -98,7 +97,6 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       lastName: '',
       phone: '',
       hourlyRate: 0,
-      experienceYears: 0,
       videoUrl: '',
       centerIds: [],
       workingDays: [],
@@ -123,7 +121,8 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
       setValue('phone', teacher.user.phone || '');
       setValue('status', teacher.user.status);
       setValue('hourlyRate', teacher.hourlyRate || 0);
-      setValue('experienceYears', getExperienceYearsFromHireDate(teacher.hireDate));
+      const experienceYears = getExperienceYearsFromHireDate(teacher.hireDate);
+      setValue('experienceYears', experienceYears ?? undefined);
       setValue('videoUrl', teacher.videoUrl ?? '');
       const linkedCenterIds = teacher.centerLinks?.map((l) => l.center.id) ?? [];
       setValue('centerIds', linkedCenterIds);
@@ -233,7 +232,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
         phone: data.phone || undefined,
         status: data.status,
         hourlyRate: data.hourlyRate,
-        experienceYears: data.experienceYears,
+        experienceYears: data.experienceYears ?? null,
         videoUrl: data.videoUrl ? data.videoUrl : null,
         centerIds: data.centerIds ?? [],
         workingDays: data.workingDays && data.workingDays.length > 0 ? data.workingDays : undefined,
@@ -394,7 +393,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
                 min="0"
                 max="80"
                 step="1"
-                {...register('experienceYears', { valueAsNumber: true })}
+                {...register('experienceYears', experienceYearsFieldRegisterOptions)}
                 error={errors.experienceYears?.message}
                 placeholder={tForm('experiencePlaceholder')}
               />

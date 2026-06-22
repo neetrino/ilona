@@ -62,9 +62,10 @@ export class UpdateTeacherDto {
 
   @IsInt()
   @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @Min(0)
   @Max(80)
-  experienceYears?: number;
+  experienceYears?: number | null;
 
   @IsArray()
   @IsOptional()

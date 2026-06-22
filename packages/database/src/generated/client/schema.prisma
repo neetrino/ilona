@@ -119,7 +119,7 @@ model Teacher {
   videoUrl            String?
   workingDays         String[]
   workingHours        Json?
-  hireDate            DateTime        @default(now())
+  hireDate            DateTime?
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
   crmLeads            CrmLead[]
