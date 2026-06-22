@@ -340,13 +340,13 @@ export function createStudentsTableColumns({
           />
         );
       },
-      className: '!w-9 !min-w-9 !max-w-9 shrink-0 !pl-2 !pr-1',
+      className: '!w-9 !min-w-9 shrink-0 !pl-2 !pr-1',
     },
     {
       key: 'student',
       header: 'STUDENT',
       sortable: true,
-      className: '!min-w-[14rem] !pl-0 !pr-2 align-top',
+      className: '!w-[18%] !min-w-[12rem] !pl-0 !pr-2 align-top',
       render: (row: TeacherAssignedItem) => {
         const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
@@ -391,7 +391,7 @@ export function createStudentsTableColumns({
     {
       key: 'center',
       header: 'CENTER',
-      className: '!min-w-[8.75rem] align-top',
+      className: '!w-[13%] !min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
@@ -415,7 +415,7 @@ export function createStudentsTableColumns({
     {
       key: 'teacher',
       header: 'TEACHER',
-      className: '!min-w-[8.75rem] align-top',
+      className: '!w-[13%] !min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
@@ -445,7 +445,7 @@ export function createStudentsTableColumns({
     {
       key: 'group',
       header: 'GROUP',
-      className: '!min-w-[8.75rem] align-top',
+      className: '!w-[13%] !min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
@@ -477,7 +477,7 @@ export function createStudentsTableColumns({
       key: 'register',
       header: 'REGISTER',
       sortable: true,
-      className: '!w-[8.25rem] !min-w-[8.25rem] !max-w-[8.25rem] whitespace-nowrap text-left align-top',
+      className: '!w-[10%] !min-w-[8.25rem] whitespace-nowrap text-left align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         return (
@@ -494,7 +494,7 @@ export function createStudentsTableColumns({
       key: 'monthlyFee',
       header: 'MONTHLY FEE',
       sortable: true,
-      className: '!min-w-[6rem] whitespace-nowrap text-center align-top',
+      className: '!w-[11%] !min-w-[6.5rem] whitespace-nowrap text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
@@ -509,7 +509,7 @@ export function createStudentsTableColumns({
       key: 'absence',
       header: 'ABSENCE',
       sortable: true,
-      className: '!min-w-[5rem] whitespace-nowrap text-center align-top',
+      className: '!w-[8%] !min-w-[5rem] whitespace-nowrap text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
@@ -529,7 +529,7 @@ export function createStudentsTableColumns({
     {
       key: 'actions',
       header: 'ACTIONS',
-      className: '!min-w-[9.5rem] shrink-0 !px-2 !py-3 text-center align-top',
+      className: '!w-[11%] !min-w-[9.5rem] shrink-0 !px-2 !py-3 text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
