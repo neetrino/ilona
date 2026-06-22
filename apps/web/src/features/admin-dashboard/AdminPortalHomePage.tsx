@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
-import { getAdminNavEntries } from '@/shared/lib/admin-nav-entries';
+import { useAdminNavEntries } from '@/shared/hooks/useAdminNavEntries';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { PORTAL_SHELL_BG } from '@/shared/components/layout/student-layout';
 import { AdminPortalNavCard } from './AdminPortalNavCard';
@@ -21,7 +21,7 @@ export function AdminPortalHomePage() {
   const isLg = useIsLgViewport();
   const role = user?.role ?? 'ADMIN';
 
-  const navItems = useMemo(() => getAdminNavEntries(role), [role]);
+  const navItems = useAdminNavEntries();
 
   useEffect(() => {
     if (isLg) {

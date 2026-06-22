@@ -10,7 +10,8 @@ type SettingsTab =
   | 'system'
   | 'penalty'
   | 'manager'
-  | 'dashboard-banner';
+  | 'dashboard-banner'
+  | 'sidebar-visibility';
 
 const VALID_TABS: ReadonlySet<string> = new Set([
   'security',
@@ -19,6 +20,7 @@ const VALID_TABS: ReadonlySet<string> = new Set([
   'penalty',
   'manager',
   'dashboard-banner',
+  'sidebar-visibility',
 ]);
 
 function parseSettingsTab(value: string | null): SettingsTab {

@@ -1,5 +1,6 @@
-import { toRolePortalPath } from '@/shared/lib/role-routes';
+import { getAdminPortalBasePath, toRolePortalPath } from '@/shared/lib/role-routes';
 import type { StudentSidebarIconKey } from '@/features/student-dashboard/studentSidebarAssets';
+import type { UserRole } from '@/types';
 
 export type AdminNavIcon =
   | { type: 'sidebar'; icon: StudentSidebarIconKey }
@@ -11,6 +12,10 @@ export type AdminNavEntry = {
   href: string;
   icon: AdminNavIcon;
 };
+
+export type AdminNavLabelKey = AdminNavEntry['labelKey'];
+
+export const ADMIN_NAV_SETTINGS_LABEL_KEY = 'settings' as const satisfies AdminNavLabelKey;
 
 export function getAdminNavEntries(role: string): AdminNavEntry[] {
   const core: AdminNavEntry[] = [
@@ -48,4 +53,35 @@ export function getAdminNavEntries(role: string): AdminNavEntry[] {
     { labelKey: 'analytics', href: '/admin/analytics', icon: { type: 'sidebar', icon: 'iconAnalytics' } },
     tail[2],
   ];
+}
+
+export function filterAdminNavEntries(
+  entries: AdminNavEntry[],
+  hiddenLabelKeys: ReadonlySet<string>,
+): AdminNavEntry[] {
+  return entries.filter((entry) => !hiddenLabelKeys.has(entry.labelKey));
+}
+
+export function resolveAdminNavLabelKeyFromPath(
+  pathWithoutLocale: string,
+  role: string,
+): AdminNavLabelKey | null {
+  const normalized = pathWithoutLocale.replace(/^\/[a-z]{2}/, '') || pathWithoutLocale;
+  const entries = [...getAdminNavEntries(role)].sort((a, b) => b.href.length - a.href.length);
+
+  for (const entry of entries) {
+    if (normalized === entry.href || normalized.startsWith(`${entry.href}/`)) {
+      return entry.labelKey;
+    }
+  }
+
+  return null;
+}
+
+export function getFirstVisibleAdminNavHref(
+  role: UserRole,
+  hiddenLabelKeys: ReadonlySet<string>,
+): string {
+  const visible = filterAdminNavEntries(getAdminNavEntries(role), hiddenLabelKeys);
+  return visible[0]?.href ?? `${getAdminPortalBasePath(role)}/dashboard`;
 }
