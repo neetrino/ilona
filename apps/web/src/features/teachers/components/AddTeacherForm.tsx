@@ -21,10 +21,12 @@ import { X } from 'lucide-react';
 type CreateTeacherFormData = {
   email: string;
   password: string;
+  confirmPassword: string;
   firstName: string;
   lastName: string;
   phone?: string;
   hourlyRate: number;
+  experienceYears?: number;
   videoUrl?: string;
   centerIds?: string[];
 };
@@ -35,6 +37,7 @@ interface AddTeacherFormProps {
 }
 
 export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
+  const t = useTranslations('teachers');
   const tForm = useTranslations('teachers.form');
   const tVal = useTranslations('teachers.validation');
   const tCommon = useTranslations('common');
@@ -53,22 +56,34 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
 
   const createTeacherSchema = useMemo(
     () =>
-      z.object({
-        email: z.string().email(tVal('invalidEmail')),
-        password: z.string().min(6, tVal('passwordMin')).max(50, tVal('passwordMax')),
-        firstName: z.string().min(2, tVal('firstNameMin')).max(50, tVal('firstNameMax')),
-        lastName: z.string().min(2, tVal('lastNameMin')).max(50, tVal('lastNameMax')),
-        phone: z.string().optional(),
-        hourlyRate: z.number().min(0, tVal('hourlyRateMin')),
-        videoUrl: z
-          .string()
-          .trim()
-          .max(500, tVal('videoUrlMax'))
-          .url(tVal('videoUrlInvalid'))
-          .optional()
-          .or(z.literal('').transform(() => undefined)),
-        centerIds: z.array(z.string()).optional(),
-      }),
+      z
+        .object({
+          email: z.string().email(tVal('invalidEmail')),
+          password: z.string().min(6, tVal('passwordMin')).max(50, tVal('passwordMax')),
+          confirmPassword: z.string().min(1, tVal('confirmPasswordRequired')),
+          firstName: z.string().min(2, tVal('firstNameMin')).max(50, tVal('firstNameMax')),
+          lastName: z.string().min(2, tVal('lastNameMin')).max(50, tVal('lastNameMax')),
+          phone: z.string().optional(),
+          hourlyRate: z.number().min(0, tVal('hourlyRateMin')),
+          experienceYears: z
+            .number()
+            .int(tVal('experienceInt'))
+            .min(0, tVal('experienceMin'))
+            .max(80, tVal('experienceMax'))
+            .optional(),
+          videoUrl: z
+            .string()
+            .trim()
+            .max(500, tVal('videoUrlMax'))
+            .url(tVal('videoUrlInvalid'))
+            .optional()
+            .or(z.literal('').transform(() => undefined)),
+          centerIds: z.array(z.string()).optional(),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: tVal('passwordsDoNotMatch'),
+          path: ['confirmPassword'],
+        }),
     [tVal],
   );
 
@@ -86,10 +101,12 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
     defaultValues: {
       email: '',
       password: '',
+      confirmPassword: '',
       firstName: '',
       lastName: '',
       phone: '',
       hourlyRate: 0,
+      experienceYears: 0,
       videoUrl: '',
       centerIds: [],
     },
@@ -204,6 +221,7 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
         lastName: data.lastName,
         phone: data.phone || undefined,
         hourlyRate: data.hourlyRate,
+        experienceYears: data.experienceYears,
         videoUrl: data.videoUrl || undefined,
         centerIds: data.centerIds && data.centerIds.length > 0 ? data.centerIds : undefined,
       };
@@ -316,16 +334,30 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">
-              {tForm('password')} <span className="text-red-500">*</span>
-            </Label>
-            <PasswordInput
-              id="password"
-              {...register('password')}
-              error={errors.password?.message}
-              placeholder={tForm('passwordPlaceholder')}
-            />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="password">
+                {tForm('password')} <span className="text-red-500">*</span>
+              </Label>
+              <PasswordInput
+                id="password"
+                {...register('password')}
+                error={errors.password?.message}
+                placeholder={tForm('passwordPlaceholder')}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">
+                {tForm('confirmPassword')} <span className="text-red-500">*</span>
+              </Label>
+              <PasswordInput
+                id="confirmPassword"
+                {...register('confirmPassword')}
+                error={errors.confirmPassword?.message}
+                placeholder={tForm('passwordPlaceholder')}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -339,19 +371,35 @@ export function AddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="hourlyRate">
-              {tForm('perLessonRate')} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="hourlyRate"
-              type="number"
-              step="0.01"
-              min="0"
-              {...register('hourlyRate', { valueAsNumber: true })}
-              error={errors.hourlyRate?.message}
-              placeholder={tForm('hourlyRatePlaceholder')}
-            />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="hourlyRate">
+                {tForm('perLessonRate')} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="hourlyRate"
+                type="number"
+                step="0.01"
+                min="0"
+                {...register('hourlyRate', { valueAsNumber: true })}
+                error={errors.hourlyRate?.message}
+                placeholder={tForm('hourlyRatePlaceholder')}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="experienceYears">{t('experienceYears')}</Label>
+              <Input
+                id="experienceYears"
+                type="number"
+                min="0"
+                max="80"
+                step="1"
+                {...register('experienceYears', { valueAsNumber: true })}
+                error={errors.experienceYears?.message}
+                placeholder={tForm('experiencePlaceholder')}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
