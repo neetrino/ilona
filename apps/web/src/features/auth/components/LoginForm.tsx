@@ -40,6 +40,12 @@ export function LoginForm() {
     }
   };
 
+  const fillDemoCredentials = (demoEmail: string, demoPassword: string) => {
+    clearError();
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+  };
+
   return (
     <Card className="w-full shadow-2xl border-border/50 bg-card backdrop-blur-sm">
       <CardHeader className="space-y-3 text-center pb-6 px-6 pt-8 sm:px-8 sm:pt-10">
@@ -150,7 +156,7 @@ export function LoginForm() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <button
               type="button"
-              onClick={() => { setEmail('admin@ilona.edu'); setPassword('admin123'); }}
+              onClick={() => fillDemoCredentials('admin@ilona.edu', 'admin123')}
               className="p-3 rounded-lg bg-muted hover:bg-muted/80 transition-all duration-200 text-xs font-medium text-foreground hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
               aria-label={`${tRoles('admin')} demo account`}
             >
@@ -158,7 +164,7 @@ export function LoginForm() {
             </button>
             <button
               type="button"
-              onClick={() => { setEmail('teacher@ilona.edu'); setPassword('teacher123'); }}
+              onClick={() => fillDemoCredentials('teacher@ilona.edu', 'teacher123')}
               className="p-3 rounded-lg bg-muted hover:bg-muted/80 transition-all duration-200 text-xs font-medium text-foreground hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
               aria-label={`${tRoles('teacher')} demo account`}
             >
@@ -166,7 +172,7 @@ export function LoginForm() {
             </button>
             <button
               type="button"
-              onClick={() => { setEmail('manager@ilona.edu'); setPassword('manager123'); }}
+              onClick={() => fillDemoCredentials('manager@ilona.edu', 'manager123')}
               className="p-3 rounded-lg bg-muted hover:bg-muted/80 transition-all duration-200 text-xs font-medium text-foreground hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
               aria-label={`${tRoles('manager')} demo account`}
             >
@@ -174,7 +180,7 @@ export function LoginForm() {
             </button>
             <button
               type="button"
-              onClick={() => { setEmail('student@ilona.edu'); setPassword('student123'); }}
+              onClick={() => fillDemoCredentials('student@ilona.edu', 'student123')}
               className="p-3 rounded-lg bg-muted hover:bg-muted/80 transition-all duration-200 text-xs font-medium text-foreground hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
               aria-label={`${tRoles('student')} demo account`}
             >
